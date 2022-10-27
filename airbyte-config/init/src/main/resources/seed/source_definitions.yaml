@@ -22,6 +22,14 @@
   icon: alloydb.svg
   sourceType: database
   releaseStage: generally_available
+- name: Google Ads Alternative
+  sourceDefinitionId: b1d37e10-de7e-4cbb-8141-1cc299d89b24
+  dockerRepository: airbyte/source-alt-google-ads
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/alt-google-ads
+  icon: google-adwords.svg
+  sourceType: api
+  releaseStage: generally_available
 - name: AWS CloudTrail
   sourceDefinitionId: 6ff047c0-f5d5-4ce5-8c81-204a830fa7e1
   dockerRepository: airbyte/source-aws-cloudtrail

@@ -1,3 +1,9 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "client_id": "im a string wdym?",
+  "client_secret": null,
+  "refresh_token": "",
+  "developer_token": "1nv4l1d-t0k3n",
+  "customer_id": 7936684534388,
+  "login_customer_id": 156888,
+  "start_date": "11-10-2222"
 }

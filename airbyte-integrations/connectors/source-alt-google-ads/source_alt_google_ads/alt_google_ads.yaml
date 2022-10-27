@@ -1,397 +1,43 @@
 version: "0.1.0"
 
 definitions:
-  cq: "SELECT campaign.accessible_bidding_strategy, campaign.ad_serving_optimization_status,  campaign.advertising_channel_sub_type, campaign.advertising_channel_type,  campaign.app_campaign_setting.app_id, campaign.app_campaign_setting.app_store,  campaign.app_campaign_setting.bidding_strategy_goal_type, campaign.base_campaign,  campaign.bidding_strategy, campaign.bidding_strategy_type, campaign.campaign_budget,  campaign_budget.amount_micros, campaign.commission.commission_rate_micros,  campaign.dynamic_search_ads_setting.domain_name, campaign.dynamic_search_ads_setting.feeds,  campaign.dynamic_search_ads_setting.language_code,  campaign.dynamic_search_ads_setting.use_supplied_urls_only, campaign.end_date,  campaign.excluded_parent_asset_field_types, campaign.experiment_type,  campaign.final_url_suffix, campaign.frequency_caps,  campaign.geo_target_type_setting.negative_geo_target_type,  campaign.geo_target_type_setting.positive_geo_target_type,  campaign.hotel_setting.hotel_center_id, campaign.id, campaign.labels,  campaign.local_campaign_setting.location_source_type,  campaign.manual_cpc.enhanced_cpc_enabled, campaign.manual_cpm, campaign.manual_cpv,  campaign.maximize_conversion_value.target_roas,  campaign.maximize_conversions.target_cpa_micros, campaign.name,  campaign.network_settings.target_content_network,  campaign.network_settings.target_google_search,  campaign.network_settings.target_partner_search_network,  campaign.network_settings.target_search_network,  campaign.optimization_goal_setting.optimization_goal_types, campaign.optimization_score,  campaign.payment_mode, campaign.percent_cpc.cpc_bid_ceiling_micros,  campaign.percent_cpc.enhanced_cpc_enabled, campaign.real_time_bidding_setting.opt_in,  campaign.resource_name, campaign.selective_optimization.conversion_actions,  campaign.serving_status, campaign.shopping_setting.campaign_priority,  campaign.shopping_setting.enable_local, campaign.shopping_setting.merchant_id,  campaign.shopping_setting.sales_country, campaign.start_date, campaign.status,  campaign.target_cpa.cpc_bid_ceiling_micros, campaign.target_cpa.cpc_bid_floor_micros,  campaign.target_cpa.target_cpa_micros, campaign.target_cpm,  campaign.target_impression_share.cpc_bid_ceiling_micros,  campaign.target_impression_share.location,  campaign.target_impression_share.location_fraction_micros,  campaign.target_roas.cpc_bid_ceiling_micros, campaign.target_roas.cpc_bid_floor_micros,  campaign.target_roas.target_roas, campaign.target_spend.cpc_bid_ceiling_micros,  campaign.target_spend.target_spend_micros, campaign.targeting_setting.target_restrictions,  campaign.tracking_setting.tracking_url, campaign.tracking_url_template,  campaign.url_custom_parameters, campaign.vanity_pharma.vanity_pharma_display_url_mode,  campaign.vanity_pharma.vanity_pharma_text, campaign.video_brand_safety_suitability,  metrics.ctr, metrics.conversions, metrics.conversions_value, metrics.clicks,  metrics.cost_micros, metrics.impressions, metrics.video_views,  metrics.video_quartile_p100_rate, segments.date, segments.hour FROM campaign WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().strftime('%Y-%m-%d') }} LIMIT 1;"
-
-  campaigns_query:
-    query: "*ref(definitions.cq)"
-  accounts_query:
-    query: >-
-      SELECT customer.auto_tagging_enabled, customer.call_reporting_setting.call_conversion_action,
-        customer.call_reporting_setting.call_conversion_reporting_enabled, 
-        customer.call_reporting_setting.call_reporting_enabled,
-        customer.conversion_tracking_setting.conversion_tracking_id, 
-        customer.conversion_tracking_setting.cross_account_conversion_tracking_id, 
-        customer.currency_code, customer.descriptive_name, customer.final_url_suffix, 
-        customer.has_partners_badge, customer.id, customer.manager, customer.optimization_score, 
-        customer.optimization_score_weight, customer.pay_per_conversion_eligibility_failure_reason, 
-        customer.remarketing_setting.google_global_site_tag, customer.resource_name, 
-        customer.test_account, customer.time_zone, customer.tracking_url_template, 
-        segments.date 
-      FROM accounts 
-      WHERE segments.date BETWEEN '2022-01-01' AND '2022-07-07'
-  ad_group_ads_query:
-    query: >-
-      SELECT ad_group_ad.ad.added_by_google_ads, ad_group_ad.ad.app_ad.descriptions, 
-      ad_group_ad.ad.app_ad.headlines, ad_group_ad.ad.app_ad.html5_media_bundles, 
-      ad_group_ad.ad.app_ad.images, ad_group_ad.ad.app_ad.mandatory_ad_text, 
-      ad_group_ad.ad.app_ad.youtube_videos, ad_group_ad.ad.app_engagement_ad.descriptions, 
-      ad_group_ad.ad.app_engagement_ad.headlines, ad_group_ad.ad.app_engagement_ad.images, 
-      ad_group_ad.ad.app_engagement_ad.videos, ad_group_ad.ad.call_ad.business_name, 
-      ad_group_ad.ad.call_ad.call_tracked, ad_group_ad.ad.call_ad.conversion_action, 
-      ad_group_ad.ad.call_ad.conversion_reporting_state, ad_group_ad.ad.call_ad.country_code, 
-      ad_group_ad.ad.call_ad.description1, ad_group_ad.ad.call_ad.description2, 
-      ad_group_ad.ad.call_ad.disable_call_conversion, ad_group_ad.ad.call_ad.headline1, 
-      ad_group_ad.ad.call_ad.headline2, ad_group_ad.ad.call_ad.path1, ad_group_ad.ad.call_ad.path2, 
-      ad_group_ad.ad.call_ad.phone_number, ad_group_ad.ad.call_ad.phone_number_verification_url, 
-      ad_group_ad.ad.device_preference, ad_group_ad.ad.display_upload_ad.display_upload_product_type, 
-      ad_group_ad.ad.display_upload_ad.media_bundle, ad_group_ad.ad.display_url, 
-      ad_group_ad.ad.expanded_dynamic_search_ad.description, 
-      ad_group_ad.ad.expanded_dynamic_search_ad.description2, 
-      ad_group_ad.ad.expanded_text_ad.description, ad_group_ad.ad.expanded_text_ad.description2, 
-      ad_group_ad.ad.expanded_text_ad.headline_part1, ad_group_ad.ad.expanded_text_ad.headline_part2, 
-      ad_group_ad.ad.expanded_text_ad.headline_part3, ad_group_ad.ad.expanded_text_ad.path1, 
-      ad_group_ad.ad.expanded_text_ad.path2, ad_group_ad.ad.final_app_urls, 
-      ad_group_ad.ad.final_mobile_urls, ad_group_ad.ad.final_url_suffix, ad_group_ad.ad.final_urls, 
-      ad_group_ad.ad.gmail_ad.header_image, ad_group_ad.ad.gmail_ad.marketing_image, 
-      ad_group_ad.ad.gmail_ad.marketing_image_description, 
-      ad_group_ad.ad.gmail_ad.marketing_image_display_call_to_action.text, 
-      ad_group_ad.ad.gmail_ad.marketing_image_display_call_to_action.text_color, 
-      ad_group_ad.ad.gmail_ad.marketing_image_display_call_to_action.url_collection_id, 
-      ad_group_ad.ad.gmail_ad.marketing_image_headline, ad_group_ad.ad.gmail_ad.product_images, 
-      ad_group_ad.ad.gmail_ad.product_videos, ad_group_ad.ad.gmail_ad.teaser.business_name, 
-      ad_group_ad.ad.gmail_ad.teaser.description, ad_group_ad.ad.gmail_ad.teaser.headline, 
-      ad_group_ad.ad.gmail_ad.teaser.logo_image, ad_group_ad.ad.hotel_ad, ad_group_ad.ad.id, 
-      ad_group_ad.ad.image_ad.image_url, ad_group_ad.ad.image_ad.mime_type, 
-      ad_group_ad.ad.image_ad.name, ad_group_ad.ad.image_ad.pixel_height, 
-      ad_group_ad.ad.image_ad.pixel_width, ad_group_ad.ad.image_ad.preview_image_url, 
-      ad_group_ad.ad.image_ad.preview_pixel_height, ad_group_ad.ad.image_ad.preview_pixel_width, 
-      ad_group_ad.ad.legacy_app_install_ad, ad_group_ad.ad.legacy_responsive_display_ad.accent_color, 
-      ad_group_ad.ad.legacy_responsive_display_ad.allow_flexible_color, 
-      ad_group_ad.ad.legacy_responsive_display_ad.business_name, 
-      ad_group_ad.ad.legacy_responsive_display_ad.call_to_action_text, 
-      ad_group_ad.ad.legacy_responsive_display_ad.description, 
-      ad_group_ad.ad.legacy_responsive_display_ad.format_setting, 
-      ad_group_ad.ad.legacy_responsive_display_ad.logo_image, 
-      ad_group_ad.ad.legacy_responsive_display_ad.long_headline, 
-      ad_group_ad.ad.legacy_responsive_display_ad.main_color, 
-      ad_group_ad.ad.legacy_responsive_display_ad.marketing_image, 
-      ad_group_ad.ad.legacy_responsive_display_ad.price_prefix, 
-      ad_group_ad.ad.legacy_responsive_display_ad.promo_text, 
-      ad_group_ad.ad.legacy_responsive_display_ad.short_headline, 
-      ad_group_ad.ad.legacy_responsive_display_ad.square_logo_image, 
-      ad_group_ad.ad.legacy_responsive_display_ad.square_marketing_image, 
-      ad_group_ad.ad.local_ad.call_to_actions, ad_group_ad.ad.local_ad.descriptions, 
-      ad_group_ad.ad.local_ad.headlines, ad_group_ad.ad.local_ad.logo_images, 
-      ad_group_ad.ad.local_ad.marketing_images, ad_group_ad.ad.local_ad.path1, 
-      ad_group_ad.ad.local_ad.path2, ad_group_ad.ad.local_ad.videos, ad_group_ad.ad.name, 
-      ad_group_ad.ad.resource_name, ad_group_ad.ad.responsive_display_ad.accent_color, 
-      ad_group_ad.ad.responsive_display_ad.allow_flexible_color, 
-      ad_group_ad.ad.responsive_display_ad.business_name, 
-      ad_group_ad.ad.responsive_display_ad.call_to_action_text, 
-      ad_group_ad.ad.responsive_display_ad.control_spec.enable_asset_enhancements, 
-      ad_group_ad.ad.responsive_display_ad.control_spec.enable_autogen_video, 
-      ad_group_ad.ad.responsive_display_ad.descriptions, 
-      ad_group_ad.ad.responsive_display_ad.format_setting, 
-      ad_group_ad.ad.responsive_display_ad.headlines, ad_group_ad.ad.responsive_display_ad.logo_images, 
-      ad_group_ad.ad.responsive_display_ad.long_headline, 
-      ad_group_ad.ad.responsive_display_ad.main_color, 
-      ad_group_ad.ad.responsive_display_ad.marketing_images, 
-      ad_group_ad.ad.responsive_display_ad.price_prefix, 
-      ad_group_ad.ad.responsive_display_ad.promo_text, 
-      ad_group_ad.ad.responsive_display_ad.square_logo_images, 
-      ad_group_ad.ad.responsive_display_ad.square_marketing_images, 
-      ad_group_ad.ad.responsive_display_ad.youtube_videos, 
-      ad_group_ad.ad.responsive_search_ad.descriptions, ad_group_ad.ad.responsive_search_ad.headlines, 
-      ad_group_ad.ad.responsive_search_ad.path1, ad_group_ad.ad.responsive_search_ad.path2, 
-      ad_group_ad.ad.shopping_comparison_listing_ad.headline, ad_group_ad.ad.shopping_product_ad, 
-      ad_group_ad.ad.shopping_smart_ad, ad_group_ad.ad.smart_campaign_ad.descriptions, 
-      ad_group_ad.ad.smart_campaign_ad.headlines, ad_group_ad.ad.system_managed_resource_source, 
-      ad_group_ad.ad.text_ad.description1, ad_group_ad.ad.text_ad.description2, 
-      ad_group_ad.ad.text_ad.headline, ad_group_ad.ad.tracking_url_template, ad_group_ad.ad.type, 
-      ad_group_ad.ad.url_collections, ad_group_ad.ad.url_custom_parameters, 
-      ad_group_ad.ad.video_ad.in_feed.description1, ad_group_ad.ad.video_ad.in_feed.description2, 
-      ad_group_ad.ad.video_ad.in_feed.headline, ad_group_ad.ad.video_ad.in_stream.action_button_label, 
-      ad_group_ad.ad.video_ad.in_stream.action_headline, ad_group_ad.ad.video_ad.out_stream.description, 
-      ad_group_ad.ad.video_ad.out_stream.headline, ad_group_ad.ad.video_responsive_ad.call_to_actions, 
-      ad_group_ad.ad.video_responsive_ad.companion_banners, 
-      ad_group_ad.ad.video_responsive_ad.descriptions, ad_group_ad.ad.video_responsive_ad.headlines, 
-      ad_group_ad.ad.video_responsive_ad.long_headlines, ad_group_ad.ad.video_responsive_ad.videos, 
-      ad_group_ad.ad_group, ad_group_ad.ad_strength, ad_group_ad.labels, 
-      ad_group_ad.policy_summary.approval_status, ad_group_ad.policy_summary.policy_topic_entries, 
-      ad_group_ad.policy_summary.review_status, ad_group_ad.resource_name, ad_group_ad.status, 
-      segments.date 
-      FROM
-        ad_group_ad
-      WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
-  ad_group_ad_labels_query:
-    query: >-
-      SELECT ad_group_ad.ad.resource_name, ad_group_ad_label.resource_name,
-        label.name, label.resource_name
-      FROM
-        ad_group_ad_label
-  ad_groups_query:
-    query: >- 
-      SELECT ad_group.ad_rotation_mode, ad_group.base_ad_group, ad_group.campaign, 
-        ad_group.cpc_bid_micros, ad_group.cpm_bid_micros, ad_group.cpv_bid_micros, 
-        ad_group.display_custom_bid_dimension, ad_group.effective_target_cpa_micros, 
-        ad_group.effective_target_cpa_source, ad_group.effective_target_roas, 
-        ad_group.effective_target_roas_source, ad_group.excluded_parent_asset_field_types, 
-        ad_group.explorer_auto_optimizer_setting.opt_in, ad_group.final_url_suffix, ad_group.id, 
-        ad_group.labels, ad_group.name, ad_group.percent_cpc_bid_micros, ad_group.resource_name, 
-        ad_group.status, ad_group.target_cpa_micros, ad_group.target_cpm_micros, ad_group.target_roas, 
-        ad_group.targeting_setting.target_restrictions, ad_group.tracking_url_template, 
-        ad_group.type, ad_group.url_custom_parameters, segments.date 
-      FROM ad_group
-      WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
-  ad_group_labels_query:
-    query: >-
-      SELECT ad_group.resource_name, ad_group_label.resource_name, label.name, label.resource_name
-      FROM ad_group_label
-  campaign_labels_query:
-    query: >-
-      SELECT campaign.resource_name, campaign_label.resource_name, label.name, label.resource_name
-      FROM campaign_label
-  click_view_query:
-   query: >-
-    SELECT ad_group.name, click_view.gclid, click_view.ad_group_ad, 
-    click_view.keyword, click_view.keyword_info.match_type, 
-    click_view.keyword_info.text, campaign.id, ad_group.id, 
-    segments.date, customer.id, campaign.name, 
-    segments.ad_network_type, 
-    campaign.network_settings.target_content_network, 
-    campaign.network_settings.target_google_search, 
-    campaign.network_settings.target_partner_search_network, 
-    campaign.network_settings.target_search_network
-    FROM click_view
-    WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
-  keyword_report_query:
-    query: >-
-      SELECT customer.descriptive_name, ad_group.id, ad_group_criterion.type, 
-      ad_group_criterion.keyword.text, ad_group_criterion.negative, 
-      ad_group_criterion.keyword.match_type, metrics.historical_quality_score, 
-      metrics.ctr, segments.date, campaign.bidding_strategy_type, metrics.clicks, 
-      metrics.cost_micros, metrics.impressions, ad_group_criterion.criterion_id 
-      FROM keyword_view
-      WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
-  geographic_report_query:
-    query: >-
-      SELECT customer.descriptive_name, geographic_view.country_criterion_id, 
-      geographic_view.location_type, ad_group.id, segments.date 
-      FROM geographic_view
-      WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
-  account_performance_report_query: 
-    query: >- 
-      SELECT customer.currency_code, customer.descriptive_name, customer.time_zone,
-      metrics.active_view_cpm, metrics.active_view_ctr, metrics.active_view_impressions, 
-      metrics.active_view_measurability, metrics.active_view_measurable_cost_micros, 
-      metrics.active_view_measurable_impressions, metrics.active_view_viewability, 
-      segments.ad_network_type, metrics.all_conversions_from_interactions_rate, 
-      metrics.all_conversions_value, metrics.all_conversions, metrics.average_cost, 
-      metrics.average_cpc, metrics.average_cpe, metrics.average_cpm, metrics.average_cpv, 
-      customer.manager, metrics.clicks, metrics.content_budget_lost_impression_share, 
-      metrics.content_impression_share, metrics.content_rank_lost_impression_share, 
-      metrics.conversions_from_interactions_rate, metrics.conversions_value, metrics.conversions, 
-      metrics.cost_micros, metrics.cost_per_all_conversions, metrics.cost_per_conversion, 
-      metrics.cross_device_conversions, metrics.ctr, segments.date, segments.day_of_week, 
-      segments.device, metrics.engagement_rate, metrics.engagements, customer.id, 
-      metrics.impressions, metrics.interaction_rate, metrics.interaction_event_types, 
-      metrics.interactions, customer.auto_tagging_enabled, customer.test_account, segments.month, 
-      segments.quarter, metrics.search_budget_lost_impression_share, 
-      metrics.search_exact_match_impression_share, metrics.search_impression_share, 
-      metrics.search_rank_lost_impression_share, metrics.value_per_all_conversions, 
-      metrics.value_per_conversion, metrics.video_view_rate, metrics.video_views, 
-      metrics.view_through_conversions, segments.week, segments.year 
-      FROM customer 
-      WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}"
-  ad_group_ad_report_query:
-    query: >-
-      SELECT ad_group_ad.ad.legacy_responsive_display_ad.accent_color, ad_group.id, 
-      customer.currency_code, customer.descriptive_name, customer.time_zone, 
-      metrics.active_view_cpm, metrics.active_view_ctr, metrics.active_view_impressions, 
-      metrics.active_view_measurability, metrics.active_view_measurable_cost_micros, 
-      metrics.active_view_measurable_impressions, metrics.active_view_viewability, 
-      ad_group_ad.ad_group, ad_group.name, ad_group.status, segments.ad_network_type, 
-      ad_group_ad.ad_strength, ad_group_ad.ad.type, metrics.all_conversions_from_interactions_rate, 
-      metrics.all_conversions_value, metrics.all_conversions, 
-      ad_group_ad.ad.legacy_responsive_display_ad.allow_flexible_color, 
-      ad_group_ad.ad.added_by_google_ads, metrics.average_cost, metrics.average_cpc, 
-      metrics.average_cpe, metrics.average_cpm, metrics.average_cpv, metrics.average_page_views, 
-      metrics.average_time_on_site, ad_group.base_ad_group, campaign.base_campaign, 
-      metrics.bounce_rate, ad_group_ad.ad.legacy_responsive_display_ad.business_name, 
-      ad_group_ad.ad.legacy_responsive_display_ad.call_to_action_text, campaign.id, 
-      campaign.name, campaign.status, metrics.clicks, ad_group_ad.policy_summary.approval_status, 
-      metrics.conversions_from_interactions_rate, metrics.conversions_value, metrics.conversions, 
-      metrics.cost_micros, metrics.cost_per_all_conversions, metrics.cost_per_conversion, 
-      metrics.cost_per_current_model_attributed_conversion, ad_group_ad.ad.final_mobile_urls, 
-      ad_group_ad.ad.final_urls, ad_group_ad.ad.tracking_url_template, 
-      ad_group_ad.ad.url_custom_parameters, metrics.cross_device_conversions, metrics.ctr, 
-      metrics.current_model_attributed_conversions_value, 
-      metrics.current_model_attributed_conversions, segments.date, segments.day_of_week, 
-      ad_group_ad.ad.expanded_text_ad.description, ad_group_ad.ad.text_ad.description1, 
-      ad_group_ad.ad.text_ad.description2, ad_group_ad.ad.device_preference, 
-      ad_group_ad.ad.display_url, metrics.engagement_rate, metrics.engagements, 
-      ad_group_ad.ad.legacy_responsive_display_ad.logo_image, 
-      ad_group_ad.ad.legacy_responsive_display_ad.square_logo_image, 
-      ad_group_ad.ad.legacy_responsive_display_ad.marketing_image, 
-      ad_group_ad.ad.legacy_responsive_display_ad.square_marketing_image, 
-      ad_group_ad.ad.expanded_dynamic_search_ad.description, 
-      ad_group_ad.ad.expanded_text_ad.description2, 
-      ad_group_ad.ad.expanded_text_ad.headline_part3, customer.id, 
-      ad_group_ad.ad.legacy_responsive_display_ad.format_setting, 
-      ad_group_ad.ad.gmail_ad.header_image, ad_group_ad.ad.gmail_ad.teaser.logo_image, 
-      ad_group_ad.ad.gmail_ad.marketing_image, metrics.gmail_forwards, metrics.gmail_saves, 
-      metrics.gmail_secondary_clicks, ad_group_ad.ad.gmail_ad.teaser.business_name, 
-      ad_group_ad.ad.gmail_ad.teaser.description, ad_group_ad.ad.gmail_ad.teaser.headline, 
-      ad_group_ad.ad.text_ad.headline, ad_group_ad.ad.expanded_text_ad.headline_part1, 
-      ad_group_ad.ad.expanded_text_ad.headline_part2, ad_group_ad.ad.id, 
-      ad_group_ad.ad.image_ad.image_url, ad_group_ad.ad.image_ad.pixel_height, 
-      ad_group_ad.ad.image_ad.pixel_width, ad_group_ad.ad.image_ad.mime_type, 
-      ad_group_ad.ad.image_ad.name, metrics.impressions, metrics.interaction_rate, 
-      metrics.interaction_event_types, metrics.interactions, 
-      ad_group_ad.ad.legacy_responsive_display_ad.long_headline, 
-      ad_group_ad.ad.legacy_responsive_display_ad.main_color, 
-      ad_group_ad.ad.gmail_ad.marketing_image_display_call_to_action.text, 
-      ad_group_ad.ad.gmail_ad.marketing_image_display_call_to_action.text_color, 
-      ad_group_ad.ad.gmail_ad.marketing_image_headline, 
-      ad_group_ad.ad.gmail_ad.marketing_image_description, segments.month, 
-      ad_group_ad.ad.responsive_display_ad.accent_color, 
-      ad_group_ad.ad.responsive_display_ad.allow_flexible_color, 
-      ad_group_ad.ad.responsive_display_ad.business_name, 
-      ad_group_ad.ad.responsive_display_ad.call_to_action_text, 
-      ad_group_ad.ad.responsive_display_ad.descriptions, 
-      ad_group_ad.ad.responsive_display_ad.price_prefix, 
-      ad_group_ad.ad.responsive_display_ad.promo_text, 
-      ad_group_ad.ad.responsive_display_ad.format_setting, 
-      ad_group_ad.ad.responsive_display_ad.headlines, 
-      ad_group_ad.ad.responsive_display_ad.logo_images, 
-      ad_group_ad.ad.responsive_display_ad.square_logo_images, 
-      ad_group_ad.ad.responsive_display_ad.long_headline, 
-      ad_group_ad.ad.responsive_display_ad.main_color, 
-      ad_group_ad.ad.responsive_display_ad.marketing_images, 
-      ad_group_ad.ad.responsive_display_ad.square_marketing_images, 
-      ad_group_ad.ad.responsive_display_ad.youtube_videos, 
-      ad_group_ad.ad.expanded_text_ad.path1, ad_group_ad.ad.expanded_text_ad.path2, 
-      metrics.percent_new_visitors, ad_group_ad.ad.legacy_responsive_display_ad.price_prefix, 
-      ad_group_ad.ad.legacy_responsive_display_ad.promo_text, segments.quarter, 
-      ad_group_ad.ad.responsive_search_ad.descriptions, 
-      ad_group_ad.ad.responsive_search_ad.headlines, ad_group_ad.ad.responsive_search_ad.path1, 
-      ad_group_ad.ad.responsive_search_ad.path2, 
-      ad_group_ad.ad.legacy_responsive_display_ad.short_headline, ad_group_ad.status, 
-      ad_group_ad.ad.system_managed_resource_source, metrics.top_impression_percentage, 
-      ad_group_ad.ad.app_ad.descriptions, ad_group_ad.ad.app_ad.headlines, 
-      ad_group_ad.ad.app_ad.html5_media_bundles, ad_group_ad.ad.app_ad.images, 
-      ad_group_ad.ad.app_ad.mandatory_ad_text, ad_group_ad.ad.app_ad.youtube_videos, 
-      metrics.value_per_all_conversions, metrics.value_per_conversion, 
-      metrics.value_per_current_model_attributed_conversion, metrics.video_quartile_p100_rate, 
-      metrics.video_quartile_p25_rate, metrics.video_quartile_p50_rate, 
-      metrics.video_quartile_p75_rate, metrics.video_view_rate, metrics.video_views, 
-      metrics.view_through_conversions, segments.week, segments.year
-      FROM ad_group_ad
-      WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
-  display_keyword_performance_report_query:
-    query: >-
-      SELECT customer.currency_code, customer.descriptive_name, 
-      customer.time_zone, metrics.active_view_cpm, 
-      metrics.active_view_ctr, metrics.active_view_impressions, 
-      metrics.active_view_measurability, 
-      metrics.active_view_measurable_cost_micros, 
-      metrics.active_view_measurable_impressions, 
-      metrics.active_view_viewability, ad_group.id, 
-      ad_group.name, ad_group.status, segments.ad_network_type, 
-      metrics.all_conversions_from_interactions_rate, 
-      metrics.all_conversions_value, metrics.all_conversions, 
-      metrics.average_cost, metrics.average_cpc, 
-      metrics.average_cpe, metrics.average_cpm, 
-      metrics.average_cpv, ad_group.base_ad_group, 
-      campaign.base_campaign, campaign.bidding_strategy, 
-      campaign.bidding_strategy_type, campaign.id, campaign.name, 
-      campaign.status, metrics.clicks, metrics.conversions_from_interactions_rate, 
-      metrics.conversions_value, metrics.conversions, metrics.cost_micros, 
-      metrics.cost_per_all_conversions, metrics.cost_per_conversion, 
-      ad_group_criterion.effective_cpc_bid_micros, ad_group_criterion.effective_cpc_bid_source, 
-      ad_group_criterion.effective_cpm_bid_micros, ad_group_criterion.effective_cpm_bid_source, 
-      ad_group_criterion.effective_cpv_bid_micros, ad_group_criterion.effective_cpv_bid_source, 
-      ad_group_criterion.keyword.text, metrics.cross_device_conversions, metrics.ctr, 
-      segments.day_of_week, segments.device, metrics.engagement_rate, metrics.engagements, 
-      customer.id, ad_group_criterion.final_mobile_urls, ad_group_criterion.final_urls, 
-      metrics.gmail_forwards, metrics.gmail_saves, metrics.gmail_secondary_clicks, 
-      ad_group_criterion.criterion_id, metrics.impressions, metrics.interaction_rate, 
-      metrics.interaction_event_types, metrics.interactions, ad_group_criterion.negative, 
-      ad_group.targeting_setting.target_restrictions, segments.month, segments.quarter, 
-      ad_group_criterion.status, ad_group_criterion.tracking_url_template, 
-      ad_group_criterion.keyword.match_type, ad_group_criterion.url_custom_parameters, 
-      metrics.value_per_all_conversions, metrics.value_per_conversion, 
-      metrics.video_quartile_p100_rate, metrics.video_quartile_p25_rate, 
-      metrics.video_quartile_p50_rate, metrics.video_quartile_p75_rate, metrics.video_view_rate, 
-      metrics.video_views, metrics.view_through_conversions, segments.week, segments.year, 
-      segments.date
-      FROM display_keyword_view
-      WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
-  display_topics_performance_report_query:
-    query: >-
-      SELECT customer.currency_code, customer.descriptive_name, customer.time_zone, 
-      metrics.active_view_cpm, metrics.active_view_ctr, metrics.active_view_impressions, 
-      metrics.active_view_measurability, metrics.active_view_measurable_cost_micros, 
-      metrics.active_view_measurable_impressions, metrics.active_view_viewability, ad_group.id, 
-      ad_group.name, ad_group.status, segments.ad_network_type, 
-      metrics.all_conversions_from_interactions_rate, metrics.all_conversions_value, 
-      metrics.all_conversions, metrics.average_cost, metrics.average_cpc, metrics.average_cpe, 
-      metrics.average_cpm, metrics.average_cpv, ad_group.base_ad_group, campaign.base_campaign, 
-      ad_group_criterion.bid_modifier, campaign.bidding_strategy, campaign.bidding_strategy_type, 
-      campaign.id, campaign.name, campaign.status, metrics.clicks, 
-      metrics.conversions_from_interactions_rate, metrics.conversions_value, metrics.conversions, 
-      metrics.cost_micros, metrics.cost_per_all_conversions, metrics.cost_per_conversion, 
-      ad_group_criterion.effective_cpc_bid_micros, ad_group_criterion.effective_cpc_bid_source, 
-      ad_group_criterion.effective_cpm_bid_micros, ad_group_criterion.effective_cpm_bid_source, 
-      ad_group_criterion.topic.path, metrics.cross_device_conversions, metrics.ctr, segments.date, 
-      segments.day_of_week, segments.device, metrics.engagement_rate, metrics.engagements, 
-      customer.id, ad_group_criterion.final_mobile_urls, ad_group_criterion.final_urls, 
-      metrics.gmail_forwards, metrics.gmail_saves, metrics.gmail_secondary_clicks, 
-      ad_group_criterion.criterion_id, metrics.impressions, metrics.interaction_rate, 
-      metrics.interaction_event_types, metrics.interactions, ad_group_criterion.negative, 
-      ad_group.targeting_setting.target_restrictions, segments.month, segments.quarter, 
-      ad_group_criterion.status, ad_group_criterion.tracking_url_template, 
-      ad_group_criterion.url_custom_parameters, metrics.value_per_all_conversions, 
-      metrics.value_per_conversion, ad_group_criterion.topic.topic_constant, 
-      metrics.video_quartile_p100_rate, metrics.video_quartile_p25_rate, 
-      metrics.video_quartile_p50_rate, metrics.video_quartile_p75_rate, metrics.video_view_rate, 
-      metrics.video_views, metrics.view_through_conversions, segments.week, segments.year 
-      FROM topic_view
-      WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
-  shopping_performance_report_query:
-    query: >-
-      SELECT customer.descriptive_name, ad_group.id, ad_group.name, ad_group.status, 
-      segments.ad_network_type, segments.product_aggregator_id, 
-      metrics.all_conversions_from_interactions_rate, metrics.all_conversions_value, 
-      metrics.all_conversions, metrics.average_cpc, segments.product_brand, campaign.id, 
-      campaign.name, campaign.status, segments.product_bidding_category_level1, 
-      segments.product_bidding_category_level2, segments.product_bidding_category_level3, 
-      segments.product_bidding_category_level4, segments.product_bidding_category_level5, 
-      segments.product_channel, segments.product_channel_exclusivity, segments.click_type, 
-      metrics.clicks, metrics.conversions_from_interactions_rate, metrics.conversions_value, 
-      metrics.conversions, metrics.cost_micros, metrics.cost_per_all_conversions, 
-      metrics.cost_per_conversion, segments.product_country, metrics.cross_device_conversions, 
-      metrics.ctr, segments.product_custom_attribute0, segments.product_custom_attribute1, 
-      segments.product_custom_attribute2, segments.product_custom_attribute3, 
-      segments.product_custom_attribute4, segments.date, segments.day_of_week, segments.device, 
-      customer.id, metrics.impressions, segments.product_language, segments.product_merchant_id, 
-      segments.month, segments.product_item_id, segments.product_condition, segments.product_title, 
-      segments.product_type_l1, segments.product_type_l2, segments.product_type_l3, 
-      segments.product_type_l4, segments.product_type_l5, segments.quarter, 
-      segments.product_store_id, metrics.value_per_all_conversions, metrics.value_per_conversion, 
-      segments.week, segments.year
-      FROM shopping_performance_view
-      WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
-  user_location_report_query: 
-    query: >-
-      SELECT customer.auto_tagging_enabled, customer.call_reporting_setting.call_conversion_action, 
-      customer.call_reporting_setting.call_conversion_reporting_enabled, 
-      customer.call_reporting_setting.call_reporting_enabled, 
-      customer.conversion_tracking_setting.conversion_tracking_id, 
-      customer.conversion_tracking_setting.cross_account_conversion_tracking_id, 
-      customer.currency_code, customer.descriptive_name, customer.final_url_suffix, 
-      customer.has_partners_badge, customer.id, customer.manager, customer.optimization_score, 
-      customer.optimization_score_weight, customer.pay_per_conversion_eligibility_failure_reasons, 
-      customer.remarketing_setting.google_global_site_tag, customer.resource_name, 
-      customer.test_account, customer.time_zone, customer.tracking_url_template
-      FROM user_location_view
-      WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
+  campaigns_query: |
+    {"query": "SELECT campaign.accessible_bidding_strategy, campaign.ad_serving_optimization_status,  campaign.advertising_channel_sub_type, campaign.advertising_channel_type,  campaign.app_campaign_setting.app_id, campaign.app_campaign_setting.app_store,  campaign.app_campaign_setting.bidding_strategy_goal_type, campaign.base_campaign,  campaign.bidding_strategy, campaign.bidding_strategy_type, campaign.campaign_budget,  campaign_budget.amount_micros, campaign.commission.commission_rate_micros,  campaign.dynamic_search_ads_setting.domain_name, campaign.dynamic_search_ads_setting.feeds,  campaign.dynamic_search_ads_setting.language_code,  campaign.dynamic_search_ads_setting.use_supplied_urls_only, campaign.end_date,  campaign.excluded_parent_asset_field_types, campaign.experiment_type,  campaign.final_url_suffix, campaign.frequency_caps,  campaign.geo_target_type_setting.negative_geo_target_type,  campaign.geo_target_type_setting.positive_geo_target_type,  campaign.hotel_setting.hotel_center_id, campaign.id, campaign.labels,  campaign.local_campaign_setting.location_source_type,  campaign.manual_cpc.enhanced_cpc_enabled, campaign.manual_cpm, campaign.manual_cpv,  campaign.maximize_conversion_value.target_roas,  campaign.maximize_conversions.target_cpa_micros, campaign.name,  campaign.network_settings.target_content_network,  campaign.network_settings.target_google_search,  campaign.network_settings.target_partner_search_network,  campaign.network_settings.target_search_network,  campaign.optimization_goal_setting.optimization_goal_types, campaign.optimization_score,  campaign.payment_mode, campaign.percent_cpc.cpc_bid_ceiling_micros,  campaign.percent_cpc.enhanced_cpc_enabled, campaign.real_time_bidding_setting.opt_in,  campaign.resource_name, campaign.selective_optimization.conversion_actions,  campaign.serving_status, campaign.shopping_setting.campaign_priority,  campaign.shopping_setting.enable_local, campaign.shopping_setting.merchant_id,  campaign.shopping_setting.sales_country, campaign.start_date, campaign.status,  campaign.target_cpa.cpc_bid_ceiling_micros, campaign.target_cpa.cpc_bid_floor_micros,  campaign.target_cpa.target_cpa_micros, campaign.target_cpm,  campaign.target_impression_share.cpc_bid_ceiling_micros,  campaign.target_impression_share.location,  campaign.target_impression_share.location_fraction_micros,  campaign.target_roas.cpc_bid_ceiling_micros, campaign.target_roas.cpc_bid_floor_micros,  campaign.target_roas.target_roas, campaign.target_spend.cpc_bid_ceiling_micros,  campaign.target_spend.target_spend_micros, campaign.targeting_setting.target_restrictions,  campaign.tracking_setting.tracking_url, campaign.tracking_url_template,  campaign.url_custom_parameters, campaign.vanity_pharma.vanity_pharma_display_url_mode,  campaign.vanity_pharma.vanity_pharma_text, campaign.video_brand_safety_suitability,  metrics.ctr, metrics.conversions, metrics.conversions_value, metrics.clicks,  metrics.cost_micros, metrics.impressions, metrics.video_views,  metrics.video_quartile_p100_rate, segments.date, segments.hour FROM campaign WHERE segments.date BETWEEN \'{{config['start_date']}}\' AND \'{{ config.get('end_date') or now_utc().strftime('%Y-%m-%d') }}\'"}
+  accounts_query: |
+    {"query": "SELECT customer.auto_tagging_enabled, customer.call_reporting_setting.call_conversion_action, customer.call_reporting_setting.call_conversion_reporting_enabled,  customer.call_reporting_setting.call_reporting_enabled, customer.conversion_tracking_setting.conversion_tracking_id,  customer.conversion_tracking_setting.cross_account_conversion_tracking_id,  customer.currency_code, customer.descriptive_name, customer.final_url_suffix,  customer.has_partners_badge, customer.id, customer.manager, customer.optimization_score,  customer.optimization_score_weight, customer.remarketing_setting.google_global_site_tag, customer.resource_name,  customer.test_account, customer.time_zone, customer.tracking_url_template, segments.date FROM customer WHERE segments.date BETWEEN \'{{config['start_date']}}\' AND \'{{ config.get('end_date') or now_utc().strftime('%Y-%m-%d') }}\'"}
+  ad_group_ads_query: |
+    {"query": "SELECT ad_group_ad.ad.added_by_google_ads, ad_group_ad.ad.app_ad.descriptions, ad_group_ad.ad.app_ad.headlines, ad_group_ad.ad.app_ad.html5_media_bundles, ad_group_ad.ad.app_ad.images, ad_group_ad.ad.app_ad.mandatory_ad_text, ad_group_ad.ad.app_ad.youtube_videos, ad_group_ad.ad.app_engagement_ad.descriptions, ad_group_ad.ad.app_engagement_ad.headlines, ad_group_ad.ad.app_engagement_ad.images, ad_group_ad.ad.app_engagement_ad.videos, ad_group_ad.ad.call_ad.business_name, ad_group_ad.ad.call_ad.call_tracked, ad_group_ad.ad.call_ad.conversion_action, ad_group_ad.ad.call_ad.conversion_reporting_state, ad_group_ad.ad.call_ad.country_code, ad_group_ad.ad.call_ad.description1, ad_group_ad.ad.call_ad.description2, ad_group_ad.ad.call_ad.disable_call_conversion, ad_group_ad.ad.call_ad.headline1, ad_group_ad.ad.call_ad.headline2, ad_group_ad.ad.call_ad.path1, ad_group_ad.ad.call_ad.path2, ad_group_ad.ad.call_ad.phone_number, ad_group_ad.ad.call_ad.phone_number_verification_url, ad_group_ad.ad.device_preference, ad_group_ad.ad.display_upload_ad.display_upload_product_type, ad_group_ad.ad.display_upload_ad.media_bundle, ad_group_ad.ad.display_url, ad_group_ad.ad.expanded_dynamic_search_ad.description, ad_group_ad.ad.expanded_dynamic_search_ad.description2, ad_group_ad.ad.expanded_text_ad.description, ad_group_ad.ad.expanded_text_ad.description2, ad_group_ad.ad.expanded_text_ad.headline_part1, ad_group_ad.ad.expanded_text_ad.headline_part2, ad_group_ad.ad.expanded_text_ad.headline_part3, ad_group_ad.ad.expanded_text_ad.path1, ad_group_ad.ad.expanded_text_ad.path2, ad_group_ad.ad.final_app_urls, ad_group_ad.ad.final_mobile_urls, ad_group_ad.ad.final_url_suffix, ad_group_ad.ad.final_urls, ad_group_ad.ad.hotel_ad, ad_group_ad.ad.id, ad_group_ad.ad.image_ad.image_url, ad_group_ad.ad.image_ad.mime_type, ad_group_ad.ad.image_ad.name, ad_group_ad.ad.image_ad.pixel_height, ad_group_ad.ad.image_ad.pixel_width, ad_group_ad.ad.image_ad.preview_image_url, ad_group_ad.ad.image_ad.preview_pixel_height, ad_group_ad.ad.image_ad.preview_pixel_width, ad_group_ad.ad.legacy_app_install_ad, ad_group_ad.ad.legacy_responsive_display_ad.accent_color, ad_group_ad.ad.legacy_responsive_display_ad.allow_flexible_color, ad_group_ad.ad.legacy_responsive_display_ad.business_name, ad_group_ad.ad.legacy_responsive_display_ad.call_to_action_text, ad_group_ad.ad.legacy_responsive_display_ad.description, ad_group_ad.ad.legacy_responsive_display_ad.format_setting, ad_group_ad.ad.legacy_responsive_display_ad.logo_image, ad_group_ad.ad.legacy_responsive_display_ad.long_headline, ad_group_ad.ad.legacy_responsive_display_ad.main_color, ad_group_ad.ad.legacy_responsive_display_ad.marketing_image, ad_group_ad.ad.legacy_responsive_display_ad.price_prefix, ad_group_ad.ad.legacy_responsive_display_ad.promo_text, ad_group_ad.ad.legacy_responsive_display_ad.short_headline, ad_group_ad.ad.legacy_responsive_display_ad.square_logo_image, ad_group_ad.ad.legacy_responsive_display_ad.square_marketing_image, ad_group_ad.ad.local_ad.call_to_actions, ad_group_ad.ad.local_ad.descriptions, ad_group_ad.ad.local_ad.headlines, ad_group_ad.ad.local_ad.logo_images, ad_group_ad.ad.local_ad.marketing_images, ad_group_ad.ad.local_ad.path1, ad_group_ad.ad.local_ad.path2, ad_group_ad.ad.local_ad.videos, ad_group_ad.ad.name, ad_group_ad.ad.resource_name, ad_group_ad.ad.responsive_display_ad.accent_color, ad_group_ad.ad.responsive_display_ad.allow_flexible_color, ad_group_ad.ad.responsive_display_ad.business_name, ad_group_ad.ad.responsive_display_ad.call_to_action_text, ad_group_ad.ad.responsive_display_ad.control_spec.enable_asset_enhancements, ad_group_ad.ad.responsive_display_ad.control_spec.enable_autogen_video, ad_group_ad.ad.responsive_display_ad.descriptions, ad_group_ad.ad.responsive_display_ad.format_setting, ad_group_ad.ad.responsive_display_ad.headlines, ad_group_ad.ad.responsive_display_ad.logo_images, ad_group_ad.ad.responsive_display_ad.long_headline, ad_group_ad.ad.responsive_display_ad.main_color, ad_group_ad.ad.responsive_display_ad.marketing_images, ad_group_ad.ad.responsive_display_ad.price_prefix, ad_group_ad.ad.responsive_display_ad.promo_text, ad_group_ad.ad.responsive_display_ad.square_logo_images, ad_group_ad.ad.responsive_display_ad.square_marketing_images, ad_group_ad.ad.responsive_display_ad.youtube_videos, ad_group_ad.ad.responsive_search_ad.descriptions, ad_group_ad.ad.responsive_search_ad.headlines, ad_group_ad.ad.responsive_search_ad.path1, ad_group_ad.ad.responsive_search_ad.path2, ad_group_ad.ad.shopping_comparison_listing_ad.headline, ad_group_ad.ad.shopping_product_ad, ad_group_ad.ad.shopping_smart_ad, ad_group_ad.ad.smart_campaign_ad.descriptions, ad_group_ad.ad.smart_campaign_ad.headlines, ad_group_ad.ad.system_managed_resource_source, ad_group_ad.ad.text_ad.description1, ad_group_ad.ad.text_ad.description2, ad_group_ad.ad.text_ad.headline, ad_group_ad.ad.tracking_url_template, ad_group_ad.ad.type, ad_group_ad.ad.url_collections, ad_group_ad.ad.url_custom_parameters, ad_group_ad.ad.video_ad.in_feed.description1, ad_group_ad.ad.video_ad.in_feed.description2, ad_group_ad.ad.video_ad.in_feed.headline, ad_group_ad.ad.video_ad.in_stream.action_button_label, ad_group_ad.ad.video_ad.in_stream.action_headline, ad_group_ad.ad.video_ad.out_stream.description, ad_group_ad.ad.video_ad.out_stream.headline, ad_group_ad.ad.video_responsive_ad.call_to_actions, ad_group_ad.ad.video_responsive_ad.companion_banners, ad_group_ad.ad.video_responsive_ad.descriptions, ad_group_ad.ad.video_responsive_ad.headlines, ad_group_ad.ad.video_responsive_ad.long_headlines, ad_group_ad.ad.video_responsive_ad.videos, ad_group_ad.ad_group, ad_group_ad.ad_strength, ad_group_ad.labels, ad_group_ad.policy_summary.approval_status, ad_group_ad.policy_summary.policy_topic_entries, ad_group_ad.policy_summary.review_status, ad_group_ad.resource_name, ad_group_ad.status, segments.date FROM ad_group_ad WHERE segments.date BETWEEN \'{{config['start_date']}}\' AND \'{{ config.get('end_date') or now_utc().strftime('%Y-%m-%d') }}\'"}
+  ad_group_ad_labels_query: |
+    {"query": "SELECT ad_group_ad.ad.resource_name, ad_group_ad_label.resource_name, label.name, label.resource_name FROM ad_group_ad_label WHERE customer.id = {{config.get('customer_id')}}"}
+  ad_groups_query: |
+    {"query": "SELECT ad_group.ad_rotation_mode, ad_group.base_ad_group, ad_group.campaign, ad_group.cpc_bid_micros, ad_group.cpm_bid_micros, ad_group.cpv_bid_micros, ad_group.display_custom_bid_dimension, ad_group.effective_target_cpa_micros, ad_group.effective_target_cpa_source, ad_group.effective_target_roas, ad_group.effective_target_roas_source, ad_group.excluded_parent_asset_field_types, ad_group.explorer_auto_optimizer_setting.opt_in, ad_group.final_url_suffix, ad_group.id, ad_group.labels, ad_group.name, ad_group.percent_cpc_bid_micros, ad_group.resource_name, ad_group.status, ad_group.target_cpa_micros, ad_group.target_cpm_micros, ad_group.target_roas, ad_group.targeting_setting.target_restrictions, ad_group.tracking_url_template, ad_group.type, ad_group.url_custom_parameters, segments.date FROM ad_group WHERE segments.date BETWEEN \'{{config['start_date']}}\' AND \'{{ config.get('end_date') or now_utc().strftime('%Y-%m-%d') }}\'"}
+  ad_group_labels_query: |
+    {"query": "SELECT ad_group.resource_name, ad_group_label.resource_name, label.name, label.resource_name FROM ad_group_label"}
+  campaign_labels_query: |
+    {"query": "SELECT campaign.resource_name, campaign_label.resource_name, label.name, label.resource_name FROM campaign_label"}
+  click_view_query: |
+    {"query": "SELECT ad_group.name, click_view.gclid, click_view.ad_group_ad, click_view.keyword, click_view.keyword_info.match_type, click_view.keyword_info.text, campaign.id, ad_group.id, segments.date, customer.id, campaign.name, segments.ad_network_type, campaign.network_settings.target_content_network, campaign.network_settings.target_google_search, campaign.network_settings.target_partner_search_network, campaign.network_settings.target_search_network FROM click_view WHERE segments.date = \'{{ config.get('end_date') or now_utc().strftime('%Y-%m-%d') }}\'"}
+  keyword_report_query: |
+    {"query": "SELECT customer.descriptive_name, ad_group.id, ad_group_criterion.type, ad_group_criterion.keyword.text, ad_group_criterion.negative, ad_group_criterion.keyword.match_type, metrics.historical_quality_score, metrics.ctr, segments.date, campaign.bidding_strategy_type, metrics.clicks, metrics.cost_micros, metrics.impressions, ad_group_criterion.criterion_id FROM keyword_view WHERE segments.date BETWEEN \'{{config['start_date']}}\' AND \'{{ config.get('end_date') or now_utc().strftime('%Y-%m-%d') }}\'"}
+  geographic_report_query: |
+    {"query": "SELECT customer.descriptive_name, geographic_view.country_criterion_id, geographic_view.location_type, ad_group.id, segments.date FROM geographic_view WHERE segments.date BETWEEN \'{{config['start_date']}}\' AND \'{{ config.get('end_date') or now_utc().strftime('%Y-%m-%d') }}\'"}
+  account_performance_report_query: |
+    {"query": "SELECT customer.currency_code, customer.descriptive_name, customer.time_zone, metrics.active_view_cpm, metrics.active_view_ctr, metrics.active_view_impressions,  metrics.active_view_measurability, metrics.active_view_measurable_cost_micros,  metrics.active_view_measurable_impressions, metrics.active_view_viewability,  segments.ad_network_type, metrics.all_conversions_from_interactions_rate,  metrics.all_conversions_value, metrics.all_conversions, metrics.average_cost,  metrics.average_cpc, metrics.average_cpe, metrics.average_cpm, metrics.average_cpv,  customer.manager, metrics.clicks, metrics.content_budget_lost_impression_share,  metrics.content_impression_share, metrics.content_rank_lost_impression_share,  metrics.conversions_from_interactions_rate, metrics.conversions_value, metrics.conversions,  metrics.cost_micros, metrics.cost_per_all_conversions, metrics.cost_per_conversion,  metrics.cross_device_conversions, metrics.ctr, segments.date, segments.day_of_week,  segments.device, metrics.engagement_rate, metrics.engagements, customer.id,  metrics.impressions, metrics.interaction_rate, metrics.interaction_event_types,  metrics.interactions, customer.auto_tagging_enabled, customer.test_account, segments.month,  segments.quarter, metrics.search_budget_lost_impression_share,  metrics.search_exact_match_impression_share, metrics.search_impression_share,  metrics.search_rank_lost_impression_share, metrics.value_per_all_conversions,  metrics.value_per_conversion, metrics.video_view_rate, metrics.video_views,  metrics.view_through_conversions, segments.week, segments.year  FROM customer  WHERE segments.date BETWEEN \'{{config['start_date']}}\' AND \'{{ config.get('end_date') or now_utc().strftime('%Y-%m-%d') }}\'"}
+  ad_group_ad_report_query: |
+    {"query": "SELECT ad_group_ad.ad.legacy_responsive_display_ad.accent_color, ad_group.id, customer.currency_code, customer.descriptive_name, customer.time_zone, metrics.active_view_cpm, metrics.active_view_ctr, metrics.active_view_impressions, metrics.active_view_measurability, metrics.active_view_measurable_cost_micros, metrics.active_view_measurable_impressions, metrics.active_view_viewability, ad_group_ad.ad_group, ad_group.name, ad_group.status, segments.ad_network_type, ad_group_ad.ad_strength, ad_group_ad.ad.type, metrics.all_conversions_from_interactions_rate, metrics.all_conversions_value, metrics.all_conversions, ad_group_ad.ad.legacy_responsive_display_ad.allow_flexible_color, ad_group_ad.ad.added_by_google_ads, metrics.average_cost, metrics.average_cpc, metrics.average_cpe, metrics.average_cpm, metrics.average_cpv, metrics.average_page_views, metrics.average_time_on_site, ad_group.base_ad_group, campaign.base_campaign, metrics.bounce_rate, ad_group_ad.ad.legacy_responsive_display_ad.business_name, ad_group_ad.ad.legacy_responsive_display_ad.call_to_action_text, campaign.id, campaign.name, campaign.status, metrics.clicks, ad_group_ad.policy_summary.approval_status, metrics.conversions_from_interactions_rate, metrics.conversions_value, metrics.conversions, metrics.cost_micros, metrics.cost_per_all_conversions, metrics.cost_per_conversion, metrics.cost_per_current_model_attributed_conversion, ad_group_ad.ad.final_mobile_urls, ad_group_ad.ad.final_urls, ad_group_ad.ad.tracking_url_template, ad_group_ad.ad.url_custom_parameters, metrics.cross_device_conversions, metrics.ctr, metrics.current_model_attributed_conversions_value, metrics.current_model_attributed_conversions, segments.date, segments.day_of_week, ad_group_ad.ad.expanded_text_ad.description, ad_group_ad.ad.text_ad.description1, ad_group_ad.ad.text_ad.description2, ad_group_ad.ad.device_preference, ad_group_ad.ad.display_url, metrics.engagement_rate, metrics.engagements, ad_group_ad.ad.legacy_responsive_display_ad.logo_image, ad_group_ad.ad.legacy_responsive_display_ad.square_logo_image, ad_group_ad.ad.legacy_responsive_display_ad.marketing_image, ad_group_ad.ad.legacy_responsive_display_ad.square_marketing_image, ad_group_ad.ad.expanded_dynamic_search_ad.description, ad_group_ad.ad.expanded_text_ad.description2, ad_group_ad.ad.expanded_text_ad.headline_part3, customer.id, ad_group_ad.ad.legacy_responsive_display_ad.format_setting, metrics.gmail_forwards, metrics.gmail_saves, metrics.gmail_secondary_clicks, ad_group_ad.ad.text_ad.headline, ad_group_ad.ad.expanded_text_ad.headline_part1, ad_group_ad.ad.expanded_text_ad.headline_part2, ad_group_ad.ad.id, ad_group_ad.ad.image_ad.image_url, ad_group_ad.ad.image_ad.pixel_height, ad_group_ad.ad.image_ad.pixel_width, ad_group_ad.ad.image_ad.mime_type, ad_group_ad.ad.image_ad.name, metrics.impressions, metrics.interaction_rate, metrics.interaction_event_types, metrics.interactions, ad_group_ad.ad.legacy_responsive_display_ad.long_headline, ad_group_ad.ad.legacy_responsive_display_ad.main_color, segments.month, ad_group_ad.ad.responsive_display_ad.accent_color, ad_group_ad.ad.responsive_display_ad.allow_flexible_color, ad_group_ad.ad.responsive_display_ad.business_name, ad_group_ad.ad.responsive_display_ad.call_to_action_text, ad_group_ad.ad.responsive_display_ad.descriptions, ad_group_ad.ad.responsive_display_ad.price_prefix, ad_group_ad.ad.responsive_display_ad.promo_text, ad_group_ad.ad.responsive_display_ad.format_setting, ad_group_ad.ad.responsive_display_ad.headlines, ad_group_ad.ad.responsive_display_ad.logo_images, ad_group_ad.ad.responsive_display_ad.square_logo_images, ad_group_ad.ad.responsive_display_ad.long_headline, ad_group_ad.ad.responsive_display_ad.main_color, ad_group_ad.ad.responsive_display_ad.marketing_images, ad_group_ad.ad.responsive_display_ad.square_marketing_images, ad_group_ad.ad.responsive_display_ad.youtube_videos, ad_group_ad.ad.expanded_text_ad.path1, ad_group_ad.ad.expanded_text_ad.path2, metrics.percent_new_visitors, ad_group_ad.ad.legacy_responsive_display_ad.price_prefix, ad_group_ad.ad.legacy_responsive_display_ad.promo_text, segments.quarter, ad_group_ad.ad.responsive_search_ad.descriptions, ad_group_ad.ad.responsive_search_ad.headlines, ad_group_ad.ad.responsive_search_ad.path1, ad_group_ad.ad.responsive_search_ad.path2, ad_group_ad.ad.legacy_responsive_display_ad.short_headline, ad_group_ad.status, ad_group_ad.ad.system_managed_resource_source, metrics.top_impression_percentage, ad_group_ad.ad.app_ad.descriptions, ad_group_ad.ad.app_ad.headlines, ad_group_ad.ad.app_ad.html5_media_bundles, ad_group_ad.ad.app_ad.images, ad_group_ad.ad.app_ad.mandatory_ad_text, ad_group_ad.ad.app_ad.youtube_videos, metrics.value_per_all_conversions, metrics.value_per_conversion, metrics.value_per_current_model_attributed_conversion, metrics.video_quartile_p100_rate, metrics.video_quartile_p25_rate, metrics.video_quartile_p50_rate, metrics.video_quartile_p75_rate, metrics.video_view_rate, metrics.video_views, metrics.view_through_conversions, segments.week, segments.year FROM ad_group_ad WHERE segments.date BETWEEN \'{{config['start_date']}}\' AND \'{{ config.get('end_date') or now_utc().strftime('%Y-%m-%d') }}\'"}
+  display_keyword_performance_report_query: |
+    {"query": "SELECT customer.currency_code, customer.descriptive_name, customer.time_zone, metrics.active_view_cpm, metrics.active_view_ctr, metrics.active_view_impressions, metrics.active_view_measurability, metrics.active_view_measurable_cost_micros, metrics.active_view_measurable_impressions, metrics.active_view_viewability, ad_group.id, ad_group.name, ad_group.status, segments.ad_network_type, metrics.all_conversions_from_interactions_rate, metrics.all_conversions_value, metrics.all_conversions, metrics.average_cost, metrics.average_cpc, metrics.average_cpe, metrics.average_cpm, metrics.average_cpv, ad_group.base_ad_group, campaign.base_campaign, campaign.bidding_strategy, campaign.bidding_strategy_type, campaign.id, campaign.name, campaign.status, metrics.clicks, metrics.conversions_from_interactions_rate, metrics.conversions_value, metrics.conversions, metrics.cost_micros, metrics.cost_per_all_conversions, metrics.cost_per_conversion, ad_group_criterion.effective_cpc_bid_micros, ad_group_criterion.effective_cpc_bid_source, ad_group_criterion.effective_cpm_bid_micros, ad_group_criterion.effective_cpm_bid_source, ad_group_criterion.effective_cpv_bid_micros, ad_group_criterion.effective_cpv_bid_source, ad_group_criterion.keyword.text, metrics.cross_device_conversions, metrics.ctr, segments.day_of_week, segments.device, metrics.engagement_rate, metrics.engagements, customer.id, ad_group_criterion.final_mobile_urls, ad_group_criterion.final_urls, metrics.gmail_forwards, metrics.gmail_saves, metrics.gmail_secondary_clicks, ad_group_criterion.criterion_id, metrics.impressions, metrics.interaction_rate, metrics.interaction_event_types, metrics.interactions, ad_group_criterion.negative, ad_group.targeting_setting.target_restrictions, segments.month, segments.quarter, ad_group_criterion.status, ad_group_criterion.tracking_url_template, ad_group_criterion.keyword.match_type, ad_group_criterion.url_custom_parameters, metrics.value_per_all_conversions, metrics.value_per_conversion, metrics.video_quartile_p100_rate, metrics.video_quartile_p25_rate, metrics.video_quartile_p50_rate, metrics.video_quartile_p75_rate, metrics.video_view_rate, metrics.video_views, metrics.view_through_conversions, segments.week, segments.year, segments.date FROM display_keyword_view WHERE segments.date BETWEEN \'{{config['start_date']}}\' AND \'{{ config.get('end_date') or now_utc().strftime('%Y-%m-%d') }}\'"}
+  display_topics_performance_report_query: |
+    {"query": "SELECT customer.currency_code, customer.descriptive_name, customer.time_zone, metrics.active_view_cpm, metrics.active_view_ctr, metrics.active_view_impressions, metrics.active_view_measurability, metrics.active_view_measurable_cost_micros, metrics.active_view_measurable_impressions, metrics.active_view_viewability, ad_group.id, ad_group.name, ad_group.status, segments.ad_network_type, metrics.all_conversions_from_interactions_rate, metrics.all_conversions_value, metrics.all_conversions, metrics.average_cost, metrics.average_cpc, metrics.average_cpe, metrics.average_cpm, metrics.average_cpv, ad_group.base_ad_group, campaign.base_campaign, ad_group_criterion.bid_modifier, campaign.bidding_strategy, campaign.bidding_strategy_type, campaign.id, campaign.name, campaign.status, metrics.clicks, metrics.conversions_from_interactions_rate, metrics.conversions_value, metrics.conversions, metrics.cost_micros, metrics.cost_per_all_conversions, metrics.cost_per_conversion, ad_group_criterion.effective_cpc_bid_micros, ad_group_criterion.effective_cpc_bid_source, ad_group_criterion.effective_cpm_bid_micros, ad_group_criterion.effective_cpm_bid_source, ad_group_criterion.topic.path, metrics.cross_device_conversions, metrics.ctr, segments.date, segments.day_of_week, segments.device, metrics.engagement_rate, metrics.engagements, customer.id, ad_group_criterion.final_mobile_urls, ad_group_criterion.final_urls, metrics.gmail_forwards, metrics.gmail_saves, metrics.gmail_secondary_clicks, ad_group_criterion.criterion_id, metrics.impressions, metrics.interaction_rate, metrics.interaction_event_types, metrics.interactions, ad_group_criterion.negative, ad_group.targeting_setting.target_restrictions, segments.month, segments.quarter, ad_group_criterion.status, ad_group_criterion.tracking_url_template, ad_group_criterion.url_custom_parameters, metrics.value_per_all_conversions, metrics.value_per_conversion, ad_group_criterion.topic.topic_constant, metrics.video_quartile_p100_rate, metrics.video_quartile_p25_rate, metrics.video_quartile_p50_rate, metrics.video_quartile_p75_rate, metrics.video_view_rate, metrics.video_views, metrics.view_through_conversions, segments.week, segments.year FROM topic_view WHERE segments.date BETWEEN \'{{config['start_date']}}\' AND \'{{ config.get('end_date') or now_utc().strftime('%Y-%m-%d') }}\'"}
+#  shopping_performance_report_query: |
+#    {"query": "SELECT customer.descriptive_name, ad_group.id, ad_group.name, ad_group.status, segments.ad_network_type, segments.product_aggregator_id, metrics.all_conversions_from_interactions_rate, metrics.all_conversions_value, metrics.all_conversions, metrics.average_cpc, segments.product_brand, campaign.id, campaign.name, campaign.status, segments.product_bidding_category_level1, segments.product_bidding_category_level2, segments.product_bidding_category_level3, segments.product_bidding_category_level4, segments.product_bidding_category_level5, segments.product_channel, segments.product_channel_exclusivity, segments.click_type, metrics.clicks, metrics.conversions_from_interactions_rate, metrics.conversions_value, metrics.conversions, metrics.cost_micros, metrics.cost_per_all_conversions, metrics.cost_per_conversion, segments.product_country, metrics.cross_device_conversions, metrics.ctr, segments.product_custom_attribute0, segments.product_custom_attribute1, segments.product_custom_attribute2, segments.product_custom_attribute3, segments.product_custom_attribute4, segments.date, segments.day_of_week, segments.device, customer.id, metrics.impressions, segments.product_language, segments.product_merchant_id, segments.month, segments.product_item_id, segments.product_condition, segments.product_title, segments.product_type_l1, segments.product_type_l2, segments.product_type_l3, segments.product_type_l4, segments.product_type_l5, segments.quarter, segments.product_store_id, metrics.value_per_all_conversions, metrics.value_per_conversion, segments.week, segments.year FROM shopping_performance_view WHERE segments.date BETWEEN \'{{config['start_date']}}\' AND \'{{ config.get('end_date') or now_utc().strftime('%Y-%m-%d') }}\'"}
+  user_location_report_query: |
+    {"query": "SELECT customer.auto_tagging_enabled, customer.call_reporting_setting.call_conversion_action, customer.call_reporting_setting.call_conversion_reporting_enabled, customer.call_reporting_setting.call_reporting_enabled, customer.conversion_tracking_setting.conversion_tracking_id, customer.conversion_tracking_setting.cross_account_conversion_tracking_id, customer.currency_code, customer.descriptive_name, customer.final_url_suffix, customer.has_partners_badge, customer.id, customer.manager, customer.optimization_score, customer.optimization_score_weight, customer.pay_per_conversion_eligibility_failure_reasons, customer.remarketing_setting.google_global_site_tag, customer.resource_name, customer.test_account, customer.time_zone, customer.tracking_url_template FROM user_location_viewWHERE segments.date BETWEEN \'{{config['start_date']}}\' AND \'{{ config.get('end_date') or now_utc().strftime('%Y-%m-%d') }}\'"}
   selector:
     extractor: 
       field_pointer: []
   requester:
-    url_base: "https://googleads.googleapis.com/v11"
+    url_base: "https://googleads.googleapis.com/v12"
     http_method: "POST"
     request_options_provider:
       request_headers:
@@ -431,6 +77,7 @@ definitions:
           ["segments.date"],
           ["segments.hour"]
         ]
+      stream_cursor_field: "segments.date"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   accounts_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -446,6 +93,7 @@ definitions:
       name: "accounts"
       primary_key: ["customer.id", "segments.date"]
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
+      stream_cursor_field: "segments.date"
   ad_group_ads_stream:
     $ref: "*ref(definitions.base_stream)"
     retriever:
@@ -459,6 +107,7 @@ definitions:
     $options:
       name: "ad_group_ads"
       primary_key: ["ad_group_ad.ad.id", "segments.date"]
+      stream_cursor_field: "segments.date"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   ad_group_ad_labels_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -487,6 +136,7 @@ definitions:
     $options:
       name: "ad_groups"
       primary_key: ["ad_group.id", "segments.date"]
+      stream_cursor_field: "segments.date"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   ad_group_labels_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -500,7 +150,6 @@ definitions:
             $ref: "*ref(definitions.ad_group_labels_query)"
     $options:
       name: "ad_group_labels"
-      primary_key: ["ad_group_label.resource_name"]
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   campaign_labels_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -529,6 +178,7 @@ definitions:
     $options:
       name: "click_view"
       primary_key: ["click_view.gclid", "segments.date", "segments.ad_network_type"]
+      stream_cursor_field: "segments.date"
       days_of_data_storage: 90
       range_days: 1
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
@@ -544,6 +194,8 @@ definitions:
             $ref: "*ref(definitions.keyword_report_query)"
     $options:
       name: "keyword_report"
+      stream_cursor_field: "segments.date"
+      primary_key: ["ad_group.id", "segments.date"]
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   geographic_report_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -596,6 +248,11 @@ definitions:
             $ref: "*ref(definitions.display_keyword_performance_report_query)"
     $options:
       name: "display_keyword_performance_report"
+      primary_key: [
+          ["ad_group.id"],
+          ["segments.date"],
+        ]
+      stream_cursor_field: "segments.date"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   display_topics_performance_report_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -610,19 +267,21 @@ definitions:
     $options:
       name: "display_topics_performance_report"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
-  shopping_performance_report_stream:
-    $ref: "*ref(definitions.base_stream)"
-    retriever:
-      $ref: "*ref(definitions.retriever)"
-      requester:
-        $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          $ref: "*ref(definitions.requester.request_options_provider)"
-          request_body_json:
-            $ref: "*ref(definitions.shopping_performance_report_query)"
-    $options:
-      name: "shopping_performance_report"
-      path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
+      stream_cursor_field: "segments.date"
+  # shopping_performance_report_stream:
+  #   $ref: "*ref(definitions.base_stream)"
+  #   retriever:
+  #     $ref: "*ref(definitions.retriever)"
+  #     requester:
+  #       $ref: "*ref(definitions.requester)"
+  #       request_options_provider:
+  #         $ref: "*ref(definitions.requester.request_options_provider)"
+  #         request_body_json:
+  #           $ref: "*ref(definitions.shopping_performance_report_query)"
+  #   $options:
+  #     stream_cursor_field: "segments.date"
+  #     name: "shopping_performance_report"
+  #     path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   user_location_report_stream:
     $ref: "*ref(definitions.base_stream)"
     retriever:
@@ -635,6 +294,7 @@ definitions:
             $ref: "*ref(definitions.user_location_report_query)"
     $options:
       name: "user_location_report"
+      stream_cursor_field: "segments.date"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
 streams:
   - "*ref(definitions.campaigns_stream)"
@@ -651,16 +311,16 @@ streams:
   - "*ref(definitions.ad_group_ad_report_stream)"
   - "*ref(definitions.display_keyword_performance_report_stream)"
   - "*ref(definitions.display_topics_performance_report_stream)"
-  - "*ref(definitions.shopping_performance_report_stream)"
+#  - "*ref(definitions.shopping_performance_report_stream)"
   - "*ref(definitions.user_location_report_stream)"
 check:
   stream_names:
     - "campaigns"
     - "accounts"
     - "ad_group_ads"
-    - "ad_group_ad_labels"
+    # # - "ad_group_ad_labels"
     - "ad_groups"
-    - "ad_group_labels"
+    # # - "ad_group_labels"
     - "campaign_labels"
     - "click_view"
     - "keyword_report"
@@ -668,6 +328,6 @@ check:
     - "account_performance_report"
     - "ad_group_ad_report"
     - "display_keyword_performance_report"
-    - "display_topics_performance_report"
-    - "shopping_performance_report"
+    # # - "display_topics_performance_report"
+    # # - "shopping_performance_report"
     - "user_location_report"
