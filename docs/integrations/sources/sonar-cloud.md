@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-This source can sync data from the [Sonar cloud API](https://sonarcloud.io/web_api). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
+1This source can sync data from the [Sonar cloud API](https://sonarcloud.io/web_api). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
 
 ## This Source Supports the Following Streams
 
