@@ -28,7 +28,7 @@ plugins {
     id 'pmd'
     id 'com.diffplug.spotless' version '6.7.1'
     id 'com.github.hierynomus.license' version '0.16.1'
-    id 'com.github.spotbugs' version '5.0.6'
+    id 'com.github.spotbugs' version '5.0.13'
     // The distribution plugin has been added to address the an issue with the copyGeneratedTar
     // task depending on "distTar". When that dependency has been refactored away, this plugin
     // can be removed.
@@ -208,6 +208,12 @@ allprojects {
 
 // Java projects common configurations
 subprojects { subproj ->
+
+
+    configurations {
+        runtimeClasspath
+    }
+
 
     // Common Docker Configuration:
     // If subprojects have the dockerImageName property configured in their gradle.properties file,
@@ -508,6 +514,7 @@ subprojects {
             licenseTask.dependsOn generateFilesTask
         }
     }
+    task listAllDependencies(type: DependencyReportTask) {}
 }
 
 task('generate-docker') {
