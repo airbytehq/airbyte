@@ -33,8 +33,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static SynchronousSchedulerClient synchronousSchedulerClient;
   private static StatePersistence statePersistence;
   private static Map<String, String> mdc;
-  private static Database configsDatabase;
-  private static Database jobsDatabase;
   private static TrackingClient trackingClient;
   private static WorkerEnvironment workerEnvironment;
   private static LogConfigs logConfigs;
@@ -42,8 +40,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static AirbyteVersion airbyteVersion;
   private static HttpClient httpClient;
   private static EventRunner eventRunner;
-  private static Flyway configsFlyway;
-  private static Flyway jobsFlyway;
 
   public static void setValues(
                                final ConfigRepository configRepository,
@@ -70,8 +66,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.secretsRepositoryWriter = secretsRepositoryWriter;
     ConfigurationApiFactory.synchronousSchedulerClient = synchronousSchedulerClient;
     ConfigurationApiFactory.mdc = mdc;
-    ConfigurationApiFactory.configsDatabase = configsDatabase;
-    ConfigurationApiFactory.jobsDatabase = jobsDatabase;
     ConfigurationApiFactory.trackingClient = trackingClient;
     ConfigurationApiFactory.workerEnvironment = workerEnvironment;
     ConfigurationApiFactory.logConfigs = logConfigs;
@@ -79,8 +73,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.airbyteVersion = airbyteVersion;
     ConfigurationApiFactory.httpClient = httpClient;
     ConfigurationApiFactory.eventRunner = eventRunner;
-    ConfigurationApiFactory.configsFlyway = configsFlyway;
-    ConfigurationApiFactory.jobsFlyway = jobsFlyway;
     ConfigurationApiFactory.statePersistence = statePersistence;
   }
 
@@ -94,8 +86,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.secretsRepositoryReader,
         ConfigurationApiFactory.secretsRepositoryWriter,
         ConfigurationApiFactory.synchronousSchedulerClient,
-        ConfigurationApiFactory.configsDatabase,
-        ConfigurationApiFactory.jobsDatabase,
         ConfigurationApiFactory.statePersistence,
         ConfigurationApiFactory.trackingClient,
         ConfigurationApiFactory.workerEnvironment,
@@ -103,9 +93,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.airbyteVersion,
         ConfigurationApiFactory.workspaceRoot,
         ConfigurationApiFactory.httpClient,
-        ConfigurationApiFactory.eventRunner,
-        ConfigurationApiFactory.configsFlyway,
-        ConfigurationApiFactory.jobsFlyway);
+        ConfigurationApiFactory.eventRunner);
   }
 
   @Override

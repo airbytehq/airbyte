@@ -30,6 +30,10 @@ properties:
   destinationDockerImage:
     description: Image name of the destination with tag.
     type: string
+  destinationProtocolVersion:
+    description: Airbyte Protocol Version of the destination
+    type: object
+    existingJavaType: io.airbyte.commons.version.Version
   operationSequence:
     description: Sequence of configurations of operations to apply as part of the sync
     type: array

@@ -86,7 +86,7 @@ class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
         return [{self.cursor_field.eval(self.config): slice_value} for slice_value in self.slice_values]
 
     def _get_request_option(self, request_option_type: RequestOptionType):
-        if self.request_option and self.request_option.inject_into == request_option_type:
+        if self.request_option and self.request_option.inject_into == request_option_type and self._cursor:
             return {self.request_option.field_name: self._cursor}
         else:
             return {}
