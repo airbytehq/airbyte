@@ -16,32 +16,9 @@ from .auth import AccessTokenAuthenticator
 from .utils import read_full_refresh
 
 
-# Basic full refresh stream
 class RailzStream(HttpStream, ABC):
     """
-    TODO remove this comment
-
-    This class represents a stream output by the connector.
-    This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
-    parsing responses etc..
-
-    Each stream should extend this class (or another abstract subclass of it) to specify behavior unique to that stream.
-
-    Typically for REST APIs each stream corresponds to a resource in the API. For example if the API
-    contains the endpoints
-        - GET v1/customers
-        - GET v1/employees
-
-    then you should have three classes:
-    `class RailzStream(HttpStream, ABC)` which is the current class
-    `class Customers(RailzStream)` contains behavior to pull data for customers using v1/customers
-    `class Employees(RailzStream)` contains behavior to pull data for employees using v1/employees
-
-    If some streams implement incremental sync, it is typical to create another class
-    `class IncrementalRailzStream((RailzStream), ABC)` then have concrete stream implementations extend it. An example
-    is provided below.
-
-    See the reference docs for the full list of configurable options.
+    https://docs.railz.ai/reference/railz-api
     """
 
     page_size = 100
@@ -72,54 +49,7 @@ class RailzStream(HttpStream, ABC):
             yield record
 
 
-class Businesses(RailzStream):
-    """
-    https://api.railz.ai/businesses
-    """
-
-    primary_key = "businessName"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "businesses"
-
-
-# Basic incremental stream
-class IncrementalRailzStream(RailzStream, ABC):
-    """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
-    """
-
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
-    state_checkpoint_interval = None
-
-    @property
-    def cursor_field(self) -> str:
-        """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
-        :return str: The name of the cursor field.
-        """
-        return []
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        businessName = latest_record["businessName"]
-        serviceName = latest_record["serviceName"]
-        updated_state = pendulum.parse(latest_record[self.cursor_field]).date()
-        stream_state_value = current_stream_state.setdefault(businessName, {}).setdefault(serviceName, {}).get(self.cursor_field)
-        if stream_state_value:
-            stream_state_value = pendulum.parse(stream_state_value).date()
-            updated_state = max(updated_state, stream_state_value)
-        current_stream_state[businessName][serviceName][self.cursor_field] = updated_state.format("YYYY-MM-DD")
-        return current_stream_state
-
-
-class ServiceIncrementalRailzStream(IncrementalRailzStream):
-    cursor_field = "postedDate"
+class ServiceRailzStream(RailzStream, ABC):
     primary_key = "id"
 
     def __init__(self, *, parent: HttpStream, **kwargs):
@@ -143,7 +73,41 @@ class ServiceIncrementalRailzStream(IncrementalRailzStream):
         params = super().request_params(stream_state, stream_slice, next_page_token)
         businessName = stream_slice["businessName"]
         serviceName = stream_slice["serviceName"]
-        params.update({"businessName": businessName, "serviceName": serviceName, "orderBy": self.cursor_field})
+        params.update({"businessName": businessName, "serviceName": serviceName})
+        return params
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, any], **kwargs) -> Iterable[Mapping]:
+        for record in super().parse_response(response, **kwargs):
+            record["businessName"] = stream_slice["businessName"]
+            record["serviceName"] = stream_slice["serviceName"]
+            yield record
+
+
+class IncrementalServiceRailzStream(ServiceRailzStream, ABC):
+
+    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
+    state_checkpoint_interval = None
+
+    @property
+    def cursor_field(self) -> str:
+        return []
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        businessName = latest_record["businessName"]
+        serviceName = latest_record["serviceName"]
+        updated_state = pendulum.parse(latest_record[self.cursor_field]).date()
+        stream_state_value = current_stream_state.setdefault(businessName, {}).setdefault(serviceName, {}).get(self.cursor_field)
+        if stream_state_value:
+            stream_state_value = pendulum.parse(stream_state_value).date()
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state[businessName][serviceName][self.cursor_field] = updated_state.format("YYYY-MM-DD")
+        return current_stream_state
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update({"orderBy": self.cursor_field})
         startDate = self.get_start_date(stream_state, stream_slice)
         if startDate:
             params["startDate"] = startDate
@@ -155,17 +119,26 @@ class ServiceIncrementalRailzStream(IncrementalRailzStream):
         start_date = stream_state.get(businessName, {}).get(serviceName, {}).get(self.cursor_field)
         return self.start_date_cache.setdefault(businessName, {}).setdefault(serviceName, start_date)
 
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, any], **kwargs) -> Iterable[Mapping]:
-        for record in super().parse_response(response, **kwargs):
-            record["businessName"] = stream_slice["businessName"]
-            record["serviceName"] = stream_slice["serviceName"]
-            yield record
+
+class Businesses(RailzStream):
+    """
+    https://api.railz.ai/businesses
+    """
+
+    primary_key = "businessName"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "businesses"
 
 
-class AccountingTransactions(ServiceIncrementalRailzStream):
+class AccountingTransactions(IncrementalServiceRailzStream):
     """
     https://docs.railz.ai/reference/accounting-transactions
     """
+
+    cursor_field = "postedDate"
 
     serviceNames = [
         "dynamicsBusinessCentral",
@@ -183,10 +156,12 @@ class AccountingTransactions(ServiceIncrementalRailzStream):
         return "accountingTransactions"
 
 
-class Bills(ServiceIncrementalRailzStream):
+class Bills(IncrementalServiceRailzStream):
     """
-    https://api.railz.ai/bills
+    https://docs.railz.ai/reference/get-bankaccounts
     """
+
+    cursor_field = "postedDate"
 
     serviceNames = [
         "dynamicsBusinessCentral",
@@ -207,7 +182,6 @@ class Bills(ServiceIncrementalRailzStream):
         return "bills"
 
 
-# Source
 class SourceRailz(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
