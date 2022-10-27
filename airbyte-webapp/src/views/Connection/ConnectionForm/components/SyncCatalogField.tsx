@@ -3,7 +3,7 @@ import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { CatalogTree } from "components/connection/CatalogTree";
-import { Text } from "components/ui/Text";
+import { Heading } from "components/ui/Heading";
 
 import { SyncSchemaStream } from "core/domain/catalog";
 import { DestinationSyncMode } from "core/request/AirbyteClient";
@@ -39,9 +39,9 @@ const SyncCatalogFieldComponent: React.FC<React.PropsWithChildren<SchemaViewProp
   return (
     <>
       <div className={styles.header}>
-        <Text as="h2" size="sm">
+        <Heading as="h2" size="sm">
           <FormattedMessage id={mode === "readonly" ? "form.dataSync.readonly" : "form.dataSync"} />
-        </Text>
+        </Heading>
         {mode !== "readonly" && additionalControl}
       </div>
       <CatalogTree streams={streams} onStreamsChanged={onStreamsUpdated} isLoading={isSubmitting} />
