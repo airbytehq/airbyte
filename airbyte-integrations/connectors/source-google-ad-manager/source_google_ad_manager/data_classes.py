@@ -17,7 +17,7 @@ class CustomBaseModel(BaseModel):
         """
         try:
             value = int(value)
-        except ValueError:
+        except (ValueError, TypeError):
             value = 0
         return value
 

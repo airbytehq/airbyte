@@ -15,57 +15,66 @@ connectionSpecification:
     - client_id
     - client_email
   properties:
-     customer_name:
-    title: Customer Name
-    type: string
-    description: The name of the customer to connect to.
-    examples:
+    customer_name:
+     title: Customer Name
+     type: string
+     description: The name of the customer to connect to.
+     examples:
         - "exported_customer"
     type:
+      title: Type
       type: string
       description: the type of authentication used to access the Google Ad Manager API
       default: service_account
     project_id:
+      title: Project ID
       type: string
       description: the name of the project on google ad manager
       airbyte_secret: true
       examples:
         - "1030xxxxxxxxxxxxxxx53"
     private_key_id:
+      title: Private Key ID
       type: string
       description: Id of the ssh private key to use
       airbyte_secret: true
     private_key:
+      title: Private Key
       type: string
       description: Private key for service account (give more info)
       airbyte_secret: true
       examples:
         - "-----BEGIN PRIVATE KEY----- xxxxxxxx -----END PRIVATE KEY----- " 
     client_email:
+      title: Client Email
       type: string
       description: Of the form .iam.gserviceaccount.com
       airbyte_secret: true
       examples:
         - "xxxx@xxxx.iam.gserviceaccount.com"
     client_id:
+      title: Client ID
       type: string
       description: In form of 111*********
       airbyte_secret: true
       examples:
         - "1030xxxxxxxxxxxxxxx53"
     auth_uri:
+      title: Auth URI
       type: string
       description: "The URI for the authorization server. Defaults to https://accounts.google.com/o/oauth2/auth"
       default: "https://accounts.google.com/o/oauth2/auth"
       examples:
         - "https://accounts.google.com/o/oauth2/auth"
     token_uri:
+      title: Token URI
       type: string
       description: "The URI for the token server. Defaults to https://oauth2.googleapis.com/token"
       default: "https://oauth2.googleapis.com/token"
       examples:
         - "https://oauth2.googleapis.com/token"
     auth_provider_x509_cert_url:
+      title: Auth Provider X509 Cert URL
       type: string
       description: "The URI for the certificate server. Defaults to https://www.googleapis.com/oauth2/v1/certs"
       default: "https://www.googleapis.com/oauth2/v1/certs"
