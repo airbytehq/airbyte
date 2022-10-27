@@ -21,6 +21,7 @@ export function useBuildInitialSchema(
   }, [connectorSpecification]);
 }
 
+// useBuildForm hook
 export interface BuildFormHook {
   initialValues: ConnectorFormValues;
   formFields: FormBlock;
@@ -45,6 +46,7 @@ export function useBuildForm(jsonSchema: JSONSchema7, initialValues?: Partial<Co
   };
 }
 
+// useBuildUiWidgetsContext hook
 interface BuildUiWidgetsContextHook {
   uiWidgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (widgetId: string, updatedValues: WidgetConfig) => void;
