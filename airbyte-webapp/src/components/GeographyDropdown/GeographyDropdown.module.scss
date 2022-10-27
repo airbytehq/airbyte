@@ -14,7 +14,8 @@
   background-color: colors.$white;
   font-weight: 500;
 
-  &:hover {
+  &:hover,
+  :active {
     background-color: colors.$grey-50;
     border-radius: 10px;
   }

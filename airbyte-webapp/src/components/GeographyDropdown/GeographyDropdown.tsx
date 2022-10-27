@@ -29,20 +29,7 @@ const flags: Record<string, React.ReactNode> = {
   eu: <EU />,
 };
 
-// const Icon = styled(FontAwesomeIcon)`
-//   display: none;
-//   color: ${({ theme }) => theme.greyColor60};
-
-//   tr:hover & {
-//     display: block;
-//   }
-//   &:hover {
-//     color: ${({ theme }) => theme.greyColor70};
-//   }
-// `;
-
 const GeographyOption: React.FC<OptionProps> = (props) => {
-  console.log(props);
   return (
     <components.Option className={styles.option} {...props}>
       <>
@@ -71,7 +58,6 @@ export const GeographyDropdown: React.FC = () => {
       className={styles.reactSelectContainer}
       classNamePrefix="reactSelect"
       options={options}
-      defaultValue={options[0]}
       components={{ Option: GeographyOption, MenuList }}
     />
   );
