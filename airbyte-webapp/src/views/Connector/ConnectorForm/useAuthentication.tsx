@@ -4,7 +4,7 @@ import { useCallback, useMemo } from "react";
 
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 
-import { useServiceForm } from "./serviceFormContext";
+import { useConnectorForm } from "./connectorFormContext";
 import { ServiceFormValues } from "./types";
 import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "./utils";
 
@@ -126,7 +126,7 @@ interface AuthenticationHook {
 
 export const useAuthentication = (): AuthenticationHook => {
   const { values, getFieldMeta, submitCount } = useFormikContext<ServiceFormValues>();
-  const { selectedConnector } = useServiceForm();
+  const { selectedConnector } = useConnectorForm();
 
   const allowOAuthConnector = useFeature(FeatureItem.AllowOAuthConnector);
 

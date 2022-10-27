@@ -7,7 +7,7 @@ import { WidgetConfigMap } from "core/form/types";
 
 import { ServiceFormValues } from "./types";
 
-interface ServiceFormContext {
+interface ConnectorFormContext {
   formType: "source" | "destination";
   getValues: <T = unknown>(values: ServiceFormValues<T>) => ServiceFormValues<T>;
   widgetsInfo: WidgetConfigMap;
@@ -23,17 +23,17 @@ interface ServiceFormContext {
   validationSchema: AnySchema;
 }
 
-const serviceFormContext = React.createContext<ServiceFormContext | null>(null);
+const connectorFormContext = React.createContext<ConnectorFormContext | null>(null);
 
-export const useServiceForm = (): ServiceFormContext => {
-  const serviceFormHelpers = useContext(serviceFormContext);
+export const useConnectorForm = (): ConnectorFormContext => {
+  const serviceFormHelpers = useContext(connectorFormContext);
   if (!serviceFormHelpers) {
     throw new Error("useServiceForm should be used within ServiceFormContextProvider");
   }
   return serviceFormHelpers;
 };
 
-interface ServiceFormContextProviderProps {
+interface ConnectorFormContextProviderProps {
   selectedService?: ConnectorDefinition;
   widgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
@@ -46,7 +46,7 @@ interface ServiceFormContextProviderProps {
   validationSchema: AnySchema;
 }
 
-export const ServiceFormContextProvider: React.FC<React.PropsWithChildren<ServiceFormContextProviderProps>> = ({
+export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<ConnectorFormContextProviderProps>> = ({
   selectedService,
   children,
   widgetsInfo,
@@ -61,7 +61,7 @@ export const ServiceFormContextProvider: React.FC<React.PropsWithChildren<Servic
 }) => {
   const { resetForm } = useFormikContext<ServiceFormValues>();
 
-  const ctx = useMemo<ServiceFormContext>(() => {
+  const ctx = useMemo<ConnectorFormContext>(() => {
     const unfinishedFlows = widgetsInfo["_common.unfinishedFlows"] ?? {};
     return {
       widgetsInfo,
@@ -103,5 +103,5 @@ export const ServiceFormContextProvider: React.FC<React.PropsWithChildren<Servic
     resetUiWidgetsInfo,
   ]);
 
-  return <serviceFormContext.Provider value={ctx}>{children}</serviceFormContext.Provider>;
+  return <connectorFormContext.Provider value={ctx}>{children}</connectorFormContext.Provider>;
 };

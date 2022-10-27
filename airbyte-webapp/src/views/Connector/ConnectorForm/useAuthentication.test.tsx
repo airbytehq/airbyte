@@ -4,18 +4,18 @@ import { useFormikContext } from "formik";
 import { SourceDefinitionSpecificationRead } from "core/request/AirbyteClient";
 import { FeatureItem, FeatureService } from "hooks/services/Feature";
 
-import { useServiceForm } from "./serviceFormContext";
+import { useConnectorForm } from "./connectorFormContext";
 import { useAuthentication as useAuthenticationHook } from "./useAuthentication";
 import { noPredicateAdvancedAuth, predicateInsideConditional } from "./useAuthentication.mocks";
 import { makeConnectionConfigurationPath } from "./utils";
 
-jest.mock("./serviceFormContext");
+jest.mock("./connectorFormContext");
 jest.mock("formik", () => ({
   ...jest.requireActual("formik"),
   useFormikContext: jest.fn(),
 }));
 
-const mockServiceForm = useServiceForm as unknown as jest.Mock<Partial<ReturnType<typeof useServiceForm>>>;
+const mockConnectorForm = useConnectorForm as unknown as jest.Mock<Partial<ReturnType<typeof useConnectorForm>>>;
 const mockFormikContext = useFormikContext as unknown as jest.Mock<Partial<ReturnType<typeof useFormikContext>>>;
 
 interface MockParams {
@@ -32,7 +32,7 @@ const mockContext = ({ connector, values, submitCount, fieldMeta = {} }: MockPar
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getFieldMeta: (field) => (fieldMeta[field] ?? {}) as any,
   });
-  mockServiceForm.mockReturnValue({
+  mockConnectorForm.mockReturnValue({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selectedConnector: { ...connector, sourceDefinitionId: "12345", jobInfo: {} as any },
   });

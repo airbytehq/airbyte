@@ -9,7 +9,7 @@ import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { AuthSpecification } from "core/request/AirbyteClient";
 import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
 
-import { useServiceForm } from "../../../serviceFormContext";
+import { useConnectorForm } from "../../../connectorFormContext";
 import { ServiceFormValues } from "../../../types";
 import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "../../../utils";
 
@@ -26,7 +26,7 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
   const { values, setValues, errors, setFieldTouched } = useFormikContext<ServiceFormValues<Credentials>>();
   const [hasRun, setHasRun] = useState(false);
 
-  const { getValues } = useServiceForm();
+  const { getValues } = useConnectorForm();
 
   const onDone = (completeOauthResponse: Record<string, unknown>) => {
     let newValues: ServiceFormValues<Credentials>;

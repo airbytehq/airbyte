@@ -7,7 +7,7 @@ import { DropDown, DropDownOptionDataItem } from "components/ui/DropDown";
 import { FormBlock, FormConditionItem } from "core/form/types";
 import { isDefined } from "utils/common";
 
-import { useServiceForm } from "../../serviceFormContext";
+import { useConnectorForm } from "../../connectorFormContext";
 import { ServiceFormValues } from "../../types";
 import styles from "./ConditionSection.module.scss";
 import { FormSection } from "./FormSection";
@@ -23,7 +23,7 @@ interface ConditionSectionProps {
  * ConditionSection is responsible for handling oneOf sections of form
  */
 export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, path, disabled }) => {
-  const { widgetsInfo, setUiWidgetsInfo } = useServiceForm();
+  const { widgetsInfo, setUiWidgetsInfo } = useConnectorForm();
   const { values, setValues } = useFormikContext<ServiceFormValues>();
 
   const currentlySelectedCondition = widgetsInfo[formField.path]?.selectedItem;

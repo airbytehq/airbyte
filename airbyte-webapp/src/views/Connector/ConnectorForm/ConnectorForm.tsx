@@ -12,8 +12,8 @@ import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/For
 import { isDefined } from "utils/common";
 
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
+import { ConnectorFormContextProvider, useConnectorForm } from "./connectorFormContext";
 import { FormRoot } from "./FormRoot";
-import { ServiceFormContextProvider, useServiceForm } from "./serviceFormContext";
 import { ConnectorCardValues, ServiceFormValues } from "./types";
 import {
   useBuildForm,
@@ -38,7 +38,7 @@ const PatchInitialValuesWithWidgetConfig: React.FC<{
   schema: JSONSchema7;
   initialValues: ServiceFormValues;
 }> = ({ schema, initialValues }) => {
-  const { widgetsInfo } = useServiceForm();
+  const { widgetsInfo } = useConnectorForm();
   const { setFieldValue } = useFormikContext<ServiceFormValues>();
 
   useDeepCompareEffect(() => {
@@ -183,7 +183,7 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
       enableReinitialize
     >
       {({ dirty }) => (
-        <ServiceFormContextProvider
+        <ConnectorFormContextProvider
           widgetsInfo={uiWidgetsInfo}
           getValues={getValues}
           setUiWidgetsInfo={setUiWidgetsInfo}
@@ -208,7 +208,7 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
             formFields={formFields}
             selectedConnector={selectedConnectorDefinitionSpecification}
           />
-        </ServiceFormContextProvider>
+        </ConnectorFormContextProvider>
       )}
     </Formik>
   );
