@@ -17,6 +17,7 @@ For more information about the grading system, see [Product Release Stages](http
 | Connector                                                                                   | Product Release Stage| Available in Cloud? |
 |:--------------------------------------------------------------------------------------------| :------------------- | :------------------ |
 | [3PL Central](sources/tplcentral.md)                                                        | Alpha                | No                  |
+| [ActiveCampaign](sources/activecampaign.md)                                                 | Alpha                | No                  |
 | [Adjust](sources/adjust.md)                                                                 | Alpha                | No                  |
 | [Airtable](sources/airtable.md)                                                             | Alpha                | Yes                 |
 | [AlloyDB](sources/alloydb.md)                                                               | Generally Available  | Yes                 |
@@ -117,7 +118,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [OneSignal](sources/onesignal.md)                                                           | Alpha                | No                  |
 | [OpenWeather](sources/openweather.md)                                                       | Alpha                | No                  |
 | [Oracle DB](sources/oracle.md)                                                              | Alpha                | Yes                 |
-| [Oracle Netsuite](sources/netsuite.md)                                                      | Generally Available  | Yes                 |
+| [Oracle Netsuite](sources/netsuite.md)                                                      | Alpha                | Yes                 |
 | [Oracle PeopleSoft](sources/oracle-peoplesoft.md)                                           | Alpha                | No                  |
 | [Oracle Siebel CRM](sources/oracle-siebel-crm.md)                                           | Alpha                | No                  |
 | [Orb](sources/orb.md)                                                                       | Alpha                | Yes                 |
@@ -141,7 +142,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Recurly](sources/recurly.md)                                                               | Alpha                | Yes                 |
 | [Redshift](sources/redshift.md)                                                             | Alpha                | Yes                 |
 | [Retently](sources/retently.md)                                                             | Alpha                | Yes                 |
-| [S3](sources/s3.md)                                                                         | Generally Available  | No                 |
+| [S3](sources/s3.md)                                                                         | Generally Available  | Yes                 |
 | [Salesforce](sources/salesforce.md)                                                         | Generally Available  | Yes                 |
 | [Salesloft](sources/salesloft.md)                                                           | Alpha                | No                  |
 | [SAP Business One](sources/sap-business-one.md)                                             | Alpha                | No                  |
@@ -173,6 +174,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Whisky Hunter](sources/whisky-hunter.md        )                                           | Alpha                | No                  |
 | [WooCommerce](sources/woocommerce.md)                                                       | Alpha                | No                  |
 | [Wordpress](sources/wordpress.md)                                                           | Alpha                | No                  |
+| [Workable](sources/workable.md)                                                           | Alpha                | No                  |
 | [Wrike](sources/wrike.md)                                                                   | Alpha                | No                  |
 | [YouTube Analytics](sources/youtube-analytics.md)                                           | Beta                 | Yes                 |
 | [Xkcd](sources/xkcd.md)                                                                     | Alpha                | No                  |

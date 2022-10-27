@@ -303,7 +303,9 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
     ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));
 
-    final Exception exception = assertThrows(NullPointerException.class, () -> source.check(config));
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(Status.FAILED, actual.getStatus());
+    assertTrue(actual.getMessage().contains("Could not connect with provided SSH configuration."));
   }
 
   @Test
@@ -322,7 +324,9 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
     ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));
 
-    final Exception exception = assertThrows(NullPointerException.class, () -> source.check(config));
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(Status.FAILED, actual.getStatus());
+    assertTrue(actual.getMessage().contains("Could not connect with provided SSH configuration."));
   }
 
   @Override

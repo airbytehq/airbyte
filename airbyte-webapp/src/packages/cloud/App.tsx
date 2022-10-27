@@ -42,7 +42,11 @@ const Services: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
           <ModalServiceProvider>
             <FormChangeTrackerService>
               <FeatureService
-                features={[FeatureItem.AllowOAuthConnector, FeatureItem.AllowCreateConnection, FeatureItem.AllowSync]}
+                features={[
+                  FeatureItem.AllowOAuthConnector,
+                  FeatureItem.AllowSync,
+                  FeatureItem.AllowSyncSubOneHourCronExpressions,
+                ]}
               >
                 <AppServicesProvider>
                   <AuthenticationProvider>

@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.temporal.exception.RetryableException;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
@@ -123,6 +124,7 @@ class JobCreationAndStatusUpdateActivityTest {
   private static final String DOCKER_REPOSITORY = "docker-repo";
   private static final String DOCKER_IMAGE_TAG = "0.0.1";
   private static final String DOCKER_IMAGE_NAME = DockerUtils.getTaggedImageName(DOCKER_REPOSITORY, DOCKER_IMAGE_TAG);
+  private static final Version DESTINATION_PROTOCOL_VERSION = new Version("0.4.0");
   private static final long JOB_ID = 123L;
   private static final long PREVIOUS_JOB_ID = 120L;
   private static final int ATTEMPT_ID = 0;
@@ -170,12 +172,15 @@ class JobCreationAndStatusUpdateActivityTest {
       Mockito.when(mConfigRepository.getDestinationConnection(DESTINATION_ID)).thenReturn(destination);
       final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
           .withDockerRepository(DOCKER_REPOSITORY)
-          .withDockerImageTag(DOCKER_IMAGE_TAG);
+          .withDockerImageTag(DOCKER_IMAGE_TAG)
+          .withProtocolVersion(DESTINATION_PROTOCOL_VERSION.serialize());
       Mockito.when(mConfigRepository.getStandardDestinationDefinition(DESTINATION_DEFINITION_ID)).thenReturn(destinationDefinition);
       final List<StreamDescriptor> streamsToReset = List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2);
       Mockito.when(mStreamResetPersistence.getStreamResets(CONNECTION_ID)).thenReturn(streamsToReset);
 
-      Mockito.when(mJobCreator.createResetConnectionJob(destination, standardSync, DOCKER_IMAGE_NAME, List.of(), streamsToReset))
+      Mockito
+          .when(mJobCreator.createResetConnectionJob(destination, standardSync, DOCKER_IMAGE_NAME, DESTINATION_PROTOCOL_VERSION, List.of(),
+              streamsToReset))
           .thenReturn(Optional.of(JOB_ID));
 
       final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID));
@@ -229,12 +234,12 @@ class JobCreationAndStatusUpdateActivityTest {
       final Job activeJob = new Job(JOB_ID, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(activeAttempt),
           JobStatus.RUNNING, 2L, 2L, 3L);
 
-      Set<ConfigType> configTypes = new HashSet<>();
+      final Set<ConfigType> configTypes = new HashSet<>();
       configTypes.add(SYNC);
 
       Mockito.when(mJobPersistence.listJobsIncludingId(configTypes, CONNECTION_ID.toString(), JOB_ID, 2))
           .thenReturn(List.of(activeJob, previousJob));
-      boolean result = jobCreationAndStatusUpdateActivity
+      final boolean result = jobCreationAndStatusUpdateActivity
           .isLastJobOrAttemptFailure(new JobCreationAndStatusUpdateActivity.JobCheckFailureInput(JOB_ID, 0, CONNECTION_ID));
       Assertions.assertThat(result).isEqualTo(false);
     }
@@ -249,12 +254,12 @@ class JobCreationAndStatusUpdateActivityTest {
       final Job activeJob = new Job(JOB_ID, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(activeAttempt),
           JobStatus.RUNNING, 2L, 2L, 3L);
 
-      Set<ConfigType> configTypes = new HashSet<>();
+      final Set<ConfigType> configTypes = new HashSet<>();
       configTypes.add(SYNC);
 
       Mockito.when(mJobPersistence.listJobsIncludingId(configTypes, CONNECTION_ID.toString(), JOB_ID, 2))
           .thenReturn(List.of(activeJob, previousJob));
-      boolean result = jobCreationAndStatusUpdateActivity
+      final boolean result = jobCreationAndStatusUpdateActivity
           .isLastJobOrAttemptFailure(new JobCreationAndStatusUpdateActivity.JobCheckFailureInput(JOB_ID, 0, CONNECTION_ID));
       Assertions.assertThat(result).isEqualTo(true);
     }
@@ -270,12 +275,12 @@ class JobCreationAndStatusUpdateActivityTest {
       final Job activeJob = new Job(JOB_ID, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(activeAttempt, previousAttempt),
           JobStatus.RUNNING, 2L, 2L, 3L);
 
-      Set<ConfigType> configTypes = new HashSet<>();
+      final Set<ConfigType> configTypes = new HashSet<>();
       configTypes.add(SYNC);
 
       Mockito.when(mJobPersistence.listJobsIncludingId(configTypes, CONNECTION_ID.toString(), JOB_ID, 2))
           .thenReturn(List.of(activeJob, previousJob));
-      boolean result = jobCreationAndStatusUpdateActivity
+      final boolean result = jobCreationAndStatusUpdateActivity
           .isLastJobOrAttemptFailure(new JobCreationAndStatusUpdateActivity.JobCheckFailureInput(JOB_ID, 1, CONNECTION_ID));
       Assertions.assertThat(result).isEqualTo(true);
     }
@@ -389,7 +394,7 @@ class JobCreationAndStatusUpdateActivityTest {
       Mockito.when(mJobPersistence.getJob(JOB_ID))
           .thenReturn(mJob);
 
-      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, CONNECTION_ID, 1, "reason"));
+      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, 1, CONNECTION_ID, "reason"));
 
       verify(mJobPersistence).failJob(JOB_ID);
       verify(mJobNotifier).failJob(eq("reason"), Mockito.any());
@@ -403,7 +408,7 @@ class JobCreationAndStatusUpdateActivityTest {
           .when(mJobPersistence).failJob(JOB_ID);
 
       Assertions
-          .assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, CONNECTION_ID, ATTEMPT_NUMBER, "")))
+          .assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, ATTEMPT_NUMBER, CONNECTION_ID, "")))
           .isInstanceOf(RetryableException.class)
           .hasCauseInstanceOf(IOException.class);
 
