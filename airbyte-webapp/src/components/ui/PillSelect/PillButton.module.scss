@@ -7,7 +7,7 @@
   flex-direction: row;
   align-items: center;
   padding: 3px 10px;
-  gap: 5px;
+  gap: variables.$spacing-sm;
   border-radius: 20px;
   cursor: pointer;
   background: colors.$grey-50;
