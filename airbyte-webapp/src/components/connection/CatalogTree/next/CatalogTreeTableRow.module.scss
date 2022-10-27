@@ -17,6 +17,7 @@
 .streamHeaderContent {
   background: colors.$white;
   border-bottom: 1px solid colors.$grey-50;
+  padding: variables.$spacing-sm variables.$spacing-md variables.$spacing-sm variables.$spacing-sm;
 
   &:hover {
     background: colors.$grey-30;
@@ -44,5 +45,6 @@
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
-  padding-left: 27px;
+  padding-left: 2px;
+  margin-right: variables.$spacing-sm;
 }

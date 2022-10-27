@@ -26,7 +26,7 @@ export const CatalogTreeTableHeader: React.FC = () => {
   const { onCheckAll, selectedBatchNodeIds, allChecked } = useBulkEditService();
 
   return (
-    <Header>
+    <Header className={styles.headerContainer}>
       <Cell>
         {mode !== "readonly" && (
           <CheckBox
