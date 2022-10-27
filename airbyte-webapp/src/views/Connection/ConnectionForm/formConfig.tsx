@@ -27,7 +27,7 @@ import {
 import { ConnectionFormMode, ConnectionOrPartialConnection } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
-import { validateCronExpression } from "utils/cron";
+import { validateCronExpression, validateCronFrequencyOneHourOrMore } from "utils/cron";
 
 import calculateInitialCatalog from "./calculateInitialCatalog";
 
@@ -75,7 +75,15 @@ export function useDefaultTransformation(): OperationCreate {
   };
 }
 
-export const connectionValidationSchema = (mode: ConnectionFormMode) =>
+interface CreateConnectionValidationSchemaArgs {
+  allowSubOneHourCronExpressions: boolean;
+  mode: ConnectionFormMode;
+}
+
+export const createConnectionValidationSchema = ({
+  mode,
+  allowSubOneHourCronExpressions,
+}: CreateConnectionValidationSchemaArgs) =>
   yup
     .object({
       // The connection name during Editing is handled separately from the form
@@ -102,8 +110,14 @@ export const connectionValidationSchema = (mode: ConnectionFormMode) =>
             .object({
               cronExpression: yup
                 .string()
+                .trim()
                 .required("form.empty.error")
-                .test("validCron", "form.cronExpression.error", validateCronExpression),
+                .test("validCron", "form.cronExpression.error", validateCronExpression)
+                .test(
+                  "validCronFrequency",
+                  "form.cronExpression.underOneHourNotAllowed",
+                  (expression) => allowSubOneHourCronExpressions || validateCronFrequencyOneHourOrMore(expression)
+                ),
               cronTimeZone: yup.string().required("form.empty.error"),
             })
             .defined("form.empty.error"),

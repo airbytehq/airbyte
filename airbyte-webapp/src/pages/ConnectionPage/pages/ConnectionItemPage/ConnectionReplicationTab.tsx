@@ -14,6 +14,7 @@ import {
   tidyConnectionFormValues,
   useConnectionFormService,
 } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useModalService } from "hooks/services/Modal";
 import { useConnectionService, ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
@@ -21,7 +22,10 @@ import { equal, naturalComparatorBy } from "utils/objects";
 import { useConfirmCatalogDiff } from "views/Connection/CatalogDiffModal/useConfirmCatalogDiff";
 import EditControls from "views/Connection/ConnectionForm/components/EditControls";
 import { ConnectionFormFields } from "views/Connection/ConnectionForm/ConnectionFormFields";
-import { connectionValidationSchema, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
+import {
+  createConnectionValidationSchema,
+  FormikConnectionFormValues,
+} from "views/Connection/ConnectionForm/formConfig";
 
 import styles from "./ConnectionReplicationTab.module.scss";
 import { ResetWarningModal } from "./ResetWarningModal";
@@ -39,6 +43,7 @@ export const ConnectionReplicationTab: React.FC = () => {
   const { connection, schemaRefreshing, schemaHasBeenRefreshed, updateConnection, setSchemaHasBeenRefreshed } =
     useConnectionEditService();
   const { initialValues, mode, schemaError, getErrorMessage, setSubmitError } = useConnectionFormService();
+  const allowSubOneHourCronExpressions = useFeature(FeatureItem.AllowSyncSubOneHourCronExpressions);
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
 
@@ -73,7 +78,13 @@ export const ConnectionReplicationTab: React.FC = () => {
 
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues, _: FormikHelpers<FormikConnectionFormValues>) => {
-      const formValues = tidyConnectionFormValues(values, workspaceId, mode, connection.operations);
+      const formValues = tidyConnectionFormValues(
+        values,
+        workspaceId,
+        mode,
+        allowSubOneHourCronExpressions,
+        connection.operations
+      );
 
       // Detect whether the catalog has any differences in its enabled streams compared to the original one.
       // This could be due to user changes (e.g. in the sync mode) or due to new/removed
@@ -135,6 +146,7 @@ export const ConnectionReplicationTab: React.FC = () => {
       setSchemaHasBeenRefreshed,
       setSubmitError,
       workspaceId,
+      allowSubOneHourCronExpressions,
     ]
   );
 
@@ -147,10 +159,9 @@ export const ConnectionReplicationTab: React.FC = () => {
       ) : !schemaRefreshing && connection ? (
         <Formik
           initialValues={initialValues}
-          validationSchema={connectionValidationSchema(mode)}
+          validationSchema={createConnectionValidationSchema({ mode, allowSubOneHourCronExpressions })}
           onSubmit={onFormSubmit}
           enableReinitialize
-          validateOnChange={false}
         >
           {({ values, isSubmitting, isValid, dirty, resetForm }) => (
             <Form>
