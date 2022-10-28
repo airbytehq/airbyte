@@ -63,7 +63,6 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
           label={<FormattedMessage id={`tables.${type}Add`} />}
           options={options}
           onChange={onSelect}
-          disabled={!allowCreateConnection}
         />
       </div>
     </>

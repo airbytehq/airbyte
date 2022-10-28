@@ -18,7 +18,7 @@ export const DropdownMenu: React.FC<
     label: React.ReactNode;
     options: DropdownMenuItemType[];
     onChange: (item: DropdownMenuItemType) => void;
-    disabled: boolean;
+    disabled?: boolean;
     testId: string;
   }>
 > = ({ options, label, disabled, onChange, testId }) => {
