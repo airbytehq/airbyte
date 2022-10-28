@@ -15,7 +15,7 @@ import MainView from "views/layout/MainView";
 
 import { WorkspaceRead } from "../core/request/AirbyteClient";
 import ConnectionPage from "./ConnectionPage";
-import { ConnectorBuilderPage } from "./connector-builder/ConnectorBuilderPage";
+import { ConnectorBuilderPage } from "./ConnectorBuilderPage/ConnectorBuilderPage";
 import DestinationPage from "./DestinationPage";
 import OnboardingPage from "./OnboardingPage";
 import PreferencesPage from "./PreferencesPage";

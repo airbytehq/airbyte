@@ -5,6 +5,8 @@
 package io.airbyte.metrics.lib;
 
 import io.opentracing.Span;
+import io.opentracing.log.Fields;
+import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import java.util.Map;
 
@@ -45,7 +47,7 @@ public class ApmTraceUtils {
   }
 
   /**
-   * Adds all the provided tags to the currently active span, if one exists.
+   * Adds all the provided tags to the provided span, if one exists.
    *
    * @param span The {@link Span} that will be associated with the tags.
    * @param tags A map of tags to be added to the currently active span.
@@ -56,6 +58,28 @@ public class ApmTraceUtils {
       tags.entrySet().forEach(entry -> {
         span.setTag(String.format(TAG_FORMAT, tagPrefix, entry.getKey()), entry.getValue().toString());
       });
+    }
+  }
+
+  /**
+   * Adds an exception to the currently active span, if one exists.
+   *
+   * @param e The {@link Exception} to be added to the currently active span.
+   */
+  public static void addExceptionToTrace(final Exception e) {
+    addExceptionToTrace(GlobalTracer.get().activeSpan(), e);
+  }
+
+  /**
+   * Adds an exception to the provided span, if one exists.
+   *
+   * @param span The {@link Span} that will be associated with the exception.
+   * @param e The {@link Exception} to be added to the provided span.
+   */
+  public static void addExceptionToTrace(final Span span, final Exception e) {
+    if (span != null) {
+      span.setTag(Tags.ERROR, true);
+      span.log(Map.of(Fields.ERROR_OBJECT, e));
     }
   }
 
