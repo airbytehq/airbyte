@@ -23,6 +23,7 @@ definitions:
       pagination_strategy:
         type: CursorPagination
         cursor_value: "{{response['paging']['next']}}"
+        stop_condition: "{{response['paging']['next'] == None}}"
         page_size: 100
       page_token_option:
         inject_into: "path"
