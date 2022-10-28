@@ -247,9 +247,6 @@ class BigQueryDestinationTest {
               + "Override by setting setting path with the CREDENTIALS_WITHMISSED_CREATE_DATASET_ROLE_PATH constant.");
     }
     final String fullConfigAsString = Files.readString(CREDENTIALS_WITHMISSED_CREATE_DATASET_ROLE_PATH);
-    System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-    System.out.println(fullConfigAsString);
-    System.out.println("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ");
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
     final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
     final String datasetId = Strings.addRandomSuffix(DATASET_NAME_PREFIX, "_", 8);
