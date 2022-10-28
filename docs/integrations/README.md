@@ -102,6 +102,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Looker](sources/looker.md)                                                                 | Alpha                | Yes                 |
 | [Magento](sources/magento.md)                                                               | Alpha                | No                  |
 | [Mailchimp](sources/mailchimp.md)                                                           | Generally Available  | Yes                 |
+| [Mailjet Mail](sources/mailjet-mail.md)                                                     | Alpha                | No                  |
 | [Mailerlite](sources/mailerlite.md)                                                         | Alpha                | No                  |
 | [Mailjet Mail](sources/mailjet-mail.md)                                                     | Alpha                | No                  |
 | [Marketo](sources/marketo.md)                                                               | Generally Available  | Yes                 |
@@ -154,6 +155,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [SearchMetrics](./sources/search-metrics.md)                                                | Alpha                | No                  |
 | [Sendgrid](sources/sendgrid.md)                                                             | Beta                 | Yes                 |
 | [Sentry](sources/sentry.md)                                                                 | Generally Available  | Yes                 |
+| [SFTP Bulk](sources/sftp-bulk.md)                                                           | Alpha                | Yes                 |
 | [SFTP](sources/sftp.md)                                                                     | Alpha                | Yes                 |
 | [Shopify](sources/shopify.md)                                                               | Alpha                | No                  |
 | [Short.io](sources/shortio.md)                                                              | Alpha                | Yes                 |
@@ -161,6 +163,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Smartsheets](sources/smartsheets.md)                                                       | Beta                 | Yes                 |
 | [Snapchat Marketing](sources/snapchat-marketing.md)                                         | Generally Available  | Yes                 |
 | [Snowflake](sources/snowflake.md)                                                           | Alpha                | Yes                 |
+| [Sonar Cloud](sources/sonar-cloud.md)                                                       | Alpha                | Yes                 |
 | [Spree Commerce](sources/spree-commerce.md)                                                 | Alpha                | No                  |
 | [Square](sources/square.md)                                                                 | Alpha                | Yes                 |
 | [Strava](sources/strava.md)                                                                 | Alpha                | No                  |
