@@ -1011,6 +1011,13 @@
   icon: retently.svg
   sourceType: api
   releaseStage: alpha
+- name: RD Station Marketing
+  sourceDefinitionId: fb141f29-be2a-450b-a4f2-2cd203a00f84
+  dockerRepository: airbyte/source-rd-station-marketing
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/rd-station-marketing
+  sourceType: api
+  releaseStage: alpha
 - name: RKI Covid
   sourceDefinitionId: d78e5de0-aa44-4744-aa4f-74c818ccfe19
   dockerRepository: airbyte/source-rki-covid
