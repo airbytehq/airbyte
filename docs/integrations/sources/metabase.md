@@ -70,5 +70,5 @@ authenticated query is running, which might trigger security alerts on the user'
 
 | Version | Date       | Pull Request                                             | Subject                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------|
-| 0.2.0   | 2022-10-28 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Disallow using `http` URLs |
+| 0.2.0   | 2022-10-28 | [18607](https://github.com/airbytehq/airbyte/pull/18607) | Disallow using `http` URLs |
 | 0.1.0   | 2022-06-15 | [6975](https://github.com/airbytehq/airbyte/pull/13752)  | Initial (alpha) release    |
