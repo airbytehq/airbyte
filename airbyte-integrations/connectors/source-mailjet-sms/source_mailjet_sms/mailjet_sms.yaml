@@ -48,7 +48,7 @@ definitions:
         $ref: "*ref(definitions.requester)"
     $options:
       name: "sms"
-      primary_key: "MessageID"
+      primary_key: "ID"
       path: "/sms"
 
 streams:
