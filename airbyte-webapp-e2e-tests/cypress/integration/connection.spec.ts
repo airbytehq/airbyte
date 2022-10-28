@@ -16,9 +16,9 @@ import {
   searchStream, 
   selectCursorField, 
   checkCursorField,
-  selectSyncMode
+  selectSyncMode,
+  setupDestinationNamespaceDefaultFormat
 } from "pages/replicationPage";
-
 import { openSourceDestinationFromGrid, goToSourcePage } from "pages/sourcePage";
 import { goToSettingsPage } from "pages/settingsConnectionPage";
 import { cleanDBSource, makeChangesInDBSource, populateDBSource } from "../commands/db";
@@ -366,6 +366,123 @@ describe("Connection main actions", () => {
     goToSettingsPage();
 
     deleteEntity();
+
+    deleteSource(sourceName);
+    deleteDestination(destName);
+  });
+
+  it("Saving a connection's destination namespace with 'Custom format' option", () => {
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+
+    const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
+    const destName = appendRandomString("Test update connection Local JSON destination cypress");
+
+    createTestConnection(sourceName, destName);
+
+    goToSourcePage();
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
+
+    goToReplicationTab();
+
+    
+    const namespace = "_DestinationNamespaceCustomFormat";
+    setupDestinationNamespaceCustomFormat(namespace);
+
+    // Ensures the DestinationNamespace is applied to the streams
+    assert(cy.get(`[title*="${namespace}"]`));
+
+    submitButtonClick();
+
+    cy.wait("@updateConnection").then((interception) => {
+      assert.isNotNull(interception.response?.statusCode, "200");
+      expect(interception.request.method).to.eq("POST");
+      expect(interception.request)
+        .property("body")
+        .to.contain({
+          name: sourceName + " <> " + destName + "Connection name",
+          namespaceDefinition: "customformat",
+          namespaceFormat: "${SOURCE_NAMESPACE}_DestinationNamespaceCustomFormat",
+          status: "active",
+        });
+
+      const streamToUpdate = interception.request.body.syncCatalog.streams[0];
+
+      expect(streamToUpdate.stream).to.contain({
+        name: "pokemon",
+      });
+    });
+    checkSuccessResult();
+
+    deleteSource(sourceName);
+    deleteDestination(destName);
+  });
+
+  it("Saving a connection's destination namespace with 'Mirror source structure' option", () => {
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+
+    const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
+    const destName = appendRandomString("Test update connection Local JSON destination cypress");
+
+    createTestConnection(sourceName, destName);
+
+    goToSourcePage();
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
+
+    goToReplicationTab();
+
+    const namespace = "<source schema>";
+
+    // Ensures the DestinationNamespace is applied to the streams
+    assert(cy.get(`[title*="${namespace}"]`));
+
+    deleteSource(sourceName);
+    deleteDestination(destName);
+  });
+
+  it("Saving a connection's destination namespace with 'Destination default' option", () => {
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+
+    const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
+    const destName = appendRandomString("Test update connection Local JSON destination cypress");
+
+    createTestConnection(sourceName, destName);
+
+    goToSourcePage();
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
+
+    goToReplicationTab();
+
+    setupDestinationNamespaceDefaultFormat();
+
+    const namespace = "<destination schema>";
+
+    // Ensures the DestinationNamespace is applied to the streams
+    assert(cy.get(`[title*="${namespace}"]`));
+
+    submitButtonClick();
+
+    cy.wait("@updateConnection").then((interception) => {
+      assert.isNotNull(interception.response?.statusCode, "200");
+      expect(interception.request.method).to.eq("POST");
+      expect(interception.request)
+        .property("body")
+        .to.contain({
+          name: sourceName + " <> " + destName + "Connection name",
+          namespaceDefinition: "destination",
+          namespaceFormat: "${SOURCE_NAMESPACE}",
+          status: "active",
+        });
+
+      const streamToUpdate = interception.request.body.syncCatalog.streams[0];
+
+      expect(streamToUpdate.stream).to.contain({
+        name: "pokemon",
+      });
+    });
+    checkSuccessResult();
 
     deleteSource(sourceName);
     deleteDestination(destName);
