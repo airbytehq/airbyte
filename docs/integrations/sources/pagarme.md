@@ -40,4 +40,4 @@ There is no clear performance limitation.
 
 | Version | Date       | Pull Request                                             | Subject                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------- |
-| 0.1.0   | 2022-10-28 | [18348](https://github.com/airbytehq/airbyte/pull/18348)  | Initial Release 
+| 0.1.0   | 2022-10-28 | [18348](https://github.com/airbytehq/airbyte/pull/18622)  | Initial Release 
