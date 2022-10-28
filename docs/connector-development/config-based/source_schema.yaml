@@ -226,7 +226,7 @@ definitions:
     type: object
     anyOf:
       - "$ref": "#/definitions/DefaultPaginator"
-      - "$ref": "#/definitions/NoPaginator"
+      - "$ref": "#/definitions/NoPagination"
   DefaultPaginator:
     type: object
     additionalProperties: true
@@ -247,7 +247,7 @@ definitions:
         "$ref": "#/definitions/PaginationStrategy"
       url_base:
         type: string
-  NoPaginator:
+  NoPagination:
     type: object
     additionalProperties: true
   RequestOption:

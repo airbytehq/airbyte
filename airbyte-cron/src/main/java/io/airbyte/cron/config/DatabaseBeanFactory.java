@@ -4,14 +4,19 @@
 
 package io.airbyte.cron.config;
 
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.check.DatabaseMigrationCheck;
 import io.airbyte.db.factory.DatabaseCheckFactory;
+import io.airbyte.persistence.job.DefaultJobPersistence;
+import io.airbyte.persistence.job.JobPersistence;
 import io.micronaut.context.annotation.Factory;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.flyway.FlywayConfigurationProperties;
 import jakarta.inject.Named;
@@ -37,6 +42,13 @@ public class DatabaseBeanFactory {
   @Singleton
   @Named("configDatabase")
   public Database configDatabase(@Named("config") final DSLContext dslContext) throws IOException {
+    return new Database(dslContext);
+  }
+
+  @Singleton
+  @Requires(env = WorkerMode.CONTROL_PLANE)
+  @Named("jobsDatabase")
+  public Database jobsDatabase(@Named("jobs") final DSLContext dslContext) throws IOException {
     return new Database(dslContext);
   }
 
@@ -77,6 +89,18 @@ public class DatabaseBeanFactory {
     return DatabaseCheckFactory
         .createConfigsDatabaseMigrationCheck(dslContext, configsFlyway, configsDatabaseMinimumFlywayMigrationVersion,
             configsDatabaseInitializationTimeoutMs);
+  }
+
+  @Singleton
+  @Requires(env = WorkerMode.CONTROL_PLANE)
+  public StreamResetPersistence streamResetPersistence(@Named("configDatabase") final Database configDatabase) {
+    return new StreamResetPersistence(configDatabase);
+  }
+
+  @Singleton
+  @Requires(env = WorkerMode.CONTROL_PLANE)
+  public JobPersistence jobPersistence(@Named("jobsDatabase") final Database jobDatabase) {
+    return new DefaultJobPersistence(jobDatabase);
   }
 
 }

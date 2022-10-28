@@ -23,10 +23,15 @@ record = MagicMock()
         ("test_try_to_check_invalid stream", record, ["invalid_stream_name"], {}, None),
     ],
 )
-def test_check_stream(test_name, record, streams_to_check, stream_slice, expectation):
+@pytest.mark.parametrize("slices_as_list", [True, False])
+def test_check_stream_with_slices_as_list(test_name, record, streams_to_check, stream_slice, expectation, slices_as_list):
     stream = MagicMock()
     stream.name = "s1"
-    stream.stream_slices.return_value = iter([stream_slice])
+    if slices_as_list:
+        stream.stream_slices.return_value = [stream_slice]
+    else:
+        stream.stream_slices.return_value = iter([stream_slice])
+
     stream.read_records.side_effect = mock_read_records({frozenset(stream_slice): iter([record])})
 
     source = MagicMock()

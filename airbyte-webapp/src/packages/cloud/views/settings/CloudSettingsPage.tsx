@@ -1,7 +1,9 @@
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 // import useConnector from "hooks/services/useConnector";
+import { DbtCloudSettingsView } from "packages/cloud/views/settings/integrations/DbtCloudSettingsView";
 import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView";
 import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView";
 import { WorkspaceSettingsView } from "packages/cloud/views/workspaces/WorkspaceSettingsView";
@@ -20,6 +22,7 @@ import { CloudSettingsRoutes } from "./routePaths";
 export const CloudSettingsPage: React.FC = () => {
   // TODO: uncomment when supported in cloud
   // const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
+  const supportsCloudDbtIntegration = useFeature(FeatureItem.AllowDBTCloudIntegration);
 
   const pageConfig = useMemo<PageConfig>(
     () => ({
@@ -82,9 +85,24 @@ export const CloudSettingsPage: React.FC = () => {
             },
           ],
         },
+        ...(supportsCloudDbtIntegration
+          ? [
+              {
+                category: <FormattedMessage id="settings.integrationSettings" />,
+                routes: [
+                  {
+                    path: CloudSettingsRoutes.DbtCloud,
+                    name: <FormattedMessage id="settings.integrationSettings.dbtCloudSettings" />,
+                    component: DbtCloudSettingsView,
+                    id: "integrationSettings.dbtCloudSettings",
+                  },
+                ],
+              },
+            ]
+          : []),
       ],
     }),
-    []
+    [supportsCloudDbtIntegration]
   );
 
   return <SettingsPage pageConfig={pageConfig} />;
