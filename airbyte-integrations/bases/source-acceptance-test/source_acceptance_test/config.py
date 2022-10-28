@@ -93,10 +93,20 @@ class ExpectedRecordsConfig(BaseModel):
         return extra_records
 
 
+class EmptyStreamConfiguration(BaseConfig):
+    name: str
+    bypass_reason: Optional[str] = Field(default=None, description="Reason why this stream is considered empty.")
+
+    def __hash__(self):  # make it hashable
+        return hash((type(self),) + tuple(self.__dict__.values()))
+
+
 class BasicReadTestConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: Optional[str] = configured_catalog_path
-    empty_streams: Set[str] = Field(default_factory=set, description="We validate that all streams has records. These are exceptions")
+    empty_streams: Set[EmptyStreamConfiguration] = Field(
+        default_factory=set, description="We validate that all streams has records. These are exceptions"
+    )
     expect_records: Optional[ExpectedRecordsConfig] = Field(description="Expected records from the read")
     validate_schema: bool = Field(True, description="Ensure that records match the schema of the corresponding stream")
     # TODO: remove this field after https://github.com/airbytehq/airbyte/issues/8312 is done
@@ -206,6 +216,11 @@ class Config(BaseConfig):
         migrated_config["acceptance_tests"] = {}
         for test_name, test_configs in legacy_config["tests"].items():
             migrated_config["acceptance_tests"][test_name] = {"tests": test_configs}
+        for basic_read_tests in migrated_config["acceptance_tests"].get("basic_read", {}).get("tests", []):
+            if "empty_streams" in basic_read_tests:
+                basic_read_tests["empty_streams"] = [
+                    {"name": empty_stream_name} for empty_stream_name in basic_read_tests.get("empty_streams", [])
+                ]
         return migrated_config
 
     @root_validator(pre=True)

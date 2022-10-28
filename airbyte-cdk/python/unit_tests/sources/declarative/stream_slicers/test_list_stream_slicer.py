@@ -116,3 +116,20 @@ def test_request_option(test_name, request_option, expected_req_params, expected
     assert expected_headers == slicer.get_request_headers()
     assert expected_body_json == slicer.get_request_body_json()
     assert expected_body_data == slicer.get_request_body_data()
+
+
+def test_request_option_before_updating_cursor():
+    request_option = RequestOption(inject_into=RequestOptionType.request_parameter, options={}, field_name="owner_resource")
+    if request_option.inject_into == RequestOptionType.path:
+        try:
+            ListStreamSlicer(slice_values=slice_values, cursor_field=cursor_field, config={}, request_option=request_option, options={})
+            assert False
+        except ValueError:
+            return
+    slicer = ListStreamSlicer(slice_values=slice_values, cursor_field=cursor_field, config={}, request_option=request_option, options={})
+    stream_slice = {cursor_field: "customer"}
+
+    assert {} == slicer.get_request_params(stream_slice)
+    assert {} == slicer.get_request_headers()
+    assert {} == slicer.get_request_body_json()
+    assert {} == slicer.get_request_body_data()

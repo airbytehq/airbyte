@@ -25,7 +25,6 @@ export interface FormGroupItem extends FormItem {
   jsonSchema: AirbyteJSONSchema;
   properties: FormBlock[];
   isLoading?: boolean;
-  hasOauth?: boolean;
   examples?: JSONSchema7Type;
 }
 

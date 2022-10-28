@@ -175,3 +175,31 @@ def test_request_option(
     assert expected_headers == slicer.get_request_headers()
     assert expected_body_json == slicer.get_request_body_json()
     assert expected_body_data == slicer.get_request_body_data()
+
+
+def test_request_option_before_updating_cursor():
+    stream_1_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, options={}, field_name="owner")
+    stream_2_request_option = RequestOption(inject_into=RequestOptionType.header, options={}, field_name="repo")
+    slicer = CartesianProductStreamSlicer(
+        stream_slicers=[
+            ListStreamSlicer(
+                slice_values=["customer", "store", "subscription"],
+                cursor_field="owner_resource",
+                config={},
+                request_option=stream_1_request_option,
+                options={},
+            ),
+            ListStreamSlicer(
+                slice_values=["airbyte", "airbyte-cloud"],
+                cursor_field="repository",
+                config={},
+                request_option=stream_2_request_option,
+                options={},
+            ),
+        ],
+        options={},
+    )
+    assert {} == slicer.get_request_params()
+    assert {} == slicer.get_request_headers()
+    assert {} == slicer.get_request_body_json()
+    assert {} == slicer.get_request_body_data()
