@@ -34,7 +34,7 @@ export const DefaultDataResidencyView: React.FC = () => {
   const { registerNotification } = useNotificationService();
 
   const { formatMessage } = useIntl();
-  useTrackPage(PageTrackingCodes.SETTINGS_WORKSPACE);
+  useTrackPage(PageTrackingCodes.SETTINGS_DEFAULT_DATA_RESIDENCY);
 
   const handleSubmit = async (
     values: DefaultDataResidencyFormValues,
