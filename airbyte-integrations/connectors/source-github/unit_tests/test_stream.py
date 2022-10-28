@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -471,6 +471,8 @@ def test_stream_project_columns():
 
     ProjectsResponsesAPI.register(data)
 
+    ProjectColumns.use_cache = False
+    Projects.use_cache = False
     stream = ProjectColumns(Projects(**repository_args_with_start_date), **repository_args_with_start_date)
 
     stream_state = {}
@@ -863,6 +865,8 @@ def test_stream_team_members_full_refresh():
     responses.add("GET", "https://api.github.com/orgs/org1/teams/team2/members", json=[{"login": "login2"}])
     responses.add("GET", "https://api.github.com/orgs/org1/teams/team2/memberships/login2", json={"username": "login2"})
 
+    TeamMembers.use_cache = False
+    Teams.use_cache = False
     stream = TeamMembers(parent=Teams(**organization_args), **repository_args)
     records = list(read_full_refresh(stream))
 
@@ -886,6 +890,8 @@ def test_stream_team_members_full_refresh():
 def test_stream_commit_comment_reactions_incremental_read():
 
     repository_args = {"repositories": ["airbytehq/integration-test"], "page_size_for_large_streams": 100}
+    CommitComments.use_cache = False
+    CommitCommentReactions.use_cache = False
     stream = CommitCommentReactions(**repository_args)
 
     responses.add(
