@@ -13,10 +13,6 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
 from requests.auth import HTTPBasicAuth
-
-
-#TODO: We might need to implement a backoff strategy since Fastbill rate limits differently depending on which license the customer has
-
 class FastbillStream(HttpStream, ABC):
 
     def __init__(self, *args, username: str = None, api_key: str = None,**kwargs):
@@ -29,8 +25,6 @@ class FastbillStream(HttpStream, ABC):
     @property
     def http_method(self) -> str:
         return "POST"
-
-    # TODO: Fill in the url base. Required.
     url_base = " https://my.fastbill.com/api/1.0/api.php"
 
     def path(
@@ -49,7 +43,6 @@ class FastbillStream(HttpStream, ABC):
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
         return None
@@ -60,10 +53,6 @@ class FastbillStream(HttpStream, ABC):
         return {'Content-type': 'application/json'}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
 
         yield response.json()
 

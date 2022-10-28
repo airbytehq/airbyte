@@ -15,7 +15,7 @@ For more information about the grading system, see [Product Release Stages](http
 ## Sources
 
 | Connector                                                                                   | Product Release Stage| Available in Cloud? |
-|:--------------------------------------------------------------------------------------------| :------------------- | :------------------ |
+|:--------------------------------------------------------------------------------------------| :------------------- |:--------------------|
 | [3PL Central](sources/tplcentral.md)                                                        | Alpha                | No                  |
 | [ActiveCampaign](sources/activecampaign.md)                                                 | Alpha                | No                  |
 | [Adjust](sources/adjust.md)                                                                 | Alpha                | No                  |
@@ -60,6 +60,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Facebook Marketing](sources/facebook-marketing.md)                                         | Generally Available  | Yes                 |
 | [Facebook Pages](sources/facebook-pages.md)                                                 | Alpha                | No                  |
 | [Faker](sources/faker.md)                                                                   | Alpha                | Yes                 |
+| [Fastbill ](sources/fastbill.md)                                                            | Alpha                | No                  |
 | [Fauna](sources/fauna.md)                                                                   | Beta                 | No                  |
 | [File](sources/file.md)                                                                     | Beta                 | Yes                 |
 | [Firebolt](sources/firebolt.md)                                                             | Alpha                | Yes                 |
@@ -182,7 +183,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Whisky Hunter](sources/whisky-hunter.md        )                                           | Alpha                | No                  |
 | [WooCommerce](sources/woocommerce.md)                                                       | Alpha                | No                  |
 | [Wordpress](sources/wordpress.md)                                                           | Alpha                | No                  |
-| [Workable](sources/workable.md)                                                           | Alpha                | No                  |
+| [Workable](sources/workable.md)                                                             | Alpha                | No                  |
 | [Wrike](sources/wrike.md)                                                                   | Alpha                | No                  |
 | [YouTube Analytics](sources/youtube-analytics.md)                                           | Beta                 | Yes                 |
 | [Xkcd](sources/xkcd.md)                                                                     | Alpha                | No                  |
