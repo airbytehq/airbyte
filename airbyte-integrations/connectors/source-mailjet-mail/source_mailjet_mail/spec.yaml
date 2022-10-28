@@ -17,7 +17,7 @@ connectionSpecification:
     api_key_secret:
       title: API Secret Key
       type: string
-      description: >- 
+      description: >-
         Your API Secret Key. See <a
         href="https://dev.mailjet.com/email/guides/#authentication">here</a>.
       airbyte_secret: true
