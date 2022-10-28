@@ -4022,6 +4022,12 @@ components:
         recordsCommitted:
           type: integer
           format: int64
+        estimatedRecords:
+          type: integer
+          format: int64
+        estimatedBytes:
+          type: integer
+          format: int64
     AttemptStreamStats:
       type: object
       required:

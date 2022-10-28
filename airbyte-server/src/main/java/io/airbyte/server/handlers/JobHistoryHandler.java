@@ -5,7 +5,10 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.base.Preconditions;
+import io.airbyte.api.model.generated.AttemptInfoRead;
 import io.airbyte.api.model.generated.AttemptNormalizationStatusReadList;
+import io.airbyte.api.model.generated.AttemptStats;
+import io.airbyte.api.model.generated.AttemptStreamStats;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.generated.DestinationDefinitionRead;
@@ -40,12 +43,14 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class JobHistoryHandler {
 
+  private static final Random RANDOM = new Random();
   private final ConnectionsHandler connectionsHandler;
   private final SourceHandler sourceHandler;
   private final DestinationHandler destinationHandler;
@@ -121,6 +126,42 @@ public class JobHistoryHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
     final JobInfoRead jobinfoRead = jobConverter.getJobInfoRead(job);
+
+    // Mock out this data for now.
+    final var totalRecords = 1000;
+    final var totalBytes = 100_000;
+
+    for (final AttemptInfoRead attempt : jobinfoRead.getAttempts()) {
+      final var streamStats = attempt.getAttempt().getStreamStats();
+      // if this doesn't exist, mock something.
+      if (streamStats == null) {
+        final var stats = List.of(new AttemptStreamStats().streamName("foo stream"), new AttemptStreamStats().streamName("bar stream"));
+        attempt.getAttempt().streamStats(stats);
+      }
+
+      for (final AttemptStreamStats stats : attempt.getAttempt().getStreamStats()) {
+        if (stats.getStats() == null) {
+          stats.stats(new AttemptStats());
+        }
+        
+        final var s = stats.getStats();
+        final var runningSync = s.getBytesEmitted() == null;
+
+        // if the sync is not done, this is empty, so we mock it out now.
+        if (runningSync) {
+          s.bytesEmitted(RANDOM.nextLong(totalBytes));
+          s.recordsEmitted(RANDOM.nextLong(totalRecords));
+
+          // Set estimate to a random buffer of the estimated to show a 'progress-like' bar.
+          s.estimatedBytes(s.getBytesEmitted() * RANDOM.nextLong(2, 5));
+          s.estimatedRecords(s.getRecordsEmitted() * RANDOM.nextLong(2, 5));
+        } else {
+          // if it's done, set to the correct number.
+          s.estimatedBytes(s.getBytesEmitted());
+          s.estimatedRecords(s.getRecordsEmitted());
+        }
+      }
+    }
 
     return buildJobDebugInfoRead(jobinfoRead);
   }
