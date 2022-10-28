@@ -15,7 +15,7 @@ import {
 } from "core/request/AirbyteClient";
 import { ServicesProvider } from "core/servicesProvider";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { defaultFeatures, FeatureService } from "hooks/services/Feature";
+import { defaultFeatures, FeatureItem, FeatureService } from "hooks/services/Feature";
 import { ModalServiceProvider } from "hooks/services/Modal";
 import en from "locales/en.json";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
@@ -44,12 +44,19 @@ export async function render<
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   return renderResult!;
 }
-export const TestWrapper: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
+
+interface TestWrapperOptions {
+  features?: FeatureItem[];
+}
+export const TestWrapper: React.FC<React.PropsWithChildren<TestWrapperOptions>> = ({
+  children,
+  features = defaultFeatures,
+}) => (
   <ThemeProvider theme={{}}>
     <IntlProvider locale="en" messages={en} onError={() => null}>
       <ConfigContext.Provider value={{ config: defaultConfig }}>
         <AnalyticsProvider>
-          <FeatureService features={defaultFeatures}>
+          <FeatureService features={features}>
             <ServicesProvider>
               <ModalServiceProvider>
                 <ConfirmationModalService>
