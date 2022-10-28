@@ -4,7 +4,6 @@
 
 from http import HTTPStatus
 from unittest.mock import MagicMock
-from unittest import mock
 
 import pytest
 from source_zendesk_sell.source import ZendeskSellStream
@@ -73,32 +72,32 @@ def test_parse_response(patch_base_class, mocker):
     stream = ZendeskSellStream()
     response = mocker.MagicMock()
     response.json.return_value = {
-            "items": [
-                {
-                    "data": {
-                        "id": 302488228,
-                        "creator_id": 2393211,
-                        "contact_id": 302488227,
-                        "created_at": "2020-11-12T09:05:47Z",
-                        "updated_at": "2022-03-23T16:53:22Z",
-                        "title": None,
-                        "name": "Octavia Squidington",
-                        "first_name": "Octavia",
-                        "last_name": "Squidington",
-                    },
-                    "meta": {"version": 36, "type": "contact"},
-                }
-            ],
-            "meta": {
-                "type": "collection",
-                "count": 25,
-                "links": {
-                    "self": "https://api.getbase.com/v2/contacts?page=2&per_page=25",
-                    "first_page": "https://api.getbase.com/v2/contacts?page=1&per_page=25",
-                    "prev_page": "https://api.getbase.com/v2/contacts?page=1&per_page=25",
-                    "next_page": "https://api.getbase.com/v2/contacts?page=3&per_page=25",
+        "items": [
+            {
+                "data": {
+                    "id": 302488228,
+                    "creator_id": 2393211,
+                    "contact_id": 302488227,
+                    "created_at": "2020-11-12T09:05:47Z",
+                    "updated_at": "2022-03-23T16:53:22Z",
+                    "title": None,
+                    "name": "Octavia Squidington",
+                    "first_name": "Octavia",
+                    "last_name": "Squidington",
                 },
+                "meta": {"version": 36, "type": "contact"},
+            }
+        ],
+        "meta": {
+            "type": "collection",
+            "count": 25,
+            "links": {
+                "self": "https://api.getbase.com/v2/contacts?page=2&per_page=25",
+                "first_page": "https://api.getbase.com/v2/contacts?page=1&per_page=25",
+                "prev_page": "https://api.getbase.com/v2/contacts?page=1&per_page=25",
+                "next_page": "https://api.getbase.com/v2/contacts?page=3&per_page=25",
             },
+        },
     }
     expected_parsed_object = {
         "id": 302488228,
