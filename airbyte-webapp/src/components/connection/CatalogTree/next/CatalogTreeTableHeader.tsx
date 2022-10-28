@@ -1,3 +1,4 @@
+import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Cell, Header } from "components/SimpleTableComponents";
@@ -11,9 +12,9 @@ import { links } from "utils/links";
 
 import styles from "./CatalogTreeTableHeader.module.scss";
 
-const TextCell: React.FC = ({ children }) => {
+const TextCell: React.FC<React.PropsWithChildren<{ flex?: number }>> = ({ flex, children }) => {
   return (
-    <Cell>
+    <Cell flex={flex}>
       <Text size="sm" className={styles.cellText}>
         {children}
       </Text>
@@ -27,7 +28,7 @@ export const CatalogTreeTableHeader: React.FC = () => {
 
   return (
     <Header className={styles.headerContainer}>
-      <Cell>
+      <Cell className={styles.checkboxCell}>
         {mode !== "readonly" && (
           <CheckBox
             onChange={onCheckAll}
@@ -36,7 +37,7 @@ export const CatalogTreeTableHeader: React.FC = () => {
           />
         )}
       </Cell>
-      <TextCell>
+      <TextCell flex={0.4}>
         <FormattedMessage id="sources.sync" />
       </TextCell>
       {/* <TextCell>

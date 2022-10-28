@@ -35,10 +35,14 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   hasError,
   disabled,
 }) => {
-  const { primaryKey, syncMode, cursorField, destinationSyncMode } = stream.config ?? {};
+  const {
+    // primaryKey, cursorField,
+    syncMode,
+    destinationSyncMode,
+  } = stream.config ?? {};
   const isStreamEnabled = stream.config?.selected;
 
-  const { defaultCursorField } = stream.stream ?? {};
+  // const { defaultCursorField } = stream.stream ?? {};
   const syncSchema = useMemo(
     () => ({
       syncMode,
@@ -49,7 +53,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
 
   const [isSelected, selectForBulkEdit] = useBulkEditSelect(stream.id);
 
-  const paths = useMemo(() => primitiveFields.map((field) => field.path), [primitiveFields]);
+  // const paths = useMemo(() => primitiveFields.map((field) => field.path), [primitiveFields]);
   const fieldCount = fields?.length ?? 0;
   const onRowClick = fieldCount > 0 ? () => onExpand() : undefined;
 
@@ -83,7 +87,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
         </div>
       )}
-      <Cell>
+      <Cell flex={0.4}>
         <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
       </Cell>
       {/* <Cell>{fieldCount}</Cell> */}
@@ -111,7 +115,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             path={cursorType === "sourceDefined" ? defaultCursorField : cursorField}
             onPathChange={onCursorChange}
           />
-        )}
+        )} */}
       </HeaderCell>
       <HeaderCell ellipsis>
         {pkType && (
@@ -122,7 +126,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             isMulti
             onPathChange={onPrimaryKeyChange}
           />
-        )}
+        )} */}
       </HeaderCell>
       <Cell>
         <FontAwesomeIcon icon={faArrowRight} />
