@@ -359,7 +359,7 @@ public class SchedulerHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final Optional<io.airbyte.api.model.generated.AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
         .getConnectionAirbyteCatalog(discoverSchemaRequestBody.getConnectionId());
-    io.airbyte.api.model.generated.@NotNull AirbyteCatalog currentAirbyteCatalog =
+    final io.airbyte.api.model.generated.@NotNull AirbyteCatalog currentAirbyteCatalog =
         connectionsHandler.getConnection(discoverSchemaRequestBody.getConnectionId()).getSyncCatalog();
     CatalogDiff diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
         CatalogConverter.toProtocol(currentAirbyteCatalog));
