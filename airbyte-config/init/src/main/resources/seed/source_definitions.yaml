@@ -1413,6 +1413,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/elasticsearch
   sourceType: api
   releaseStage: alpha
+- name: Waiteraid
+  sourceDefinitionId: 03a53b13-794a-4d6b-8544-3b36ed8f3ce4
+  dockerRepository: airbyte/source-waiteraid
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/waiteraid
+  sourceType: api
+  releaseStage: alpha
 - name: Yandex Metrica
   sourceDefinitionId: 7865dce4-2211-4f6a-88e5-9d0fe161afe7
   dockerRepository: airbyte/source-yandex-metrica
