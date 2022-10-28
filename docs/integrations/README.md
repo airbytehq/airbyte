@@ -97,6 +97,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [LinkedIn Ads](sources/linkedin-ads.md)                                                     | Generally Available  | Yes                 |
 | [LinkedIn Pages](sources/linkedin-pages.md)                                                 | Alpha                | No                  |
 | [Linnworks](sources/linnworks.md)                                                           | Alpha                | Yes                 |
+| [Lokalise](sources/lokalise.md)                                                             | Alpha                | Yes                 |
 | [Looker](sources/looker.md)                                                                 | Alpha                | Yes                 |
 | [Magento](sources/magento.md)                                                               | Alpha                | No                  |
 | [Mailchimp](sources/mailchimp.md)                                                           | Generally Available  | Yes                 |
