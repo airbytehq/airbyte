@@ -16,6 +16,7 @@ import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.airbyte.commons.temporal.scheduling.state.listener.TestStateListener;
 import io.airbyte.commons.temporal.scheduling.state.listener.WorkflowStateChangedListener.ChangedStateEvent;
 import io.airbyte.commons.temporal.scheduling.state.listener.WorkflowStateChangedListener.StateField;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
@@ -225,8 +226,8 @@ class ConnectionManagerWorkflowTest {
         .thenReturn(
             new GeneratedJobInput(
                 jobRunConfig,
-                new IntegrationLauncherConfig().withDockerImage("some_source"),
-                new IntegrationLauncherConfig(),
+                new IntegrationLauncherConfig().withDockerImage("some_source").withProtocolVersion(new Version("0.2.0")),
+                new IntegrationLauncherConfig().withProtocolVersion(new Version("0.2.0")),
                 new StandardSyncInput()));
   }
 
