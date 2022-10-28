@@ -480,6 +480,14 @@
   icon: google-sheets.svg
   sourceType: file
   releaseStage: generally_available
+- name: Google Webfonts
+  sourceDefinitionId: a68fbcde-b465-4ab3-b2a6-b0590a875835
+  dockerRepository: airbyte/source-google-webfonts
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-webfonts
+  icon: googleworkpace.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Google Workspace Admin Reports
   sourceDefinitionId: ed9dfefa-1bbc-419d-8c5e-4d78f0ef6734
   dockerRepository: airbyte/source-google-workspace-admin-reports
