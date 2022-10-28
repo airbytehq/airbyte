@@ -7,7 +7,6 @@ package io.airbyte.server.apis;
 import io.airbyte.api.generated.AttemptApi;
 import io.airbyte.api.model.generated.InternalOperationResult;
 import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
-import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.server.handlers.AttemptHandler;
 import javax.ws.rs.Path;
 
@@ -16,8 +15,8 @@ public class AttemptApiController implements AttemptApi {
 
   private final AttemptHandler attemptHandler;
 
-  public AttemptApiController(final JobPersistence jobPersistence) {
-    attemptHandler = new AttemptHandler(jobPersistence);
+  public AttemptApiController(final AttemptHandler attemptHandler) {
+    this.attemptHandler = attemptHandler;
   }
 
   @Override
