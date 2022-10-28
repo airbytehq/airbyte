@@ -121,9 +121,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private static final int RECORD_METRIC_CURRENT_VERSION = 1;
   private static final String WORKFLOW_CONFIG_TAG = "workflow_config";
   private static final int WORKFLOW_CONFIG_CURRENT_VERSION = 1;
-  private static final String WORKFLOW_DELAY_TAG = "get_workflow_delay";
-  private static final int WORKFLOW_DELAY_TAG_CURRENT_VERSION = 1;
-
   private static final String ROUTE_ACTIVITY_TAG = "route_activity";
   private static final int ROUTE_ACTIVITY_CURRENT_VERSION = 1;
 
@@ -163,14 +160,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   public void run(final ConnectionUpdaterInput connectionUpdaterInput) throws RetryableException {
     try {
       ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionUpdaterInput.getConnectionId()));
-      if (Workflow.getVersion(WORKFLOW_DELAY_TAG, Workflow.DEFAULT_VERSION,
-          WORKFLOW_DELAY_TAG_CURRENT_VERSION) < WORKFLOW_DELAY_TAG_CURRENT_VERSION) {
-        recordMetric(new RecordMetricInput(connectionUpdaterInput, Optional.empty(), OssMetricsRegistry.TEMPORAL_WORKFLOW_ATTEMPT, null));
-        workflowDelay = getWorkflowRestartDelaySeconds();
-      } else {
-        workflowDelay = getWorkflowRestartDelaySeconds();
-        recordMetric(new RecordMetricInput(connectionUpdaterInput, Optional.empty(), OssMetricsRegistry.TEMPORAL_WORKFLOW_ATTEMPT, null));
-      }
+
+      // Fetch workflow delay first so that it is set if any subsequent activities fail and need to be
+      // re-attempted.
+      workflowDelay = getWorkflowRestartDelaySeconds();
+
+      recordMetric(new RecordMetricInput(connectionUpdaterInput, Optional.empty(), OssMetricsRegistry.TEMPORAL_WORKFLOW_ATTEMPT, null));
 
       try {
         cancellableSyncWorkflow = generateSyncWorkflowRunnable(connectionUpdaterInput);
