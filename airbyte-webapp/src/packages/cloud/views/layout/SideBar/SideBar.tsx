@@ -129,7 +129,7 @@ const SideBar: React.FC = () => {
               },
               {
                 type: SidebarDropdownMenuItemType.LINK,
-                href: links.recipesLink,
+                href: links.tutorialLink,
                 icon: <RecipesIcon />,
                 displayName: <FormattedMessage id="sidebar.recipes" />,
               },
