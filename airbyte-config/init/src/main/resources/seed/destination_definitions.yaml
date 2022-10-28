@@ -329,3 +329,10 @@
   documentationUrl: https://docs.airbyte.com/integrations/destinations/tidb
   icon: tidb.svg
   releaseStage: alpha
+- name: YugabyteDB
+  destinationDefinitionId: 2300fdcf-a532-419f-9f24-a014336e7966
+  dockerRepository: airbyte/destination-yugabytedb
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/yugabytedb
+  icon: yugabytedb.svg
+  releaseStage: alpha

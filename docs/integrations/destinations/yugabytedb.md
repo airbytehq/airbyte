@@ -50,3 +50,10 @@ Could this connector hurt the user's database/API/etc... or put too much strain 
 For each of the above high-level requirements as appropriate, add or point to a follow-along guide. See existing source or destination guides for an example.
 
 For each major cloud provider we support, also add a follow-along guide for setting up Airbyte to connect to that destination. See the Postgres destination guide for an example of what this should look like.
+
+
+## CHANGELOG
+
+| Version | Date       | Pull Request                                                  | Subject                 |
+|:--------|:-----------|:--------------------------------------------------------------|:------------------------|
+| 0.1.0   | 2022-10-28 | [#18039](https://github.com/airbytehq/airbyte/pull/18039)     | New Destination YugabyteDB |
