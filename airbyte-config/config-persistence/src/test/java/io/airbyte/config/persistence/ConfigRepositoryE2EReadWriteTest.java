@@ -159,6 +159,22 @@ class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
+  void testFetchActorsUsingDefinition() throws IOException {
+    UUID destinationDefinitionId = MockData.publicDestinationDefinition().getDestinationDefinitionId();
+    UUID sourceDefinitionId = MockData.publicSourceDefinition().getSourceDefinitionId();
+    final List<DestinationConnection> destinationConnections = configRepository.listDestinationsForDefinition(
+        destinationDefinitionId);
+    final List<SourceConnection> sourceConnections = configRepository.listSourcesForDefinition(
+        sourceDefinitionId);
+
+    assertThat(destinationConnections)
+        .containsExactlyElementsOf(MockData.destinationConnections().stream().filter(d -> d.getDestinationDefinitionId().equals(
+            destinationDefinitionId) && !d.getTombstone()).collect(Collectors.toList()));
+    assertThat(sourceConnections).containsExactlyElementsOf(MockData.sourceConnections().stream().filter(d -> d.getSourceDefinitionId().equals(
+        sourceDefinitionId) && !d.getTombstone()).collect(Collectors.toList()));
+  }
+
+  @Test
   void testSimpleInsertActorCatalog() throws IOException, JsonValidationException, SQLException {
 
     final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
