@@ -100,3 +100,19 @@ services:
         platforms:
           - linux/amd64
           - linux/arm64
+  api-server:
+    image: airbyte/api-server:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-api-server/build/docker
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+      args:
+        VERSION: ${VERSION}
+      x-bake:
+        tags:
+          - airbyte/api-server:${VERSION}
+          - airbyte/api-server:${ALT_TAG:-${VERSION}}
+        platforms:
+          - linux/amd64
+          - linux/arm64
