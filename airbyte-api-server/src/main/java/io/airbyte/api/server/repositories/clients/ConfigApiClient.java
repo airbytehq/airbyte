@@ -20,6 +20,8 @@ import io.micronaut.http.client.annotation.Client;
         value = "Micronaut HTTP Client")
 @Header(name = ACCEPT,
         value = "application/json")
+@Header(name = "${airbyte.internal.api.auth-header.name}",
+        value = "${airbyte.internal.api.auth-header.value}")
 public interface ConfigApiClient {
 
   @Post(value = "/api/v1/connections/sync",
