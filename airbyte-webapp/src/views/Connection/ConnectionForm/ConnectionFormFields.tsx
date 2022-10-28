@@ -1,7 +1,7 @@
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import { Field, FieldProps, useFormikContext } from "formik";
+import { Field, FieldProps } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useUnmount } from "react-use";
@@ -9,16 +9,13 @@ import { useUnmount } from "react-use";
 import { ControlLabels } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
 import { Button } from "components/ui/Button";
-import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
 import { Text } from "components/ui/Text";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
-import { Geography } from "core/request/AirbyteClient";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { ValuesProps } from "hooks/services/useConnectionHook";
-import { useAvailableGeographies } from "packages/cloud/services/geographies/GeographiesService";
 
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
 import { useRefreshSourceSchemaWithConfirmationOnDirty } from "./components/refreshSourceSchemaWithConfirmationOnDirty";
@@ -38,14 +35,10 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
   const { mode, formId } = useConnectionFormService();
   const { formatMessage } = useIntl();
   const { clearFormChange } = useFormChangeTrackerService();
-  const { setFieldValue } = useFormikContext();
 
   const readonlyClass = classNames({
     [styles.readonly]: mode === "readonly",
   });
-
-  const { geographies } = useAvailableGeographies();
-  console.log(geographies);
 
   const refreshSchema = useRefreshSourceSchemaWithConfirmationOnDirty(dirty);
 
@@ -60,16 +53,6 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
       <div className={styles.formContainer}>
         <Section title={<FormattedMessage id="connection.transfer" />}>
           <ScheduleField />
-          <Field name="geography">
-            {/** todo (josephkmh): replace this dropdown with a styled <GeographyDropdown /> */}
-            {({ field }: FieldProps<Geography>) => (
-              <DropDown
-                {...field}
-                options={geographies.map((geography) => ({ label: geography, value: geography }))}
-                onChange={(geography) => setFieldValue(field.name, geography.value)}
-              />
-            )}
-          </Field>
         </Section>
         <Section>
           <Text as="h2" size="sm">
