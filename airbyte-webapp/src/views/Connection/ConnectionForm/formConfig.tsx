@@ -255,6 +255,7 @@ export const useInitialValues = (
   destDefinition: DestinationDefinitionSpecificationRead,
   isNotCreateMode?: boolean
 ): FormikConnectionFormValues => {
+  const workspace = useCurrentWorkspace();
   const initialSchema = useMemo(
     () =>
       calculateInitialCatalog(
@@ -273,7 +274,7 @@ export const useInitialValues = (
       prefix: connection.prefix || "",
       namespaceDefinition: connection.namespaceDefinition || NamespaceDefinitionType.source,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
-      geography: connection.geography || "auto",
+      geography: connection.geography || workspace.defaultGeography || "auto",
     };
 
     // Is Create Mode
@@ -308,6 +309,7 @@ export const useInitialValues = (
     destDefinition.supportsNormalization,
     initialSchema,
     isNotCreateMode,
+    workspace,
   ]);
 };
 

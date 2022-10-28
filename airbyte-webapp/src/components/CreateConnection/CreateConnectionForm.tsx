@@ -10,6 +10,7 @@ import {
   tidyConnectionFormValues,
   useConnectionFormService,
 } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { useCreateConnection } from "hooks/services/useConnectionHook";
 import { SchemaError as SchemaErrorType, useDiscoverSchema } from "hooks/services/useSourceHook";
@@ -21,6 +22,7 @@ import { connectionValidationSchema, FormikConnectionFormValues } from "views/Co
 
 import styles from "./CreateConnectionForm.module.scss";
 import { CreateConnectionNameField } from "./CreateConnectionNameField";
+import { DataResidency } from "./DataResidency";
 import { SchemaError } from "./SchemaError";
 
 interface CreateConnectionProps {
@@ -35,7 +37,7 @@ interface CreateConnectionPropsInner extends Pick<CreateConnectionProps, "afterS
 
 const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schemaError, afterSubmitConnection }) => {
   const navigate = useNavigate();
-
+  const canEditDataGeographies = useFeature(FeatureItem.AllowChangeDataGeographies);
   const { mutateAsync: createConnection } = useCreateConnection();
 
   const { clearFormChange } = useFormChangeTrackerService();
@@ -108,6 +110,7 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
           {({ values, isSubmitting, isValid, dirty }) => (
             <Form>
               <CreateConnectionNameField />
+              {canEditDataGeographies && <DataResidency />}
               <ConnectionFormFields values={values} isSubmitting={isSubmitting} dirty={dirty} />
               <OperationsSection
                 onStartEditTransformation={() => setEditingTransformation(true)}

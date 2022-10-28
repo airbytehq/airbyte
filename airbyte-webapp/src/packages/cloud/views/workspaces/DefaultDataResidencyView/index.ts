@@ -1,0 +1,1 @@
+export { DefaultDataResidencyView } from "./DefaultDataResidencyView";
