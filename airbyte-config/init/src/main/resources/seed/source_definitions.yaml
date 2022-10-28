@@ -241,6 +241,13 @@
   icon: confluence.svg
   sourceType: api
   releaseStage: alpha
+- name: ConvertKit
+  sourceDefinitionId: be9ee02f-6efe-4970-979b-95f797a37188
+  dockerRepository: airbyte/source-convertkit
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/convertkit
+  sourceType: api
+  releaseStage: alpha
 - name: Courier
   sourceDefinitionId: 0541b2cd-2367-4986-b5f1-b79ff55439e4
   dockerRepository: airbyte/source-courier
