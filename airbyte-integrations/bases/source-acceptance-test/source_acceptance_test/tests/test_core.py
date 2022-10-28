@@ -27,7 +27,7 @@ from airbyte_cdk.models import (
 from docker.errors import ContainerError
 from jsonschema._utils import flatten
 from source_acceptance_test.base import BaseTest
-from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig, DiscoveryTestConfig, SpecTestConfig
+from source_acceptance_test.config import BasicReadTestConfig, Config, ConnectionTestConfig, DiscoveryTestConfig, SpecTestConfig
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
 from source_acceptance_test.utils.backward_compatibility import CatalogDiffChecker, SpecDiffChecker, validate_previous_configs
 from source_acceptance_test.utils.common import find_all_values_for_key_in_schema, find_keyword_schema
@@ -385,13 +385,14 @@ class TestBasicRead(BaseTest):
         """
         Only certain streams allowed to be empty
         """
+        allowed_empty_stream_names = set([allowed_empty_stream.name for allowed_empty_stream in allowed_empty_streams])
         counter = Counter(record.stream for record in records)
 
         all_streams = set(stream.stream.name for stream in configured_catalog.streams)
         streams_with_records = set(counter.keys())
         streams_without_records = all_streams - streams_with_records
 
-        streams_without_records = streams_without_records - allowed_empty_streams
+        streams_without_records = streams_without_records - allowed_empty_stream_names
         assert not streams_without_records, f"All streams should return some records, streams without records: {streams_without_records}"
 
     def _validate_field_appears_at_least_once_in_stream(self, records: List, schema: Dict):
@@ -466,7 +467,9 @@ class TestBasicRead(BaseTest):
         expected_records: List[AirbyteRecordMessage],
         docker_runner: ConnectorRunner,
         detailed_logger,
+        test_strictness_level: Config.TestStrictnessLevel,
     ):
+        self.enforce_strictness_level(test_strictness_level, inputs)
         output = docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in filter_output(output, Type.RECORD)]
 
@@ -578,3 +581,11 @@ class TestBasicRead(BaseTest):
             result[record.stream].append(record.data)
 
         return result
+
+    @staticmethod
+    def enforce_strictness_level(test_strictness_level: Config.TestStrictnessLevel, inputs: BasicReadTestConfig):
+        if test_strictness_level is Config.TestStrictnessLevel.high:
+            if inputs.empty_streams:
+                all_empty_streams_have_bypass_reasons = all([bool(empty_stream.bypass_reason) for empty_stream in inputs.empty_streams])
+                if not all_empty_streams_have_bypass_reasons:
+                    pytest.fail("A bypass_reason must be filled in for all empty streams when test_strictness_level is set to high.")
