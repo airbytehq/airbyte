@@ -81,6 +81,7 @@ class AirbyteLogMessage(BaseModel):
 
 class TraceType(Enum):
     ERROR = "ERROR"
+    ESTIMATE = "ESTIMATE"
 
 
 class FailureType(Enum):
@@ -99,8 +100,8 @@ class AirbyteErrorTraceMessage(BaseModel):
 
 
 class Type1(Enum):
-    stream = "stream"
-    sync = "sync"
+    STREAM = "STREAM"
+    SYNC = "SYNC"
 
 
 class AirbyteEstimateTraceMessage(BaseModel):

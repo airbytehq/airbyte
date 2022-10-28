@@ -219,8 +219,8 @@ definitions:
         description: The type of estimate
         type: string
         enum:
-          - stream
-          - sync
+          - STREAM
+          - SYNC
       namespace:
         description: The namespace of the stream
         type: string
