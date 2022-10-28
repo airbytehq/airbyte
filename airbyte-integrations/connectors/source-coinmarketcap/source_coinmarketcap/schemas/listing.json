@@ -21,7 +21,10 @@
       "type": ["null", "string"]
     },
     "tags": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "max_supply": {
       "type": ["null", "number"]

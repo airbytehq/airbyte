@@ -26,13 +26,13 @@ connectionSpecification:
         /latest: Latest market ticker quotes and averages for cryptocurrencies and exchanges.
         /historical: Intervals of historic market data like OHLCV data or data for use in charting libraries. See <a
         href="https://coinmarketcap.com/api/documentation/v1/#section/Endpoint-Overview">here</a>.
-    symbol:
+    symbols:
       title: Symbol
       type: array
       items: {
         "type": "string"
       }
-      description: Cryptocurrency symbols.
+      description: Cryptocurrency symbols. (only used for quotes stream)
       examples:
         - AVAX
         - BTC

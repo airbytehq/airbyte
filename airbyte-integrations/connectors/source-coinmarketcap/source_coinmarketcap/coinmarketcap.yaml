@@ -57,7 +57,7 @@ definitions:
         $ref: "*ref(definitions.requester)"
         request_options_provider:
           request_parameters:
-            symbol: "{{ ','.join(config.get('symbol', [])) }}"
+            symbol: "{{ ','.join(config.get('symbols', [])) }}"
     $options:
       name: "quotes"
       path: "/v1/cryptocurrency/quotes/{{ config['data_type'] or ''}}"

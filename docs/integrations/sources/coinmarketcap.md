@@ -6,11 +6,11 @@ This source can sync data from the [Coinmarketcap API](https://coinmarketcap.com
 
 ## This Source Supports the Following Streams
 
-* categories
-* listing
-* quotes
-* fiat
-* exchange
+* [categories](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyCategories)
+* [listing](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyListingsLatest)
+* [quotes](https://coinmarketcap.com/api/documentation/v1/#operation/getV2CryptocurrencyQuotesLatest)
+* [fiat](https://coinmarketcap.com/api/documentation/v1/#tag/fiat)
+* [exchange](https://coinmarketcap.com/api/documentation/v1/#tag/exchange)
 
 ### Features
 
@@ -27,7 +27,10 @@ Coinmarketcap APIs are under rate limits for the number of API calls allowed per
 
 ### Requirements
 
-* API token
+* [API token](https://coinmarketcap.com/api/documentation/v1/#section/Authentication)
+* Data Type:
+  * latest
+  * historical
 
 ## Changelog
 
