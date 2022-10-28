@@ -22,7 +22,6 @@ import io.airbyte.commons.temporal.scheduling.state.listener.NoopStateListener;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
-import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StandardCheckConnectionInput;
@@ -542,13 +541,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
-  public void retryFailedActivity() {
-    traceConnectionId();
-    workflowState.setRetryFailedActivity(true);
-  }
-
-  @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
-  @Override
   public WorkflowState getState() {
     traceConnectionId();
     return workflowState;
@@ -628,19 +620,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
           connectionId);
       Workflow.sleep(workflowDelay);
 
-      // Accept a manual signal to retry the failed activity during this window
-      if (workflowState.isRetryFailedActivity()) {
-        log.info("Received RetryFailedActivity signal for connection {}. Retrying activity.", connectionId);
-        workflowState.setRetryFailedActivity(false);
-        return runMandatoryActivityWithOutput(mapper, input);
-      }
-
       // If a jobId exist set the failure reason
       if (workflowInternalState.getJobId() != null) {
         final ConnectionUpdaterInput connectionUpdaterInput = connectionUpdaterInputFromState();
         final FailureReason failureReason =
-            FailureHelper.genericFailure(e, workflowInternalState.getJobId(), workflowInternalState.getAttemptNumber())
-                .withFailureOrigin(FailureOrigin.AIRBYTE_PLATFORM);
+            FailureHelper.platformFailure(e, workflowInternalState.getJobId(), workflowInternalState.getAttemptNumber());
         reportFailure(connectionUpdaterInput, null, FailureCause.ACTIVITY, Set.of(failureReason));
       }
 
