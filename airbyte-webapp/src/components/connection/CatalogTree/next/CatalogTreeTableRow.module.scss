@@ -18,6 +18,7 @@
   background: colors.$white;
   border-bottom: 1px solid colors.$grey-50;
   padding: variables.$spacing-sm variables.$spacing-md variables.$spacing-sm variables.$spacing-sm;
+  gap: variables.$spacing-lg;
 
   &:hover {
     background: colors.$grey-30;
@@ -42,9 +43,10 @@
 }
 
 .streamRowCheckboxCell {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
   padding-left: 2px;
   margin-right: variables.$spacing-sm;
+  max-width: 43px;
+  text-align: center;
+  font-size: 10px;
+  line-height: 13px;
 }

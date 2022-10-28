@@ -7,4 +7,10 @@
 
 .headerContainer {
   margin-top: variables.$spacing-xl;
+  margin-bottom: variables.$spacing-lg;
+}
+
+.checkboxCell {
+  max-width: 43px;
+  text-align: center;
 }
