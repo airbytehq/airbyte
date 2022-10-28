@@ -674,6 +674,13 @@
   icon: mailchimp.svg
   sourceType: api
   releaseStage: generally_available
+- name: Mailjet Mail
+  sourceDefinitionId: 56582331-5de2-476b-b913-5798de77bbdf
+  dockerRepository: airbyte/source-mailjet-mail
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mailjet-mail
+  sourceType: api
+  releaseStage: alpha
 - name: MailerLite
   sourceDefinitionId: dc3b9003-2432-4e93-a7f4-4620b0f14674
   dockerRepository: airbyte/source-mailerlite
@@ -1099,6 +1106,13 @@
   icon: snowflake.svg
   sourceType: database
   releaseStage: alpha
+- name: Sonar Cloud
+  sourceDefinitionId: 3ab1d7d0-1577-4ab9-bcc4-1ff6a4c2c9f2
+  dockerRepository: airbyte/source-sonar-cloud
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sonar-cloud
+  sourceType: api
+  releaseStage: alpha
 - name: Square
   sourceDefinitionId: 77225a51-cd15-4a13-af02-65816bd0ecf4
   dockerRepository: airbyte/source-square
@@ -1354,6 +1368,13 @@
   dockerRepository: airbyte/source-sftp
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/sftp
+  sourceType: file
+  releaseStage: alpha
+- name: SFTP Bulk
+  sourceDefinitionId: 31e3242f-dee7-4cdc-a4b8-8e06c5458517
+  dockerRepository: airbyte/source-sftp-bulk
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sftp-bulk
   sourceType: file
   releaseStage: alpha
 - name: Firebolt
