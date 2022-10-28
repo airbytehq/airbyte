@@ -1,0 +1,25 @@
+{
+  "streams": [
+    {
+      "name" : "project",
+      "json_schema" : {},
+      "supported_sync_modes" : [
+        "full_refresh"
+      ]
+    },
+    {
+      "name" : "release",
+      "json_schema" : {},
+      "supported_sync_modes" : [
+        "full_refresh"
+      ]
+    },
+    {
+      "name" : "stats",
+      "json_schema" : {},
+      "supported_sync_modes" : [
+        "full_refresh"
+      ]
+    }
+  ]
+}
