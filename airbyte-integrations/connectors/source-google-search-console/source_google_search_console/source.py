@@ -63,6 +63,10 @@ class SourceGoogleSearchConsole(AbstractSource):
             except ValueError:
                 raise Exception("custom_reports is not valid JSON")
             jsonschema.validate(config["custom_reports"], custom_reports_schema)
+            for report in config["custom_reports"]:
+                for dimension in report["dimensions"]:
+                    if dimension not in SearchAnalyticsByCustomDimensions.dimension_to_property_schema_map:
+                        raise Exception(f"dimension: '{dimension}' not found")
 
         pendulum.parse(config["start_date"])
         end_date = config.get("end_date")
