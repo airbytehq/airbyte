@@ -189,7 +189,7 @@ public class DestinationDefinitionsHandler {
         .withPublic(false)
         .withCustom(false);
     if (!protocolVersionRange.isSupported(new Version(destinationDefinition.getProtocolVersion()))) {
-      throw new UnsupportedProtocolVersion(destinationDefinition.getProtocolVersion(), protocolVersionRange.getMin(), protocolVersionRange.getMax());
+      throw new UnsupportedProtocolVersion(destinationDefinition.getProtocolVersion(), protocolVersionRange.min(), protocolVersionRange.max());
     }
     configRepository.writeStandardDestinationDefinition(destinationDefinition);
 
@@ -203,7 +203,7 @@ public class DestinationDefinitionsHandler {
             .withPublic(false)
             .withCustom(true);
     if (!protocolVersionRange.isSupported(new Version(destinationDefinition.getProtocolVersion()))) {
-      throw new UnsupportedProtocolVersion(destinationDefinition.getProtocolVersion(), protocolVersionRange.getMin(), protocolVersionRange.getMax());
+      throw new UnsupportedProtocolVersion(destinationDefinition.getProtocolVersion(), protocolVersionRange.min(), protocolVersionRange.max());
     }
     configRepository.writeCustomDestinationDefinition(destinationDefinition, customDestinationDefinitionCreate.getWorkspaceId());
 
@@ -251,7 +251,7 @@ public class DestinationDefinitionsHandler {
 
     final Version airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(spec.getProtocolVersion());
     if (!protocolVersionRange.isSupported(airbyteProtocolVersion)) {
-      throw new UnsupportedProtocolVersion(airbyteProtocolVersion, protocolVersionRange.getMin(), protocolVersionRange.getMax());
+      throw new UnsupportedProtocolVersion(airbyteProtocolVersion, protocolVersionRange.min(), protocolVersionRange.max());
     }
 
     final StandardDestinationDefinition newDestination = new StandardDestinationDefinition()

@@ -195,7 +195,7 @@ public class SourceDefinitionsHandler {
         .withPublic(false)
         .withCustom(false);
     if (!protocolVersionRange.isSupported(new Version(sourceDefinition.getProtocolVersion()))) {
-      throw new UnsupportedProtocolVersion(sourceDefinition.getProtocolVersion(), protocolVersionRange.getMin(), protocolVersionRange.getMax());
+      throw new UnsupportedProtocolVersion(sourceDefinition.getProtocolVersion(), protocolVersionRange.min(), protocolVersionRange.max());
     }
     configRepository.writeStandardSourceDefinition(sourceDefinition);
 
@@ -208,7 +208,7 @@ public class SourceDefinitionsHandler {
         .withPublic(false)
         .withCustom(true);
     if (!protocolVersionRange.isSupported(new Version(sourceDefinition.getProtocolVersion()))) {
-      throw new UnsupportedProtocolVersion(sourceDefinition.getProtocolVersion(), protocolVersionRange.getMin(), protocolVersionRange.getMax());
+      throw new UnsupportedProtocolVersion(sourceDefinition.getProtocolVersion(), protocolVersionRange.min(), protocolVersionRange.max());
     }
     configRepository.writeCustomSourceDefinition(sourceDefinition, customSourceDefinitionCreate.getWorkspaceId());
 
@@ -254,7 +254,7 @@ public class SourceDefinitionsHandler {
 
     final Version airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(spec.getProtocolVersion());
     if (!protocolVersionRange.isSupported(airbyteProtocolVersion)) {
-      throw new UnsupportedProtocolVersion(airbyteProtocolVersion, protocolVersionRange.getMin(), protocolVersionRange.getMax());
+      throw new UnsupportedProtocolVersion(airbyteProtocolVersion, protocolVersionRange.min(), protocolVersionRange.max());
     }
 
     final StandardSourceDefinition newSource = new StandardSourceDefinition()
