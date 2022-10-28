@@ -72,8 +72,23 @@ At the end of this process, you should have JSON credentials to this Google Serv
 4. Click Authenticate your account to sign in with Google and authorize your account. 
 5. Fill in the `site_urls` field.
 5. Fill in the `start date` field.
-6. Fill in the `custom reports` (optionally) in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...]}`
+6. Fill in the `custom reports` (optionally) in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...]}` (see example below)
 7. You should be ready to sync data.
+
+**Example `custom report`**:
+
+[
+   {
+      "name": "name of report",
+      "dimensions": [
+         "date",
+         "country",
+         "device",
+         "query",
+         "page"
+      ]
+   }
+]
 
 ### For Airbyte Open Source:
 
