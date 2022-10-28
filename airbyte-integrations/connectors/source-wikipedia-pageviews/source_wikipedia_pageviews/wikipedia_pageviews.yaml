@@ -32,7 +32,7 @@ definitions:
   per_article_requester:
     $options:
       $ref: "*ref(definitions.requester)"
-    path: "/per-article/{{config.project}}/{{config.access}}/{{config.agent}}/{{config.article}}/daily/{{config.start}}/{{config.end}}"
+    path: "/per-article/{{config.project}}/{{config.access}}/{{config.agent}}/{{config.article}}/daily/{{stream_slice.start_time}}/{{stream_slice.end_time}}"
   top_requester:
     $options:
       $ref: "*ref(definitions.requester)"
