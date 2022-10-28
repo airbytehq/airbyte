@@ -20,10 +20,10 @@ dependencies {
     implementation "software.amazon.awssdk:bundle:2.17.131"
     implementation "software.amazon.awssdk:url-connection-client:2.17.131"
     implementation "org.apache.hadoop:hadoop-aws:3.3.2"
+    implementation "org.apache.hadoop:hadoop-client-api:3.3.2"
+    implementation "org.apache.hadoop:hadoop-client-runtime:3.3.2"
 
 //    implementation "software.amazon.awssdk:utils:2.17.131"
-//    implementation "org.apache.hadoop:hadoop-client-api:3.3.2"
-//    implementation "org.apache.hadoop:hadoop-client-runtime:3.3.2"
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-iceberg')

@@ -89,7 +89,6 @@ public class S3Config {
     }
 
     public String warehousePath() {
-        String s3EndpointSchema = sslEnabled ? "https" : "http";
         return "s3a://%s/%s".formatted(bucketName, bucketPath);
     }
 
@@ -144,8 +143,19 @@ public class S3Config {
         final ClientConfiguration clientConfiguration = new ClientConfiguration().withProtocol(Protocol.HTTPS);
         clientConfiguration.setSignerOverride("AWSS3V4SignerType");
 
+        String finalEndpoint = endpoint;
+        if (!sslEnabled) {
+            String schemaSuffix = "://";
+            String httpSchema = "http://";
+            if (endpoint.contains(schemaSuffix)) {
+                int schemaSuffixIndex = endpoint.indexOf(schemaSuffix) + schemaSuffix.length();
+                finalEndpoint = httpSchema + endpoint.substring(schemaSuffixIndex);
+            } else {
+                finalEndpoint = httpSchema + endpoint;
+            }
+        }
         return AmazonS3ClientBuilder.standard()
-            .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, bucketRegion))
+            .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(finalEndpoint, bucketRegion))
             .withPathStyleAccessEnabled(true)
             .withClientConfiguration(clientConfiguration)
             .withCredentials(credentialsProvider)

@@ -97,7 +97,9 @@ public class IcebergDestination extends BaseConnector implements Destination {
         Map<String, String> sparkConfMap = s3Config.getCatalogConfig().sparkConfigMap(s3Config);
 
         log.debug("s3Config:{}, sparkConfMap:{}", s3Config, sparkConfMap);
-        Builder sparkBuilder = SparkSession.builder().master("local")
+
+        Builder sparkBuilder = SparkSession.builder()
+            .master("local")
             .appName("Airbyte->Iceberg-" + System.currentTimeMillis());
         sparkConfMap.forEach(sparkBuilder::config);
         SparkSession spark = sparkBuilder.getOrCreate();

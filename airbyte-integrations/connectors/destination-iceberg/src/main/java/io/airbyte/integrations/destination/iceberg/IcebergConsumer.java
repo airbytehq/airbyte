@@ -6,7 +6,6 @@ import static io.airbyte.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED
 import static org.apache.logging.log4j.util.Strings.isNotBlank;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.CommitOnStateAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
@@ -69,7 +68,7 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
     @Override
     protected void startTracked() throws Exception {
         Map<AirbyteStreamNameNamespacePair, WriteConfig> configs = new HashMap<>();
-        String tempTablePrefix = Strings.addRandomSuffix("_airbyte_tmp", "_", 3) + "_";
+//        String tempTablePrefix = Strings.addRandomSuffix("_airbyte_tmp", "_", 3) + "_";
         for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
             final String streamName = stream.getStream().getName().toLowerCase();
             String namespace = (isNotBlank(stream.getStream().getNamespace()) ?
@@ -77,7 +76,7 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
                 catalogConfig.getDefaultDatabase()
             ).toLowerCase();
             final String tableName = genTableName(namespace, "airbyte_raw_" + streamName);
-            final String tmpTableName = genTableName(namespace, tempTablePrefix + streamName);
+            final String tmpTableName = genTableName(namespace, "_airbyte_tmp_" + streamName);
             final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
             if (syncMode == null) {
                 throw new IllegalStateException("Undefined destination sync mode");
@@ -131,14 +130,15 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
     private void appendToTempTable(WriteConfig writeConfig) {
         String tableName = writeConfig.getTmpTableName();
         List<Row> rows = writeConfig.fetchDataCache();
-        if (!rows.isEmpty()) {
-            log.info("=> Flushing {} rows into {}", rows.size(), tableName);
-            spark.createDataFrame(rows, normalizationSchema).write()
-                // append data to temp table
-                .mode(SaveMode.Append)
-                // TODO make format as config
-                .option("write-format", "parquet").saveAsTable(tableName);
-        }
+        //saveAsTable even if rows is empty, to ensure table is created.
+        // otherwise the table would be missing, and throws exception in close()
+        log.info("=> Flushing {} rows into {}", rows.size(), tableName);
+        spark.createDataFrame(rows, normalizationSchema).write()
+            // append data to temp table
+            .mode(SaveMode.Append)
+            // TODO make format as config
+            .option("write-format", "parquet")
+            .saveAsTable(tableName);
     }
 
     private String genTableName(String database, String tmpTableName) {
@@ -167,20 +167,20 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
                 for (WriteConfig writeConfig : writeConfigs.values()) {
                     String tempTableName = writeConfig.getTmpTableName();
                     String finalTableName = writeConfig.getTableName();
-                    log.info("=> Migration data from {} to {}", tempTableName, finalTableName);
-                    if (writeConfig.isAppendMode()) {
-                        // append
-                        spark.sql("SELECT * FROM %s".formatted(tempTableName))
-                            .write()
-                            .mode(SaveMode.Append)
-                            .saveAsTable(finalTableName);
-                    } else {
-                        // overwrite
-                        spark.sql("SELECT * FROM %s".formatted(tempTableName))
-                            .write()
-                            .mode(SaveMode.Overwrite)
-                            .saveAsTable(finalTableName);
-                    }
+                    log.info("=> Migration({}) data from {} to {}",
+                        writeConfig.isAppendMode() ? "append" : "overwrite",
+                        tempTableName,
+                        finalTableName);
+//                    if (writeConfig.isAppendMode()) {
+                    spark.sql("SELECT * FROM %s".formatted(tempTableName))
+//                            .coalesce(1)
+                        .write()
+                        .mode(writeConfig.isAppendMode() ? SaveMode.Append : SaveMode.Overwrite)
+                        .saveAsTable(finalTableName);
+//                    } else {
+//                        spark.sql("DROP TABLE IF EXISTS %s".formatted(finalTableName));
+//                        spark.sql("ALTER TABLE %s RENAME TO %s".formatted(tempTableName, finalTableName));
+//                    }
                 }
                 log.info("==> Copy temp tables finished...");
             } else {

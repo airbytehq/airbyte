@@ -17,15 +17,18 @@ import io.airbyte.integrations.destination.iceberg.config.S3Config;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.time.OffsetDateTime;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.IcebergGenerics;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.io.CloseableIterable;
+import org.glassfish.jersey.internal.guava.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,16 +71,22 @@ public class IcebergDestinationAcceptanceTest extends DestinationAcceptanceTest 
         Catalog catalog = s3Config.getCatalogConfig().genCatalog(s3Config);
 
         String dbName = namingResolver.getNamespace(
-            isNotBlank(namespace) ? namespace : s3Config.getCatalogConfig().getDefaultDatabase()).toLowerCase();
+            isNotBlank(namespace) ? namespace :
+                s3Config.getCatalogConfig().getDefaultDatabase()
+        ).toLowerCase();
         String tableName = namingResolver.getIdentifier("airbyte_raw_" + streamName).toLowerCase();
+        LOGGER.info("Select data from:{}", tableName);
         Table table = catalog.loadTable(TableIdentifier.of(dbName, tableName));
-        List<JsonNode> result = new ArrayList<>();
         try (CloseableIterable<Record> records = IcebergGenerics.read(table).build()) {
-            records.forEach(row -> {
-                result.add(Jsons.deserialize((String) row.getField(JavaBaseConstants.COLUMN_NAME_DATA)));
-            });
+            return Lists.newArrayList(records)
+                .stream()
+                .sorted((r1, r2) -> Comparator.<OffsetDateTime>naturalOrder().compare(
+                    (OffsetDateTime) r1.getField(JavaBaseConstants.COLUMN_NAME_EMITTED_AT),
+                    (OffsetDateTime) r2.getField(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
+                ))
+                .map(r -> Jsons.deserialize((String) r.getField(JavaBaseConstants.COLUMN_NAME_DATA)))
+                .collect(Collectors.toList());
         }
-        return result;
     }
 
     @Override

@@ -83,5 +83,4 @@ class IcebergDestinationTest {
         final AirbyteConnectionStatus status = destinationSuccess.check(null);
         assertEquals(Status.SUCCEEDED, status.getStatus(), "Connection check should have succeeded");
     }
-
 }
