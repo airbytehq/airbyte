@@ -15,7 +15,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAut
 ConvexConfig = TypedDict(
     "ConvexConfig",
     {
-        "deployment_name": str,
+        "deployment_url": str,
         "access_key": str,
     },
 )
@@ -33,9 +33,9 @@ ConvexState = TypedDict(
 # Source
 class SourceConvex(AbstractSource):
     def _json_schemas(self, config: ConvexConfig) -> requests.Response:
-        deployment_name = config["deployment_name"]
+        deployment_url = config["deployment_url"]
         access_key = config["access_key"]
-        url = f"{ConvexStream.convex_url_base(deployment_name)}/api/json_schemas?deltaSchema=true&format=convex_json"
+        url = f"{deployment_url}/api/json_schemas?deltaSchema=true&format=convex_json"
         headers = {"Authorization": f"Convex {access_key}"}
         return requests.get(url, headers=headers)
 
@@ -63,7 +63,7 @@ class SourceConvex(AbstractSource):
         table_names = list(json_schemas.keys())
         return [
             ConvexStream(
-                config["deployment_name"],
+                config["deployment_url"],
                 config["access_key"],
                 table_name,
                 json_schemas[table_name],
@@ -73,8 +73,8 @@ class SourceConvex(AbstractSource):
 
 
 class ConvexStream(HttpStream, IncrementalMixin):
-    def __init__(self, deployment_name: str, access_key: str, table_name: str, json_schema: Mapping[str, Any]):
-        self.deployment_name = deployment_name
+    def __init__(self, deployment_url: str, access_key: str, table_name: str, json_schema: Mapping[str, Any]):
+        self.deployment_url = deployment_url
         self.table_name = table_name
         if json_schema:
             json_schema["properties"]["_ab_cdc_lsn"] = {"type": "number"}
@@ -89,19 +89,13 @@ class ConvexStream(HttpStream, IncrementalMixin):
         self._delta_has_more = True
         super().__init__(TokenAuthenticator(access_key, "Convex"))
 
-    @staticmethod
-    def convex_url_base(deployment_name: str) -> str:
-        if "localhost" in deployment_name:
-            return deployment_name
-        return f"https://{deployment_name}.convex.cloud"
-
     @property
     def name(self) -> str:
         return self.table_name
 
     @property
     def url_base(self) -> str:
-        return self.convex_url_base(self.deployment_name)
+        return self.deployment_url
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return self.json_schema
@@ -137,6 +131,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[ConvexState] = None,
     ) -> str:
+        # https://docs.convex.dev/http-api/#sync
         if self._snapshot_has_more:
             return "/api/list_snapshot"
         else:

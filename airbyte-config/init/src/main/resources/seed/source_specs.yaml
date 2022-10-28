@@ -2177,15 +2177,15 @@
       title: "Convex Source Spec"
       type: "object"
       required:
-      - "deployment_name"
+      - "deployment_url"
       - "access_key"
       properties:
-        deployment_name:
+        deployment_url:
           type: "string"
-          title: "Deployment Name"
+          title: "Deployment Url"
           examples:
-          - "murky-swan-635"
-          - "cluttered-owl-337"
+          - "https://murky-swan-635.convex.cloud"
+          - "https://cluttered-owl-337.convex.cloud"
         access_key:
           type: "string"
           title: "Access Key"

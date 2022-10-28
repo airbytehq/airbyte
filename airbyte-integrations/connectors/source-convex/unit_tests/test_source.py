@@ -37,7 +37,7 @@ def setup_responses():
     }
     responses.add(
         responses.GET,
-        "https://murky-swan-635.convex.cloud/api/json_schemas?deltaSchema=true",
+        "https://murky-swan-635.convex.cloud/api/json_schemas?deltaSchema=true&format=convex_json",
         json=sample_shapes_resp,
     )
 
@@ -50,7 +50,7 @@ def test_check_connection(mocker):
     assert source.check_connection(
         logger_mock,
         {
-            "deployment_name": "murky-swan-635",
+            "deployment_url": "https://murky-swan-635.convex.cloud",
             "access_key": "test_api_key",
         },
     ) == (True, None)
@@ -62,7 +62,7 @@ def test_streams(mocker):
     source = SourceConvex()
     streams = source.streams(
         {
-            "deployment_name": "murky-swan-635",
+            "deployment_url": "https://murky-swan-635.convex.cloud",
             "access_key": "test_api_key",
         }
     )
@@ -70,7 +70,7 @@ def test_streams(mocker):
     streams.sort(key=lambda stream: stream.table_name)
     assert streams[0].table_name == "posts"
     assert streams[1].table_name == "users"
-    assert all(stream.deployment_name == "murky-swan-635" for stream in streams)
+    assert all(stream.deployment_url == "https://murky-swan-635.convex.cloud" for stream in streams)
     assert all(stream._session.auth.get_auth_header() == {"Authorization": "Convex test_api_key"} for stream in streams)
     shapes = [stream.get_json_schema() for stream in streams]
     assert all(shape["type"] == "object" for shape in shapes)

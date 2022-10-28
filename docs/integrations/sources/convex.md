@@ -59,18 +59,14 @@ please reach out to [Convex support](mailto:support@convex.dev).
 Contact Convex via [email](mailto:support@convex.dev) or [Discord](https://convex.dev/community) to request Airbyte support for your account.
 
 On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the project that you want to sync.
+Note only "Production" deployments should be synced.
 
 In the Data tab, you should see the tables and a sample of the data that will be synced.
 
-The URL should be in the format
-
-```
-https://dashboard.convex.dev/{team}/{project}/{deployment_name}/data
-```
-
-1. Copy the `deployment_name` from the URL to the `deployment_name` field in Airbyte.
-2. Navigate to the Settings tab and click "Generate a deploy key".
-3. Copy the generated deploy key into the `access_key` field in Airbyte.
+1. Navigate to the Settings tab.
+2. Copy the "Deployment URL" from the settings page to the `deployment_url` field in Airbyte.
+3. Click "Generate a deploy key".
+4. Copy the generated deploy key into the `access_key` field in Airbyte.
 
 ## Changelog
 
