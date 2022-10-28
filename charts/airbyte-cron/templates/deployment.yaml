@@ -90,46 +90,6 @@ spec:
               configMapKeyRef:
                 name: {{ .Release.Name }}-airbyte-env
                 key: REMOTE_CONNECTOR_CATALOG_URL
-          - name: TEMPORAL_CLOUD_CLIENT_CERT
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Release.Name }}-airbyte-secrets
-                key: TEMPORAL_CLOUD_CLIENT_CERT
-          - name: TEMPORAL_CLOUD_CLIENT_KEY
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Release.Name }}-airbyte-secrets
-                key: TEMPORAL_CLOUD_CLIENT_KEY
-          - name: TEMPORAL_CLOUD_ENABLED
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Release.Name }}-airbyte-env
-                key: TEMPORAL_CLOUD_ENABLED
-          - name: TEMPORAL_CLOUD_HOST
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Release.Name }}-airbyte-env
-                key: TEMPORAL_CLOUD_HOST
-          - name: TEMPORAL_CLOUD_NAMESPACE
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Release.Name }}-airbyte-env
-                key: TEMPORAL_CLOUD_NAMESPACE
-          - name: TEMPORAL_HISTORY_RETENTION_IN_DAYS
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Release.Name }}-airbyte-env
-                key: TEMPORAL_HISTORY_RETENTION_IN_DAYS
-          - name: TEMPORAL_HOST
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Release.Name }}-airbyte-env
-                key: TEMPORAL_HOST
-          - name: TEMPORAL_WORKER_PORTS
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Release.Name }}-airbyte-env
-                key: TEMPORAL_WORKER_PORTS
           - name: TRACKING_STRATEGY
             valueFrom:
               configMapKeyRef:
