@@ -24,6 +24,7 @@ export const TestControls: React.FC<TestControlsProps> = ({ onClickTest }) => {
       </div>
       <Button
         className={styles.testButton}
+        size="sm"
         onClick={onClickTest}
         icon={
           <div>

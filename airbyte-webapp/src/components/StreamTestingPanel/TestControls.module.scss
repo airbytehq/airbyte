@@ -26,14 +26,7 @@ $testIconHeight: 17px;
   }
 }
 
-// repeat name so that styles take precedence over default Button styles
-.testButton.testButton {
-  background-color: colors.$dark-blue;
-  height: 100%;
-}
-
 .testButton {
-  width: 100px;
   margin-right: 0;
   flex: 0 0 100px;
 }
