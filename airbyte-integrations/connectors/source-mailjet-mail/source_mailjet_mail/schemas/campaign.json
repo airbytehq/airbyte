@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "CampaignType": {
+      "type": "integer"
+    },
+    "ClickTracked": {
+      "type": "integer"
+    },
+    "CreatedAt": {
+      "type": "string"
+    },
+    "CustomValue": {
+      "type": "integer"
+    },
+    "FirstMessageID": {
+      "type": "integer"
+    },
+    "FromEmail": {
+      "type": "boolean"
+    },
+    "FromID": {
+      "type": "string"
+    },
+    "FromName": {
+      "type": "string"
+    },
+    "HasHtmlCount": {
+      "type": "string"
+    },
+    "HasTxtCount": {
+      "type": "string"
+    },
+    "ID": {
+      "type": "integer"
+    },
+    "IsDeleted": {
+      "type": "boolean"
+    },
+    "IsStarred": {
+      "type": "boolean"
+    },
+    "ListID": {
+      "type": "integer"
+    },
+    "NewsLetterID": {
+      "type": "integer"
+    },
+    "OpenTracked": {
+      "type": "string"
+    },
+    "SendEndAt": {
+      "type": "string"
+    },
+    "SendStartAt": {
+      "type": "boolean"
+    },
+    "SpamassScore": {
+      "type": "integer"
+    },
+    "Status": {
+      "type": "integer"
+    },
+    "Subject": {
+      "type": "string"
+    },
+    "UnsubscribeTrackedCount": {
+      "type": "integer"
+    }
+  }
+}
