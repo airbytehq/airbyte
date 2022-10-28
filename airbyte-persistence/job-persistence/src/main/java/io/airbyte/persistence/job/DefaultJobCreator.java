@@ -5,6 +5,7 @@
 package io.airbyte.persistence.job;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
@@ -52,7 +53,9 @@ public class DefaultJobCreator implements JobCreator {
                                       final DestinationConnection destination,
                                       final StandardSync standardSync,
                                       final String sourceDockerImageName,
+                                      final Version sourceProtocolVersion,
                                       final String destinationDockerImageName,
+                                      final Version destinationProtocolVersion,
                                       final List<StandardSyncOperation> standardSyncOperations,
                                       @Nullable final JsonNode webhookOperationConfigs,
                                       @Nullable final ActorDefinitionResourceRequirements sourceResourceReqs,
@@ -79,8 +82,10 @@ public class DefaultJobCreator implements JobCreator {
         .withNamespaceFormat(standardSync.getNamespaceFormat())
         .withPrefix(standardSync.getPrefix())
         .withSourceDockerImage(sourceDockerImageName)
+        .withSourceProtocolVersion(sourceProtocolVersion)
         .withSourceConfiguration(source.getConfiguration())
         .withDestinationDockerImage(destinationDockerImageName)
+        .withDestinationProtocolVersion(destinationProtocolVersion)
         .withDestinationConfiguration(destination.getConfiguration())
         .withOperationSequence(standardSyncOperations)
         .withWebhookOperationConfigs(webhookOperationConfigs)
@@ -102,6 +107,7 @@ public class DefaultJobCreator implements JobCreator {
   public Optional<Long> createResetConnectionJob(final DestinationConnection destination,
                                                  final StandardSync standardSync,
                                                  final String destinationDockerImage,
+                                                 final Version destinationProtocolVersion,
                                                  final List<StandardSyncOperation> standardSyncOperations,
                                                  final List<StreamDescriptor> streamsToReset)
       throws IOException {
@@ -126,6 +132,7 @@ public class DefaultJobCreator implements JobCreator {
         .withNamespaceFormat(standardSync.getNamespaceFormat())
         .withPrefix(standardSync.getPrefix())
         .withDestinationDockerImage(destinationDockerImage)
+        .withDestinationProtocolVersion(destinationProtocolVersion)
         .withDestinationConfiguration(destination.getConfiguration())
         .withOperationSequence(standardSyncOperations)
         .withConfiguredAirbyteCatalog(configuredAirbyteCatalog)
