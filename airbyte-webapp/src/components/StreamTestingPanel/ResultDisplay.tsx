@@ -15,7 +15,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead }) => {
     <div className={styles.container}>
       {streamRead.slices.map((slice) => (
         <div className={classNames(styles.displayBox, styles.container, styles.slice)}>
-          <Text>{`Slice ${JSON.stringify(slice.sliceDescriptor)}`}</Text>
+          <Text>Slice {JSON.stringify(slice.sliceDescriptor)}</Text>
           {slice.pages.map((page, pageNumber) => (
             <div className={classNames(styles.displayBox, styles.container, styles.page)}>
               <Text>{`Page ${pageNumber}`}</Text>
