@@ -674,6 +674,13 @@
   icon: mailchimp.svg
   sourceType: api
   releaseStage: generally_available
+- name: Mailjet Mail
+  sourceDefinitionId: 56582331-5de2-476b-b913-5798de77bbdf
+  dockerRepository: airbyte/source-mailjet-mail
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mailjet-mail
+  sourceType: api
+  releaseStage: alpha
 - name: MailerLite
   sourceDefinitionId: dc3b9003-2432-4e93-a7f4-4620b0f14674
   dockerRepository: airbyte/source-mailerlite
