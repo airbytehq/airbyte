@@ -28,13 +28,16 @@ class ZendeskSellStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         try:
+            meta_links = {}
             regex_page = r"[=?/]page[_=/-]?(\d{1,3})"
-            meta_links = response.json().get("meta", {}).get("links")
+            data = response.json()
+            if data:
+                meta_links = data.get("meta", {}).get("links")
             if "next_page" in meta_links.keys():
                 return {"page": int(re.findall(regex_page, meta_links["next_page"])[0])}
+            return None
         except Exception as e:
             self.logger.error(f"{e.__class__} occurred, while trying to get next page information from the following dict {meta_links}")
-            return None
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -46,7 +49,7 @@ class ZendeskSellStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         items = response.json()["items"]
-        return [item["data"] for item in items]
+        yield from [item["data"] for item in items]
 
 
 class Pipelines(ZendeskSellStream):

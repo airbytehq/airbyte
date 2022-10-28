@@ -4,6 +4,7 @@
 
 from http import HTTPStatus
 from unittest.mock import MagicMock
+from unittest import mock
 
 import pytest
 from source_zendesk_sell.source import ZendeskSellStream
@@ -29,22 +30,7 @@ def test_request_params(patch_base_class):
     [
         (
             {
-                "items": [
-                    {
-                        "data": {
-                            "id": 302488228,
-                            "creator_id": 2393211,
-                            "contact_id": 302488227,
-                            "created_at": "2020-11-12T09:05:47Z",
-                            "updated_at": "2022-03-23T16:53:22Z",
-                            "title": None,
-                            "name": "Octavia Squidington",
-                            "first_name": "Octavia",
-                            "last_name": "Squidington",
-                        },
-                        "meta": {"version": 36, "type": "contact"},
-                    }
-                ],
+                "items": [],
                 "meta": {
                     "type": "collection",
                     "count": 25,
@@ -56,26 +42,11 @@ def test_request_params(patch_base_class):
                     },
                 },
             },
-            3,
+            {"page": 3},
         ),
         (
             {
-                "items": [
-                    {
-                        "data": {
-                            "id": 302488228,
-                            "creator_id": 2393211,
-                            "contact_id": 302488227,
-                            "created_at": "2020-11-12T09:05:47Z",
-                            "updated_at": "2022-03-23T16:53:22Z",
-                            "title": None,
-                            "name": "Octavia Squidington",
-                            "first_name": "Octavia",
-                            "last_name": "Squidington",
-                        },
-                        "meta": {"version": 36, "type": "contact"},
-                    }
-                ],
+                "items": [],
                 "meta": {
                     "type": "collection",
                     "count": 25,
@@ -91,16 +62,17 @@ def test_request_params(patch_base_class):
         ({None}, None),
     ],
 )
-def test_next_page_token(patch_base_class, inputs, expected_token):
+def test_next_page_token(mocker, requests_mock, patch_base_class, inputs, expected_token):
     stream = ZendeskSellStream()
-    inputs = {"response": MagicMock()}
-    assert stream.next_page_token(**inputs) == expected_token
+    response = mocker.MagicMock()
+    response.json.return_value = inputs
+    assert stream.next_page_token(response) == expected_token
 
 
-def test_parse_response(patch_base_class):
+def test_parse_response(patch_base_class, mocker):
     stream = ZendeskSellStream()
-    inputs = {
-        "response": {
+    response = mocker.MagicMock()
+    response.json.return_value = {
             "items": [
                 {
                     "data": {
@@ -127,7 +99,6 @@ def test_parse_response(patch_base_class):
                     "next_page": "https://api.getbase.com/v2/contacts?page=3&per_page=25",
                 },
             },
-        }
     }
     expected_parsed_object = {
         "id": 302488228,
@@ -140,14 +111,16 @@ def test_parse_response(patch_base_class):
         "first_name": "Octavia",
         "last_name": "Squidington",
     }
-    assert next(stream.parse_response(**inputs)) == expected_parsed_object
+    assert next(stream.parse_response(response)) == expected_parsed_object
 
 
 def test_request_headers(patch_base_class):
     stream = ZendeskSellStream()
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": 2}
+    stream_slice = None
+    stream_state = None
+    next_page_token = {"page": 2}
     expected_headers = {"page": 2}
-    assert stream.request_headers(**inputs) == expected_headers
+    assert stream.request_params(stream_slice, stream_state, next_page_token) == expected_headers
 
 
 def test_http_method(patch_base_class):
