@@ -2,6 +2,7 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { EU, US } from "country-flag-icons/react/3x2";
 import React from "react";
+import { useIntl } from "react-intl";
 import { components, OptionProps, MenuListProps } from "react-select";
 
 import { DropDown } from "components/ui/DropDown";
@@ -10,8 +11,8 @@ import styles from "./GeographyDropdown.module.scss";
 
 const options = [
   {
-    value: "us",
-    label: "us",
+    value: "en",
+    label: "en",
   },
   {
     value: "auto",
@@ -30,11 +31,12 @@ const flags: Record<string, React.ReactNode> = {
 };
 
 const GeographyOption: React.FC<OptionProps> = (props) => {
+  const { formatMessage } = useIntl();
   return (
     <components.Option className={styles.option} {...props}>
       <>
         <span className={styles.flag}>{flags[props.label]}</span>
-        <span className={styles.label}>{props.label}</span>
+        <span className={styles.label}>{formatMessage({ id: `geography.${props.label}` })}</span>
       </>
     </components.Option>
   );
@@ -52,7 +54,7 @@ const MenuList = (props: MenuListProps) => {
   );
 };
 
-export const GeographyDropdown: React.FC = () => {
+export const GeographyDropdown: React.FC = (props) => {
   return (
     <DropDown
       className={styles.reactSelectContainer}

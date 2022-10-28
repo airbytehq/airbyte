@@ -1,23 +1,39 @@
 @use "../../scss/variables";
-@use "../../scss/colors";
+@use "scss/colors";
+
+.menuList {
+  padding: 10px 16px;
+  margin-top: 10px;
+  max-width: 300px;
+  color: colors.$blue-300;
+  border-top: solid colors.$dark-blue-50 1px;
+
+  :first-child {
+    padding-right: 8px;
+  }
+
+  :last-child {
+    font-size: variables.$spacing-lg;
+  }
+}
 
 .reactSelectContainer {
   width: 300px;
-}
 
-.option {
-  display: flex;
-  align-items: center;
-  padding: 6px 20px 6px 6px;
-  margin: 0 10px;
-  max-width: 280px;
-  background-color: colors.$white;
-  font-weight: 500;
+  & .option {
+    display: flex;
+    align-items: center;
+    padding: 6px 20px 6px 6px;
+    margin: 0 10px;
+    max-width: 280px;
+    background-color: colors.$white;
+    font-weight: 500;
 
-  &:hover,
-  :active {
-    background-color: colors.$grey-50;
-    border-radius: 10px;
+    &:hover,
+    :active {
+      background-color: colors.$grey-50;
+      border-radius: 10px;
+    }
   }
 }
 
@@ -35,20 +51,4 @@
 
 .label {
   padding-left: 10px;
-}
-
-.menuList {
-  padding: 10px 16px;
-  margin-top: 10px;
-  max-width: 300px;
-  color: colors.$blue-300;
-  border-top: solid colors.$dark-blue-50 1px;
-
-  :first-child {
-    padding-right: 8px;
-  }
-
-  :last-child {
-    font-size: smaller;
-  }
 }
