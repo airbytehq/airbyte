@@ -644,6 +644,13 @@
   icon: linnworks.svg
   sourceType: api
   releaseStage: alpha
+- name: Lokalise
+  sourceDefinitionId: 45e0b135-615c-40ac-b38e-e65b0944197f
+  dockerRepository: airbyte/source-lokalise
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/lokalise
+  sourceType: api
+  releaseStage: alpha
 - name: Looker
   sourceDefinitionId: 00405b19-9768-4e0c-b1ae-9fc2ee2b2a8c
   dockerRepository: airbyte/source-looker
