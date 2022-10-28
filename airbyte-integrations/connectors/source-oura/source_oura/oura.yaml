@@ -27,12 +27,12 @@ definitions:
     pagination_strategy:
       type: CursorPagination
       cursor_value: "{{ response['next_token'] }}"
-      page_size: 100  # Not used, but check fails without it
+      page_size: 100 # Not used, but check fails without it
     page_token_option:
       field_name: "next_token"
       inject_into: "request_parameter"
     url_base: "*ref(definitions.base_requester.url_base)"
-    page_size_option:  # Not used, but check fails without it
+    page_size_option: # Not used, but check fails without it
       field_name: ""
       inject_into: "request_parameter"
   base_retriever:

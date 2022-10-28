@@ -4,15 +4,15 @@
   "properties": {
     "day": {
       "type": ["string", "null"],
-      "format" : "date"
+      "format": "date"
     },
     "start_datetime": {
       "type": ["string", "null"],
-      "format" : "date-time"
+      "format": "date-time"
     },
     "end_datetime": {
       "type": ["string", "null"],
-      "format" : "date-time"
+      "format": "date-time"
     },
     "type": {
       "type": ["string", "null"]
