@@ -25,8 +25,11 @@ import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreLists;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
+import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -57,6 +60,7 @@ public class SourceDefinitionsHandler {
   private final AirbyteGithubStore githubStore;
   private final SynchronousSchedulerClient schedulerSynchronousClient;
   private final SourceHandler sourceHandler;
+  private final AirbyteProtocolVersionRange protocolVersionRange;
 
   public SourceDefinitionsHandler(final ConfigRepository configRepository,
                                   final SynchronousSchedulerClient schedulerSynchronousClient,
@@ -74,6 +78,10 @@ public class SourceDefinitionsHandler {
     this.schedulerSynchronousClient = schedulerSynchronousClient;
     this.githubStore = githubStore;
     this.sourceHandler = sourceHandler;
+
+    // TODO inject protocol min and max once this handler is being converted to micronaut
+    final Configs configs = new EnvConfigs();
+    protocolVersionRange = new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(), configs.getAirbyteProtocolVersionMax());
   }
 
   @VisibleForTesting
@@ -185,6 +193,10 @@ public class SourceDefinitionsHandler {
     final StandardSourceDefinition sourceDefinition = sourceDefinitionFromCreate(sourceDefinitionCreate)
         .withPublic(false)
         .withCustom(false);
+    if (!protocolVersionRange.isSupported(new Version(sourceDefinition.getProtocolVersion()))) {
+      throw new RuntimeException(String.format("Airbyte Protocol Version %s is not supported. (Must be within [%s:%s])",
+          sourceDefinition.getProtocolVersion(), protocolVersionRange.getMin().serialize(), protocolVersionRange.getMax().serialize()));
+    }
     configRepository.writeStandardSourceDefinition(sourceDefinition);
 
     return buildSourceDefinitionRead(sourceDefinition);
@@ -195,6 +207,10 @@ public class SourceDefinitionsHandler {
     final StandardSourceDefinition sourceDefinition = sourceDefinitionFromCreate(customSourceDefinitionCreate.getSourceDefinition())
         .withPublic(false)
         .withCustom(true);
+    if (!protocolVersionRange.isSupported(new Version(sourceDefinition.getProtocolVersion()))) {
+      throw new RuntimeException(String.format("Airbyte Protocol Version %s is not supported. (Must be within [%s:%s])",
+          sourceDefinition.getProtocolVersion(), protocolVersionRange.getMin().serialize(), protocolVersionRange.getMax().serialize()));
+    }
     configRepository.writeCustomSourceDefinition(sourceDefinition, customSourceDefinitionCreate.getWorkspaceId());
 
     return buildSourceDefinitionRead(sourceDefinition);
@@ -238,6 +254,10 @@ public class SourceDefinitionsHandler {
         : currentSourceDefinition.getResourceRequirements();
 
     final Version airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(spec.getProtocolVersion());
+    if (!protocolVersionRange.isSupported(airbyteProtocolVersion)) {
+      throw new RuntimeException(String.format("Airbyte Protocol Version %s is not supported. (Must be within [%s:%s])",
+          airbyteProtocolVersion.serialize(), protocolVersionRange.getMin().serialize(), protocolVersionRange.getMax().serialize()));
+    }
 
     final StandardSourceDefinition newSource = new StandardSourceDefinition()
         .withSourceDefinitionId(currentSourceDefinition.getSourceDefinitionId())
