@@ -50,28 +50,20 @@ export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
   const { formatMessage } = useIntl();
 
   const webhookChange = async (action: WebhookAction, data: WebhookPayload) => {
+    setWebhookUrlError(false);
     setFormAction((value) => ({ ...value, [action]: true }));
-    if (action === WebhookAction.Test) {
-      await testWebhookAction(data);
-    }
-    if (action === WebhookAction.Save) {
-      await updateWebhook(data);
-    }
-    setFormAction((value) => ({ ...value, [action]: false }));
-  };
-
-  const testWebhookAction = async (data: WebhookPayload) => {
-    if (webhookUrlError) {
-      setWebhookUrlError(false);
-    }
     try {
-      const response = await testWebhook(data);
-      if (response.status === "failed") {
+      const testWebhookResp = await testWebhook(data);
+      if (testWebhookResp.status === "succeeded" && action === WebhookAction.Save) {
+        await updateWebhook(data);
+      }
+      if (testWebhookResp.status === "failed") {
         setWebhookUrlError(true);
       }
     } catch (e) {
       setWebhookUrlError(true);
     }
+    setFormAction((value) => ({ ...value, [action]: false }));
   };
 
   return (
@@ -136,12 +128,7 @@ export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
               </div>
               <Row className={styles.webhookUrlLabelRow}>
                 <Cell className={styles.webhookUrlLabelCell}>
-                  <Label
-                    error={!!errors.webhook}
-                    message={
-                      !!errors.webhook && <FormattedMessage id={errors.webhook} defaultMessage={errors.webhook} />
-                    }
-                  >
+                  <Label error={!!errors.webhook}>
                     <FormattedMessage id="settings.webhookTitle" />
                   </Label>
                 </Cell>
@@ -180,7 +167,12 @@ export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
                       />
                     )}
                   </Field>
-                  {webhookUrlError && (
+                  {!!errors.webhook && (
+                    <Text className={styles.webhookErrorMessage} size="sm">
+                      <FormattedMessage id={errors.webhook} defaultMessage={errors.webhook} />
+                    </Text>
+                  )}
+                  {webhookUrlError && !errors.webhook && (
                     <Text className={styles.webhookErrorMessage} size="sm">
                       <FormattedMessage id="form.someError" />
                     </Text>
