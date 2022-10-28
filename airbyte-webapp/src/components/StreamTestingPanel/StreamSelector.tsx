@@ -9,7 +9,7 @@ import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBui
 
 import styles from "./StreamSelector.module.scss";
 
-export const StreamSelector: React.FC<unknown> = () => {
+export const StreamSelector: React.FC = () => {
   const { streams, selectedStream, setSelectedStream } = useConnectorBuilderState();
 
   return (
