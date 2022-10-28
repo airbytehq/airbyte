@@ -141,7 +141,8 @@ public class ConnectionsHandler {
         .withOperationIds(operationIds)
         .withStatus(ApiPojoConverters.toPersistenceStatus(connectionCreate.getStatus()))
         .withSourceCatalogId(connectionCreate.getSourceCatalogId())
-        .withGeography(getGeographyFromConnectionCreateOrWorkspace(connectionCreate));
+        .withGeography(getGeographyFromConnectionCreateOrWorkspace(connectionCreate))
+        .withBreakingChange(false);
     if (connectionCreate.getResourceRequirements() != null) {
       standardSync.withResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(connectionCreate.getResourceRequirements()));
     }
@@ -337,6 +338,10 @@ public class ConnectionsHandler {
 
     if (patch.getResourceRequirements() != null) {
       sync.setResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(patch.getResourceRequirements()));
+    }
+
+    if (patch.getGeography() != null) {
+      sync.setGeography(ApiPojoConverters.toPersistenceGeography(patch.getGeography()));
     }
   }
 

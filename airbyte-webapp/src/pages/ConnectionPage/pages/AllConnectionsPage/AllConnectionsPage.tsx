@@ -1,7 +1,7 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { Suspense } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
 import { LoadingPage, MainPageWithScroll } from "components";
@@ -18,6 +18,7 @@ import ConnectionsTable from "./components/ConnectionsTable";
 
 const AllConnectionsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { formatMessage } = useIntl();
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
   const { connections } = useConnectionList();
@@ -43,7 +44,11 @@ const AllConnectionsPage: React.FC = () => {
           <ConnectionsTable connections={connections} />
         </MainPageWithScroll>
       ) : (
-        <EmptyResourceListView resourceType="connections" onCreateClick={onCreateClick} />
+        <EmptyResourceListView
+          resourceType="connections"
+          onCreateClick={onCreateClick}
+          buttonLabel={formatMessage({ id: "connection.createFirst" })}
+        />
       )}
     </Suspense>
   );

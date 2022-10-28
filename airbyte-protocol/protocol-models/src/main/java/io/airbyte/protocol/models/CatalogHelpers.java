@@ -50,7 +50,8 @@ public class CatalogHelpers {
   }
 
   public static AirbyteStream createAirbyteStream(final String streamName, final String namespace, final List<Field> fields) {
-    return new AirbyteStream().withName(streamName).withNamespace(namespace).withJsonSchema(fieldsToJsonSchema(fields));
+    return new AirbyteStream().withName(streamName).withNamespace(namespace).withJsonSchema(fieldsToJsonSchema(fields))
+        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH));
   }
 
   public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(final String streamName, final String namespace, final Field... fields) {
@@ -67,7 +68,8 @@ public class CatalogHelpers {
 
   public static ConfiguredAirbyteStream createConfiguredAirbyteStream(final String streamName, final String namespace, final List<Field> fields) {
     return new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(streamName).withNamespace(namespace).withJsonSchema(fieldsToJsonSchema(fields)))
+        .withStream(new AirbyteStream().withName(streamName).withNamespace(namespace).withJsonSchema(fieldsToJsonSchema(fields))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)))
         .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE);
   }
 

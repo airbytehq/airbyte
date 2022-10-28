@@ -5,6 +5,7 @@
 package io.airbyte.workers.config;
 
 import io.airbyte.commons.temporal.TemporalUtils;
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivity;
@@ -23,6 +24,7 @@ import io.airbyte.workers.temporal.sync.NormalizationActivity;
 import io.airbyte.workers.temporal.sync.NormalizationSummaryCheckActivity;
 import io.airbyte.workers.temporal.sync.PersistStateActivity;
 import io.airbyte.workers.temporal.sync.ReplicationActivity;
+import io.airbyte.workers.temporal.sync.WebhookOperationActivity;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Property;
 import io.micronaut.context.annotation.Requires;
@@ -99,8 +101,10 @@ public class ActivityBeanFactory {
                                      final NormalizationActivity normalizationActivity,
                                      final DbtTransformationActivity dbtTransformationActivity,
                                      final PersistStateActivity persistStateActivity,
-                                     final NormalizationSummaryCheckActivity normalizationSummaryCheckActivity) {
-    return List.of(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity, normalizationSummaryCheckActivity);
+                                     final NormalizationSummaryCheckActivity normalizationSummaryCheckActivity,
+                                     final WebhookOperationActivity webhookOperationActivity) {
+    return List.of(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity, normalizationSummaryCheckActivity,
+        webhookOperationActivity);
   }
 
   @Singleton
