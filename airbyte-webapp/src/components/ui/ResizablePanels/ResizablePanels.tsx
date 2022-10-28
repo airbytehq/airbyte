@@ -4,7 +4,8 @@ import classNames from "classnames";
 import React from "react";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 
-import { Text } from "../Text";
+import { Heading } from "components/ui/Heading";
+
 import styles from "./ResizablePanels.module.scss";
 
 interface ResizablePanelsProps {
@@ -49,14 +50,14 @@ const PanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = (
     <div className={classNames(className, styles.panelContainer)}>
       {overlay && width <= overlay.displayThreshold && (
         <div className={styles.lightOverlay}>
-          <Text
+          <Heading
             as="h2"
             className={classNames(styles.rotatedHeader, {
               [styles.counterClockwise]: overlay?.rotation === "counter-clockwise",
             })}
           >
             {overlay.header}
-          </Text>
+          </Heading>
         </div>
       )}
       {children}

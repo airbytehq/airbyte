@@ -8,8 +8,10 @@ import io.airbyte.api.generated.DestinationDefinitionSpecificationApi;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
 import io.airbyte.server.handlers.SchedulerHandler;
+import javax.ws.rs.Path;
 import lombok.AllArgsConstructor;
 
+@Path("/v1/destination_definition_specifications/get")
 @AllArgsConstructor
 public class DestinationDefinitionSpecificationApiController implements DestinationDefinitionSpecificationApi {
 
