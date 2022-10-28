@@ -8,6 +8,7 @@ connectionSpecification:
   additionalProperties: true
   properties:
     api_key:
+      title: API Key
       type: string
       description: API Key
       airbyte_secret: true
