@@ -8,6 +8,8 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.KubePodInfo;
 import io.airbyte.workers.storage.DocumentStoreClient;
+import io.micronaut.context.annotation.Parameter;
+import io.micronaut.context.annotation.Prototype;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import org.slf4j.Logger;
@@ -20,6 +22,7 @@ import org.slf4j.LoggerFactory;
  * It doesn't have a single value for a state. Instead, in a location on cloud storage or disk, it
  * writes every state it's encountered.
  */
+@Prototype
 public class AsyncStateManager {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -34,7 +37,7 @@ public class AsyncStateManager {
 
   private final DocumentStoreClient documentStoreClient;
 
-  public AsyncStateManager(final DocumentStoreClient documentStoreClient) {
+  public AsyncStateManager(@Parameter final DocumentStoreClient documentStoreClient) {
     this.documentStoreClient = documentStoreClient;
   }
 
