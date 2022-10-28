@@ -5,11 +5,11 @@ definitions:
     extractor:
       field_pointer: []
   requester:
-    url_base: "https://example.com"
+    url_base: "https://emailoctopus.com/api/1.6"
     http_method: "GET"
-    authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config['api_key'] }}"
+    request_options_provider:
+      request_parameters:
+        api_key: "{{ config['api_key'] }}"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -20,16 +20,16 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
-  customers_stream:
+  campaigns_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
-      name: "customers"
+      name: "campaigns"
       primary_key: "id"
-      path: "/example"
+      path: "/campaigns"
 
 streams:
-  - "*ref(definitions.customers_stream)"
+  - "*ref(definitions.campaigns_stream)"
 
 check:
   stream_names:
-    - "customers"
+    - "campaigns"
