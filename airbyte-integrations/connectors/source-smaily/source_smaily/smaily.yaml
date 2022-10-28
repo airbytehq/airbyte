@@ -35,10 +35,42 @@ definitions:
       name: "segments"
       primary_key: "id"
       path: "/list.php"
+  # API Docs: https://smaily.com/help/api/campaigns-3/list-campaigns/
+  campaigns_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "campaigns"
+      primary_key: "id"
+      path: "/campaign.php"
+  # API Docs: https://smaily.com/help/api/templates-2/list-templates/
+  templates_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "templates"
+      primary_key: "id"
+      path: "/templates.php"
+  # API Docs: https://smaily.com/help/api/automations-2/list-automation-workflows/
+  automations_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "automations"
+      primary_key: "id"
+      path: "/autoresponder.php"
+  # API Docs: https://smaily.com/help/api/a-b-tests/list-a-b-tests/
+  ab_tests_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "ab_tests"
+      primary_key: "id"
+      path: "/split.php"
 
 streams:
   - "*ref(definitions.users_stream)"
   - "*ref(definitions.segments_stream)"
+  - "*ref(definitions.campaigns_stream)"
+  - "*ref(definitions.templates_stream)"
+  - "*ref(definitions.automations_stream)"
+  - "*ref(definitions.ab_tests_stream)"
 
 check:
   stream_names: ["users"]
