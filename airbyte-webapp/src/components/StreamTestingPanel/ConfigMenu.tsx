@@ -29,7 +29,11 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className }) => {
         icon={<FontAwesomeIcon className={styles.icon} icon={faGear} />}
       />
       {isOpen && (
-        <Modal onClose={() => setIsOpen(false)} title={<FormattedMessage id="connectorBuilder.configMenuTitle" />}>
+        <Modal
+          size="lg"
+          onClose={() => setIsOpen(false)}
+          title={<FormattedMessage id="connectorBuilder.configMenuTitle" />}
+        >
           <ModalBody className={styles.modalContent}>
             <CodeEditor
               value={configString}
