@@ -21,7 +21,7 @@ export const links = {
   namespaceLink: `${BASE_DOCS_LINK}/understanding-airbyte/namespaces`,
   tutorialLink: "https://www.youtube.com/watch?v=Rcpt5SVsMpk&feature=emb_logo",
   statusLink: "https://status.airbyte.io/",
-  recipesLink: "https://airbyte.com/recipes",
+  tutorialsLink: "https://airbyte.com/tutorials",
   syncModeLink: `${BASE_DOCS_LINK}/understanding-airbyte/connections`,
   demoLink: "https://demo.airbyte.io",
   contactSales: "https://airbyte.com/talk-to-sales",
