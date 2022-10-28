@@ -61,6 +61,7 @@ import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
+import io.airbyte.server.handlers.LogsHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
@@ -325,6 +326,8 @@ public class ServerApp implements ServerRunnable {
         destinationDefinitionsHandler,
         configs.getAirbyteVersion());
 
+    final LogsHandler logsHandler = new LogsHandler(configs);
+
     LOGGER.info("Starting server...");
 
     return apiFactory.create(
@@ -351,6 +354,7 @@ public class ServerApp implements ServerRunnable {
         destinationHandler,
         healthCheckHandler,
         jobHistoryHandler,
+        logsHandler,
         operationsHandler,
         schedulerHandler);
   }
