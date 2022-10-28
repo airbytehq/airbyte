@@ -284,9 +284,13 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     });
   }
 
+  /**
+   * This implementation has been moved to {@link AttemptApiController}. Since the path of
+   * {@link AttemptApiController} is more granular, it will override this implementation
+   */
   @Override
   public NotificationRead tryNotificationConfig(final Notification notification) {
-    return execute(() -> workspacesHandler.tryNotification(notification));
+    throw new NotImplementedException();
   }
 
   // SOURCE
