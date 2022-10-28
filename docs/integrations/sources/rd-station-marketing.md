@@ -41,4 +41,4 @@ Each endpoint has its own performance limitations, which also consider the accou
 
 | Version | Date       | Pull Request                                             | Subject                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------- |
-| 0.1.0   | 2022-10-23 | [18348](https://github.com/airbytehq/airbyte/pull/7092)  | Initial Release                                                 |
+| 0.1.0   | 2022-10-23 | [18348](https://github.com/airbytehq/airbyte/pull/18348)  | Initial Release                                                |
