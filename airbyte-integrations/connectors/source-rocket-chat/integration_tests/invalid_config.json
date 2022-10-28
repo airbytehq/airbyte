@@ -1,3 +1,4 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "endpoint": "https://airbyte-connector-poc.rocket.chat",
+  "token": "e1xXRjWv8UWX7lxjZJUmaUSXX65AjFKyvS1NOLxfDSu"
 }
