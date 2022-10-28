@@ -11,6 +11,7 @@ import { DocsIcon } from "components/icons/DocsIcon";
 import { PlayIcon } from "components/icons/PlayIcon";
 import { Row, Cell } from "components/SimpleTableComponents";
 import { Button } from "components/ui/Button";
+import { Heading } from "components/ui/Heading";
 import { Input } from "components/ui/Input";
 import { Text } from "components/ui/Text";
 import { Tooltip } from "components/ui/Tooltip";
@@ -18,6 +19,7 @@ import { Tooltip } from "components/ui/Tooltip";
 import useWorkspace, { WebhookPayload } from "hooks/services/useWorkspace";
 import { links } from "utils/links";
 
+import { useNotificationService } from "../../../../../hooks/services/Notification";
 import { Content, SettingsCard } from "../../SettingsComponents";
 import help from "./help.png";
 import styles from "./WebHookForm.module.scss";
@@ -45,25 +47,58 @@ const webhookValidationSchema = yup.object().shape({
 export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
   const [webhookViewGuide, setWebhookViewGuide] = useState(false);
   const [formAction, setFormAction] = useState<FormActionType>({ test: false, save: false });
-  const [webhookUrlError, setWebhookUrlError] = useState<boolean>(false);
+  const { registerNotification, unregisterAllNotifications } = useNotificationService();
   const { updateWebhook, testWebhook } = useWorkspace();
   const { formatMessage } = useIntl();
 
-  const webhookChange = async (action: WebhookAction, data: WebhookPayload) => {
-    setWebhookUrlError(false);
+  const webhookAction = async (action: WebhookAction, data: WebhookPayload) => {
+    unregisterAllNotifications();
     setFormAction((value) => ({ ...value, [action]: true }));
-    try {
-      const testWebhookResp = await testWebhook(data);
-      if (testWebhookResp.status === "succeeded" && action === WebhookAction.Save) {
-        await updateWebhook(data);
+    if (action === WebhookAction.Test) {
+      switch (await testWebhookAction(data)) {
+        case true: {
+          registerNotification({
+            id: "webhook-success",
+            title: "Webhook URL test successfully passed",
+            isError: false,
+          });
+          break;
+        }
+        case false: {
+          registerNotification({
+            id: "webhook-error",
+            title: "Webhook URL test is not passed. Please verify your webhook URL",
+            isError: true,
+          });
+          break;
+        }
       }
-      if (testWebhookResp.status === "failed") {
-        setWebhookUrlError(true);
+    }
+    if (action === WebhookAction.Save) {
+      switch (await testWebhookAction(data)) {
+        case true: {
+          await updateWebhook(data);
+          break;
+        }
+        case false: {
+          registerNotification({
+            id: "save-error",
+            title: "Settings is not saved. Please verify your webhook URL",
+            isError: true,
+          });
+          break;
+        }
       }
-    } catch (e) {
-      setWebhookUrlError(true);
     }
     setFormAction((value) => ({ ...value, [action]: false }));
+  };
+
+  const testWebhookAction = async (data: WebhookPayload): Promise<boolean> => {
+    try {
+      return (await testWebhook(data))?.status === "succeeded";
+    } catch (e) {
+      return false;
+    }
   };
 
   return (
@@ -73,7 +108,7 @@ export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
       validateOnBlur
       validateOnChange={false}
       validationSchema={webhookValidationSchema}
-      onSubmit={(values: WebhookPayload) => webhookChange(WebhookAction.Save, values)}
+      onSubmit={(values: WebhookPayload) => webhookAction(WebhookAction.Save, values)}
     >
       {({ dirty, errors, values }) => (
         <Form>
@@ -81,9 +116,9 @@ export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
             <Content>
               <div className={classNames(styles.webhookGuide, { [styles.active]: webhookViewGuide })}>
                 <div className={styles.webhookGuideTitle}>
-                  <Text as="h5">
+                  <Heading as="h5">
                     <FormattedMessage id="settings.notificationGuide.title" />
-                  </Text>
+                  </Heading>
                   <div>
                     <Button type="button" variant="clear" onClick={() => setWebhookViewGuide(false)}>
                       <FontAwesomeIcon className={styles.crossIcon} icon={faXmark} />
@@ -163,18 +198,13 @@ export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
                         placeholder={formatMessage({
                           id: "settings.yourWebhook",
                         })}
-                        error={(!!meta.error && meta.touched) || webhookUrlError}
+                        error={!!meta.error && meta.touched}
                       />
                     )}
                   </Field>
                   {!!errors.webhook && (
                     <Text className={styles.webhookErrorMessage} size="sm">
                       <FormattedMessage id={errors.webhook} defaultMessage={errors.webhook} />
-                    </Text>
-                  )}
-                  {webhookUrlError && !errors.webhook && (
-                    <Text className={styles.webhookErrorMessage} size="sm">
-                      <FormattedMessage id="form.someError" />
                     </Text>
                   )}
                 </Cell>
@@ -190,7 +220,7 @@ export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
                         variant="secondary"
                         isLoading={formAction.test}
                         disabled={!values.webhook || !!errors.webhook || formAction.save}
-                        onClick={() => webhookChange(WebhookAction.Test, values)}
+                        onClick={() => webhookAction(WebhookAction.Test, values)}
                       >
                         <FormattedMessage id="settings.test" />
                       </Button>
