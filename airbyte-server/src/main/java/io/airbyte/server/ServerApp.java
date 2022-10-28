@@ -57,6 +57,7 @@ import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DbMigrationHandler;
+import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
@@ -293,6 +294,11 @@ public class ServerApp implements ServerRunnable {
         configs.getLogConfigs(),
         eventRunner);
 
+    final DbMigrationHandler dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
+
+    final DestinationDefinitionsHandler destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, syncSchedulerClient,
+        destinationHandler);
+
     LOGGER.info("Starting server...");
 
     return apiFactory.create(
@@ -314,6 +320,8 @@ public class ServerApp implements ServerRunnable {
         jobsFlyway,
         attemptHandler,
         connectionsHandler,
+        dbMigrationHandler,
+        destinationDefinitionsHandler,
         destinationHandler,
         operationsHandler,
         schedulerHandler);

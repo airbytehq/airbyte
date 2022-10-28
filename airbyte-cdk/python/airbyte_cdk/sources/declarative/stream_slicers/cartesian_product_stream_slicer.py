@@ -110,4 +110,4 @@ class CartesianProductStreamSlicer(StreamSlicer, JsonSchemaMixin):
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         sub_slices = (s.stream_slices(sync_mode, stream_state) for s in self.stream_slicers)
-        return (ChainMap(*a) for a in itertools.product(*sub_slices))
+        return (dict(ChainMap(*a)) for a in itertools.product(*sub_slices))
