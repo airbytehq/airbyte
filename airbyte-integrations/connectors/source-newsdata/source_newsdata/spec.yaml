@@ -12,6 +12,12 @@ connectionSpecification:
       description: API Key
       airbyte_secret: true
       order: 0
+    is_free_tier:
+      type: boolean
+      description: Indicates if API Key is free tier. This value affects page size, 10 if free tier, 50 if not.
+      default: true
+      airbyte_secret: true
+      order: 1
     OneOf:
       query:
         type: string
@@ -28,23 +34,23 @@ connectionSpecification:
             - Search `Social` or `pizza` but not `pasta`: query = "social OR pizza -pasta"
             - Search `Social` or `pizza` or `pasta`: query = "social OR pizza OR pasta"
           Note: You can't use AND and OR in the same query.
-        order: 1
+        order: 2
       query_in_title:
         type: string
         description: Same as `query`, but restricting the search to only the news title. It cannot be used along with `query`.
-        order: 1
+        order: 2
     domain:
       type: array
       description: Domains (maximum 5) to restrict the search to. Use the sources stream to find top sources id.
       maxitems: 5
       items:
         type: string
-      order: 2
+      order: 3
     country:
       type: array
       description: 2-letter ISO 3166-1 countries (maximum 5) to restrict the search to.
       maxitems: 5
-      order: 3
+      order: 4
       items:
         type: string
         enum:
@@ -128,7 +134,7 @@ connectionSpecification:
       type: array
       description: Categories (maximum 5) to restrict the search to.
       maxitems: 5
-      order: 4
+      order: 5
       items:
         type: string
         enum:
@@ -147,7 +153,7 @@ connectionSpecification:
       type: array
       description: Languages (maximum 5) to restrict the search to.
       maxitems: 5
-      order: 5
+      order: 6
       items:
         type: string
         enum:

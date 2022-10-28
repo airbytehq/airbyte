@@ -14,13 +14,25 @@ definitions:
   base_retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
-    paginator:
-      type: NoPagination
   base_stream:
     retriever:
       $ref: "*ref(definitions.base_retriever)"
       requester: 
         $ref: "*ref(definitions.base_requester)"
+  cursor_paginator:
+    type: "DefaultPaginator"
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ response['nextPage'] }}"
+      page_size: 10
+      # page_size: !!int "{% if config['is_free_tier'] %}{{ 10 }}{% else %}{{ 50 }}{% endif %}"
+    page_token_option:
+      field_name: "page"
+      inject_into: "request_parameter"
+    page_size_option: # This is useless, only there because it is required, but page sizes are managed automatically by API subscription type 
+      field_name: "X-Pagination-Page-Size"
+      inject_into: "header"
+    url_base: "*ref(definitions.base_requester.url_base)"
   latest_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -39,6 +51,8 @@ definitions:
             q: "{{ config['query'] | urlencode }}"
             qInTitle: "{{ config['query_in_title'] | urlencode }}"
             domain: "{{ ','.join(config['domain']) }}"
+      paginator:
+        $ref: "*ref(definitions.cursor_paginator)"
   sources_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
