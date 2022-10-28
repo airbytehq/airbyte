@@ -1,44 +1,36 @@
 {
   "type": "object",
   "properties": {
-    "items": {
+    "project": {
+      "type": "string"
+    },
+    "access": {
+      "type": "string"
+    },
+    "year": {
+      "type": "string"
+    },
+    "month": {
+      "type": "string"
+    },
+    "day": {
+      "type": "string"
+    },
+    "articles": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "project": {
+          "rank": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "article": {
             "type": "string"
           },
-          "access": {
-            "type": "string"
-          },
-          "year": {
-            "type": "string"
-          },
-          "month": {
-            "type": "string"
-          },
-          "day": {
-            "type": "string"
-          },
-          "articles": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "rank": {
-                  "type": "integer",
-                  "format": "int32"
-                },
-                "article": {
-                  "type": "string"
-                },
-                "views": {
-                  "type": "integer",
-                  "format": "int64"
-                }
-              }
-            }
+          "views": {
+            "type": "integer",
+            "format": "int64"
           }
         }
       }

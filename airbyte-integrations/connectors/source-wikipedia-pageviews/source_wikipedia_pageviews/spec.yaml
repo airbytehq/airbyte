@@ -10,15 +10,13 @@ connectionSpecification:
     - article
     - start
     - end
-    - year
-    - month
-    - day
     - country
   additionalProperties: true
   properties:
     # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
     project:
       type: string
+      title: Project
       description: If you want to filter by project, use the domain of any Wikimedia project.
       examples:
         - en.wikipedia.org
@@ -26,6 +24,7 @@ connectionSpecification:
         - commons.wikimedia.org
     access:
       type: string
+      title: Access
       description: If you want to filter by access method, use one of desktop, mobile-app or mobile-web. If you are interested in pageviews regardless of access method, use all-access.
       examples:
         - all-access
@@ -34,6 +33,7 @@ connectionSpecification:
         - mobile-web
     agent:
       type: string
+      title: Agent
       description: If you want to filter by agent type, use one of user, automated or spider. If you are interested in pageviews regardless of agent type, use all-agents.
       examples:
         - all-agents
@@ -42,6 +42,7 @@ connectionSpecification:
         - automated
     article:
       type: string
+      title: Article
       description: The title of any article in the specified project. Any spaces should be replaced with underscores. It also should be URI-encoded, so that non-URI-safe characters like %, / or ? are accepted.
       examples:
         - Are_You_the_One%3F
@@ -53,21 +54,24 @@ connectionSpecification:
     #     - monthly
     start:
       type: string
+      title: Start
       description: The date of the first day to include, in YYYYMMDD or YYYYMMDDHH format.
     end:
       type: string
+      title: End
       description: The date of the last day to include, in YYYYMMDD or YYYYMMDDHH format.
-    year:
-      type: string
-      description: Year in YYYY format.
-    month:
-      type: string
-      description: Month in MM format.
-    day:
-      type: string
-      description: Day in DD format.
+    # year:
+    #   type: string
+    #   description: Year in YYYY format.
+    # month:
+    #   type: string
+    #   description: Month in MM format.
+    # day:
+    #   type: string
+    #   description: Day in DD format.
     country:
       type: string
+      title: Country
       description: The ISO 3166-1 alpha-2 code of a country for which to retrieve top articles.
       examples:
         - FR

@@ -10,13 +10,25 @@ definitions:
     request_options_provider:
       request_headers:
         "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbytehq/airbyte)"
-  stream_slicer:
+  top_stream_slicer:
+    type: DatetimeStreamSlicer
+    start_datetime: 
+      datetime: "{{config.start}}"
+      datetime_format: "%Y%m%d"
+    end_datetime: 
+      datetime: "{{config.start}}"
+      datetime_format: "%Y%m%d"
+    step: "1d"
+    cursor_field: "timestamp"
+    datetime_format: "%Y/%m/%d"
+  per_article_stream_slicer:
     type: DatetimeStreamSlicer
     start_datetime: "{{config.start}}"
     end_datetime: "{{config.end}}"
     step: "1d"
     cursor_field: "timestamp"
     datetime_format: "%Y%m%d"
+
   per_article_requester:
     $options:
       $ref: "*ref(definitions.requester)"
@@ -24,8 +36,7 @@ definitions:
   top_requester:
     $options:
       $ref: "*ref(definitions.requester)"
-    path: "/top/{{config.project}}/{{config.access}}/{{config.year}}/{{config.month}}/{{config.day}}"
-
+    path: "/top/{{config.project}}/{{config.access}}/{{stream_slice.start_time}}"
   per_article_retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -34,7 +45,8 @@ definitions:
     requester:
       $ref: "*ref(definitions.per_article_requester)"
     stream_slicer:
-      $ref: "*ref(definitions.stream_slicer)"
+      $ref: "*ref(definitions.per_article_stream_slicer)"
+
   top_retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -42,6 +54,8 @@ definitions:
       type: NoPagination
     requester:
       $ref: "*ref(definitions.top_requester)"
+    stream_slicer:
+      $ref: "*ref(definitions.top_stream_slicer)"
   per_article_stream:
     retriever:
       $ref: "*ref(definitions.per_article_retriever)"
