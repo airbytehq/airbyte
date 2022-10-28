@@ -1244,8 +1244,8 @@ class DealsRecent(IncrementalStream):
     def _transform(self, records: Iterable) -> Iterable:
         """Preprocess record before emitting"""
         for record in records:
-            record = self._cast_record_fields_if_needed(record)
-            if self.created_at_field and self.updated_at_field and record.get('properties').get('hs_lastmodifieddate').get('timestamp')is None:
+            #record = self._cast_record_fields_if_needed(record)
+            if self.created_at_field and self.updated_at_field and record.get('properties').get('hs_lastmodifieddate').get('timestamp') is None:
                 record['properties']['hs_lastmodifieddate']['timestamp'] = record['properties']['hs_createdate']['timestamp']
             yield record
 
@@ -1285,10 +1285,20 @@ class DealsRecent(IncrementalStream):
         next_page_token = None
         latest_cursor = None
 
+
         while not pagination_complete:
             response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
 
+
+            logger.info(f"Total Data: {response.json().get('total')}")
+
+            logger.info(f"Has More Data: {response.json().get('hasMore')}")
+
+            logger.info(f"Offset: {response.json().get('offset')}")
+
             records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+
+            
 
             if self.filter_old_records:
                 records = self._filter_old_records(records)
@@ -1296,19 +1306,20 @@ class DealsRecent(IncrementalStream):
             for record in records:
                 cursor = self._field_to_datetime(record['properties']['hs_lastmodifieddate']['timestamp'])
                 latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+
                 yield record
 
-            next_page_token = self.next_page_token(response)
-            if self.state and next_page_token and next_page_token["offset"] >= 10000:
-                # As per Hubspot documentation, the recent engagements endpoint will only return the 10K
-                # most recently updated engagements. Since they are returned sorted by `lastUpdated` in
-                # descending order, we stop getting records if we have already reached 10,000. Attempting
-                # to get more than 10K will result in a HTTP 400 error.
-                # https://legacydocs.hubspot.com/docs/methods/engagements/get-recent-engagements
-                next_page_token = None
 
-            if not next_page_token:
+            logger.info(f"Latest Cusrsor: {latest_cursor}")
+            has_more = response.json().get('hasMore')
+
+
+            if has_more:
+                next_page_token = {"offset": response.json().get('offset')}
+                logger.info(f"next_page_token: {next_page_token}")
+            else:
                 pagination_complete = True
+
 
         # Always return an empty generator just in case no records were ever yielded
         yield from []
