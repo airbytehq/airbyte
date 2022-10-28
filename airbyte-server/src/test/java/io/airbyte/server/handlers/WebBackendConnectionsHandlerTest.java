@@ -278,10 +278,10 @@ class WebBackendConnectionsHandlerTest {
 
     expectedWithNewSchemaAndBreakingChange = expectedWebBackendConnectionReadObject(connectionRead, sourceRead, destinationRead,
         new OperationReadList().operations(expected.getOperations()), SchemaChange.BREAKING, now, modifiedCatalog, null)
-        .catalogDiff(new CatalogDiff().transforms(List.of(
-            new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)
-                .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("users-data1"))
-                .updateStream(null))));
+            .catalogDiff(new CatalogDiff().transforms(List.of(
+                new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)
+                    .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("users-data1"))
+                    .updateStream(null))));
 
     expectedWithNewSchemaBroken = expectedWebBackendConnectionReadObject(brokenConnectionRead, sourceRead, destinationRead, brokenOperationReadList,
         SchemaChange.BREAKING, now, connectionRead.getSyncCatalog(), brokenConnectionRead.getSourceCatalogId());
