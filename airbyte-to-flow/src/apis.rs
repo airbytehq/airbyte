@@ -17,13 +17,6 @@ pub enum FlowCaptureOperation {
     Pull,
 }
 
-// Mode of streaming
-#[derive(Clone, strum_macros::Display, clap::ValueEnum, PartialEq, Debug)]
-#[strum(serialize_all = "kebab_case")]
-pub enum StreamMode {
-    TCP,
-}
-
 // An interceptor modifies the request/response streams between Flow runtime and the connector.
 // InterceptorStream defines the type of input and output streams handled by interceptors.
 pub type InterceptorStream = Pin<Box<dyn Stream<Item = Result<Bytes, Error>> + Send + Sync>>;

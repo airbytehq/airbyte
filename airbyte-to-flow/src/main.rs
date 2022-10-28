@@ -1,5 +1,5 @@
+use anyhow::Context;
 use clap::Parser;
-use errors::Error;
 use flow_cli_common::{init_logging, LogArgs};
 
 pub mod apis;
@@ -8,7 +8,7 @@ pub mod errors;
 pub mod interceptors;
 pub mod libs;
 
-use apis::{FlowCaptureOperation, StreamMode};
+use apis::FlowCaptureOperation;
 use connector_runner::run_airbyte_source_connector;
 
 #[derive(clap::Parser, Debug)]
@@ -25,8 +25,7 @@ pub struct Args {
     log_args: LogArgs,
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Error> {
+fn main() -> anyhow::Result<()> {
     let Args {
         connector_entrypoint,
         operation,
@@ -34,10 +33,19 @@ async fn main() -> Result<(), Error> {
     } = Args::parse();
     init_logging(&log_args);
 
-    let stream_mode = StreamMode::TCP;
-    let socket = "0.0.0.0:2222";
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .context("building tokio runtime")?;
 
-    let result = run_airbyte_source_connector(connector_entrypoint, operation, socket, stream_mode).await;
+    let result = runtime.block_on(run_airbyte_source_connector(connector_entrypoint, operation));
+
+    // Explicitly call Runtime::shutdown_background as an alternative to calling Runtime::Drop.
+    // This shuts down the runtime without waiting for blocking background tasks to complete,
+    // which is good because they likely never will. Consider a blocking call to read from stdin,
+    // where the sender is itself waiting for us to exit or write to our stdout.
+    // (Note that tokio::io maps AsyncRead of file descriptors to blocking tasks under the hood).
+    runtime.shutdown_background();
 
     match result {
         Err(err) => {

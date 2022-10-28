@@ -130,7 +130,7 @@ jobs:
           - source-amplitude
           - source-intercom
           - source-google-ads
-          - source-salesforce
+          # - source-salesforce disabled for now
           - source-google-analytics-data-api
           - source-linkedin-ads
           - source-bing-ads
