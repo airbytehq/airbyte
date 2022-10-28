@@ -72,7 +72,7 @@ docs/SUMMARY.md
 **/specs_secrets_mask.yaml
 
 # Files generated for uploading to GCS
-resources/seed/oss_catalog.json
+airbyte-config/**/resources/seed/oss_catalog.json
 
 # Helm charts .tgz dependencies
 charts/**/charts
