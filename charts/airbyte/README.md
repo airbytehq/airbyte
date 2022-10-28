@@ -104,7 +104,7 @@ Helm chart to deploy airbyte
 | pod-sweeper.extraVolumeMounts | list | `[]` |  |
 | pod-sweeper.extraVolumes | list | `[]` |  |
 | pod-sweeper.image.pullPolicy | string | `"IfNotPresent"` |  |
-| pod-sweeper.image.repository | string | `"bitnami/kubectl"` |  |
+| pod-sweeper.image.repository | string | `"airbyte/kubectl"` |  |
 | pod-sweeper.image.tag | string | `"latest"` |  |
 | pod-sweeper.livenessProbe.enabled | bool | `true` |  |
 | pod-sweeper.livenessProbe.failureThreshold | int | `3` |  |

@@ -94,6 +94,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-proxy'
     include ':airbyte-server'
     include ':airbyte-temporal'
+    include ':airbyte-kubectl'
     include ':airbyte-tests'
     include ':airbyte-webapp'
     include ':airbyte-webapp-e2e-tests'

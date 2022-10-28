@@ -115,7 +115,7 @@ enabled: true
 ##  podSweeper.image.pullPolicy The pull policy for the pod sweeper image
 ##  podSweeper.image.tag The pod sweeper image tag to use
 image:
-  repository: bitnami/kubectl
+  repository: airbyte/kubectl
   pullPolicy: IfNotPresent
   tag: latest
 

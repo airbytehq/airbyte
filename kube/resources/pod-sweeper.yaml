@@ -65,7 +65,7 @@ spec:
       serviceAccountName: airbyte-admin
       containers:
         - name: airbyte-pod-sweeper
-          image: bitnami/kubectl
+          image: airbyte/kubectl
           imagePullPolicy: IfNotPresent
           env:
             - name: KUBE_NAMESPACE

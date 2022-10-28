@@ -14,6 +14,7 @@ projectDir=(
   "temporal"
   "webapp"
   "workers"
+  "kubectl"
 )
 
 # Set default values to required vars. If set in env, values will be taken from there.
