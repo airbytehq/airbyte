@@ -1356,6 +1356,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/sftp
   sourceType: file
   releaseStage: alpha
+- name: SFTP Bulk
+  sourceDefinitionId: 31e3242f-dee7-4cdc-a4b8-8e06c5458517
+  dockerRepository: airbyte/source-sftp-bulk
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sftp-bulk
+  sourceType: file
+  releaseStage: alpha
 - name: Firebolt
   sourceDefinitionId: 6f2ac653-8623-43c4-8950-19218c7caf3d
   dockerRepository: airbyte/source-firebolt
