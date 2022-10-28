@@ -7,7 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.utils.transform import TypeTransformer, TransformConfig
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from chargebee import APIError
 from chargebee.list_result import ListResult
 from chargebee.model import Model

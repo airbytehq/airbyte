@@ -11,7 +11,7 @@ interface ResetStreamsDetailsProps {
 }
 
 export const ResetStreamsDetails: React.FC<ResetStreamsDetailsProps> = ({ names = [], isOpen }) => (
-  <Text as="p" size="sm" className={classNames(styles.textContainer, { [styles.open]: isOpen })}>
+  <Text size="sm" className={classNames(styles.textContainer, { [styles.open]: isOpen })}>
     {names.map((name) => (
       <span key={name} className={styles.text}>
         {name}

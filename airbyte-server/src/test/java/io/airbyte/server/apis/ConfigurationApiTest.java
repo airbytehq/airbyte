@@ -17,13 +17,11 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.StatePersistence;
-import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
-import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 
 class ConfigurationApiTest {
@@ -40,8 +38,6 @@ class ConfigurationApiTest {
         mock(SecretsRepositoryReader.class),
         mock(SecretsRepositoryWriter.class),
         mock(SynchronousSchedulerClient.class),
-        mock(Database.class),
-        mock(Database.class),
         mock(StatePersistence.class),
         mock(TrackingClient.class),
         WorkerEnvironment.DOCKER,
@@ -49,9 +45,7 @@ class ConfigurationApiTest {
         new AirbyteVersion("0.1.0-alpha"),
         Path.of(""),
         mock(HttpClient.class),
-        mock(EventRunner.class),
-        mock(Flyway.class),
-        mock(Flyway.class));
+        mock(EventRunner.class));
 
     assertFalse(configurationApi.getHealthCheck().getAvailable());
   }
