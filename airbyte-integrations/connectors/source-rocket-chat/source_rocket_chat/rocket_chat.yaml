@@ -32,6 +32,13 @@ definitions:
       field_name: "offset"
     pagination_strategy:
       type: "OffsetIncrement"
+  custom_retriever:
+    record_selector:
+      $ref: "*ref(definitions.update_selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -51,12 +58,7 @@ definitions:
   rooms_stream:
     $ref: "*ref(definitions.base_stream)"
     retriever:
-      record_selector:
-        $ref: "*ref(definitions.update_selector)"
-      paginator:
-        type: NoPagination
-      requester:
-        $ref: "*ref(definitions.requester)"
+      $ref: "*ref(definitions.custom_retriever)"
     $options:
       name: "rooms"
       primary_key: "_id"
@@ -80,12 +82,28 @@ definitions:
       name: "roles"
       primary_key: "_id"
       path: "/roles.list"
+  subscriptions_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.custom_retriever)"
+    $options:
+      name: "subscriptions"
+      primary_key: "_id"
+      path: "/subscriptions.get"
+  users_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "users"
+      primary_key: "_id"
+      path: "/users.list"
 
 streams:
   - "*ref(definitions.teams_stream)"
   - "*ref(definitions.rooms_stream)"
   - "*ref(definitions.channels_stream)"
   - "*ref(definitions.roles_stream)"
+  - "*ref(definitions.subscriptions_stream)"
+  - "*ref(definitions.users_stream)"
 
 check:
   stream_names:

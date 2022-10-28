@@ -15,10 +15,10 @@
       "type": ["null", "string"]
     },
     "createdBy": {
-      "type": ["null", "string"]
+      "type": ["null", "object"]
     },
     "_updatedAt": {
-      "type": ["null", "object"]
+      "type": ["null", "string"]
     },
     "roomId": {
       "type": ["null", "string"]

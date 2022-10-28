@@ -21,10 +21,10 @@
       "type": ["null", "boolean"]
     },
     "name": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "t": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "msgs": {
       "type": ["null", "integer"]

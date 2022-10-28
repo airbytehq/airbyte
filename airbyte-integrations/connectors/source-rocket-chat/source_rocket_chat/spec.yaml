@@ -25,6 +25,6 @@ connectionSpecification:
         case sensitive.
       airbyte_secret: true
     user_id:
-      title: User ID
+      title: User ID.
       type: string
       description: Your User Id.
