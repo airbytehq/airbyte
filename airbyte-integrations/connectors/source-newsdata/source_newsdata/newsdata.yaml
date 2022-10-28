@@ -21,7 +21,6 @@ definitions:
       $ref: "*ref(definitions.base_retriever)"
       requester: 
         $ref: "*ref(definitions.base_requester)"
-  common_inputs:
   latest_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
