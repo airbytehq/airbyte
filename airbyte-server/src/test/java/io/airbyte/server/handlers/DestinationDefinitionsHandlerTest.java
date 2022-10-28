@@ -561,13 +561,13 @@ class DestinationDefinitionsHandlerTest {
         Jsons.clone(destinationDefinition).withDockerImageTag(newDockerImageTag).withSpec(newSpec).withProtocolVersion(newProtocolVersion);
 
     assertThrows(RuntimeException.class, () -> destinationDefinitionsHandler.updateDestinationDefinition(
-          new DestinationDefinitionUpdate().destinationDefinitionId(this.destinationDefinition.getDestinationDefinitionId())
-              .dockerImageTag(newDockerImageTag))
-    );
+        new DestinationDefinitionUpdate().destinationDefinitionId(this.destinationDefinition.getDestinationDefinitionId())
+            .dockerImageTag(newDockerImageTag)));
 
     verify(schedulerSynchronousClient).createGetSpecJob(newImageName);
     verify(configRepository, never()).writeStandardDestinationDefinition(updatedDestination);
   }
+
   @Test
   @DisplayName("deleteDestinationDefinition should correctly delete a sourceDefinition")
   void testDeleteDestinationDefinition() throws ConfigNotFoundException, IOException, JsonValidationException {

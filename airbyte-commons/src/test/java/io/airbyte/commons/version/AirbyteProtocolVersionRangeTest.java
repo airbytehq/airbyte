@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.commons.version;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -32,4 +36,5 @@ class AirbyteProtocolVersionRangeTest {
     assertFalse(range.isSupported(new Version("1.0.0")));
     assertFalse(range.isSupported(new Version("3.0.0")));
   }
+
 }

@@ -400,6 +400,7 @@ class SourceDefinitionsHandlerTest {
                 .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
                 .withProtocolVersion(DEFAULT_PROTOCOL_VERSION));
   }
+
   @Test
   @DisplayName("createCustomSourceDefinition should correctly create a sourceDefinition")
   void testCreateCustomSourceDefinition() throws URISyntaxException, IOException, JsonValidationException {
@@ -548,8 +549,7 @@ class SourceDefinitionsHandlerTest {
 
     assertThrows(RuntimeException.class, () -> sourceDefinitionsHandler
         .updateSourceDefinition(
-            new SourceDefinitionUpdate().sourceDefinitionId(this.sourceDefinition.getSourceDefinitionId()).dockerImageTag(newDockerImageTag))
-    );
+            new SourceDefinitionUpdate().sourceDefinitionId(this.sourceDefinition.getSourceDefinitionId()).dockerImageTag(newDockerImageTag)));
 
     verify(schedulerSynchronousClient).createGetSpecJob(newImageName);
     verify(configRepository, never()).writeStandardSourceDefinition(updatedSource);
