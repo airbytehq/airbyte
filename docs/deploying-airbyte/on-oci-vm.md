@@ -87,7 +87,7 @@ Alternatively, you can get Airbyte running on your OCI VM instance using a diffe
 
 	Replace `<private-key-file.key>` with the path to your private key.
 
-2. Open the URL  [http://localhost:8000/](http://localhost:8000/) in a Browser.
+2. On your browser, visit port 8000 [port 8000](http://localhost:8000/)
 
 :::info
 
