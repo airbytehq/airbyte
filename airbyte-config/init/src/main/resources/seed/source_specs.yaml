@@ -6466,6 +6466,32 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+- dockerImage: "airbyte/source-mailjet-mail:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/mailjet-mail"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Mailjet Mail Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "api_key_secret"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API Key"
+          type: "string"
+          description: "Your API Key. See <a href=\"https://dev.mailjet.com/email/guides/#authentication\"\
+            >here</a>."
+        api_key_secret:
+          title: "API Secret Key"
+          type: "string"
+          description: "Your API Secret Key. See <a href=\"https://dev.mailjet.com/email/guides/#authentication\"\
+            >here</a>."
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-mailerlite:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailerlite"
