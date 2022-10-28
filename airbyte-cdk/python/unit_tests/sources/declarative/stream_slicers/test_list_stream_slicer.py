@@ -56,11 +56,8 @@ def test_update_cursor(test_name, stream_slice, last_record, expected_state):
         updated_state = slicer.get_stream_state()
         assert expected_state == updated_state
     else:
-        try:
+        with pytest.raises(ValueError):
             slicer.update_cursor(stream_slice, last_record)
-            assert False
-        except ValueError:
-            pass
 
 
 @pytest.mark.parametrize(
