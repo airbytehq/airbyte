@@ -79,6 +79,7 @@ class DefaultAirbyteDestinationTest {
   private IntegrationLauncher integrationLauncher;
   private Process process;
   private AirbyteStreamFactory streamFactory;
+  private AirbyteMessageBufferedWriterFactory messageWriterFactory;
   private ByteArrayOutputStream outputStream;
 
   @BeforeEach
@@ -105,6 +106,7 @@ class DefaultAirbyteDestinationTest {
     when(process.getInputStream()).thenReturn(inputStream);
 
     streamFactory = noop -> MESSAGES.stream();
+    messageWriterFactory = new DefaultAirbyteMessageBufferedWriterFactory();
   }
 
   @AfterEach
@@ -120,7 +122,7 @@ class DefaultAirbyteDestinationTest {
   @SuppressWarnings("BusyWait")
   @Test
   void testSuccessfulLifecycle() throws Exception {
-    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher, streamFactory);
+    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher, streamFactory, messageWriterFactory);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
     final AirbyteMessage recordMessage = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
@@ -159,7 +161,7 @@ class DefaultAirbyteDestinationTest {
   @Test
   void testTaggedLogs() throws Exception {
 
-    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher, streamFactory);
+    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher, streamFactory, messageWriterFactory);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
     final AirbyteMessage recordMessage = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
