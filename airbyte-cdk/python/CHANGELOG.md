@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.1
+Low-code: Fix a few bugs with the stream slicers
+
 ## 0.4.0
 Low-code: Add support for custom error messages on error response filters
 

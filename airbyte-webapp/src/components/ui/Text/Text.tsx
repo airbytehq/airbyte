@@ -3,7 +3,7 @@ import React from "react";
 
 import styles from "./text.module.scss";
 
-type TextSize = "sm" | "md" | "lg";
+type TextSize = "xs" | "sm" | "md" | "lg";
 type TextElementType = "p" | "span" | "div";
 
 interface TextProps {
@@ -16,6 +16,7 @@ interface TextProps {
 
 const getTextClassNames = ({ size, centered, bold }: Required<Pick<TextProps, "size" | "centered" | "bold">>) => {
   const sizes: Record<TextSize, string> = {
+    xs: styles.xs,
     sm: styles.sm,
     md: styles.md,
     lg: styles.lg,
