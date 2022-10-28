@@ -6411,6 +6411,25 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+- dockerImage: "airbyte/source-mailerlite:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/mailerlite"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Mailerlite Spec"
+      type: "object"
+      required:
+      - "api_token"
+      additionalProperties: true
+      properties:
+        api_token:
+          type: "string"
+          description: "Your API Token. See <a href=\"https://developers.mailerlite.com/docs/#authentication\"\
+            >here</a>."
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-mailgun:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailgun"
