@@ -1,52 +1,28 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-import logging
-from typing import Any, List, Mapping, Tuple, Union, MutableMapping, Iterator
 
-import requests
-from airbyte_cdk.models import AirbyteCatalog, AirbyteStream, ConfiguredAirbyteCatalog, AirbyteStateMessage, \
-    AirbyteMessage
+import logging
+from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple, Union
+
+from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, AirbyteStream, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
+from .dataverse import do_request, get_auth
 from .streams import IncrementalMicrosoftDataverseStream
-
-from .authenticator import Crm365Oauth2Authenticator
 
 
 class SourceMicrosoftDataverse(AbstractSource):
-
     def __init__(self):
         self.catalogs = None
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
-        auth = Crm365Oauth2Authenticator(
-            token_refresh_endpoint=f'https://login.microsoftonline.com/{config["tenant_id"]}/oauth2/v2.0/token',
-            client_id=config["client_id"],
-            client_secret=config["client_secret_value"],
-            scopes=[f'{config["url"]}/.default'],
-            refresh_token=None
-        )
-        headers = auth.get_auth_header()
-        # Call a protected API with the access token.
-        response = requests.get(
-            config["url"] + "/api/data/v9.2/EntityDefinitions?$expand=Attributes",
-            headers=headers,
-        )
+        response = do_request(config, "EntityDefinitions?$expand=Attributes")
         response_json = response.json()
         streams = []
         for entity in response_json["value"]:
-            schema = {
-                "properties": {
-                    "_ab_cdc_updated_at": {
-                        "type": "string"
-                    },
-                    "_ab_cdc_deleted_at": {
-                        "type": ["null", "string"]
-                    }
-                }
-            }
+            schema = {"properties": {"_ab_cdc_updated_at": {"type": "string"}, "_ab_cdc_deleted_at": {"type": ["null", "string"]}}}
             for attribute in entity["Attributes"]:
                 if attribute["AttributeType"] == "String":
                     attribute_type = {"type": ["null", "string"]}
@@ -84,19 +60,7 @@ class SourceMicrosoftDataverse(AbstractSource):
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         try:
-            auth = Crm365Oauth2Authenticator(
-                    token_refresh_endpoint=f'https://login.microsoftonline.com/{config["tenant_id"]}/oauth2/v2.0/token',
-                    client_id=config["client_id"],
-                    client_secret=config["client_secret_value"],
-                    scopes=[f'{config["url"]}/.default'],
-                    refresh_token=None
-                    )
-            headers = auth.get_auth_header()
-            # Call a protected API with the access token.
-            response = requests.get(
-                config["url"] + "/api/data/v9.2/",
-                headers=headers,
-            )
+            response = do_request(config, "")
             # Raises an exception for error codes (4xx or 5xx)
             response.raise_for_status()
             return True, None
@@ -117,23 +81,22 @@ class SourceMicrosoftDataverse(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        auth = Crm365Oauth2Authenticator(
-                token_refresh_endpoint=f'https://login.microsoftonline.com/{config["tenant_id"]}/oauth2/v2.0/token',
-                client_id=config["client_id"],
-                client_secret=config["client_secret_value"],
-                scopes=[f'{config["url"]}/.default'],
-                refresh_token=None
-                )
+        auth = get_auth(config)
 
         streams = []
         for catalog in self.catalogs.streams:
-            streams.append(IncrementalMicrosoftDataverseStream(
-                url=config["url"],
-                stream_name=catalog.stream.name,
-                primary_key=catalog.primary_key,
-                schema=catalog.stream.json_schema,
-                max_num_pages=config["max_num_pages"],
-                odata_maxpagesize=config["odata_maxpagesize"],
-                authenticator=auth)
+            response = do_request(config, f"EntityDefinitions(LogicalName='{catalog.stream.name}')")
+            response_json = response.json()
+            streams.append(
+                IncrementalMicrosoftDataverseStream(
+                    url=config["url"],
+                    stream_name=catalog.stream.name,
+                    stream_path=response_json["LogicalCollectionName"],
+                    primary_key=catalog.primary_key,
+                    schema=catalog.stream.json_schema,
+                    max_num_pages=config["max_num_pages"],
+                    odata_maxpagesize=config["odata_maxpagesize"],
+                    authenticator=auth,
+                )
             )
         return streams

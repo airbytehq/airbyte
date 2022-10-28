@@ -14,7 +14,7 @@
           "incremental"
         ]
       },
-      "default_cursor_field": [],
+      "default_cursor_field": [ "_ab_cdc_updated_at" ],
       "source_defined_primary_key": [
         [
           "<entity_primary_key>"

@@ -1,17 +1,15 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-import datetime
-from abc import ABC
 
+from abc import ABC
+from datetime import datetime
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from urllib import parse
 
 import requests
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
-
-from urllib import parse
-import logging
 
 
 # Basic full refresh stream
@@ -47,9 +45,6 @@ class MicrosoftDataverseStream(HttpStream, ABC):
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        """
-        Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
-        """
         return {"Cache-Control": "no-cache", "OData-Version": "4.0", "Content-Type": "application/json"}
 
 
@@ -58,19 +53,21 @@ class IncrementalMicrosoftDataverseStream(MicrosoftDataverseStream, IncrementalM
 
     maxNumPages = 0
     numPagesRetrieved = 0
-    odata_maxpagesize = 2000
+    odata_maxpagesize = 5000
     delta_token_field = "$deltatoken"
+    update_field = "modifiedon"
     today_date = None
     primary_key = ""
 
-    def __init__(self, url, stream_name, schema, primary_key, max_num_pages, odata_maxpagesize, **kwargs):
+    def __init__(self, url, stream_name, stream_path, schema, primary_key, max_num_pages, odata_maxpagesize, **kwargs):
         super().__init__(url, **kwargs)
+        self._cursor_value = None
         self.stream_name = stream_name
+        self.stream_path = stream_path
         self.primary_key = primary_key
         self.schema = schema
         self.maxNumPages = max_num_pages
         self.odata_maxpagesize = odata_maxpagesize
-        self.today_date = datetime.datetime.combine(datetime.date.today(), datetime.time.max, datetime.timezone.utc)
 
     state_checkpoint_interval = None
 
@@ -87,16 +84,12 @@ class IncrementalMicrosoftDataverseStream(MicrosoftDataverseStream, IncrementalM
         return True
 
     @property
-    def update_field(self):
-        return "modifiedon"
-
-    @property
     def state(self) -> Mapping[str, Any]:
         return {self.delta_token_field: str(self._cursor_value)}
 
     @property
     def cursor_field(self) -> str:
-        return "_ab_cdc_updated_at"    # Parameter returned inside response's deltaLink field
+        return "_ab_cdc_updated_at"  # Defaulting to the cdc field so normalization gets it
 
     # Sets the state got by state getter. "value" is the return of state getter -> dict
     @state.setter
@@ -109,9 +102,11 @@ class IncrementalMicrosoftDataverseStream(MicrosoftDataverseStream, IncrementalM
         """
         Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
         """
-        dHeaders = super().request_headers(stream_state=stream_state)
-        dHeaders.update({"Prefer": "odata.track-changes,odata.maxpagesize="+str(self.odata_maxpagesize)})  # odata.track-changes -> Header that enables change tracking
-        return dHeaders
+        request_headers = super().request_headers(stream_state=stream_state)
+        request_headers.update(
+            {"Prefer": "odata.track-changes,odata.maxpagesize=" + str(self.odata_maxpagesize)}
+        )  # odata.track-changes -> Header that enables change tracking
+        return request_headers
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -119,29 +114,29 @@ class IncrementalMicrosoftDataverseStream(MicrosoftDataverseStream, IncrementalM
         """
         :return a dict containing the parameters to be used in the request
         """
-        dParams = super().request_params(stream_state)
+        request_params = super().request_params(stream_state)
         # If there is not a nextLink(contains "next_page_token") in the response, means it is the last page.
         # In this case, the deltatoken is passed instead.
         if next_page_token is None:
-            dParams.update(stream_state)
-            return dParams
+            request_params.update(stream_state)
+            return request_params
         elif next_page_token is not None:
-            dParams.update(next_page_token)
-            return dParams
+            request_params.update(next_page_token)
+            return request_params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        responseJson = response.json()
-        if "@odata.deltaLink" in responseJson:
-            deltaLink = responseJson["@odata.deltaLink"]
-            deltaLinkParams = dict(parse.parse_qsl(parse.urlsplit(deltaLink).query))
-            self._cursor_value = deltaLinkParams[self.delta_token_field]
-        for result in responseJson["value"]:
+        response_json = response.json()
+        if "@odata.deltaLink" in response_json:
+            delta_link = response_json["@odata.deltaLink"]
+            delta_link_params = dict(parse.parse_qsl(parse.urlsplit(delta_link).query))
+            self._cursor_value = delta_link_params[self.delta_token_field]
+        for result in response_json["value"]:
             if "@odata.context" in result and result["reason"] == "deleted":
-                result.update({self.primary_key: result["id"]})
+                result.update({self.primary_key[0][0]: result["id"]})
                 result.pop("@odata.context", None)
                 result.pop("id", None)
                 result.pop("reason", None)
-                result.update({"_ab_cdc_deleted_at": self.today_date.isoformat()})
+                result.update({"_ab_cdc_deleted_at": datetime.now().isoformat()})
             else:
                 result.update({"_ab_cdc_updated_at": result[self.update_field]})
 
@@ -153,20 +148,14 @@ class IncrementalMicrosoftDataverseStream(MicrosoftDataverseStream, IncrementalM
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
-        
-        responseJson = response.json()
-        
-        # $skiptoken is one of the parameters of nextLink alongside 
-        # the other parameters(query, etc..) sent in the first request.  
-        # It is used to get the next page. 
-        if self.maxNumPages != 0 and self.numPagesRetrieved >= self.maxNumPages-1:
-            logging.info(f"\nO limite de {self.maxNumPages} páginas foi atingido.\n")
-            return None
-        elif "@odata.nextLink" in responseJson:
-            nextLink = responseJson["@odata.nextLink"]
-            nextLinkParams = dict(parse.parse_qsl(parse.urlsplit(nextLink).query))
+
+        response_json = response.json()
+
+        if "@odata.nextLink" in response_json:
+            next_link = response_json["@odata.nextLink"]
+            next_link_params = dict(parse.parse_qsl(parse.urlsplit(next_link).query))
             self.numPagesRetrieved += 1
-            return nextLinkParams
+            return next_link_params
         else:
             return None
 
@@ -177,4 +166,4 @@ class IncrementalMicrosoftDataverseStream(MicrosoftDataverseStream, IncrementalM
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
-        return self.name + "s"
+        return self.stream_path

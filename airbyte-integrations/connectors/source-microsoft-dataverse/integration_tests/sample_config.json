@@ -3,6 +3,5 @@
   "client_id": "<client_id>",
   "tenant_id": "<tenant_id>",
   "client_secret_value": "<client_secret>",
-  "max_num_pages": 0,
   "odata_maxpagesize": 5000
 }

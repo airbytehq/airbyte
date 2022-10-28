@@ -4,17 +4,17 @@
 
 from unittest.mock import MagicMock
 
-from source_microsoft_dataverse.source import SourceCrm_365
+from source_microsoft_dataverse.source import SourceMicrosoftDataverse
 
 
 def test_check_connection(mocker):
-    source = SourceCrm_365()
+    source = SourceMicrosoftDataverse()
     logger_mock, config_mock = MagicMock(), MagicMock()
     assert source.check_connection(logger_mock, config_mock) == (True, None)
 
 
 def test_streams(mocker):
-    source = SourceCrm_365()
+    source = SourceMicrosoftDataverse()
     config_mock = MagicMock()
     streams = source.streams(config_mock)
     # TODO: replace this with your streams number

@@ -5,26 +5,26 @@
 
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_microsoft_dataverse.source import IncrementalCrm_365Stream
+from source_microsoft_dataverse.source import IncrementalMicrosoftDataverseStream
 
 
 @fixture
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(IncrementalCrm_365Stream, "path", "v0/example_endpoint")
-    mocker.patch.object(IncrementalCrm_365Stream, "primary_key", "test_primary_key")
-    mocker.patch.object(IncrementalCrm_365Stream, "__abstractmethods__", set())
+    mocker.patch.object(IncrementalMicrosoftDataverseStream, "path", "v0/example_endpoint")
+    mocker.patch.object(IncrementalMicrosoftDataverseStream, "primary_key", "test_primary_key")
+    mocker.patch.object(IncrementalMicrosoftDataverseStream, "__abstractmethods__", set())
 
 
 def test_cursor_field(patch_incremental_base_class):
-    stream = IncrementalCrm_365Stream()
+    stream = IncrementalMicrosoftDataverseStream()
     # TODO: replace this with your expected cursor field
     expected_cursor_field = []
     assert stream.cursor_field == expected_cursor_field
 
 
 def test_get_updated_state(patch_incremental_base_class):
-    stream = IncrementalCrm_365Stream()
+    stream = IncrementalMicrosoftDataverseStream()
     # TODO: replace this with your input parameters
     inputs = {"current_stream_state": None, "latest_record": None}
     # TODO: replace this with your expected updated stream state
@@ -33,7 +33,7 @@ def test_get_updated_state(patch_incremental_base_class):
 
 
 def test_stream_slices(patch_incremental_base_class):
-    stream = IncrementalCrm_365Stream()
+    stream = IncrementalMicrosoftDataverseStream()
     # TODO: replace this with your input parameters
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
     # TODO: replace this with your expected stream slices list
@@ -42,18 +42,18 @@ def test_stream_slices(patch_incremental_base_class):
 
 
 def test_supports_incremental(patch_incremental_base_class, mocker):
-    mocker.patch.object(IncrementalCrm_365Stream, "cursor_field", "dummy_field")
-    stream = IncrementalCrm_365Stream()
+    mocker.patch.object(IncrementalMicrosoftDataverseStream, "cursor_field", "dummy_field")
+    stream = IncrementalMicrosoftDataverseStream()
     assert stream.supports_incremental
 
 
 def test_source_defined_cursor(patch_incremental_base_class):
-    stream = IncrementalCrm_365Stream()
+    stream = IncrementalMicrosoftDataverseStream()
     assert stream.source_defined_cursor
 
 
 def test_stream_checkpoint_interval(patch_incremental_base_class):
-    stream = IncrementalCrm_365Stream()
+    stream = IncrementalMicrosoftDataverseStream()
     # TODO: replace this with your expected checkpoint interval
     expected_checkpoint_interval = None
     assert stream.state_checkpoint_interval == expected_checkpoint_interval

@@ -1,8 +1,7 @@
 {
-  "client_id": "b9fbaf73-6210-4b0d-83f9-46c8c793a224",
-  "tenant_id": "9c853ba5-ce7c-4b71-9b14-429ce4db79dd",
-  "client_secret_value": "aopsjdpioasjdoisspaoskdaosidjoaisjdioasd",
-  "url": "https://org85a7fc02.crm2.dynamics.com",
-  "odata.maxpagesize": 100,
-  "max_num_pages": 5
+  "client_id": "<client_id>",
+  "tenant_id": "<tenant_id>",
+  "client_secret_value": "<invalid_client_secret>",
+  "url": "<url>",
+  "odata.maxpagesize": 100
 }
