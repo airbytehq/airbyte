@@ -6,6 +6,7 @@
   "prefix": "",
   "sourceId": "a3295ed7-4acf-4c0b-b16b-07a00e624a52",
   "destinationId": "083a53bc-8bc2-4dc0-b05a-4273a96f3b93",
+  "geography": "auto",
   "syncCatalog": {
     "streams": [
       {
