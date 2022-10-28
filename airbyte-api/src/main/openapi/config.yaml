@@ -3266,6 +3266,10 @@ components:
           format: uuid
         geography:
           $ref: "#/components/schemas/Geography"
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
     WebBackendConnectionCreate:
       type: object
       required:
@@ -3367,6 +3371,10 @@ components:
           format: uuid
         geography:
           $ref: "#/components/schemas/Geography"
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
     WebBackendConnectionUpdate:
       type: object
       description: Used to apply a patch-style update to a connection, which means that null properties remain unchanged
@@ -3414,10 +3422,7 @@ components:
         notifySchemaChanges:
           type: boolean
         nonBreakingChangesPreference:
-          enum:
-            - ignore
-            - disable
-          type: string
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
     ConnectionRead:
       type: object
       required:
@@ -3470,6 +3475,10 @@ components:
           $ref: "#/components/schemas/Geography"
         breakingChange:
           type: boolean
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
     SchemaChange:
       enum:
         - no_change
@@ -4783,10 +4792,12 @@ components:
         notifySchemaChanges:
           type: boolean
         nonBreakingChangesPreference:
-          enum:
-            - ignore
-            - disable
-          type: string
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
+    NonBreakingChangesPreference:
+      enum:
+        - ignore
+        - disable
+      type: string
     WebBackendConnectionReadList:
       type: object
       required:

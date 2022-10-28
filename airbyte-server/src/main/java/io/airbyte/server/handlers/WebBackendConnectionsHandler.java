@@ -656,6 +656,8 @@ public class WebBackendConnectionsHandler {
     connectionPatch.resourceRequirements(webBackendConnectionPatch.getResourceRequirements());
     connectionPatch.sourceCatalogId(webBackendConnectionPatch.getSourceCatalogId());
     connectionPatch.geography(webBackendConnectionPatch.getGeography());
+    connectionPatch.notifySchemaChanges(webBackendConnectionPatch.getNotifySchemaChanges());
+    connectionPatch.nonBreakingChangesPreference(webBackendConnectionPatch.getNonBreakingChangesPreference());
 
     connectionPatch.operationIds(finalOperationIds);
 

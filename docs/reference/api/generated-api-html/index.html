@@ -494,6 +494,7 @@ font-style: italic;
     "timeUnit" : "minutes"
   },
   "breakingChange" : true,
+  "notifySchemaChanges" : true,
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -658,6 +659,7 @@ font-style: italic;
     "timeUnit" : "minutes"
   },
   "breakingChange" : true,
+  "notifySchemaChanges" : true,
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -778,6 +780,7 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "breakingChange" : true,
+    "notifySchemaChanges" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -841,6 +844,7 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "breakingChange" : true,
+    "notifySchemaChanges" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -962,6 +966,7 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "breakingChange" : true,
+    "notifySchemaChanges" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1025,6 +1030,7 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "breakingChange" : true,
+    "notifySchemaChanges" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1321,6 +1327,7 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "breakingChange" : true,
+    "notifySchemaChanges" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1384,6 +1391,7 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "breakingChange" : true,
+    "notifySchemaChanges" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1679,6 +1687,7 @@ containing the updated stream needs to be sent.</div>
     "timeUnit" : "minutes"
   },
   "breakingChange" : true,
+  "notifySchemaChanges" : true,
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -8537,7 +8546,6 @@ containing the updated stream needs to be sent.</div>
       "timeUnit" : "minutes"
     }
   },
-  "nonBreakingChangesPreference" : "ignore",
   "resourceRequirements" : {
     "cpu_limit" : "cpu_limit",
     "memory_request" : "memory_request",
@@ -8764,7 +8772,6 @@ containing the updated stream needs to be sent.</div>
       "timeUnit" : "minutes"
     }
   },
-  "nonBreakingChangesPreference" : "ignore",
   "resourceRequirements" : {
     "cpu_limit" : "cpu_limit",
     "memory_request" : "memory_request",
@@ -9239,7 +9246,6 @@ containing the updated stream needs to be sent.</div>
       "timeUnit" : "minutes"
     }
   },
-  "nonBreakingChangesPreference" : "ignore",
   "resourceRequirements" : {
     "cpu_limit" : "cpu_limit",
     "memory_request" : "memory_request",
@@ -10062,6 +10068,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#LogType"><code>LogType</code> - </a></li>
     <li><a href="#LogsRequestBody"><code>LogsRequestBody</code> - </a></li>
     <li><a href="#NamespaceDefinitionType"><code>NamespaceDefinitionType</code> - </a></li>
+    <li><a href="#NonBreakingChangesPreference"><code>NonBreakingChangesPreference</code> - </a></li>
     <li><a href="#NotFoundKnownExceptionInfo"><code>NotFoundKnownExceptionInfo</code> - </a></li>
     <li><a href="#Notification"><code>Notification</code> - </a></li>
     <li><a href="#NotificationRead"><code>NotificationRead</code> - </a></li>
@@ -10376,6 +10383,8 @@ containing the updated stream needs to be sent.</div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
+<div class="param">notifySchemaChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">nonBreakingChangesPreference (optional)</div><div class="param-desc"><span class="param-type"><a href="#NonBreakingChangesPreference">NonBreakingChangesPreference</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10406,6 +10415,8 @@ containing the updated stream needs to be sent.</div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
 <div class="param">breakingChange </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">notifySchemaChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">nonBreakingChangesPreference (optional)</div><div class="param-desc"><span class="param-type"><a href="#NonBreakingChangesPreference">NonBreakingChangesPreference</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10525,6 +10536,8 @@ containing the updated stream needs to be sent.</div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
+<div class="param">notifySchemaChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">nonBreakingChangesPreference (optional)</div><div class="param-desc"><span class="param-type"><a href="#NonBreakingChangesPreference">NonBreakingChangesPreference</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11023,6 +11036,12 @@ containing the updated stream needs to be sent.</div>
   <div class="model">
     <h3><a name="NamespaceDefinitionType"><code>NamespaceDefinitionType</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'>Method used for computing final namespace in destination</div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="NonBreakingChangesPreference"><code>NonBreakingChangesPreference</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
     <div class="field-items">
           </div>  <!-- field-items -->
   </div>
@@ -11596,9 +11615,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
 <div class="param">schemaChange </div><div class="param-desc"><span class="param-type"><a href="#SchemaChange">SchemaChange</a></span>  </div>
 <div class="param">notifySchemaChanges </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">nonBreakingChangesPreference </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-        <div class="param-enum-header">Enum:</div>
-        <div class="param-enum">ignore</div><div class="param-enum">disable</div>
+<div class="param">nonBreakingChangesPreference </div><div class="param-desc"><span class="param-type"><a href="#NonBreakingChangesPreference">NonBreakingChangesPreference</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11636,9 +11653,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
 <div class="param">notifySchemaChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">nonBreakingChangesPreference (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-        <div class="param-enum-header">Enum:</div>
-        <div class="param-enum">ignore</div><div class="param-enum">disable</div>
+<div class="param">nonBreakingChangesPreference (optional)</div><div class="param-desc"><span class="param-type"><a href="#NonBreakingChangesPreference">NonBreakingChangesPreference</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
