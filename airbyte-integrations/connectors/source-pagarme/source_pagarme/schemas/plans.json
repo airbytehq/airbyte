@@ -1,0 +1,87 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "object": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "amount": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "days": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "trial_days": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "date_created": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "payment_methods": {
+            "type": "array",
+            "items": {
+                "type": [
+                    "null",
+                    "string"
+                ]
+            }
+        },
+        "color": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "charges": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "installments": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "invoice_reminder": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "payment_deadline_charges_interval": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        }
+    }
+}

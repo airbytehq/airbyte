@@ -1,0 +1,204 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "object": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "company_id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "amount": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "items": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "items": {
+                "type": [
+                    "null",
+                    "object"
+                ],
+                "properties": {
+                    "object": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "id": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "title": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "unit_price": {
+                        "type": [
+                            "null",
+                            "integer"
+                        ]
+                    },
+                    "quantity": {
+                        "type": [
+                            "null",
+                            "integer"
+                        ]
+                    },
+                    "category": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "tangible": {
+                        "type": [
+                            "null",
+                            "boolean"
+                        ]
+                    },
+                    "venue": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "date": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    }
+                }
+            }
+        },
+        "short_id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "url": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "date_created": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "date_updated": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "status": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "max_orders": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "expires_at": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "payment_config": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "default_payment_method": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "boleto": {
+                    "type": [
+                        "null",
+                        "object"
+                    ],
+                    "properties": {
+                        "expires_in": {
+                            "type": [
+                                "null",
+                                "integer"
+                            ]
+                        },
+                        "enabled": {
+                            "type": [
+                                "null",
+                                "boolean"
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "customer_config": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "postback_config": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "orders_paid": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "review_informations": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        }
+    }
+}

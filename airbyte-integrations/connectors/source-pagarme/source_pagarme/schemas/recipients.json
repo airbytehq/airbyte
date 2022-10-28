@@ -1,0 +1,239 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "object": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "transfer_enabled": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "last_transfer": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "transfer_interval": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "transfer_day": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "automatic_anticipation_enabled": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "automatic_anticipation_type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "automatic_anticipation_days": {
+            "type": "null"
+        },
+        "automatic_anticipation_1025_delay": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "anticipatable_volume_percentage": {
+            "type": "null"
+        },
+        "date_created": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "date_updated": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "bank_account": {
+            "type": "object",
+            "properties": {
+                "object": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "id": {
+                    "type": [
+                        "null",
+                        "integer"
+                    ]
+                },
+                "bank_code": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "agencia": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "agencia_dv": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "conta": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "conta_dv": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "type": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "document_type": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "document_number": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "legal_name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "charge_transfer_fees": {
+                    "type": [
+                        "null",
+                        "boolean"
+                    ]
+                },
+                "pix_key": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "date_created": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "status": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "status_reason": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "postback_url": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "register_information": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "metadata": {
+            "type": [
+                "null",
+                "object"
+            ]
+        },
+        "external_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "mdr_configuration_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "fee_preset_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "automatic_anticipation_fee_reimbursement": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "statement_descriptor": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "pix_recipient_as_source": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "client_since": {
+            "type": [
+                "null",
+                "string"
+            ]
+        }
+    }
+}

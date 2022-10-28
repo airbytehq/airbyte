@@ -1,0 +1,194 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "object": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "date_created": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "date_updated": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "brand": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "holder_name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "first_digits": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "last_digits": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "country": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "fingerprint": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "customer": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "object": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "id": {
+                    "type": [
+                        "null",
+                        "integer"
+                    ]
+                },
+                "external_id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "type": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "country": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "document_number": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "document_type": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "email": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "phone_numbers": {
+                    "type": [
+                        "null",
+                        "array"
+                    ],
+                    "items": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    }
+                },
+                "born_at": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "birthday": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "gender": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "date_created": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "documents": {
+                    "type": [
+                        "null",
+                        "array"
+                    ]
+                },
+                "client_since": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "risk_indicator": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "valid": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "expiration_date": {
+            "type": [
+                "null",
+                "string"
+            ]
+        }
+    }
+}

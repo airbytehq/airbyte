@@ -1,0 +1,90 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "object": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "installment": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "transaction_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "amount": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "reason_code": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "card_brand": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "updated_at": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "created_at": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "date_updated": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "date_created": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "accrual_date": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "status": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "cycle": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        }
+    }
+}

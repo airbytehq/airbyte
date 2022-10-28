@@ -1,0 +1,611 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "object": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "status": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "refuse_reason": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "status_reason": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "acquirer_response_code": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "acquirer_response_message": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "acquirer_name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "acquirer_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "authorization_code": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "soft_descriptor": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "tid": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "nsu": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "date_created": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "date_updated": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "amount": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "authorized_amount": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "paid_amount": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "refunded_amount": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "installments": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "id": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "cost": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "card_holder_name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "card_last_digits": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "card_first_digits": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "card_brand": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "card_pin_mode": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "card_magstripe_fallback": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "cvm_pin": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "postback_url": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "payment_method": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "capture_method": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "antifraud_score": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "boleto_url": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "boleto_barcode": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "boleto_expiration_date": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "boleto": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "referer": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ip": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "subscription_id": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "phone": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "address": {
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "customer": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "object": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "id": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "external_id": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "type": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "country": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "document_number": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "document_type": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "name": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "email": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "phone_numbers": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "born_at": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "birthday": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "gender": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "date_created": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "documents": {
+          "type": [
+            "null",
+            "array"
+          ],
+          "items": {}
+        },
+        "client_since": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "risk_indicator": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "billing": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "shipping": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "items": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {}
+    },
+    "card": {
+      "type": "object",
+      "properties": {
+        "object": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "id": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "date_created": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "date_updated": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "brand": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "holder_name": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "first_digits": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "last_digits": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "country": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "fingerprint": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "valid": {
+          "type": [
+            "null",
+            "boolean"
+          ]
+        },
+        "expiration_date": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "split_rules": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "antifraud_metadata": {
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "reference_key": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "device": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "local_transaction_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "local_time": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "fraud_covered": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "fraud_reimbursed": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "order_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "risk_level": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "receipt_url": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "payment": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "addition": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "discount": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "private_label": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "pix_data": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "pix_qr_code": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "pix_expiration_date": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "metadata": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "productName": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "productType": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "clientId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "orderCode": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "utm_campaign": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "productId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    }
+  }
+}

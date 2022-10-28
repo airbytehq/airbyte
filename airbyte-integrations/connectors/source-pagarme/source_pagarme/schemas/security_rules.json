@@ -1,0 +1,72 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "object": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "date_created": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "date_updated": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "table": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "chain": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "source": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "value": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "target": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "active": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "batch_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        }
+    }
+}

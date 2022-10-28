@@ -1,0 +1,90 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "object": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "bank_code": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "agencia": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "agencia_dv": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "conta": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "conta_dv": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "document_type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "document_number": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "legal_name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "charge_transfer_fees": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "pix_key": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "date_created": {
+            "type": [
+                "null",
+                "string"
+            ]
+        }
+    }
+}

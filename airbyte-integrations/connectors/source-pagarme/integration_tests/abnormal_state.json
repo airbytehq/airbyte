@@ -1,0 +1,29 @@
+{
+  "balance": {
+    "date_created": "4000-11-16T00:00:00.000Z"
+  },
+  "chargebacks": {
+    "date_updated": "4000-11-16T00:00:00.000Z"
+  },
+  "customers": {
+    "date_created": "4000-11-16T00:00:00.000Z"
+  },
+  "payables": {
+    "date_created": "4000-11-16T00:00:00.000Z"
+  },
+  "payment_links": {
+    "date_updated": "4000-11-16T00:00:00.000Z"
+  },
+  "recipients": {
+    "date_updated": "4000-11-16T00:00:00.000Z"
+  },
+  "refunds": {
+    "date_updated": "4000-11-16T00:00:00.000Z"
+  },
+  "transactions": {
+    "date_updated": "4000-11-16T00:00:00.000Z"
+  },
+  "transfers": {
+    "date_updated": "4000-11-16T00:00:00.000Z"
+  }
+}

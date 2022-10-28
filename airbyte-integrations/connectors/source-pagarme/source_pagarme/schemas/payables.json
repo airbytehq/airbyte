@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "object": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "id": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "status": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "amount": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "fee": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "anticipation_fee": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "fraud_coverage_fee": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "installment": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "transaction_id": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "split_rule_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "bulk_anticipation_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "anticipation_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "recipient_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "originator_model": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "originator_model_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "payment_date": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "original_payment_date": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "type": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "payment_method": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "accrual_date": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "date_created": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "liquidation_arrangement_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}

@@ -120,6 +120,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Orb](sources/orb.md)                                                                       | Alpha                | Yes                 |
 | [Orbit](sources/orbit.md)                                                                   | Alpha                | Yes                 |
 | [Outreach](./sources/outreach.md)                                                           | Alpha                | No                  |
+| [Pagar.me](sources/pagarme.md)                                                              | Alpha                | No                  |
 | [PagerDuty](sources/pagerduty.md)                                                           | Alpha                | No                  |
 | [PayPal Transaction](sources/paypal-transaction.md)                                         | Beta                 | Yes                 |
 | [Paystack](sources/paystack.md)                                                             | Alpha                | No                  |
