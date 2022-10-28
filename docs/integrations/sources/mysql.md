@@ -183,6 +183,7 @@ MySQL data types are mapped to the following data types when synchronizing data.
 | `boolean`                                 | boolean                |                                                                                                                |
 | `tinyint(1)`                              | boolean                |                                                                                                                |
 | `tinyint(>1)`                             | number                 |                                                                                                                |
+| `tinyint(>=1) unsigned`                   | number                 |                                                                                                                |
 | `smallint`                                | number                 |                                                                                                                |
 | `mediumint`                               | number                 |                                                                                                                |
 | `int`                                     | number                 |                                                                                                                |
