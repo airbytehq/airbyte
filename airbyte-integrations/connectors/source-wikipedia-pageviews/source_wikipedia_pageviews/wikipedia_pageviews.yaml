@@ -9,7 +9,7 @@ definitions:
     http_method: "GET"
     request_options_provider:
       request_headers:
-        "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbyte/airbyte)"
+        "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbytehq/airbyte)"
   stream_slicer:
     type: DatetimeStreamSlicer
     start_datetime: "{{config.start}}"
