@@ -660,6 +660,13 @@
   icon: mailchimp.svg
   sourceType: api
   releaseStage: generally_available
+- name: MailerLite
+  sourceDefinitionId: dc3b9003-2432-4e93-a7f4-4620b0f14674
+  dockerRepository: airbyte/source-mailerlite
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mailerlite
+  sourceType: api
+  releaseStage: alpha
 - name: Mailgun
   sourceDefinitionId: 5b9cb09e-1003-4f9c-983d-5779d1b2cd51
   dockerRepository: airbyte/source-mailgun
