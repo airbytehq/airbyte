@@ -7,7 +7,7 @@ exports[`<GitBlock /> should render with default props 1`] = `
   >
     <a
       class="link"
-      href="https://docs.airbyte.com/quickstart/deploy-airbyte"
+      href="https://docs.daspire.com/quickstart/deploy-airbyte"
       rel="noreferrer"
       target="_blank"
     >
@@ -54,7 +54,7 @@ exports[`<GitBlock /> should render with overwritten props 1`] = `
   >
     <a
       class="link"
-      href="https://docs.airbyte.com/quickstart/deploy-airbyte"
+      href="https://docs.daspire.com/quickstart/deploy-airbyte"
       rel="noreferrer"
       target="_blank"
     >
