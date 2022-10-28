@@ -1217,6 +1217,103 @@ class EmailEvents(IncrementalStream):
     primary_key = "id"
     scopes = {"content"}
 
+class DealsRecent(IncrementalStream):
+    """Deals Recent, API v1
+    Docs: Docs: https://legacydocs.hubspot.com/docs/methods/deals/get_deals_modified
+    """
+
+    url = "/deals/v1/deal/recent/modified"
+    data_field = "results"
+    updated_at_field = "timestamp"
+    created_at_field = "timestamp"
+    primary_key = "dealId"
+    scopes = {"crm.objects.deals.read"}
+
+
+    def _filter_old_records(self, records: Iterable) -> Iterable:
+        """Skip records that was updated before our start_date"""
+
+        for record in records:
+            updated_at = record['properties']['hs_lastmodifieddate']['timestamp']
+            if updated_at:
+                updated_at = self._field_to_datetime(updated_at)
+                if updated_at < self._start_date:
+                    continue
+            yield record
+
+    def _transform(self, records: Iterable) -> Iterable:
+        """Preprocess record before emitting"""
+        for record in records:
+            record = self._cast_record_fields_if_needed(record)
+            if self.created_at_field and self.updated_at_field and record.get('properties').get('hs_lastmodifieddate').get('timestamp')is None:
+                record['properties']['hs_lastmodifieddate']['timestamp'] = record['properties']['hs_createdate']['timestamp']
+            yield record
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+
+
+        params = {"count": 100, "includePropertyVersions": True}
+        if next_page_token:
+            params["offset"] = next_page_token["offset"]
+        if self.state:
+            params.update({"since": int(self._state.timestamp() * 1000), "count": 100})
+        return params
+        
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self.set_sync(sync_mode)
+        return [None]
+
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+
+        stream_state = stream_state or {}
+        pagination_complete = False
+
+        next_page_token = None
+        latest_cursor = None
+
+        while not pagination_complete:
+            response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
+
+            records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+
+            if self.filter_old_records:
+                records = self._filter_old_records(records)
+
+            for record in records:
+                cursor = self._field_to_datetime(record['properties']['hs_lastmodifieddate']['timestamp'])
+                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+                yield record
+
+            next_page_token = self.next_page_token(response)
+            if self.state and next_page_token and next_page_token["offset"] >= 10000:
+                # As per Hubspot documentation, the recent engagements endpoint will only return the 10K
+                # most recently updated engagements. Since they are returned sorted by `lastUpdated` in
+                # descending order, we stop getting records if we have already reached 10,000. Attempting
+                # to get more than 10K will result in a HTTP 400 error.
+                # https://legacydocs.hubspot.com/docs/methods/engagements/get-recent-engagements
+                next_page_token = None
+
+            if not next_page_token:
+                pagination_complete = True
+
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
+
+        self._update_state(latest_cursor=latest_cursor, is_last_record=True)
 
 class Engagements(IncrementalStream):
     """Engagements, API v1
