@@ -46,6 +46,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [CockroachDB](sources/cockroachdb.md)                                                       | Alpha                | No                  |
 | [Commercetools](sources/commercetools.md)                                                   | Alpha                | No                  |
 | [Confluence](sources/confluence.md)                                                         | Alpha                | No                  |
+| [ConvertKit](sources/convertkit.md)                                                         | Alpha                | No                  |
 | [Courier](sources/courier.md)                                                               | Alpha                | No                  |
 | [Customer.io](sources/customer-io.md)                                                       | Alpha                | No                  |
 | [Db2](sources/db2.md)                                                                       | Alpha                | No                  |
