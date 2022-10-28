@@ -232,12 +232,14 @@ SELECT pg_create_logical_replication_slot('airbyte_slot', 'wal2json');
 
 For each table you want to replicate with CDC, add the replication identity (the method of distinguishing between rows) first:
 
-To use primary keys to distinguish between rows, run:
-
+To use primary keys to distinguish between rows for tables that don't have a large amount of data per row, run:
 ```
 ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;
 ```
-
+In case your tables use data types that support [TOAST](https://www.postgresql.org/docs/current/storage-toast.html) and have very large field values, use:
+```
+ALTER TABLE tbl1 REPLICA IDENTITY FULL;
+```
 After setting the replication identity, run:
 
 ```
@@ -398,6 +400,7 @@ The root causes is that the WALs needed for the incremental sync has been remove
 
 | Version | Date       | Pull Request                                                                                                       | Subject                                                                                                                                                                    |
 |:--------|:-----------|:-------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.21  | 2022-10-25 | [18256](https://github.com/airbytehq/airbyte/pull/18256)                                                           | Disable allow and prefer ssl modes in CDC mode                                                                                                                             |
 | 1.0.20  | 2022-10-25 | [18383](https://github.com/airbytehq/airbyte/pull/18383)                                                           | Better SSH error handling + messages                                                                                                                                       |
 | 1.0.19  | 2022-10-21 | [18263](https://github.com/airbytehq/airbyte/pull/18263)                                                           | Fixes bug introduced in [15833](https://github.com/airbytehq/airbyte/pull/15833) and adds better error messaging for SSH tunnel in Destinations                            |
 | 1.0.18  | 2022-10-19 | [18087](https://github.com/airbytehq/airbyte/pull/18087)                                                           | Better error messaging for configuration errors (SSH configs, choosing an invalid cursor)                                                                                  |

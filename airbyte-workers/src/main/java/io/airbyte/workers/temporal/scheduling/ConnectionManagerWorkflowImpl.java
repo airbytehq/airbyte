@@ -121,7 +121,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private static final int RECORD_METRIC_CURRENT_VERSION = 1;
   private static final String WORKFLOW_CONFIG_TAG = "workflow_config";
   private static final int WORKFLOW_CONFIG_CURRENT_VERSION = 1;
-
   private static final String ROUTE_ACTIVITY_TAG = "route_activity";
   private static final int ROUTE_ACTIVITY_CURRENT_VERSION = 1;
 
@@ -161,8 +160,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   public void run(final ConnectionUpdaterInput connectionUpdaterInput) throws RetryableException {
     try {
       ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionUpdaterInput.getConnectionId()));
-      recordMetric(new RecordMetricInput(connectionUpdaterInput, Optional.empty(), OssMetricsRegistry.TEMPORAL_WORKFLOW_ATTEMPT, null));
+
+      // Fetch workflow delay first so that it is set if any subsequent activities fail and need to be
+      // re-attempted.
       workflowDelay = getWorkflowRestartDelaySeconds();
+
+      recordMetric(new RecordMetricInput(connectionUpdaterInput, Optional.empty(), OssMetricsRegistry.TEMPORAL_WORKFLOW_ATTEMPT, null));
 
       try {
         cancellableSyncWorkflow = generateSyncWorkflowRunnable(connectionUpdaterInput);
@@ -357,7 +360,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       final String failureReason = failureType == FailureType.CONFIG_ERROR ? "Connection Check Failed " + connectionId
           : "Job failed after too many retries for connection " + connectionId;
       runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure, new JobFailureInput(connectionUpdaterInput.getJobId(),
-          connectionUpdaterInput.getConnectionId(), connectionUpdaterInput.getAttemptNumber(), failureReason));
+          connectionUpdaterInput.getAttemptNumber(), connectionUpdaterInput.getConnectionId(), failureReason));
 
       final int autoDisableConnectionVersion =
           Workflow.getVersion("auto_disable_failing_connection", Workflow.DEFAULT_VERSION, AUTO_DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION);

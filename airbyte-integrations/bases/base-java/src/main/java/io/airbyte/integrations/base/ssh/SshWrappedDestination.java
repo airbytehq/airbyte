@@ -6,7 +6,6 @@ package io.airbyte.integrations.base.ssh;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -19,7 +18,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.util.List;
 import java.util.function.Consumer;
-import org.apache.sshd.common.SshException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
