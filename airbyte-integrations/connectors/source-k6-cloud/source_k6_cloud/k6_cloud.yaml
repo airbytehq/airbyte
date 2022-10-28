@@ -3,16 +3,8 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: []
-  organizations_selector:
-    extractor:
-      field_pointer: ["organizations"]
-  projects_selector:
-    extractor:
-      field_pointer: ["projects"]
-  tests_selector:
-    extractor:
-      field_pointer: ["k6-tests"]
+      field_pointer:
+        - "{{ options['name'] }}"
   requester:
     url_base: "https://api.k6.io"
     http_method: "GET"
@@ -85,7 +77,7 @@ definitions:
       requester:
         $ref: "*ref(definitions.requester)"
     $options:
-      name: "tests"
+      name: "k6-tests"
       primary_key: "id"
       path: "loadtests/v2/tests"
 
