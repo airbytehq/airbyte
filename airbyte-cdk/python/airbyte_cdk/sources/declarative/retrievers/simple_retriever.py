@@ -6,7 +6,8 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
@@ -18,6 +19,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSl
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.record_helper import data_to_airbyte_record
 from dataclasses_jsonschema import JsonSchemaMixin
 
 
@@ -344,19 +346,26 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         """
         return self.paginator.next_page_token(response, self._last_records)
 
-    def read_records(
+    def read_records_as_message(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: Optional[List[str]] = None,
         stream_slice: Optional[StreamSlice] = None,
         stream_state: Optional[StreamState] = None,
-    ) -> Iterable[Mapping[str, Any]]:
+    ) -> Iterable[AirbyteMessage]:
         # Warning: use self.state instead of the stream_state passed as argument!
         stream_slice = stream_slice or {}  # None-check
         self.paginator.reset()
-        records_generator = HttpStream.read_records(self, sync_mode, cursor_field, stream_slice, self.state)
+        records_generator = self._read_pages(
+            lambda req, res, state, _slice: self.parse_records_and_emit_request_and_responses(
+                req, res, stream_slice=_slice, stream_state=state
+            ),
+            stream_slice,
+            stream_state,
+        )
         for r in records_generator:
-            self.stream_slicer.update_cursor(stream_slice, last_record=r)
+            if r.type == MessageType.RECORD:
+                self.stream_slicer.update_cursor(stream_slice, last_record=r.record.data)
             yield r
         else:
             last_record = self._last_records[-1] if self._last_records else None
@@ -385,3 +394,23 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
     def state(self, value: StreamState):
         """State setter, accept state serialized by state getter."""
         self.stream_slicer.update_cursor(value)
+
+    def parse_records_and_emit_request_and_responses(self, request, response, stream_slice, stream_state) -> Iterable[AirbyteMessage]:
+        yield self._create_trace_message_from_request(request)
+        yield self._create_trace_message_from_response(response)
+        for record_mapping in self._read_pages(
+            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice, stream_state
+        ):
+            # FIXME: need to get the real json schema if we want to support type transforms
+            json_schema = {}
+            yield data_to_airbyte_record(self.name, record_mapping, self.transformer, json_schema)
+
+    def _create_trace_message_from_request(self, request):
+        # FIXME: this should return some sort of trace message
+        log_message = f"request:{str(request)}"
+        return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))
+
+    def _create_trace_message_from_response(self, response):
+        # FIXME: this should return some sort of trace message
+        log_message = f"response:{str(response)}"
+        return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))

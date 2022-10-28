@@ -22,7 +22,7 @@ records = [{"id": 1}, {"id": 2}]
 config = {}
 
 
-@patch.object(HttpStream, "read_records", return_value=[])
+@patch.object(HttpStream, "_read_pages", return_value=[])
 def test_simple_retriever_full(mock_http_stream):
     requester = MagicMock()
     request_params = {"param": "value"}
@@ -45,7 +45,7 @@ def test_simple_retriever_full(mock_http_stream):
     underlying_state = {"date": "2021-01-01"}
     iterator.get_stream_state.return_value = underlying_state
 
-    requester.get_authenticator.return_value = NoAuth
+    requester.get_authenticator.return_value = NoAuth()
     url_base = "https://airbyte.io"
     requester.get_url_base.return_value = url_base
     path = "/v1"
@@ -102,7 +102,7 @@ def test_simple_retriever_full(mock_http_stream):
     assert retriever.cache_filename == cache_filename
     assert retriever.use_cache == use_cache
 
-    [r for r in retriever.read_records(SyncMode.full_refresh)]
+    [r for r in retriever.read_records_as_message(SyncMode.full_refresh)]
     paginator.reset.assert_called()
 
 

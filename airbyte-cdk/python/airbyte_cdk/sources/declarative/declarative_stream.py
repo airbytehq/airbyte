@@ -5,7 +5,7 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteMessage, SyncMode
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
@@ -105,6 +105,18 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
         """
         return self.stream_cursor_field
 
+    def read_records_as_messages(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[AirbyteMessage]:
+        print("here")
+        for record in self.retriever.read_records_as_message(sync_mode, cursor_field, stream_slice, stream_state):
+            print(f"record: {record}")
+            yield self._apply_transformations(record, self.config, stream_slice)
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -112,8 +124,7 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        for record in self.retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state):
-            yield self._apply_transformations(record, self.config, stream_slice)
+        raise RuntimeError("deprecated")
 
     def _apply_transformations(self, record: Mapping[str, Any], config: Config, stream_slice: StreamSlice):
         output_record = record
