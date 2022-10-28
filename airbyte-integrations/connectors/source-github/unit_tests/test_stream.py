@@ -795,12 +795,12 @@ def test_stream_issue_milestones():
     stream.page_size = 2
 
     data = [
-        {"id": 1, "updated_at": "2022-02-02T10:10:02Z"},
-        {"id": 2, "updated_at": "2022-02-02T10:10:04Z"},
-        {"id": 3, "updated_at": "2022-02-02T10:12:06Z"},
-        {"id": 4, "updated_at": "2022-02-02T10:12:08Z"},
-        {"id": 5, "updated_at": "2022-02-02T10:14:10Z"},
         {"id": 6, "updated_at": "2022-02-02T10:14:12Z"},
+        {"id": 5, "updated_at": "2022-02-02T10:14:10Z"},
+        {"id": 4, "updated_at": "2022-02-02T10:12:08Z"},
+        {"id": 3, "updated_at": "2022-02-02T10:12:06Z"},
+        {"id": 2, "updated_at": "2022-02-02T10:10:04Z"},
+        {"id": 1, "updated_at": "2022-02-02T10:10:02Z"},
     ]
 
     api_url = "https://api.github.com/repos/organization/repository/milestones"
@@ -808,7 +808,7 @@ def test_stream_issue_milestones():
     responses.add(
         "GET",
         api_url,
-        json=data[0:2],
+        json=data[2:4],
         headers={
             "Link": '<https://api.github.com/repos/organization/repository/milestones?per_page=2&page=2>; rel="next"'
         },
@@ -818,17 +818,17 @@ def test_stream_issue_milestones():
     responses.add(
         "GET",
         api_url,
-        json=data[2:4],
+        json=data[4:6],
         match=[matchers.query_param_matcher({"page": "2", "per_page": "2"}, strict_match=False)],
     )
 
     stream_state = {}
     records = read_incremental(stream, stream_state)
     assert records == [
-        {"id": 1, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:02Z"},
-        {"id": 2, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:04Z"},
-        {"id": 3, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:06Z"},
         {"id": 4, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:08Z"},
+        {"id": 3, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:06Z"},
+        {"id": 2, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:04Z"},
+        {"id": 1, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:02Z"},
     ]
 
     assert stream_state == {
@@ -838,14 +838,14 @@ def test_stream_issue_milestones():
     responses.add(
         "GET",
         api_url,
-        json=data[4:6],
+        json=data,
         match=[matchers.query_param_matcher({"per_page": "2"}, strict_match=False)],
     )
 
     records = read_incremental(stream, stream_state)
     assert records == [
-        {"id": 5, "repository": "organization/repository", "updated_at": "2022-02-02T10:14:10Z"},
         {"id": 6, "repository": "organization/repository", "updated_at": "2022-02-02T10:14:12Z"},
+        {"id": 5, "repository": "organization/repository", "updated_at": "2022-02-02T10:14:10Z"},
     ]
     assert stream_state == {
         "organization/repository": {"updated_at": "2022-02-02T10:14:12Z"},
