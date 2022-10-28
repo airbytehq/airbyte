@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server.apis.factories;
 
 import io.airbyte.server.apis.LogsApiController;
@@ -12,11 +16,14 @@ public class LogsApiFactory implements Factory<LogsApiController> {
     LogsApiFactory.logsHandler = logsHandler;
   }
 
-  @Override public LogsApiController provide() {
+  @Override
+  public LogsApiController provide() {
     return new LogsApiController(logsHandler);
   }
 
-  @Override public void dispose(final LogsApiController instance) {
+  @Override
+  public void dispose(final LogsApiController instance) {
     /* no op */
   }
+
 }

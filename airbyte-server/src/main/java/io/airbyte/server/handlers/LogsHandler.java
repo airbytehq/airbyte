@@ -25,7 +25,8 @@ public class LogsHandler {
         return LogClientSingleton.getInstance().getServerLogFile(configs.getWorkspaceRoot(), configs.getWorkerEnvironment(), configs.getLogConfigs());
       }
       case SCHEDULER -> {
-        return LogClientSingleton.getInstance().getSchedulerLogFile(configs.getWorkspaceRoot(), configs.getWorkerEnvironment(), configs.getLogConfigs());
+        return LogClientSingleton.getInstance().getSchedulerLogFile(configs.getWorkspaceRoot(), configs.getWorkerEnvironment(),
+            configs.getLogConfigs());
       }
       default -> throw new IllegalStateException("Unexpected value: " + logsRequestBody.getLogType());
     }
