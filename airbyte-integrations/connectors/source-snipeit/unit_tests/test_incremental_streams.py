@@ -5,7 +5,7 @@
 
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_snipeit.incremental_streams import Events
+from source_snipeit.streams import Events
 
 
 @fixture
@@ -18,7 +18,7 @@ def patch_incremental_base_class(mocker):
 
 def test_cursor_field(patch_incremental_base_class):
     stream = Events()
-    expected_cursor_field = "updated_at/datetime"
+    expected_cursor_field = "updated_at"
     assert stream.cursor_field == expected_cursor_field
 
 
@@ -27,15 +27,13 @@ def test_get_updated_state(patch_incremental_base_class):
     # TODO: replace this with your input parameters
     inputs = {
         "current_stream_state": {
-            "updated_at/datetime": "2022-04-20 19:06:42.805431+08:00"
+            "updated_at": "2022-04-20 19:06:42.805431+08:00"
         },
         "latest_record": {
-            "updated_at": {
-                "datetime": "2022-04-20 19:07:23.181174+08:00"
-            }
+            "updated_at": "2022-04-20 19:07:23.181174+08:00"
         }
     }
-    expected_state = {"updated_at/datetime": "2022-04-20 19:07:23.181174+08:00"}
+    expected_state = {"updated_at": "2022-04-20 19:07:23.181174+08:00"}
     assert stream.get_updated_state(**inputs) == expected_state
 
 

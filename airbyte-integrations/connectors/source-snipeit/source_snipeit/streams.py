@@ -163,7 +163,7 @@ class Events(SnipeitStream, IncrementalMixin):
                 yield from []
             else:
                 # NOTE: There's probably a more succint way of doing this but I can't think of it right now.
-                ascending_list = reversed(transformed)
+                ascending_list: list = reversed(transformed)
                 only_the_newest: list = [x for x in ascending_list if _newer_than_latest(latest_record_date, x)]
                 yield from only_the_newest
         else:

@@ -67,6 +67,7 @@ class SourceSnipeit(AbstractSource):
         logger.debug(f"Sending a request to: {full_url}")
         z = requests.get(full_url, headers=headers)
         logger.debug(f"Status code of response: {z.status_code}")
+
         try:
             z.raise_for_status()
             ok = True

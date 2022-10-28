@@ -6,7 +6,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_snipeit.full_refresh_streams import SnipeitStream
+from source_snipeit.streams import SnipeitStream
 # from source_acceptance_test
 
 
