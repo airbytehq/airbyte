@@ -49,6 +49,10 @@ dependencies:
     name: server
     repository: "file://../airbyte-server"
     version: "*"
+  - condition: api-server.enabled
+    name: api-server
+    repository: "file://../airbyte-api-server"
+    version: "*"
   - condition: worker.enabled
     name: worker
     repository: "file://../airbyte-worker"
