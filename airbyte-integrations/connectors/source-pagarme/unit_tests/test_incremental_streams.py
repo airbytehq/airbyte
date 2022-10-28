@@ -12,6 +12,7 @@ from source_pagarme.streams import IncrementalPagarmeStream, Payables
 def test_current_stream_state():
     return {"date_created": "2021-10-22"}
 
+
 @fixture
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class

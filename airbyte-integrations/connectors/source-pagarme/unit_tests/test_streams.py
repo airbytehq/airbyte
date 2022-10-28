@@ -20,7 +20,7 @@ def patch_base_class(mocker):
 def test_request_params(patch_base_class):
     stream = PagarmeStream(api_key="key")
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_params = {'count': 1000}
+    expected_params = {"count": 1000}
     assert stream.request_params(**inputs) == expected_params
 
 

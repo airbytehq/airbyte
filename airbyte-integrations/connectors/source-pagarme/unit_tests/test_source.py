@@ -77,7 +77,7 @@ def setup_responses():
                 "date_created": "2021-10-09T00:34:45.080Z",
                 "documents": [],
                 "client_since": None,
-                "risk_indicator": None
+                "risk_indicator": None,
             },
             "billing": None,
             "shipping": None,
@@ -94,7 +94,7 @@ def setup_responses():
                 "country": "country",
                 "fingerprint": "fingerprint",
                 "valid": True,
-                "expiration_date": "8908"
+                "expiration_date": "8908",
             },
             "split_rules": None,
             "antifraud_metadata": {},
@@ -120,9 +120,9 @@ def setup_responses():
                 "productId": "111",
                 "utm_campaign": "utm_campaign",
                 "productType": "subscription",
-                "orderCode": "111111111111"
-            }
-        }
+                "orderCode": "111111111111",
+            },
+        },
     )
 
 

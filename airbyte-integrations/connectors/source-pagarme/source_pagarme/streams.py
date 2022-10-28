@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 import datetime
 from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
@@ -12,10 +16,10 @@ class PagarmeStream(HttpStream, ABC):
     primary_key = "id"
     url_base = "https://api.pagar.me/1/"
 
-    def __init__(self, api_key, replication_start_date=None, **kwargs):
+    def __init__(self, api_key, start_date=None, **kwargs):
         super().__init__(**kwargs)
         self.api_key = api_key
-        self._replication_start_date = replication_start_date
+        self._start_date = start_date
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if response.json():
@@ -30,9 +34,8 @@ class PagarmeStream(HttpStream, ABC):
         if next_page_token:
             params.update({"page": self.page})
         return params
-    
-    def request_body_json(
-        self,  **kwargs) -> Optional[Mapping]:
+
+    def request_body_json(self, **kwargs) -> Optional[Mapping]:
         body = {"api_key": self.api_key}
         return body
 
@@ -50,18 +53,17 @@ class IncrementalPagarmeStream(PagarmeStream, ABC):
         return "date_created"
 
     def request_body_json(self, stream_state: Mapping[str, Any], **kwargs) -> Optional[Mapping]:
-        replication_start_date = self._string_to_timestampmillis(self._replication_start_date)
-        if replication_start_date:
+        start_date = self._string_to_timestampmillis(self._start_date)
+        if start_date:
             if stream_state.get(self.cursor_field):
-                replication_start_date = max(self._string_to_timestampmillis(stream_state[self.cursor_field]), replication_start_date)
+                start_date = max(self._string_to_timestampmillis(stream_state[self.cursor_field]), start_date)
             if self.filter_field == "start_date":
-                body = {"api_key": self.api_key, self.filter_field: f"{replication_start_date}"}
+                body = {"api_key": self.api_key, self.filter_field: f"{start_date}"}
             else:
-                body = {"api_key": self.api_key, self.filter_field: f">{replication_start_date}"}
+                body = {"api_key": self.api_key, self.filter_field: f">{start_date}"}
         else:
             body = {"api_key": self.api_key}
         return body
-    
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         latest_benchmark = latest_record[self.cursor_field]
@@ -70,7 +72,7 @@ class IncrementalPagarmeStream(PagarmeStream, ABC):
         return {self.cursor_field: latest_benchmark}
 
     def _string_to_timestampmillis(self, date_string):
-        date_as_datetime = datetime.datetime.strptime(date_string,"%Y-%m-%dT%H:%M:%S.%fZ")
+        date_as_datetime = datetime.datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%fZ")
         timestamp = datetime.datetime.timestamp(date_as_datetime)
         return int(timestamp) * 1000
 

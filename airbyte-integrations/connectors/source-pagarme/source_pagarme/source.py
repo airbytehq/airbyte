@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.models import SyncMode
@@ -39,17 +40,18 @@ class SourcePagarme(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         api_key = config["api_key"]
         start_date = config["start_date"]
-        return [Balance(api_key=api_key, replication_start_date=start_date),
-                BankAccounts(api_key=api_key, replication_start_date=start_date),
-                Cards(api_key=api_key, replication_start_date=start_date),
-                Chargebacks(api_key=api_key, replication_start_date=start_date),
-                Customers(api_key=api_key, replication_start_date=start_date),
-                Payables(api_key=api_key, replication_start_date=start_date),
-                PaymentLinks(api_key=api_key, replication_start_date=start_date),
-                Plans(api_key=api_key, replication_start_date=start_date),
-                Recipients(api_key=api_key, replication_start_date=start_date),
-                Refunds(api_key=api_key, replication_start_date=start_date),
-                SecurityRules(api_key=api_key, replication_start_date=start_date),
-                Transactions(api_key=api_key, replication_start_date=start_date),
-                Transfers(api_key=api_key, replication_start_date=start_date),
-                ]
+        return [
+            Balance(api_key=api_key, start_date=start_date),
+            BankAccounts(api_key=api_key, start_date=start_date),
+            Cards(api_key=api_key, start_date=start_date),
+            Chargebacks(api_key=api_key, start_date=start_date),
+            Customers(api_key=api_key, start_date=start_date),
+            Payables(api_key=api_key, start_date=start_date),
+            PaymentLinks(api_key=api_key, start_date=start_date),
+            Plans(api_key=api_key, start_date=start_date),
+            Recipients(api_key=api_key, start_date=start_date),
+            Refunds(api_key=api_key, start_date=start_date),
+            SecurityRules(api_key=api_key, start_date=start_date),
+            Transactions(api_key=api_key, start_date=start_date),
+            Transfers(api_key=api_key, start_date=start_date),
+        ]
