@@ -100,6 +100,13 @@
   icon: asana.svg
   sourceType: api
   releaseStage: beta
+- name: Ashby
+  sourceDefinitionId: 4e8c9fa0-3634-499b-b948-11581b5c3efa
+  dockerRepository: airbyte/source-ashby
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/ashby
+  sourceType: api
+  releaseStage: alpha
 - name: Auth0
   sourceDefinitionId: 6c504e48-14aa-4221-9a72-19cf5ff1ae78
   dockerRepository: airbyte/source-auth0

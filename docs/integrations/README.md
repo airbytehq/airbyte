@@ -28,6 +28,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Apify Dataset](sources/apify-dataset.md)                                                   | Alpha                | Yes                 |
 | [Appstore](sources/appstore.md)                                                             | Alpha                | No                  |
 | [Asana](sources/asana.md)                                                                   | Alpha                | No                  |
+| [Ashby](sources/ashby.md)                                                                   | Alpha                | No                  |
 | [AWS CloudTrail](sources/aws-cloudtrail.md)                                                 | Alpha                | Yes                 |
 | [Azure Table Storage](sources/azure-table.md)                                               | Alpha                | Yes                 |
 | [BambooHR](sources/bamboo-hr.md)                                                            | Generally Available  | Yes                 |
