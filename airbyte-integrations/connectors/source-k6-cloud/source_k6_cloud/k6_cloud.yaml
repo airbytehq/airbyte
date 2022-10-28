@@ -38,7 +38,7 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     retriever:
       record_selector:
-        $ref: "*ref(definitions.organizations_selector)"
+        $ref: "*ref(definitions.selector)"
       paginator:
         type: NoPagination
       requester:
@@ -66,12 +66,12 @@ definitions:
       stream_slicer:
         $ref: "*ref(definitions.organizations_stream_slicer)"
       record_selector:
-        $ref: "*ref(definitions.projects_selector)"
+        $ref: "*ref(definitions.selector)"
   tests_stream:
     $ref: "*ref(definitions.base_stream)"
     retriever:
       record_selector:
-        $ref: "*ref(definitions.tests_selector)"
+        $ref: "*ref(definitions.selector)"
       paginator:
         $ref: "*ref(definitions.increment_paginator)"
       requester:
