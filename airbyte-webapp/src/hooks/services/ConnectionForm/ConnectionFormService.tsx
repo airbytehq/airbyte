@@ -82,7 +82,10 @@ const useConnectionForm = ({ connection, mode, schemaError, refreshSchema }: Con
 
 const ConnectionFormContext = createContext<ReturnType<typeof useConnectionForm> | null>(null);
 
-export const ConnectionFormServiceProvider: React.FC<ConnectionServiceProps> = ({ children, ...props }) => {
+export const ConnectionFormServiceProvider: React.FC<React.PropsWithChildren<ConnectionServiceProps>> = ({
+  children,
+  ...props
+}) => {
   const data = useConnectionForm(props);
   return <ConnectionFormContext.Provider value={data}>{children}</ConnectionFormContext.Provider>;
 };

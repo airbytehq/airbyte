@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.mysql.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import java.time.Duration;

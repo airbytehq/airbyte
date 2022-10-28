@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.temporal.stubs;
 
+import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
-import io.airbyte.workers.temporal.exception.RetryableException;
 
 @SuppressWarnings("PMD.UnusedPrivateField")
 public class InvalidTestWorkflowImpl implements TestWorkflow {

@@ -24,7 +24,10 @@ class JsonlParser(AbstractFileParser):
             "large_string",
         ),
         # TODO: support array type rather than coercing to string
-        "array": ("large_string",),
+        "array": (
+            "list",
+            "large_string",
+        ),
         "null": ("large_string",),
     }
 
@@ -80,6 +83,8 @@ class JsonlParser(AbstractFileParser):
         def field_type_to_str(type_: Any) -> str:
             if isinstance(type_, pa.lib.StructType):
                 return "struct"
+            if isinstance(type_, pa.lib.ListType):
+                return "list"
             if isinstance(type_, pa.lib.DataType):
                 return str(type_)
             raise Exception(f"Unknown PyArrow Type: {type_}")

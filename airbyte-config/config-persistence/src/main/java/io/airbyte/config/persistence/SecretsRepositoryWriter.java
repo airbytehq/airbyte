@@ -83,7 +83,7 @@ public class SecretsRepositoryWriter {
         source.getWorkspaceId(),
         previousSourceConnection,
         source.getConfiguration(),
-        connectorSpecification,
+        connectorSpecification.getConnectionSpecification(),
         source.getTombstone() == null || !source.getTombstone());
     final SourceConnection partialSource = Jsons.clone(source).withConfiguration(partialConfig);
 
@@ -107,7 +107,7 @@ public class SecretsRepositoryWriter {
         destination.getWorkspaceId(),
         previousDestinationConnection,
         destination.getConfiguration(),
-        connectorSpecification,
+        connectorSpecification.getConnectionSpecification(),
         destination.getTombstone() == null || !destination.getTombstone());
     final DestinationConnection partialDestination = Jsons.clone(destination).withConfiguration(partialConfig);
 
@@ -146,11 +146,11 @@ public class SecretsRepositoryWriter {
   private JsonNode statefulUpdateSecrets(final UUID workspaceId,
                                          final Optional<JsonNode> oldConfig,
                                          final JsonNode fullConfig,
-                                         final ConnectorSpecification spec,
+                                         final JsonNode spec,
                                          final boolean validate)
       throws JsonValidationException {
     if (validate) {
-      validator.ensure(spec.getConnectionSpecification(), fullConfig);
+      validator.ensure(spec, fullConfig);
     }
 
     if (longLivedSecretPersistence.isEmpty()) {
@@ -163,13 +163,13 @@ public class SecretsRepositoryWriter {
           workspaceId,
           oldConfig.get(),
           fullConfig,
-          spec.getConnectionSpecification(),
+          spec,
           longLivedSecretPersistence.get());
     } else {
       splitSecretConfig = SecretsHelpers.splitConfig(
           workspaceId,
           fullConfig,
-          spec.getConnectionSpecification());
+          spec);
     }
     splitSecretConfig.getCoordinateToPayload().forEach(longLivedSecretPersistence.get()::write);
     return splitSecretConfig.getPartialConfig();
@@ -324,8 +324,35 @@ public class SecretsRepositoryWriter {
 
   public void writeWorkspace(final StandardWorkspace workspace)
       throws JsonValidationException, IOException {
-    // TODO(msiega): split secrets once they're introduced.
-    configRepository.writeStandardWorkspaceNoSecrets(workspace);
+    // Get the schema for the webhook config so we can split out any secret fields.
+    final JsonNode webhookConfigSchema = Jsons.jsonNodeFromFile(ConfigSchema.WORKSPACE_WEBHOOK_OPERATION_CONFIGS.getConfigSchemaFile());
+    // Check if there's an existing config, so we can re-use the secret coordinates.
+    final var previousWorkspace = getWorkspaceIfExists(workspace.getWorkspaceId(), false);
+    Optional<JsonNode> previousWebhookConfigs = Optional.empty();
+    if (previousWorkspace.isPresent() && previousWorkspace.get().getWebhookOperationConfigs() != null) {
+      previousWebhookConfigs = Optional.of(previousWorkspace.get().getWebhookOperationConfigs());
+    }
+    // Split out the secrets from the webhook config.
+    final JsonNode partialConfig = workspace.getWebhookOperationConfigs() == null ? null
+        : statefulUpdateSecrets(
+            workspace.getWorkspaceId(),
+            previousWebhookConfigs,
+            workspace.getWebhookOperationConfigs(),
+            webhookConfigSchema, true);
+    final StandardWorkspace partialWorkspace = Jsons.clone(workspace);
+    if (partialConfig != null) {
+      partialWorkspace.withWebhookOperationConfigs(partialConfig);
+    }
+    configRepository.writeStandardWorkspaceNoSecrets(partialWorkspace);
+  }
+
+  private Optional<StandardWorkspace> getWorkspaceIfExists(final UUID workspaceId, final boolean includeTombstone) {
+    try {
+      final StandardWorkspace existingWorkspace = configRepository.getStandardWorkspaceNoSecrets(workspaceId, includeTombstone);
+      return existingWorkspace == null ? Optional.empty() : Optional.of(existingWorkspace);
+    } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
+      return Optional.empty();
+    }
   }
 
 }

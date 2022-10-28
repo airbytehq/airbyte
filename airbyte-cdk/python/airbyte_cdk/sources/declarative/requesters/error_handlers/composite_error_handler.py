@@ -26,13 +26,13 @@ class CompositeErrorHandler(ErrorHandler, JsonSchemaMixin):
                 - predicate: "{{ 'codase' in response }}"
                   action: RETRY
               backoff_strategies:
-                - type: "ConstantBackoffStrategy"
+                - type: "ConstantBackoff"
                   backoff_time_in_seconds: 5
             - response_filters:
                 - http_codes: [ 403 ]
                   action: RETRY
               backoff_strategies:
-                - type: "ConstantBackoffStrategy"
+                - type: "ConstantBackoff"
                   backoff_time_in_seconds: 10
     Attributes:
         error_handlers (List[ErrorHandler]): list of error handlers

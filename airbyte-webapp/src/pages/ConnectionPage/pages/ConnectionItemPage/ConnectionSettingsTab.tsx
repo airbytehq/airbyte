@@ -2,19 +2,16 @@ import React from "react";
 
 import DeleteBlock from "components/DeleteBlock";
 
-import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
+import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { useDeleteConnection } from "hooks/services/useConnectionHook";
 
 import styles from "./ConnectionSettingsTab.module.scss";
 import { StateBlock } from "./StateBlock";
 
-interface ConnectionSettingsTabProps {
-  connection: WebBackendConnectionRead;
-}
-
-export const ConnectionSettingsTab: React.FC<ConnectionSettingsTabProps> = ({ connection }) => {
+export const ConnectionSettingsTab: React.FC = () => {
+  const { connection } = useConnectionEditService();
   const { mutateAsync: deleteConnection } = useDeleteConnection();
 
   const [isAdvancedMode] = useAdvancedModeSetting();

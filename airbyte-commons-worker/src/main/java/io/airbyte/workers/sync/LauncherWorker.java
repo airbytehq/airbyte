@@ -5,7 +5,6 @@
 package io.airbyte.workers.sync;
 
 import com.google.common.base.Stopwatch;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.temporal.TemporalUtils;
@@ -38,7 +37,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 
 /**
  * Coordinates configuring and managing the state of an async process. This is tied to the (job_id,
@@ -133,7 +131,6 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
         final var kubePodInfo = new KubePodInfo(containerOrchestratorConfig.namespace(),
             podName,
             mainContainerInfo);
-        val featureFlag = new EnvVariableFeatureFlags();
 
         // Use the configuration to create the process.
         process = new AsyncOrchestratorPodProcess(
@@ -143,7 +140,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             containerOrchestratorConfig.secretName(),
             containerOrchestratorConfig.secretMountPath(),
             containerOrchestratorConfig.googleApplicationCredentials(),
-            featureFlag.useStreamCapableState(),
+            containerOrchestratorConfig.environmentVariables(),
             serverPort);
 
         // Define what to do on cancellation.

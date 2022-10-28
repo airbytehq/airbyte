@@ -15,6 +15,7 @@ import MainView from "views/layout/MainView";
 
 import { WorkspaceRead } from "../core/request/AirbyteClient";
 import ConnectionPage from "./ConnectionPage";
+import { ConnectorBuilderPage } from "./connector-builder/ConnectorBuilderPage";
 import DestinationPage from "./DestinationPage";
 import OnboardingPage from "./OnboardingPage";
 import PreferencesPage from "./PreferencesPage";
@@ -43,6 +44,7 @@ const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = ({ workspace }) =
           <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
           <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
           <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
+          <Route path={`${RoutePaths.ConnectorBuilder}/*`} element={<ConnectorBuilderPage />} />
           {workspace.displaySetupWizard ? (
             <Route path={`${RoutePaths.Onboarding}/*`} element={<OnboardingPage />} />
           ) : null}

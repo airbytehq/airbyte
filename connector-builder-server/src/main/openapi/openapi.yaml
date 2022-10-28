@@ -1,0 +1,243 @@
+openapi: 3.0.0
+info:
+  description: |
+    Connector Builder Server API
+
+  version: "1.0.0"
+  title: Connector Builder Server API
+  contact:
+    email: contact@airbyte.io
+  license:
+    name: MIT
+    url: "https://opensource.org/licenses/MIT"
+externalDocs:
+  description: Find out more about Connector Builder
+  url: "https://docs.airbyte.com/connector-development/config-based/overview/"
+
+paths:
+  /v1/stream/read:
+    post:
+      summary: Reads a specific stream in the source. TODO in a later phase - only read a single slice of data.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StreamReadRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StreamRead"
+        "400":
+          $ref: "#/components/responses/ExceptionResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/streams/list:
+    post:
+      summary: List all streams present in the connector definition, along with their specific request URLs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StreamsListRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StreamsListRead"
+        "400":
+          $ref: "#/components/responses/ExceptionResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+
+components:
+  schemas:
+    StreamRead:
+      type: object
+      required:
+        - slices
+      properties:
+        slices:
+          type: array
+          description: The stream slices returned from the read command
+          items:
+            type: object
+            required:
+              - sliceDescriptor
+              - pages
+            properties:
+              sliceDescriptor:
+                type: object
+                description: 'An object describing the current slice, e.g. {start_time: "2021-01-01", end_time: "2021-01-31"}'
+              pages:
+                type: array
+                description: The pages returned from the read command
+                items:
+                  type: object
+                  required:
+                    - airbyteMessages
+                    - request
+                    - response
+                  properties:
+                    airbyteMessages:
+                      type: array
+                      description: The RECORD/STATE/LOG AirbyteMessages coming from the read operation for this page
+                      items:
+                        $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteMessage"
+                    request:
+                      $ref: "#/components/schemas/HttpRequest"
+                    response:
+                      $ref: "#/components/schemas/HttpResponse"
+    StreamReadRequestBody:
+      type: object
+      required:
+        - definition
+        - stream
+      properties:
+        definition:
+          $ref: "#/components/schemas/ConnectorDefinitionBody"
+          description: The config-based connector definition contents
+        stream:
+          type: string
+          description: Name of the stream to read
+        state:
+          $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteStateMessage"
+        # --- Potential addition for a later phase ---
+        # numPages:
+        #   type: integer
+        #   description: Number of pages to read from the source for each slice
+        #   default: 1
+    HttpRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          description: URL that the request was sent to
+        parameters:
+          type: object
+          description: The request parameters that were set on the HTTP request, if any
+        body:
+          type: object
+          description: The body of the HTTP request, if present
+        headers:
+          type: object
+          description: The headers of the HTTP request, if any
+    HttpResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: integer
+          description: The status of the response
+        body:
+          type: object
+          description: The body of the HTTP response, if present
+        headers:
+          type: object
+          description: The headers of the HTTP response, if any
+    ConnectorDefinitionBody:
+      $ref: ../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json
+    AirbyteProtocol:
+      $ref: ../../../../airbyte-protocol/protocol-models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml
+    StreamsListRequestBody:
+      type: object
+      required:
+        - definition
+      properties:
+        definition:
+          $ref: "#/components/schemas/ConnectorDefinitionBody"
+          description: The config-based connector definition contents
+    StreamsListRead:
+      type: object
+      required:
+        - streams
+      properties:
+        streams:
+          type: array
+          items:
+            type: object
+            description: The stream names present in the connector definition
+            required:
+              - name
+              - url
+            properties:
+              name:
+                type: string
+                description: The name of the stream
+              url:
+                type: string
+                format: uri
+                description: The URL to which read requests will be made for this stream
+              # --- Potential addition for a later phase ---
+              # slices:
+              #   type: array
+              #   description: list of slices that will be retrieved for this stream
+              #   items:
+              #     type: object
+
+    # The following exception structs were copied from airbyte-api/src/main/openapi/config.yaml
+    InvalidInputProperty:
+      type: object
+      required:
+        - propertyPath
+      properties:
+        propertyPath:
+          type: string
+        invalidValue:
+          type: string
+        message:
+          type: string
+    KnownExceptionInfo:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+        exceptionClassName:
+          type: string
+        exceptionStack:
+          type: array
+          items:
+            type: string
+    InvalidInputExceptionInfo:
+      type: object
+      required:
+        - message
+        - validationErrors
+      properties:
+        message:
+          type: string
+        exceptionClassName:
+          type: string
+        exceptionStack:
+          type: array
+          items:
+            type: string
+        validationErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvalidInputProperty"
+
+  responses:
+    InvalidInputResponse:
+      description: Input failed validation
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/InvalidInputExceptionInfo"
+    ExceptionResponse:
+      description: Exception occurred; see message for details.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/KnownExceptionInfo"

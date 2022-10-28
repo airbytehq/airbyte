@@ -134,6 +134,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                  |
 |:--------|:-----------|:----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| 1.2.5   | 2022-10-19 | [#18162](https://github.com/airbytehq/airbyte/pull/18162) | Improve error logs                                                                                                       |
 | 1.2.4   | 2022-09-26 | [#16890](https://github.com/airbytehq/airbyte/pull/16890) | Add user-agent header                                                                                                    |
 | 1.2.3   | 2022-09-22 | [#17054](https://github.com/airbytehq/airbyte/pull/17054) | Respect stream namespace                                                                                                 |
 | 1.2.1   | 2022-09-14 | [#15668](https://github.com/airbytehq/airbyte/pull/15668) | (bugged, do not use) Wrap logs in AirbyteLogMessage                                                                      |
@@ -184,6 +185,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                  |
 |:--------|:-----------|:----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| 1.2.5   | 2022-10-19 | [#18162](https://github.com/airbytehq/airbyte/pull/18162) | Improve error logs                                                                                                       |
 | 1.2.4   | 2022-09-26 | [#16890](https://github.com/airbytehq/airbyte/pull/16890) | Add user-agent header                                                                                                    |
 | 1.2.3   | 2022-09-22 | [#17054](https://github.com/airbytehq/airbyte/pull/17054) | Respect stream namespace                                                                                                 |
 | 1.2.2   | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668)  | (bugged, do not use) Wrap logs in AirbyteLogMessage                                                                      |

@@ -53,7 +53,8 @@ public class MySqlCdcProperties {
     props.setProperty("boolean.type", "io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter");
     props.setProperty("datetime.type", "io.airbyte.integrations.debezium.internals.MySQLDateTimeConverter");
 
-    // For CDC mode, the user cannot provide timezone arguments as JDBC parameters - they are specifically defined in the replication_method
+    // For CDC mode, the user cannot provide timezone arguments as JDBC parameters - they are
+    // specifically defined in the replication_method
     // config.
     if (sourceConfig.get("replication_method").has("server_time_zone")) {
       final String serverTimeZone = sourceConfig.get("replication_method").get("server_time_zone").asText();

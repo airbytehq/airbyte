@@ -14,6 +14,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionReadList;
@@ -22,6 +23,8 @@ import io.airbyte.api.model.generated.DestinationReadList;
 import io.airbyte.api.model.generated.SlugRequestBody;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SourceReadList;
+import io.airbyte.api.model.generated.WebhookConfigRead;
+import io.airbyte.api.model.generated.WebhookConfigWrite;
 import io.airbyte.api.model.generated.WorkspaceCreate;
 import io.airbyte.api.model.generated.WorkspaceGiveFeedback;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
@@ -38,6 +41,7 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.server.converters.NotificationConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -54,6 +58,12 @@ import org.mockito.ArgumentCaptor;
 class WorkspacesHandlerTest {
 
   public static final String FAILURE_NOTIFICATION_WEBHOOK = "http://airbyte.notifications/failure";
+  public static final String NEW_WORKSPACE = "new workspace";
+  public static final String TEST_NAME = "test-name";
+  private static final UUID WEBHOOK_CONFIG_ID = UUID.randomUUID();
+  private static final JsonNode PERSISTED_WEBHOOK_CONFIGS = Jsons.deserialize(
+      String.format("{\"webhookConfigs\": [{\"id\": \"%s\", \"name\": \"%s\", \"authToken\": {\"_secret\": \"a-secret_v1\"}}]}",
+          WEBHOOK_CONFIG_ID, TEST_NAME));
   private ConfigRepository configRepository;
   private SecretsRepositoryWriter secretsRepositoryWriter;
   private ConnectionsHandler connectionsHandler;
@@ -71,16 +81,19 @@ class WorkspacesHandlerTest {
       io.airbyte.api.model.generated.Geography.AUTO;
   private static final io.airbyte.api.model.generated.Geography GEOGRAPHY_US =
       io.airbyte.api.model.generated.Geography.US;
+  private SecretPersistence secretPersistence;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setUp() {
     configRepository = mock(ConfigRepository.class);
-    secretsRepositoryWriter = new SecretsRepositoryWriter(configRepository, Optional.empty(), Optional.empty());
+    secretPersistence = mock(SecretPersistence.class);
+    secretsRepositoryWriter = new SecretsRepositoryWriter(configRepository, Optional.of(secretPersistence), Optional.empty());
     connectionsHandler = mock(ConnectionsHandler.class);
     destinationHandler = mock(DestinationHandler.class);
     sourceHandler = mock(SourceHandler.class);
     uuidSupplier = mock(Supplier.class);
+
     workspace = generateWorkspace();
     workspacesHandler = new WorkspacesHandler(configRepository, secretsRepositoryWriter, connectionsHandler,
         destinationHandler, sourceHandler, uuidSupplier);
@@ -118,8 +131,9 @@ class WorkspacesHandlerTest {
   }
 
   @Test
-  void testCreateWorkspace() throws JsonValidationException, IOException {
-    when(configRepository.listStandardWorkspaces(false)).thenReturn(Collections.singletonList(workspace));
+  void testCreateWorkspace() throws JsonValidationException, IOException, ConfigNotFoundException {
+    workspace.withWebhookOperationConfigs(PERSISTED_WEBHOOK_CONFIGS);
+    when(configRepository.getStandardWorkspaceNoSecrets(any(), eq(false))).thenReturn(workspace);
 
     final UUID uuid = UUID.randomUUID();
     when(uuidSupplier.get()).thenReturn(uuid);
@@ -127,20 +141,21 @@ class WorkspacesHandlerTest {
     configRepository.writeStandardWorkspaceNoSecrets(workspace);
 
     final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
-        .name("new workspace")
+        .name(NEW_WORKSPACE)
         .email(TEST_EMAIL)
         .news(false)
         .anonymousDataCollection(false)
         .securityUpdates(false)
         .notifications(List.of(generateApiNotification()))
-        .defaultGeography(GEOGRAPHY_US);
+        .defaultGeography(GEOGRAPHY_US)
+        .webhookConfigs(List.of(new WebhookConfigWrite().name(TEST_NAME).authToken("test-auth-token")));
 
     final WorkspaceRead actualRead = workspacesHandler.createWorkspace(workspaceCreate);
     final WorkspaceRead expectedRead = new WorkspaceRead()
         .workspaceId(uuid)
         .customerId(uuid)
         .email(TEST_EMAIL)
-        .name("new workspace")
+        .name(NEW_WORKSPACE)
         .slug("new-workspace")
         .initialSetupComplete(false)
         .displaySetupWizard(false)
@@ -148,17 +163,19 @@ class WorkspacesHandlerTest {
         .anonymousDataCollection(false)
         .securityUpdates(false)
         .notifications(List.of(generateApiNotification()))
-        .defaultGeography(GEOGRAPHY_US);
+        .defaultGeography(GEOGRAPHY_US)
+        .webhookConfigs(List.of(new WebhookConfigRead().id(uuid).name(TEST_NAME)));
 
     assertEquals(expectedRead, actualRead);
   }
 
   @Test
-  void testCreateWorkspaceDuplicateSlug() throws JsonValidationException, IOException {
+  void testCreateWorkspaceDuplicateSlug() throws JsonValidationException, IOException, ConfigNotFoundException {
     when(configRepository.getWorkspaceBySlugOptional(any(String.class), eq(true)))
         .thenReturn(Optional.of(workspace))
         .thenReturn(Optional.of(workspace))
         .thenReturn(Optional.empty());
+    when(configRepository.getStandardWorkspaceNoSecrets(any(), eq(false))).thenReturn(workspace);
 
     final UUID uuid = UUID.randomUUID();
     when(uuidSupplier.get()).thenReturn(uuid);
@@ -186,7 +203,8 @@ class WorkspacesHandlerTest {
         .anonymousDataCollection(false)
         .securityUpdates(false)
         .notifications(Collections.emptyList())
-        .defaultGeography(GEOGRAPHY_AUTO);
+        .defaultGeography(GEOGRAPHY_AUTO)
+        .webhookConfigs(Collections.emptyList());
 
     assertTrue(actualRead.getSlug().startsWith(workspace.getSlug()));
     assertNotEquals(workspace.getSlug(), actualRead.getSlug());
@@ -270,6 +288,7 @@ class WorkspacesHandlerTest {
 
   @Test
   void testGetWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
+    workspace.withWebhookOperationConfigs(PERSISTED_WEBHOOK_CONFIGS);
     when(configRepository.getStandardWorkspaceNoSecrets(workspace.getWorkspaceId(), false)).thenReturn(workspace);
 
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(workspace.getWorkspaceId());
@@ -286,7 +305,8 @@ class WorkspacesHandlerTest {
         .anonymousDataCollection(false)
         .securityUpdates(false)
         .notifications(List.of(generateApiNotification()))
-        .defaultGeography(GEOGRAPHY_AUTO);
+        .defaultGeography(GEOGRAPHY_AUTO)
+        .webhookConfigs(List.of(new WebhookConfigRead().id(WEBHOOK_CONFIG_ID).name(TEST_NAME)));
 
     assertEquals(workspaceRead, workspacesHandler.getWorkspace(workspaceIdRequestBody));
   }
@@ -325,7 +345,8 @@ class WorkspacesHandlerTest {
         .initialSetupComplete(true)
         .displaySetupWizard(false)
         .notifications(List.of(apiNotification))
-        .defaultGeography(GEOGRAPHY_US);
+        .defaultGeography(GEOGRAPHY_US)
+        .webhookConfigs(List.of(new WebhookConfigWrite().name(TEST_NAME).authToken("test-auth-token")));
 
     final Notification expectedNotification = generateNotification();
     expectedNotification.getSlackConfiguration().withWebhook("updated");
@@ -342,7 +363,10 @@ class WorkspacesHandlerTest {
         .withDisplaySetupWizard(false)
         .withTombstone(false)
         .withNotifications(List.of(expectedNotification))
-        .withDefaultGeography(Geography.US);
+        .withDefaultGeography(Geography.US)
+        .withWebhookOperationConfigs(PERSISTED_WEBHOOK_CONFIGS);
+
+    when(uuidSupplier.get()).thenReturn(WEBHOOK_CONFIG_ID);
 
     when(configRepository.getStandardWorkspaceNoSecrets(workspace.getWorkspaceId(), false))
         .thenReturn(workspace)
@@ -364,7 +388,8 @@ class WorkspacesHandlerTest {
         .anonymousDataCollection(true)
         .securityUpdates(false)
         .notifications(List.of(expectedNotificationRead))
-        .defaultGeography(GEOGRAPHY_US);
+        .defaultGeography(GEOGRAPHY_US)
+        .webhookConfigs(List.of(new WebhookConfigRead().name(TEST_NAME).id(WEBHOOK_CONFIG_ID)));
 
     verify(configRepository).writeStandardWorkspaceNoSecrets(expectedWorkspace);
 
@@ -459,6 +484,44 @@ class WorkspacesHandlerTest {
     workspacesHandler.setFeedbackDone(workspaceGiveFeedback);
 
     verify(configRepository).setFeedback(workspaceGiveFeedback.getWorkspaceId());
+  }
+
+  @Test
+  void testWorkspaceIsWrittenThroughSecretsWriter() throws JsonValidationException, IOException {
+    secretsRepositoryWriter = mock(SecretsRepositoryWriter.class);
+    workspacesHandler = new WorkspacesHandler(configRepository, secretsRepositoryWriter, connectionsHandler,
+        destinationHandler, sourceHandler, uuidSupplier);
+
+    final UUID uuid = UUID.randomUUID();
+    when(uuidSupplier.get()).thenReturn(uuid);
+
+    final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
+        .name(NEW_WORKSPACE)
+        .email(TEST_EMAIL)
+        .news(false)
+        .anonymousDataCollection(false)
+        .securityUpdates(false)
+        .notifications(List.of(generateApiNotification()))
+        .defaultGeography(GEOGRAPHY_US);
+
+    final WorkspaceRead actualRead = workspacesHandler.createWorkspace(workspaceCreate);
+    final WorkspaceRead expectedRead = new WorkspaceRead()
+        .workspaceId(uuid)
+        .customerId(uuid)
+        .email(TEST_EMAIL)
+        .name(NEW_WORKSPACE)
+        .slug("new-workspace")
+        .initialSetupComplete(false)
+        .displaySetupWizard(false)
+        .news(false)
+        .anonymousDataCollection(false)
+        .securityUpdates(false)
+        .notifications(List.of(generateApiNotification()))
+        .defaultGeography(GEOGRAPHY_US)
+        .webhookConfigs(Collections.emptyList());
+
+    assertEquals(expectedRead, actualRead);
+    verify(secretsRepositoryWriter, times(1)).writeWorkspace(any());
   }
 
 }

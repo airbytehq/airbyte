@@ -304,10 +304,15 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void setAttemptTemporalWorkflowId(final long jobId, final int attemptNumber, final String temporalWorkflowId) throws IOException {
+  public void setAttemptTemporalWorkflowInfo(final long jobId,
+                                             final int attemptNumber,
+                                             final String temporalWorkflowId,
+                                             final String processingTaskQueue)
+      throws IOException {
     jobDatabase.query(ctx -> ctx.execute(
-        " UPDATE attempts SET temporal_workflow_id = ? WHERE job_id = ? AND attempt_number = ?",
+        " UPDATE attempts SET temporal_workflow_id = ? , processing_task_queue = ? WHERE job_id = ? AND attempt_number = ?",
         temporalWorkflowId,
+        processingTaskQueue,
         jobId,
         attemptNumber));
   }

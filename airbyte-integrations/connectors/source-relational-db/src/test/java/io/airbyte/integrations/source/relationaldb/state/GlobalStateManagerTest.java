@@ -135,7 +135,7 @@ public class GlobalStateManagerTest {
         .withGlobal(expectedGlobalState)
         .withType(AirbyteStateType.GLOBAL);
 
-    final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a");
+    final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a", 1L);
     assertEquals(expected, actualFirstEmission);
   }
 
@@ -167,7 +167,8 @@ public class GlobalStateManagerTest {
                 .withStreamName(STREAM_NAME1)
                 .withStreamNamespace(NAMESPACE)
                 .withCursorField(List.of(CURSOR_FIELD1))
-                .withCursor("a"),
+                .withCursor("a")
+                .withCursorRecordCount(1L),
             new DbStreamState()
                 .withStreamName(STREAM_NAME2)
                 .withStreamNamespace(NAMESPACE)
@@ -204,7 +205,7 @@ public class GlobalStateManagerTest {
         .withGlobal(expectedGlobalState)
         .withType(AirbyteStateType.GLOBAL);
 
-    final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a");
+    final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a", 1L);
     assertEquals(expected, actualFirstEmission);
   }
 

@@ -166,11 +166,12 @@ Note: If you are contributing a Python file without imports or function definiti
 ### Develop on `airbyte-webapp`
 
 - Spin up Airbyte locally so the UI can make requests against the local API.
-- Stop the `webapp`.
 
 ```bash
-docker-compose stop webapp
+BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" docker-compose up
 ```
+
+Note: [basic auth](https://docs.airbyte.com/operator-guides/security#network-security) must be disabled by setting `BASIC_AUTH_USERNAME` and `BASIC_AUTH_PASSWORD` to empty values, otherwise requests from the development server will fail against the local API.
 
 - Start up the react app.
 

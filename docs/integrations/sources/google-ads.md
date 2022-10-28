@@ -13,11 +13,11 @@ This page contains the setup guide and reference information for the Google Ads 
 
 :::note
 You'll need to create a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/) since Google Ads accounts cannot generate a developer token.
-::: 
+:::
 
 To set up the Google Ads source connector with Airbyte Open Source, you'll need a developer token. This token allows you to access your data from the Google Ads API. However, Google is selective about which software and use cases can get a developer token. The Airbyte team has worked with the Google Ads team to allowlist Airbyte and make sure you can get a developer token (see [issue 1981](https://github.com/airbytehq/airbyte/issues/1981) for more information).
 
-Follow [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token) to apply for the token. Note that you will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token; it has to be at least a basic developer token. It usually takes Google 24 hours to respond to these applications. 
+Follow [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token) to apply for the token. Note that you will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token; it has to be at least a basic developer token. It usually takes Google 24 hours to respond to these applications.
 
 When you apply for a token, make sure to mention:
 
@@ -42,7 +42,7 @@ To set up Google Ads as a source in Airbyte Cloud:
 8. (Optional) Enter a custom [GAQL](#custom-query-understanding-google-ads-query-language) query.
 9. (Optional) If the access to your account is through a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/), enter the [**Login Customer ID for Managed Accounts**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Google Ads Manager account.
 10. (Optional) Enter a [**Conversion Window**](https://support.google.com/google-ads/answer/3123169?hl=en).
-11. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated. 
+11. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated.
 12. Click **Set up source**.
 
 #### For Airbyte Open Source
@@ -60,7 +60,7 @@ To set up Google Ads as a source in Airbyte Open Source:
 9. (Optional) Enter a custom [GAQL](#custom-query-understanding-google-ads-query-language) query.
 10. (Optional) If the access to your account is through a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/), enter the [**Login Customer ID for Managed Accounts**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Google Ads Manager account.
 11. (Optional) Enter a [**Conversion Window**](https://support.google.com/google-ads/answer/3123169?hl=en).
-12. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated. 
+12. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated.
 13. Click **Set up source**.
 
 ## Supported sync modes
@@ -118,12 +118,13 @@ Follow Google's guidance on [Selectability between segments and metrics](https:/
 
 This source is constrained by the [Google Ads API limits](https://developers.google.com/google-ads/api/docs/best-practices/quotas)
 
-Due to a limitation in the Google Ads API which does not allow getting performance data at a granularity level smaller than a day, the Google Ads connector usually pulls data up until the previous day. For example, if the sync runs on Wednesday at 5 PM, then data up until Tuesday midnight is pulled. Data for Wednesday is exported only if a sync runs after Wednesday (for example, 12:01 AM on Thursday) and so on. This avoids syncing partial performance data, only to have to resync it again once the full day's data has been recorded by Google. For example, without this functionality, a sync which runs on Wednesday at 5 PM would get ads performance data for Wednesday between 12:01 AM - 5 PM on Wednesday, then it would need to run again at the end of the day to get all of Wednesday's data. 
+Due to a limitation in the Google Ads API which does not allow getting performance data at a granularity level smaller than a day, the Google Ads connector usually pulls data up until the previous day. For example, if the sync runs on Wednesday at 5 PM, then data up until Tuesday midnight is pulled. Data for Wednesday is exported only if a sync runs after Wednesday (for example, 12:01 AM on Thursday) and so on. This avoids syncing partial performance data, only to have to resync it again once the full day's data has been recorded by Google. For example, without this functionality, a sync which runs on Wednesday at 5 PM would get ads performance data for Wednesday between 12:01 AM - 5 PM on Wednesday, then it would need to run again at the end of the day to get all of Wednesday's data.
 
 ## Changelog
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| `0.2.2`  | 2022-10-21 | [17412](https://github.com/airbytehq/airbyte/pull/17412) | Release with CDK >= 0.2.2                                                                                                            |
 | `0.2.1`  | 2022-09-29 | [17412](https://github.com/airbytehq/airbyte/pull/17412) | Always use latest CDK version                                                                                                        |
 | `0.2.0`  | 2022-08-23 | [15858](https://github.com/airbytehq/airbyte/pull/15858) | Mark the `query` and `table_name` fields in `custom_queries` as required                                                             |
 | `0.1.44` | 2022-07-27 | [15084](https://github.com/airbytehq/airbyte/pull/15084) | Fix data type `ad_group_criterion.topic.path` in `display_topics_performance_report` and shifted `campaigns` to non-managers streams |

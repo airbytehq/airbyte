@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.config;
 
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;

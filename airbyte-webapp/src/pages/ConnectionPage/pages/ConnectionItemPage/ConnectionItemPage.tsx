@@ -45,17 +45,12 @@ export const ConnectionItemPageInner: React.FC = () => {
     >
       <Suspense fallback={<LoadingPage />}>
         <Routes>
-          <Route path={ConnectionSettingsRoutes.STATUS} element={<ConnectionStatusTab connection={connection} />} />
+          <Route path={ConnectionSettingsRoutes.STATUS} element={<ConnectionStatusTab />} />
           <Route path={ConnectionSettingsRoutes.REPLICATION} element={<ConnectionReplicationTab />} />
-          <Route
-            path={ConnectionSettingsRoutes.TRANSFORMATION}
-            element={<ConnectionTransformationTab connection={connection} />}
-          />
+          <Route path={ConnectionSettingsRoutes.TRANSFORMATION} element={<ConnectionTransformationTab />} />
           <Route
             path={ConnectionSettingsRoutes.SETTINGS}
-            element={
-              isConnectionDeleted ? <Navigate replace to=".." /> : <ConnectionSettingsTab connection={connection} />
-            }
+            element={isConnectionDeleted ? <Navigate replace to=".." /> : <ConnectionSettingsTab />}
           />
           <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace />} />
         </Routes>

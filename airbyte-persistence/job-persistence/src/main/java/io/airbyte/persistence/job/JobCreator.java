@@ -4,6 +4,7 @@
 
 package io.airbyte.persistence.job;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
@@ -33,6 +34,7 @@ public interface JobCreator {
                                String sourceDockerImage,
                                String destinationDockerImage,
                                List<StandardSyncOperation> standardSyncOperations,
+                               @Nullable JsonNode webhookOperationConfigs,
                                @Nullable ActorDefinitionResourceRequirements sourceResourceReqs,
                                @Nullable ActorDefinitionResourceRequirements destinationResourceReqs)
       throws IOException;

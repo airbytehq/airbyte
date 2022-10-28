@@ -13,10 +13,11 @@ import { Tooltip } from "components/ui/Tooltip";
 
 import { Action, Namespace } from "core/analytics";
 import { getFrequencyFromScheduleData } from "core/analytics/utils";
-import { ConnectionStatus, JobWithAttemptsRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { ConnectionStatus, JobWithAttemptsRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
 import { useTrackPage, PageTrackingCodes, useAnalyticsService } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
+import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import { useCancelJob, useListJobs } from "services/job/JobService";
@@ -37,10 +38,6 @@ interface ActiveJob {
   isCanceling: boolean;
 }
 
-interface ConnectionStatusTabProps {
-  connection: WebBackendConnectionRead;
-}
-
 const getJobRunningOrPending = (jobs: JobWithAttemptsRead[]) => {
   return jobs.find((jobWithAttempts) => {
     const jobStatus = jobWithAttempts?.job?.status;
@@ -48,7 +45,8 @@ const getJobRunningOrPending = (jobs: JobWithAttemptsRead[]) => {
   });
 };
 
-export const ConnectionStatusTab: React.FC<ConnectionStatusTabProps> = ({ connection }) => {
+export const ConnectionStatusTab: React.FC = () => {
+  const { connection } = useConnectionEditService();
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_STATUS);
   const [activeJob, setActiveJob] = useState<ActiveJob>();
   const [jobPageSize, setJobPageSize] = useState(JOB_PAGE_SIZE_INCREMENT);

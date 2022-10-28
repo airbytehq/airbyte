@@ -8,6 +8,7 @@ dependencies {
     implementation 'io.sentry:sentry:6.3.1'
     implementation 'io.temporal:temporal-sdk:1.8.1'
     implementation 'io.temporal:temporal-serviceclient:1.8.1'
+    implementation libs.bundles.datadog
 
     implementation project(':airbyte-api')
     implementation project(':airbyte-analytics')
@@ -18,6 +19,7 @@ dependencies {
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-metrics:metrics-lib')
+    implementation project(':airbyte-persistence:job-persistence')
 
     annotationProcessor platform(libs.micronaut.bom)
     annotationProcessor libs.bundles.micronaut.annotation.processor

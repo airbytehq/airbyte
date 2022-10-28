@@ -8,43 +8,43 @@ The instructions have been tested on `Amazon Linux 2 AMI (HVM)`
 
 ## Create a new instance
 
-* Launch a new instance
+- Launch a new instance
 
 ![](../.gitbook/assets/aws_ec2_launch.png)
 
-* Select instance AMI
+- Select instance AMI
 
 ![](../.gitbook/assets/aws_ec2_ami.png)
 
-* Select instance type
-  * For testing out Airbyte, a `t2.medium` instance is likely sufficient. Airbyte uses a lot of disk space with images and logs, so make sure to provision at least 30GBs of disk per node.
-  * For long-running Airbyte installations, we recommend a `t2.large` instance.
+- Select instance type
+  - For testing out Airbyte, a `t2.medium` instance is likely sufficient. Airbyte uses a lot of disk space with images and logs, so make sure to provision at least 30GBs of disk per node.
+  - For long-running Airbyte installations, we recommend a `t2.large` instance.
 
 ![](../.gitbook/assets/aws_ec2_instance_type.png)
 
-* `Next: Configure Instance Details` 
-  * You can tune parameters or keep the defaults
-* `Next: Add Storage`
-  * You can tune parameters or keep the defaults
-* `Next: Add Tags`
-  * You can tune parameters or keep the defaults
-* `Next: Configure Security Groups`
-  * We are going to allow network for `ssh` 
+- `Next: Configure Instance Details`
+  - You can tune parameters or keep the defaults
+- `Next: Add Storage`
+  - You can tune parameters or keep the defaults
+- `Next: Add Tags`
+  - You can tune parameters or keep the defaults
+- `Next: Configure Security Groups`
+  - We are going to allow network for `ssh`
 
 ![](../.gitbook/assets/aws_ec2_security_group.png)
 
-* `Review and Launch`
-* `Launch`
-* Create a ssh key so you can connect to the instance
-  * Download the key \(and don't lose it or you won't be able to connect to the instance\)
+- `Review and Launch`
+- `Launch`
+- Create a ssh key so you can connect to the instance
+  - Download the key \(and don't lose it or you won't be able to connect to the instance\)
 
 ![](../.gitbook/assets/aws_ec2_ssh_key.png)
 
-* `Launch Instances`
+- `Launch Instances`
 
 ![](../.gitbook/assets/aws_ec2_instance_view.png)
 
-* Wait for the instance to become `Running`
+- Wait for the instance to become `Running`
 
 ## Install environment
 
@@ -54,7 +54,7 @@ Note: The following commands will be entered either on your local terminal or in
 
 :::
 
-* Connect to your instance
+- Connect to your instance
 
 ```bash
 # In your workstation terminal
@@ -64,7 +64,7 @@ chmod 400 $SSH_KEY # or ssh will complain that the key has the wrong permissions
 ssh -i $SSH_KEY ec2-user@$INSTANCE_IP
 ```
 
-* Install `docker`
+- Install `docker`
 
 ```bash
 # In your ssh session on the instance terminal
@@ -74,7 +74,7 @@ sudo service docker start
 sudo usermod -a -G docker $USER
 ```
 
-* Install `docker-compose`
+- Install `docker-compose`
 
 ```bash
 # In your ssh session on the instance terminal
@@ -83,7 +83,7 @@ sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 ```
 
-* Close the ssh connection to ensure the group modification is taken into account
+- Close the ssh connection to ensure the group modification is taken into account
 
 ```bash
 # In your ssh session on the instance terminal
@@ -92,14 +92,14 @@ logout
 
 ## Install & start Airbyte
 
-* Connect to your instance
+- Connect to your instance
 
 ```bash
 # In your workstation terminal
 ssh -i $SSH_KEY ec2-user@$INSTANCE_IP
 ```
 
-* Install Airbyte
+- Install Airbyte
 
 ```bash
 # In your ssh session on the instance terminal
@@ -116,11 +116,11 @@ For security reasons, we strongly recommend to not expose Airbyte on Internet av
 
 :::
 
-* Create ssh tunnel for port 8000
+- Create ssh tunnel for port 8000
 
 :::info
 
-If you want to use different ports you will need to modify `API_URL` in your `.env` file and restart Airbyte.
+If you want to use different ports or change the HTTP basic auth username and password, you will need to modify `API_URL` in your `.env` file and restart Airbyte.
 
 :::
 
@@ -129,7 +129,7 @@ If you want to use different ports you will need to modify `API_URL` in your `.e
 ssh -i $SSH_KEY -L 8000:localhost:8000 -N -f ec2-user@$INSTANCE_IP
 ```
 
-* Just visit [http://localhost:8000](http://localhost:8000) in your browser and start moving some data!
+- Just visit [http://localhost:8000](http://localhost:8000) in your browser and start moving some data!
 
 ## Pushing Airbyte logs to CloudWatch
 
@@ -138,4 +138,3 @@ If you want to get your logs from your Airbyte Docker containers in CloudWatch, 
 ## Troubleshooting
 
 If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../troubleshooting/on-deploying.md) section in our docs for common problems.
-

@@ -4,23 +4,29 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_ID_KEY;
+
+import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
+import io.airbyte.commons.temporal.config.WorkerMode;
+import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.config.WorkerMode;
-import io.airbyte.workers.temporal.exception.RetryableException;
 import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
 import java.util.List;
+import java.util.Map;
 
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
@@ -32,9 +38,11 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
     this.jobPersistence = jobPersistence;
   }
 
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public GeneratedJobInput getSyncWorkflowInput(final SyncInput input) {
     try {
+      ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, input.getJobId()));
       final long jobId = input.getJobId();
       final int attempt = input.getAttemptId();
       final JobSyncConfig config;
@@ -87,6 +95,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withSourceConfiguration(config.getSourceConfiguration())
           .withDestinationConfiguration(config.getDestinationConfiguration())
           .withOperationSequence(config.getOperationSequence())
+          .withWebhookOperationConfigs(config.getWebhookOperationConfigs())
           .withCatalog(config.getConfiguredAirbyteCatalog())
           .withState(config.getState())
           .withResourceRequirements(config.getResourceRequirements())
@@ -100,8 +109,10 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
     }
   }
 
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public GeneratedJobInput getSyncWorkflowInputWithAttemptNumber(final SyncInputWithAttemptNumber input) {
+    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, input.getJobId()));
     return getSyncWorkflowInput(new SyncInput(
         input.getAttemptNumber(),
         input.getJobId()));
