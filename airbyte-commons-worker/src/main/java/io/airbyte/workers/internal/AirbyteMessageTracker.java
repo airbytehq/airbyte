@@ -251,6 +251,7 @@ public class AirbyteMessageTracker implements MessageTracker {
   private void handleEmittedTrace(final AirbyteTraceMessage traceMessage, final ConnectorType connectorType) {
     switch (traceMessage.getType()) {
       case ERROR -> handleEmittedErrorTrace(traceMessage, connectorType);
+      case ESTIMATE -> handleEmittedEstimateTrace(traceMessage, connectorType);
       default -> log.warn("Invalid message type for trace message: {}", traceMessage);
     }
   }
@@ -261,6 +262,10 @@ public class AirbyteMessageTracker implements MessageTracker {
     } else if (connectorType.equals(ConnectorType.SOURCE)) {
       sourceErrorTraceMessages.add(errorTraceMessage);
     }
+  }
+
+  private void handleEmittedEstimateTrace(final AirbyteTraceMessage estimateTraceMessage, final ConnectorType connectorType) {
+    // TODO!
   }
 
   private short getStreamIndex(final String streamName) {
