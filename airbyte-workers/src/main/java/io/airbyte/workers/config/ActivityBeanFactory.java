@@ -190,7 +190,7 @@ public class ActivityBeanFactory {
                                         @Property(name = "airbyte.activity.max-delay",
                                                   defaultValue = "600") final Integer maxDelayBetweenActivityAttemptsSeconds) {
     return RetryOptions.newBuilder()
-        .setMaximumAttempts(1)
+        .setMaximumAttempts(activityNumberOfAttempts)
         .setInitialInterval(Duration.ofSeconds(initialDelayBetweenActivityAttemptsSeconds))
         .setMaximumInterval(Duration.ofSeconds(maxDelayBetweenActivityAttemptsSeconds))
         .build();

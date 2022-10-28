@@ -249,12 +249,12 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public void jobSuccessWithAttemptNumber(final JobSuccessInputWithAttemptNumber input) {
-    throw new RuntimeException("C'est casse");
-    /*
-     * ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, input.getConnectionId(), JOB_ID_KEY,
-     * input.getJobId())); jobSuccess(new JobSuccessInput( input.getJobId(), input.getAttemptNumber(),
-     * input.getConnectionId(), input.getStandardSyncOutput()));
-     */
+    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, input.getConnectionId(), JOB_ID_KEY, input.getJobId()));
+    jobSuccess(new JobSuccessInput(
+        input.getJobId(),
+        input.getAttemptNumber(),
+        input.getConnectionId(),
+        input.getStandardSyncOutput()));
   }
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)

@@ -620,6 +620,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
           connectionId, input.getClass().getSimpleName(), workflowDelay, e);
       // TODO (https://github.com/airbytehq/airbyte/issues/13773) add tracking/notification
 
+      // Wait a short delay before restarting workflow. This is important if, for example, the failing
+      // activity was configured to not have retries.
+      // Without this delay, that activity could cause the workflow to loop extremely quickly,
+      // overwhelming temporal.
+      log.info("Waiting {} before restarting the workflow for connection {}, to prevent spamming temporal with restarts.", workflowDelay,
+          connectionId);
       Workflow.sleep(workflowDelay);
 
       // Accept a manual signal to retry the failed activity during this window
