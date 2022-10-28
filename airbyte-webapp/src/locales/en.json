@@ -363,6 +363,14 @@
   "connection.catalogTree.sourceSchema": "'<source schema>",
   "connection.catalogTree.destinationSchema": "'<destination schema>",
 
+  "connection.geographyTitle": "Data residency",
+  "connection.geographyDescription": "Depending on your network configuration, you may need to <a>add IP addresses</a> to your allowlist.",
+  "connection.geography.auto": "Airbyte Default",
+  "connection.geography.us": "United States",
+  "connection.geography.eu": "Europe",
+  "connection.geographyUpdateSuccess": "The data residency for this connection was successfully updated.",
+  "connection.geographyUpdateError": "There was an error updating the data residency for this connection.",
+
   "connection.newConnection": "New connection",
   "connection.createFirst": "Create your first connection",
   "connection.newConnectionTitle": "New connection",
@@ -499,6 +507,9 @@
   "settings.account": "Account",
   "settings.accountSettings.updateEmailSuccess": "Email updated",
   "settings.cookiePreferences": "Cookie Preferences",
+  "settings.defaultDataResidency": "Default Data residency",
+  "settings.defaultGeography": "Geography",
+  "settings.defaultDataResidencyDescription": "Choose the default preferred data processing location for all of your connections. Setting this choice means your data never leaves this region. <a>Learn more</a>.",
 
   "connector.requestConnectorBlock": "Request a new connector",
   "connector.requestConnector": "Request a new connector",
