@@ -7,6 +7,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
+    "typesense>=0.14.0"
 ]
 
 TEST_REQUIREMENTS = ["pytest~=6.1", "typesense>=0.14.0"]
