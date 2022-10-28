@@ -43,7 +43,7 @@ class GoogleAdManagerAuthenticator:
         self.ad_manager_client = ad_manager.AdManagerClient(self.oauth2_client, application_name)
 
     def generate_report_downloader(self) -> ad_manager.DataDownloader:
-        report_downloader = self.ad_manager_client.GetDataDownloader(version='v202208')
+        report_downloader = self.ad_manager_client.GetDataDownloader(version=API_VERSION)
         return report_downloader
 
     def get_networks(self) -> List[Mapping[str, Any]]:

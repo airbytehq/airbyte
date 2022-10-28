@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.2+",
+    "airbyte-cdk >= 0.2",
     "googleads==33.0.0",
     "pydantic==1.9.2"
 

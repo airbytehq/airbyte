@@ -17,8 +17,9 @@ from csv import DictReader as csv_dict_reader
 from .data_classes import AdUnitPerHourItem, AdUnitPerReferrerItem, ReportStatus
 from .utils import convert_time_to_dict
 
-_CHUNK_SIZE = 16 * 1024
+CHUNK_SIZE = 16 * 1024
 API_VERSION = 'v202208'
+TIMEOUT_LIMIT = 60*10
 
 logger = logging.getLogger('{}.{}'.format(__name__, 'google_ad_manager_report_downloader'))
 
@@ -88,9 +89,9 @@ class BaseGoogleAdManagerReportStream(Stream, IncrementalMixin):
         this is the base method to parse the api response
         """
         logger.info("start parsing the response stream, should be replaced with logger")
-        timeout = time.time() + 60*10   # 10 minutes from now
+        timeout = time.time() + TIMEOUT_LIMIT   # 10 minutes from now
         while True:
-            chunk = response.read(_CHUNK_SIZE)
+            chunk = response.read(CHUNK_SIZE)
             if not chunk or time.time() > timeout:  # timeout after 10 minutes
                 break
             lines = chunk.decode('utf-8')
@@ -189,6 +190,14 @@ class AdUnitPerHourReportStream(BaseGoogleAdManagerReportStream):
     Returns:
         _type_: _description_
     """
+    columns = ["TOTAL_INVENTORY_LEVEL_UNFILLED_IMPRESSIONS",
+               "TOTAL_LINE_ITEM_LEVEL_IMPRESSIONS",
+               "TOTAL_LINE_ITEM_LEVEL_CLICKS",
+               "TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE",
+               "TOTAL_LINE_ITEM_LEVEL_WITHOUT_CPD_AVERAGE_ECPM",
+               "TOTAL_LINE_ITEM_LEVEL_CTR",
+               "TOTAL_CODE_SERVED_COUNT"]
+    dimensions = ['AD_UNIT_NAME', 'HOUR', "DATE"]
 
     def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient, customer_name: str) -> None:
         super().__init__(google_ad_manager_client)
@@ -204,17 +213,9 @@ class AdUnitPerHourReportStream(BaseGoogleAdManagerReportStream):
         Returns:
             _type_: _description_
         """
-        columns = ["TOTAL_INVENTORY_LEVEL_UNFILLED_IMPRESSIONS",
-                   "TOTAL_LINE_ITEM_LEVEL_IMPRESSIONS",
-                   "TOTAL_LINE_ITEM_LEVEL_CLICKS",
-                   "TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE",
-                   "TOTAL_LINE_ITEM_LEVEL_WITHOUT_CPD_AVERAGE_ECPM",
-                   "TOTAL_LINE_ITEM_LEVEL_CTR",
-                   "TOTAL_CODE_SERVED_COUNT"]
-        dimensions = ['AD_UNIT_NAME', 'HOUR', "DATE"]
         report_job = {"reportQuery": {}}
-        report_job['reportQuery']['dimensions'] = dimensions
-        report_job['reportQuery']['columns'] = columns
+        report_job['reportQuery']['dimensions'] = self.dimensions
+        report_job['reportQuery']['columns'] = self.columns
         report_job["reportQuery"]["adUnitView"] = 'HIERARCHICAL'
         report_job = self.add_dates_ranges(report_job, start_date, end_date)
         return report_job
@@ -248,6 +249,16 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
     Args:
         BaseGoogleAdManagerReportStream (_type_): _description_
     """
+    columns = [
+                "TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE",
+                "TOTAL_LINE_ITEM_LEVEL_IMPRESSIONS",
+                "TOTAL_LINE_ITEM_LEVEL_CLICKS",
+                "TOTAL_LINE_ITEM_LEVEL_WITHOUT_CPD_AVERAGE_ECPM",
+                "TOTAL_ACTIVE_VIEW_VIEWABLE_IMPRESSIONS",
+                "TOTAL_ACTIVE_VIEW_MEASURABLE_IMPRESSIONS",
+                "TOTAL_ACTIVE_VIEW_ELIGIBLE_IMPRESSIONS",
+            ]
+    dimensions = ['ADVERTISER_NAME', 'CUSTOM_CRITERIA', 'AD_UNIT_ID', "DATE"]
     
     def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient, customer_name: str) -> None:
         super().__init__(google_ad_manager_client)
@@ -267,18 +278,8 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
         targets_ids = [targeting_value['id'] for targeting_value in targeting_values if targeting_value["id"]]
         targets_ids = ", ".join([str(target_id) for target_id in targets_ids])
         report_job = {"reportQuery": {}}
-        custom_traffic_source_columns = [
-                "TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE",
-                "TOTAL_LINE_ITEM_LEVEL_IMPRESSIONS",
-                "TOTAL_LINE_ITEM_LEVEL_CLICKS",
-                "TOTAL_LINE_ITEM_LEVEL_WITHOUT_CPD_AVERAGE_ECPM",
-                "TOTAL_ACTIVE_VIEW_VIEWABLE_IMPRESSIONS",
-                "TOTAL_ACTIVE_VIEW_MEASURABLE_IMPRESSIONS",
-                "TOTAL_ACTIVE_VIEW_ELIGIBLE_IMPRESSIONS",
-            ]
-        dimensions = ['ADVERTISER_NAME', 'CUSTOM_CRITERIA', 'AD_UNIT_ID', "DATE"]
-        report_job["reportQuery"]["dimensions"] = dimensions
-        report_job["reportQuery"]["columns"] = custom_traffic_source_columns
+        report_job["reportQuery"]["dimensions"] = self.dimensions
+        report_job["reportQuery"]["columns"] = self.columns
         report_job["reportQuery"]["adUnitView"] = 'HIERARCHICAL'
         statement_builder = ad_manager.StatementBuilder(version=API_VERSION)
         statement_builder.Where(f"CUSTOM_TARGETING_VALUE_ID IN ({targets_ids})")
@@ -295,7 +296,7 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
         if name:
             statement_builder = statement_builder.Where("name = :name").WithBindVariable('name', name)
         statement_builder.limit = page_size
-        timeout = time.time() + 60 * 10  # 10 minutes from now
+        timeout = time.time() + TIMEOUT_LIMIT  # 10 minutes from now
         while True:
             response = custom_targeting_service.getCustomTargetingKeysByStatement(statement_builder.ToStatement())
             if time.time() <= timeout:
@@ -328,12 +329,8 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
                 response = custom_targeting_service.getCustomTargetingValuesByStatement(statement.ToStatement())
                 if time.time() <= timeout:
                     if 'results' in response and len(response['results']):
-                        for custom_targeting_value in response['results']:
-                            custom_targe_dict = {"id": custom_targeting_value['id'],
-                                                 "name": custom_targeting_value['name'],
-                                                 "displayName": custom_targeting_value['displayName'],
-                                                 "customTargetingKeyId": custom_targeting_value['customTargetingKeyId']}
-                            targeting_values.append(custom_targe_dict)
+                        custom_target_list = self.generate_custom_targeting_dict(response['results'])
+                        targeting_values.extend(custom_target_list)
                         statement.offset += statement.limit
                     else:
                         break
@@ -342,6 +339,19 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
         logger.info("found {} custom targeting values".format(len(targeting_values)))
         return targeting_values
 
+    def generate_custom_targeting_dict(self, results: Mapping[str, str]) -> List:
+        """
+        generate custom targeting from results
+        """
+        custom_target_list = list()
+        for custom_targeting_value in results:
+            custom_target_dict = {"id": custom_targeting_value['id'],
+                                  "name": custom_targeting_value['name'],
+                                  "displayName": custom_targeting_value['displayName'],
+                                  "customTargetingKeyId": custom_targeting_value['customTargetingKeyId']}
+            custom_target_list.append(custom_target_dict)
+        return custom_target_list
+    
     def generate_item(self, row):
         """from a dict returned by the http request generate item
 
