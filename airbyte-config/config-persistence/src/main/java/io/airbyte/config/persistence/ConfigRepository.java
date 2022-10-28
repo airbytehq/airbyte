@@ -650,6 +650,54 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
   }
 
+  /**
+   * Returns all destinations for a workspace. Does not contain secrets.
+   *
+   * @param workspaceId - id of the workspace
+   * @return destinations
+   * @throws IOException - you never know when you IO
+   */
+  public List<DestinationConnection> listWorkspaceDestinationConnection(UUID workspaceId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
+        .from(ACTOR)
+        .where(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
+        .and(ACTOR.WORKSPACE_ID.eq(workspaceId))
+        .andNot(ACTOR.TOMBSTONE).fetch());
+    return result.stream().map(DbConverter::buildDestinationConnection).collect(Collectors.toList());
+  }
+
+  /**
+   * Returns all active sources using a definition
+   *
+   * @param definitionId - id for the definition
+   * @return sources
+   * @throws IOException
+   */
+  public List<SourceConnection> listSourcesForDefinition(UUID definitionId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
+        .from(ACTOR)
+        .where(ACTOR.ACTOR_TYPE.eq(ActorType.source))
+        .and(ACTOR.ACTOR_DEFINITION_ID.eq(definitionId))
+        .andNot(ACTOR.TOMBSTONE).fetch());
+    return result.stream().map(DbConverter::buildSourceConnection).collect(Collectors.toList());
+  }
+
+  /**
+   * Returns all active destinations using a definition
+   *
+   * @param definitionId - id for the definition
+   * @return destinations
+   * @throws IOException
+   */
+  public List<DestinationConnection> listDestinationsForDefinition(UUID definitionId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
+        .from(ACTOR)
+        .where(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
+        .and(ACTOR.ACTOR_DEFINITION_ID.eq(definitionId))
+        .andNot(ACTOR.TOMBSTONE).fetch());
+    return result.stream().map(DbConverter::buildDestinationConnection).collect(Collectors.toList());
+  }
+
   public StandardSync getStandardSync(final UUID connectionId) throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(ConfigSchema.STANDARD_SYNC, connectionId.toString(), StandardSync.class);
   }

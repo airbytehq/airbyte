@@ -42,6 +42,7 @@ import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.persistence.job.DefaultJobPersistence;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.WebUrlHelper;
+import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
 import io.airbyte.persistence.job.errorreporter.JobErrorReportingClient;
 import io.airbyte.persistence.job.errorreporter.JobErrorReportingClientFactory;
@@ -53,10 +54,17 @@ import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
 import io.airbyte.server.errors.KnownExceptionMapper;
 import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
+import io.airbyte.server.handlers.AttemptHandler;
+import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DbMigrationHandler;
+import io.airbyte.server.handlers.DestinationDefinitionsHandler;
+import io.airbyte.server.handlers.DestinationHandler;
+import io.airbyte.server.handlers.OperationsHandler;
+import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -255,6 +263,42 @@ public class ServerApp implements ServerRunnable {
     // "major" version bump as it will no longer be needed.
     migrateExistingConnectionsToTemporalScheduler(configRepository, jobPersistence, eventRunner);
 
+    final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
+
+    final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
+
+    final AttemptHandler attemptHandler = new AttemptHandler(jobPersistence);
+
+    final ConnectionsHandler connectionsHandler = new ConnectionsHandler(
+        configRepository,
+        workspaceHelper,
+        trackingClient,
+        eventRunner);
+
+    final DestinationHandler destinationHandler = new DestinationHandler(
+        configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
+        schemaValidator,
+        connectionsHandler);
+
+    final OperationsHandler operationsHandler = new OperationsHandler(configRepository);
+
+    final SchedulerHandler schedulerHandler = new SchedulerHandler(
+        configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
+        syncSchedulerClient,
+        jobPersistence,
+        configs.getWorkerEnvironment(),
+        configs.getLogConfigs(),
+        eventRunner);
+
+    final DbMigrationHandler dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
+
+    final DestinationDefinitionsHandler destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, syncSchedulerClient,
+        destinationHandler);
+
     LOGGER.info("Starting server...");
 
     return apiFactory.create(
@@ -273,7 +317,14 @@ public class ServerApp implements ServerRunnable {
         httpClient,
         eventRunner,
         configsFlyway,
-        jobsFlyway);
+        jobsFlyway,
+        attemptHandler,
+        connectionsHandler,
+        dbMigrationHandler,
+        destinationDefinitionsHandler,
+        destinationHandler,
+        operationsHandler,
+        schedulerHandler);
   }
 
   @VisibleForTesting

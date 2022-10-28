@@ -2,14 +2,16 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from contextlib import nullcontext
 from unittest.mock import patch
 
+import pendulum
 import pytest
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_twilio.auth import HttpBasicAuthenticator
 from source_twilio.source import SourceTwilio
-from source_twilio.streams import Accounts, Addresses, Calls, DependentPhoneNumbers, MessageMedia, Messages, UsageTriggers
+from source_twilio.streams import Accounts, Addresses, Alerts, Calls, DependentPhoneNumbers, MessageMedia, TwilioNestedStream, UsageTriggers
 
 TEST_CONFIG = {
     "account_sid": "airbyte.io",
@@ -135,29 +137,25 @@ class TestIncrementalTwilioStream:
     CONFIG.pop("auth_token")
 
     @pytest.mark.parametrize(
-        "stream_cls, expected",
-        [
-            (Calls, "EndTime>"),
-        ],
-    )
-    def test_incremental_filter_field(self, stream_cls, expected):
-        stream = stream_cls(**self.CONFIG)
-        result = stream.incremental_filter_field
-        assert result == expected
-
-    @pytest.mark.parametrize(
-        "stream_cls, next_page_token, expected",
+        "stream_cls, stream_slice, next_page_token, expected",
         [
             (
                 Calls,
+                {"EndTime>": "2022-01-01", "EndTime<": "2022-01-02"},
                 {"Page": "2", "PageSize": "1000", "PageToken": "PAAD42931b949c0dedce94b2f93847fdcf95"},
-                {"EndTime>": "2022-01-01", "Page": "2", "PageSize": "1000", "PageToken": "PAAD42931b949c0dedce94b2f93847fdcf95"},
+                {
+                    "EndTime>": "2022-01-01",
+                    "EndTime<": "2022-01-02",
+                    "Page": "2",
+                    "PageSize": "1000",
+                    "PageToken": "PAAD42931b949c0dedce94b2f93847fdcf95",
+                },
             ),
         ],
     )
-    def test_request_params(self, stream_cls, next_page_token, expected):
+    def test_request_params(self, stream_cls, stream_slice, next_page_token, expected):
         stream = stream_cls(**self.CONFIG)
-        result = stream.request_params(stream_state=None, next_page_token=next_page_token)
+        result = stream.request_params(stream_state=None, stream_slice=stream_slice, next_page_token=next_page_token)
         assert result == expected
 
     @pytest.mark.parametrize(
@@ -171,6 +169,33 @@ class TestIncrementalTwilioStream:
         with patch.object(HttpStream, "read_records", return_value=record):
             result = stream.read_records(sync_mode=None)
             assert list(result) == expected
+
+    @pytest.mark.parametrize(
+        "stream_cls, parent_cls_records, extra_slice_keywords",
+        [
+            (Calls, [{"subresource_uris": {"calls": "123"}}, {"subresource_uris": {"calls": "124"}}], ["subresource_uri"]),
+            (Alerts, [{}], []),
+        ],
+    )
+    def test_stream_slices(self, mocker, stream_cls, parent_cls_records, extra_slice_keywords):
+        stream = stream_cls(
+            authenticator=TEST_CONFIG.get("authenticator"), start_date=pendulum.now().subtract(months=13).to_iso8601_string()
+        )
+        expected_slices = 2 * len(parent_cls_records)  # 2 per year slices per each parent slice
+        if isinstance(stream, TwilioNestedStream):
+            slices_mock_context = mocker.patch.object(stream.parent_stream_instance, "stream_slices", return_value=[{}])
+            records_mock_context = mocker.patch.object(stream.parent_stream_instance, "read_records", return_value=parent_cls_records)
+        else:
+            slices_mock_context, records_mock_context = nullcontext(), nullcontext()
+        with slices_mock_context:
+            with records_mock_context:
+                slices = list(stream.stream_slices(sync_mode="incremental"))
+        assert len(slices) == expected_slices
+        for slice_ in slices:
+            if isinstance(stream, TwilioNestedStream):
+                for kw in extra_slice_keywords:
+                    assert kw in slice_
+            assert slice_[stream.lower_boundary_filter_field] <= slice_[stream.upper_boundary_filter_field]
 
 
 class TestTwilioNestedStream:
@@ -205,12 +230,6 @@ class TestTwilioNestedStream:
                 [{"subresource_uris": {"addresses": "123"}, "sid": "123", "account_sid": "456"}],
                 [{"sid": "123", "account_sid": "456"}],
             ),
-            (
-                MessageMedia,
-                Messages,
-                [{"subresource_uris": {"media": "1234"}, "num_media": "1", "sid": "123", "account_sid": "456"}],
-                [{"subresource_uri": "1234"}],
-            ),
         ],
     )
     def test_stream_slices(self, stream_cls, parent_stream, record, expected):
@@ -218,7 +237,7 @@ class TestTwilioNestedStream:
         with patch.object(Accounts, "read_records", return_value=record):
             with patch.object(parent_stream, "stream_slices", return_value=record):
                 with patch.object(parent_stream, "read_records", return_value=record):
-                    result = stream.stream_slices()
+                    result = stream.stream_slices(sync_mode="full_refresh")
                     assert list(result) == expected
 
 
