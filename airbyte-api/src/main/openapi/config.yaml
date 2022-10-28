@@ -2888,6 +2888,8 @@ components:
           format: uuid
         catalogDiff:
           $ref: "#/components/schemas/CatalogDiff"
+        breakingChange:
+          type: boolean
     SourceSearch:
       type: object
       properties:

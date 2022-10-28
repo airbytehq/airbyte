@@ -2491,6 +2491,8 @@ components:
           $ref: "#/components/schemas/SynchronousJobRead"
         catalogDiff:
           $ref: "#/components/schemas/CatalogDiff"
+        breakingChange:
+          type: boolean
       required:
         - jobInfo
       type: object

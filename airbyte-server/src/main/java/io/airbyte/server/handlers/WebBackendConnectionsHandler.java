@@ -352,7 +352,7 @@ public class WebBackendConnectionsHandler {
        * confusing. We need to figure out why source_catalog_id is not always populated in the db.
        */
       diff = refreshedCatalog.get().getCatalogDiff();
-
+      connection.setBreakingChange(refreshedCatalog.get().getBreakingChange());
     } else if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
       // reconstructs a full picture of the full schema at the time the catalog was configured.
       syncCatalog = updateSchemaWithDiscovery(configuredCatalog, catalogUsedToMakeConfiguredCatalog.get());
