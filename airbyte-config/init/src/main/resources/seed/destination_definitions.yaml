@@ -100,7 +100,7 @@
 - destinationDefinitionId: 68f351a7-2745-4bef-ad7f-996b8e51bb8c
   name: ElasticSearch
   dockerRepository: airbyte/destination-elasticsearch
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.com/integrations/destinations/elasticsearch
   icon: elasticsearch.svg
   releaseStage: alpha
@@ -182,14 +182,14 @@
 - name: MeiliSearch
   destinationDefinitionId: af7c921e-5892-4ff2-b6c1-4a5ab258fb7e
   dockerRepository: airbyte/destination-meilisearch
-  dockerImageTag: 0.2.13
+  dockerImageTag: 1.0.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/meilisearch
   icon: meilisearch.svg
   releaseStage: alpha
 - name: MongoDB
   destinationDefinitionId: 8b746512-8c2e-6ac1-4adc-b59faafd473c
   dockerRepository: airbyte/destination-mongodb
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.com/integrations/destinations/mongodb
   icon: mongodb.svg
   releaseStage: alpha
@@ -238,7 +238,7 @@
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.3.50
+  dockerImageTag: 0.3.51
   documentationUrl: https://docs.airbyte.com/integrations/destinations/redshift
   icon: redshift.svg
   resourceRequirements:
@@ -257,7 +257,7 @@
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.3.16
+  dockerImageTag: 0.3.17
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3
   icon: s3.svg
   resourceRequirements:

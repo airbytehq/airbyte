@@ -24,6 +24,7 @@ connectors-destination-testcontainers-oracle-xe = "1.17.3"
 connectors-destination-testcontainers-elasticsearch = "1.17.3"
 connectors-source-testcontainers-clickhouse = "1.17.3"
 platform-testcontainers = "1.17.3"
+temporal = "1.17.0"
 
 [libraries]
 fasterxml = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "fasterxml_version" }
@@ -32,7 +33,7 @@ jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", ver
 jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "fasterxml_version" }
 jackson-dataformat = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "fasterxml_version" }
 jackson-datatype = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "fasterxml_version" }
-guava = { module = "com.google.guava:guava", version = "30.1.1-jre" }
+guava = { module = "com.google.guava:guava", version = "31.1-jre" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commons_io" }
 apache-commons = { module = "org.apache.commons:commons-compress", version = "1.20" }
 apache-commons-lang = { module = "org.apache.commons:commons-lang3", version = "3.11" }
@@ -96,6 +97,9 @@ micrometer-statsd = { module = "io.micrometer:micrometer-registry-statsd", versi
 datadog-trace-api = { module = "com.datadoghq:dd-trace-api", version.ref = "datadog-version" }
 datadog-trace-ot = { module = "com.datadoghq:dd-trace-ot", version.ref = "datadog-version" }
 quartz-scheduler = { module = "org.quartz-scheduler:quartz", version = "2.3.2" }
+temporal-sdk = { module = "io.temporal:temporal-sdk", version.ref = "temporal" }
+temporal-serviceclient = { module = "io.temporal:temporal-serviceclient", version.ref = "temporal" }
+temporal-testing = { module = "io.temporal:temporal-testing", version.ref = "temporal" }
 
 # Micronaut-related dependencies
 h2-database = { module = "com.h2database:h2", version = "2.1.214" }
@@ -132,3 +136,4 @@ micronaut-annotation = ["jakarta-inject", "micronaut-inject-java"]
 micronaut-annotation-processor = ["micronaut-inject-java", "micronaut-management", "micronaut-validation", "micronaut-data-processor", "micronaut-jaxrs-processor"]
 micronaut-test = ["micronaut-test-core", "micronaut-test-junit5", "h2-database"]
 micronaut-test-annotation-processor = ["micronaut-inject-java"]
+temporal = ["temporal-sdk", "temporal-serviceclient"]
