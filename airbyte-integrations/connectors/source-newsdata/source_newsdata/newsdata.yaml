@@ -37,7 +37,7 @@ definitions:
             language: "{{ ','.join(config['language']) }}"
             category: "{{ ','.join(config['category']) }}"
             q: "{{ config['query'] | urlencode }}"
-            qInTitle: "{{ config['queryInTitle'] | urlencode }}"
+            qInTitle: "{{ config['query_in_title'] | urlencode }}"
             domain: "{{ ','.join(config['domain']) }}"
   sources_stream:
     $ref: "*ref(definitions.base_stream)"

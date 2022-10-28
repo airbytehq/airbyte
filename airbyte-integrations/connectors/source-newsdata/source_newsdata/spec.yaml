@@ -12,35 +12,39 @@ connectionSpecification:
       description: API Key
       airbyte_secret: true
       order: 0
-    query:
-      type: string
-      description: >-
-        Keywords or phrases to search for in the news title and content.
-        Advanced Search options:
-          - Search `Social`: query = "social"
-          - Search `Social Pizza`: query = "social pizza"
-          - Search `Social` but not with `pizza`: query = "social -pizza"
-          - Search `Social` but not with `pizza` and `wildfire`: query = "social -pizza -wildfire"
-          - Search `Social` and `pizza`: query = "social AND pizza"
-          - Search `Social` and `pizza` and `pasta`: query = "social AND pizza AND pasta"
-          - Search `Social` or `pizza`: query = "social OR pizza"
-          - Search `Social` or `pizza` but not `pasta`: query = "social OR pizza -pasta"
-          - Search `Social` or `pizza` or `pasta`: query = "social OR pizza OR pasta"
-        Note: You can't use AND and OR in the same query.
-      order: 1
-    queryInTitle:
-      type: string
-      description: Same as `query`, but restricting the search to only the news title. It cannot be used along with `query`.
+    OneOf:
+      query:
+        type: string
+        description: >-
+          Keywords or phrases to search for in the news title and content.
+          Advanced Search options:
+            - Search `Social`: query = "social"
+            - Search `Social Pizza`: query = "social pizza"
+            - Search `Social` but not with `pizza`: query = "social -pizza"
+            - Search `Social` but not with `pizza` and `wildfire`: query = "social -pizza -wildfire"
+            - Search `Social` and `pizza`: query = "social AND pizza"
+            - Search `Social` and `pizza` and `pasta`: query = "social AND pizza AND pasta"
+            - Search `Social` or `pizza`: query = "social OR pizza"
+            - Search `Social` or `pizza` but not `pasta`: query = "social OR pizza -pasta"
+            - Search `Social` or `pizza` or `pasta`: query = "social OR pizza OR pasta"
+          Note: You can't use AND and OR in the same query.
+        order: 1
+      query_in_title:
+        type: string
+        description: Same as `query`, but restricting the search to only the news title. It cannot be used along with `query`.
+        order: 1
     domain:
       type: array
       description: Domains (maximum 5) to restrict the search to. Use the sources stream to find top sources id.
+      maxitems: 5
       items:
         type: string
-      order: 3
+      order: 2
     country:
       type: array
       description: 2-letter ISO 3166-1 countries (maximum 5) to restrict the search to.
-      order: 4
+      maxitems: 5
+      order: 3
       items:
         type: string
         enum:
@@ -123,7 +127,8 @@ connectionSpecification:
     category:
       type: array
       description: Categories (maximum 5) to restrict the search to.
-      order: 5
+      maxitems: 5
+      order: 4
       items:
         type: string
         enum:
@@ -141,7 +146,8 @@ connectionSpecification:
     language:
       type: array
       description: Languages (maximum 5) to restrict the search to.
-      order: 6
+      maxitems: 5
+      order: 5
       items:
         type: string
         enum:
