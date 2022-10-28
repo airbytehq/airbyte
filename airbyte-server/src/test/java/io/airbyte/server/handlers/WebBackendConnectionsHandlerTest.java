@@ -121,6 +121,7 @@ class WebBackendConnectionsHandlerTest {
   private OperationReadList brokenOperationReadList;
   private WebBackendConnectionRead expected;
   private WebBackendConnectionRead expectedWithNewSchema;
+  private WebBackendConnectionRead expectedWithNewSchemaAndBreakingChange;
   private WebBackendConnectionRead expectedWithNewSchemaBroken;
   private WebBackendConnectionRead expectedNoDiscoveryWithNewSchema;
   private EventRunner eventRunner;
@@ -275,6 +276,13 @@ class WebBackendConnectionsHandlerTest {
                     .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("users-data1"))
                     .updateStream(null))));
 
+    expectedWithNewSchemaAndBreakingChange = expectedWebBackendConnectionReadObject(connectionRead, sourceRead, destinationRead,
+        new OperationReadList().operations(expected.getOperations()), SchemaChange.BREAKING, now, modifiedCatalog, null)
+        .catalogDiff(new CatalogDiff().transforms(List.of(
+            new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)
+                .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("users-data1"))
+                .updateStream(null))));
+
     expectedWithNewSchemaBroken = expectedWebBackendConnectionReadObject(brokenConnectionRead, sourceRead, destinationRead, brokenOperationReadList,
         SchemaChange.BREAKING, now, connectionRead.getSyncCatalog(), brokenConnectionRead.getSourceCatalogId());
     when(schedulerHandler.resetConnection(any(ConnectionIdRequestBody.class)))
@@ -415,6 +423,23 @@ class WebBackendConnectionsHandlerTest {
     final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead,
         operationReadList);
     assertEquals(expectedWithNewSchema, result);
+  }
+
+  @Test
+  void testWebBackendGetConnectionWithDiscoveryAndNewSchemaBreakingChange() throws ConfigNotFoundException,
+      IOException, JsonValidationException {
+    final UUID newCatalogId = UUID.randomUUID();
+    when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
+        .thenReturn(Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(newCatalogId)));
+    when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withId(UUID.randomUUID()));
+    SourceDiscoverSchemaRead schemaRead =
+        new SourceDiscoverSchemaRead().catalogDiff(expectedWithNewSchema.getCatalogDiff()).catalog(expectedWithNewSchema.getSyncCatalog())
+            .breakingChange(true);
+    when(schedulerHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
+
+    final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead,
+        operationReadList);
+    assertEquals(expectedWithNewSchemaAndBreakingChange, result);
   }
 
   @Test
