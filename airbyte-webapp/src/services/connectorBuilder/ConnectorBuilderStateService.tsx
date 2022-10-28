@@ -37,7 +37,7 @@ const useYamlManifest = () => {
       setJsonManifest(json);
     } catch (err) {
       if (err instanceof YAMLException) {
-        console.log("Connector manifest yaml is not valid!");
+        console.error(`Connector manifest yaml is not valid! Error: ${err}`);
       }
     }
   }, [yamlManifest]);
@@ -68,7 +68,7 @@ const useConfig = () => {
       const json = JSON.parse(configString) as StreamReadRequestBodyConfig;
       setConfigJson(json);
     } catch (err) {
-      console.log("Config value is not valid JSON!");
+      console.error(`Config value is not valid JSON! Error: ${err}`);
     }
   }, [configString]);
 
