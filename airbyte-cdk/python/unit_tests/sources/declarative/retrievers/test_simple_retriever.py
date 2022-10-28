@@ -54,7 +54,7 @@ def test_simple_retriever_full(mock_http_stream):
     requester.get_method.return_value = http_method
     backoff_time = 60
     should_retry = ResponseStatus.retry(backoff_time)
-    requester.should_retry.return_value = should_retry
+    requester.interpret_response_status.return_value = should_retry
     request_body_json = {"body": "json"}
     requester.request_body_json.return_value = request_body_json
 
@@ -117,21 +117,34 @@ def test_simple_retriever_full(mock_http_stream):
 def test_should_retry(test_name, requester_response, expected_should_retry, expected_backoff_time):
     requester = MagicMock(use_cache=False)
     retriever = SimpleRetriever(name="stream_name", primary_key=primary_key, requester=requester, record_selector=MagicMock(), options={})
-    requester.should_retry.return_value = requester_response
+    requester.interpret_response_status.return_value = requester_response
     assert retriever.should_retry(requests.Response()) == expected_should_retry
     if requester_response.action == ResponseAction.RETRY:
         assert retriever.backoff_time(requests.Response()) == expected_backoff_time
 
 
 @pytest.mark.parametrize(
-    "test_name, status_code, response_status, len_expected_records",
+    "test_name, status_code, response_status, len_expected_records, expected_error",
     [
-        ("test_parse_response_fails_if_should_retry_is_fail", 404, response_status.FAIL, None),
-        ("test_parse_response_succeeds_if_should_retry_is_ok", 200, response_status.SUCCESS, 1),
-        ("test_parse_response_succeeds_if_should_retry_is_ignore", 404, response_status.IGNORE, 0),
+        (
+            "test_parse_response_fails_if_should_retry_is_fail",
+            404,
+            response_status.FAIL,
+            None,
+            ReadException("Request None failed with response <Response [404]>"),
+        ),
+        ("test_parse_response_succeeds_if_should_retry_is_ok", 200, response_status.SUCCESS, 1, None),
+        ("test_parse_response_succeeds_if_should_retry_is_ignore", 404, response_status.IGNORE, 0, None),
+        (
+            "test_parse_response_fails_with_custom_error_message",
+            404,
+            ResponseStatus(response_action=ResponseAction.FAIL, error_message="Custom error message override"),
+            None,
+            ReadException("Custom error message override"),
+        ),
     ],
 )
-def test_parse_response(test_name, status_code, response_status, len_expected_records):
+def test_parse_response(test_name, status_code, response_status, len_expected_records, expected_error):
     requester = MagicMock(use_cache=False)
     record_selector = MagicMock()
     record_selector.select_records.return_value = [{"id": 100}]
@@ -140,13 +153,13 @@ def test_parse_response(test_name, status_code, response_status, len_expected_re
     )
     response = requests.Response()
     response.status_code = status_code
-    requester.should_retry.return_value = response_status
+    requester.interpret_response_status.return_value = response_status
     if len_expected_records is None:
         try:
             retriever.parse_response(response, stream_state={})
             assert False
-        except ReadException:
-            pass
+        except ReadException as actual_exception:
+            assert type(expected_error) is type(actual_exception) and expected_error.args == actual_exception.args
     else:
         records = retriever.parse_response(response, stream_state={})
         assert len(records) == len_expected_records
@@ -170,7 +183,7 @@ def test_backoff_time(test_name, response_action, retry_in, expected_backoff_tim
         name="stream_name", primary_key=primary_key, requester=requester, record_selector=record_selector, options={}
     )
     if expected_backoff_time:
-        requester.should_retry.return_value = ResponseStatus(response_action, retry_in)
+        requester.interpret_response_status.return_value = ResponseStatus(response_action, retry_in)
         actual_backoff_time = retriever.backoff_time(response)
         assert expected_backoff_time == actual_backoff_time
     else:
