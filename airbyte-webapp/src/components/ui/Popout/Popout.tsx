@@ -4,7 +4,7 @@ import { useToggle } from "react-use";
 
 import { DropDown, DropdownProps } from "components/ui/DropDown";
 
-import styles from "./Popout.module.scss";
+import { Overlay } from "../Overlay";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Value = any;
@@ -76,14 +76,12 @@ export const Popout: React.FC<PopoutProps> = ({ onChange, targetComponent, ...pr
         components={components}
       />
       {isOpen && (
-        <div
-          className={styles.outsideClickListener}
-          role="button"
+        <Overlay
+          variant="transparent"
           onClick={(event) => {
             event.stopPropagation();
             toggleOpen();
           }}
-          aria-hidden="true"
         />
       )}
     </>

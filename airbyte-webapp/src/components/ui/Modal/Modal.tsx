@@ -3,7 +3,7 @@ import classNames from "classnames";
 import React, { useState } from "react";
 
 import { Card } from "../Card";
-import { Overlay } from "../Overlay/Overlay";
+import { Overlay } from "../Overlay";
 import styles from "./Modal.module.scss";
 
 export interface ModalProps {

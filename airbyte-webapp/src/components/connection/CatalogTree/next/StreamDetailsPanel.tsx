@@ -1,6 +1,6 @@
 import { Dialog } from "@headlessui/react";
 
-import { Overlay } from "components/ui/Overlay/Overlay";
+import { Overlay } from "components/ui/Overlay";
 
 import { AirbyteStream } from "core/request/AirbyteClient";
 
