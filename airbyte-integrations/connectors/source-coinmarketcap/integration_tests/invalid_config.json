@@ -1,4 +1,4 @@
 {
   "api_key": "fail-1111",
-  "symbol": ["AVAX", "BTC"]
+  "symbols": ["AVAX", "BTC"]
 }
