@@ -1,19 +1,9 @@
-import { capitalize } from "lodash";
-
-import { StreamTestingPanel } from "components/StreamTestingPanel";
 import { ResizablePanels } from "components/ui/ResizablePanels";
 import { YamlEditor } from "components/YamlEditor";
 
-import {
-  ConnectorBuilderStateProvider,
-  useConnectorBuilderState,
-} from "services/connectorBuilder/ConnectorBuilderStateService";
-
 import styles from "./ConnectorBuilderPage.module.scss";
 
-const ConnectorBuilderPageInner: React.FC = () => {
-  const { selectedStream } = useConnectorBuilderState();
-
+export const ConnectorBuilderPage: React.FC = () => {
   return (
     <ResizablePanels
       className={styles.container}
@@ -23,22 +13,16 @@ const ConnectorBuilderPageInner: React.FC = () => {
         minWidth: 400,
       }}
       rightPanel={{
-        children: <StreamTestingPanel />,
+        children: <div>Testing panel</div>,
         className: styles.rightPanel,
         startingFlex: 0.33,
         minWidth: 60,
         overlay: {
           displayThreshold: 300,
-          header: capitalize(selectedStream.name),
+          header: "Stream Name",
           rotation: "counter-clockwise",
         },
       }}
     />
   );
 };
-
-export const ConnectorBuilderPage: React.FC = () => (
-  <ConnectorBuilderStateProvider>
-    <ConnectorBuilderPageInner />
-  </ConnectorBuilderStateProvider>
-);

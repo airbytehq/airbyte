@@ -177,7 +177,7 @@ export const ConnectionStatusTab: React.FC = () => {
                       onClick={onSyncNowButtonClick}
                       icon={
                         <div className={styles.iconRotate}>
-                          <RotateIcon height={styles.syncIconHeight} width={styles.syncIconHeight} />
+                          <RotateIcon />
                         </div>
                       }
                     >
