@@ -75,11 +75,10 @@
         "name": "payment_links",
         "json_schema": {},
         "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
+          "full_refresh"
         ]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
     },
     {

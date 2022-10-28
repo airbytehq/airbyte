@@ -95,15 +95,10 @@
         "name": "payment_links",
         "json_schema": {},
         "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date_updated"
+          "full_refresh"
         ]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
     },
     {

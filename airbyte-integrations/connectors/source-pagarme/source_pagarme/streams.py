@@ -117,13 +117,7 @@ class Payables(IncrementalPagarmeStream):
         return "payables"
 
 
-class PaymentLinks(IncrementalPagarmeStream):
-    filter_field = "date_updated"
-
-    @property
-    def cursor_field(self) -> str:
-        return "date_updated"
-
+class PaymentLinks(PagarmeStream):
     def path(self, **kwargs) -> str:
         return "payment_links"
 
