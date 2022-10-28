@@ -46,7 +46,6 @@ class SourceFaker(Source):
         else:
             return AirbyteConnectionStatus(status=Status.FAILED)
 
-
     def discover(self, logger: AirbyteLogger, config: Dict[str, any]) -> AirbyteCatalog:
         """
         Returns an AirbyteCatalog representing the available streams and fields in this integration.
@@ -206,8 +205,11 @@ def generate_estimate(stream_name: str, total: int):
 
     data = {
         "type": "TRACE",
-        "emitted_at": int(datetime.datetime.now().timestamp() * 1000),
-        "trace": {"type": "ESTIMATE", "estimate": {"type": "STREAM", "name": stream_name, "namespace": "", "row_estimate": total}},
+        "trace": {
+            "emitted_at": int(datetime.datetime.now().timestamp() * 1000),
+            "type": "ESTIMATE",
+            "estimate": {"type": "STREAM", "name": stream_name, "namespace": "", "row_estimate": total},
+        },
     }
 
     return HackedAirbyteTraceMessage(data)
