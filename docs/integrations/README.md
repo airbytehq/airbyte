@@ -124,6 +124,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Orbit](sources/orbit.md)                                                                   | Alpha                | Yes                 |
 | [Outreach](./sources/outreach.md)                                                           | Alpha                | No                  |
 | [PagerDuty](sources/pagerduty.md)                                                           | Alpha                | No                  |
+| [Partnerstack](sources/partnerstack.md)                                                     | Alpha                | No                  |
 | [PayPal Transaction](sources/paypal-transaction.md)                                         | Generally Available  | Yes                 |
 | [Paystack](sources/paystack.md)                                                             | Alpha                | No                  |
 | [PersistIq](sources/persistiq.md)                                                           | Alpha                | Yes                 |
