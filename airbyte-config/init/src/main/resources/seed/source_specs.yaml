@@ -4763,6 +4763,34 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
+- dockerImage: "airbyte/source-google-webfonts:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/google-webfonts"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Google Webfonts Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          description: "API key is required to access google apis, For getting your's\
+            \ goto google console and generate api key for Webfonts"
+          airbyte_secret: true
+        sort:
+          type: "string"
+          description: "Optional, to find how to sort"
+        prettyPrint:
+          type: "string"
+          description: "Optional, boolean type"
+        alt:
+          type: "string"
+          description: "Optional, Available params- json, media, proto"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-google-workspace-admin-reports:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-workspace-admin-reports"
