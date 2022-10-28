@@ -22,6 +22,7 @@ import io.airbyte.server.apis.DestinationApiController;
 import io.airbyte.server.apis.DestinationDefinitionApiController;
 import io.airbyte.server.apis.DestinationDefinitionSpecificationApiController;
 import io.airbyte.server.apis.HealthApiController;
+import io.airbyte.server.apis.JobsApiController;
 import io.airbyte.server.apis.binders.AttemptApiBinder;
 import io.airbyte.server.apis.binders.ConnectionApiBinder;
 import io.airbyte.server.apis.binders.DbMigrationBinder;
@@ -29,6 +30,7 @@ import io.airbyte.server.apis.binders.DestinationApiBinder;
 import io.airbyte.server.apis.binders.DestinationDefinitionApiBinder;
 import io.airbyte.server.apis.binders.DestinationDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.HealthApiBinder;
+import io.airbyte.server.apis.binders.JobsApiBinder;
 import io.airbyte.server.apis.factories.AttemptApiFactory;
 import io.airbyte.server.apis.factories.ConnectionApiFactory;
 import io.airbyte.server.apis.factories.DbMigrationApiFactory;
@@ -163,7 +165,8 @@ public interface ServerFactory {
           DestinationApiController.class,
           DestinationDefinitionApiController.class,
           DestinationDefinitionSpecificationApiController.class,
-          HealthApiController.class);
+          HealthApiController.class,
+          JobsApiController.class);
 
       final Set<Object> components = Set.of(
           new CorsFilter(),
@@ -174,7 +177,8 @@ public interface ServerFactory {
           new DestinationApiBinder(),
           new DestinationDefinitionApiBinder(),
           new DestinationDefinitionSpecificationApiBinder(),
-          new HealthApiBinder());
+          new HealthApiBinder(),
+          new JobsApiBinder());
 
       // construct server
       return new ServerApp(airbyteVersion, componentClasses, components);
