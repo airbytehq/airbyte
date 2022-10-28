@@ -29,6 +29,9 @@ connectionSpecification:
     symbol:
       title: Symbol
       type: array
+      items: {
+        "type": "string"
+      }
       description: Cryptocurrency symbols.
       examples:
         - AVAX
