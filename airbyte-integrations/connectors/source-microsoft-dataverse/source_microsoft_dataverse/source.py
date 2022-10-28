@@ -9,7 +9,7 @@ from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessa
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
-from .dataverse import do_request, get_auth, convert_dataverse_type
+from .dataverse import convert_dataverse_type, do_request, get_auth
 from .streams import IncrementalMicrosoftDataverseStream
 
 
