@@ -60,6 +60,12 @@ export const DropDownOption: React.FC<DropDownOptionProps> = (props) => {
         isSelected={props.isSelected && !props.isMulti}
         isDisabled={props.isDisabled}
         isFocused={props.isFocused}
+        onClick={(event) => {
+          // This custom onClick handler prevents the click event from bubbling up outside of the option
+          // for cases where the Dropdown is a child of a clickable parent such as a table row.
+          props.selectOption(props.data);
+          event.stopPropagation();
+        }}
       >
         <DropDownText primary={props.data.primary} secondary={props.data.secondary} fullText={props.data.fullText}>
           {props.isMulti && (
