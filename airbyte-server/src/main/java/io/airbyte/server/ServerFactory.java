@@ -22,6 +22,7 @@ import io.airbyte.server.apis.DestinationApiController;
 import io.airbyte.server.apis.DestinationDefinitionApiController;
 import io.airbyte.server.apis.DestinationDefinitionSpecificationApiController;
 import io.airbyte.server.apis.HealthApiController;
+import io.airbyte.server.apis.JobsApiController;
 import io.airbyte.server.apis.LogsApiController;
 import io.airbyte.server.apis.binders.AttemptApiBinder;
 import io.airbyte.server.apis.binders.ConnectionApiBinder;
@@ -30,6 +31,7 @@ import io.airbyte.server.apis.binders.DestinationApiBinder;
 import io.airbyte.server.apis.binders.DestinationDefinitionApiBinder;
 import io.airbyte.server.apis.binders.DestinationDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.HealthApiBinder;
+import io.airbyte.server.apis.binders.JobsApiBinder;
 import io.airbyte.server.apis.binders.LogsApiBinder;
 import io.airbyte.server.apis.factories.AttemptApiFactory;
 import io.airbyte.server.apis.factories.ConnectionApiFactory;
@@ -172,6 +174,7 @@ public interface ServerFactory {
           DestinationDefinitionApiController.class,
           DestinationDefinitionSpecificationApiController.class,
           HealthApiController.class,
+          JobsApiController.class,
           LogsApiController.class);
 
       final Set<Object> components = Set.of(
@@ -184,6 +187,7 @@ public interface ServerFactory {
           new DestinationDefinitionApiBinder(),
           new DestinationDefinitionSpecificationApiBinder(),
           new HealthApiBinder(),
+          new JobsApiBinder(),
           new LogsApiBinder());
 
       // construct server
