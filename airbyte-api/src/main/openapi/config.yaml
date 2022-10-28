@@ -3411,6 +3411,13 @@ components:
           format: uuid
         geography:
           $ref: "#/components/schemas/Geography"
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          enum:
+            - ignore
+            - disable
+          type: string
     ConnectionRead:
       type: object
       required:
@@ -4713,6 +4720,8 @@ components:
         - destination
         - isSyncing
         - schemaChange
+        - notifySchemaChanges
+        - nonBreakingChangesPreference
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -4771,6 +4780,13 @@ components:
           $ref: "#/components/schemas/Geography"
         schemaChange:
           $ref: "#/components/schemas/SchemaChange"
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          enum:
+            - ignore
+            - disable
+          type: string
     WebBackendConnectionReadList:
       type: object
       required:
