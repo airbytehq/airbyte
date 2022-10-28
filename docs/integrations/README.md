@@ -241,3 +241,4 @@ For more information about the grading system, see [Product Release Stages](http
 | [SQLite](destinations/sqlite.md)                           | Alpha                | No                  |
 | [Streamr](destinations/streamr.md)                         | Alpha                | No                  |
 | [TiDB](destinations/tidb.md)                               | Alpha                | No                  |
+| [Yugabytedb](destinations/yugabytedb.md)                   | Alpha                | No                  |
