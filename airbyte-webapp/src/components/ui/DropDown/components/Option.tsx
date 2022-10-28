@@ -11,17 +11,16 @@ export type DropDownOptionProps = {
   data: { disabled: boolean; index: number; fullText?: boolean } & DropDownOptionDataItem;
 } & OptionProps<OptionType, boolean>;
 
-export interface DropDownOptionDataItem {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface DropDownOptionDataItem<Value = any, Config = any> {
   label?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value?: any;
+  value?: Value;
   groupValue?: string;
   groupValueText?: string;
   img?: React.ReactNode;
   primary?: boolean;
   secondary?: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  config?: any;
+  config?: Config;
 }
 
 export const OptionView = styled.div<{
