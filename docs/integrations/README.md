@@ -104,9 +104,9 @@ For more information about the grading system, see [Product Release Stages](http
 | [Looker](sources/looker.md)                                                                 | Alpha                | Yes                 |
 | [Magento](sources/magento.md)                                                               | Alpha                | No                  |
 | [Mailchimp](sources/mailchimp.md)                                                           | Generally Available  | Yes                 |
+| [Mailjet SMS](sources/mailjet-sms.md)                                                       | Alpha                | No                  |
 | [Mailjet Mail](sources/mailjet-mail.md)                                                     | Alpha                | No                  |
 | [Mailerlite](sources/mailerlite.md)                                                         | Alpha                | No                  |
-| [Mailjet Mail](sources/mailjet-mail.md)                                                     | Alpha                | No                  |
 | [Marketo](sources/marketo.md)                                                               | Generally Available  | Yes                 |
 | [Metabase](sources/metabase.md)                                                             | Alpha                | Yes                 |
 | [Microsoft Dynamics AX](sources/microsoft-dynamics-ax.md)                                   | Alpha                | No                  |
