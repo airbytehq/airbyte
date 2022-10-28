@@ -95,6 +95,6 @@ Please note that Airbyte currently does not support SSL/TLS certificates.
 
 :::
 
-## Troubleshooting[​](https://docs.airbyte.com/deploying-airbyte/on-azure-vm-cloud-shell#troubleshooting)
+## Troubleshooting
 
 If you encounter any issues, reach out to our community on [Slack](https://slack.airbyte.com/).
