@@ -144,6 +144,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [PrestaShop](sources/presta-shop.md)                                                        | Alpha                | Yes                 |
 | [Qualaroo](sources/qualaroo.md)                                                             | Alpha                | Yes                 |
 | [QuickBooks](sources/quickbooks.md)                                                         | Alpha                | No                  |
+| [RD Station Marketing](sources/rd-station-marketing.md)                                     | Alpha                | No                  |
 | [Recharge](sources/recharge.md)                                                             | Generally Available  | Yes                 |
 | [Recurly](sources/recurly.md)                                                               | Alpha                | Yes                 |
 | [Redshift](sources/redshift.md)                                                             | Alpha                | Yes                 |
