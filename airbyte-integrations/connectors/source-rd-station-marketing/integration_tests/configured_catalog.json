@@ -2,101 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "analytics_emails",
-        "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "send_at"
-        ]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "analytics_conversions",
-        "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "asset_updated_at"
-        ]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "analytics_funnel",
-        "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "reference_day"
-        ]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "analytics_workflow_emails_statistics",
-        "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
         "name": "emails",
-        "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "update_time"
-        ]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "embeddables",
-        "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "update_time"
-        ]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "fields",
         "json_schema": {},
         "supported_sync_modes": [
           "full_refresh"
@@ -126,37 +32,7 @@
     },
     {
       "stream": {
-        "name": "popups",
-        "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "update_time"
-        ]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
         "name": "segmentations",
-        "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "update_time"
-        ]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "workflows",
         "json_schema": {},
         "supported_sync_modes": [
           "full_refresh"
