@@ -41,8 +41,11 @@ class SourceFaker(Source):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
 
-        # As this is an in-memory source, it always succeeds
-        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+        if type(config["count"]) == int or type(config["count"]) == float:
+            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+        else:
+            return AirbyteConnectionStatus(status=Status.FAILED)
+
 
     def discover(self, logger: AirbyteLogger, config: Dict[str, any]) -> AirbyteCatalog:
         """
@@ -136,6 +139,10 @@ class SourceFaker(Source):
                 records_in_sync = 0
                 records_in_page = 0
 
+                users_estimate = count - cursor
+                yield generate_estimate(stream.stream.name, users_estimate)
+                yield generate_estimate("Purchases", users_estimate * 2)  # a fuzzy guess, some users have purchases, some don't
+
                 for i in range(cursor, count):
                     user = generate_user(person, dt, i)
                     yield generate_record(stream, user)
@@ -162,6 +169,7 @@ class SourceFaker(Source):
 
             elif stream.stream.name == "Products":
                 products = generate_products()
+                yield generate_estimate(stream.stream.name, len(products))
                 for p in products:
                     yield generate_record(stream, p)
                 yield generate_state(state, stream, {"product_count": len(products)})
@@ -191,6 +199,18 @@ def generate_record(stream: any, data: any):
         type=Type.RECORD,
         record=AirbyteRecordMessage(stream=stream.stream.name, data=dict, emitted_at=int(datetime.datetime.now().timestamp()) * 1000),
     )
+
+
+def generate_estimate(stream_name: str, total: int):
+    # TODO: Use the updated CDK classes when published, e.g. `return AirbyteMessage``
+
+    data = {
+        "type": "TRACE",
+        "emitted_at": int(datetime.datetime.now().timestamp() * 1000),
+        "trace": {"type": "ESTIMATE", "estimate": {"type": "STREAM", "name": stream_name, "namespace": "", "row_estimate": total}},
+    }
+
+    return HackedAirbyteTraceMessage(data)
 
 
 def log_stream(stream_name: str):
@@ -300,3 +320,14 @@ def format_airbyte_time(d: datetime):
     s = s.replace(" ", "T")
     s += "+00:00"
     return s
+
+
+class HackedAirbyteTraceMessage:
+    data = {}
+    type = "TRACE"
+
+    def __init__(self, data: dict):
+        self.data = data
+
+    def json(self, exclude_unset):
+        return json.dumps(self.data)
