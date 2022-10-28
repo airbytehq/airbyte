@@ -2,20 +2,32 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "k6-runs": {
+    "id": {
+      "type": "integer"
+    },
+    "project_id": {
+      "type": "integer"
+    },
+    "user_id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "created": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string"
+    },
+    "last_test_run_id": {
+      "type": "string"
+    },
+    "test_run_ids": {
       "type": "array"
     },
-    "k6-runs-trending-metrics": {
-      "type": "array"
-    },
-    "k6-tests": {
-      "type": "array"
-    },
-    "load_zones": {
-      "type": "array"
-    },
-    "meta": {
-      "type": "object"
+    "script": {
+      "type": "string"
     }
   }
 }
