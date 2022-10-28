@@ -1,22 +1,46 @@
 {
   "streams": [
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
       "stream": {
-        "name": "customers",
+        "default_cursor_field": null,
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "name": "campaigns",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "full_refresh"
     },
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
       "stream": {
-        "name": "employees",
+        "default_cursor_field": null,
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"]
+        "name": "lists",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh"
     }
   ]
 }

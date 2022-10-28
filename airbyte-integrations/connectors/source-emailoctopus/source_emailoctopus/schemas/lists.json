@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "counts": {
+      "properties": {
+        "pending": {
+          "type": "integer"
+        },
+        "subscribed": {
+          "type": "integer"
+        },
+        "unsubscribed": {
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "double_opt_in": {
+      "type": "boolean"
+    },
+    "fields": {
+      "items": {
+        "properties": {
+          "fallback": {
+            "type": "null"
+          },
+          "label": {
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array"
+    }
+  },
+  "type": "object"
+}
