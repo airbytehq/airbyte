@@ -5,8 +5,11 @@
     "name": {
       "type": "string"
     },
-    "state": {
+    "abbreviation": {
       "type": "string"
+    },
+    "id": {
+      "type": "integer"
     },
     "deaths": {
       "type": "integer"
@@ -15,5 +18,5 @@
       "type": "string"
     }
   },
-  "required": ["date", "deaths", "name", "state"]
+  "required": ["date", "deaths", "name", "abbreviation", "id"]
 }

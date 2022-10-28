@@ -432,12 +432,23 @@ class GermanHistoryHospitalization(IncrementalRkiCovidStream):
         return "germany/history/hospitalization/"
 
 
-# STATES FULL-REFRESH | INCREMENTAL
+# STATES FULL-REFRESH
 # source: states/history/cases/:days | FULL-REFRESH
-class StatesHistoryCases(RkiCovidStream):
+class ByStateRkiCovidStream(RkiCovidStream, ABC):
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.json().get("data"):
+            for key, value in response.json().get("data").items():
+                for record in value.get("history"):
+                    record.update({"name": value.get("name"), "state": key})
+                    yield record
+        return [{}]
+
+
+class StatesHistoryCases(ByStateRkiCovidStream):
     """Docs: https://api.corona-zahlen.org/germany/states/history/cases/:days"""
 
-    primary_key = ""
+    primary_key = None
 
     def __init__(self, config, **kwargs):
         super().__init__(**kwargs)
@@ -448,14 +459,6 @@ class StatesHistoryCases(RkiCovidStream):
         if diff.days <= 0:
             return 1
         return diff.days
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.json():
-            for key, value in response.json().get("data").items():
-                for x in value.get("history"):
-                    record = {"name": value.get("name"), "state": key, "cases": x.get("cases"), "date": x.get("date")}
-                    yield record
-        return [{}]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -466,10 +469,10 @@ class StatesHistoryCases(RkiCovidStream):
 
 
 # source: states/history/incidence/:days | FULL-REFRESH
-class StatesHistoryIncidence(RkiCovidStream):
+class StatesHistoryIncidence(ByStateRkiCovidStream):
     """Docs: https://api.corona-zahlen.org/germany/states/history/incidence/:days"""
 
-    primary_key = ""
+    primary_key = None
 
     def __init__(self, config, **kwargs):
         super().__init__(**kwargs)
@@ -480,14 +483,6 @@ class StatesHistoryIncidence(RkiCovidStream):
         if diff.days <= 0:
             return 1
         return diff.days
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.json():
-            for key, value in response.json().get("data").items():
-                for x in value.get("history"):
-                    record = {"name": value.get("name"), "state": key, "weekIncidence": x.get("weekIncidence"), "date": x.get("date")}
-                    yield record
-        return [{}]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -498,10 +493,10 @@ class StatesHistoryIncidence(RkiCovidStream):
 
 
 # source: states/history/frozen-incidence/:days | FULL-REFRESH
-class StatesHistoryFrozenIncidence(RkiCovidStream):
+class StatesHistoryFrozenIncidence(ByStateRkiCovidStream):
     """Docs: https://api.corona-zahlen.org/germany/states/history/frozen-incidence/:days"""
 
-    primary_key = ""
+    primary_key = None
 
     def __init__(self, config, **kwargs):
         super().__init__(**kwargs)
@@ -512,14 +507,6 @@ class StatesHistoryFrozenIncidence(RkiCovidStream):
         if diff.days <= 0:
             return 1
         return diff.days
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.json():
-            for key, value in response.json().get("data").items():
-                for x in value.get("history"):
-                    record = {"name": value.get("name"), "state": key, "weekIncidence": x.get("weekIncidence"), "date": x.get("date")}
-                    yield record
-        return [{}]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -530,10 +517,10 @@ class StatesHistoryFrozenIncidence(RkiCovidStream):
 
 
 # source: states/history/deaths/:days | FULL-REFRESH
-class StatesHistoryDeaths(RkiCovidStream):
+class StatesHistoryDeaths(ByStateRkiCovidStream):
     """Docs: https://api.corona-zahlen.org/germany/states/history/deaths/:days"""
 
-    primary_key = ""
+    primary_key = None
 
     def __init__(self, config, **kwargs):
         super().__init__(**kwargs)
@@ -544,14 +531,6 @@ class StatesHistoryDeaths(RkiCovidStream):
         if diff.days <= 0:
             return 1
         return diff.days
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.json():
-            for key, value in response.json().get("data").items():
-                for x in value.get("history"):
-                    record = {"name": value.get("name"), "state": key, "deaths": x.get("deaths"), "date": x.get("date")}
-                    yield record
-        return [{}]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -562,10 +541,10 @@ class StatesHistoryDeaths(RkiCovidStream):
 
 
 # source: states/history/recovered/:days | FULL-REFRESH
-class StatesHistoryRecovered(RkiCovidStream):
+class StatesHistoryRecovered(ByStateRkiCovidStream):
     """Docs: https://api.corona-zahlen.org/germany/states/history/recovered/:days"""
 
-    primary_key = ""
+    primary_key = None
 
     def __init__(self, config, **kwargs):
         super().__init__(**kwargs)
@@ -576,14 +555,6 @@ class StatesHistoryRecovered(RkiCovidStream):
         if diff.days <= 0:
             return 1
         return diff.days
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.json():
-            for key, value in response.json().get("data").items():
-                for x in value.get("history"):
-                    record = {"name": value.get("name"), "state": key, "recovered": x.get("recovered"), "date": x.get("date")}
-                    yield record
-        return [{}]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -594,10 +565,10 @@ class StatesHistoryRecovered(RkiCovidStream):
 
 
 # source: states/history/hospitalization/:days | FULL-REFRESH
-class StatesHistoryHospitalization(RkiCovidStream):
+class StatesHistoryHospitalization(ByStateRkiCovidStream):
     """Docs: https://api.corona-zahlen.org/germany/states/history/hospitalization/:days"""
 
-    primary_key = ""
+    primary_key = None
 
     def __init__(self, config, **kwargs):
         super().__init__(**kwargs)
@@ -608,14 +579,6 @@ class StatesHistoryHospitalization(RkiCovidStream):
         if diff.days <= 0:
             return 1
         return diff.days
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.json():
-            for key, value in response.json().get("data").items():
-                for x in value.get("history"):
-                    record = {"name": value.get("name"), "state": key, "date": x.get("date"), "data": x}
-                    yield record
-        return [{}]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None

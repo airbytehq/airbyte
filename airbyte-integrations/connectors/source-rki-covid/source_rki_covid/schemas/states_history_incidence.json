@@ -5,8 +5,11 @@
     "name": {
       "type": "string"
     },
-    "state": {
+    "abbreviation": {
       "type": "string"
+    },
+    "id": {
+      "type": "integer"
     },
     "weekIncidence": {
       "type": ["number", "integer"]
@@ -15,5 +18,5 @@
       "type": "string"
     }
   },
-  "required": ["date", "name", "state", "weekIncidence"]
+  "required": ["date", "name", "abbreviation", "weekIncidence", "id"]
 }

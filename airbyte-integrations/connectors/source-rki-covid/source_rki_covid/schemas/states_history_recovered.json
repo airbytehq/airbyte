@@ -5,8 +5,11 @@
     "name": {
       "type": "string"
     },
-    "state": {
+    "abbreviation": {
       "type": "string"
+    },
+    "id": {
+      "type": "integer"
     },
     "recovered": {
       "type": "integer"
@@ -15,5 +18,5 @@
       "type": "string"
     }
   },
-  "required": ["date", "name", "recovered", "state"]
+  "required": ["date", "name", "recovered", "abbreviation", "id"]
 }

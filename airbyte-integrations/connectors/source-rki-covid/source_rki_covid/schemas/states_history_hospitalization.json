@@ -5,8 +5,11 @@
     "name": {
       "type": "string"
     },
-    "state": {
+    "abbreviation": {
       "type": "string"
+    },
+    "id": {
+      "type": "integer"
     },
     "date": {
       "type": "string"
@@ -71,5 +74,5 @@
       ]
     }
   },
-  "required": ["data", "date", "name", "state"]
+  "required": ["data", "date", "name", "abbreviation"]
 }

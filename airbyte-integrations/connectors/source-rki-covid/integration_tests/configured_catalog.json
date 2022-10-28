@@ -607,11 +607,11 @@
           },
           "required": ["cases", "date", "name", "state"]
         },
-        "supported_sync_modes": ["full_refresh", "incremental"],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "default_cursor_field": ["date"]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "append_dedup",
       "cursor_field": ["date"],
       "primary_key": [["state"]]
@@ -638,11 +638,11 @@
           },
           "required": ["date", "name", "state", "weekIncidence"]
         },
-        "supported_sync_modes": ["full_refresh", "incremental"],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "default_cursor_field": ["date"]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "append_dedup",
       "cursor_field": ["date"],
       "primary_key": [["state"]]
@@ -661,11 +661,11 @@
           },
           "required": ["date", "name", "state", "weekIncidence"]
         },
-        "supported_sync_modes": ["full_refresh", "incremental"],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "default_cursor_field": ["date"]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "append_dedup",
       "cursor_field": ["date"],
       "primary_key": [["state"]]
@@ -684,11 +684,11 @@
           },
           "required": ["date", "deaths", "name", "state"]
         },
-        "supported_sync_modes": ["full_refresh", "incremental"],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "default_cursor_field": ["date"]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "append_dedup",
       "cursor_field": ["date"],
       "primary_key": [["state"]]
@@ -707,11 +707,11 @@
           },
           "required": ["date", "name", "recovered", "state"]
         },
-        "supported_sync_modes": ["full_refresh", "incremental"],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "default_cursor_field": ["date"]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "append_dedup",
       "cursor_field": ["date"],
       "primary_key": [["state"]]
@@ -794,11 +794,11 @@
           },
           "required": ["data", "date", "name", "state"]
         },
-        "supported_sync_modes": ["full_refresh", "incremental"],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "default_cursor_field": ["date"]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "append_dedup",
       "cursor_field": ["date"],
       "primary_key": [["state"]]

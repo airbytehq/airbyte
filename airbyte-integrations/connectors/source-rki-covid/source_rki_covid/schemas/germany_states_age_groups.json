@@ -2,8 +2,11 @@
   "$schema": "http://json-schema.org/schema#",
   "type": "object",
   "properties": {
-    "state": {
+    "abbreviation": {
       "type": "string"
+    },
+    "id": {
+      "type": "integer"
     },
     "data": {
       "type": "object",
@@ -349,5 +352,5 @@
       ]
     }
   },
-  "required": ["data", "state"]
+  "required": ["data", "abbreviation", "id"]
 }
