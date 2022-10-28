@@ -42,7 +42,7 @@
       "type": "boolean"
     },
     "IsUnsubTracked": {
-      "type": "boolean"
+      "type": "string"
     },
     "MessageSize": {
       "type": "integer"
@@ -57,7 +57,7 @@
       "type": "string"
     },
     "StatePermanent": {
-      "type": "boolean"
+      "type": "string"
     },
     "Status": {
       "type": "string"

@@ -12,25 +12,25 @@
       "type": "string"
     },
     "CustomValue": {
-      "type": "string"
+      "type": "integer"
     },
     "FirstMessageID": {
       "type": "integer"
     },
     "FromEmail": {
-      "type": "string"
+      "type": "boolean"
     },
     "FromID": {
-      "type": "number"
+      "type": "string"
     },
     "FromName": {
       "type": "string"
     },
     "HasHtmlCount": {
-      "type": "number"
+      "type": "string"
     },
     "HasTxtCount": {
-      "type": "number"
+      "type": "string"
     },
     "ID": {
       "type": "integer"
@@ -48,13 +48,13 @@
       "type": "integer"
     },
     "OpenTracked": {
-      "type": "number"
+      "type": "string"
     },
     "SendEndAt": {
       "type": "string"
     },
     "SendStartAt": {
-      "type": "string"
+      "type": "boolean"
     },
     "SpamassScore": {
       "type": "integer"
