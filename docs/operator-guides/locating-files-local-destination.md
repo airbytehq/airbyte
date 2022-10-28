@@ -26,7 +26,7 @@ Note that there are scenarios where you may not be able to browse to the actual 
 Note that this method does not allow direct access to any files directly, instead it creates local, readable copies.
 
 1. Open and standard CMD shell
-2. Type the following (where <local path> is the path on your Windows host machine to place copies)   
+2. Type the following (where `<local path>` is the path on your Windows host machine to place copies)
    `docker cp airbyte-server:/tmp/airbyte_local <local path>`
 3. This will copy the entire `airbyte_local` folder to your host machine.
 
