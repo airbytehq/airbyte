@@ -460,7 +460,7 @@
 - name: Google Search Console
   sourceDefinitionId: eb4c9e00-db83-4d63-a386-39cfa91012a8
   dockerRepository: airbyte/source-google-search-console
-  dockerImageTag: 0.1.17
+  dockerImageTag: 0.1.18
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-search-console
   icon: googlesearchconsole.svg
   sourceType: api
@@ -1009,6 +1009,13 @@
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/retently
   icon: retently.svg
+  sourceType: api
+  releaseStage: alpha
+- name: RD Station Marketing
+  sourceDefinitionId: fb141f29-be2a-450b-a4f2-2cd203a00f84
+  dockerRepository: airbyte/source-rd-station-marketing
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/rd-station-marketing
   sourceType: api
   releaseStage: alpha
 - name: RKI Covid
