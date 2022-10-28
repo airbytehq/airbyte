@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "requests",
-    "ci_common_utils",
+    "airbyte_ci_common_utils",
     "unidiff",
     "mdutils~=1.3.1",
     "mypy==0.930",

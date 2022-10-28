@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from typing import Dict, List
 
-from ci_common_utils import Logger
+from airbyte_ci_common_utils import Logger
 from ci_sonar_qube import ROOT_DIR
 
 LOGGER = Logger()

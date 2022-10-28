@@ -9,7 +9,7 @@ from json.decoder import JSONDecodeError
 from pathlib import Path
 from typing import Any, ClassVar, Mapping, Tuple
 
-from ci_common_utils import GoogleApi, Logger
+from airbyte_ci_common_utils import GoogleApi, Logger
 
 DEFAULT_SECRET_FILE = "config"
 DEFAULT_SECRET_FILE_WITH_EXT = DEFAULT_SECRET_FILE + ".json"

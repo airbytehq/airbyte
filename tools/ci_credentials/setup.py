@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["requests", "ci_common_utils"]
+MAIN_REQUIREMENTS = ["requests", "airbyte_ci_common_utils"]
 
 TEST_REQUIREMENTS = ["requests-mock"]
 

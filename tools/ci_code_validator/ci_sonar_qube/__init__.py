@@ -4,7 +4,7 @@
 import os
 from pathlib import Path
 
-from ci_common_utils import Logger
+from airbyte_ci_common_utils import Logger
 
 LOGGER = Logger()
 
