@@ -241,6 +241,13 @@
   icon: confluence.svg
   sourceType: api
   releaseStage: alpha
+- name: ConvertKit
+  sourceDefinitionId: be9ee02f-6efe-4970-979b-95f797a37188
+  dockerRepository: airbyte/source-convertkit
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/convertkit
+  sourceType: api
+  releaseStage: alpha
 - name: Courier
   sourceDefinitionId: 0541b2cd-2367-4986-b5f1-b79ff55439e4
   dockerRepository: airbyte/source-courier
@@ -473,6 +480,14 @@
   icon: google-sheets.svg
   sourceType: file
   releaseStage: generally_available
+- name: Google Webfonts
+  sourceDefinitionId: a68fbcde-b465-4ab3-b2a6-b0590a875835
+  dockerRepository: airbyte/source-google-webfonts
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-webfonts
+  icon: googleworkpace.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Google Workspace Admin Reports
   sourceDefinitionId: ed9dfefa-1bbc-419d-8c5e-4d78f0ef6734
   dockerRepository: airbyte/source-google-workspace-admin-reports
@@ -1011,6 +1026,13 @@
   icon: retently.svg
   sourceType: api
   releaseStage: alpha
+- name: RD Station Marketing
+  sourceDefinitionId: fb141f29-be2a-450b-a4f2-2cd203a00f84
+  dockerRepository: airbyte/source-rd-station-marketing
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/rd-station-marketing
+  sourceType: api
+  releaseStage: alpha
 - name: RKI Covid
   sourceDefinitionId: d78e5de0-aa44-4744-aa4f-74c818ccfe19
   dockerRepository: airbyte/source-rki-covid
@@ -1389,6 +1411,13 @@
   dockerRepository: airbyte/source-elasticsearch
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/elasticsearch
+  sourceType: api
+  releaseStage: alpha
+- name: Waiteraid
+  sourceDefinitionId: 03a53b13-794a-4d6b-8544-3b36ed8f3ce4
+  dockerRepository: airbyte/source-waiteraid
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/waiteraid
   sourceType: api
   releaseStage: alpha
 - name: Yandex Metrica

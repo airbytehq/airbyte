@@ -7,6 +7,7 @@ import { Text } from "components/ui/Text";
 
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
+import { Heading } from "../ui/Heading";
 import styles from "./StreamSelector.module.scss";
 
 export const StreamSelector: React.FC = () => {
@@ -15,9 +16,9 @@ export const StreamSelector: React.FC = () => {
   return (
     <Listbox value={selectedStream.name} onChange={setSelectedStream}>
       <Listbox.Button className={classNames(styles.button, styles.centered)}>
-        <Text className={styles.capitalized} as="h1" size="sm">
+        <Heading className={styles.capitalized} as="h1" size="sm">
           {selectedStream.name}
-        </Text>
+        </Heading>
         <FontAwesomeIcon className={styles.arrow} icon={faSortDown} />
       </Listbox.Button>
       {/* wrap in div to make `position: absolute` on Listbox.Options result in correct vertical positioning */}

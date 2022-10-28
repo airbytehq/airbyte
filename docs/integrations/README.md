@@ -46,6 +46,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [CockroachDB](sources/cockroachdb.md)                                                       | Alpha                | No                  |
 | [Commercetools](sources/commercetools.md)                                                   | Alpha                | No                  |
 | [Confluence](sources/confluence.md)                                                         | Alpha                | No                  |
+| [ConvertKit](sources/convertkit.md)                                                         | Alpha                | No                  |
 | [Courier](sources/courier.md)                                                               | Alpha                | No                  |
 | [Customer.io](sources/customer-io.md)                                                       | Alpha                | No                  |
 | [Db2](sources/db2.md)                                                                       | Alpha                | No                  |
@@ -76,6 +77,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Google Directory](sources/google-directory.md)                                             | Alpha                | Yes                 |
 | [Google Search Console](sources/google-search-console.md)                                   | Generally Available  | Yes                 |
 | [Google Sheets](sources/google-sheets.md)                                                   | Generally Available  | Yes                 |
+| [Google Webfonts](sources/google-webfonts.md)                                               | Alpha                | Yes                 |
 | [Google Workspace Admin Reports](sources/google-workspace-admin-reports.md)                 | Alpha                | Yes                 |
 | [Greenhouse](sources/greenhouse.md)                                                         | Beta                 | Yes                 |
 | [Gutendex](sources/gutendex.md)                                                             | Alpha                | No                  |
@@ -144,6 +146,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [PrestaShop](sources/presta-shop.md)                                                        | Alpha                | Yes                 |
 | [Qualaroo](sources/qualaroo.md)                                                             | Alpha                | Yes                 |
 | [QuickBooks](sources/quickbooks.md)                                                         | Alpha                | No                  |
+| [RD Station Marketing](sources/rd-station-marketing.md)                                     | Alpha                | No                  |
 | [Recharge](sources/recharge.md)                                                             | Generally Available  | Yes                 |
 | [Recurly](sources/recurly.md)                                                               | Alpha                | Yes                 |
 | [Redshift](sources/redshift.md)                                                             | Alpha                | Yes                 |
@@ -178,6 +181,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Typeform](sources/typeform.md)                                                             | Alpha                | Yes                 |
 | [US Census](sources/us-census.md)                                                           | Alpha                | Yes                 |
 | [VictorOps](sources/victorops.md)                                                           | Alpha                | No                  |
+| [Waiteraid](sources/waiteraid.md)                                                           | Alpha                | Yes                 |
 | [Webflow](sources/webflow.md        )                                                       | Alpha                | Yes                 |
 | [Whisky Hunter](sources/whisky-hunter.md        )                                           | Alpha                | No                  |
 | [WooCommerce](sources/woocommerce.md)                                                       | Alpha                | No                  |
@@ -241,4 +245,5 @@ For more information about the grading system, see [Product Release Stages](http
 | [SQLite](destinations/sqlite.md)                           | Alpha                | No                  |
 | [Streamr](destinations/streamr.md)                         | Alpha                | No                  |
 | [TiDB](destinations/tidb.md)                               | Alpha                | No                  |
+| [Typesense](destinations/typesense.md)                     | Alpha                | No                  |
 | [Yugabytedb](destinations/yugabytedb.md)                   | Alpha                | No                  |
