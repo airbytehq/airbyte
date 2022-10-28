@@ -41,3 +41,26 @@ def do_request(config: Mapping[str, Any], path: str):
         config["url"] + "/api/data/v9.2/" + path,
         headers=headers,
     )
+
+
+def convert_dataverse_type(dataverse_type: str) -> None | dict:
+    if dataverse_type == "String":
+        attribute_type = {"type": ["null", "string"]}
+    elif dataverse_type == "DateTime":
+        attribute_type = {"type": ["null", "string"], "format": "date-time", "airbyte_type": "timestamp_with_timezone"}
+    elif dataverse_type == "Integer":
+        attribute_type = {"type": ["null", "integer"]}
+    elif dataverse_type == "Money":
+        attribute_type = {"type": ["null", "number"]}
+    elif dataverse_type == "Boolean":
+        attribute_type = {"type": ["null", "boolean"]}
+    elif dataverse_type == "Double":
+        attribute_type = {"type": ["null", "number"]}
+    elif dataverse_type == "Decimal":
+        attribute_type = {"type": ["null", "number"]}
+    elif dataverse_type == "Virtual":
+        return None
+    else:
+        attribute_type = {"type": ["null", "string"]}
+
+    return attribute_type

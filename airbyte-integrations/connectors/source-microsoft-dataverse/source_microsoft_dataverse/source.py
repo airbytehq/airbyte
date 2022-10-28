@@ -9,7 +9,7 @@ from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessa
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
-from .dataverse import do_request, get_auth
+from .dataverse import do_request, get_auth, convert_dataverse_type
 from .streams import IncrementalMicrosoftDataverseStream
 
 
@@ -24,24 +24,10 @@ class SourceMicrosoftDataverse(AbstractSource):
         for entity in response_json["value"]:
             schema = {"properties": {"_ab_cdc_updated_at": {"type": "string"}, "_ab_cdc_deleted_at": {"type": ["null", "string"]}}}
             for attribute in entity["Attributes"]:
-                if attribute["AttributeType"] == "String":
-                    attribute_type = {"type": ["null", "string"]}
-                elif attribute["AttributeType"] == "DateTime":
-                    attribute_type = {"type": ["null", "string"], "format": "date-time", "airbyte_type": "timestamp_with_timezone"}
-                elif attribute["AttributeType"] == "Integer":
-                    attribute_type = {"type": ["null", "integer"]}
-                elif attribute["AttributeType"] == "Money":
-                    attribute_type = {"type": ["null", "number"]}
-                elif attribute["AttributeType"] == "Boolean":
-                    attribute_type = {"type": ["null", "boolean"]}
-                elif attribute["AttributeType"] == "Double":
-                    attribute_type = {"type": ["null", "number"]}
-                elif attribute["AttributeType"] == "Decimal":
-                    attribute_type = {"type": ["null", "number"]}
-                elif attribute["AttributeType"] == "Virtual":
+                attribute_type = convert_dataverse_type(attribute["AttributeType"])
+
+                if not attribute_type:
                     continue
-                else:
-                    attribute_type = {"type": ["null", "string"]}
 
                 schema["properties"][attribute["LogicalName"]] = attribute_type
 
