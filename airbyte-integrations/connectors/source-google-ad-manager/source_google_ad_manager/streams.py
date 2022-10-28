@@ -8,6 +8,7 @@ from typing import Any, Iterable, Mapping, Optional, List
 import logging
 import time
 import requests
+from pendulum import parse as pendulum_parse
 from airbyte_cdk.sources.streams import Stream, IncrementalMixin
 from datetime import datetime
 from googleads import ad_manager
@@ -99,9 +100,10 @@ class BaseGoogleAdManagerReportStream(Stream, IncrementalMixin):
             for row in reader:
                 item = self.generate_item(row)
                 # this section deals with the cursor, to be revisited
-                upcoming_cursor_value = datetime.strftime(getattr(item, self.cursor_field), '%Y-%m-%d')
-                current_cursor_value = self.state.get(self.cursor_field)
-                max_cursor_value = {self.cursor_field: max(upcoming_cursor_value, current_cursor_value)}
+                current_cursor_value = pendulum_parse(self.state.get(self.cursor_field))
+                upcoming_cursor_value = pendulum_parse(getattr(item, self.cursor_field).strftime('%Y-%m-%d'))
+                cursor_value = (max(upcoming_cursor_value, current_cursor_value)).to_date_string()
+                max_cursor_value = {self.cursor_field: cursor_value}
                 self.state = max_cursor_value
                 yield item.dict()
     
@@ -179,6 +181,7 @@ class BaseGoogleAdManagerReportStream(Stream, IncrementalMixin):
         except AdManagerReportError as exc:
             # the error handling should be implemented here, for now raise
             raise exc
+        logger.info(f"finished reading the records, the state is{self.state}")
     
 
 class AdUnitPerHourReportStream(BaseGoogleAdManagerReportStream):
@@ -324,7 +327,7 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
             statement_builder = ad_manager.StatementBuilder(version=API_VERSION)
             custom_targeting_service = self.google_ad_manager_client.GetService('CustomTargetingService', version=API_VERSION)
             statement = statement_builder.Where("customTargetingKeyId IN ({})".format(",".join([str(key['id']) for key in all_keys])))
-            timeout = time.time() + 60 * 10  # 10 minutes from now
+            timeout = time.time() + TIMEOUT_LIMIT  # 10 minutes from now
             while True:
                 response = custom_targeting_service.getCustomTargetingValuesByStatement(statement.ToStatement())
                 if time.time() <= timeout:
