@@ -198,7 +198,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
     } catch (final Exception e) {
       log.error("The connection update workflow has failed, will create a new attempt.", e);
-      reportFailure(connectionUpdaterInput, null, FailureCause.UNKNOWN, new HashSet<>());
+      reportFailure(connectionUpdaterInput, null, FailureCause.UNKNOWN);
       prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
     }
   }
@@ -252,13 +252,13 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         if (syncCheckConnectionFailure.isFailed()) {
           final StandardSyncOutput checkFailureOutput = syncCheckConnectionFailure.buildFailureOutput();
           workflowState.setFailed(getFailStatus(checkFailureOutput));
-          reportFailure(connectionUpdaterInput, checkFailureOutput, FailureCause.CONNECTION, new HashSet<>());
+          reportFailure(connectionUpdaterInput, checkFailureOutput, FailureCause.CONNECTION);
         } else {
           standardSyncOutput = runChildWorkflow(jobInputs);
           workflowState.setFailed(getFailStatus(standardSyncOutput));
 
           if (workflowState.isFailed()) {
-            reportFailure(connectionUpdaterInput, standardSyncOutput, FailureCause.UNKNOWN, new HashSet<>());
+            reportFailure(connectionUpdaterInput, standardSyncOutput, FailureCause.UNKNOWN);
           } else {
             reportSuccess(connectionUpdaterInput, standardSyncOutput);
           }
@@ -282,13 +282,13 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
               af.getCause(),
               workflowInternalState.getJobId(),
               workflowInternalState.getAttemptNumber()));
-          reportFailure(connectionUpdaterInput, standardSyncOutput, FailureCause.ACTIVITY, new HashSet<>());
+          reportFailure(connectionUpdaterInput, standardSyncOutput, FailureCause.ACTIVITY);
           prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
         } else {
           workflowInternalState.getFailures().add(
               FailureHelper.unknownOriginFailure(childWorkflowFailure.getCause(), workflowInternalState.getJobId(),
                   workflowInternalState.getAttemptNumber()));
-          reportFailure(connectionUpdaterInput, standardSyncOutput, FailureCause.WORKFLOW, new HashSet<>());
+          reportFailure(connectionUpdaterInput, standardSyncOutput, FailureCause.WORKFLOW);
           prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
         }
       }
@@ -320,6 +320,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     recordMetric(new RecordMetricInput(connectionUpdaterInput, Optional.empty(), OssMetricsRegistry.TEMPORAL_WORKFLOW_SUCCESS, null));
 
     resetNewConnectionInput(connectionUpdaterInput);
+  }
+
+  private void reportFailure(final ConnectionUpdaterInput connectionUpdaterInput,
+                             final StandardSyncOutput standardSyncOutput,
+                             final FailureCause failureCause) {
+    reportFailure(connectionUpdaterInput, standardSyncOutput, failureCause, new HashSet<>());
   }
 
   private void reportFailure(final ConnectionUpdaterInput connectionUpdaterInput,
