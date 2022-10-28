@@ -540,7 +540,7 @@ class IssueMilestones(SemiIncrementalMixin, GithubStream):
     is_sorted = "desc"
     stream_base_params = {
         "state": "all",
-        "sort": "updated",
+        "sort": "updated_at",
         "direction": "desc",
     }
 
