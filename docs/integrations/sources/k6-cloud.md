@@ -7,6 +7,7 @@ This source can sync data from the [K6 Cloud API](https://developers.k6.io). At 
 ## This Source Supports the Following Streams
 
 * organizations
+* projects
 * tests
 
 ### Features
