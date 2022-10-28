@@ -153,6 +153,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [SearchMetrics](./sources/search-metrics.md)                                                | Alpha                | No                  |
 | [Sendgrid](sources/sendgrid.md)                                                             | Beta                 | Yes                 |
 | [Sentry](sources/sentry.md)                                                                 | Generally Available  | Yes                 |
+| [SFTP Bulk](sources/sftp-bulk.md)                                                           | Alpha                | Yes                 |
 | [SFTP](sources/sftp.md)                                                                     | Alpha                | Yes                 |
 | [Shopify](sources/shopify.md)                                                               | Alpha                | No                  |
 | [Short.io](sources/shortio.md)                                                              | Alpha                | Yes                 |
