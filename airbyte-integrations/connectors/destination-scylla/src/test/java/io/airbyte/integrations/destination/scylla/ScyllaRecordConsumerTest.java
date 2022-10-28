@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.scylla;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,6 +21,7 @@ import org.testcontainers.containers.GenericContainer;
 @DisplayName("ScyllaRecordConsumer")
 @ExtendWith(MockitoExtension.class)
 public class ScyllaRecordConsumerTest extends PerStreamStateMessageTest {
+
   private static ScyllaContainer scyllaContainer;
 
   @Mock
@@ -68,4 +73,5 @@ public class ScyllaRecordConsumerTest extends PerStreamStateMessageTest {
     }
 
   }
+
 }

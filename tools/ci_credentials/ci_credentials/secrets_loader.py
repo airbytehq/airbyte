@@ -145,7 +145,7 @@ class SecretsLoader:
                 for pattern in MASK_KEY_PATTERNS:
                     if re.search(pattern, key):
                         self.logger.info(f"Add mask for key: {key}")
-                        for line in value.splitlines():
+                        for line in str(value).splitlines():
                             line = str(line).strip()
                             # don't output } and such
                             if len(line) > 1 and not os.getenv("VERSION") == "dev":

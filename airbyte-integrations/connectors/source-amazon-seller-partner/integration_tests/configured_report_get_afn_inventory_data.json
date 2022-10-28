@@ -1,0 +1,26 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "GET_AFN_INVENTORY_DATA",
+        "json_schema": {
+          "title": "Seller Sales and Traffic Business Report",
+          "description": "Seller retail analytics reports - Sales and Traffic Business Report By Asin",
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "seller-sku": { "type": ["null", "string"] },
+            "fulfillment-channel-sku": { "type": ["null", "string"] },
+            "asin": { "type": ["null", "string"] },
+            "condition-type": { "type": ["null", "string"] },
+            "Warehouse-Condition-code": { "type": ["null", "string"] },
+            "Quantity Available": { "type": ["null", "number"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

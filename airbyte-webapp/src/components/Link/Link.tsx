@@ -11,7 +11,7 @@ export interface ILinkProps {
 }
 
 // TODO: fix typings
-const Link = styled(ReactLink)<ILinkProps /*& ReactLinkProps */>`
+const Link = styled(ReactLink)<ILinkProps /* & ReactLinkProps */>`
   color: ${({ theme, $light }) => ($light ? theme.darkGreyColor : theme.primaryColor)};
 
   font-weight: ${({ bold }) => (bold ? "bold" : "normal")};

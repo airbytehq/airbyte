@@ -79,7 +79,7 @@ Now, when replications syncs are triggered by Airbyte, my custom transformations
 If you want to use a custom run and pass variables you need to use the follow syntax:
 
 ```bash
-run --vars '{table_name":"sample","schema_name":"other_value"}'
+run --vars '{"table_name":"sample","schema_name":"other_value"}'
 ```
 
 This string must have no space. There is a [Github issue](https://github.com/airbytehq/airbyte/issues/4348) to improve this. If you want to contribute to Airbyte, this is a good opportunity!

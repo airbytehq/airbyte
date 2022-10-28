@@ -13,7 +13,7 @@ Submodules
 airbyte\_cdk.sources.declarative.requesters.paginators.limit\_paginator module
 ------------------------------------------------------------------------------
 
-.. automodule:: airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator
+.. automodule:: airbyte_cdk.sources.declarative.requesters.paginators.default_paginator
    :members:
    :undoc-members:
    :show-inheritance:
@@ -22,14 +22,6 @@ airbyte\_cdk.sources.declarative.requesters.paginators.no\_pagination module
 ----------------------------------------------------------------------------
 
 .. automodule:: airbyte_cdk.sources.declarative.requesters.paginators.no_pagination
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-airbyte\_cdk.sources.declarative.requesters.paginators.pagination\_strategy module
-----------------------------------------------------------------------------------
-
-.. automodule:: airbyte_cdk.sources.declarative.requesters.paginators.pagination_strategy
    :members:
    :undoc-members:
    :show-inheritance:

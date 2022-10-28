@@ -15,7 +15,7 @@ class YamlParser(ConnectionDefinitionParser):
     """
     Parses a Yaml string to a ConnectionDefinition
 
-    In addition to standard Yaml parsing, the input_string can contain refererences to values previously defined.
+    In addition to standard Yaml parsing, the input_string can contain references to values previously defined.
     This parser will dereference these values to produce a complete ConnectionDefinition.
 
     References can be defined using a *ref(<arg>) string.

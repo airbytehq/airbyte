@@ -2,6 +2,8 @@ connector_image: airbyte/source-amazon-seller-partner:dev
 tests:
   spec:
     - spec_path: "integration_tests/spec.json"
+      backward_compatibility_tests_config:
+          disable_for_version: "0.2.26"
   connection:
     # - config_path: "secrets/config.json"
     #   status: "succeed"
@@ -11,6 +13,8 @@ tests:
       timeout_seconds: 60
   discovery:
     - config_path: "secrets/config.json"
+      backward_compatibility_tests_config:
+          disable_for_version: "0.2.26"
 # TODO: uncomment when at least one record exist
 #  basic_read:
 #    - config_path: "secrets/config.json"
@@ -42,6 +46,8 @@ tests:
 #      configured_catalog_path: "integration_tests/configured_catalog_fba_fulfillment_customer_shipment_replacement_data.json"
 #    - config_path: "secrets/config.json"
 #      configured_catalog_path: "integration_tests/configured_catalog_browse_tree_data.json"
+#    - config_path: "secrets/config.json"
+#      configured_catalog_path: "integration_tests/configured_catalog_restock_inventory.json"
 # TODO: uncomment when Orders (or any other incremental) stream is filled with data
 #  incremental:
 #   - config_path: "secrets/config.json"

@@ -11,11 +11,12 @@
 .contentContainer {
   max-width: 100%;
   overflow-x: auto;
+  padding-top: variables.$spacing-lg;
 }
 
 .content {
   overflow-y: auto;
   height: 100%;
-  padding: variables.$spacing-lg variables.$spacing-xl variables.$spacing-page-bottom variables.$spacing-xl;
+  padding: 0 variables.$spacing-xl variables.$spacing-page-bottom;
   min-width: variables.$main-page-content-min-width;
 }

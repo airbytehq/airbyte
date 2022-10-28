@@ -9,6 +9,7 @@ import {
   StreamTransform,
   SyncMode,
 } from "core/request/AirbyteClient";
+import { ModalServiceProvider } from "hooks/services/Modal";
 
 import messages from "../../../locales/en.json";
 import { CatalogDiffModal } from "./CatalogDiffModal";
@@ -52,13 +53,14 @@ const updatedItems: StreamTransform[] = [
     transformType: "update_stream",
     streamDescriptor: { namespace: "apple", name: "harissa_paste" },
     updateStream: [
-      { transformType: "add_field", fieldName: ["users", "phone"] },
-      { transformType: "add_field", fieldName: ["users", "email"] },
-      { transformType: "remove_field", fieldName: ["users", "lastName"] },
+      { transformType: "add_field", fieldName: ["users", "phone"], breaking: false },
+      { transformType: "add_field", fieldName: ["users", "email"], breaking: false },
+      { transformType: "remove_field", fieldName: ["users", "lastName"], breaking: false },
 
       {
         transformType: "update_field_schema",
         fieldName: ["users", "address"],
+        breaking: false,
         updateFieldSchema: { oldSchema: { type: "number" }, newSchema: { type: "string" } },
       },
     ],
@@ -146,18 +148,20 @@ describe("catalog diff modal", () => {
     mockCatalogDiff.transforms = [];
   });
 
-  test("it renders the correct section for each type of transform", () => {
+  it("renders the correct section for each type of transform", () => {
     mockCatalogDiff.transforms.push(...addedItems, ...removedItems, ...updatedItems);
 
     render(
       <IntlProvider messages={messages} locale="en">
-        <CatalogDiffModal
-          catalogDiff={mockCatalogDiff}
-          catalog={mockCatalog}
-          onClose={() => {
-            return null;
-          }}
-        />
+        <ModalServiceProvider>
+          <CatalogDiffModal
+            catalogDiff={mockCatalogDiff}
+            catalog={mockCatalog}
+            onClose={() => {
+              return null;
+            }}
+          />
+        </ModalServiceProvider>
       </IntlProvider>
     );
 
@@ -193,18 +197,20 @@ describe("catalog diff modal", () => {
     expect(updatedStreamRowWithSyncMode).not.toBeInTheDocument();
   });
 
-  test("added fields are not rendered when not in the diff", () => {
+  it("added fields are not rendered when not in the diff", () => {
     mockCatalogDiff.transforms.push(...removedItems, ...updatedItems);
 
     render(
       <IntlProvider messages={messages} locale="en">
-        <CatalogDiffModal
-          catalogDiff={mockCatalogDiff}
-          catalog={mockCatalog}
-          onClose={() => {
-            return null;
-          }}
-        />
+        <ModalServiceProvider>
+          <CatalogDiffModal
+            catalogDiff={mockCatalogDiff}
+            catalog={mockCatalog}
+            onClose={() => {
+              return null;
+            }}
+          />
+        </ModalServiceProvider>
       </IntlProvider>
     );
 
@@ -212,18 +218,20 @@ describe("catalog diff modal", () => {
     expect(newStreamsTable).not.toBeInTheDocument();
   });
 
-  test("removed fields are not rendered when not in the diff", () => {
+  it("removed fields are not rendered when not in the diff", () => {
     mockCatalogDiff.transforms.push(...addedItems, ...updatedItems);
 
     render(
       <IntlProvider messages={messages} locale="en">
-        <CatalogDiffModal
-          catalogDiff={mockCatalogDiff}
-          catalog={mockCatalog}
-          onClose={() => {
-            return null;
-          }}
-        />
+        <ModalServiceProvider>
+          <CatalogDiffModal
+            catalogDiff={mockCatalogDiff}
+            catalog={mockCatalog}
+            onClose={() => {
+              return null;
+            }}
+          />
+        </ModalServiceProvider>
       </IntlProvider>
     );
 
@@ -231,18 +239,20 @@ describe("catalog diff modal", () => {
     expect(removedStreamsTable).not.toBeInTheDocument();
   });
 
-  test("changed streams accordion opens/closes on clicking the description row", () => {
+  it("changed streams accordion opens/closes on clicking the description row", () => {
     mockCatalogDiff.transforms.push(...addedItems, ...updatedItems);
 
     render(
       <IntlProvider messages={messages} locale="en">
-        <CatalogDiffModal
-          catalogDiff={mockCatalogDiff}
-          catalog={mockCatalog}
-          onClose={() => {
-            return null;
-          }}
-        />
+        <ModalServiceProvider>
+          <CatalogDiffModal
+            catalogDiff={mockCatalogDiff}
+            catalog={mockCatalog}
+            onClose={() => {
+              return null;
+            }}
+          />
+        </ModalServiceProvider>
       </IntlProvider>
     );
 

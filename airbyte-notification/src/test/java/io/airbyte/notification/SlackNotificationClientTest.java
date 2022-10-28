@@ -40,16 +40,21 @@ class SlackNotificationClientTest {
   private static final String JOB_DESCRIPTION = "job description";
   private static final String LOG_URL = "logUrl";
   private static final String SOURCE_TEST = "source-test";
+  private static final Long JOB_ID = 1L;
 
   public static final String WEBHOOK_URL = "http://localhost:";
   private static final String EXPECTED_FAIL_MESSAGE = "Your connection from source-test to destination-test just failed...\n"
       + "This happened with job description\n"
       + "\n"
-      + "You can access its logs here: logUrl\n";
+      + "You can access its logs here: logUrl\n"
+      + "\n"
+      + "Job ID: 1";
   private static final String EXPECTED_SUCCESS_MESSAGE = "Your connection from source-test to destination-test succeeded\n"
       + "This was for job description\n"
       + "\n"
-      + "You can access its logs here: logUrl\n";
+      + "You can access its logs here: logUrl\n"
+      + "\n"
+      + "Job ID: 1";
   private HttpServer server;
 
   @BeforeEach
@@ -81,7 +86,7 @@ class SlackNotificationClientTest {
         new SlackNotificationClient(new Notification()
             .withNotificationType(NotificationType.SLACK)
             .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + "/bad")));
-    assertThrows(IOException.class, () -> client.notifyJobFailure(SOURCE_TEST, DESTINATION_TEST, JOB_DESCRIPTION, LOG_URL));
+    assertThrows(IOException.class, () -> client.notifyJobFailure(SOURCE_TEST, DESTINATION_TEST, JOB_DESCRIPTION, LOG_URL, JOB_ID));
   }
 
   @Test
@@ -89,7 +94,7 @@ class SlackNotificationClientTest {
     final SlackNotificationClient client =
         new SlackNotificationClient(
             new Notification().withNotificationType(NotificationType.SLACK).withSlackConfiguration(new SlackNotificationConfiguration()));
-    assertFalse(client.notifyJobFailure(SOURCE_TEST, DESTINATION_TEST, JOB_DESCRIPTION, LOG_URL));
+    assertFalse(client.notifyJobFailure(SOURCE_TEST, DESTINATION_TEST, JOB_DESCRIPTION, LOG_URL, JOB_ID));
   }
 
   @Test
@@ -111,7 +116,7 @@ class SlackNotificationClientTest {
         new SlackNotificationClient(new Notification()
             .withNotificationType(NotificationType.SLACK)
             .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + TEST_PATH)));
-    assertTrue(client.notifyJobFailure(SOURCE_TEST, DESTINATION_TEST, JOB_DESCRIPTION, LOG_URL));
+    assertTrue(client.notifyJobFailure(SOURCE_TEST, DESTINATION_TEST, JOB_DESCRIPTION, LOG_URL, JOB_ID));
   }
 
   @Test
@@ -122,7 +127,7 @@ class SlackNotificationClientTest {
             .withNotificationType(NotificationType.SLACK)
             .withSendOnSuccess(true)
             .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + TEST_PATH)));
-    assertTrue(client.notifyJobSuccess(SOURCE_TEST, DESTINATION_TEST, JOB_DESCRIPTION, LOG_URL));
+    assertTrue(client.notifyJobSuccess(SOURCE_TEST, DESTINATION_TEST, JOB_DESCRIPTION, LOG_URL, JOB_ID));
   }
 
   @Test

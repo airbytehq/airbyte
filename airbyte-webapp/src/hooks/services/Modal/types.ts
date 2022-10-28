@@ -1,6 +1,6 @@
 import React from "react";
 
-import { ModalProps } from "components/Modal/Modal";
+import { ModalProps } from "components/ui/Modal";
 
 export interface ModalOptions<T> {
   title: ModalProps["title"];

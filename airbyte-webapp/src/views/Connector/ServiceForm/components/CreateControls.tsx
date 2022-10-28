@@ -2,10 +2,11 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button } from "components";
+import { Button } from "components/ui/Button";
 
+import styles from "./CreateControls.module.scss";
 import { TestingConnectionError, FetchingConnectorError } from "./TestingConnectionError";
-import TestingConnectionSpinner from "./TestingConnectionSpinner";
+import { TestingConnectionSpinner } from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
 
 interface CreateControlProps {
@@ -25,10 +26,6 @@ const ButtonContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-`;
-
-const SubmitButton = styled(Button)`
-  margin-left: auto;
 `;
 
 const CreateControls: React.FC<CreateControlProps> = ({
@@ -53,9 +50,9 @@ const CreateControls: React.FC<CreateControlProps> = ({
     <ButtonContainer>
       {errorMessage && !fetchingConnectorError && <TestingConnectionError errorMessage={errorMessage} />}
       {fetchingConnectorError && <FetchingConnectorError />}
-      <SubmitButton type="submit" disabled={isLoadSchema}>
+      <Button className={styles.submitButton} type="submit" disabled={isLoadSchema}>
         <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />
-      </SubmitButton>
+      </Button>
     </ButtonContainer>
   );
 };

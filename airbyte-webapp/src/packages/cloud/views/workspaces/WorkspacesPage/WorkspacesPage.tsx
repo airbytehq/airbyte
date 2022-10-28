@@ -1,41 +1,28 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
-import { H1, H3 } from "components";
+import { Heading } from "components/ui/Heading";
+import { Text } from "components/ui/Text";
+
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 
 import WorkspacesList from "./components/WorkspacesList";
-
-const MainContent = styled.div`
-  width: 100%;
-  max-width: 680px;
-  height: 100%;
-  padding: 26px;
-  margin: 0 auto;
-  text-align: center;
-`;
-
-const Logo = styled.img`
-  margin-bottom: 58px;
-`;
-
-const Subtitle = styled(H3)`
-  margin: 17px 0 33px;
-  line-height: 32px;
-`;
+import styles from "./WorkspacesPage.module.scss";
 
 const WorkspacesPage: React.FC = () => {
+  useTrackPage(PageTrackingCodes.WORKSPACES);
+
   return (
-    <MainContent>
-      <Logo src="/cloud-main-logo.svg" width={186} />
-      <H1 center bold>
+    <div className={styles.container}>
+      <img className={styles.logo} alt="logo" src="/cloud-main-logo.svg" width={186} />
+      <Heading as="h1" size="lg" centered>
         <FormattedMessage id="workspaces.title" />
-      </H1>
-      <Subtitle center>
+      </Heading>
+      <Text centered className={styles.subtitle}>
         <FormattedMessage id="workspaces.subtitle" />
-      </Subtitle>
+      </Text>
       <WorkspacesList />
-    </MainContent>
+    </div>
   );
 };
 

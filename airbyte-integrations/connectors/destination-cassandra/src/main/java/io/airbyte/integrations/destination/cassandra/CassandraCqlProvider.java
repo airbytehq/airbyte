@@ -7,8 +7,6 @@ package io.airbyte.integrations.destination.cassandra;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.now;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.BatchStatement;
-import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.metadata.TokenMap;
@@ -137,24 +135,27 @@ class CassandraCqlProvider implements Closeable {
         .flatMap(range -> range.unwrap().stream())
         .map(range -> selectStatement.bind(range.getStart(), range.getEnd()))
         // explore datastax 4.x async api as an alternative for async processing
-        .map(selectBoundStatement -> executorService.submit(() -> batchInsert(selectBoundStatement, insertStatement)))
+        .map(selectBoundStatement -> executorService.submit(() -> asyncInsert(selectBoundStatement, insertStatement)))
         .forEach(this::awaitThread);
 
   }
 
-  private void batchInsert(BoundStatement select, PreparedStatement insert) {
-    // unlogged removes the log record for increased insert speed
-    var batchStatement = BatchStatement.builder(BatchType.UNLOGGED);
-
-    cqlSession.execute(select).all().stream()
+  private void asyncInsert(BoundStatement select, PreparedStatement insert) {
+    var boundStatements = cqlSession.execute(select).all().stream()
         .map(r -> CassandraRecord.of(
             r.get(columnId, UUID.class),
             r.get(columnData, String.class),
             r.get(columnTimestamp, Instant.class)))
-        .map(r -> insert.bind(r.getId(), r.getData(), r.getTimestamp()))
-        .forEach(batchStatement::addStatement);
+        .map(r -> insert.bind(r.getId(), r.getData(), r.getTimestamp())).toList();
 
-    cqlSession.execute(batchStatement.build());
+    boundStatements.forEach(boundStatement -> {
+      var resultSetCompletionStage = cqlSession.executeAsync(boundStatement);
+      resultSetCompletionStage.whenCompleteAsync((res, err) -> {
+        if (err != null) {
+          LOGGER.error("Something went wrong during async insertion: " + err.getMessage());
+        }
+      });
+    });
   }
 
   private void awaitThread(Future<?> future) {

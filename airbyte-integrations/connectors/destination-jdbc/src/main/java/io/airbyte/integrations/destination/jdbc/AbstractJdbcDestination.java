@@ -4,7 +4,10 @@
 
 package io.airbyte.integrations.destination.jdbc;
 
+import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
@@ -12,12 +15,14 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -59,6 +64,12 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+    } catch (final ConnectionErrorException ex) {
+      final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, message);
+      return new AirbyteConnectionStatus()
+          .withStatus(Status.FAILED)
+          .withMessage(message);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
@@ -80,10 +91,26 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       throws Exception {
     // verify we have write permissions on the target schema by creating a table with a random name,
     // then dropping that table
-    final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
-    sqlOps.createSchemaIfNotExists(database, outputSchema);
-    sqlOps.createTableIfNotExists(database, outputSchema, outputTableName);
-    sqlOps.dropTableIfExists(database, outputSchema, outputTableName);
+    try {
+      // Get metadata from the database to see whether connection is possible
+      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils.getDefaultSourceOperations()::rowToJson);
+
+      // verify we have write permissions on the target schema by creating a table with a random name,
+      // then dropping that table
+      final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
+      sqlOps.createSchemaIfNotExists(database, outputSchema);
+      sqlOps.createTableIfNotExists(database, outputSchema, outputTableName);
+      sqlOps.dropTableIfExists(database, outputSchema, outputTableName);
+    } catch (final SQLException e) {
+      if (Objects.isNull(e.getCause()) || !(e.getCause() instanceof SQLException)) {
+        throw new ConnectionErrorException(e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
+      } else {
+        final SQLException cause = (SQLException) e.getCause();
+        throw new ConnectionErrorException(e.getSQLState(), cause.getErrorCode(), cause.getMessage(), e);
+      }
+    } catch (final Exception e) {
+      throw new Exception(e);
+    }
   }
 
   protected DataSource getDataSource(final JsonNode config) {

@@ -21,7 +21,7 @@ const getExperiment: ExperimentService["getExperiment"] = (key): any => {
 describe("ExperimentService", () => {
   describe("useExperiment", () => {
     it("should return the value from the ExperimentService if provided", () => {
-      const wrapper: React.FC = ({ children }) => (
+      const wrapper: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
         <ExperimentProvider
           value={{
             getExperiment,
@@ -36,7 +36,7 @@ describe("ExperimentService", () => {
     });
 
     it("should return the defaultValue if ExperimentService provides undefined", () => {
-      const wrapper: React.FC = ({ children }) => (
+      const wrapper: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         <ExperimentProvider value={{ getExperiment: () => undefined as any, getExperimentChanges$: () => EMPTY }}>
           {children}
@@ -53,7 +53,7 @@ describe("ExperimentService", () => {
 
     it("should rerender whenever the ExperimentService emits a new value", () => {
       const subject = new Subject<TestExperimentValueType>();
-      const wrapper: React.FC = ({ children }) => (
+      const wrapper: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         <ExperimentProvider value={{ getExperiment, getExperimentChanges$: () => subject.asObservable() as any }}>
           {children}

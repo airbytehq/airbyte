@@ -1,3 +1,5 @@
+import type { OAuthProviders } from "./AuthProviders";
+
 import {
   Auth,
   User,
@@ -15,35 +17,16 @@ import {
   updatePassword,
   updateEmail,
   AuthErrorCodes,
+  signInWithPopup,
+  GoogleAuthProvider,
+  GithubAuthProvider,
 } from "firebase/auth";
 
 import { Provider } from "config";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { EmailLinkErrorCodes, ErrorCodes } from "packages/cloud/services/auth/types";
 
-interface AuthService {
-  login(email: string, password: string): Promise<UserCredential>;
-
-  signOut(): Promise<void>;
-
-  signUp(email: string, password: string): Promise<UserCredential>;
-
-  reauthenticate(email: string, passwordPassword: string): Promise<UserCredential>;
-
-  updatePassword(newPassword: string): Promise<void>;
-
-  resetPassword(email: string): Promise<void>;
-
-  finishResetPassword(code: string, newPassword: string): Promise<void>;
-
-  sendEmailVerifiedLink(): Promise<void>;
-
-  updateEmail(email: string, password: string): Promise<void>;
-
-  signInWithEmailLink(email: string): Promise<UserCredential>;
-}
-
-export class GoogleAuthService implements AuthService {
+export class GoogleAuthService {
   constructor(private firebaseAuthProvider: Provider<Auth>) {}
 
   get auth(): Auth {
@@ -52,6 +35,14 @@ export class GoogleAuthService implements AuthService {
 
   getCurrentUser(): User | null {
     return this.auth.currentUser;
+  }
+
+  async loginWithOAuth(provider: OAuthProviders) {
+    // Instantiate the appropriate auth provider. For Google we're specifying the `hd` parameter, to only show
+    // Google accounts in the selector that are linked to a business (GSuite) account.
+    const authProvider =
+      provider === "github" ? new GithubAuthProvider() : new GoogleAuthProvider().setCustomParameters({ hd: "*" });
+    await signInWithPopup(this.auth, authProvider);
   }
 
   async login(email: string, password: string): Promise<UserCredential> {
@@ -113,7 +104,7 @@ export class GoogleAuthService implements AuthService {
   }
 
   async updateEmail(email: string, password: string): Promise<void> {
-    const user = await this.getCurrentUser();
+    const user = this.getCurrentUser();
 
     if (user) {
       await this.reauthenticate(email, password);

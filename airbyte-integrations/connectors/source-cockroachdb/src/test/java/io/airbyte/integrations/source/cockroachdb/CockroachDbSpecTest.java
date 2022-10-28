@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.cockroachdb;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,6 +14,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +35,7 @@ public class CockroachDbSpecTest {
       + "\"database\" : \"postgres_db\",  "
       + "\"port\" : 5432,  "
       + "\"host\" : \"localhost\",  "
+      + "\"jdbc_url_params\" : \"property1=pValue1&property2=pValue2\",  "
       + "\"ssl\" : true }";
 
   private static JsonNode schema;
@@ -67,6 +70,18 @@ public class CockroachDbSpecTest {
   void testWithReplicationMethodWithReplicationSlot() {
     final JsonNode config = Jsons.deserialize(CONFIGURATION);
     assertTrue(validator.test(schema, config));
+  }
+
+  @Test
+  void testWithJdbcAdditionalProperty() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    assertTrue(validator.test(schema, config));
+  }
+
+  @Test
+  void testJdbcAdditionalProperty() throws Exception {
+    final ConnectorSpecification spec = new CockroachDbSource().spec();
+    assertNotNull(spec.getConnectionSpecification().get("properties").get("jdbc_url_params"));
   }
 
 }

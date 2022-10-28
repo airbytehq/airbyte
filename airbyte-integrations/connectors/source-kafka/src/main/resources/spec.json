@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/kafka",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/kafka",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
@@ -11,6 +11,54 @@
     "required": ["bootstrap_servers", "subscription", "protocol"],
     "additionalProperties": false,
     "properties": {
+      "MessageFormat": {
+        "title": "MessageFormat",
+        "type": "object",
+        "description": "The serialization used based on this ",
+        "oneOf": [
+          {
+            "title": "JSON",
+            "properties": {
+              "deserialization_type": {
+                "type": "string",
+                "enum": ["JSON"],
+                "default": "JSON"
+              }
+            }
+          },
+          {
+            "title": "AVRO",
+            "properties": {
+              "deserialization_type": {
+                "type": "string",
+                "enum": ["AVRO"],
+                "default": "AVRO"
+              },
+              "deserialization_strategy": {
+                "type": "string",
+                "enum": [
+                  "TopicNameStrategy",
+                  "RecordNameStrategy",
+                  "TopicRecordNameStrategy"
+                ],
+                "default": "TopicNameStrategy"
+              },
+              "schema_registry_url": {
+                "type": "string",
+                "examples": ["http://localhost:8081"]
+              },
+              "schema_registry_username": {
+                "type": "string",
+                "default": ""
+              },
+              "schema_registry_password": {
+                "type": "string",
+                "default": ""
+              }
+            }
+          }
+        ]
+      },
       "bootstrap_servers": {
         "title": "Bootstrap Servers",
         "description": "A list of host/port pairs to use for establishing the initial connection to the Kafka cluster. The client will make use of all servers irrespective of which servers are specified here for bootstrapping&mdash;this list only impacts the initial hosts used to discover the full set of servers. This list should be in the form <code>host1:port1,host2:port2,...</code>. Since these servers are just used for the initial connection to discover the full cluster membership (which may change dynamically), this list need not contain the full set of servers (you may want more than one, though, in case a server is down).",
@@ -225,6 +273,12 @@
         "description": "The number of repeated calls to poll() if no messages were received.",
         "type": "integer",
         "default": 3
+      },
+      "max_records_process": {
+        "title": "Maximum Records",
+        "description": "The Maximum to be processed per execution",
+        "type": "integer",
+        "default": 100000
       }
     }
   }

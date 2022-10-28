@@ -11,17 +11,14 @@ import lombok.extern.slf4j.Slf4j;
 public class EnvVariableFeatureFlags implements FeatureFlags {
 
   public static final String USE_STREAM_CAPABLE_STATE = "USE_STREAM_CAPABLE_STATE";
+  public static final String LOG_CONNECTOR_MESSAGES = "LOG_CONNECTOR_MESSAGES";
+  public static final String NEED_STATE_VALIDATION = "NEED_STATE_VALIDATION";
 
   @Override
   public boolean autoDisablesFailingConnections() {
     log.info("Auto Disable Failing Connections: " + Boolean.parseBoolean(System.getenv("AUTO_DISABLE_FAILING_CONNECTIONS")));
 
     return Boolean.parseBoolean(System.getenv("AUTO_DISABLE_FAILING_CONNECTIONS"));
-  }
-
-  @Override
-  public boolean exposeSecretsInExport() {
-    return Boolean.parseBoolean(System.getenv("EXPOSE_SECRETS_IN_EXPORT"));
   }
 
   @Override
@@ -32,6 +29,16 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   @Override
   public boolean useStreamCapableState() {
     return getEnvOrDefault(USE_STREAM_CAPABLE_STATE, false, Boolean::parseBoolean);
+  }
+
+  @Override
+  public boolean logConnectorMessages() {
+    return getEnvOrDefault(LOG_CONNECTOR_MESSAGES, false, Boolean::parseBoolean);
+  }
+
+  @Override
+  public boolean needStateValidation() {
+    return getEnvOrDefault(NEED_STATE_VALIDATION, true, Boolean::parseBoolean);
   }
 
   // TODO: refactor in order to use the same method than the ones in EnvConfigs.java

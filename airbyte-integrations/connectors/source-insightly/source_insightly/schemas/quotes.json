@@ -1,0 +1,137 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "QUOTE_ID": {
+      "type": "integer"
+    },
+    "QUOTATION_NAME": {
+      "type": ["string", "null"]
+    },
+    "OPPORTUNITY_ID": {
+      "type": ["integer", "null"]
+    },
+    "CONTACT_ID": {
+      "type": ["integer", "null"]
+    },
+    "ORGANISATION_ID": {
+      "type": ["integer", "null"]
+    },
+    "PRICEBOOK_ID": {
+      "type": ["integer", "null"]
+    },
+    "QUOTATION_NUMBER": {
+      "type": ["string", "null"]
+    },
+    "QUOTATION_DESCRIPTION": {
+      "type": ["string", "null"]
+    },
+    "QUOTATION_PHONE": {
+      "type": ["string", "null"]
+    },
+    "QUOTATION_EMAIL": {
+      "type": ["string", "null"]
+    },
+    "QUOTATION_FAX": {
+      "type": ["string", "null"]
+    },
+    "QUOTE_STATUS": {
+      "type": ["string", "null"]
+    },
+    "QUOTATION_EXPIRATION_DATE": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "LINE_ITEM_COUNT": {
+      "type": ["integer", "null"]
+    },
+    "IS_SYNCING": {
+      "type": ["boolean", "null"]
+    },
+    "QUOTATION_CURRENCY_CODE": {
+      "type": ["string", "null"]
+    },
+    "SUBTOTAL": {
+      "type": ["integer", "null"]
+    },
+    "DISCOUNT": {
+      "type": ["integer", "null"]
+    },
+    "TOTAL_PRICE": {
+      "type": ["integer", "null"]
+    },
+    "SHIPPING_HANDLING": {
+      "type": ["integer", "null"]
+    },
+    "TAX": {
+      "type": ["integer", "null"]
+    },
+    "GRAND_TOTAL": {
+      "type": ["integer", "null"]
+    },
+    "ADDRESS_BILLING_NAME": {
+      "type": ["string", "null"]
+    },
+    "ADDRESS_BILLING_STREET": {
+      "type": ["string", "null"]
+    },
+    "ADDRESS_BILLING_CITY": {
+      "type": ["string", "null"]
+    },
+    "ADDRESS_BILLING_STATE": {
+      "type": ["string", "null"]
+    },
+    "ADDRESS_BILLING_POSTCODE": {
+      "type": ["string", "null"]
+    },
+    "ADDRESS_BILLING_COUNTRY": {
+      "type": ["string", "null"]
+    },
+    "ADDRESS_SHIPPING_NAME": {
+      "type": ["string", "null"]
+    },
+    "ADDRESS_SHIPPING_STREET": {
+      "type": ["string", "null"]
+    },
+    "ADDRESS_SHIPPING_CITY": {
+      "type": ["string", "null"]
+    },
+    "ADDRESS_SHIPPING_STATE": {
+      "type": ["string", "null"]
+    },
+    "ADDRESS_SHIPPING_POSTCODE": {
+      "type": ["string", "null"]
+    },
+    "ADDRESS_SHIPPING_COUNTRY": {
+      "type": ["string", "null"]
+    },
+    "OWNER_USER_ID": {
+      "type": ["integer", "null"]
+    },
+    "DATE_CREATED_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "DATE_UPDATED_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "CREATED_USER_ID": {
+      "type": ["integer", "null"]
+    },
+    "CUSTOMFIELDS": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "FIELD_NAME": {
+            "type": ["string", "null"]
+          },
+          "FIELD_VALUE": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  }
+}

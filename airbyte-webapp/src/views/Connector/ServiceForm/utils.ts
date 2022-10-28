@@ -3,19 +3,8 @@ import { naturalComparator } from "utils/objects";
 
 import { ConnectorDefinitionSpecification } from "../../../core/domain/connector";
 
-export function makeConnectionConfigurationPath(path: string[]): string {
-  return `connectionConfiguration.${path.join(".")}`;
-}
-
-export interface OauthOutputSpec {
-  client_id: {
-    type: string;
-    path_in_connector_config: ["credentials", "client_id"];
-  };
-  client_secret: {
-    type: string;
-    path_in_connector_config: ["credentials", "client_secret"];
-  };
+export function makeConnectionConfigurationPath(path: string[] = []): string {
+  return ["connectionConfiguration", ...path].join(".");
 }
 
 type OAuthOutputSpec = { properties: Record<string, { type: string; path_in_connector_config: string[] }> } | undefined;

@@ -2,16 +2,17 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class Retriever(ABC):
+class Retriever(JsonSchemaMixin):
     """
     Responsible for fetching a stream's records from an HTTP API source.
     """

@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
@@ -71,23 +72,46 @@ class StateDecoratingIteratorTest {
             .withData(Jsons.jsonNode(ImmutableMap.of("cursor", recordValue))));
   }
 
+  private Iterator<AirbyteMessage> createExceptionIterator() {
+    return new Iterator<>() {
+
+      final Iterator<AirbyteMessage> internalMessageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2,
+          RECORD_MESSAGE_2, RECORD_MESSAGE_3);
+
+      @Override
+      public boolean hasNext() {
+        return true;
+      }
+
+      @Override
+      public AirbyteMessage next() {
+        if (internalMessageIterator.hasNext()) {
+          return internalMessageIterator.next();
+        } else {
+          // this line throws a RunTimeException wrapped around a SQLException to mimic the flow of when a
+          // SQLException is thrown and wrapped in
+          // StreamingJdbcDatabase#tryAdvance
+          throw new RuntimeException(new SQLException("Connection marked broken because of SQLSTATE(080006)", "08006"));
+        }
+      }
+
+    };
+  };
+
   private static Iterator<AirbyteMessage> messageIterator;
   private StateManager stateManager;
 
   @BeforeEach
   void setup() {
     stateManager = mock(StateManager.class);
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, null)).thenReturn(EMPTY_STATE_MESSAGE.getState());
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_1)).thenReturn(STATE_MESSAGE_1.getState());
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_2)).thenReturn(STATE_MESSAGE_2.getState());
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_3)).thenReturn(STATE_MESSAGE_3.getState());
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_4)).thenReturn(STATE_MESSAGE_4.getState());
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_5)).thenReturn(STATE_MESSAGE_5.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, null, 0)).thenReturn(EMPTY_STATE_MESSAGE.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_1, 1L)).thenReturn(STATE_MESSAGE_1.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_2, 1L)).thenReturn(STATE_MESSAGE_2.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_3, 1L)).thenReturn(STATE_MESSAGE_3.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_4, 1L)).thenReturn(STATE_MESSAGE_4.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_5, 1L)).thenReturn(STATE_MESSAGE_5.getState());
 
-    when(stateManager.getOriginalCursorField(NAME_NAMESPACE_PAIR)).thenReturn(Optional.empty());
-    when(stateManager.getOriginalCursor(NAME_NAMESPACE_PAIR)).thenReturn(Optional.empty());
-    when(stateManager.getCursorField(NAME_NAMESPACE_PAIR)).thenReturn(Optional.empty());
-    when(stateManager.getCursor(NAME_NAMESPACE_PAIR)).thenReturn(Optional.empty());
+    when(stateManager.getCursorInfo(NAME_NAMESPACE_PAIR)).thenReturn(Optional.empty());
   }
 
   @Test
@@ -110,6 +134,10 @@ class StateDecoratingIteratorTest {
 
   @Test
   void testWithInitialCursor() {
+    // record 1 and 2 has smaller cursor value, so at the end, the initial cursor is emitted with 0
+    // record count
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_5, 0L)).thenReturn(STATE_MESSAGE_5.getState());
+
     messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2);
     final StateDecoratingIterator iterator = new StateDecoratingIterator(
         messageIterator,
@@ -148,6 +176,58 @@ class StateDecoratingIteratorTest {
   }
 
   @Test
+  void testIteratorCatchesExceptionWhenEmissionFrequencyNonZero() {
+    final Iterator<AirbyteMessage> exceptionIterator = createExceptionIterator();
+
+    // The mock record count matches the number of records returned by the exception iterator.
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_1, 1L)).thenReturn(STATE_MESSAGE_1.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_2, 2L)).thenReturn(STATE_MESSAGE_2.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_3, 1L)).thenReturn(STATE_MESSAGE_3.getState());
+
+    final StateDecoratingIterator iterator = new StateDecoratingIterator(
+        exceptionIterator,
+        stateManager,
+        NAME_NAMESPACE_PAIR,
+        UUID_FIELD_NAME,
+        RECORD_VALUE_1,
+        JsonSchemaPrimitive.STRING,
+        1);
+    assertEquals(RECORD_MESSAGE_1, iterator.next());
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    // continues to emit RECORD_MESSAGE_2 since cursorField has not changed thus not satisfying the
+    // condition of "ready"
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    assertEquals(RECORD_MESSAGE_3, iterator.next());
+    // emits the first state message since the iterator has changed cursorFields (2 -> 3) and met the
+    // frequency minimum of 1 record
+    assertEquals(STATE_MESSAGE_2, iterator.next());
+    // no further records to read since Exception was caught above and marked iterator as endOfData()
+    assertFalse(iterator.hasNext());
+  }
+
+  @Test
+  void testIteratorCatchesExceptionWhenEmissionFrequencyZero() {
+    final Iterator<AirbyteMessage> exceptionIterator = createExceptionIterator();
+    final StateDecoratingIterator iterator = new StateDecoratingIterator(
+        exceptionIterator,
+        stateManager,
+        NAME_NAMESPACE_PAIR,
+        UUID_FIELD_NAME,
+        RECORD_VALUE_1,
+        JsonSchemaPrimitive.STRING,
+        0);
+    assertEquals(RECORD_MESSAGE_1, iterator.next());
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    assertEquals(RECORD_MESSAGE_3, iterator.next());
+    // since stateEmission is not set to emit frequently, this will catch the error but not emit state
+    // message since it wasn't in a ready state
+    // of having a frequency > 0 but will prevent an exception from causing the iterator to fail by
+    // marking iterator as endOfData()
+    assertFalse(iterator.hasNext());
+  }
+
+  @Test
   void testEmptyStream() {
     final StateDecoratingIterator iterator = new StateDecoratingIterator(
         Collections.emptyIterator(),
@@ -169,7 +249,7 @@ class StateDecoratingIteratorTest {
 
     // UTF8 null \u0000 is removed from the cursor value in the state message
     final AirbyteMessage stateMessageWithNull = STATE_MESSAGE_1;
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, recordValueWithNull)).thenReturn(stateMessageWithNull.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, recordValueWithNull, 1L)).thenReturn(stateMessageWithNull.getState());
 
     messageIterator = MoreIterators.of(recordMessageWithNull);
 
@@ -291,11 +371,17 @@ class StateDecoratingIteratorTest {
    * start with `F1 > 16` and skip record 3.
    * <p/>
    * So intermediate state emission should only happen when all records with the same cursor value has
-   * been synced to destination. Reference: https://github.com/airbytehq/airbyte/issues/15427
+   * been synced to destination. Reference:
+   * <a href="https://github.com/airbytehq/airbyte/issues/15427">link</a>
    */
   @Test
   @DisplayName("When there are multiple records with the same cursor value")
   void testStateEmissionForRecordsSharingSameCursorValue() {
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_2, 2L)).thenReturn(STATE_MESSAGE_2.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_3, 3L)).thenReturn(STATE_MESSAGE_3.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_4, 1L)).thenReturn(STATE_MESSAGE_4.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_5, 2L)).thenReturn(STATE_MESSAGE_5.getState());
+
     messageIterator = MoreIterators.of(
         RECORD_MESSAGE_2, RECORD_MESSAGE_2,
         RECORD_MESSAGE_3, RECORD_MESSAGE_3, RECORD_MESSAGE_3,

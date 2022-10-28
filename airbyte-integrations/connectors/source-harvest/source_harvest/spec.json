@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/harvest",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/harvest",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Harvest Spec",

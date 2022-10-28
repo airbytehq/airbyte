@@ -107,3 +107,17 @@ spec:
             limits:
               cpu: 0.5
               memory: 128Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbyte-cron
+spec:
+  template:
+    spec:
+      containers:
+        - name: airbyte-cron-container
+          resources:
+            limits:
+              cpu: 0.5
+              memory: 128Mi

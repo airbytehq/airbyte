@@ -1,10 +1,9 @@
-ARG JDK_VERSION=19-slim-bullseye
-ARG JDK_IMAGE=openjdk:${JDK_VERSION}
+ARG JDK_IMAGE=airbyte/airbyte-base-java-image:1.0
 FROM ${JDK_IMAGE} AS server
 
 EXPOSE 8000
 
-ARG VERSION=0.40.0-alpha
+ARG VERSION=0.40.17
 
 ENV APPLICATION airbyte-server
 ENV VERSION ${VERSION}

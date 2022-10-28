@@ -8,9 +8,9 @@
           "type": "object",
           "properties": {
             "api_key": {
-                "type": "string",
-                "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
-                "airbyte_secret": true
+              "type": "string",
+              "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
+              "airbyte_secret": true
             }
           }
         },
@@ -27,9 +27,9 @@
           "type": "object",
           "properties": {
             "api_key": {
-                "type": "string",
-                "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
-                "airbyte_secret": true
+              "type": "string",
+              "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
+              "airbyte_secret": true
             }
           }
         },
@@ -46,9 +46,9 @@
           "type": "object",
           "properties": {
             "api_key": {
-                "type": "string",
-                "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
-                "airbyte_secret": true
+              "type": "string",
+              "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
+              "airbyte_secret": true
             }
           }
         },
@@ -65,9 +65,9 @@
           "type": "object",
           "properties": {
             "api_key": {
-                "type": "string",
-                "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
-                "airbyte_secret": true
+              "type": "string",
+              "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
+              "airbyte_secret": true
             }
           }
         },
@@ -84,9 +84,9 @@
           "type": "object",
           "properties": {
             "api_key": {
-                "type": "string",
-                "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
-                "airbyte_secret": true
+              "type": "string",
+              "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
+              "airbyte_secret": true
             }
           }
         },
@@ -103,9 +103,9 @@
           "type": "object",
           "properties": {
             "api_key": {
-                "type": "string",
-                "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
-                "airbyte_secret": true
+              "type": "string",
+              "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
+              "airbyte_secret": true
             }
           }
         },
@@ -122,9 +122,9 @@
           "type": "object",
           "properties": {
             "api_key": {
-                "type": "string",
-                "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
-                "airbyte_secret": true
+              "type": "string",
+              "description": "Hubplanner API key. See  <a href=\"https://github.com/hubplanner/API#authentication\" target=\"_blank\">here</a> for more details.",
+              "airbyte_secret": true
             }
           }
         },

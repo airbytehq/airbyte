@@ -15,19 +15,26 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OP
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.OPERATION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
 import static org.jooq.impl.DSL.asterisk;
+import static org.jooq.impl.DSL.groupConcat;
+import static org.jooq.impl.DSL.noCondition;
+import static org.jooq.impl.DSL.select;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.Geography;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -52,6 +59,8 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +89,8 @@ import org.slf4j.LoggerFactory;
 public class ConfigRepository {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigRepository.class);
+  private static final String OPERATION_IDS_AGG_FIELD = "operation_ids_agg";
+  private static final String OPERATION_IDS_AGG_DELIMITER = ",";
 
   private final ConfigPersistence persistence;
   private final ExceptionWrappingDatabase database;
@@ -87,6 +98,10 @@ public class ConfigRepository {
   public ConfigRepository(final ConfigPersistence persistence, final Database database) {
     this.persistence = persistence;
     this.database = new ExceptionWrappingDatabase(database);
+  }
+
+  public ConfigPersistence getConfigPersistence() {
+    return persistence;
   }
 
   /**
@@ -106,7 +121,7 @@ public class ConfigRepository {
     return true;
   }
 
-  public StandardWorkspace getStandardWorkspace(final UUID workspaceId, final boolean includeTombstone)
+  public StandardWorkspace getStandardWorkspaceNoSecrets(final UUID workspaceId, final boolean includeTombstone)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardWorkspace workspace = persistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), StandardWorkspace.class);
 
@@ -129,10 +144,7 @@ public class ConfigRepository {
           .where(WORKSPACE.SLUG.eq(slug)).andNot(WORKSPACE.TOMBSTONE)).fetch();
     }
 
-    if (result.size() == 0) {
-      return Optional.empty();
-    }
-    return Optional.of(DbConverter.buildStandardWorkspace(result.get(0)));
+    return result.stream().findFirst().map(DbConverter::buildStandardWorkspace);
   }
 
   public StandardWorkspace getWorkspaceBySlug(final String slug, final boolean includeTombstone)
@@ -153,12 +165,21 @@ public class ConfigRepository {
     return workspaces;
   }
 
-  public void writeStandardWorkspace(final StandardWorkspace workspace) throws JsonValidationException, IOException {
+  /**
+   * MUST NOT ACCEPT SECRETS - Should only be called from { @link SecretsRepositoryWriter }
+   *
+   * Write a StandardWorkspace to the database.
+   *
+   * @param workspace - The configuration of the workspace
+   * @throws JsonValidationException - throws is the workspace is invalid
+   * @throws IOException - you never know when you IO
+   */
+  public void writeStandardWorkspaceNoSecrets(final StandardWorkspace workspace) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
   }
 
   public void setFeedback(final UUID workflowId) throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardWorkspace workspace = getStandardWorkspace(workflowId, false);
+    final StandardWorkspace workspace = getStandardWorkspaceNoSecrets(workflowId, false);
 
     workspace.setFeedbackDone(true);
 
@@ -168,10 +189,16 @@ public class ConfigRepository {
   public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
 
-    return persistence.getConfig(
+    final StandardSourceDefinition sourceDef = persistence.getConfig(
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
         sourceDefinitionId.toString(),
         StandardSourceDefinition.class);
+    // Make sure we have a default version of the Protocol.
+    // This corner case may happen for connectors that haven't been upgraded since we added versioning.
+    if (sourceDef != null) {
+      return sourceDef.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(sourceDef.getProtocolVersion()).serialize());
+    }
+    return null;
   }
 
   public StandardSourceDefinition getSourceDefinitionFromSource(final UUID sourceId) {
@@ -196,7 +223,7 @@ public class ConfigRepository {
     try {
       final StandardSync sync = getStandardSync(connectionId);
       final SourceConnection source = getSourceConnection(sync.getSourceId());
-      return getStandardWorkspace(source.getWorkspaceId(), isTombstone);
+      return getStandardWorkspaceNoSecrets(source.getWorkspaceId(), isTombstone);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -206,6 +233,8 @@ public class ConfigRepository {
     final List<StandardSourceDefinition> sourceDefinitions = new ArrayList<>();
     for (final StandardSourceDefinition sourceDefinition : persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION,
         StandardSourceDefinition.class)) {
+      sourceDefinition.withProtocolVersion(AirbyteProtocolVersion
+          .getWithDefault(sourceDefinition.getSpec() != null ? sourceDefinition.getSpec().getProtocolVersion() : null).serialize());
       if (!MoreBooleans.isTruthy(sourceDefinition.getTombstone()) || includeTombstone) {
         sourceDefinitions.add(sourceDefinition);
       }
@@ -278,8 +307,15 @@ public class ConfigRepository {
 
   public StandardDestinationDefinition getStandardDestinationDefinition(final UUID destinationDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefinitionId.toString(),
-        StandardDestinationDefinition.class);
+    final StandardDestinationDefinition destDef =
+        persistence.getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefinitionId.toString(),
+            StandardDestinationDefinition.class);
+    // Make sure we have a default version of the Protocol.
+    // This corner case may happen for connectors that haven't been upgraded since we added versioning.
+    if (destDef != null) {
+      return destDef.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(destDef.getProtocolVersion()).serialize());
+    }
+    return null;
   }
 
   public StandardDestinationDefinition getDestinationDefinitionFromDestination(final UUID destinationId) {
@@ -306,6 +342,8 @@ public class ConfigRepository {
 
     for (final StandardDestinationDefinition destinationDefinition : persistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION,
         StandardDestinationDefinition.class)) {
+      destinationDefinition.withProtocolVersion(AirbyteProtocolVersion
+          .getWithDefault(destinationDefinition.getSpec() != null ? destinationDefinition.getSpec().getProtocolVersion() : null).serialize());
       if (!MoreBooleans.isTruthy(destinationDefinition.getTombstone()) || includeTombstone) {
         destinationDefinitions.add(destinationDefinition);
       }
@@ -554,6 +592,23 @@ public class ConfigRepository {
   }
 
   /**
+   * Returns all sources for a workspace. Does not contain secrets.
+   *
+   * @param workspaceId - id of the workspace
+   * @return sources
+   * @throws JsonValidationException - throws if returned sources are invalid
+   * @throws IOException - you never know when you IO
+   */
+  public List<SourceConnection> listWorkspaceSourceConnection(final UUID workspaceId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
+        .from(ACTOR)
+        .where(ACTOR.ACTOR_TYPE.eq(ActorType.source))
+        .and(ACTOR.WORKSPACE_ID.eq(workspaceId))
+        .andNot(ACTOR.TOMBSTONE).fetch());
+    return result.stream().map(DbConverter::buildSourceConnection).collect(Collectors.toList());
+  }
+
+  /**
    * Returns destination with a given id. Does not contain secrets. To hydrate with secrets see
    * { @link SecretsRepositoryReader#getDestinationConnectionWithSecrets(final UUID destinationId) }.
    *
@@ -595,6 +650,54 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
   }
 
+  /**
+   * Returns all destinations for a workspace. Does not contain secrets.
+   *
+   * @param workspaceId - id of the workspace
+   * @return destinations
+   * @throws IOException - you never know when you IO
+   */
+  public List<DestinationConnection> listWorkspaceDestinationConnection(UUID workspaceId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
+        .from(ACTOR)
+        .where(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
+        .and(ACTOR.WORKSPACE_ID.eq(workspaceId))
+        .andNot(ACTOR.TOMBSTONE).fetch());
+    return result.stream().map(DbConverter::buildDestinationConnection).collect(Collectors.toList());
+  }
+
+  /**
+   * Returns all active sources using a definition
+   *
+   * @param definitionId - id for the definition
+   * @return sources
+   * @throws IOException
+   */
+  public List<SourceConnection> listSourcesForDefinition(UUID definitionId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
+        .from(ACTOR)
+        .where(ACTOR.ACTOR_TYPE.eq(ActorType.source))
+        .and(ACTOR.ACTOR_DEFINITION_ID.eq(definitionId))
+        .andNot(ACTOR.TOMBSTONE).fetch());
+    return result.stream().map(DbConverter::buildSourceConnection).collect(Collectors.toList());
+  }
+
+  /**
+   * Returns all active destinations using a definition
+   *
+   * @param definitionId - id for the definition
+   * @return destinations
+   * @throws IOException
+   */
+  public List<DestinationConnection> listDestinationsForDefinition(UUID definitionId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
+        .from(ACTOR)
+        .where(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
+        .and(ACTOR.ACTOR_DEFINITION_ID.eq(definitionId))
+        .andNot(ACTOR.TOMBSTONE).fetch());
+    return result.stream().map(DbConverter::buildDestinationConnection).collect(Collectors.toList());
+  }
+
   public StandardSync getStandardSync(final UUID connectionId) throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(ConfigSchema.STANDARD_SYNC, connectionId.toString(), StandardSync.class);
   }
@@ -603,41 +706,73 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.STANDARD_SYNC, standardSync.getConnectionId().toString(), standardSync);
   }
 
-  public List<StandardSync> listStandardSyncs() throws ConfigNotFoundException, IOException, JsonValidationException {
+  public List<StandardSync> listStandardSyncs() throws IOException, JsonValidationException {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class);
   }
 
   public List<StandardSync> listStandardSyncsUsingOperation(final UUID operationId)
       throws IOException {
-    final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
+
+    final Result<Record> connectionAndOperationIdsResult = database.query(ctx -> ctx
+        // SELECT connection.* plus the connection's associated operationIds as a concatenated list
+        .select(
+            CONNECTION.asterisk(),
+            groupConcat(CONNECTION_OPERATION.OPERATION_ID).separator(OPERATION_IDS_AGG_DELIMITER).as(OPERATION_IDS_AGG_FIELD))
         .from(CONNECTION)
-        .join(CONNECTION_OPERATION)
-        .on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
-        .where(CONNECTION_OPERATION.OPERATION_ID.eq(operationId))).fetch();
-    return getStandardSyncsFromResult(result);
+
+        // inner join with all connection_operation rows that match the connection's id
+        .join(CONNECTION_OPERATION).on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
+
+        // only keep rows for connections that have an operationId that matches the input.
+        // needs to be a sub query because we want to keep all operationIds for matching connections
+        // in the main query
+        .where(CONNECTION.ID.in(
+            select(CONNECTION.ID).from(CONNECTION).join(CONNECTION_OPERATION).on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
+                .where(CONNECTION_OPERATION.OPERATION_ID.eq(operationId))))
+
+        // group by connection.id so that the groupConcat above works
+        .groupBy(CONNECTION.ID)).fetch();
+
+    return getStandardSyncsFromResult(connectionAndOperationIdsResult);
   }
 
-  public List<StandardSync> listWorkspaceStandardSyncs(final UUID workspaceId) throws IOException {
-    final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
+  public List<StandardSync> listWorkspaceStandardSyncs(final UUID workspaceId, final boolean includeDeleted) throws IOException {
+    final Result<Record> connectionAndOperationIdsResult = database.query(ctx -> ctx
+        // SELECT connection.* plus the connection's associated operationIds as a concatenated list
+        .select(
+            CONNECTION.asterisk(),
+            groupConcat(CONNECTION_OPERATION.OPERATION_ID).separator(OPERATION_IDS_AGG_DELIMITER).as(OPERATION_IDS_AGG_FIELD))
         .from(CONNECTION)
+
+        // left join with all connection_operation rows that match the connection's id.
+        // left join includes connections that don't have any connection_operations
+        .leftJoin(CONNECTION_OPERATION).on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
+
+        // join with source actors so that we can filter by workspaceId
         .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
-        .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).fetch();
-    return getStandardSyncsFromResult(result);
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId)
+            .and(includeDeleted ? noCondition() : CONNECTION.STATUS.notEqual(StatusType.deprecated)))
+
+        // group by connection.id so that the groupConcat above works
+        .groupBy(CONNECTION.ID)).fetch();
+
+    return getStandardSyncsFromResult(connectionAndOperationIdsResult);
   }
 
-  private List<StandardSync> getStandardSyncsFromResult(final Result<Record> result) throws IOException {
+  private List<StandardSync> getStandardSyncsFromResult(final Result<Record> connectionAndOperationIdsResult) {
     final List<StandardSync> standardSyncs = new ArrayList<>();
-    for (final Record record : result) {
-      final UUID connectionId = record.get(CONNECTION.ID);
-      final Result<Record> connectionOperationRecords = database.query(ctx -> ctx.select(asterisk())
-          .from(CONNECTION_OPERATION)
-          .where(CONNECTION_OPERATION.CONNECTION_ID.eq(connectionId))
-          .fetch());
 
-      final List<UUID> connectionOperationIds =
-          connectionOperationRecords.stream().map(r -> r.get(CONNECTION_OPERATION.OPERATION_ID)).collect(Collectors.toList());
-      standardSyncs.add(DbConverter.buildStandardSync(record, connectionOperationIds));
+    for (final Record record : connectionAndOperationIdsResult) {
+      final String operationIdsFromRecord = record.get(OPERATION_IDS_AGG_FIELD, String.class);
+
+      // can be null when connection has no connectionOperations
+      final List<UUID> operationIds = operationIdsFromRecord == null
+          ? Collections.emptyList()
+          : Arrays.stream(operationIdsFromRecord.split(OPERATION_IDS_AGG_DELIMITER)).map(UUID::fromString).toList();
+
+      standardSyncs.add(DbConverter.buildStandardSync(record, operationIds));
     }
+
     return standardSyncs;
   }
 
@@ -716,10 +851,7 @@ public class ConfigRepository {
           ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID.eq(sourceDefinitionId)).fetch();
     });
 
-    if (result.size() == 0) {
-      return Optional.empty();
-    }
-    return Optional.of(DbConverter.buildSourceOAuthParameter(result.get(0)));
+    return result.stream().findFirst().map(DbConverter::buildSourceOAuthParameter);
   }
 
   public void writeSourceOAuthParam(final SourceOAuthParameter sourceOAuthParameter) throws JsonValidationException, IOException {
@@ -745,10 +877,7 @@ public class ConfigRepository {
           ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID.eq(destinationDefinitionId)).fetch();
     });
 
-    if (result.size() == 0) {
-      return Optional.empty();
-    }
-    return Optional.of(DbConverter.buildDestinationOAuthParameter(result.get(0)));
+    return result.stream().findFirst().map(DbConverter::buildDestinationOAuthParameter);
   }
 
   public void writeDestinationOAuthParam(final DestinationOAuthParameter destinationOAuthParameter) throws JsonValidationException, IOException {
@@ -786,10 +915,66 @@ public class ConfigRepository {
     return result;
   }
 
+  // Data-carrier records to hold combined result of query for a Source or Destination and its
+  // corresponding Definition. This enables the API layer to
+  // process combined information about a Source/Destination/Definition pair without requiring two
+  // separate queries and in-memory join operation,
+  // because the config models are grouped immediately in the repository layer.
+  @VisibleForTesting
+  public record SourceAndDefinition(SourceConnection source, StandardSourceDefinition definition) {
+
+  }
+
+  @VisibleForTesting
+  public record DestinationAndDefinition(DestinationConnection destination, StandardDestinationDefinition definition) {
+
+  }
+
+  public List<SourceAndDefinition> getSourceAndDefinitionsFromSourceIds(final List<UUID> sourceIds) throws IOException {
+    final Result<Record> records = database.query(ctx -> ctx
+        .select(ACTOR.asterisk(), ACTOR_DEFINITION.asterisk())
+        .from(ACTOR)
+        .join(ACTOR_DEFINITION)
+        .on(ACTOR.ACTOR_DEFINITION_ID.eq(ACTOR_DEFINITION.ID))
+        .where(ACTOR.ACTOR_TYPE.eq(ActorType.source), ACTOR.ID.in(sourceIds))
+        .fetch());
+
+    final List<SourceAndDefinition> sourceAndDefinitions = new ArrayList<>();
+
+    for (final Record record : records) {
+      final SourceConnection source = DbConverter.buildSourceConnection(record);
+      final StandardSourceDefinition definition = DbConverter.buildStandardSourceDefinition(record);
+      sourceAndDefinitions.add(new SourceAndDefinition(source, definition));
+    }
+
+    return sourceAndDefinitions;
+  }
+
+  public List<DestinationAndDefinition> getDestinationAndDefinitionsFromDestinationIds(final List<UUID> destinationIds) throws IOException {
+    final Result<Record> records = database.query(ctx -> ctx
+        .select(ACTOR.asterisk(), ACTOR_DEFINITION.asterisk())
+        .from(ACTOR)
+        .join(ACTOR_DEFINITION)
+        .on(ACTOR.ACTOR_DEFINITION_ID.eq(ACTOR_DEFINITION.ID))
+        .where(ACTOR.ACTOR_TYPE.eq(ActorType.destination), ACTOR.ID.in(destinationIds))
+        .fetch());
+
+    final List<DestinationAndDefinition> destinationAndDefinitions = new ArrayList<>();
+
+    for (final Record record : records) {
+      final DestinationConnection destination = DbConverter.buildDestinationConnection(record);
+      final StandardDestinationDefinition definition = DbConverter.buildStandardDestinationDefinition(record);
+      destinationAndDefinitions.add(new DestinationAndDefinition(destination, definition));
+    }
+
+    return destinationAndDefinitions;
+  }
+
   public ActorCatalog getActorCatalogById(final UUID actorCatalogId)
       throws IOException, ConfigNotFoundException {
     final Result<Record> result = database.query(ctx -> ctx.select(ACTOR_CATALOG.asterisk())
         .from(ACTOR_CATALOG).where(ACTOR_CATALOG.ID.eq(actorCatalogId))).fetch();
+
     if (result.size() > 0) {
       return DbConverter.buildActorCatalog(result.get(0));
     }
@@ -807,8 +992,8 @@ public class ConfigRepository {
    * @return the db identifier for the cached catalog.
    */
   private UUID getOrInsertActorCatalog(final AirbyteCatalog airbyteCatalog,
-                                       final DSLContext context) {
-    final OffsetDateTime timestamp = OffsetDateTime.now();
+                                       final DSLContext context,
+                                       final OffsetDateTime timestamp) {
     final HashFunction hashFunction = Hashing.murmur3_32_fixed();
     final String catalogHash = hashFunction.hashBytes(Jsons.serialize(airbyteCatalog).getBytes(
         Charsets.UTF_8)).toString();
@@ -842,11 +1027,33 @@ public class ConfigRepository {
         .and(ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH.eq(configHash))
         .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1)).fetch();
 
-    if (records.size() >= 1) {
-      return Optional.of(DbConverter.buildActorCatalog(records.get(0)));
-    }
-    return Optional.empty();
+    return records.stream().findFirst().map(DbConverter::buildActorCatalog);
+  }
 
+  public Optional<ActorCatalogFetchEvent> getMostRecentActorCatalogFetchEventForSource(final UUID sourceId) throws IOException {
+
+    final Result<Record> records = database.query(ctx -> ctx.select(ACTOR_CATALOG_FETCH_EVENT.asterisk())
+        .from(ACTOR_CATALOG_FETCH_EVENT)
+        .where(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID.eq(sourceId))
+        .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1).fetch());
+
+    return records.stream().findFirst().map(DbConverter::buildActorCatalogFetchEvent);
+  }
+
+  public Map<UUID, ActorCatalogFetchEvent> getMostRecentActorCatalogFetchEventForSources(final List<UUID> sourceIds)
+      throws IOException {
+
+    return database.query(ctx -> ctx.fetch(
+        """
+        select actor_catalog_id, actor_id, created_at from
+          (select actor_catalog_id, actor_id, created_at, rank() over (partition by actor_id order by created_at desc) as creation_order_rank
+          from public.actor_catalog_fetch_event
+          ) table_with_rank
+        where creation_order_rank = 1;
+        """))
+        .stream().map(DbConverter::buildActorCatalogFetchEvent)
+        .collect(Collectors.toMap(record -> record.getActorId(),
+            record -> record));
   }
 
   /**
@@ -874,7 +1081,7 @@ public class ConfigRepository {
     final OffsetDateTime timestamp = OffsetDateTime.now();
     final UUID fetchEventID = UUID.randomUUID();
     return database.transaction(ctx -> {
-      final UUID catalogId = getOrInsertActorCatalog(catalog, ctx);
+      final UUID catalogId = getOrInsertActorCatalog(catalog, ctx, timestamp);
       ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
           .set(ACTOR_CATALOG_FETCH_EVENT.ID, fetchEventID)
           .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID, actorId)
@@ -994,6 +1201,14 @@ public class ConfigRepository {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSync standardSync = getStandardSync(connectionId);
     return standardSync.getCatalog();
+  }
+
+  public Geography getGeographyForConnection(final UUID connectionId) throws IOException {
+    return database.query(ctx -> ctx.select(CONNECTION.GEOGRAPHY)
+        .from(CONNECTION)
+        .where(CONNECTION.ID.eq(connectionId))
+        .limit(1))
+        .fetchOneInto(Geography.class);
   }
 
 }

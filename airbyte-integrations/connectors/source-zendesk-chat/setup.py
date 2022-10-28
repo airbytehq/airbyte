@@ -11,7 +11,7 @@ MAIN_REQUIREMENTS = [
     "requests==2.25.1",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock"]
+TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock", "requests_mock"]
 
 setup(
     name="source_zendesk_chat",

@@ -24,11 +24,10 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
-from deepdiff import DeepDiff
 from docker.errors import ContainerError
 from jsonschema._utils import flatten
 from source_acceptance_test.base import BaseTest
-from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig, DiscoveryTestConfig, SpecTestConfig
+from source_acceptance_test.config import BasicReadTestConfig, Config, ConnectionTestConfig, DiscoveryTestConfig, SpecTestConfig
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
 from source_acceptance_test.utils.backward_compatibility import CatalogDiffChecker, SpecDiffChecker, validate_previous_configs
 from source_acceptance_test.utils.common import find_all_values_for_key_in_schema, find_keyword_schema
@@ -45,15 +44,6 @@ class TestSpec(BaseTest):
 
     spec_cache: ConnectorSpecification = None
     previous_spec_cache: ConnectorSpecification = None
-
-    @staticmethod
-    def compute_spec_diff(actual_connector_spec: ConnectorSpecification, previous_connector_spec: ConnectorSpecification):
-        return DeepDiff(
-            previous_connector_spec.dict()["connectionSpecification"],
-            actual_connector_spec.dict()["connectionSpecification"],
-            view="tree",
-            ignore_order=True,
-        )
 
     @pytest.fixture(name="skip_backward_compatibility_tests")
     def skip_backward_compatibility_tests_fixture(self, inputs: SpecTestConfig, previous_connector_docker_runner: ConnectorRunner) -> bool:
@@ -185,13 +175,9 @@ class TestSpec(BaseTest):
         previous_connector_spec: ConnectorSpecification,
         number_of_configs_to_generate: int = 100,
     ):
-        """Check if the current spec is backward_compatible:
-        1. Perform multiple hardcoded syntactic checks with SpecDiffChecker.
-        2. Validate fake generated previous configs against the actual connector specification with validate_previous_configs.
-        """
+        """Check if the current spec is backward_compatible with the previous one"""
         assert isinstance(actual_connector_spec, ConnectorSpecification) and isinstance(previous_connector_spec, ConnectorSpecification)
-        spec_diff = self.compute_spec_diff(actual_connector_spec, previous_connector_spec)
-        checker = SpecDiffChecker(spec_diff)
+        checker = SpecDiffChecker(previous=previous_connector_spec.dict(), current=actual_connector_spec.dict())
         checker.assert_is_backward_compatible()
         validate_previous_configs(previous_connector_spec, actual_connector_spec, number_of_configs_to_generate)
 
@@ -235,17 +221,6 @@ class TestConnection(BaseTest):
 
 @pytest.mark.default_timeout(30)
 class TestDiscovery(BaseTest):
-    @staticmethod
-    def compute_discovered_catalog_diff(
-        discovered_catalog: MutableMapping[str, AirbyteStream], previous_discovered_catalog: MutableMapping[str, AirbyteStream]
-    ):
-        return DeepDiff(
-            {stream_name: airbyte_stream.dict().pop("json_schema") for stream_name, airbyte_stream in previous_discovered_catalog.items()},
-            {stream_name: airbyte_stream.dict().pop("json_schema") for stream_name, airbyte_stream in discovered_catalog.items()},
-            view="tree",
-            ignore_order=True,
-        )
-
     @pytest.fixture(name="skip_backward_compatibility_tests")
     def skip_backward_compatibility_tests_fixture(
         self, inputs: DiscoveryTestConfig, previous_connector_docker_runner: ConnectorRunner
@@ -340,13 +315,9 @@ class TestDiscovery(BaseTest):
         discovered_catalog: MutableMapping[str, AirbyteStream],
         previous_discovered_catalog: MutableMapping[str, AirbyteStream],
     ):
-        """Check if the current spec is backward_compatible:
-        1. Perform multiple hardcoded syntactic checks with SpecDiffChecker.
-        2. Validate fake generated previous configs against the actual connector specification with validate_previous_configs.
-        """
+        """Check if the current catalog is backward_compatible with the previous one."""
         assert isinstance(discovered_catalog, MutableMapping) and isinstance(previous_discovered_catalog, MutableMapping)
-        catalog_diff = self.compute_discovered_catalog_diff(discovered_catalog, previous_discovered_catalog)
-        checker = CatalogDiffChecker(catalog_diff)
+        checker = CatalogDiffChecker(previous_discovered_catalog, discovered_catalog)
         checker.assert_is_backward_compatible()
 
 
@@ -389,7 +360,10 @@ class TestBasicRead(BaseTest):
                 continue
             record_fields = set(get_object_structure(record.data))
             common_fields = set.intersection(record_fields, schema_pathes)
-            assert common_fields, f" Record from {record.stream} stream should have some fields mentioned by json schema, {schema_pathes}"
+
+            assert (
+                common_fields
+            ), f" Record {record} from {record.stream} stream with fields {record_fields} should have some fields mentioned by json schema: {schema_pathes}"
 
     @staticmethod
     def _validate_schema(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
@@ -411,13 +385,14 @@ class TestBasicRead(BaseTest):
         """
         Only certain streams allowed to be empty
         """
+        allowed_empty_stream_names = set([allowed_empty_stream.name for allowed_empty_stream in allowed_empty_streams])
         counter = Counter(record.stream for record in records)
 
         all_streams = set(stream.stream.name for stream in configured_catalog.streams)
         streams_with_records = set(counter.keys())
         streams_without_records = all_streams - streams_with_records
 
-        streams_without_records = streams_without_records - allowed_empty_streams
+        streams_without_records = streams_without_records - allowed_empty_stream_names
         assert not streams_without_records, f"All streams should return some records, streams without records: {streams_without_records}"
 
     def _validate_field_appears_at_least_once_in_stream(self, records: List, schema: Dict):
@@ -492,7 +467,9 @@ class TestBasicRead(BaseTest):
         expected_records: List[AirbyteRecordMessage],
         docker_runner: ConnectorRunner,
         detailed_logger,
+        test_strictness_level: Config.TestStrictnessLevel,
     ):
+        self.enforce_strictness_level(test_strictness_level, inputs)
         output = docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in filter_output(output, Type.RECORD)]
 
@@ -604,3 +581,11 @@ class TestBasicRead(BaseTest):
             result[record.stream].append(record.data)
 
         return result
+
+    @staticmethod
+    def enforce_strictness_level(test_strictness_level: Config.TestStrictnessLevel, inputs: BasicReadTestConfig):
+        if test_strictness_level is Config.TestStrictnessLevel.high:
+            if inputs.empty_streams:
+                all_empty_streams_have_bypass_reasons = all([bool(empty_stream.bypass_reason) for empty_stream in inputs.empty_streams])
+                if not all_empty_streams_have_bypass_reasons:
+                    pytest.fail("A bypass_reason must be filled in for all empty streams when test_strictness_level is set to high.")

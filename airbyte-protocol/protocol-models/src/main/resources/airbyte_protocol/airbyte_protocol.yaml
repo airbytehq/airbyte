@@ -4,6 +4,7 @@
 title: AirbyteProtocol
 type: object
 description: AirbyteProtocol structs
+version: 0.3.0
 properties:
   airbyte_message:
     "$ref": "#/definitions/AirbyteMessage"
@@ -153,6 +154,9 @@ definitions:
       message:
         description: "log message"
         type: string
+      stack_trace:
+        description: "an optional stack trace if the log message corresponds to an exception"
+        type: string
   AirbyteTraceMessage:
     type: object
     additionalProperties: true
@@ -224,8 +228,7 @@ definitions:
     required:
       - name
       - json_schema
-      # todo (cgardens) - make required once sources are migrated
-      # - supported_sync_modes
+      - supported_sync_modes
     properties:
       name:
         type: string
@@ -235,7 +238,9 @@ definitions:
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
       supported_sync_modes:
+        description: List of sync modes supported by this stream.
         type: array
+        minItems: 1
         items:
           "$ref": "#/definitions/SyncMode"
       source_defined_cursor:
@@ -427,6 +432,9 @@ definitions:
             type: string
           oauth_config_specification:
             "$ref": "#/definitions/OAuthConfigSpecification"
+      protocol_version:
+        description: "the Airbyte Protocol version supported by the connector. Protocol versioning uses SemVer. "
+        type: string
   OAuthConfigSpecification:
     type: object
     additionalProperties: true

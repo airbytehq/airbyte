@@ -1,5 +1,6 @@
 import GlobalStyle from "global-styles";
 import React, { Suspense } from "react";
+import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter as Router } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 
@@ -26,14 +27,14 @@ import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvide
 
 const messages = { ...en, ...cloudLocales };
 
-const StyleProvider: React.FC = ({ children }) => (
+const StyleProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <ThemeProvider theme={theme}>
     <GlobalStyle />
     {children}
   </ThemeProvider>
 );
 
-const Services: React.FC = ({ children }) => (
+const Services: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <AnalyticsProvider>
     <ApiErrorBoundary>
       <NotificationServiceProvider>
@@ -41,11 +42,17 @@ const Services: React.FC = ({ children }) => (
           <ModalServiceProvider>
             <FormChangeTrackerService>
               <FeatureService
-                features={[FeatureItem.AllowOAuthConnector, FeatureItem.AllowCreateConnection, FeatureItem.AllowSync]}
+                features={[
+                  FeatureItem.AllowOAuthConnector,
+                  FeatureItem.AllowSync,
+                  FeatureItem.AllowSyncSubOneHourCronExpressions,
+                ]}
               >
                 <AppServicesProvider>
                   <AuthenticationProvider>
-                    <IntercomProvider>{children}</IntercomProvider>
+                    <HelmetProvider>
+                      <IntercomProvider>{children}</IntercomProvider>
+                    </HelmetProvider>
                   </AuthenticationProvider>
                 </AppServicesProvider>
               </FeatureService>

@@ -1,0 +1,16 @@
+@use "../../../scss/variables";
+
+.title {
+  margin: variables.$spacing-xl 0;
+}
+
+.videos {
+  width: 425px;
+  height: 205px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: variables.$spacing-xl 0 50px;
+  background: url("./images/video-background.svg") no-repeat;
+  padding: 0 27px;
+}

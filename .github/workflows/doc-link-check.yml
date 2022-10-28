@@ -1,6 +1,7 @@
 # Perform link check on all markdown files
+# https://github.com/gaurav-nelson/github-action-markdown-link-check
 
-name: Doc Link Checker
+name: Check for broken links in docs
 
 on:
   workflow_dispatch:

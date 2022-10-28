@@ -379,6 +379,26 @@ def logs_instance():
 
 
 @pytest.fixture()
+def resource_set_instance(api_url):
+    """
+    Resource set object instance
+    """
+    _id = "iam5xyzmibarA6Afoo7"
+    return {
+        "id": _id,
+        "label": "all users",
+        "description": "all users",
+        "created": "2022-07-09T20:58:41.000Z",
+        "lastUpdated": "2022-07-09T20:58:41.000Z",
+        "_links": {
+            "bindings": {"href": f"{url_base}/iam/resource-sets/{_id}/bindings"},
+            "self": {"href": f"{url_base}/iam/resource-sets/{_id}"},
+            "resources": {"href": f"{url_base}/iam/resource-sets/{_id}/resources"},
+        },
+    }
+
+
+@pytest.fixture()
 def latest_record_instance(url_base, api_url):
     """
     Last Record instance object response

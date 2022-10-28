@@ -1,6 +1,27 @@
 {
   "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
+    "advertiser_id": {
+      "type": ["null", "integer"]
+    },
+    "adgroup_id": {
+      "type": ["null", "integer"]
+    },
+    "campaign_id": {
+      "type": ["null", "integer"]
+    },
+    "ad_id": {
+      "type": ["null", "integer"]
+    },
+    "stat_time_day": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "stat_time_hour": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "metrics": {
       "type": ["null", "object"],
       "properties": {

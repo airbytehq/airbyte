@@ -184,12 +184,6 @@ class Pages(IncrementalBigcommerceStream):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
-    def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        params = {"limit": self.limit}
-        return params
-
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
@@ -213,6 +207,29 @@ class Transactions(OrderSubstream):
     ) -> MutableMapping[str, Any]:
         params = {"limit": self.limit}
         return params
+
+
+class Channels(IncrementalBigcommerceStream):
+    data_field = "channels"
+    # Override `order_field` bacause Channels API do not acept `asc` value
+    order_field = "date_modified"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}"
+
+
+class Store(BigcommerceStream):
+    data_field = "store"
+    cursor_field = "store_id"
+    api_version = "v2"
+    data = None
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        json_response = response.json()
+        yield from [json_response]
 
 
 class BigcommerceAuthenticator(HttpAuthenticator):
@@ -254,4 +271,6 @@ class SourceBigcommerce(AbstractSource):
             Orders(**args),
             Transactions(**args),
             Products(**args),
+            Channels(**args),
+            Store(**args),
         ]

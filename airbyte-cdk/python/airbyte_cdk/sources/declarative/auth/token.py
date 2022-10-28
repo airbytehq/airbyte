@@ -6,6 +6,7 @@ import base64
 from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Union
 
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
@@ -13,7 +14,7 @@ from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class ApiKeyAuthenticator(AbstractHeaderAuthenticator, JsonSchemaMixin):
+class ApiKeyAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator, JsonSchemaMixin):
     """
     ApiKeyAuth sets a request header on the HTTP requests sent.
 
@@ -51,7 +52,7 @@ class ApiKeyAuthenticator(AbstractHeaderAuthenticator, JsonSchemaMixin):
 
 
 @dataclass
-class BearerAuthenticator(AbstractHeaderAuthenticator, JsonSchemaMixin):
+class BearerAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator, JsonSchemaMixin):
     """
     Authenticator that sets the Authorization header on the HTTP requests sent.
 
@@ -81,9 +82,9 @@ class BearerAuthenticator(AbstractHeaderAuthenticator, JsonSchemaMixin):
 
 
 @dataclass
-class BasicHttpAuthenticator(AbstractHeaderAuthenticator):
+class BasicHttpAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator, JsonSchemaMixin):
     """
-    Builds auth based off the basic authentication scheme as defined by RFC 7617, which transmits credentials as USER ID/password pairs, encoded using bas64
+    Builds auth based off the basic authentication scheme as defined by RFC 7617, which transmits credentials as USER ID/password pairs, encoded using base64
     https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme
 
     The header is of the form

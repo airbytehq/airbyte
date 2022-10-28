@@ -1,17 +1,15 @@
-import { getIn, useFormikContext } from "formik";
+import { useFormikContext } from "formik";
 import React, { useContext, useMemo } from "react";
 import { AnySchema } from "yup";
 
 import { Connector, ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
 import { WidgetConfigMap } from "core/form/types";
-import { FeatureItem, useFeature } from "hooks/services/Feature";
 
 import { ServiceFormValues } from "./types";
-import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "./utils";
 
 interface ServiceFormContext {
   formType: "source" | "destination";
-  getValues: (values: ServiceFormValues) => ServiceFormValues;
+  getValues: <T = unknown>(values: ServiceFormValues<T>) => ServiceFormValues<T>;
   widgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
   unfinishedFlows: Record<string, { startValue: string; id: number | string }>;
@@ -22,8 +20,6 @@ interface ServiceFormContext {
   selectedConnector?: ConnectorDefinitionSpecification;
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
-  isAuthFlowSelected?: boolean;
-  authFieldsToHide: string[];
   validationSchema: AnySchema;
 }
 
@@ -45,12 +41,12 @@ interface ServiceFormContextProviderProps {
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
   availableServices: ConnectorDefinition[];
-  getValues: (values: ServiceFormValues) => ServiceFormValues;
+  getValues: <T = unknown>(values: ServiceFormValues<T>) => ServiceFormValues<T>;
   selectedConnector?: ConnectorDefinitionSpecification;
   validationSchema: AnySchema;
 }
 
-export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProps> = ({
+export const ServiceFormContextProvider: React.FC<React.PropsWithChildren<ServiceFormContextProviderProps>> = ({
   availableServices,
   children,
   widgetsInfo,
@@ -64,7 +60,6 @@ export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProp
   isEditMode,
 }) => {
   const { values, resetForm } = useFormikContext<ServiceFormValues>();
-  const allowOAuthConnector = useFeature(FeatureItem.AllowOAuthConnector);
 
   const { serviceType } = values;
   const selectedService = useMemo(
@@ -72,29 +67,10 @@ export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProp
     [availableServices, serviceType]
   );
 
-  const isAuthFlowSelected = useMemo(
-    () =>
-      allowOAuthConnector &&
-      selectedConnector?.advancedAuth &&
-      selectedConnector?.advancedAuth.predicateValue ===
-        getIn(getValues(values), makeConnectionConfigurationPath(selectedConnector?.advancedAuth.predicateKey ?? [])),
-    [selectedConnector, allowOAuthConnector, values, getValues]
-  );
-
-  const authFieldsToHide = useMemo(
-    () =>
-      Object.values(serverProvidedOauthPaths(selectedConnector)).map((f) =>
-        makeConnectionConfigurationPath(f.path_in_connector_config)
-      ),
-    [selectedConnector]
-  );
-
   const ctx = useMemo<ServiceFormContext>(() => {
     const unfinishedFlows = widgetsInfo["_common.unfinishedFlows"] ?? {};
     return {
       widgetsInfo,
-      isAuthFlowSelected,
-      authFieldsToHide: isAuthFlowSelected ? authFieldsToHide : [],
       getValues,
       setUiWidgetsInfo,
       selectedService,
@@ -121,8 +97,6 @@ export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProp
     };
   }, [
     widgetsInfo,
-    isAuthFlowSelected,
-    authFieldsToHide,
     getValues,
     setUiWidgetsInfo,
     selectedService,

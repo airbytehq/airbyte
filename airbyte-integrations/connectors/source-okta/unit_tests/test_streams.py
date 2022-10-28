@@ -20,6 +20,7 @@ from source_okta.source import (
     Logs,
     OktaStream,
     Permissions,
+    ResourceSets,
     UserRoleAssignments,
     Users,
 )
@@ -126,7 +127,6 @@ class TestOktaStream:
 
         stream = TestIncrementalOktaStream(url_base=url_base, start_date=start_date)
         stream._cursor_field = "lastUpdated"
-
         current_stream_state = {"lastUpdated": "2021-04-21T21:03:55.000Z"}
         update_state = stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record_instance)
         expected_result = {"lastUpdated": "2022-07-18T07:58:11.000Z"}
@@ -360,3 +360,40 @@ class TestStreamUserRoleAssignment:
         stream = UserRoleAssignments(url_base=url_base, start_date=start_date)
         requests_mock.get(f"{api_url}/users?limit=200", json=[users_instance])
         assert list(stream.stream_slices()) == [{"user_id": "test_user_id"}]
+
+
+class TestStreamResourceSets:
+    def test_resource_sets(self, requests_mock, patch_base_class, resource_set_instance, url_base, api_url, start_date):
+        stream = ResourceSets(url_base=url_base, start_date=start_date)
+        record = {"resource-sets": [resource_set_instance]}
+        requests_mock.get(f"{api_url}/iam/resource-sets", json=record)
+        inputs = {"sync_mode": SyncMode.incremental}
+        assert list(stream.read_records(**inputs)) == record["resource-sets"]
+
+    def test_resource_sets_parse_response(self, requests_mock, patch_base_class, resource_set_instance, url_base, api_url, start_date):
+        stream = ResourceSets(url_base=url_base, start_date=start_date)
+        record = {"resource-sets": [resource_set_instance]}
+        requests_mock.get(f"{api_url}", json=record)
+        assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [resource_set_instance]
+
+    def test_resource_sets_next_page_token(self, requests_mock, patch_base_class, resource_set_instance, url_base, api_url, start_date):
+        stream = ResourceSets(url_base=url_base, start_date=start_date)
+        cursor = "iam5cursorFybecursor"
+        response = MagicMock(requests.Response)
+        next_link = f"{url_base}/iam/resource-sets?after={cursor}"
+        response.json = MagicMock(return_value={"_links": {"next": {"href": next_link}}, "resource-sets": [resource_set_instance]})
+        inputs = {"response": response}
+        result = stream.next_page_token(**inputs)
+        assert result == {"after": cursor}
+
+        response.json = MagicMock(return_value={"resource-sets": [resource_set_instance]})
+        inputs = {"response": response}
+        result = stream.next_page_token(**inputs)
+        assert result is None
+
+    def test_resource_sets_request_params(self, requests_mock, patch_base_class, resource_set_instance, url_base, api_url, start_date):
+        stream = ResourceSets(url_base=url_base, start_date=start_date)
+        cursor = "iam5cursorFybecursor"
+        inputs = {"stream_slice": None, "stream_state": {"id": cursor}, "next_page_token": None}
+        expected_params = {"limit": 200, "after": "iam5cursorFybecursor", "filter": 'id gt "iam5cursorFybecursor"'}
+        assert stream.request_params(**inputs) == expected_params

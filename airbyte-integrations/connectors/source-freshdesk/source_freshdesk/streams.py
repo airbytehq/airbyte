@@ -13,6 +13,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.auth import AuthBase
 from source_freshdesk.utils import CallCredit
 
@@ -24,6 +25,11 @@ class FreshdeskStream(HttpStream, ABC):
     result_return_limit = 100
     primary_key = "id"
     link_regex = re.compile(r'<(.*?)>;\s*rel="next"')
+    raise_on_http_errors = True
+    forbidden_stream = False
+
+    # regestring the default schema transformation
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], *args, **kwargs):
         super().__init__(authenticator=authenticator)
@@ -44,6 +50,16 @@ class FreshdeskStream(HttpStream, ABC):
         if response.status_code == requests.codes.too_many_requests:
             return float(response.headers.get("Retry-After", 0))
 
+    def should_retry(self, response: requests.Response) -> bool:
+        if isinstance(response.json(), dict):
+            if response.status_code == requests.codes.FORBIDDEN and response.json().get("code") == "require_feature":
+                self.forbidden_stream = True
+                setattr(self, "raise_on_http_errors", False)
+                self.logger.warn(f"Stream `{self.name}` is not available. {response.json().get('message')}")
+            else:
+                return super().should_retry(response)
+        return super().should_retry(response)
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         link_header = response.headers.get("Link")
         if not link_header:
@@ -57,7 +73,7 @@ class FreshdeskStream(HttpStream, ABC):
         return {"per_page": link_query_params["per_page"][0], "page": link_query_params["page"][0]}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = {"per_page": self.result_return_limit}
         if next_page_token and "page" in next_page_token:
@@ -83,7 +99,7 @@ class FreshdeskStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         data = response.json()
-        return data if data else []
+        return {} if self.forbidden_stream else data if data else []
 
 
 class IncrementalFreshdeskStream(FreshdeskStream, IncrementalMixin):
@@ -108,7 +124,7 @@ class IncrementalFreshdeskStream(FreshdeskStream, IncrementalMixin):
         self._cursor_value = value.get(self.cursor_field, self.start_date)
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params[self.cursor_filter] = stream_state.get(self.cursor_field, self.start_date)
@@ -301,7 +317,7 @@ class Tickets(IncrementalFreshdeskStream):
         return "tickets"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         includes = ["description", "requester", "stats"]

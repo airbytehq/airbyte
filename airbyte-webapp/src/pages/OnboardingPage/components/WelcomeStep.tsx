@@ -2,9 +2,9 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { BigButton } from "components/CenteredPageComponents";
+import { Button } from "components/ui/Button";
 
-import { useConfig } from "config";
+import { links } from "utils/links";
 
 import HighlightedText from "./HighlightedText";
 import TitlesBlock from "./TitlesBlock";
@@ -26,8 +26,6 @@ const Videos = styled.div`
 `;
 
 const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onNextStep }) => {
-  const config = useConfig();
-
   return (
     <>
       <TitlesBlock
@@ -65,12 +63,13 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onNextStep }) => {
         <VideoItem
           description={<FormattedMessage id="onboarding.exploreDemo" />}
           img="/videoCover.png"
-          link={config.links.demoLink}
+          link={links.demoLink}
         />
       </Videos>
-      <BigButton onClick={onNextStep} shadow>
+
+      <Button size="lg" onClick={onNextStep}>
         <FormattedMessage id="onboarding.firstConnection" />
-      </BigButton>
+      </Button>
     </>
   );
 };

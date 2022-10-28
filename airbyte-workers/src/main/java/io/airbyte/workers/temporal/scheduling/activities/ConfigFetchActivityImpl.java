@@ -4,7 +4,12 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import io.airbyte.config.Configs;
+import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
+
+import datadog.trace.api.Trace;
+import io.airbyte.commons.temporal.config.WorkerMode;
+import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.Cron;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.ScheduleType;
@@ -12,39 +17,56 @@ import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.metrics.lib.ApmTraceUtils;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.models.Job;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.temporal.exception.RetryableException;
+import io.micronaut.context.annotation.Requires;
+import io.micronaut.context.annotation.Value;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.text.ParseException;
 import java.time.DateTimeException;
 import java.time.Duration;
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.UUID;
 import java.util.function.Supplier;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTimeZone;
 import org.quartz.CronExpression;
 
-@AllArgsConstructor
 @Slf4j
+@Singleton
+@Requires(env = WorkerMode.CONTROL_PLANE)
 public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
   private final static long MS_PER_SECOND = 1000L;
   private final static long MIN_CRON_INTERVAL_SECONDS = 60;
 
-  private ConfigRepository configRepository;
-  private JobPersistence jobPersistence;
-  private Configs configs;
-  private Supplier<Long> currentSecondsSupplier;
+  private final ConfigRepository configRepository;
+  private final JobPersistence jobPersistence;
+  private final Integer syncJobMaxAttempts;
+  private final Supplier<Long> currentSecondsSupplier;
 
+  public ConfigFetchActivityImpl(final ConfigRepository configRepository,
+                                 final JobPersistence jobPersistence,
+                                 @Value("${airbyte.worker.sync.max-attempts}") final Integer syncJobMaxAttempts,
+                                 @Named("currentSecondsSupplier") final Supplier<Long> currentSecondsSupplier) {
+    this.configRepository = configRepository;
+    this.jobPersistence = jobPersistence;
+    this.syncJobMaxAttempts = syncJobMaxAttempts;
+    this.currentSecondsSupplier = currentSecondsSupplier;
+  }
+
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public ScheduleRetrieverOutput getTimeToWait(final ScheduleRetrieverInput input) {
     try {
+      ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, input.getConnectionId()));
       final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
 
       if (standardSync.getScheduleType() != null) {
@@ -64,7 +86,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
    *
    *         This method consumes the `scheduleType` and `scheduleData` fields.
    */
-  private ScheduleRetrieverOutput getTimeToWaitFromScheduleType(final StandardSync standardSync, UUID connectionId) throws IOException {
+  private ScheduleRetrieverOutput getTimeToWaitFromScheduleType(final StandardSync standardSync, final UUID connectionId) throws IOException {
     if (standardSync.getScheduleType() == ScheduleType.MANUAL || standardSync.getStatus() != Status.ACTIVE) {
       // Manual syncs wait for their first run
       return new ScheduleRetrieverOutput(Duration.ofDays(100 * 365));
@@ -103,7 +125,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
         final Duration timeToWait = Duration.ofSeconds(
             Math.max(0, nextRunStart.getTime() / MS_PER_SECOND - currentSecondsSupplier.get()));
         return new ScheduleRetrieverOutput(timeToWait);
-      } catch (ParseException e) {
+      } catch (final ParseException e) {
         throw (DateTimeException) new DateTimeException(e.getMessage()).initCause(e);
       }
     }
@@ -117,7 +139,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
    *
    *         This method consumes the `schedule` field.
    */
-  private ScheduleRetrieverOutput getTimeToWaitFromLegacy(final StandardSync standardSync, UUID connectionId) throws IOException {
+  private ScheduleRetrieverOutput getTimeToWaitFromLegacy(final StandardSync standardSync, final UUID connectionId) throws IOException {
     if (standardSync.getSchedule() == null || standardSync.getStatus() != Status.ACTIVE) {
       // Manual syncs wait for their first run
       return new ScheduleRetrieverOutput(Duration.ofDays(100 * 365));
@@ -142,9 +164,10 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
   }
 
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public GetMaxAttemptOutput getMaxAttempt() {
-    return new GetMaxAttemptOutput(configs.getSyncJobMaxAttempts());
+    return new GetMaxAttemptOutput(syncJobMaxAttempts);
   }
 
 }

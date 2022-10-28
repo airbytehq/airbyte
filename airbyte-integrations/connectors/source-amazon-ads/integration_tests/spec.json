@@ -31,7 +31,7 @@
         "type": "string"
       },
       "region": {
-        "title": "Region *",
+        "title": "Region",
         "description": "Region to pull data from (EU/NA/FE). See <a href=\"https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints\">docs</a> for more details.",
         "enum": ["NA", "EU", "FE"],
         "type": "string",
@@ -39,15 +39,15 @@
         "order": 4
       },
       "report_wait_timeout": {
-        "title": "Report Wait Timeout *",
-        "description": "Timeout duration in minutes for Reports. Default is 30 minutes.",
-        "default": 30,
-        "examples": [30, 120],
+        "title": "Report Wait Timeout",
+        "description": "Timeout duration in minutes for Reports. Default is 60 minutes.",
+        "default": 60,
+        "examples": [60, 120],
         "order": 5,
         "type": "integer"
       },
       "report_generation_max_retries": {
-        "title": "Report Generation Maximum Retries *",
+        "title": "Report Generation Maximum Retries",
         "description": "Maximum retries Airbyte will attempt for fetching report data. Default is 5.",
         "default": 5,
         "examples": [5, 10, 15],
@@ -55,20 +55,31 @@
         "type": "integer"
       },
       "start_date": {
-        "title": "Start Date (Optional)",
+        "title": "Start Date",
         "description": "The Start date for collecting reports, should not be more than 60 days in the past. In YYYY-MM-DD format",
         "examples": ["2022-10-10", "2022-10-22"],
         "order": 7,
         "type": "string"
       },
       "profiles": {
-        "title": "Profile IDs (Optional)",
+        "title": "Profile IDs",
         "description": "Profile IDs you want to fetch data for. See <a href=\"https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles\">docs</a> for more details.",
         "order": 8,
         "type": "array",
         "items": {
           "type": "integer"
         }
+      },
+      "state_filter": {
+        "title": "State Filter",
+        "description": "Reflects the state of the Display, Product, and Brand Campaign streams as enabled, paused, or archived. If you do not populate this field, it will be ignored completely.",
+        "items": {
+          "type": "string",
+          "enum": ["enabled", "paused", "archived"]
+        },
+        "type": "array",
+        "uniqueItems": true,
+        "order": 9
       }
     },
     "required": ["client_id", "client_secret", "refresh_token"],

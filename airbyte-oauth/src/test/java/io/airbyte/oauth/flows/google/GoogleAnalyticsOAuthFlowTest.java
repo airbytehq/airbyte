@@ -11,7 +11,7 @@ public class GoogleAnalyticsOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected BaseOAuthFlow getOAuthFlow() {
-    return new GoogleAnalyticsOAuthFlow(getConfigRepository(), getHttpClient(), this::getConstantState);
+    return new GoogleAnalyticsViewIdOAuthFlow(getConfigRepository(), getHttpClient(), this::getConstantState);
   }
 
   @Override
