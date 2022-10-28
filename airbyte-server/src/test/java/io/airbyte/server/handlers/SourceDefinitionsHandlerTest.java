@@ -40,6 +40,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.errors.IdNotFoundKnownException;
+import io.airbyte.server.errors.UnsupportedProtocolVersion;
 import io.airbyte.server.scheduler.SynchronousJobMetadata;
 import io.airbyte.server.scheduler.SynchronousResponse;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
@@ -390,7 +391,7 @@ class SourceDefinitionsHandlerTest {
                 .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest()))
             .jobSpecific(Collections.emptyList()));
 
-    assertThrows(RuntimeException.class, () -> sourceDefinitionsHandler.createPrivateSourceDefinition(create));
+    assertThrows(UnsupportedProtocolVersion.class, () -> sourceDefinitionsHandler.createPrivateSourceDefinition(create));
 
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
     verify(configRepository, never())
@@ -482,7 +483,7 @@ class SourceDefinitionsHandlerTest {
         .sourceDefinition(create)
         .workspaceId(workspaceId);
 
-    assertThrows(RuntimeException.class, () -> sourceDefinitionsHandler.createCustomSourceDefinition(customCreate));
+    assertThrows(UnsupportedProtocolVersion.class, () -> sourceDefinitionsHandler.createCustomSourceDefinition(customCreate));
 
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
     verify(configRepository, never()).writeCustomSourceDefinition(
@@ -547,7 +548,7 @@ class SourceDefinitionsHandlerTest {
     final StandardSourceDefinition updatedSource = Jsons.clone(this.sourceDefinition)
         .withDockerImageTag(newDockerImageTag).withSpec(newSpec).withProtocolVersion(newProtocolVersion);
 
-    assertThrows(RuntimeException.class, () -> sourceDefinitionsHandler
+    assertThrows(UnsupportedProtocolVersion.class, () -> sourceDefinitionsHandler
         .updateSourceDefinition(
             new SourceDefinitionUpdate().sourceDefinitionId(this.sourceDefinition.getSourceDefinitionId()).dockerImageTag(newDockerImageTag)));
 

@@ -37,6 +37,7 @@ import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.errors.InternalServerKnownException;
+import io.airbyte.server.errors.UnsupportedProtocolVersion;
 import io.airbyte.server.scheduler.SynchronousResponse;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.server.services.AirbyteGithubStore;
@@ -188,8 +189,7 @@ public class DestinationDefinitionsHandler {
         .withPublic(false)
         .withCustom(false);
     if (!protocolVersionRange.isSupported(new Version(destinationDefinition.getProtocolVersion()))) {
-      throw new RuntimeException(String.format("Airbyte Protocol Version %s is not supported. (Must be within [%s:%s])",
-          destinationDefinition.getProtocolVersion(), protocolVersionRange.getMin().serialize(), protocolVersionRange.getMax().serialize()));
+      throw new UnsupportedProtocolVersion(destinationDefinition.getProtocolVersion(), protocolVersionRange.getMin(), protocolVersionRange.getMax());
     }
     configRepository.writeStandardDestinationDefinition(destinationDefinition);
 
@@ -203,8 +203,7 @@ public class DestinationDefinitionsHandler {
             .withPublic(false)
             .withCustom(true);
     if (!protocolVersionRange.isSupported(new Version(destinationDefinition.getProtocolVersion()))) {
-      throw new RuntimeException(String.format("Airbyte Protocol Version %s is not supported. (Must be within [%s:%s])",
-          destinationDefinition.getProtocolVersion(), protocolVersionRange.getMin().serialize(), protocolVersionRange.getMax().serialize()));
+      throw new UnsupportedProtocolVersion(destinationDefinition.getProtocolVersion(), protocolVersionRange.getMin(), protocolVersionRange.getMax());
     }
     configRepository.writeCustomDestinationDefinition(destinationDefinition, customDestinationDefinitionCreate.getWorkspaceId());
 
@@ -252,8 +251,7 @@ public class DestinationDefinitionsHandler {
 
     final Version airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(spec.getProtocolVersion());
     if (!protocolVersionRange.isSupported(airbyteProtocolVersion)) {
-      throw new RuntimeException(String.format("Airbyte Protocol Version %s is not supported. (Must be within [%s:%s])",
-          airbyteProtocolVersion.serialize(), protocolVersionRange.getMin().serialize(), protocolVersionRange.getMax().serialize()));
+      throw new UnsupportedProtocolVersion(airbyteProtocolVersion, protocolVersionRange.getMin(), protocolVersionRange.getMax());
     }
 
     final StandardDestinationDefinition newDestination = new StandardDestinationDefinition()
