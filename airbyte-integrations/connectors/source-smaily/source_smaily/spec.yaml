@@ -1,0 +1,21 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/smaily
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Smaily Spec
+  type: object
+  required:
+    - api_subdomain
+    - api_username
+    - api_password
+  additionalProperties: true
+  properties:
+    api_subdomain:
+      type: string
+      description: API Subdomain
+    api_username:
+      type: string
+      description: API user username
+    api_password:
+      type: string
+      description: API user password
+      airbyte_secret: true
