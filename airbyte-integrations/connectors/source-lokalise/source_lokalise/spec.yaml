@@ -9,9 +9,11 @@ connectionSpecification:
   additionalProperties: true
   properties:
     api_key:
+      title: API Key
       type: string
       description: Lokalise API Key with read-access. Available at Profile settings > API tokens. See <a href="https://docs.lokalise.com/en/articles/1929556-api-tokens">here</a>.
       airbyte_secret: true
     project_id:
+      title: Project Id
       type: string
       description: Lokalise project ID. Available at Project Settings > General.

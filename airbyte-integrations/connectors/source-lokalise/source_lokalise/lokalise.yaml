@@ -3,22 +3,8 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: []
-  keys_selector:
-    extractor:
-      field_pointer: ["keys"]
-  languages_selector:
-    extractor:
-      field_pointer: ["languages"]
-  comments_selector:
-    extractor:
-      field_pointer: ["comments"]
-  contributors_selector:
-    extractor:
-      field_pointer: ["contributors"]
-  translations_selector:
-    extractor:
-      field_pointer: ["translations"]
+      field_pointer:
+        - "{{ options['name'] }}"
 
   requester:
     url_base: "https://api.lokalise.com"
@@ -57,8 +43,6 @@ definitions:
     # https://developers.lokalise.com/reference/list-all-keys
     $ref: "*ref(definitions.base_stream)"
     retriever:
-      record_selector:
-        $ref: "*ref(definitions.keys_selector)"
       paginator:
         $ref: "*ref(definitions.increment_paginator)"
       requester:
@@ -72,8 +56,6 @@ definitions:
     # https://developers.lokalise.com/reference/list-all-keys
     $ref: "*ref(definitions.base_stream)"
     retriever:
-      record_selector:
-        $ref: "*ref(definitions.languages_selector)"
       paginator:
         $ref: "*ref(definitions.increment_paginator)"
       requester:
@@ -87,8 +69,6 @@ definitions:
     # https://developers.lokalise.com/reference/list-project-comments
     $ref: "*ref(definitions.base_stream)"
     retriever:
-      record_selector:
-        $ref: "*ref(definitions.comments_selector)"
       paginator:
         $ref: "*ref(definitions.increment_paginator)"
       requester:
@@ -102,8 +82,6 @@ definitions:
     # https://developers.lokalise.com/reference/list-all-contributors
     $ref: "*ref(definitions.base_stream)"
     retriever:
-      record_selector:
-        $ref: "*ref(definitions.contributors_selector)"
       paginator:
         $ref: "*ref(definitions.increment_paginator)"
       requester:
@@ -117,8 +95,6 @@ definitions:
     # https://developers.lokalise.com/reference/list-all-translations
     $ref: "*ref(definitions.base_stream)"
     retriever:
-      record_selector:
-        $ref: "*ref(definitions.translations_selector)"
       paginator:
         $ref: "*ref(definitions.increment_paginator)"
       requester:
@@ -127,7 +103,6 @@ definitions:
       name: "translations"
       primary_key: "translation_id"
       path: "/api2/projects/{{ config['project_id'] }}/translations"
-
 
 streams:
   - "*ref(definitions.keys_stream)"
