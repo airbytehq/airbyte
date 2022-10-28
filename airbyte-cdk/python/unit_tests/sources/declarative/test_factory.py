@@ -69,9 +69,9 @@ def test_factory():
     request_options_provider = factory.create_component(config["request_options"], input_config)()
 
     assert type(request_options_provider) == InterpolatedRequestOptionsProvider
-    assert request_options_provider._parameter_interpolator._config == input_config
+    assert request_options_provider._parameter_interpolator.config == input_config
     assert request_options_provider._parameter_interpolator._interpolator.mapping["offset"] == "{{ next_page_token['offset'] }}"
-    assert request_options_provider._body_json_interpolator._config == input_config
+    assert request_options_provider._body_json_interpolator.config == input_config
     assert request_options_provider._body_json_interpolator._interpolator.mapping["body_offset"] == "{{ next_page_token['offset'] }}"
 
 
@@ -497,6 +497,7 @@ def test_create_composite_error_handler():
             - response_filters:
                 - http_codes: [ 403 ]
                   action: RETRY
+                  error_message: "Retryable error received: {{ response.message }}"
     """
     config = parser.parse(content)
 
@@ -508,6 +509,7 @@ def test_create_composite_error_handler():
     assert isinstance(component.error_handlers[0].response_filters[0], HttpResponseFilter)
     assert component.error_handlers[0].response_filters[0].predicate.condition == "{{ 'code' in response }}"
     assert component.error_handlers[1].response_filters[0].http_codes == [403]
+    assert component.error_handlers[1].response_filters[0].error_message.string == "Retryable error received: {{ response.message }}"
     assert isinstance(component, CompositeErrorHandler)
 
 

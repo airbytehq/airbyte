@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { act, render as tlr } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import React from "react";
+import selectEvent from "react-select-event";
 import mockConnection from "test-utils/mock-data/mockConnection.json";
 import mockDest from "test-utils/mock-data/mockDestinationDefinition.json";
 import { TestWrapper } from "test-utils/testutils";
 
 import { AirbyteCatalog } from "core/request/AirbyteClient";
+import { defaultFeatures, FeatureItem } from "hooks/services/Feature";
 import * as sourceHook from "hooks/services/useSourceHook";
 
 import { CreateConnectionForm } from "./CreateConnectionForm";
@@ -66,5 +69,73 @@ describe("CreateConnectionForm", () => {
 
     const renderResult = await render();
     expect(renderResult).toMatchSnapshot();
+  });
+
+  describe("cron expression validation", () => {
+    const INVALID_CRON_EXPRESSION = "invalid cron expression";
+    const CRON_EXPRESSION_EVERY_MINUTE = "* * * * * * ?";
+
+    it("should display an error for an invalid cron expression", async () => {
+      jest.spyOn(sourceHook, "useDiscoverSchema").mockImplementationOnce(() => baseUseDiscoverSchema);
+
+      const container = tlr(
+        <TestWrapper>
+          <CreateConnectionForm source={mockConnection.source} destination={mockConnection.destination} />
+        </TestWrapper>
+      );
+
+      await selectEvent.select(container.getByTestId("scheduleData"), /cron/i);
+
+      const cronExpressionInput = container.getByTestId("cronExpression");
+
+      userEvent.clear(cronExpressionInput);
+      await userEvent.type(cronExpressionInput, INVALID_CRON_EXPRESSION, { delay: 1 });
+
+      const errorMessage = container.getByText("Invalid cron expression");
+
+      expect(errorMessage).toBeInTheDocument();
+    });
+
+    it("should allow cron expressions under one hour when feature enabled", async () => {
+      jest.spyOn(sourceHook, "useDiscoverSchema").mockImplementationOnce(() => baseUseDiscoverSchema);
+
+      const container = tlr(
+        <TestWrapper>
+          <CreateConnectionForm source={mockConnection.source} destination={mockConnection.destination} />
+        </TestWrapper>
+      );
+
+      await selectEvent.select(container.getByTestId("scheduleData"), /cron/i);
+
+      const cronExpressionField = container.getByTestId("cronExpression");
+
+      await userEvent.type(cronExpressionField, `{selectall}${CRON_EXPRESSION_EVERY_MINUTE}`, { delay: 1 });
+
+      const errorMessage = container.queryByTestId("cronExpressionError");
+
+      expect(errorMessage).not.toBeInTheDocument();
+    });
+
+    it("should not allow cron expressions under one hour when feature not enabled", async () => {
+      jest.spyOn(sourceHook, "useDiscoverSchema").mockImplementationOnce(() => baseUseDiscoverSchema);
+
+      const featuresToInject = defaultFeatures.filter((f) => f !== FeatureItem.AllowSyncSubOneHourCronExpressions);
+
+      const container = tlr(
+        <TestWrapper features={featuresToInject}>
+          <CreateConnectionForm source={mockConnection.source} destination={mockConnection.destination} />
+        </TestWrapper>
+      );
+
+      await selectEvent.select(container.getByTestId("scheduleData"), /cron/i);
+
+      const cronExpressionField = container.getByTestId("cronExpression");
+
+      await userEvent.type(cronExpressionField, `{selectall}${CRON_EXPRESSION_EVERY_MINUTE}`, { delay: 1 });
+
+      const errorMessage = container.getByTestId("cronExpressionError");
+
+      expect(errorMessage).toBeInTheDocument();
+    });
   });
 });
