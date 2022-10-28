@@ -9,7 +9,9 @@ This source retrieves the latests news from the [Newsdata API](https://newsdata.
 This source is capable of syncing the following streams:
 
 * `latest`
-* `sources`
+* `sources` 
+  - __NOTE__: `category`, `language` and `country` input parameters only accept a single value, not multiple like `latest` stream. 
+  Thus, if several values are supplied, the first one will be the one to be used.
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 

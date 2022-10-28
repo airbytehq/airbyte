@@ -22,9 +22,6 @@ definitions:
       requester: 
         $ref: "*ref(definitions.base_requester)"
   common_inputs:
-    country: "{{ ','.join(config['country']) }}"
-    language: "{{ ','.join(config['language']) }}"
-    category: "{{ ','.join(config['category']) }}"
   latest_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -37,7 +34,9 @@ definitions:
         $ref: "*ref(definitions.base_requester)"
         request_options_provider:
           request_parameters:
-            $ref: "*ref(definitions.common_inputs)"
+            country: "{{ ','.join(config['country']) }}"
+            language: "{{ ','.join(config['language']) }}"
+            category: "{{ ','.join(config['category']) }}"
             q: "{{ config['query'] | urlencode }}"
             qInTitle: "{{ config['queryInTitle'] | urlencode }}"
             domain: "{{ ','.join(config['domain']) }}"
@@ -53,7 +52,9 @@ definitions:
         $ref: "*ref(definitions.base_requester)"
         request_options_provider:
           request_parameters:
-            $ref: "*ref(definitions.common_inputs)"
+            country: "{{ config['country'][0] }}"
+            language: "{{ config['language'][0] }}"
+            category: "{{ config['category'][0] }}"
   
 
 streams:
