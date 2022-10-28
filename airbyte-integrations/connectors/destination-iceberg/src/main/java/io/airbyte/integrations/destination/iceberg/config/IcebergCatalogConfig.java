@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import org.apache.iceberg.catalog.Catalog;
 
 /**
  * @author Leibniz on 2022/10/26.
@@ -16,6 +17,10 @@ public interface IcebergCatalogConfig {
     void check(S3Config destinationConfig);
 
     Map<String, String> sparkConfigMap(S3Config s3Config);
+
+    Catalog genCatalog(S3Config s3Config);
+
+    String getDefaultDatabase();
 
     static IcebergCatalogConfig fromDestinationConfig(@Nonnull final JsonNode config) {
         final JsonNode catalogConfig = config.get(ICEBERG_CATALOG_CONFIG_KEY);

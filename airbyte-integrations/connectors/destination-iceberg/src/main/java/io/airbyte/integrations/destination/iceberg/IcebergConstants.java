@@ -20,6 +20,7 @@ public class IcebergConstants {
     public static final String ICEBERG_CATALOG_CONFIG_KEY = "iceberg_catalog";
     public static final String ICEBERG_CATALOG_TYPE_CONFIG_KEY = "catalog_type";
     public static final String HIVE_THRIFT_URI_CONFIG_KEY = "hive_thrift_uri";
+    public static final String HIVE_DATABASE_CONFIG_KEY = "database";
 
     public static final String CATALOG_NAME = "iceberg";
     public static final String DEFAULT_DATABASE = "default";

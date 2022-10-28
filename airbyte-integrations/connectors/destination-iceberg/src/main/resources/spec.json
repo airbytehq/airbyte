@@ -148,6 +148,15 @@
                 "examples" : [
                   "host:port"
                 ]
+              },
+              "database" : {
+                "title" : "Default database",
+                "description" : "The default database tables are written to if the source does not specify a namespace. The usual value for this field is \"default\".",
+                "type" : "string",
+                "examples" : [
+                  "default"
+                ],
+                "default" : "default"
               }
             }
           }

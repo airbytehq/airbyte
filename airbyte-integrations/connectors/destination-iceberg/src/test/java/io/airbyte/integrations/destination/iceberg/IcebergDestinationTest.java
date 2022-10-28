@@ -48,7 +48,7 @@ class IcebergDestinationTest {
             .bucketRegion("fake-region")
             .endpoint("fake-endpoint")
             .credentialConfig(new S3AccessKeyCredentialConfig("fake-accessKeyId", "fake-secretAccessKey"))
-            .catalogConfig(new HiveCatalogConfig("fake-thrift-uri"))
+            .catalogConfig(new HiveCatalogConfig("fake-thrift-uri", "default"))
             .s3Client(s3)
             .build();
 

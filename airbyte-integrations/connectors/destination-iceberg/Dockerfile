@@ -17,7 +17,7 @@ ENV JAVA_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED \
     --add-opens java.base/java.lang.reflect=ALL-UNNAMED \
     --add-opens java.base/java.text=ALL-UNNAMED \
     --add-opens java.base/sun.nio.ch=ALL-UNNAMED \
-    --add-opens java.desktop/java.awt.font=ALL-UNNAMED"
+    --add-opens java.base/java.nio=ALL-UNNAMED "
 
 COPY --from=build /airbyte /airbyte
 

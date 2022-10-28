@@ -83,9 +83,14 @@ public class S3Config {
 
     private S3Config setProperty() {
         System.setProperty("aws.region", bucketRegion);
-        System.setProperty("aws.access.key.id", accessKeyId);
-        System.setProperty("aws.secret.access.key", secretKey);
+        System.setProperty("aws.accessKeyId", accessKeyId);
+        System.setProperty("aws.secretAccessKey", secretKey);
         return this;
+    }
+
+    public String warehousePath() {
+        String s3EndpointSchema = sslEnabled ? "https" : "http";
+        return "s3a://%s/%s".formatted(bucketName, bucketPath);
     }
 
     private static String getProperty(@Nonnull final JsonNode config, @Nonnull final String key) {
@@ -105,7 +110,7 @@ public class S3Config {
         }
     }
 
-    AmazonS3 resetS3Client() {
+    private AmazonS3 resetS3Client() {
         synchronized (lock) {
             if (s3Client != null) {
                 s3Client.shutdown();
@@ -115,8 +120,9 @@ public class S3Config {
         }
     }
 
-    protected AmazonS3 createS3Client() {
+    private AmazonS3 createS3Client() {
         log.info("Creating S3 client...");
+        log.info("S3 client config:{}", this);
 
         final AWSCredentialsProvider credentialsProvider = credentialConfig.getS3CredentialsProvider();
         final S3CredentialType credentialType = credentialConfig.getCredentialType();
