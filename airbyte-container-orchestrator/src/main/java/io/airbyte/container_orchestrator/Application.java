@@ -13,7 +13,6 @@ import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.KubePodInfo;
 import io.airbyte.workers.process.KubePodProcess;
-import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.storage.StateClients;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.runtime.Micronaut;
@@ -105,7 +104,7 @@ public class Application {
       final JobRunConfig jobRunConfig,
       final KubePodInfo kubePodInfo,
       final FeatureFlags featureFlags,
-      final ProcessFactory processFactory,
+//      final ProcessFactory processFactory,
       final JobOrchestrator<?> jobOrchestrator) {
     this.context = context;
     this.application = application;
