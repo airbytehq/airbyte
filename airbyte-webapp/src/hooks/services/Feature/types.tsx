@@ -5,6 +5,7 @@ export enum FeatureItem {
   AllowUpdateConnectors = "ALLOW_UPDATE_CONNECTORS",
   AllowOAuthConnector = "ALLOW_OAUTH_CONNECTOR",
   AllowSync = "ALLOW_SYNC",
+  AllowChangeDataGeographies = "ALLOW_CHANGE_DATA_GEOGRAPHIES",
 }
 
 export type FeatureSet = Record<FeatureItem, boolean>;
