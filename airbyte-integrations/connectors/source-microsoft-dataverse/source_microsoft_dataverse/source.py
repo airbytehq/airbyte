@@ -80,7 +80,6 @@ class SourceMicrosoftDataverse(AbstractSource):
                     stream_path=response_json["LogicalCollectionName"],
                     primary_key=catalog.primary_key,
                     schema=catalog.stream.json_schema,
-                    max_num_pages=config["max_num_pages"],
                     odata_maxpagesize=config["odata_maxpagesize"],
                     authenticator=auth,
                 )
