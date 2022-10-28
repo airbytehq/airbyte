@@ -18,7 +18,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead }) => {
           <Text>Slice {JSON.stringify(slice.sliceDescriptor)}</Text>
           {slice.pages.map((page, pageNumber) => (
             <div className={classNames(styles.displayBox, styles.container, styles.page)}>
-              <Text>{`Page ${pageNumber}`}</Text>
+              <Text>Page {pageNumber}</Text>
               <div className={classNames(styles.displayBox, styles.pageData)}>
                 Request:
                 <pre>{JSON.stringify(page.request, null, 2)}</pre>
