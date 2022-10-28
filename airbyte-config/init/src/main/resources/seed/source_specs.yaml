@@ -4521,7 +4521,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-search-console:0.1.17"
+- dockerImage: "airbyte/source-google-search-console:0.1.18"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-search-console"
     connectionSpecification:
