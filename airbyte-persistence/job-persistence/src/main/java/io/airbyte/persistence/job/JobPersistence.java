@@ -121,7 +121,7 @@ public interface JobPersistence {
   /**
    * Sets an attempt's temporal workflow id. Later used to cancel the workflow.
    */
-  void setAttemptTemporalWorkflowId(long jobId, int attemptNumber, String temporalWorkflowId) throws IOException;
+  void setAttemptTemporalWorkflowInfo(long jobId, int attemptNumber, String temporalWorkflowId, String processingTaskQueue) throws IOException;
 
   /**
    * Retrieves an attempt's temporal workflow id. Used to cancel the workflow.

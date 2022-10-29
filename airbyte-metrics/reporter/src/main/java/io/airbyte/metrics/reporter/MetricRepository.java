@@ -140,6 +140,66 @@ class MetricRepository {
         + ctx.fetchOne(queryForAbnormalSyncInMinutesInLastDay).get("cnt", long.class);
   }
 
+  long numberOfJobsRunningUnusuallyLong() {
+    // Definition of unusually long means runtime is more than 2x historic avg run time or 15
+    // minutes more than avg run time, whichever is greater.
+    // It will skip jobs with fewer than 4 runs in last week to make sure the historic avg run is
+    // meaningful and consistent.
+    final var query =
+        """
+        -- pick average running time and last sync running time in attempts table.
+          select
+            current_running_attempts.connection_id,
+            current_running_attempts.running_time,
+            historic_avg_running_attempts.avg_run_sec
+            from
+            	(
+             -- Sub-query-1: query the currently running attempt's running time.
+                (
+                  select
+                    jobs.scope as connection_id,
+                    extract(epoch from age(NOW(), attempts.created_at)) as running_time
+                  from
+                    jobs
+                  join attempts on
+                    jobs.id = attempts.job_id
+                  where
+                    jobs.status = 'running'
+                    and attempts.status = 'running'
+                    and jobs.config_type = 'sync' )
+                        as current_running_attempts
+              join
+            -- Sub-query-2: query historic attempts' average running time within last week.
+                (
+                  select
+                    jobs.scope as connection_id,
+                    avg(extract(epoch from age(attempts.updated_at, attempts.created_at))) as avg_run_sec
+                  from
+                    jobs
+                  join attempts on
+                    jobs.id = attempts.job_id
+                  where
+                  -- 168 hours is 1 week: we look for all attempts in last week to calculate its average running time.
+                    attempts.updated_at >= NOW() - interval '168 HOUR'
+                    and jobs.status = 'succeeded'
+                    and attempts.status = 'succeeded'
+                    and jobs.config_type = 'sync'
+                  group by
+                    connection_id
+                  having
+                    count(*) > 4
+                ) as historic_avg_running_attempts
+              on
+                current_running_attempts.connection_id = historic_avg_running_attempts.connection_id)
+          where
+          -- Find if currently running time takes 2x more time than average running time,
+          -- and it's 15 minutes (900 seconds) more than average running time so it won't alert on noises for quick sync jobs.
+            current_running_attempts.running_time > greatest(historic_avg_running_attempts.avg_run_sec * 2, historic_avg_running_attempts.avg_run_sec + 900)
+        """;
+    final var queryResults = ctx.fetch(query);
+    return queryResults.getValues("connection_id").size();
+  }
+
   Map<JobStatus, Double> overallJobRuntimeForTerminalJobsInLastHour() {
     final var query = """
                       SELECT status, extract(epoch from age(updated_at, created_at)) AS sec FROM jobs

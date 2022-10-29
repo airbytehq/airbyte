@@ -17,6 +17,9 @@ import lombok.NoArgsConstructor;
 @WorkflowInterface
 public interface ConnectionManagerWorkflow {
 
+  long NON_RUNNING_JOB_ID = -1;
+  int NON_RUNNING_ATTEMPT_ID = -1;
+
   /**
    * Workflow method to launch a {@link ConnectionManagerWorkflow}. Launches a workflow responsible
    * for scheduling syncs. This workflow will run and then continue running until deleted.
@@ -58,13 +61,6 @@ public interface ConnectionManagerWorkflow {
 
   @SignalMethod
   void resetConnectionAndSkipNextScheduling();
-
-  /**
-   * If an activity fails the workflow will be stuck. This signal activity can be used to retry the
-   * activity.
-   */
-  @SignalMethod
-  void retryFailedActivity();
 
   /**
    * Return the current state of the workflow.

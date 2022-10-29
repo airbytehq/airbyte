@@ -11,6 +11,9 @@ services:
   db:
     ports:
       - 8011:5432
+    networks:
+      - airbyte_internal
+      - airbyte_public
   airbyte-temporal-ui:
     image: temporalio/web:1.13.0
     logging: *default-logging
@@ -21,3 +24,6 @@ services:
       - TEMPORAL_PERMIT_WRITE_API=true
     ports:
       - 8012:8088
+    networks:
+      - airbyte_internal
+      - airbyte_public

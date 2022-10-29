@@ -52,3 +52,9 @@ save snapshots periodically on disk.
 ### Setup guide
 
 ######TODO: more info, screenshots?, etc...
+
+## Changelog
+
+| Version | Date       | Pull Request                                               | Subject           |
+|:--------|:-----------|:-----------------------------------------------------------|:------------------|
+| 0.1.3   | 2022-10-18 | [\#17951](https://github.com/airbytehq/airbyte/pull/17951) | Add SSH support   |

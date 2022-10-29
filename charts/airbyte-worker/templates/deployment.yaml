@@ -395,8 +395,8 @@ spec:
         {{- if .Values.containerSecurityContext }}
         securityContext: {{- toYaml .Values.containerSecurityContext | nindent 10 }}
         {{- end }}
-        {{- if eq .Values.global.deploymentMode "oss" }}
         volumeMounts:
+        {{- if eq .Values.global.deploymentMode "oss" }}
         - name: gcs-log-creds-volume
           mountPath: /secrets/gcs-log-creds
           readOnly: true
