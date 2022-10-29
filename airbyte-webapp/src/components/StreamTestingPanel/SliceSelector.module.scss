@@ -4,7 +4,7 @@
 .button {
   padding: variables.$spacing-sm variables.$spacing-md;
   background-color: transparent;
-  border: 1px solid colors.$dark-blue;
+  border: variables.$border-thin solid colors.$dark-blue;
   border-radius: variables.$border-radius-xs;
   display: flex;
   align-items: center;

@@ -13,7 +13,7 @@
 }
 
 .tabTitle {
-  border-bottom: 1px solid colors.$grey-50;
+  border-bottom: variables.$border-thin solid colors.$grey-50;
   color: colors.$grey-300;
   font-weight: 500;
   font-size: 10px;

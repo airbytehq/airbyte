@@ -20,7 +20,6 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead, classN
   const [selectedPage, setSelectedPage] = useState(0);
 
   const handlePageChange = (selectedPageIndex: number) => {
-    console.log(selectedPageIndex);
     setSelectedPage(selectedPageIndex);
   };
 
