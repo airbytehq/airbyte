@@ -37,7 +37,7 @@ The Amplitude source connector supports the following [sync modes](https://docs.
 
 ## Performance considerations
 
-The Amplitude connector ideally should gracefully handle Amplitude API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Amplitude connector ideally should gracefully handle Amplitude API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues/new/choose) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
 

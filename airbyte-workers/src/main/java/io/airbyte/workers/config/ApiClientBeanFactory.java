@@ -9,6 +9,7 @@ import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.micronaut.context.BeanProvider;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Prototype;
@@ -54,6 +55,11 @@ public class ApiClientBeanFactory {
                 builder.setHeader(airbyteApiAuthHeaderName, internalApiAuthToken.get());
               }
             }));
+  }
+
+  @Singleton
+  public HttpClient httpClient() {
+    return HttpClient.newHttpClient();
   }
 
   @Singleton

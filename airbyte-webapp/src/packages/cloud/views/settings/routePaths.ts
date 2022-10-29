@@ -9,4 +9,5 @@ export const CloudSettingsRoutes = {
 
   Workspace: "workspaces",
   AccessManagement: "access-management",
+  DbtCloud: "dbt-cloud",
 } as const;

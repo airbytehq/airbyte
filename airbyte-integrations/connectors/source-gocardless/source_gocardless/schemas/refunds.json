@@ -1,0 +1,54 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "amount": {
+      "type": ["null", "integer"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "reference": {
+      "type": ["null", "string"]
+    },
+    "metadata": {
+      "type": ["null", "object"],
+      "properties": {
+        "reason": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "fx": {
+      "type": ["null", "object"],
+      "properties": {
+        "fx_currency": {
+          "type": ["null", "string"]
+        },
+        "fx_amount": {
+          "type": ["null", "integer"]
+        },
+        "exchange_rate": {
+          "type": ["null", "string"]
+        },
+        "estimated_exchange_rate": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "links": {
+      "type": ["null", "object"],
+      "properties": {
+        "payment": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

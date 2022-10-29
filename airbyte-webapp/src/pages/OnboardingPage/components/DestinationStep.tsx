@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { Action, Namespace } from "core/analytics";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
@@ -25,8 +23,6 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
   const [error, setError] = useState<FormError | null>(null);
 
   const { mutateAsync: createDestination } = useCreateDestination();
-
-  const analyticsService = useAnalyticsService();
 
   const getDestinationDefinitionById = (id: string) =>
     destinationDefinitions.find((item) => item.destinationDefinitionId === id);
@@ -68,12 +64,6 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
     const destinationConnector = getDestinationDefinitionById(destinationDefinitionId);
     setDocumentationUrl(destinationConnector?.documentationUrl || "");
 
-    analyticsService.track(Namespace.DESTINATION, Action.SELECT, {
-      actionDescription: "Destination connector type selected",
-      connector_destination: destinationConnector?.name,
-      connector_destination_definition_id: destinationConnector?.destinationDefinitionId,
-    });
-
     setError(null);
     setDestinationDefinitionId(destinationDefinitionId);
   };
@@ -97,6 +87,7 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
       errorMessage={errorMessage}
       selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
       isLoading={isLoading}
+      formValues={destinationDefinitionId ? { serviceType: destinationDefinitionId } : undefined}
     />
   );
 };

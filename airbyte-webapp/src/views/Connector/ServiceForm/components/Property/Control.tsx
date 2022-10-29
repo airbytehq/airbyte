@@ -78,6 +78,7 @@ export const Control: React.FC<ControlProps> = ({
         onChange={(selectedItem) => selectedItem && helpers.setValue(selectedItem.value)}
         value={value}
         isDisabled={disabled}
+        error={error}
       />
     );
   } else if (property.multiline && !property.isSecret) {
