@@ -1,4 +1,5 @@
 @use "scss/colors";
+@use "scss/variables";
 
 $containerHeight: 23px;
 
@@ -7,17 +8,14 @@ $containerHeight: 23px;
   height: $containerHeight;
   width: 80%;
   display: flex;
-  gap: 5px;
-  // justify-content: center;
+  gap: variables.$spacing-sm;
   font-size: 10px;
   margin: 0;
 }
 
 .button {
   list-style-type: none;
-  // background-color: lightpink;
-  border-radius: 5px;
-  // padding: 3px 8px;
+  border-radius: variables.$border-radius-xs;
   min-width: $containerHeight;
   cursor: pointer;
 
