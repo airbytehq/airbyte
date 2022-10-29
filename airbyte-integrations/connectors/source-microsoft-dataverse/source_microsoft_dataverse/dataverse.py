@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping, MutableMapping
+from typing import Any, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import Oauth2Authenticator
@@ -43,7 +43,7 @@ def do_request(config: Mapping[str, Any], path: str):
     )
 
 
-def convert_dataverse_type(dataverse_type: str) -> None | dict:
+def convert_dataverse_type(dataverse_type: str) -> Optional[dict]:
     if dataverse_type == "String":
         attribute_type = {"type": ["null", "string"]}
     elif dataverse_type == "DateTime":

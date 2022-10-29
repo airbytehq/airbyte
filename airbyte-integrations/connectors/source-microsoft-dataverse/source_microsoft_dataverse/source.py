@@ -31,8 +31,7 @@ class SourceMicrosoftDataverse(AbstractSource):
 
                 schema["properties"][attribute["LogicalName"]] = attribute_type
 
-            stream = AirbyteStream(name=entity["LogicalName"], json_schema=schema)
-            stream.supported_sync_modes = ["full_refresh", "incremental"]
+            stream = AirbyteStream(name=entity["LogicalName"], json_schema=schema, supported_sync_modes = ["full_refresh", "incremental"])
             stream.source_defined_cursor = True
             stream.default_cursor_field = ["_ab_cdc_updated_at"]
             stream.source_defined_primary_key = [[entity["PrimaryIdAttribute"]]]

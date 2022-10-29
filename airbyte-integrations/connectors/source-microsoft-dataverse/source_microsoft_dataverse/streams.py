@@ -51,7 +51,6 @@ class MicrosoftDataverseStream(HttpStream, ABC):
 # Basic incremental stream
 class IncrementalMicrosoftDataverseStream(MicrosoftDataverseStream, IncrementalMixin, ABC):
 
-    maxNumPages = 0
     numPagesRetrieved = 0
     odata_maxpagesize = 5000
     delta_token_field = "$deltatoken"
@@ -59,14 +58,13 @@ class IncrementalMicrosoftDataverseStream(MicrosoftDataverseStream, IncrementalM
     today_date = None
     primary_key = ""
 
-    def __init__(self, url, stream_name, stream_path, schema, primary_key, max_num_pages, odata_maxpagesize, **kwargs):
+    def __init__(self, url, stream_name, stream_path, schema, primary_key, odata_maxpagesize, **kwargs):
         super().__init__(url, **kwargs)
         self._cursor_value = None
         self.stream_name = stream_name
         self.stream_path = stream_path
         self.primary_key = primary_key
         self.schema = schema
-        self.maxNumPages = max_num_pages
         self.odata_maxpagesize = odata_maxpagesize
 
     state_checkpoint_interval = None
