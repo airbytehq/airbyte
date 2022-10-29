@@ -1,0 +1,5 @@
+{
+  "api_key": "<invalid api_key>",
+  "query": "water OR rain",
+  "from-date": "2002-10-12"
+}

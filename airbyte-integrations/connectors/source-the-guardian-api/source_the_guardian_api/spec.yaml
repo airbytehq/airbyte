@@ -1,0 +1,55 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/theguardianapi
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: The Guardian Api Spec
+  type: object
+  required:
+    - api_key
+  additionalProperties: true
+  properties:
+    api_key:
+      type: string
+      description: Your API Key. See <a href="https://open-platform.theguardian.com/access/">here</a>. The key is case sensitive.
+      airbyte_secret: true
+    query:
+      type: string
+      description: (Optional) The query (q) parameter filters the results to only those that include that search term. The q parameter supports AND, OR and NOT operators.
+      examples:
+        - environment AND NOT water
+        - environment AND political
+        - amusement park
+        - political
+    tag:
+      type: string
+      description: (Optional) A tag is a piece of data that is used by The Guardian to categorise content. Use this parameter to filter results by showing only the ones matching the entered tag. See <a href="https://content.guardianapis.com/tags?api-key=test">here</a> for a list of all tags, and <a href="https://open-platform.theguardian.com/documentation/tag">here</a> for the tags endpoint documentation.
+      examples:
+        - environment/recycling
+        - environment/plasticbags
+        - environment/energyefficiency
+    section:
+      type: string
+      description: (Optional) Use this to filter the results by a particular section. See <a href="https://content.guardianapis.com/sections?api-key=test">here</a> for a list of all sections, and <a href="https://open-platform.theguardian.com/documentation/section">here</a> for the sections endpoint documentation.
+      examples:
+        - media
+        - technology
+        - housing-network
+    order-by:
+      type: string
+      description: (Optional) Use this to sort the results. The three available sorting options are - newest, oldest, relevance.
+      pattern: ^(newest|oldest|relevance)$
+      examples:
+        - newest
+        - oldest
+        - relevance
+    from-date:
+      type: string
+      description: (Optional) Use this to set the minimum date (YYYY-MM-DD) of the results. Results older than the from-date will not be shown.
+      pattern: ^([1-9][0-9]{3})\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$
+      examples:
+        - YYYY-MM-DD
+    to-date:
+      type: string
+      description: (Optional) Use this to set the maximum date (YYYY-MM-DD) of the results. Results newer than the to-date will not be shown.
+      pattern: ^([1-9][0-9]{3})\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$
+      examples:
+        - YYYY-MM-DD

@@ -1,0 +1,53 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer:
+        - response
+        - results
+  requester:
+    url_base: "https://content.guardianapis.com"
+    http_method: "GET"
+    request_options_provider:
+      request_parameters:
+        api-key: "{{ config['api_key'] }}"
+        q: "{{ config['query'] }}"
+        tag: "{{ config['tag'] }}"
+        section: "{{ config['section'] }}"
+        order-by: "{{ config['order-by'] }}"
+        from-date: "{{ config['from-date'] }}"
+        to-date: "{{ config['to-date'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: "DefaultPaginator"
+      url_base: "*ref(definitions.requester.url_base)"
+      pagination_strategy:
+        class_name: "source_the_guardian_api.custom_page_strategy.CustomPageIncrement"
+        page_size: 10
+      page_token_option:
+        inject_into: "request_parameter"
+        field_name: "page"
+      page_size_option:
+        inject_into: "body_data"
+        field_name: "page_size"
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  content_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "content"
+      primary_key: "id"
+      path: "/search"
+
+streams:
+  - "*ref(definitions.content_stream)"
+
+check:
+  stream_names:
+    - "content"

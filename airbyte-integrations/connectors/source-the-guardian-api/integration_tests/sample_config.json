@@ -1,0 +1,6 @@
+{
+  "api_key": "<valid api_key>",
+  "query": "water OR rain OR thunder",
+  "tag": "books/history",
+  "from-date": "2002-10-12"
+}
