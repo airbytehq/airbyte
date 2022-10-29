@@ -26,7 +26,9 @@ No performance limitation , however given the nature of the source and in order 
 
 ## Changelog
 
-
+| Version | Date       | Pull Request                                             | Subject                       |
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
+| 0.1.0   | 2022-10-29 | [18653](https://github.com/airbytehq/airbyte/pull/18653) | Initial Release               |
 
 
 
