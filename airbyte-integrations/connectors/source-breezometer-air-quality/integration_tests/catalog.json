@@ -1,0 +1,11 @@
+{
+  "streams": [
+    {
+      "name": "forecast_air_quality",
+      "supported_sync_modes": [
+        "full_refresh"
+      ],
+      "json_schema": {}
+    }
+  ]
+}

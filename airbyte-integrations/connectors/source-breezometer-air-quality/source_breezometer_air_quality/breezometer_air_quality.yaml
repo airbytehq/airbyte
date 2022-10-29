@@ -1,0 +1,38 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: ["data"]
+  requester:
+    url_base: "https://api.breezometer.com"
+    http_method: "GET"
+    request_options_provider:
+      request_parameters:
+        key: "{{ config['api_key'] }}"
+        lat: "{{ config['latitude'] }}"
+        lon: "{{ config['longitude'] }}"
+        hours: "{{ config['next_number_of_hours'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  forecast_air_quality_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "forecast_air_quality"
+      primary_key: "datetime"
+      path: "/air-quality/v2/forecast/hourly"
+
+streams:
+  - "*ref(definitions.forecast_air_quality_stream)"
+
+check:
+  stream_names:
+    - "forecast_air_quality"
