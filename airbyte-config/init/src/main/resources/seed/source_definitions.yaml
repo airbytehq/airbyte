@@ -696,6 +696,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailjet-mail
   sourceType: api
   releaseStage: alpha
+- name: Mailjet SMS
+  sourceDefinitionId: 6ec2acea-7fd1-4378-b403-41a666e0c028
+  dockerRepository: airbyte/source-mailjet-sms
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mailjet-sms
+  sourceType: api
+  releaseStage: alpha
 - name: MailerLite
   sourceDefinitionId: dc3b9003-2432-4e93-a7f4-4620b0f14674
   dockerRepository: airbyte/source-mailerlite
@@ -1316,6 +1323,14 @@
   icon: zendesk.svg
   sourceType: api
   releaseStage: generally_available
+- name: Zendesk Sell
+  sourceDefinitionId: 982eaa4c-bba1-4cce-a971-06a41f700b8c
+  dockerRepository: airbyte/source-zendesk-sell
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-sell
+  icon: zendesk.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Zendesk Sunshine
   sourceDefinitionId: 325e0640-e7b3-4e24-b823-3361008f603f
   dockerRepository: airbyte/source-zendesk-sunshine
