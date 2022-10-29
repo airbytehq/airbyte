@@ -4,10 +4,12 @@ connectionSpecification:
   title: Launchdarkly Spec
   type: object
   required:
-    - api_key
+    - access_token
   additionalProperties: true
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    api_key:
+    access_token:
+      title: Access tokens
       type: string
-      description: API Key
+      description: >-
+        Your Access tokens. See <a
+        href="https://apidocs.launchdarkly.com/#section/Overview/Authentication">here</a>.

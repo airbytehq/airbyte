@@ -1,0 +1,293 @@
+[1m============================= test session starts ==============================[0m
+platform darwin -- Python 3.10.8, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- /Users/haithem.souala/Documents/infra.nosync/airbyte-contest/darkly/airbyte/airbyte-integrations/.venv/bin/python3.10
+cachedir: .pytest_cache
+hypothesis profile 'default' -> database=DirectoryBasedExampleDatabase('/Users/haithem.souala/Documents/infra.nosync/airbyte-contest/darkly/airbyte/airbyte-integrations/connectors/source-launchdarkly/.hypothesis/examples')
+rootdir: /Users/haithem.souala/Documents/infra.nosync/airbyte-contest/darkly/airbyte, configfile: pytest.ini
+plugins: hypothesis-6.54.6, sugar-0.9.5, requests-mock-1.9.3, mock-3.6.1, timeout-1.4.2, cov-3.0.0
+[1mcollecting ... [0mcollected 26 items / 1 skipped / 25 selected
+
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_config_match_spec[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_match_expected[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_docker_env[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_oneof_usage[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_required[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_optional[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_has_secret[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_secret_never_in_the_output[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_defined_refs_exist_in_json_spec_file[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_oauth_flow_parameters[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_backward_compatibility[inputs0] Pulling docker image airbyte/source-launchdarkly:latest
+{"type": "LOG", "log": {"level": "WARN", "message": "\n We did not find the airbyte/source-launchdarkly:latest image for this connector. This probably means this version has not yet been published to an accessible docker registry like DockerHub."}}
+[33mSKIPPED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_additional_properties_is_true[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestConnection::test_check[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestConnection::test_check[inputs1] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestDiscovery::test_discover[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestDiscovery::test_defined_cursors_exist_in_schema[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestDiscovery::test_defined_refs_exist_in_schema[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestDiscovery::test_defined_keyword_exist_in_schema[inputs0-allOf] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestDiscovery::test_defined_keyword_exist_in_schema[inputs0-not] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestDiscovery::test_primary_keys_exist_in_schema[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestDiscovery::test_streams_has_sync_modes[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestDiscovery::test_additional_properties_is_true[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestDiscovery::test_backward_compatibility[inputs0] Pulling docker image airbyte/source-launchdarkly:latest
+{"type": "LOG", "log": {"level": "WARN", "message": "\n We did not find the airbyte/source-launchdarkly:latest image for this connector. This probably means this version has not yet been published to an accessible docker registry like DockerHub."}}
+[33mSKIPPED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestBasicRead::test_read[inputs0] [31mFAILED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestBasicRead::test_airbyte_trace_message_on_failure[inputs0] {"type": "LOG", "log": {"level": "ERROR", "message": "Docker container failed, code 1, error:\n{\"type\": \"TRACE\", \"trace\": {\"type\": \"ERROR\", \"emitted_at\": 1667080252985.146, \"error\": {\"message\": \"Something went wrong in the connector. See the logs for more details.\", \"internal_message\": \"2 validation errors for ConfiguredAirbyteCatalog\\nstreams -> 0 -> sync_mode\\n  value is not a valid enumeration member; permitted: 'full_refresh', 'incremental' (type=type_error.enum; enum_values=[<SyncMode.full_refresh: 'full_refresh'>, <SyncMode.incremental: 'incremental'>])\\nstreams -> 0 -> destination_sync_mode\\n  value is not a valid enumeration member; permitted: 'append', 'overwrite', 'append_dedup' (type=type_error.enum; enum_values=[<DestinationSyncMode.append: 'append'>, <DestinationSyncMode.overwrite: 'overwrite'>, <DestinationSyncMode.append_dedup: 'append_dedup'>])\", \"stack_trace\": \"Traceback (most recent call last):\\n  File \\\"/airbyte/integration_code/main.py\\\", line 13, in <module>\\n    launch(source, sys.argv[1:])\\n  File \\\"/usr/local/lib/python3.9/site-packages/airbyte_cdk/entrypoint.py\\\", line 131, in launch\\n    for message in source_entrypoint.run(parsed_args):\\n  File \\\"/usr/local/lib/python3.9/site-packages/airbyte_cdk/entrypoint.py\\\", line 119, in run\\n    config_catalog = self.source.read_catalog(parsed_args.catalog)\\n  File \\\"/usr/local/lib/python3.9/site-packages/airbyte_cdk/sources/source.py\\\", line 90, in read_catalog\\n    return ConfiguredAirbyteCatalog.parse_obj(self.read_config(catalog_path))\\n  File \\\"pydantic/main.py\\\", line 521, in pydantic.main.BaseModel.parse_obj\\n  File \\\"pydantic/main.py\\\", line 341, in pydantic.main.BaseModel.__init__\\npydantic.error_wrappers.ValidationError: 2 validation errors for ConfiguredAirbyteCatalog\\nstreams -> 0 -> sync_mode\\n  value is not a valid enumeration member; permitted: 'full_refresh', 'incremental' (type=type_error.enum; enum_values=[<SyncMode.full_refresh: 'full_refresh'>, <SyncMode.incremental: 'incremental'>])\\nstreams -> 0 -> destination_sync_mode\\n  value is not a valid enumeration member; permitted: 'append', 'overwrite', 'append_dedup' (type=type_error.enum; enum_values=[<DestinationSyncMode.append: 'append'>, <DestinationSyncMode.overwrite: 'overwrite'>, <DestinationSyncMode.append_dedup: 'append_dedup'>])\\n\", \"failure_type\": \"system_error\"}}}\n"}}
+[32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_full_refresh.py::TestFullRefresh::test_sequential_reads[inputs0] {"type": "LOG", "log": {"level": "INFO", "message": "members: the two sequential reads should produce either equal set of records or one of them is a strict subset of the other"}}
+{"type": "LOG", "log": {"level": "INFO", "message": "First read"}}
+{"type": "LOG", "log": {"level": "INFO", "message": "[\n {\n  \"_links\": {\n   \"parent\": {\n    \"href\": \"/api/v2/members\",\n    \"type\": \"application/json\"\n   },\n   \"self\": {\n    \"href\": \"/api/v2/members/635c281b86a86c0c4987eee8\",\n    \"type\": \"application/json\"\n   },\n   \"sendMfaEnableRequest\": {\n    \"href\": \"/api/v2/members/635c281b86a86c0c4987eee8/mfa/request\",\n    \"type\": \"application/json\"\n   }\n  },\n  \"_id\": \"635c281b86a86c0c4987eee8\",\n  \"firstName\": \"Haithem\",\n  \"lastName\": \"Souala\",\n  \"role\": \"owner\",\n  \"email\": \"haithem.souala@melting-point.fr\",\n  \"_pendingInvite\": false,\n  \"_verified\": true,\n  \"isBeta\": false,\n  \"customRoles\": [],\n  \"mfa\": \"disabled\",\n  \"excludedDashboards\": null,\n  \"_lastSeen\": 1667080257757,\n  \"_lastSeenMetadata\": {\n   \"tokenId\": \"635c3144b417660c3944c5cd\"\n  },\n  \"creationDate\": 1666983963811,\n  \"oauthProviders\": [\n   \"google_oauth\"\n  ]\n }\n]"}}
+{"type": "LOG", "log": {"level": "INFO", "message": "Second read"}}
+{"type": "LOG", "log": {"level": "INFO", "message": "[\n {\n  \"_links\": {\n   \"parent\": {\n    \"href\": \"/api/v2/members\",\n    \"type\": \"application/json\"\n   },\n   \"self\": {\n    \"href\": \"/api/v2/members/635c281b86a86c0c4987eee8\",\n    \"type\": \"application/json\"\n   },\n   \"sendMfaEnableRequest\": {\n    \"href\": \"/api/v2/members/635c281b86a86c0c4987eee8/mfa/request\",\n    \"type\": \"application/json\"\n   }\n  },\n  \"_id\": \"635c281b86a86c0c4987eee8\",\n  \"firstName\": \"Haithem\",\n  \"lastName\": \"Souala\",\n  \"role\": \"owner\",\n  \"email\": \"haithem.souala@melting-point.fr\",\n  \"_pendingInvite\": false,\n  \"_verified\": true,\n  \"isBeta\": false,\n  \"customRoles\": [],\n  \"mfa\": \"disabled\",\n  \"excludedDashboards\": null,\n  \"_lastSeen\": 1667080261513,\n  \"_lastSeenMetadata\": {\n   \"tokenId\": \"635c3144b417660c3944c5cd\"\n  },\n  \"creationDate\": 1666983963811,\n  \"oauthProviders\": [\n   \"google_oauth\"\n  ]\n }\n]"}}
+{"type": "LOG", "log": {"level": "INFO", "message": "Missing records"}}
+{"type": "LOG", "log": {"level": "INFO", "message": "[\n {\n  \"_links\": {\n   \"parent\": {\n    \"href\": \"/api/v2/members\",\n    \"type\": \"application/json\"\n   },\n   \"self\": {\n    \"href\": \"/api/v2/members/635c281b86a86c0c4987eee8\",\n    \"type\": \"application/json\"\n   },\n   \"sendMfaEnableRequest\": {\n    \"href\": \"/api/v2/members/635c281b86a86c0c4987eee8/mfa/request\",\n    \"type\": \"application/json\"\n   }\n  },\n  \"_id\": \"635c281b86a86c0c4987eee8\",\n  \"firstName\": \"Haithem\",\n  \"lastName\": \"Souala\",\n  \"role\": \"owner\",\n  \"email\": \"haithem.souala@melting-point.fr\",\n  \"_pendingInvite\": false,\n  \"_verified\": true,\n  \"isBeta\": false,\n  \"customRoles\": [],\n  \"mfa\": \"disabled\",\n  \"excludedDashboards\": null,\n  \"_lastSeen\": 1667080257757,\n  \"_lastSeenMetadata\": {\n   \"tokenId\": \"635c3144b417660c3944c5cd\"\n  },\n  \"creationDate\": 1666983963811,\n  \"oauthProviders\": [\n   \"google_oauth\"\n  ]\n }\n]"}}
+[31mFAILED[0m
+{"type": "LOG", "log": {"level": "INFO", "message": "/Users/haithem.souala/Documents/infra.nosync/airbyte-contest/darkly/airbyte/airbyte-integrations/connectors/source-launchdarkly - SAT run - 05d34d5c8a97259b7bf595fd4aae19455392aa45 - FAILED"}}
+
+
+=================================== FAILURES ===================================
+[31m[1m_______________________ TestBasicRead.test_read[inputs0] _______________________[0m
+
+self = <source_acceptance_test.tests.test_core.TestBasicRead object at 0x1053a1270>
+connector_config = SecretDict(******)
+configured_catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStream(stream=AirbyteStream(name='projects', json_schema={'$schema'...l_refresh'>, cursor_field=None, destination_sync_mode=<DestinationSyncMode.overwrite: 'overwrite'>, primary_key=None)])
+inputs = BasicReadTestConfig(config_path='secrets/config.json', configured_catalog_path='integration_tests/configured_catalog.j...rds=None, validate_schema=True, validate_data_points=False, expect_trace_message_on_failure=True, timeout_seconds=None)
+expected_records_by_stream = {}
+docker_runner = <source_acceptance_test.utils.connector_runner.ConnectorRunner object at 0x1053a02b0>
+detailed_logger = <Logger detailed_logger acceptance_tests_logs/test_core.py__TestBasicRead__test_read[inputs0].txt (DEBUG)>
+
+    [94mdef[39;49;00m [92mtest_read[39;49;00m(
+        [96mself[39;49;00m,
+        connector_config,
+        configured_catalog,
+        inputs: BasicReadTestConfig,
+        expected_records_by_stream: MutableMapping[[96mstr[39;49;00m, List[MutableMapping]],
+        docker_runner: ConnectorRunner,
+        detailed_logger,
+    ):
+        output = docker_runner.call_read(connector_config, configured_catalog)
+        records = [message.record [94mfor[39;49;00m message [95min[39;49;00m filter_output(output, Type.RECORD)]
+    
+        [94massert[39;49;00m records, [33m"[39;49;00m[33mAt least one record should be read using provided catalog[39;49;00m[33m"[39;49;00m
+    
+        [94mif[39;49;00m inputs.validate_schema:
+            [96mself[39;49;00m._validate_schema(records=records, configured_catalog=configured_catalog)
+    
+>       [96mself[39;49;00m._validate_empty_streams(records=records, configured_catalog=configured_catalog, allowed_empty_streams=inputs.empty_streams)
+
+[1m[31m../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py[0m:482: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <source_acceptance_test.tests.test_core.TestBasicRead object at 0x1053a1270>
+records = [AirbyteRecordMessage(namespace=None, stream='projects', data={'_links': {'environments': {'href': '/api/v2/projects/d...['proj/default:env/test:flag/flag-two', 'proj/default:env/production:flag/flag-two']}}, emitted_at=1667080249048), ...]
+configured_catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStream(stream=AirbyteStream(name='projects', json_schema={'$schema'...l_refresh'>, cursor_field=None, destination_sync_mode=<DestinationSyncMode.overwrite: 'overwrite'>, primary_key=None)])
+allowed_empty_streams = set()
+
+    [94mdef[39;49;00m [92m_validate_empty_streams[39;49;00m([96mself[39;49;00m, records, configured_catalog, allowed_empty_streams):
+        [33m"""[39;49;00m
+    [33m    Only certain streams allowed to be empty[39;49;00m
+    [33m    """[39;49;00m
+        allowed_empty_stream_names = [96mset[39;49;00m([allowed_empty_stream.name [94mfor[39;49;00m allowed_empty_stream [95min[39;49;00m allowed_empty_streams])
+        counter = Counter(record.stream [94mfor[39;49;00m record [95min[39;49;00m records)
+    
+        all_streams = [96mset[39;49;00m(stream.stream.name [94mfor[39;49;00m stream [95min[39;49;00m configured_catalog.streams)
+        streams_with_records = [96mset[39;49;00m(counter.keys())
+        streams_without_records = all_streams - streams_with_records
+    
+        streams_without_records = streams_without_records - allowed_empty_stream_names
+>       [94massert[39;49;00m [95mnot[39;49;00m streams_without_records, [33mf[39;49;00m[33m"[39;49;00m[33mAll streams should return some records, streams without records: [39;49;00m[33m{[39;49;00mstreams_without_records[33m}[39;49;00m[33m"[39;49;00m
+[1m[31mE       AssertionError: All streams should return some records, streams without records: {'metrics'}[0m
+[1m[31mE       assert not {'metrics'}[0m
+
+[1m[31m../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py[0m:396: AssertionError
+[31m[1m________________ TestFullRefresh.test_sequential_reads[inputs0] ________________[0m
+
+self = <source_acceptance_test.tests.test_full_refresh.TestFullRefresh object at 0x1053a3910>
+inputs = FullRefreshConfig(config_path='secrets/config.json', configured_catalog_path='integration_tests/configured_catalog.json', timeout_seconds=None, ignored_fields=None)
+connector_config = SecretDict(******)
+configured_catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStream(stream=AirbyteStream(name='projects', json_schema={'$schema'...l_refresh'>, cursor_field=None, destination_sync_mode=<DestinationSyncMode.overwrite: 'overwrite'>, primary_key=None)])
+docker_runner = <source_acceptance_test.utils.connector_runner.ConnectorRunner object at 0x10543d930>
+detailed_logger = <Logger detailed_logger acceptance_tests_logs/test_full_refresh.py__TestFullRefresh__test_sequential_reads[inputs0].txt (DEBUG)>
+
+    [94mdef[39;49;00m [92mtest_sequential_reads[39;49;00m(
+        [96mself[39;49;00m,
+        inputs: ConnectionTestConfig,
+        connector_config: SecretDict,
+        configured_catalog: ConfiguredAirbyteCatalog,
+        docker_runner: ConnectorRunner,
+        detailed_logger: Logger,
+    ):
+        ignored_fields = [96mgetattr[39;49;00m(inputs, [33m"[39;49;00m[33mignored_fields[39;49;00m[33m"[39;49;00m) [95mor[39;49;00m {}
+        configured_catalog = full_refresh_only_catalog(configured_catalog)
+        output = docker_runner.call_read(connector_config, configured_catalog)
+        records_1 = [message.record [94mfor[39;49;00m message [95min[39;49;00m output [94mif[39;49;00m message.type == Type.RECORD]
+        records_by_stream_1 = defaultdict([96mlist[39;49;00m)
+        [94mfor[39;49;00m record [95min[39;49;00m records_1:
+            records_by_stream_1[record.stream].append(record.data)
+    
+        output = docker_runner.call_read(connector_config, configured_catalog)
+        records_2 = [message.record [94mfor[39;49;00m message [95min[39;49;00m output [94mif[39;49;00m message.type == Type.RECORD]
+        records_by_stream_2 = defaultdict([96mlist[39;49;00m)
+        [94mfor[39;49;00m record [95min[39;49;00m records_2:
+            records_by_stream_2[record.stream].append(record.data)
+    
+        pks_by_stream = primary_keys_by_stream(configured_catalog)
+    
+        [94mfor[39;49;00m stream [95min[39;49;00m records_by_stream_1:
+            [94mif[39;49;00m pks_by_stream.get(stream):
+                serializer = partial(primary_keys_only, pks=pks_by_stream.get(stream))
+            [94melse[39;49;00m:
+                serializer = partial(make_hashable, exclude_fields=ignored_fields.get(stream))
+            stream_records_1 = records_by_stream_1.get(stream)
+            stream_records_2 = records_by_stream_2.get(stream)
+            [94mif[39;49;00m [95mnot[39;49;00m [96mset[39;49;00m([96mmap[39;49;00m(serializer, stream_records_1)).issubset([96mset[39;49;00m([96mmap[39;49;00m(serializer, stream_records_2))):
+                missing_records = [96mset[39;49;00m([96mmap[39;49;00m(serializer, stream_records_1)) - ([96mset[39;49;00m([96mmap[39;49;00m(serializer, stream_records_2)))
+                msg = [33mf[39;49;00m[33m"[39;49;00m[33m{[39;49;00mstream[33m}[39;49;00m[33m: the two sequential reads should produce either equal set of records or one of them is a strict subset of the other[39;49;00m[33m"[39;49;00m
+                detailed_logger.info(msg)
+                detailed_logger.info([33m"[39;49;00m[33mFirst read[39;49;00m[33m"[39;49;00m)
+                detailed_logger.log_json_list(stream_records_1)
+                detailed_logger.info([33m"[39;49;00m[33mSecond read[39;49;00m[33m"[39;49;00m)
+                detailed_logger.log_json_list(stream_records_2)
+                detailed_logger.info([33m"[39;49;00m[33mMissing records[39;49;00m[33m"[39;49;00m)
+                detailed_logger.log_json_list(missing_records)
+>               pytest.fail(msg)
+[1m[31mE               Failed: members: the two sequential reads should produce either equal set of records or one of them is a strict subset of the other[0m
+
+[1m[31m../../bases/source-acceptance-test/source_acceptance_test/tests/test_full_refresh.py[0m:80: Failed
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m detailed_logger acceptance_tests_logs/test_full_refresh.py__TestFullRefresh__test_sequential_reads[inputs0].txt:test_full_refresh.py:73 members: the two sequential reads should produce either equal set of records or one of them is a strict subset of the other
+[32mINFO    [0m detailed_logger acceptance_tests_logs/test_full_refresh.py__TestFullRefresh__test_sequential_reads[inputs0].txt:test_full_refresh.py:74 First read
+[32mINFO    [0m detailed_logger acceptance_tests_logs/test_full_refresh.py__TestFullRefresh__test_sequential_reads[inputs0].txt:conftest.py:282 [
+ {
+  "_links": {
+   "parent": {
+    "href": "/api/v2/members",
+    "type": "application/json"
+   },
+   "self": {
+    "href": "/api/v2/members/635c281b86a86c0c4987eee8",
+    "type": "application/json"
+   },
+   "sendMfaEnableRequest": {
+    "href": "/api/v2/members/635c281b86a86c0c4987eee8/mfa/request",
+    "type": "application/json"
+   }
+  },
+  "_id": "635c281b86a86c0c4987eee8",
+  "firstName": "Haithem",
+  "lastName": "Souala",
+  "role": "owner",
+  "email": "haithem.souala@melting-point.fr",
+  "_pendingInvite": false,
+  "_verified": true,
+  "isBeta": false,
+  "customRoles": [],
+  "mfa": "disabled",
+  "excludedDashboards": null,
+  "_lastSeen": 1667080257757,
+  "_lastSeenMetadata": {
+   "tokenId": "635c3144b417660c3944c5cd"
+  },
+  "creationDate": 1666983963811,
+  "oauthProviders": [
+   "google_oauth"
+  ]
+ }
+]
+[32mINFO    [0m detailed_logger acceptance_tests_logs/test_full_refresh.py__TestFullRefresh__test_sequential_reads[inputs0].txt:test_full_refresh.py:76 Second read
+[32mINFO    [0m detailed_logger acceptance_tests_logs/test_full_refresh.py__TestFullRefresh__test_sequential_reads[inputs0].txt:conftest.py:282 [
+ {
+  "_links": {
+   "parent": {
+    "href": "/api/v2/members",
+    "type": "application/json"
+   },
+   "self": {
+    "href": "/api/v2/members/635c281b86a86c0c4987eee8",
+    "type": "application/json"
+   },
+   "sendMfaEnableRequest": {
+    "href": "/api/v2/members/635c281b86a86c0c4987eee8/mfa/request",
+    "type": "application/json"
+   }
+  },
+  "_id": "635c281b86a86c0c4987eee8",
+  "firstName": "Haithem",
+  "lastName": "Souala",
+  "role": "owner",
+  "email": "haithem.souala@melting-point.fr",
+  "_pendingInvite": false,
+  "_verified": true,
+  "isBeta": false,
+  "customRoles": [],
+  "mfa": "disabled",
+  "excludedDashboards": null,
+  "_lastSeen": 1667080261513,
+  "_lastSeenMetadata": {
+   "tokenId": "635c3144b417660c3944c5cd"
+  },
+  "creationDate": 1666983963811,
+  "oauthProviders": [
+   "google_oauth"
+  ]
+ }
+]
+[32mINFO    [0m detailed_logger acceptance_tests_logs/test_full_refresh.py__TestFullRefresh__test_sequential_reads[inputs0].txt:test_full_refresh.py:78 Missing records
+[32mINFO    [0m detailed_logger acceptance_tests_logs/test_full_refresh.py__TestFullRefresh__test_sequential_reads[inputs0].txt:conftest.py:282 [
+ {
+  "_links": {
+   "parent": {
+    "href": "/api/v2/members",
+    "type": "application/json"
+   },
+   "self": {
+    "href": "/api/v2/members/635c281b86a86c0c4987eee8",
+    "type": "application/json"
+   },
+   "sendMfaEnableRequest": {
+    "href": "/api/v2/members/635c281b86a86c0c4987eee8/mfa/request",
+    "type": "application/json"
+   }
+  },
+  "_id": "635c281b86a86c0c4987eee8",
+  "firstName": "Haithem",
+  "lastName": "Souala",
+  "role": "owner",
+  "email": "haithem.souala@melting-point.fr",
+  "_pendingInvite": false,
+  "_verified": true,
+  "isBeta": false,
+  "customRoles": [],
+  "mfa": "disabled",
+  "excludedDashboards": null,
+  "_lastSeen": 1667080257757,
+  "_lastSeenMetadata": {
+   "tokenId": "635c3144b417660c3944c5cd"
+  },
+  "creationDate": 1666983963811,
+  "oauthProviders": [
+   "google_oauth"
+  ]
+ }
+]
+[33m=============================== warnings summary ===============================[0m
+airbyte-integrations/bases/source-acceptance-test/source_acceptance_test/tests/test_core.py: 22 warnings
+airbyte-integrations/bases/source-acceptance-test/source_acceptance_test/tests/test_full_refresh.py: 1 warning
+  /Users/haithem.souala/Documents/infra.nosync/airbyte-contest/darkly/airbyte/airbyte-integrations/.venv/lib/python3.10/site-packages/docker/utils/utils.py:52: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
+    s1 = StrictVersion(v1)
+
+airbyte-integrations/bases/source-acceptance-test/source_acceptance_test/tests/test_core.py: 22 warnings
+airbyte-integrations/bases/source-acceptance-test/source_acceptance_test/tests/test_full_refresh.py: 1 warning
+  /Users/haithem.souala/Documents/infra.nosync/airbyte-contest/darkly/airbyte/airbyte-integrations/.venv/lib/python3.10/site-packages/docker/utils/utils.py:53: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
+    s2 = StrictVersion(v2)
+
+-- Docs: https://docs.pytest.org/en/stable/warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] ../../bases/source-acceptance-test/source_acceptance_test/plugin.py:63: Skipping TestIncremental.test_two_sequential_reads: This connector does not implement incremental sync
+SKIPPED [1] ../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py:51: The previous connector image could not be retrieved.
+SKIPPED [1] ../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py:229: The previous connector image could not be retrieved.
+FAILED ../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestBasicRead::test_read[inputs0]
+FAILED ../../bases/source-acceptance-test/source_acceptance_test/tests/test_full_refresh.py::TestFullRefresh::test_sequential_reads[inputs0]
+[31m============ [31m[1m2 failed[0m, [32m22 passed[0m, [33m3 skipped[0m, [33m46 warnings[0m[31m in 44.02s[0m[31m =============[0m
