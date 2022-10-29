@@ -1,0 +1,91 @@
+@use "scss/colors";
+
+.jobListContainer {
+  padding: 25px 25px 22px;
+  background-color: colors.$grey-50;
+}
+
+.jobListTitle {
+  display: flex;
+  justify-content: space-between;
+}
+
+.jobListForm {
+  width: 100%;
+}
+
+.emptyListContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  > img {
+    width: 111px;
+    height: 111px;
+    margin: 20px 0;
+  }
+}
+
+.contextExplanation {
+  color: colors.$grey-300;
+  width: 100%;
+
+  & a {
+    color: colors.$grey-300;
+  }
+}
+
+.jobListButtonGroup {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.jobListButton {
+  margin-left: 10px;
+}
+
+.jobListItem {
+  margin-top: 10px;
+  padding: 18px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  & img {
+    height: 32px;
+    width: 32px;
+  }
+}
+
+.jobListItemIntegrationName {
+  display: flex;
+  align-items: center;
+}
+
+.jobListItemInputGroup {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.jobListItemInput {
+  height: fit-content;
+  margin-left: 1em;
+}
+
+.jobListItemInputLabel {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.jobListItemDelete {
+  color: colors.$grey-200;
+  font-size: large;
+  margin: 0 1em;
+  cursor: pointer;
+  border: none;
+  background-color: inherit;
+}

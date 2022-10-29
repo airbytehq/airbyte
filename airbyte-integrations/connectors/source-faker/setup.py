@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "Faker==13.3.1"]
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "mimesis==6.1.1"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
@@ -14,7 +14,7 @@ TEST_REQUIREMENTS = [
 
 setup(
     name="source_faker",
-    description="Source implementation for Faker.",
+    description="Source implementation for fake but realistic looking data.",
     author="Airbyte",
     author_email="evan@airbyte.io",
     packages=find_packages(),

@@ -10,7 +10,7 @@ import os
 from logging import Logger
 from pathlib import Path
 from subprocess import STDOUT, check_output, run
-from typing import Any, List, MutableMapping, Optional
+from typing import Any, List, MutableMapping, Optional, Set
 
 import pytest
 from airbyte_cdk.models import (
@@ -24,8 +24,15 @@ from airbyte_cdk.models import (
 )
 from docker import errors
 from source_acceptance_test.base import BaseTest
-from source_acceptance_test.config import Config
+from source_acceptance_test.config import Config, EmptyStreamConfiguration
+from source_acceptance_test.tests import TestBasicRead
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, load_config, load_yaml_or_json_path
+
+
+@pytest.fixture(name="acceptance_test_config", scope="session")
+def acceptance_test_config_fixture(pytestconfig) -> Config:
+    """Fixture with test's config"""
+    return load_config(pytestconfig.getoption("--acceptance-test-config", skip=True))
 
 
 @pytest.fixture(name="base_path")
@@ -36,10 +43,9 @@ def base_path_fixture(pytestconfig, acceptance_test_config) -> Path:
     return Path(pytestconfig.getoption("--acceptance-test-config")).absolute()
 
 
-@pytest.fixture(name="acceptance_test_config", scope="session")
-def acceptance_test_config_fixture(pytestconfig) -> Config:
-    """Fixture with test's config"""
-    return load_config(pytestconfig.getoption("--acceptance-test-config", skip=True))
+@pytest.fixture(name="test_strictness_level", scope="session")
+def test_strictness_level_fixture(acceptance_test_config: Config):
+    return acceptance_test_config.test_strictness_level
 
 
 @pytest.fixture(name="connector_config_path")
@@ -162,14 +168,62 @@ def pull_docker_image(acceptance_test_config) -> None:
         pytest.exit(f"Docker image `{image_name}` not found, please check your {config_filename} file", returncode=1)
 
 
-@pytest.fixture(name="expected_records")
-def expected_records_fixture(inputs, base_path) -> List[AirbyteRecordMessage]:
-    expect_records = getattr(inputs, "expect_records")
-    if not expect_records:
-        return []
+@pytest.fixture(name="empty_streams")
+def empty_streams_fixture(inputs, test_strictness_level) -> Set[EmptyStreamConfiguration]:
+    empty_streams = getattr(inputs, "empty_streams", set())
+    if test_strictness_level is Config.TestStrictnessLevel.high and empty_streams:
+        all_empty_streams_have_bypass_reasons = all([bool(empty_stream.bypass_reason) for empty_stream in inputs.empty_streams])
+        if not all_empty_streams_have_bypass_reasons:
+            pytest.fail("A bypass_reason must be filled in for all empty streams when test_strictness_level is set to high.")
+    return empty_streams
 
-    with open(str(base_path / getattr(expect_records, "path"))) as f:
-        return [AirbyteRecordMessage.parse_raw(line) for line in f]
+
+@pytest.fixture(name="expected_records_by_stream")
+def expected_records_by_stream_fixture(
+    test_strictness_level: Config.TestStrictnessLevel,
+    configured_catalog: ConfiguredAirbyteCatalog,
+    empty_streams: Set[EmptyStreamConfiguration],
+    inputs,
+    base_path,
+) -> MutableMapping[str, List[MutableMapping]]:
+    def enforce_high_strictness_level_rules(expect_records_config, configured_catalog, empty_streams, records_by_stream) -> Optional[str]:
+        error_prefix = "High strictness level error: "
+        if expect_records_config is None:
+            pytest.fail(error_prefix + "expect_records must be configured for the basic_read test.")
+        elif expect_records_config.path:
+            not_seeded_streams = find_not_seeded_streams(configured_catalog, empty_streams, records_by_stream)
+            if not_seeded_streams:
+                pytest.fail(
+                    error_prefix
+                    + f"{', '.join(not_seeded_streams)} streams are declared in the catalog but do not have expected records. Please add expected records to {expect_records_config.path} or declare these streams in empty_streams."
+                )
+
+    expect_records_config = inputs.expect_records
+
+    expected_records_by_stream = {}
+    if expect_records_config:
+        if expect_records_config.path:
+            expected_records_file_path = str(base_path / expect_records_config.path)
+            with open(expected_records_file_path, "r") as f:
+                all_records = [AirbyteRecordMessage.parse_raw(line) for line in f]
+                expected_records_by_stream = TestBasicRead.group_by_stream(all_records)
+
+    if test_strictness_level is Config.TestStrictnessLevel.high:
+        enforce_high_strictness_level_rules(expect_records_config, configured_catalog, empty_streams, expected_records_by_stream)
+    return expected_records_by_stream
+
+
+def find_not_seeded_streams(
+    configured_catalog: ConfiguredAirbyteCatalog,
+    empty_streams: Set[EmptyStreamConfiguration],
+    records_by_stream: MutableMapping[str, List[MutableMapping]],
+) -> Set[str]:
+    stream_names_in_catalog = set([configured_stream.stream.name for configured_stream in configured_catalog.streams])
+    empty_streams_names = set([stream.name for stream in empty_streams])
+    expected_record_stream_names = set(records_by_stream.keys())
+    expected_seeded_stream_names = stream_names_in_catalog - empty_streams_names
+
+    return expected_seeded_stream_names - expected_record_stream_names
 
 
 @pytest.fixture(name="cached_schemas", scope="session")

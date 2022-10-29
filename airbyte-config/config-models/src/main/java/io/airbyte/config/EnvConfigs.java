@@ -138,7 +138,6 @@ public class EnvConfigs implements Configs {
 
   // Worker - Control plane configs
   private static final String DEFAULT_DATA_SYNC_TASK_QUEUES = "SYNC"; // should match TemporalJobType.SYNC.name()
-  private static final String CONNECTION_IDS_FOR_MVP_DATA_PLANE = "CONNECTION_IDS_FOR_MVP_DATA_PLANE";
 
   // Worker - Data Plane configs
   private static final String DATA_SYNC_TASK_QUEUES = "DATA_SYNC_TASK_QUEUES";
@@ -945,17 +944,6 @@ public class EnvConfigs implements Configs {
   @Override
   public boolean shouldRunConnectionManagerWorkflows() {
     return getEnvOrDefault(SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS, true);
-  }
-
-  // Worker - Control plane
-
-  @Override
-  public Set<String> connectionIdsForMvpDataPlane() {
-    final var connectionIds = getEnvOrDefault(CONNECTION_IDS_FOR_MVP_DATA_PLANE, "");
-    if (connectionIds.isEmpty()) {
-      return new HashSet<>();
-    }
-    return Arrays.stream(connectionIds.split(",")).collect(Collectors.toSet());
   }
 
   // Worker - Data plane

@@ -15,7 +15,12 @@ public class DatabricksSqlOperations extends JdbcSqlOperations {
   @Override
   public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
     for (final String query : queries) {
-      database.execute(query);
+      for (String q : query.split(";")) {
+        if (q.isBlank())
+          continue;
+
+        database.execute(q);
+      }
     }
   }
 
