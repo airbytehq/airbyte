@@ -1,3 +1,5 @@
+import { useIntl } from "react-intl";
+
 import { useReadStream } from "services/connectorBuilder/ConnectorBuilderApiService";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
@@ -7,6 +9,7 @@ import styles from "./StreamTestingPanel.module.scss";
 import { TestControls } from "./TestControls";
 
 export const StreamTestingPanel: React.FC<unknown> = () => {
+  const { formatMessage } = useIntl();
   const { jsonManifest, selectedStream, configJson } = useConnectorBuilderState();
   const { data: streamReadData, refetch: readStream } = useReadStream({
     manifest: jsonManifest,
@@ -23,7 +26,11 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
           readStream();
         }}
       />
-      <ResultDisplay className={styles.resultDisplay} streamRead={streamReadData ?? { logs: [], slices: [] }} />
+      {streamReadData && streamReadData.slices.length !== 0 ? (
+        <ResultDisplay className={styles.resultDisplay} streamRead={streamReadData} />
+      ) : (
+        <div className={styles.placeholder}>{formatMessage({ id: "connectorBuilder.resultsPlaceholder" })}</div>
+      )}
     </div>
   );
 };

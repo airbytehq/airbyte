@@ -25,11 +25,13 @@ interface TabData {
 
 export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className }) => {
   const { formatMessage } = useIntl();
-  const tabs: TabData[] = [
-    { title: formatMessage({ id: "connectorBuilder.recordsTab" }), content: page.records },
-    { title: formatMessage({ id: "connectorBuilder.requestTab" }), content: page.request },
-    { title: formatMessage({ id: "connectorBuilder.responseTab" }), content: page.response },
-  ];
+  const tabs: TabData[] = [{ title: formatMessage({ id: "connectorBuilder.recordsTab" }), content: page.records }];
+  if (page.request) {
+    tabs.push({ title: formatMessage({ id: "connectorBuilder.requestTab" }), content: page.request });
+  }
+  if (page.response) {
+    tabs.push({ title: formatMessage({ id: "connectorBuilder.responseTab" }), content: page.response });
+  }
 
   return (
     <div className={classNames(className)}>

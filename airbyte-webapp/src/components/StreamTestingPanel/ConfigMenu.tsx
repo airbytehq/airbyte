@@ -1,6 +1,5 @@
 import { faGear } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import classNames from "classnames";
 import { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
@@ -23,13 +22,18 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className }) => {
   return (
     <>
       <Button
-        className={classNames(className, styles.openModalButton)}
+        className={className}
+        size="sm"
         variant="secondary"
         onClick={() => setIsOpen(true)}
         icon={<FontAwesomeIcon className={styles.icon} icon={faGear} />}
       />
       {isOpen && (
-        <Modal onClose={() => setIsOpen(false)} title={<FormattedMessage id="connectorBuilder.configMenuTitle" />}>
+        <Modal
+          size="lg"
+          onClose={() => setIsOpen(false)}
+          title={<FormattedMessage id="connectorBuilder.configMenuTitle" />}
+        >
           <ModalBody className={styles.modalContent}>
             <CodeEditor
               value={configString}

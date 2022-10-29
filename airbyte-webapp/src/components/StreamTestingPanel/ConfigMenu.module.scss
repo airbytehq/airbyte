@@ -1,11 +1,6 @@
 @use "scss/colors";
 
-.openModalButton.openModalButton {
-  height: 100%;
-}
-
 .modalContent {
-  width: 800px;
-  height: 700px;
+  height: 60vh;
   background-color: colors.$dark-blue;
 }

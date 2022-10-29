@@ -1,5 +1,4 @@
 import { load, YAMLException } from "js-yaml";
-import { lowerCase } from "lodash";
 import React, { useContext, useEffect, useState } from "react";
 import { useDebounce, useLocalStorage } from "react-use";
 
@@ -38,7 +37,7 @@ const useYamlManifest = () => {
       setJsonManifest(json);
     } catch (err) {
       if (err instanceof YAMLException) {
-        console.log("Connector manifest yaml is not valid!");
+        console.error(`Connector manifest yaml is not valid! Error: ${err}`);
       }
     }
   }, [yamlManifest]);
@@ -52,7 +51,7 @@ const useStreams = () => {
   const streams = streamListRead.streams;
 
   const [selectedStreamName, setSelectedStream] = useState(streamListRead.streams[0].name);
-  const selectedStream = streams.find((stream) => lowerCase(stream.name) === lowerCase(selectedStreamName)) ?? {
+  const selectedStream = streams.find((stream) => stream.name === selectedStreamName) ?? {
     name: selectedStreamName,
     url: "",
   };
@@ -69,7 +68,7 @@ const useConfig = () => {
       const json = JSON.parse(configString) as StreamReadRequestBodyConfig;
       setConfigJson(json);
     } catch (err) {
-      console.log("Config value is not valid JSON!");
+      console.error(`Config value is not valid JSON! Error: ${err}`);
     }
   }, [configString]);
 

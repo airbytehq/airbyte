@@ -38,6 +38,8 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -199,7 +201,8 @@ public class DbConverter {
   public static ActorCatalogFetchEvent buildActorCatalogFetchEvent(final Record record) {
     return new ActorCatalogFetchEvent()
         .withActorId(record.get(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID))
-        .withActorCatalogId(record.get(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID));
+        .withActorCatalogId(record.get(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID))
+        .withCreatedAt(record.get(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC));
   }
 
   public static WorkspaceServiceAccount buildWorkspaceServiceAccount(final Record record) {

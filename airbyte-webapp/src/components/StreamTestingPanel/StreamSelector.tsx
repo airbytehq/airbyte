@@ -3,8 +3,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { capitalize } from "lodash";
 
+import { Heading } from "components/ui/Heading";
 import { ListBox, ListBoxControlButtonProps } from "components/ui/ListBox";
-import { Text } from "components/ui/Text";
 
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
@@ -17,9 +17,9 @@ interface StreamSelectorProps {
 const ControlButton: React.FC<ListBoxControlButtonProps<string>> = ({ selectedOption }) => {
   return (
     <>
-      <Text as="h1" size="sm">
+      <Heading as="h1" size="sm">
         {selectedOption.label}
-      </Text>
+      </Heading>
       <FontAwesomeIcon className={styles.arrow} icon={faSortDown} />
     </>
   );
