@@ -5,6 +5,7 @@
 package io.airbyte.commons.version;
 
 public record AirbyteProtocolVersionRange(Version min, Version max) {
+
   public boolean isSupported(final Version v) {
     final Integer major = getMajor(v);
     return getMajor(min) <= major && major <= getMajor(max);
