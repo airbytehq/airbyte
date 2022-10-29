@@ -140,6 +140,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Recharge](sources/recharge.md)                                                             | Generally Available  | Yes                 |
 | [Recurly](sources/recurly.md)                                                               | Alpha                | Yes                 |
 | [Redshift](sources/redshift.md)                                                             | Alpha                | Yes                 |
+| [Restcountries.com](sources/restcountries.md)                                               | Alpha                | No                  |
 | [Retently](sources/retently.md)                                                             | Alpha                | Yes                 |
 | [S3](sources/s3.md)                                                                         | Generally Available  | No                 |
 | [Salesforce](sources/salesforce.md)                                                         | Generally Available  | Yes                 |

@@ -1,0 +1,30 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://restcountries.com/v2"
+    http_method: "GET"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"      
+  all_countries_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+    $options:
+      name: "countries"
+      primary_key: "name"
+      path: "/all"
+
+streams:
+  - "*ref(definitions.all_countries_stream)"
+
+check:
+  stream_names:
+    - "countries"

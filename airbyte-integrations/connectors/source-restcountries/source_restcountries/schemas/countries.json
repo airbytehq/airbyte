@@ -1,0 +1,199 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "alpha2Code": {
+        "type": "string"
+      },
+      "alpha3Code": {
+        "type": "string"
+      },
+      "altSpellings": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "area": {
+        "type": "number"
+      },
+      "borders": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "callingCodes": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "capital": {
+        "type": "string"
+      },
+      "cioc": {
+        "type": "string"
+      },
+      "currencies": {
+        "items": {
+          "properties": {
+            "code": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "symbol": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "demonym": {
+        "type": "string"
+      },
+      "flag": {
+        "type": "string"
+      },
+      "flags": {
+        "properties": {
+          "png": {
+            "type": "string"
+          },
+          "svg": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "gini": {
+        "type": "number"
+      },
+      "independent": {
+        "type": "boolean"
+      },
+      "languages": {
+        "items": {
+          "properties": {
+            "iso639_1": {
+              "type": "string"
+            },
+            "iso639_2": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "nativeName": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "latlng": {
+        "items": {
+          "type": "number"
+        },
+        "type": "array"
+      },
+      "name": {
+        "type": "string"
+      },
+      "nativeName": {
+        "type": "string"
+      },
+      "numericCode": {
+        "type": "string"
+      },
+      "population": {
+        "type": "integer"
+      },
+      "region": {
+        "type": "string"
+      },
+      "regionalBlocs": {
+        "items": {
+          "properties": {
+            "acronym": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "otherAcronyms": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "otherNames": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "subregion": {
+        "type": "string"
+      },
+      "timezones": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "topLevelDomain": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "translations": {
+        "properties": {
+          "br": {
+            "type": "string"
+          },
+          "de": {
+            "type": "string"
+          },
+          "es": {
+            "type": "string"
+          },
+          "fa": {
+            "type": "string"
+          },
+          "fr": {
+            "type": "string"
+          },
+          "hr": {
+            "type": "string"
+          },
+          "hu": {
+            "type": "string"
+          },
+          "it": {
+            "type": "string"
+          },
+          "ja": {
+            "type": "string"
+          },
+          "nl": {
+            "type": "string"
+          },
+          "pt": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "type": "object"
+  }
