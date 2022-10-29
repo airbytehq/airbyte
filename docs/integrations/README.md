@@ -162,6 +162,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Sugar CRM](sources/sugar-crm.md)                                                           | Alpha                | No                  |
 | [SurveyMonkey](sources/surveymonkey.md)                                                     | Generally Available  | Yes                 |
 | [Tempo](sources/tempo.md)                                                                   | Alpha                | Yes                 |
+| [The Guardian API](sources/the-guardian-api.md)                                             | Alpha                | Yes                 |
 | [TiDB](sources/tidb.md)                                                                     | Alpha                | No                  |
 | [TikTok Marketing](./sources/tiktok-marketing.md)                                           | Generally Available  | Yes                 |
 | [Trello](sources/trello.md)                                                                 | Alpha                | No                  |
