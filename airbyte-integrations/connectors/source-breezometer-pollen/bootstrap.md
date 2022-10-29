@@ -2,7 +2,7 @@
 
 ## Overview
 
-Breezometer Pollen API lets you request pollen information including types, plants, and indexes for a specific location.
+Breezometer Pollen connector lets you request pollen information including types, plants, and indexes for a specific location.
 
 ## Authentication
 

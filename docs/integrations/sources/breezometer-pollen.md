@@ -26,4 +26,4 @@ There is only one endpoint, that responds with information for various trees and
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.0   | 2022-10-29 | [18049](https://github.com/airbytehq/airbyte/pull/18049) | Initial version/release of the connector.
+| 0.1.0   | 2022-10-29 | [18650](https://github.com/airbytehq/airbyte/pull/18650) | Initial version/release of the connector.
