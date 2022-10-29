@@ -13,17 +13,16 @@ on:
 jobs:
   dummy-job:
     name: Deploy Docs Assets
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       # Node.js is needed for Yarn
       - name: Setup Yarn
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         uses: actions/setup-node@v2
         with:
           node-version: '16.14.0'
@@ -31,7 +30,22 @@ jobs:
           cache-dependency-path: docusaurus
 
       - name: Run Docusaurus
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./tools/bin/deploy_docusaurus
+
+      - name: Notify Slack channel on failure
+        uses: abinoda/slack-action@master
+        if: failure()
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+        with:
+          # 'C03BEADRPNY' channel => '#oss-master-build-failure'
+          args: >-
+            {\"channel\":\"C03BEADRPNY\", \"blocks\":[
+            {\"type\":\"divider\"},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"OSS Docs build fails on the latest master :bangbang: \n\n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n\"}},
+            {\"type\":\"divider\"}]}
+
