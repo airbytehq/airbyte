@@ -62,21 +62,6 @@ class Services(PublicApisStream):
     ) -> Iterable[Mapping]:
         return response.json()["entries"]
 
-
-
-# Basic incremental stream
-class IncrementalPublicApisStream(PublicApisStream, ABC):
-    state_checkpoint_interval = None
-
-    @property
-    def cursor_field(self) -> str:
-        return []
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {}
-
-
-
 # Source
 class SourcePublicApis(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
