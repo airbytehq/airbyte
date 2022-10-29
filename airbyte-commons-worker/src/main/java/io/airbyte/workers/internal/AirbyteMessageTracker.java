@@ -17,6 +17,8 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
+import io.airbyte.protocol.models.AirbyteControlConnectorConfigMessage;
+import io.airbyte.protocol.models.AirbyteControlMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -110,6 +112,7 @@ public class AirbyteMessageTracker implements MessageTracker {
       case TRACE -> handleEmittedTrace(message.getTrace(), ConnectorType.SOURCE);
       case RECORD -> handleSourceEmittedRecord(message.getRecord());
       case STATE -> handleSourceEmittedState(message.getState());
+      case CONTROL -> handleEmittedOrchestratorMessage(message.getControl(), ConnectorType.SOURCE);
       default -> log.warn("Invalid message type for message: {}", message);
     }
   }
@@ -122,6 +125,7 @@ public class AirbyteMessageTracker implements MessageTracker {
     switch (message.getType()) {
       case TRACE -> handleEmittedTrace(message.getTrace(), ConnectorType.DESTINATION);
       case STATE -> handleDestinationEmittedState(message.getState());
+      case CONTROL -> handleEmittedOrchestratorMessage(message.getControl(), ConnectorType.DESTINATION);
       default -> log.warn("Invalid message type for message: {}", message);
     }
   }
@@ -214,6 +218,30 @@ public class AirbyteMessageTracker implements MessageTracker {
       log.warn(e.getMessage(), e);
       unreliableStateTimingMetrics = true;
     }
+  }
+
+  /**
+   * When a connector signals that the platform should update persist an update
+   */
+  private void handleEmittedOrchestratorMessage(final AirbyteControlMessage controlMessage, final ConnectorType connectorType) {
+    switch (controlMessage.getType()) {
+      case CONNECTOR_CONFIG -> handleEmittedOrchestratorConnectorConfig(controlMessage.getConnectorConfig(), connectorType);
+      default -> log.warn("Invalid orchestrator message type for message: {}", controlMessage);
+    }
+  }
+
+  /**
+   * When a connector needs to update its configuration
+   */
+  @SuppressWarnings("PMD") // until method is implemented
+  private void handleEmittedOrchestratorConnectorConfig(final AirbyteControlConnectorConfigMessage configMessage,
+                                                        final ConnectorType connectorType) {
+    // TODO: Update config here
+    /**
+     * Pseudocode: for (key in configMessage.getConfig()) { validateIsReallyConfig(key);
+     * persistConfigChange(connectorType, key, configMessage.getConfig().get(key)); // nuance here for
+     * secret storage or not. May need to be async over API for replication orchestrator }
+     */
   }
 
   /**
