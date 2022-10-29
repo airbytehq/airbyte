@@ -1,6 +1,6 @@
-# Emailoctopus Source
+# EmailOctopus Source
 
-This is the repository for the Emailoctopus configuration based source connector.
+This is the repository for the EmailOctopus configuration based source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/emailoctopus).
 
 ## Local development
