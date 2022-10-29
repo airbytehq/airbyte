@@ -32,6 +32,7 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
+  # API Docs: https://emailoctopus.com/api-documentation/campaigns/get-all
   campaigns_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -42,6 +43,13 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       paginator:
         $ref: "*ref(definitions.increment_paginator)"
+    # Fields are large and may affect performance
+    transformations:
+      - type: RemoveFields
+        field_pointers:
+          - ["content", "html"]
+          - ["content", "plain_text"]
+  # API Docs: https://emailoctopus.com/api-documentation/lists/get-all
   lists_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -52,6 +60,11 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       paginator:
         $ref: "*ref(definitions.increment_paginator)"
+    # 'tags' array not yet documented (2022-10-29)
+    transformations:
+      - type: RemoveFields
+        field_pointers:
+          - ["tags"]
 
 streams:
   - "*ref(definitions.campaigns_stream)"
