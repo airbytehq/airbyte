@@ -5,6 +5,7 @@ import React, { useMemo } from "react";
 import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 
 import { StatusIcon } from "components";
+import { ProgressBar } from "components/ProgressBar";
 import { Cell, Row } from "components/SimpleTableComponents";
 
 import { AttemptRead, JobStatus, SynchronousJobRead } from "core/request/AirbyteClient";
@@ -87,6 +88,9 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
         <div className={styles.statusIcon}>{statusIcon}</div>
         <div className={styles.justification}>
           {label}
+          <div>
+            <ProgressBar job={job} />
+          </div>
           {attempts.length > 0 && (
             <>
               {jobConfigType === "reset_connection" ? (
