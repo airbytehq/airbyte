@@ -350,7 +350,9 @@ public class DefaultJobPersistence implements JobPersistence {
               attemptNumber).stream().findFirst();
       final Long attemptId = record.get().get("id", Long.class);
 
+      // change this into an update or
       ctx.insertInto(SYNC_STATS)
+          .onDuplicateKeyUpdate()
           .set(SYNC_STATS.ID, UUID.randomUUID())
           .set(SYNC_STATS.UPDATED_AT, now)
           .set(SYNC_STATS.CREATED_AT, now)
@@ -380,6 +382,10 @@ public class DefaultJobPersistence implements JobPersistence {
       }
       return null;
     });
+
+  }
+
+  public void writeRunningSyncStats(final long jobId, final long attemptId, final SyncStats stats) {
 
   }
 

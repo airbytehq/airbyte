@@ -143,7 +143,7 @@ public class JobHistoryHandler {
         if (stats.getStats() == null) {
           stats.stats(new AttemptStats());
         }
-        
+
         final var s = stats.getStats();
         final var runningSync = s.getBytesEmitted() == null;
 
