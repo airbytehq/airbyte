@@ -135,7 +135,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state)
-    throws Exception {
+      throws Exception {
     try {
       final StateManager stateManager =
           StateManagerFactory.createStateManager(getSupportedStateType(config), deserializeInitialState(state, config), catalog);
@@ -175,7 +175,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   private boolean isConfigError(final Exception exception) {
-    // For now, enhanced error details should only be shown for InvalidCursorException. In the future, enhanced error messages will exist for
+    // For now, enhanced error details should only be shown for InvalidCursorException. In the future,
+    // enhanced error messages will exist for
     // additional error types.
     return exception instanceof InvalidCursorException;
   }

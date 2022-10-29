@@ -67,9 +67,7 @@ const MainRoutes: React.FC = () => {
       cloudWorkspace.creditStatus === CreditStatus.NEGATIVE_MAX_THRESHOLD;
     // If the workspace is out of credits it doesn't allow creation of new connections
     // or syncing existing connections.
-    setWorkspaceFeatures(
-      outOfCredits ? ({ [FeatureItem.AllowCreateConnection]: false, [FeatureItem.AllowSync]: false } as FeatureSet) : []
-    );
+    setWorkspaceFeatures(outOfCredits ? ({ [FeatureItem.AllowSync]: false } as FeatureSet) : []);
     return () => {
       setWorkspaceFeatures(undefined);
     };

@@ -497,6 +497,7 @@ def test_create_composite_error_handler():
             - response_filters:
                 - http_codes: [ 403 ]
                   action: RETRY
+                  error_message: "Retryable error received: {{ response.message }}"
     """
     config = parser.parse(content)
 
@@ -508,6 +509,7 @@ def test_create_composite_error_handler():
     assert isinstance(component.error_handlers[0].response_filters[0], HttpResponseFilter)
     assert component.error_handlers[0].response_filters[0].predicate.condition == "{{ 'code' in response }}"
     assert component.error_handlers[1].response_filters[0].http_codes == [403]
+    assert component.error_handlers[1].response_filters[0].error_message.string == "Retryable error received: {{ response.message }}"
     assert isinstance(component, CompositeErrorHandler)
 
 

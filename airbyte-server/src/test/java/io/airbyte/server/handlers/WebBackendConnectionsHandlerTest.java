@@ -251,7 +251,8 @@ class WebBackendConnectionsHandlerTest {
         destinationRead,
         false,
         jobRead.getJob().getCreatedAt(),
-        jobRead.getJob().getStatus());
+        jobRead.getJob().getStatus(),
+        SchemaChange.NO_CHANGE);
 
     expected = expectedWebBackendConnectionReadObject(connectionRead, sourceRead, destinationRead, operationReadList, SchemaChange.NO_CHANGE, now,
         connectionRead.getSyncCatalog(), connectionRead.getSourceCatalogId());
@@ -345,7 +346,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testWebBackendListConnectionsForWorkspace() throws IOException {
+  void testWebBackendListConnectionsForWorkspace() throws IOException, JsonValidationException, ConfigNotFoundException {
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
     workspaceIdRequestBody.setWorkspaceId(sourceRead.getWorkspaceId());
 
@@ -371,9 +372,9 @@ class WebBackendConnectionsHandlerTest {
     when(connectionsHandler.getConnection(connectionRead.getConnectionId())).thenReturn(connectionRead);
     when(operationsHandler.listOperationsForConnection(connectionIdRequestBody)).thenReturn(operationReadList);
 
-    final WebBackendConnectionRead WebBackendConnectionRead = wbHandler.webBackendGetConnection(webBackendConnectionRequestBody);
+    final WebBackendConnectionRead webBackendConnectionRead = wbHandler.webBackendGetConnection(webBackendConnectionRequestBody);
 
-    assertEquals(expected, WebBackendConnectionRead);
+    assertEquals(expected, webBackendConnectionRead);
 
     // make sure the icons were loaded into actual svg content
     assertTrue(expected.getSource().getIcon().startsWith(SVG));
@@ -404,8 +405,9 @@ class WebBackendConnectionsHandlerTest {
       IOException, JsonValidationException {
     when(connectionsHandler.getDiff(any(), any(),
         any())).thenReturn(expectedWithNewSchema.getCatalogDiff());
+    final UUID newCatalogId = UUID.randomUUID();
     when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
-        .thenReturn(Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(UUID.randomUUID())));
+        .thenReturn(Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(newCatalogId)));
     when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withId(UUID.randomUUID()));
     final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead,
         operationReadList);
@@ -1132,6 +1134,40 @@ class WebBackendConnectionsHandlerTest {
     assertTrue(
         resultList.stream().anyMatch(
             streamDescriptor -> streamDescriptor.getName() == "updated_stream"));
+  }
+
+  @Test
+  void testGetSchemaChangeNoChange() {
+    final ConnectionRead connectionReadNotBreaking = new ConnectionRead().breakingChange(false);
+
+    assertEquals(SchemaChange.NO_CHANGE, wbHandler.getSchemaChange(null, Optional.of(UUID.randomUUID()), Optional.of(new ActorCatalogFetchEvent())));
+    assertEquals(SchemaChange.NO_CHANGE,
+        wbHandler.getSchemaChange(connectionReadNotBreaking, Optional.empty(), Optional.of(new ActorCatalogFetchEvent())));
+
+    final UUID catalogId = UUID.randomUUID();
+
+    assertEquals(SchemaChange.NO_CHANGE, wbHandler.getSchemaChange(connectionReadNotBreaking, Optional.of(catalogId),
+        Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(catalogId))));
+  }
+
+  @Test
+  void testGetSchemaChangeBreaking() {
+    final UUID sourceId = UUID.randomUUID();
+    final ConnectionRead connectionReadWithSourceId = new ConnectionRead().sourceCatalogId(UUID.randomUUID()).sourceId(sourceId).breakingChange(true);
+
+    assertEquals(SchemaChange.BREAKING, wbHandler.getSchemaChange(connectionReadWithSourceId,
+        Optional.of(UUID.randomUUID()), Optional.empty()));
+  }
+
+  @Test
+  void testGetSchemaChangeNotBreaking() {
+    final UUID catalogId = UUID.randomUUID();
+    final UUID differentCatalogId = UUID.randomUUID();
+    final ConnectionRead connectionReadWithSourceId =
+        new ConnectionRead().breakingChange(false);
+
+    assertEquals(SchemaChange.NON_BREAKING, wbHandler.getSchemaChange(connectionReadWithSourceId,
+        Optional.of(catalogId), Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(differentCatalogId))));
   }
 
 }

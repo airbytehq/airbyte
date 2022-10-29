@@ -73,3 +73,6 @@ docs/SUMMARY.md
 
 # Helm charts .tgz dependencies
 charts/**/charts
+
+# Datadog
+dd-java-agent.jar
