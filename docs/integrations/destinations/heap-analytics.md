@@ -77,7 +77,7 @@ There are 4 properties in the request body.
 - properties: An object with key-value properties you want associated with the event.
 - timestamp: (optional), the datetime in ISO8601. e.g. "2017-03-10T22:21:56+00:00". Defaults to the current time if not provided.
 
-For `Add User Properties`, You need to configure the following 2 fields in airbyte.
+For `Add User Properties`, You need to configure the following 4 fields in airbyte.
 
 - Identity Column: The attribute name from the source data populated to identity.
 - event_column: The attribute name from the source data populated to event.
