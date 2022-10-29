@@ -2,7 +2,7 @@
   "streams": [
     {
       "cursor_field": null,
-      "destination_sync_mode": "append",
+      "destination_sync_mode": "overwrite",
       "primary_key": null,
       "stream": {
         "default_cursor_field": null,
@@ -23,7 +23,7 @@
     },
     {
       "cursor_field": null,
-      "destination_sync_mode": "append",
+      "destination_sync_mode": "overwrite",
       "primary_key": null,
       "stream": {
         "default_cursor_field": null,
