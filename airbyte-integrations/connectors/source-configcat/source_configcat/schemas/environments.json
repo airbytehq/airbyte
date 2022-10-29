@@ -6,22 +6,22 @@
       "type": "object"
     },
     "environmentId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "color": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "description": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "order": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "reasonRequired": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     }
   }
 }

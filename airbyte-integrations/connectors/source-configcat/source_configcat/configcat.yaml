@@ -62,7 +62,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
-        path: "/products/{{ stream_slice.productId }}/tags"
+        path: "/products/{{ stream_slice.productId }}/environments"
       stream_slicer:
         $ref: "*ref(definitions.product_stream_slicer)"
       record_selector:
