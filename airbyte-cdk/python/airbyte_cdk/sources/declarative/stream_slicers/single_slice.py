@@ -56,4 +56,4 @@ class SingleSlice(StreamSlicer, JsonSchemaMixin):
         return {}
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[StreamSlice]:
-        return [dict()]
+        yield dict()

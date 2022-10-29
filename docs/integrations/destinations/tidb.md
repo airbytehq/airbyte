@@ -47,7 +47,7 @@ CREATE USER 'airbyte'@'%' IDENTIFIED BY 'your_password_here';
 Then give it access to the relevant database:
 
 ```sql
-GRANT SELECT ON <database name>.* TO 'airbyte'@'%';
+GRANT CREATE, INSERT, SELECT, DROP ON <database name>.* TO 'airbyte'@'%';
 ```
 
 #### Target Database

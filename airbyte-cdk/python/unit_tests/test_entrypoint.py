@@ -19,6 +19,7 @@ from airbyte_cdk.models import (
     AirbyteStream,
     ConnectorSpecification,
     Status,
+    SyncMode,
     Type,
 )
 from airbyte_cdk.sources import Source
@@ -154,12 +155,16 @@ def test_config_validate(entrypoint: AirbyteEntrypoint, mocker, config_mock, sch
     check_value = AirbyteConnectionStatus(status=Status.SUCCEEDED)
     mocker.patch.object(MockSource, "check", return_value=check_value)
     mocker.patch.object(MockSource, "spec", return_value=ConnectorSpecification(connectionSpecification=schema))
+
+    messages = list(entrypoint.run(parsed_args))
     if config_valid:
-        messages = list(entrypoint.run(parsed_args))
         assert [_wrap_message(check_value)] == messages
     else:
-        with pytest.raises(Exception, match=r"(?i)Config Validation Error:.*"):
-            list(entrypoint.run(parsed_args))
+        assert len(messages) == 1
+        airbyte_message = AirbyteMessage.parse_raw(messages[0])
+        assert airbyte_message.type == Type.CONNECTION_STATUS
+        assert airbyte_message.connectionStatus.status == Status.FAILED
+        assert airbyte_message.connectionStatus.message.startswith("Config validation error:")
 
 
 def test_run_check(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
@@ -172,7 +177,7 @@ def test_run_check(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock
 
 def test_run_discover(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
     parsed_args = Namespace(command="discover", config="config_path")
-    expected = AirbyteCatalog(streams=[AirbyteStream(name="stream", json_schema={"k": "v"})])
+    expected = AirbyteCatalog(streams=[AirbyteStream(name="stream", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh])])
     mocker.patch.object(MockSource, "discover", return_value=expected)
     assert [_wrap_message(expected)] == list(entrypoint.run(parsed_args))
     assert spec_mock.called
