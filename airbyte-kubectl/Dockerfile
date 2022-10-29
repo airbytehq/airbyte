@@ -18,7 +18,7 @@ RUN export -p; \
     arch=${TARGETARCH:-${DOCKER_BUILD_ARCH:-}} ; \
     arch=${arch:-$(uname -m)} ; \
     arch=${arch/aarch64/amd64} ; \
-    kube_url="https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${DOCKER_BUILD_ARCH}/kubectl"; \
+    kube_url="https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${arch}/kubectl"; \
     echo $kube_url; \
     curl --fail -sSLO $kube_url && \
     [ -s kubectl ] && \
