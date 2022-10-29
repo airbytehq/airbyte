@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
@@ -366,7 +367,8 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         for r in records_generator:
             if r.type == MessageType.RECORD:
                 self.stream_slicer.update_cursor(stream_slice, last_record=r.record.data)
-            yield r
+            if r.type == MessageType.RECORD or self.logger.isEnabledFor(logging.DEBUG):
+                yield r
         else:
             last_record = self._last_records[-1] if self._last_records else None
             self.stream_slicer.update_cursor(stream_slice, last_record=last_record)

@@ -6,6 +6,7 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import AirbyteMessage, SyncMode
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
@@ -112,10 +113,13 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[AirbyteMessage]:
-        print("here")
-        for record in self.retriever.read_records_as_message(sync_mode, cursor_field, stream_slice, stream_state):
-            print(f"record: {record}")
-            yield self._apply_transformations(record, self.config, stream_slice)
+        # FIXME: safeguard this assignment!
+        if hasattr(self.logger, "level"):
+            self.retriever.logger.setLevel(self.logger.level)
+        for message in self.retriever.read_records_as_message(sync_mode, cursor_field, stream_slice, stream_state):
+            if message.type == MessageType.RECORD:
+                message.record.data = self._apply_transformations(message.record.data, self.config, stream_slice)
+            yield message
 
     def read_records(
         self,
