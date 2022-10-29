@@ -19,7 +19,7 @@
       "description": "If double opt-in has been enabled on the list."
     },
     "fields": {
-      "type": "object",
+      "type": "array",
       "title": "Subscriber Fields",
       "description": "Stored information on subscribers.",
       "properties": {
