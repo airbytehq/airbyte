@@ -4,41 +4,63 @@ import React from "react";
 
 import styles from "./ListBox.module.scss";
 
-interface ListBoxProps {
-  className?: string;
-  values: string[];
-  selectedValue: string;
-  onSelect: (selected: string) => void;
-  buttonClassName?: string;
-  buttonContent?: (value: string) => React.ReactNode;
-  optionContent?: (value: string) => React.ReactNode;
+export interface ListBoxControlButtonProps<T> {
+  selectedOption: Option<T>;
 }
 
-export const ListBox: React.FC<ListBoxProps> = ({
-  className,
-  values,
-  selectedValue,
-  onSelect,
-  buttonClassName,
-  buttonContent,
-  optionContent,
-}) => {
+// Not using arrow function due to generic type
+// eslint-disable-next-line react/function-component-definition
+function DefaultControlButton<T>({ selectedOption }: ListBoxControlButtonProps<T>) {
+  return <>{selectedOption.label}</>;
+}
+
+export interface Option<T> {
+  label: string;
+  value: T;
+}
+
+interface ListBoxProps<T> {
+  className?: string;
+  options: Array<Option<T>>;
+  selectedValue: T;
+  onSelect: (selectedValue: T) => void;
+  buttonClassName?: string;
+  controlButton?: React.ComponentType<ListBoxControlButtonProps<T>>;
+}
+
+// Not using arrow function due to generic type
+// eslint-disable-next-line react/function-component-definition
+export function ListBox<T>(props: ListBoxProps<T>) {
+  const {
+    className,
+    options,
+    selectedValue,
+    onSelect,
+    buttonClassName,
+    controlButton: ControlButton = DefaultControlButton,
+  } = props;
+
+  const selectedOption = options.find((option) => option.value === selectedValue) ?? {
+    label: String(selectedValue),
+    value: selectedValue,
+  };
+
   return (
     <div className={className}>
       <Listbox value={selectedValue} onChange={onSelect}>
         <Listbox.Button className={classNames(buttonClassName, styles.button)}>
-          {buttonContent ? buttonContent(selectedValue) : selectedValue}
+          <ControlButton selectedOption={selectedOption} />
         </Listbox.Button>
         {/* wrap in div to make `position: absolute` on Listbox.Options result in correct vertical positioning */}
         <div className={styles.optionsContainer}>
           <Listbox.Options className={classNames(styles.optionsMenu)}>
-            {values.map((value) => (
-              <Listbox.Option key={value} value={value} className={styles.option}>
+            {options.map(({ label, value }) => (
+              <Listbox.Option key={label} value={value} className={styles.option}>
                 {({ active, selected }) => (
                   <div
                     className={classNames(styles.optionValue, { [styles.active]: active, [styles.selected]: selected })}
                   >
-                    {optionContent ? optionContent(value) : value}
+                    {label}
                   </div>
                 )}
               </Listbox.Option>
@@ -48,4 +70,4 @@ export const ListBox: React.FC<ListBoxProps> = ({
       </Listbox>
     </div>
   );
-};
+}

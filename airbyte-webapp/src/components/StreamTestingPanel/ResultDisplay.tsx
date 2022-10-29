@@ -16,20 +16,6 @@ interface ResultDisplayProps {
   className?: string;
 }
 
-const marginPagesDisplayed = 2;
-
-// this keeps the number of elements displayed constant regardless of which page is selected
-function pageRangeDisplayed(numPages: number, selectedPageIndex: number): number {
-  if (selectedPageIndex === 0 || numPages - selectedPageIndex <= 3) {
-    return 6;
-  } else if (selectedPageIndex === 1 || selectedPageIndex === 2) {
-    return 5;
-  } else if (selectedPageIndex === 3 || numPages - selectedPageIndex === 4) {
-    return 4;
-  }
-  return 3;
-}
-
 export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead, className }) => {
   const { formatMessage } = useIntl();
   const [selectedSliceIndex, setSelectedSliceIndex] = useState(0);
@@ -59,13 +45,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead, classN
       <PageDisplay className={styles.pageDisplay} page={page} />
       <div className={styles.paginator}>
         <Text className={styles.pageLabel}>Page:</Text>
-        <Paginator
-          forcePage={selectedPage}
-          numPages={numPages}
-          onPageChange={handlePageChange}
-          marginPagesDisplayed={marginPagesDisplayed}
-          pageRangeDisplayed={pageRangeDisplayed(numPages, selectedPage)}
-        />
+        <Paginator numPages={numPages} onPageChange={handlePageChange} selectedPage={selectedPage} />
       </div>
     </div>
   );

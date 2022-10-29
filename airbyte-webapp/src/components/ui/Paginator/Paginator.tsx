@@ -1,48 +1,45 @@
 import classNames from "classnames";
-import ReactPaginate, { ReactPaginateProps } from "react-paginate";
+import ReactPaginate from "react-paginate";
 
 import styles from "./Paginator.module.scss";
 
-type PaginatorProps = {
+interface PaginatorProps {
+  className?: string;
   numPages: number;
   onPageChange: (selectedPageIndex: number) => void;
-  // pageRangeDisplayed?: 2 | 4 | 6 | 8 | 10;
-} & Partial<Omit<ReactPaginateProps, "pageCount" | "onPageChange">>;
+  selectedPage: number;
+}
 
-export const Paginator: React.FC<PaginatorProps> = ({
-  numPages,
-  onPageChange,
-  breakLabel = "...",
-  nextLabel = ">",
-  previousLabel = "<",
-  pageRangeDisplayed = 2,
-  marginPagesDisplayed = 2,
-  containerClassName,
-  pageClassName,
-  breakClassName,
-  activeClassName,
-  previousClassName,
-  nextClassName,
-  ...remainingProps
-}) => {
+// this keeps the number of elements displayed constant regardless of which page is selected
+function pageRangeDisplayed(numPages: number, selectedPageIndex: number): number {
+  if (selectedPageIndex === 0 || numPages - selectedPageIndex <= 3) {
+    return 6;
+  } else if (selectedPageIndex === 1 || selectedPageIndex === 2) {
+    return 5;
+  } else if (selectedPageIndex === 3 || numPages - selectedPageIndex === 4) {
+    return 4;
+  }
+  return 3;
+}
+
+export const Paginator: React.FC<PaginatorProps> = ({ className, numPages, onPageChange, selectedPage }) => {
   return (
     <ReactPaginate
       pageCount={numPages}
       onPageChange={(event) => {
         onPageChange(event.selected);
       }}
-      breakLabel={breakLabel}
-      nextLabel={nextLabel}
-      previousLabel={previousLabel}
-      pageRangeDisplayed={pageRangeDisplayed}
-      marginPagesDisplayed={marginPagesDisplayed}
-      containerClassName={classNames(containerClassName, styles.container)}
-      pageClassName={classNames(pageClassName, styles.button, styles.page)}
-      breakClassName={classNames(breakClassName, styles.button, styles.break)}
-      activeClassName={classNames(activeClassName, styles.active)}
-      previousClassName={classNames(previousClassName, styles.button, styles.previous)}
-      nextClassName={classNames(nextClassName, styles.button, styles.next)}
-      {...remainingProps}
+      breakLabel="…"
+      nextLabel=">"
+      previousLabel="<"
+      pageRangeDisplayed={pageRangeDisplayed(numPages, selectedPage)}
+      marginPagesDisplayed={2}
+      containerClassName={classNames(className, styles.container)}
+      pageClassName={classNames(styles.button, styles.page)}
+      breakClassName={classNames(styles.button, styles.break)}
+      activeClassName={styles.active}
+      previousClassName={classNames(styles.button, styles.previous)}
+      nextClassName={classNames(styles.button, styles.next)}
     />
   );
 };
