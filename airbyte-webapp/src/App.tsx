@@ -11,7 +11,6 @@ import { defaultFeatures, FeatureService } from "hooks/services/Feature";
 import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { ModalServiceProvider } from "hooks/services/Modal";
 import NotificationService from "hooks/services/Notification";
-import { ConnectorBuilderStateProvider } from "services/connectorBuilder/ConnectorBuilderStateService";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 import { StoreProvider } from "views/common/StoreProvider";
 
@@ -50,9 +49,7 @@ const Services: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
               <ModalServiceProvider>
                 <FormChangeTrackerService>
                   <HelmetProvider>
-                    <ApiServices>
-                      <ConnectorBuilderStateProvider>{children}</ConnectorBuilderStateProvider>
-                    </ApiServices>
+                    <ApiServices>{children}</ApiServices>
                   </HelmetProvider>
                 </FormChangeTrackerService>
               </ModalServiceProvider>
