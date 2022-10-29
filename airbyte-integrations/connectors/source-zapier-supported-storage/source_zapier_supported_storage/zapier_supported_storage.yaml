@@ -5,11 +5,8 @@ definitions:
     extractor:
       field_pointer: []
   requester:
-    url_base: "https://store.zapier.com"
+    url_base: "https://store.zapier.com/api"
     http_method: "GET"
-#    authenticator:
-#      type: BearerAuthenticator
-#      api_token: "{{ config['api_key'] }}"
     request_options_provider:
       request_parameters:
         secret: "{{ config['secret'] }}"
@@ -28,7 +25,7 @@ definitions:
     $options:
       name: "zapier_supported_storage"
       primary_key: "data"
-      path: "/api/records"
+      path: "/records"
 
 streams:
   - "*ref(definitions.zapier_supported_storage_stream)"

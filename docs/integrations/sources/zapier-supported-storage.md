@@ -53,5 +53,5 @@ To get the API token for your application follow this [steps](https://developer.
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|                        |
-| 0.1.0   | 2022-10-25 |  | Initial release for Zapier Supported Storage|
+| 0.1.0   | 2022-10-25 | [18442](https://github.com/airbytehq/airbyte/pull/18442)  | Initial release|
 
