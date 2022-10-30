@@ -31,7 +31,6 @@ public interface WorkflowStateChangedListener {
     FAILED,
     RESET,
     CONTINUE_AS_RESET,
-    RETRY_FAILED_ACTIVITY,
     QUARANTINED,
     SUCCESS,
     CANCELLED_FOR_RESET,
