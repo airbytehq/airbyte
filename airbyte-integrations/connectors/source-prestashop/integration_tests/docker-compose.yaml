@@ -7,7 +7,7 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=admin
     volumes:
-      - .:/docker-entrypoint-initdb.d/
+      - ${INTEGRATION_TESTS_DIR:-.}:/docker-entrypoint-initdb.d/
     networks:
       - prestashop-net
 
