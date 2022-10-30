@@ -6,11 +6,12 @@ This source can sync data from the [Launchdarkly API](https://apidocs.launchdark
 
 ## This Source Supports the Following Streams
 
-* contact list
-* contacts
-* messages
-* campaigns
-* stats
+* projects
+* environments
+* metrics
+* members
+* audit_log
+* flags
 
 ### Features
 
