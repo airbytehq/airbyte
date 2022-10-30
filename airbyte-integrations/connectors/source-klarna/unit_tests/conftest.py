@@ -1,5 +1,5 @@
 import pytest as pytest
-from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
 
 from source_klarna import SourceKlarna
 from source_klarna.source import KlarnaStream, IncrementalKlarnaStream

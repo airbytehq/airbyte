@@ -1,3 +1,6 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "region": "eu",
+  "playground": true,
+  "username": "PK57312_4d86a3a57622",
+  "password": "g9QhHeZtkakKBX26"
 }
