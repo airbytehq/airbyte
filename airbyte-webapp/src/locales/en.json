@@ -574,5 +574,8 @@
   "airbyte.datatype.boolean": "Boolean",
 
   "connectorBuilder.downloadYaml": "Download YAML",
-  "connectorBuilder.expandConfiguration": "Expand this pane to continue building your connector"
+  "connectorBuilder.expandConfiguration": "Expand this pane to continue building your connector",
+  "connectorBuilder.testButton": "Test",
+  "connectorBuilder.configMenuTitle": "Configure Test Input",
+  "connectorBuilder.configMenuConfirm": "Confirm"
 }
