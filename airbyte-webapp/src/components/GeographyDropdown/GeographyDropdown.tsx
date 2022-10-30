@@ -6,23 +6,9 @@ import { useIntl } from "react-intl";
 import { components, OptionProps, MenuListProps } from "react-select";
 
 import { DropDown } from "components/ui/DropDown";
+import { DropdownProps } from "components/ui/DropDown";
 
 import styles from "./GeographyDropdown.module.scss";
-
-const options = [
-  {
-    value: "en",
-    label: "en",
-  },
-  {
-    value: "auto",
-    label: "auto",
-  },
-  {
-    value: "eu",
-    label: "eu",
-  },
-];
 
 const flags: Record<string, React.ReactNode> = {
   auto: <US />,
@@ -54,7 +40,11 @@ const MenuList = (props: MenuListProps) => {
   );
 };
 
-export const GeographyDropdown: React.FC = (props) => {
+interface Props<T = unknown> extends DropdownProps {
+  options: T[];
+}
+
+export const GeographyDropdown: React.FC<Props> = ({ options }) => {
   return (
     <DropDown
       className={styles.reactSelectContainer}
