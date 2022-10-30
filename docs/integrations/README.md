@@ -95,6 +95,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Klaviyo](sources/klaviyo.md)                                                               | Generally Available  | Yes                 |
 | [Kustomer](sources/kustomer.md)                                                             | Alpha                | Yes                 |
 | [Kyriba](sources/kyriba.md)                                                                 | Alpha                | No                  |
+| [Launchdarkly](sources/launchdarkly.md)                                                     | Alpha                | Yes                 |
 | [Lemlist](sources/lemlist.md)                                                               | Alpha                | Yes                 |
 | [Lever](sources/lever-hiring.md)                                                            | Alpha                | No                  |
 | [LinkedIn Ads](sources/linkedin-ads.md)                                                     | Generally Available  | Yes                 |
