@@ -140,6 +140,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Pipedrive](sources/pipedrive.md)                                                           | Alpha                | No                  |
 | [Pivotal Tracker](sources/pivotal-tracker.md)                                               | Alpha                | No                  |
 | [Plaid](sources/plaid.md)                                                                   | Alpha                | No                  |
+| [Pocket](sources/pocket.md)                                                                 | Alpha                | Yes                 |
 | [PokéAPI](sources/pokeapi.md)                                                               | Alpha                | Yes                 |
 | [Postgres](sources/postgres.md)                                                             | Generally Available  | Yes                 |
 | [PostHog](sources/posthog.md)                                                               | Alpha                | Yes                 |
