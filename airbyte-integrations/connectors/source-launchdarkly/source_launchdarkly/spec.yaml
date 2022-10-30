@@ -8,8 +8,10 @@ connectionSpecification:
   additionalProperties: true
   properties:
     access_token:
-      title: Access tokens
+      title: Access token
       type: string
       description: >-
-        Your Access tokens. See <a
+        Your Access token. See <a
         href="https://apidocs.launchdarkly.com/#section/Overview/Authentication">here</a>.
+      airbyte_secret: true
+
