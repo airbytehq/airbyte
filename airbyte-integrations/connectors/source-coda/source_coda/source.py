@@ -1,8 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
-
+import logging
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -26,7 +25,6 @@ class CodaStream(HttpStream, ABC):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-   
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -55,11 +53,7 @@ class CodaStream(HttpStream, ABC):
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
-        yield from response.json()
+        return response.json()['items']
 
 
 """
@@ -85,12 +79,107 @@ class Docs(CodaStream):
     ) -> str:
         return "docs"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
-        yield from response.json()
+
+class Permissions(CodaStream):
+
+    primary_key = "PERMISSIONS"
+
+    def __init__(self, doc_id, **kwargs):
+        super().__init__(**kwargs)
+        self._doc_id = doc_id
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"docs/{self._doc_id}/acl/permissions"
+
+
+
+class Categories(CodaStream):
+
+    primary_key = "CATEGORIES"
+
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "categories"
+
+
+
+
+class Pages(CodaStream):
+
+    primary_key = "PAGES"
+
+    def __init__(self, doc_id, **kwargs):
+        super().__init__(**kwargs)
+        self._doc_id = doc_id
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"docs/{self._doc_id}/pages"
+
+class Tables(CodaStream):
+
+    primary_key = "TABLES"
+
+    def __init__(self, doc_id, **kwargs):
+        super().__init__(**kwargs)
+        self._doc_id = doc_id
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"docs/{self._doc_id}/tables"
+
+
+
+class Columns(CodaStream):
+
+    primary_key = "COLUMNS"
+
+    def __init__(self, doc_id, **kwargs):
+        super().__init__(**kwargs)
+        self._doc_id = doc_id
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"docs/{self._doc_id}/columns"
+
+
+class Formulas(CodaStream):
+
+    primary_key = "FORMULAS"
+
+    def __init__(self, doc_id, **kwargs):
+        super().__init__(**kwargs)
+        self._doc_id = doc_id
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"docs/{self._doc_id}/formulas"
+
+class Controls(CodaStream):
+
+    primary_key = "CONTROLS"
+
+    def __init__(self, doc_id, **kwargs):
+        super().__init__(**kwargs)
+        self._doc_id = doc_id
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"docs/{self._doc_id}/controls"
+
+
+
+
+
 
 
 # Basic incremental stream
@@ -183,20 +272,22 @@ class SourceCoda(AbstractSource):
             "authenticator": TokenAuthenticator(token=config.get("auth_token")),
         }
 
+        additional_args = {
+            **stream_args,
+            'doc_id': config.get('doc_id')
+        }
+
         return [
             UserDetails(**stream_args),
             Docs(**stream_args),
-            # Permissions(authenticator=auth, **config),
-            # Categories(authenticator=auth, **config),
-            # Publishing(authenticator=auth, **config),
-            # Pages(authenticator=auth, **config),
-            # Automation(authenticator=auth, **config),
-            # Tables(authenticator=auth, **config),
-            # Columns(authenticator=auth, **config),
+            Permissions(**additional_args),
+            Categories(**stream_args),
+            Pages(**additional_args),
+            Tables(**additional_args),
+            # Columns(**additional_args),
             # Rows(authenticator=auth, **config),
-            # Formulas(authenticator=auth, **config),
-            # Docs(authenticator=auth, **config),
-            # Controls(authenticator=auth, **config),
+            Formulas(**additional_args),
+            Controls(**additional_args),
             # Account(authenticator=auth, **config),
             # Analytics(authenticator=auth, **config),
         ]

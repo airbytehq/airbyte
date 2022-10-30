@@ -11,14 +11,6 @@
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
                     "properties": {
-                      "href": {
-                        "type": "string"
-                      },
-                      "items": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
                             "id": {
                               "type": "string"
                             },
@@ -166,9 +158,6 @@
                             "folderId": {
                               "type": "string"
                             }
-                          }
-                        }
-                      }
                     }
                 }
             },
