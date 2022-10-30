@@ -1,5 +1,13 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "value"
+  "departments": {
+    "grouped_translations": {
+      "en": {
+        "name": "Sales"
+      }
+    },
+    "id": 123,
+    "name": "Sales",
+    "offers_count": 0,
+    "status": null
   }
 }
