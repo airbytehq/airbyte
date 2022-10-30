@@ -5,9 +5,19 @@ connectionSpecification:
   type: object
   required:
     - api_key
+    - site_id
   additionalProperties: true
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
     api_key:
       type: string
-      description: API Key
+      description: >-
+        Plausible API Key. See the <a
+        href="https://plausible.io/docs/stats-api">docs</a>
+        for information on how to generate this key.
+      airbyte_secret: true
+    site_id:
+      type: string
+      description: >-
+        The domain of your site as configured on Plausible.
+        Can be retrieved from the 'domain' field in your
+        Plausible site settings.
