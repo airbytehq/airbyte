@@ -21,6 +21,7 @@ definitions:
       type: NoPagination
     requester:
       $ref: "*ref(definitions.requester)"
+    primary_key: "id"
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
@@ -29,14 +30,12 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "candidates"
-      primary_key: "id"
       path: "/candidates"
   offers_stream:
     # Docs: https://docs.recruitee.com/reference/offers-get
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "offers"
-      primary_key: "id"
       path: "/offers"
 
 streams:
