@@ -47,7 +47,7 @@
         "pipeline_template": {
             "type": [
                 "null",
-                "string"
+                "object"
             ]
         },
         "careers_url": {
@@ -60,7 +60,10 @@
             "type": "string"
         },
         "state_name": {
-            "type": "string"
+            "type": [
+                "null",
+                "string"
+            ]
         },
         "street": {
             "type": [
