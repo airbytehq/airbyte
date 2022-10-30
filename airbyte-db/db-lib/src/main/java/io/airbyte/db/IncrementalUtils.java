@@ -82,6 +82,9 @@ public class IncrementalUtils {
       case BOOLEAN -> {
         return Boolean.compare(Boolean.parseBoolean(original), Boolean.parseBoolean(candidate));
       }
+      case INTEGER -> {
+        return Integer.compare(Integer.parseInt(original), Integer.parseInt(candidate));
+      }
       // includes OBJECT, ARRAY, NULL
       default -> throw new IllegalStateException(String.format("Cannot use field of type %s as a comparable", type));
     }
