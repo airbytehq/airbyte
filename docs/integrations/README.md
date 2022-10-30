@@ -88,6 +88,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Insightly](sources/insightly.md)                                                           | Alpha                | Yes                 |
 | [Instagram](sources/instagram.md)                                                           | Generally Available  | Yes                 |
 | [Intercom](sources/intercom.md)                                                             | Generally Available  | Yes                 |
+| [Intruder](sources/intruder.md)                                                             | Alpha                | Yes                 |
 | [Iterable](sources/iterable.md)                                                             | Generally Available  | Yes                 |
 | [Jenkins](sources/jenkins.md)                                                               | Alpha                | No                  |
 | [Jira](sources/jira.md)                                                                     | Alpha                | No                  |
