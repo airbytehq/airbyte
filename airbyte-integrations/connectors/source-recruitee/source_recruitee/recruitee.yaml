@@ -31,10 +31,19 @@ definitions:
       name: "candidates"
       primary_key: "id"
       path: "/candidates"
+  offers_stream:
+    # Docs: https://docs.recruitee.com/reference/offers-get
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "offers"
+      primary_key: "id"
+      path: "/offers"
 
 streams:
   - "*ref(definitions.candidates_stream)"
+  - "*ref(definitions.offers_stream)"
 
 check:
   stream_names:
     - "candidates"
+    - "offers"

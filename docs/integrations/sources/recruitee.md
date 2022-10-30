@@ -43,6 +43,7 @@ The Recruitee source connector supports the following [sync modes](https://docs.
 ## Supported Streams
 
 * [Candidates](https://docs.recruitee.com/reference/candidates-get)
+* [Offers](https://docs.recruitee.com/reference/offers-get)
 
 ## Changelog
 
