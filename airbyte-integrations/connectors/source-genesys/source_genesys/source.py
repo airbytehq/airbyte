@@ -266,22 +266,10 @@ class SourceGenesys(AbstractSource):
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
+        TODO: Implement true connection checks using an endpoint that is always live
         Testing connection availability for the connector by granting the credentials.
         """
-
-        try:
-            if not config["client_secret"] or not config["client_id"]:
-                raise Exception("Empty config values! Check your configuration file!")
-
-            self.get_connection_response(config).raise_for_status()
-            return True, None
-
-        except Exception as e:
-            return (
-                False,
-                f"Got an exception while trying to set up the connection: {e}. "
-                f"Most probably, there are no users in the given Genesys instance or your token is incorrect",
-            )
+        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         response = self.get_connection_response(self, config)
