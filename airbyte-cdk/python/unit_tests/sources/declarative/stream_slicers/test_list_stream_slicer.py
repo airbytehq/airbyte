@@ -51,9 +51,13 @@ def test_list_stream_slicer(test_name, slice_values, cursor_field, expected_slic
 )
 def test_update_cursor(test_name, stream_slice, last_record, expected_state):
     slicer = ListStreamSlicer(slice_values=slice_values, cursor_field=cursor_field, config={}, options={})
-    slicer.update_cursor(stream_slice, last_record)
-    updated_state = slicer.get_stream_state()
-    assert expected_state == updated_state
+    if expected_state:
+        slicer.update_cursor(stream_slice, last_record)
+        updated_state = slicer.get_stream_state()
+        assert expected_state == updated_state
+    else:
+        with pytest.raises(ValueError):
+            slicer.update_cursor(stream_slice, last_record)
 
 
 @pytest.mark.parametrize(
@@ -111,11 +115,10 @@ def test_request_option(test_name, request_option, expected_req_params, expected
     slicer = ListStreamSlicer(slice_values=slice_values, cursor_field=cursor_field, config={}, request_option=request_option, options={})
     stream_slice = {cursor_field: "customer"}
 
-    slicer.update_cursor(stream_slice)
-    assert expected_req_params == slicer.get_request_params(stream_slice)
-    assert expected_headers == slicer.get_request_headers()
-    assert expected_body_json == slicer.get_request_body_json()
-    assert expected_body_data == slicer.get_request_body_data()
+    assert expected_req_params == slicer.get_request_params(stream_slice=stream_slice)
+    assert expected_headers == slicer.get_request_headers(stream_slice=stream_slice)
+    assert expected_body_json == slicer.get_request_body_json(stream_slice=stream_slice)
+    assert expected_body_data == slicer.get_request_body_data(stream_slice=stream_slice)
 
 
 def test_request_option_before_updating_cursor():
