@@ -4,8 +4,8 @@ import { GeographyDropdown } from "./GeographyDropdown";
 
 export const defaultOptions = [
   {
-    value: "en",
-    label: "en",
+    value: "us",
+    label: "us",
   },
   {
     value: "auto",

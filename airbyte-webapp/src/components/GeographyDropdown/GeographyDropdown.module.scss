@@ -37,18 +37,6 @@
   }
 }
 
-.flag {
-  padding: 9px 6px;
-  border-radius: 7px;
-  background-color: colors.$white;
-  display: flex;
-  align-items: center;
-
-  & > svg {
-    height: 16px;
-  }
-}
-
 .label {
   padding-left: 10px;
 }
