@@ -37,12 +37,20 @@ definitions:
     $options:
       name: "offers"
       path: "/offers"
+  departments_stream:
+    # Docs: https://docs.recruitee.com/reference/departments-get
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "departments"
+      path: "/departments"
 
 streams:
   - "*ref(definitions.candidates_stream)"
   - "*ref(definitions.offers_stream)"
+  - "*ref(definitions.departments_stream)"
 
 check:
   stream_names:
     - "candidates"
     - "offers"
+    - "departments"
