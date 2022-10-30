@@ -3,11 +3,10 @@
 This is the repository for the Genesys source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/genesys).
 
+We are using `OAuth2` as this is the only supported authentication method.
 ## Local development
 
 ### Prerequisites
-**To iterate on this connector, make sure to complete this prerequisites section.**
-
 #### Minimum Python version required `= 3.9.0`
 
 #### Build & Activate Virtual Environment and install dependencies
