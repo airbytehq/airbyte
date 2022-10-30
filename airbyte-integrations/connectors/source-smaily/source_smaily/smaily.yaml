@@ -11,6 +11,18 @@ definitions:
       type: BasicHttpAuthenticator
       username: "{{config['api_username']}}"
       password: "{{config['api_password']}}"
+  increment_paginator:
+    type: DefaultPaginator
+    url_base: "*ref(definitions.requester.url_base)"
+    page_size_option:
+      inject_into: "request_parameter"
+      field_name: "limit"
+    pagination_strategy:
+      type: PageIncrement
+      page_size: 250
+    page_token_option:
+      inject_into: "request_parameter"
+      field_name: "page"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -28,6 +40,10 @@ definitions:
       name: "users"
       primary_key: "id"
       path: "/organizations/users.php"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      paginator:
+        $ref: "*ref(definitions.increment_paginator)"
   # API Docs: https://smaily.com/help/api/segments/list-segments/
   segments_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -49,6 +65,13 @@ definitions:
       name: "templates"
       primary_key: "id"
       path: "/templates.php"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      paginator:
+        $ref: "*ref(definitions.increment_paginator)"
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 1000
   # API Docs: https://smaily.com/help/api/automations-2/list-automation-workflows/
   automations_stream:
     $ref: "*ref(definitions.base_stream)"
