@@ -6538,6 +6538,42 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-mailjet-sms:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/mailjet-sms"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Mailjet Sms Spec"
+      type: "object"
+      required:
+      - "token"
+      additionalProperties: true
+      properties:
+        token:
+          title: "Access Token"
+          type: "string"
+          description: "Your access token. See <a href=\"https://dev.mailjet.com/sms/reference/overview/authentication\"\
+            >here</a>."
+          airbyte_secret: true
+        start_date:
+          title: "Start date"
+          type: "integer"
+          description: "Retrieve SMS messages created after the specified timestamp.\
+            \ Required format - Unix timestamp."
+          pattern: "^[0-9]*$"
+          examples:
+          - 1666261656
+        end_date:
+          title: "End date"
+          type: "integer"
+          description: "Retrieve SMS messages created before the specified timestamp.\
+            \ Required format - Unix timestamp."
+          pattern: "^[0-9]*$"
+          examples:
+          - 1666281656
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-mailerlite:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailerlite"
@@ -10310,7 +10346,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.24"
+- dockerImage: "airbyte/source-s3:0.1.25"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -12883,6 +12919,26 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+- dockerImage: "airbyte/source-zendesk-sell:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-sell"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Source Zendesk Sell Spec"
+      type: "object"
+      required:
+      - "api_token"
+      properties:
+        api_token:
+          title: "API token"
+          type: "string"
+          description: "The API token for authenticating to Zendesk Sell"
+          examples:
+          - "f23yhd630otl94y85a8bf384958473pto95847fd006da49382716or937ruw059"
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-zendesk-sunshine:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk_sunshine"
