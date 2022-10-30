@@ -48,7 +48,7 @@ curl --insecure -X POST -H 'Content-Type: application/json' -H 'X-Accept: applic
 ```
 
 ## Changelog
-TODO
-| Version | Date       | Pull Request                                             | Subject                                         |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
-| 0.1.0   | 2022-10-30 | [](https://github.com/airbytehq/airbyte/pull/)   | 🎉 New Source: Pocket                           |
+
+| Version | Date       | Pull Request                                               | Subject                                         |
+|:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------|
+| 0.1.0   | 2022-10-30 | [18655](https://github.com/airbytehq/airbyte/pull/18655)   | 🎉 New Source: Pocket                           |
