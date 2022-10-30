@@ -5,9 +5,13 @@ connectionSpecification:
   type: object
   required:
     - api_key
+    - company_id
   additionalProperties: true
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
     api_key:
       type: string
-      description: API Key
+      description: Recruitee API Key. See <a href="https://docs.recruitee.com/reference/getting-started#generate-api-token">here</a>.
+      airbyte_secret: true
+    company_id:
+      type: number
+      description: Workable Company ID.
