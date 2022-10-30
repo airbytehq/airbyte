@@ -264,6 +264,7 @@ class ConnectionManagerWorkflowTest {
       returnTrueForLastJobOrAttemptFailure();
       when(mConfigFetchActivity.getTimeToWait(Mockito.any()))
           .thenReturn(new ScheduleRetrieverOutput(SCHEDULE_WAIT));
+      when(mConfigFetchActivity.getMaxAttempt()).thenReturn(new GetMaxAttemptOutput(1));
 
       final UUID testId = UUID.randomUUID();
       final TestStateListener testStateListener = new TestStateListener();
@@ -308,6 +309,7 @@ class ConnectionManagerWorkflowTest {
       returnTrueForLastJobOrAttemptFailure();
       when(mConfigFetchActivity.getTimeToWait(Mockito.any()))
           .thenReturn(new ScheduleRetrieverOutput(SCHEDULE_WAIT));
+      when(mConfigFetchActivity.getMaxAttempt()).thenReturn(new GetMaxAttemptOutput(1));
 
       final UUID testId = UUID.randomUUID();
       final TestStateListener testStateListener = new TestStateListener();
@@ -1475,6 +1477,7 @@ class ConnectionManagerWorkflowTest {
       mockSetup.run();
       when(mConfigFetchActivity.getTimeToWait(Mockito.any())).thenReturn(new ScheduleRetrieverOutput(
           Duration.ZERO));
+      when(mConfigFetchActivity.getMaxAttempt()).thenReturn(new GetMaxAttemptOutput(1));
 
       final UUID testId = UUID.randomUUID();
       TestStateListener.reset();
@@ -1503,42 +1506,6 @@ class ConnectionManagerWorkflowTest {
           .isEmpty();
 
       assertWorkflowWasContinuedAsNew();
-    }
-
-    @Test
-    void testCanRetryFailedActivity() throws InterruptedException {
-      returnTrueForLastJobOrAttemptFailure();
-      when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
-          .thenThrow(ApplicationFailure.newNonRetryableFailure("", ""))
-          .thenReturn(new JobCreationOutput(1l));
-
-      when(mConfigFetchActivity.getTimeToWait(Mockito.any())).thenReturn(new ScheduleRetrieverOutput(
-          Duration.ZERO));
-
-      final UUID testId = UUID.randomUUID();
-      final TestStateListener testStateListener = new TestStateListener();
-      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-
-      final ConnectionUpdaterInput input = ConnectionUpdaterInput.builder()
-          .connectionId(UUID.randomUUID())
-          .jobId(null)
-          .attemptId(null)
-          .fromFailure(false)
-          .attemptNumber(1)
-          .workflowState(workflowState)
-          .build();
-
-      startWorkflowAndWaitUntilReady(workflow, input);
-
-      // Sleep test env for half of restart delay, so that we know we are in the middle of the delay
-      testEnv.sleep(WORKFLOW_FAILURE_RESTART_DELAY.dividedBy(2));
-      workflow.retryFailedActivity();
-      Thread.sleep(500); // any time after no-waiting manual run
-      final Queue<ChangedStateEvent> events = testStateListener.events(testId);
-
-      Assertions.assertThat(events)
-          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.RETRY_FAILED_ACTIVITY && changedStateEvent.isValue())
-          .hasSize(1);
     }
 
   }
