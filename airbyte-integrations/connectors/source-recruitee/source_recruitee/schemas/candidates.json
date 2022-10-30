@@ -76,7 +76,7 @@
                     "positive_ratings": {
                         "type": [
                             "null",
-                            "string"
+                            "integer"
                         ]
                     },
                     "id": {
@@ -133,7 +133,10 @@
             "type": "boolean"
         },
         "positive_ratings": {
-            "type": "integer"
+            "type": [
+                "null",
+                "integer"
+            ]
         },
         "id": {
             "type": "integer"
@@ -180,7 +183,7 @@
         "admin_id": {
             "type": [
                 "null",
-                "string"
+                "integer"
             ]
         },
         "my_last_rating": {
