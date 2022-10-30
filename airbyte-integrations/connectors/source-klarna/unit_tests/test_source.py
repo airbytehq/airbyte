@@ -21,6 +21,5 @@ def test_streams(mocker, klarna_config):
     source = SourceKlarna()
     config_mock = klarna_config
     streams = source.streams(config_mock)
-    # TODO: replace this with your streams number
-    expected_streams_number = 1
+    expected_streams_number = 2
     assert len(streams) == expected_streams_number

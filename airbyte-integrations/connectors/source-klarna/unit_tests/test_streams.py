@@ -6,8 +6,10 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
+from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
 
-from source_klarna.source import KlarnaStream
+from source_klarna.source import KlarnaStream, Payouts, Transactions
+from unit_tests.conftest import get_klarna_config
 
 
 @pytest.fixture
@@ -19,39 +21,39 @@ def patch_base_class(mocker):
 
 
 def test_request_params(patch_base_class, klarna_stream):
-    # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request parameters
     expected_params = {'offset': 0, 'size': 500}
     assert klarna_stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class, klarna_stream):
-    # TODO: replace this with your input parameters
     inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
     expected_token = None
     assert klarna_stream.next_page_token(**inputs) == expected_token
 
 
-def test_parse_response(patch_base_class, klarna_stream):
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected parced object
-    expected_parsed_object = {}
-    assert next(klarna_stream.parse_response(**inputs)) == expected_parsed_object
+@pytest.mark.parametrize(
+    ("specific_klarna_stream", "response"),
+    [
+        (Payouts, {"payouts": [{}]}),
+        (Transactions, {"transactions": [{}]}),
+    ],
+)
+def test_parse_response(patch_base_class, klarna_config, specific_klarna_stream, response):
+    mock_response = MagicMock()
+    mock_response.json.return_value = response
+    inputs = {"response": mock_response, "stream_state": {}}
+    stream = specific_klarna_stream(authenticator=BasicHttpAuthenticator("", ""), **klarna_config)
+    assert next(stream.parse_response(**inputs)) == {}
 
 
 def test_request_headers(patch_base_class, klarna_stream):
-    # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
     expected_headers = {}
     assert klarna_stream.request_headers(**inputs) == expected_headers
 
 
 def test_http_method(patch_base_class, klarna_stream):
-    # TODO: replace this with your expected http request method
     expected_method = "GET"
     assert klarna_stream.http_method == expected_method
 

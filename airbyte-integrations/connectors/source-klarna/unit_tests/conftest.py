@@ -2,7 +2,7 @@ import pytest as pytest
 from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
 
 from source_klarna import SourceKlarna
-from source_klarna.source import KlarnaStream, IncrementalKlarnaStream
+from source_klarna.source import KlarnaStream
 
 
 @pytest.fixture(name="source_klarna")
@@ -18,8 +18,3 @@ def get_klarna_config():
 @pytest.fixture(name="klarna_stream")
 def get_klarna_stream(klarna_config):
     return KlarnaStream(authenticator=BasicHttpAuthenticator("", ""), **klarna_config)
-
-
-@pytest.fixture(name="incremental_klarna_stream")
-def get_incremental_klarna_stream(klarna_config):
-    return IncrementalKlarnaStream(authenticator=BasicHttpAuthenticator("", ""), **klarna_config)
