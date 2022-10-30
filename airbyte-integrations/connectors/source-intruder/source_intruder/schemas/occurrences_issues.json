@@ -9,7 +9,7 @@
       "type": ["null", "string"]
     },
     "port": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "extra_info": {
       "type": ["null", "object"]
