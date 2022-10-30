@@ -8,7 +8,7 @@ For information about how to use this connector within Airbyte, see [the documen
 ### Prerequisites
 **To iterate on this connector, make sure to complete this prerequisites section.**
 
-#### Minimum Python version required `= 3.7.0`
+#### Minimum Python version required `= 3.9.0`
 
 #### Build & Activate Virtual Environment and install dependencies
 From this connector directory, create a virtual environment:
@@ -21,7 +21,6 @@ development environment of choice. To activate it from the terminal, run:
 ```
 source .venv/bin/activate
 pip install -r requirements.txt
-pip install '.[tests]'
 ```
 If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
 
@@ -39,6 +38,8 @@ To build using Gradle, from the Airbyte repository root, run:
 ```
 
 #### Create credentials
+See `integration_tests/sample_config.json` for a sample config file.
+
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/visma-economic)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_visma_economic/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
