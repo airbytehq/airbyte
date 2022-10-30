@@ -140,7 +140,5 @@
       "type": ["integer", "null"]
     }
   },
-  "required": [
-    "contactID"
-  ]
+  "required": ["contactID"]
 }

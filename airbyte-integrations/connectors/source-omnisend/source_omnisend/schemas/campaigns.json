@@ -57,19 +57,15 @@
     },
     "segments": {
       "type": ["array", "null"],
-      "items":
-        {
-          "type": "object",
-          "properties": {
-            "segmentID": {
-              "type": ["string", "null"]
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "segmentID": {
+            "type": ["string", "null"]
           }
         }
-
+      }
     }
   },
-  "required": [
-    "campaignID"
-  ]
+  "required": ["campaignID"]
 }

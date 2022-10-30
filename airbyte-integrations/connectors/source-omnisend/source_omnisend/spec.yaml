@@ -12,4 +12,3 @@ connectionSpecification:
       type: string
       description: API Key
       airbyte_secret: true
-
