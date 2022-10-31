@@ -384,6 +384,13 @@
           "{sync_id}"
         ],
         "order": 8
+      },
+      "glue_database": {
+        "type": "string",
+        "description": "Name of the glue database for creating the tables, leave blank if no integration",
+        "title": "Glue database name",
+        "examples": ["airbyte_database"],
+        "order": 9
       }
     }
   }

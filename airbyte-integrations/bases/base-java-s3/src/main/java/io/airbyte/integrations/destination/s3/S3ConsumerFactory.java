@@ -43,7 +43,7 @@ public class S3ConsumerFactory {
                                        final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
                                        final S3DestinationConfig s3Config,
                                        final ConfiguredAirbyteCatalog catalog) {
-    final List<WriteConfig> writeConfigs = createWriteConfigs(storageOperations, namingResolver, s3Config, catalog);
+    final List<WriteConfig> writeConfigs = createWriteConfigs(storageOperations, s3Config, catalog);
     return new BufferedStreamConsumer(
         outputRecordCollector,
         onStartFunction(storageOperations, writeConfigs),
@@ -57,18 +57,15 @@ public class S3ConsumerFactory {
   }
 
   private static List<WriteConfig> createWriteConfigs(final BlobStorageOperations storageOperations,
-                                                      final NamingConventionTransformer namingResolver,
                                                       final S3DestinationConfig config,
                                                       final ConfiguredAirbyteCatalog catalog) {
     return catalog.getStreams()
         .stream()
-        .map(toWriteConfig(storageOperations, namingResolver, config))
+        .map(toWriteConfig(storageOperations, config))
         .collect(Collectors.toList());
   }
 
-  private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(
-                                                                              final BlobStorageOperations storageOperations,
-                                                                              final NamingConventionTransformer namingResolver,
+  private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(final BlobStorageOperations storageOperations,
                                                                               final S3DestinationConfig s3Config) {
     return stream -> {
       Preconditions.checkNotNull(stream.getDestinationSyncMode(), "Undefined destination sync mode");

@@ -11,12 +11,14 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
+import io.airbyte.integrations.destination.s3.constant.GlueConstants;
 import io.airbyte.integrations.destination.s3.util.S3NameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,11 +30,11 @@ public abstract class BaseS3Destination extends BaseConnector implements Destina
 
   private final NamingConventionTransformer nameTransformer;
 
-  public BaseS3Destination() {
+  protected BaseS3Destination() {
     this(new S3DestinationConfigFactory());
   }
 
-  public BaseS3Destination(final S3DestinationConfigFactory configFactory) {
+  protected BaseS3Destination(final S3DestinationConfigFactory configFactory) {
     this.configFactory = configFactory;
     this.nameTransformer = new S3NameTransformer();
   }
@@ -62,13 +64,28 @@ public abstract class BaseS3Destination extends BaseConnector implements Destina
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     final S3DestinationConfig s3Config = configFactory.getS3DestinationConfig(config, storageProvider());
-    return new S3ConsumerFactory().create(
-        outputRecordCollector,
-        new S3StorageOperations(nameTransformer, s3Config.getS3Client(), s3Config),
-        nameTransformer,
-        SerializedBufferFactory.getCreateFunction(s3Config, FileBuffer::new),
-        s3Config,
-        catalog);
+    final GlueDestinationConfig glueConfig = GlueDestinationConfig.getInstance(config);
+    if (!StringUtils.isBlank(glueConfig.getDatabase())) {
+      return new S3GlueConsumerFactory().create(
+          outputRecordCollector,
+          new S3StorageOperations(nameTransformer, s3Config.getS3Client(), s3Config),
+          //TODO (itaseski) add Glue name transformer
+          new GlueOperations(glueConfig.getAWSGlueInstance()),
+          nameTransformer,
+          SerializedBufferFactory.getCreateFunction(s3Config, FileBuffer::new),
+          s3Config,
+          glueConfig,
+          catalog
+      );
+    } else {
+      return new S3ConsumerFactory().create(
+          outputRecordCollector,
+          new S3StorageOperations(nameTransformer, s3Config.getS3Client(), s3Config),
+          nameTransformer,
+          SerializedBufferFactory.getCreateFunction(s3Config, FileBuffer::new),
+          s3Config,
+          catalog);
+    }
   }
 
   public abstract StorageProvider storageProvider();
