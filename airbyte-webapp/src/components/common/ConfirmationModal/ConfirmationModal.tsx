@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { Button } from "components/ui/Button";
 import { Modal } from "components/ui/Modal";
 
-import useLoadingState from "../../hooks/useLoadingState";
+import useLoadingState from "../../../hooks/useLoadingState";
 import styles from "./ConfirmationModal.module.scss";
 
 const Content = styled.div`
