@@ -6,11 +6,12 @@ package io.airbyte.commons.temporal.scheduling;
 
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
+import java.io.IOException;
 
 @WorkflowInterface
 public interface ConnectionNotificationWorkflow {
 
   @WorkflowMethod
-  void sendSchemaChangeNotification();
+  void sendSchemaChangeNotification() throws IOException, InterruptedException;
 
 }

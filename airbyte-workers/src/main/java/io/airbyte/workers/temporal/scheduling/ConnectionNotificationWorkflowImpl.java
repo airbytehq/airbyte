@@ -8,13 +8,15 @@ import io.airbyte.commons.temporal.scheduling.ConnectionNotificationWorkflow;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.notification.NotificationClient;
+import java.io.IOException;
 
 public class ConnectionNotificationWorkflowImpl implements ConnectionNotificationWorkflow {
 
   @Override
-  public void sendSchemaChangeNotification() {
+  public void sendSchemaChangeNotification() throws IOException, InterruptedException {
     Notification notification = new Notification().withNotificationType(NotificationType.SLACK);
     NotificationClient notificationClient = NotificationClient.createNotificationClient(notification);
+    notificationClient.notifySchemaChange();
   }
 
 }
