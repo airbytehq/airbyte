@@ -828,6 +828,13 @@
   icon: okta.svg
   sourceType: api
   releaseStage: alpha
+- name: Omnisend
+  sourceDefinitionId: e7f0c5e2-4815-48c4-90cf-f47124209835
+  dockerRepository: airbyte/source-omnisend
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/omnisend
+  sourceType: api
+  releaseStage: alpha
 - name: OneSignal
   sourceDefinitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
   dockerRepository: airbyte/source-onesignal
