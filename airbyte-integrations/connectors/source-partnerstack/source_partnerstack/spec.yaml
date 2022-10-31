@@ -1,4 +1,4 @@
-documentationUrl: https://docs.partnerstack.com/reference/auth
+documentationUrl: https://docs.airbyte.com/integrations/sources/partnerstack
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Partnerstack Spec
@@ -10,10 +10,12 @@ connectionSpecification:
   properties:
     public_key:
       type: string
+      title: Partnerstack Public key
       description: The Live Public Key for a Partnerstack account.
       airbyte_secret: true
     private_key:
       type: string
+      title: Partnerstack Private key
       description: The Live Private Key for a Partnerstack account.
       airbyte_secret: true
     start_date:
