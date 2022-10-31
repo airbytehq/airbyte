@@ -17,6 +17,7 @@ cd "$ROOT_DIR"
 assert_root
 
 cd "$PROJECT_DIR"
+echo "cd'd into projectdir= ${PROJECT_DIR}"
 
 function validate_dockerignore() {
   excludes_all=$(grep -w '^\*$' .dockerignore)
