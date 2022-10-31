@@ -27,7 +27,6 @@ class StreamWriter:
         self._database: str = self._configured_stream.stream.namespace or self._config.lakeformation_database_name
 
         self._messages = []
-        self._partition_fields = []
 
         logger.info(f"Creating StreamWriter for {self._database}:{self._table}")
 
@@ -98,6 +97,7 @@ class StreamWriter:
             logger.info(f"No messages to write to {self._database}:{self._table}")
             return
 
+        partition_fields = []
         date_columns = self._get_date_columns()
         for col in date_columns:
             if col in df.columns:
@@ -106,7 +106,7 @@ class StreamWriter:
                 # Create date column for partitioning
                 if self._cursor_fields and col in self._cursor_fields:
                     fields = self._add_partition_column(col, df)
-                    self._partition_fields.extend(fields)
+                    partition_fields.extend(fields)
 
         if self._sync_mode == DestinationSyncMode.overwrite and not force_append:
             logger.debug(f"Overwriting {len(df)} records to {self._database}:{self._table}")
@@ -115,7 +115,7 @@ class StreamWriter:
                 self._get_path(),
                 self._database,
                 self._table,
-                self._partition_fields,
+                partition_fields,
             )
 
         elif self._sync_mode == DestinationSyncMode.append or force_append:
@@ -125,7 +125,7 @@ class StreamWriter:
                 self._get_path(),
                 self._database,
                 self._table,
-                self._partition_fields,
+                partition_fields,
             )
 
         else:
