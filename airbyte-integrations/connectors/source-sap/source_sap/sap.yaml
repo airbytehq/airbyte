@@ -5,7 +5,7 @@ definitions:
     extractor:
       field_pointer: []
   requester:
-    url_base: "https://sandbox.api.sap.com/fieldglass/api/vc/connector/"
+    url_base: "https://sandbox.api.sap.com/fieldglass/api/vc/connector"
     http_method: "GET"
     authenticator:
       type: ApiKeyAuthenticator
