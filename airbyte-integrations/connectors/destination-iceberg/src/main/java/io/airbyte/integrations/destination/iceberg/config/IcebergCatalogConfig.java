@@ -1,37 +1,27 @@
 package io.airbyte.integrations.destination.iceberg.config;
 
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBERG_CATALOG_CONFIG_KEY;
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBERG_CATALOG_TYPE_CONFIG_KEY;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.iceberg.IcebergConstants;
 import java.util.Map;
-import javax.annotation.Nonnull;
+import lombok.Data;
 import org.apache.iceberg.catalog.Catalog;
 
 /**
  * @author Leibniz on 2022/10/26.
  */
-public interface IcebergCatalogConfig {
+@Data
+public abstract class IcebergCatalogConfig {
 
-    void check(S3Config destinationConfig);
+    protected StorageConfig storageConfig;
+    protected FormatConfig formatConfig;
 
-    Map<String, String> sparkConfigMap(S3Config s3Config);
+    public abstract void check() throws Exception;
 
-    Catalog genCatalog(S3Config s3Config);
+    public abstract Map<String, String> sparkConfigMap();
 
-    String getDefaultDatabase();
+    public abstract Catalog genCatalog();
 
-    static IcebergCatalogConfig fromDestinationConfig(@Nonnull final JsonNode config) {
-        final JsonNode catalogConfig = config.get(ICEBERG_CATALOG_CONFIG_KEY);
-        String catalogType = catalogConfig.get(ICEBERG_CATALOG_TYPE_CONFIG_KEY).asText().toUpperCase();
-        switch (catalogType) {
-            case "HIVE":
-                return new HiveCatalogConfig(catalogConfig);
-            //TODO support other catalog types
-            default:
-                throw new RuntimeException("Unexpected catalog config: " + Jsons.serialize(config));
-        }
+    public String getDefaultDatabase() {
+        return IcebergConstants.DEFAULT_DATABASE;
     }
 
 }

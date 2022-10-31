@@ -16,13 +16,15 @@ import com.amazonaws.services.s3.model.UploadPartRequest;
 import com.amazonaws.services.s3.model.UploadPartResult;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.iceberg.config.HiveCatalogConfig;
+import io.airbyte.integrations.destination.iceberg.config.IcebergCatalogConfig;
+import io.airbyte.integrations.destination.iceberg.config.IcebergCatalogConfigFactory;
 import io.airbyte.integrations.destination.iceberg.config.S3Config;
-import io.airbyte.integrations.destination.iceberg.config.S3Config.S3ConfigFactory;
 import io.airbyte.integrations.destination.iceberg.config.credential.S3AccessKeyCredentialConfig;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -30,9 +32,9 @@ import org.junit.jupiter.api.Test;
 class IcebergDestinationTest {
 
     private AmazonS3 s3;
-    private S3Config config;
+    private IcebergCatalogConfig config;
 
-    private S3ConfigFactory factory;
+    private IcebergCatalogConfigFactory factory;
 
     @BeforeEach
     void setup() throws IOException {
@@ -42,19 +44,18 @@ class IcebergDestinationTest {
         when(s3.uploadPart(any(UploadPartRequest.class))).thenReturn(uploadPartResult);
         when(s3.initiateMultipartUpload(any(InitiateMultipartUploadRequest.class))).thenReturn(uploadResult);
 
-        config = S3Config.builder()
-            .bucketName("fake-bucket")
-            .bucketPath("fake-bucketPath")
+        config = new HiveCatalogConfig("fake-thrift-uri", "default");
+        config.setStorageConfig(S3Config.builder()
+            .warehouseUri("fake-bucket")
             .bucketRegion("fake-region")
             .endpoint("fake-endpoint")
             .credentialConfig(new S3AccessKeyCredentialConfig("fake-accessKeyId", "fake-secretAccessKey"))
-            .catalogConfig(new HiveCatalogConfig("fake-thrift-uri", "default"))
             .s3Client(s3)
-            .build();
+            .build());
 
-        factory = new S3ConfigFactory() {
+        factory = new IcebergCatalogConfigFactory() {
             @Override
-            public S3Config parseS3Config(JsonNode config) {
+            public IcebergCatalogConfig fromJsonNodeConfig(final @NotNull JsonNode config) {
                 return IcebergDestinationTest.this.config;
             }
         };

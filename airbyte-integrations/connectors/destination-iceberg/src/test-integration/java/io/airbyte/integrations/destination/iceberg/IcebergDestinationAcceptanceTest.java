@@ -13,7 +13,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.destination.iceberg.config.S3Config;
+import io.airbyte.integrations.destination.iceberg.config.IcebergCatalogConfig;
+import io.airbyte.integrations.destination.iceberg.config.IcebergCatalogConfigFactory;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -36,8 +37,10 @@ public class IcebergDestinationAcceptanceTest extends DestinationAcceptanceTest 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IcebergDestinationAcceptanceTest.class);
 
-    private static final String SECRET_FILE_PATH = "secrets/iceberg.json";
+    private static final String SECRET_FILE_PATH = "secrets/config.json";
     private final NamingConventionTransformer namingResolver = new StandardNameTransformer();
+    private JsonNode config = Jsons.deserialize(IOs.readFile(Path.of(SECRET_FILE_PATH)));
+    ;
 
     @Override
     protected String getImageName() {
@@ -46,7 +49,7 @@ public class IcebergDestinationAcceptanceTest extends DestinationAcceptanceTest 
 
     @Override
     protected JsonNode getConfig() throws IOException {
-        return Jsons.deserialize(IOs.readFile(Path.of(SECRET_FILE_PATH)));
+        return config;
     }
 
     @Override
@@ -67,12 +70,12 @@ public class IcebergDestinationAcceptanceTest extends DestinationAcceptanceTest 
         // Records returned from this method will be compared against records provided to the connector
         // to verify they were written correctly
         JsonNode config = getConfig();
-        final S3Config s3Config = new S3Config.S3ConfigFactory().parseS3Config(config);
-        Catalog catalog = s3Config.getCatalogConfig().genCatalog(s3Config);
+        final IcebergCatalogConfig catalogConfig = new IcebergCatalogConfigFactory().fromJsonNodeConfig(config);
+        Catalog catalog = catalogConfig.genCatalog();
 
         String dbName = namingResolver.getNamespace(
             isNotBlank(namespace) ? namespace :
-                s3Config.getCatalogConfig().getDefaultDatabase()
+                catalogConfig.getDefaultDatabase()
         ).toLowerCase();
         String tableName = namingResolver.getIdentifier("airbyte_raw_" + streamName).toLowerCase();
         LOGGER.info("Select data from:{}", tableName);

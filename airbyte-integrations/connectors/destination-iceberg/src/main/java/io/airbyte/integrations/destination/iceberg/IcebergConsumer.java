@@ -99,6 +99,7 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
      */
     @Override
     protected void acceptTracked(AirbyteMessage msg) throws Exception {
+        log.info("Receive message:{}", msg);
         if (msg.getType() != Type.RECORD) {
             return;
         }
@@ -154,17 +155,19 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
      */
     @Override
     public void commit() throws Exception {
-        for (WriteConfig writeConfig : writeConfigs.values()) {
-            appendToTempTable(writeConfig);
-        }
+//        for (WriteConfig writeConfig : writeConfigs.values()) {
+//            appendToTempTable(writeConfig);
+//        }
     }
 
     @Override
     protected void close(boolean hasFailed) throws Exception {
+        log.info("close {}, hasFailed={}", this.getClass().getSimpleName(), hasFailed);
         try {
             if (!hasFailed) {
                 log.info("==> Migration finished with no explicit errors. Copying data from temp tables to permanent");
                 for (WriteConfig writeConfig : writeConfigs.values()) {
+                    appendToTempTable(writeConfig);
                     String tempTableName = writeConfig.getTmpTableName();
                     String finalTableName = writeConfig.getTableName();
                     log.info("=> Migration({}) data from {} to {}",
