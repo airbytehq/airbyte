@@ -62,7 +62,11 @@ export const GeographyDropdown: React.FC<Props> = ({ options }) => {
       ...provided,
       color: "black",
       backgroundColor: state.isSelected ? "#eae9ff" : "white",
-      borderRadius: state.isSelected ? "10px" : "0px",
+      borderRadius: "10px",
+
+      "&:hover": {
+        backgroundColor: state.isSelected ? "#eae9ff" : "#f8f8fa",
+      },
     }),
     valueContainer: () => ({
       display: "flex",
