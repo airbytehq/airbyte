@@ -100,7 +100,6 @@
         },
         "name": {
           "type": "string",
-          "maxLength": 50,
           "description": "The name of the payment terms."
         },
         "paymentTermsType": {
@@ -110,8 +109,7 @@
         "self": {
           "type": "string",
           "format": "uri",
-          "description": "A unique reference to the payment term resource.",
-          "required": true
+          "description": "A unique reference to the payment term resource."
         }
       }
     },
@@ -130,8 +128,7 @@
         "self": {
           "type": "string",
           "format": "uri",
-          "description": "A unique reference to the customer resource.",
-          "required": true
+          "description": "A unique reference to the customer resource."
         }
       }
     },
@@ -141,7 +138,6 @@
       "properties": {
         "name": {
           "type": "string",
-          "maxLength": 250,
           "filterable": true,
           "sortable": true,
           "description": "The name of the actual recipient.",
@@ -149,7 +145,6 @@
         },
         "address": {
           "type": "string",
-          "maxLength": 250,
           "filterable": true,
           "sortable": true,
           "description": "The street address of the actual recipient.",
@@ -157,7 +152,6 @@
         },
         "zip": {
           "type": "string",
-          "maxLength": 50,
           "filterable": true,
           "sortable": true,
           "description": "The zip code of the actual recipient.",
@@ -165,7 +159,6 @@
         },
         "city": {
           "type": "string",
-          "maxLength": 250,
           "filterable": true,
           "sortable": true,
           "description": "The city of the actual recipient.",
@@ -173,21 +166,18 @@
         },
         "country": {
           "type": "string",
-          "maxLength": 50,
           "filterable": true,
           "sortable": true,
           "description": "The country of the actual recipient."
         },
         "ean": {
           "type": "string",
-          "maxLength": 13,
           "filterable": true,
           "sortable": true,
           "description": "The 'European Article Number' of the actual recipient."
         },
         "publicEntryNumber": {
           "type": "string",
-          "maxLength": 40,
           "filterable": true,
           "sortable": true,
           "description": "The public entry number of the actual recipient."
@@ -203,8 +193,7 @@
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A unique reference to the customer employee.",
-              "required": true
+              "description": "A unique reference to the customer employee."
             }
           }
         },
@@ -221,15 +210,13 @@
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A unique reference to the vat zone.",
-              "required": true
+              "description": "A unique reference to the vat zone."
             }
           }
         },
 				"cvr": {
 					"type": "string",
-					"description": "The Corporate Identification Number of the recipient for example CVR in Denmark.",
-					"maxLength": 40
+					"description": "The Corporate Identification Number of the recipient for example CVR in Denmark."
 				}
       }
     },
@@ -246,46 +233,39 @@
         "self": {
           "type": "string",
           "format": "uri",
-          "description": "A unique reference to the delivery location resource.",
-          "required": true
+          "description": "A unique reference to the delivery location resource."
         }
       }
     },
     "delivery": {
       "type": "object",
-      "description": "The actual place of delivery for the goods on the invoice. This is usually the same place as the one referenced in the deliveryLocation property, but may be edited as required.",
       "properties": {
         "address": {
           "type": "string",
-          "maxLength": 255,
           "filterable": true,
           "sortable": true,
           "description": "Street address where the goods must be delivered to the customer."
         },
         "zip": {
           "type": "string",
-          "maxLength": 30,
           "filterable": true,
           "sortable": true,
           "description": "The zip code of the place of delivery."
         },
         "city": {
           "type": "string",
-          "maxLength": 50,
           "filterable": true,
           "sortable": true,
           "description": "The city of the place of delivery"
         },
         "country": {
           "type": "string",
-          "maxLength": 50,
           "filterable": true,
           "sortable": true,
           "description": "The country of the place of delivery"
         },
         "deliveryTerms": {
           "type": "string",
-          "maxLength": 100,
           "filterable": true,
           "sortable": true,
           "description": "Details about the terms of delivery."
@@ -306,21 +286,18 @@
       "properties": {
         "heading": {
           "type": "string",
-          "maxLength": 250,
           "filterable": true,
           "sortable": true,
           "description": "The invoice heading. Usually displayed at the top of the invoice."
         },
         "textLine1": {
           "type": "string",
-          "maxLength": 1000,
           "filterable": true,
           "sortable": true,
           "description": "The first line of supplementary text on the invoice. This is usually displayed right under the heading in a smaller font."
         },
         "textLine2": {
           "type": "string",
-          "maxLength": 1000,
           "filterable": true,
           "sortable": true,
           "description": "The second line of supplementary text in the notes on the invoice. This is usually displayed as a footer on the invoice."
@@ -343,8 +320,7 @@
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A unique reference to the customer contact resource.",
-              "required": true
+              "description": "A unique reference to the customer contact resource."
             }
           }
         },
@@ -362,8 +338,7 @@
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A unique reference to the employee resource.",
-              "required": true
+              "description": "A unique reference to the employee resource."
             }
           }
         },
@@ -381,14 +356,12 @@
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A unique reference to the employee resource.",
-              "required": true
+              "description": "A unique reference to the employee resource."
             }
           }
         },
         "other": {
           "type": "string",
-          "maxLength": 250,
           "filterable": true,
           "sortable": true,
           "description": "A text field that can be used to save any custom reference on the invoice."
@@ -417,14 +390,12 @@
         "self": {
           "type": "string",
           "format": "uri",
-          "description": "A unique link reference to the layout item.",
-          "required": true
+          "description": "A unique link reference to the layout item."
         }
       }
     },
     "project": {
       "type": "object",
-      "description": "A reference to any project this entry might be related to. This requires the projects module to be enabled.",
       "properties": {
         "projectNumber": {
           "type": "integer",
@@ -434,8 +405,7 @@
         "self": {
           "type": "string",
           "format": "uri",
-          "description": "A unique reference to the project resource.",
-          "required": true
+          "description": "A unique reference to the project resource."
         }
       }
     },
@@ -459,7 +429,6 @@
           },
           "description": {
             "type": "string",
-            "maxLength": 2500,
             "description": "A description of the product or service sold."
           },
           "deliveryDate": {
@@ -516,14 +485,12 @@
               },
               "name": {
                 "type": "string",
-                "maxLength": 100,
                 "description": "The name of the unit (e.g. 'kg' for weight or 'l' for volume)."
               },
               "self": {
                 "type": "string",
                 "format": "uri",
-                "description": "A unique reference to the unit resource.",
-                "required": true
+                "description": "A unique reference to the unit resource."
               }
             }
           },
@@ -533,20 +500,17 @@
             "properties": {
               "productNumber": {
                 "type": "string",
-                "maxLength": 25,
                 "description": "The unique product number. This can be a stock keeping unit identifier (SKU)."
               },
               "self": {
                 "type": "string",
                 "format": "uri",
-                "description": "A unique reference to the product resource.",
-                "required": true
+                "description": "A unique reference to the product resource."
               }
             }
           },
           "departmentalDistribution": {
             "type": "object",
-            "description": "A departmental distribution defines which departments this invoice line is distributed between. This requires the departments module to be enabled.",
             "properties": {
               "departmentalDistributionNumber": {
                 "type": "integer",
@@ -556,8 +520,7 @@
               "self": {
                 "type": "string",
                 "format": "uri",
-                "description": "A unique reference to the departmental distribution resource.",
-                "required": true
+                "description": "A unique reference to the departmental distribution resource."
               }
             }
           }
@@ -572,8 +535,7 @@
     "self": {
       "type": "string",
       "format": "uri",
-      "description": "The unique self reference of the booked invoice.",
-      "required": true
+      "description": "The unique self reference of the booked invoice."
     }
   }
 }

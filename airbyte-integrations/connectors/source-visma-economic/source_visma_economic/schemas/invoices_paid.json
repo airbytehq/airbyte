@@ -98,8 +98,7 @@
         "self": {
           "type": "string",
           "format": "uri",
-          "description": "A unique reference to the payment term resource.",
-          "required": true
+          "description": "A unique reference to the payment term resource."
         }
       }
     },
@@ -118,8 +117,7 @@
         "self": {
           "type": "string",
           "format": "uri",
-          "description": "A unique reference to the customer resource.",
-          "required": true
+          "description": "A unique reference to the customer resource."
         }
       }
     },
@@ -187,8 +185,7 @@
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A unique reference to the customer employee.",
-              "required": true
+              "description": "A unique reference to the customer employee."
             }
           }
         },
@@ -205,8 +202,7 @@
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A unique reference to the vat zone.",
-              "required": true
+              "description": "A unique reference to the vat zone."
             }
           }
         },
@@ -230,14 +226,12 @@
         "self": {
           "type": "string",
           "format": "uri",
-          "description": "A unique reference to the delivery location resource.",
-          "required": true
+          "description": "A unique reference to the delivery location resource."
         }
       }
     },
     "delivery": {
       "type": "object",
-      "description": "The actual place of delivery for the goods on the invoice. This is usually the same place as the one referenced in the deliveryLocation property, but may be edited as required.",
       "properties": {
         "address": {
           "type": "string",
@@ -339,16 +333,14 @@
                 "self": {
                   "type": "string",
                   "format": "uri",
-                  "description": "A unique reference to the customer resource.",
-                  "required": true
+                  "description": "A unique reference to the customer resource."
                 }
               }
             },
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A unique reference to the customer contact resource.",
-              "required": true
+              "description": "A unique reference to the customer contact resource."
             }
           }
         },
@@ -366,8 +358,7 @@
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A unique reference to the employee resource.",
-              "required": true
+              "description": "A unique reference to the employee resource."
             }
           }
         },
@@ -385,8 +376,7 @@
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A unique reference to the employee resource.",
-              "required": true
+              "description": "A unique reference to the employee resource."
             }
           }
         },
@@ -406,8 +396,7 @@
         "download": {
           "type": "string",
           "format": "uri",
-          "description": "The unique reference of the pdf representation for this booked invoice.",
-          "required": true
+          "description": "The unique reference of the pdf representation for this booked invoice."
         }
       }
     },
@@ -422,14 +411,12 @@
         "self": {
           "type": "string",
           "format": "uri",
-          "description": "A unique link reference to the layout item.",
-          "required": true
+          "description": "A unique link reference to the layout item."
         }
       }
     },
     "project": {
       "type": "object",
-      "description": "A reference to any project this entry might be related to. This requires the projects module to be enabled.",
       "properties": {
         "projectNumber": {
           "type": "integer",
@@ -439,8 +426,7 @@
         "self": {
           "type": "string",
           "format": "uri",
-          "description": "A unique reference to the project resource.",
-          "required": true
+          "description": "A unique reference to the project resource."
         }
       }
     },
@@ -452,8 +438,7 @@
     "self": {
       "type": "string",
       "format": "uri",
-      "description": "The unique self reference of the booked invoice.",
-      "required": true
+      "description": "The unique self reference of the booked invoice."
     }
   }
 }

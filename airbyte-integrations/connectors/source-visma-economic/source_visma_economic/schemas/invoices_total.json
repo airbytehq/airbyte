@@ -25,8 +25,7 @@
         "self": {
           "type": "string",
           "format": "uri",
-          "description": "A reference to the invoices totals draft resource.",
-          "required": true
+          "description": "A reference to the invoices totals draft resource."
         }
       }
     },
@@ -67,8 +66,7 @@
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A reference to the invoices totals booked paid resource.",
-              "required": true
+              "description": "A reference to the invoices totals booked paid resource."
             }
           }
         },
@@ -119,8 +117,7 @@
                 "self": {
                   "type": "string",
                   "format": "uri",
-                  "description": "A reference to the invoices totals booked unpaid overdue resource.",
-                  "required": true
+                  "description": "A reference to the invoices totals booked unpaid overdue resource."
                 }
               }
             },
@@ -144,24 +141,21 @@
                 "self": {
                   "type": "string",
                   "format": "uri",
-                  "description": "A reference to the invoices totals booked unpaid not overdue resource.",
-                  "required": true
+                  "description": "A reference to the invoices totals booked unpaid not overdue resource."
                 }
               }
             },
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A reference to the invoices totals booked unpaid resource.",
-              "required": true
+              "description": "A reference to the invoices totals booked unpaid resource."
             }
           }
         },
         "self": {
           "type": "string",
           "format": "uri",
-          "description": "A reference to the invoices totals booked resource.",
-          "required": true
+          "description": "A reference to the invoices totals booked resource."
         }
       }
     },
@@ -180,8 +174,7 @@
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A reference to the invoices totals for the last 15 days resource.",
-              "required": true
+              "description": "A reference to the invoices totals for the last 15 days resource."
             }
           }
         },
@@ -196,8 +189,7 @@
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A reference to the invoices totals for the last month resource.",
-              "required": true
+              "description": "A reference to the invoices totals for the last month resource."
             }
           }
         },
@@ -212,8 +204,7 @@
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A reference to the invoices totals for the last 7 days resource.",
-              "required": true
+              "description": "A reference to the invoices totals for the last 7 days resource."
             }
           }
         },
@@ -228,8 +219,7 @@
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A reference to the invoices totals for the last 30 days resource.",
-              "required": true
+              "description": "A reference to the invoices totals for the last 30 days resource."
             }
           }
         },
@@ -244,8 +234,7 @@
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A reference to the invoices totals for the last week resource.",
-              "required": true
+              "description": "A reference to the invoices totals for the last week resource."
             }
           }
         },
@@ -260,8 +249,7 @@
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A reference to the invoices totals for the last year resource.",
-              "required": true
+              "description": "A reference to the invoices totals for the last year resource."
             }
           }
         },
@@ -276,8 +264,7 @@
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A reference to the invoices totals for this calendar month resource.",
-              "required": true
+              "description": "A reference to the invoices totals for this calendar month resource."
             }
           }
         },
@@ -292,8 +279,7 @@
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A reference to the invoices totals for this week resource.",
-              "required": true
+              "description": "A reference to the invoices totals for this week resource."
             }
           }
         },
@@ -308,8 +294,7 @@
             "self": {
               "type": "string",
               "format": "uri",
-              "description": "A reference to the invoices totals for this calendar year resource.",
-              "required": true
+              "description": "A reference to the invoices totals for this calendar year resource."
             }
           }
         }
@@ -318,8 +303,7 @@
     "self": {
       "type": "string",
       "format": "uri",
-      "description": "A reference to the invoices totals booked resource.",
-      "required": true
+      "description": "A reference to the invoices totals booked resource."
     }
   }
 }

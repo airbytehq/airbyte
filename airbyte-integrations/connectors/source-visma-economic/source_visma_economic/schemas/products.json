@@ -6,26 +6,21 @@
   "description": "A schema for retrieval of a collection of products.",
   "properties": {
     "productNumber": {
-      "required": true,
       "type": "string",
       "minLength": 1,
-      "maxLength": 25,
       "filterable": true,
       "sortable": true,
       "description": "Unique alphanumeric product number."
     },
     "description": {
       "type": "string",
-      "maxLength": 500,
       "filterable": true,
       "sortable": true,
       "description": "Free text description of product."
     },
     "name": {
-      "required": true,
       "type": "string",
       "minLength": 1,
-      "maxLength": 300,
       "filterable": true,
       "sortable": true,
       "description": "Descriptive name of the product."
@@ -53,7 +48,6 @@
     },
     "barCode": {
       "type": "string",
-      "maxLength": 50,
       "filterable": true,
       "sortable": true,
       "description": "String representation of a machine readable barcode symbol that represents this product."
@@ -162,20 +156,17 @@
         },
         "name": {
           "type": "string",
-          "maxLength": 8,
           "description": "The name of the unit."
         },
         "self": {
           "type": "string",
           "format": "uri",
-          "description": "A unique reference to the unit resource.",
-          "required": true
+          "description": "A unique reference to the unit resource."
         }
       }
     },
     "productGroup": {
       "type": "object",
-      "required": true,
       "description": "A reference to the product group this product is contained within.",
       "properties": {
         "productGroupNumber": {
@@ -186,7 +177,6 @@
         "name": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 50,
           "description": "Descriptive name of the product group."
         },
         "salesAccounts": {
@@ -257,8 +247,7 @@
                   "type": "string",
                   "format": "uri",
                   "readOnly": true,
-                  "description": "The unique self link of the contra account.",
-                  "required": true
+                  "description": "The unique self link of the contra account."
                 }
               }
             },
@@ -269,7 +258,6 @@
             },
             "name": {
               "type": "string",
-              "maxLength": 125,
               "readOnly": true,
               "description": "The name of the account."
             },
@@ -280,7 +268,6 @@
               "properties": {
                 "vatCode": {
                   "type": "string",
-                  "maxLength": 5,
                   "readOnly": true,
                   "description": "The VAT code of the VAT account for this account."
                 },
@@ -288,8 +275,7 @@
                   "type": "string",
                   "format": "uri",
                   "readOnly": true,
-                  "description": "The unique self link of the VAT code.",
-                  "required": true
+                  "description": "The unique self link of the VAT code."
                 }
               }
             },
@@ -316,8 +302,7 @@
                         "type": "string",
                         "format": "uri",
                         "readOnly": true,
-                        "description": "The unique self link of the first account in the interval.",
-                        "required": true
+                        "description": "The unique self link of the first account in the interval."
                       }
                     }
                   },
@@ -335,8 +320,7 @@
                         "type": "string",
                         "format": "uri",
                         "readOnly": true,
-                        "description": "The unique self link of the last account in the interval.",
-                        "required": true
+                        "description": "The unique self link of the last account in the interval."
                       }
                     }
                   }
@@ -357,8 +341,7 @@
                   "type": "string",
                   "format": "uri",
                   "readOnly": true,
-                  "description": "The unique self link of the first account.",
-                  "required": true
+                  "description": "The unique self link of the first account."
                 }
               }
             },
@@ -373,15 +356,13 @@
             "type": "string",
             "format": "uri",
             "readOnly": true,
-            "description": "A unique reference to the accruals account resource.",
-            "required": true
+            "description": "A unique reference to the accruals account resource."
           }
         },
         "self": {
           "type": "string",
           "format": "uri",
-          "description": "A unique reference to the product group resource.",
-          "required": true
+          "description": "A unique reference to the product group resource."
         }
       }
     },
@@ -402,16 +383,14 @@
         "self": {
           "type": "string",
           "format": "uri",
-          "description": "A unique reference to the departmental distribution resource.",
-          "required": true
+          "description": "A unique reference to the departmental distribution resource."
         }
       }
     },
     "self": {
       "type": "string",
       "format": "uri",
-      "description": "A unique reference to this product resource.",
-      "required": true
+      "description": "A unique reference to this product resource."
     }
   }
 }
