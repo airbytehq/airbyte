@@ -131,8 +131,12 @@ def connector_spec_fixture(connector_spec_path) -> ConnectorSpecification:
 
 @pytest.fixture(name="docker_runner")
 def docker_runner_fixture(image_tag, tmp_path) -> ConnectorRunner:
-    image_name = image_tag.split(":")[0] + ":test"
+    image_name = get_docker_image_tag(image_tag)
     return ConnectorRunner(image_name, volume=tmp_path)
+
+
+def get_docker_image_tag(image_tag):
+    return image_tag.split(":")[0] + ":test"
 
 
 @pytest.fixture(name="previous_connector_image_name")
@@ -162,7 +166,7 @@ def previous_connector_docker_runner_fixture(previous_connector_image_name, tmp_
 @pytest.fixture(scope="session", autouse=True)
 def pull_docker_image(acceptance_test_config) -> None:
     """Startup fixture to pull docker image"""
-    image_name = acceptance_test_config.connector_image.split(":")[0] + ":test"
+    image_name = get_docker_image_tag(acceptance_test_config.connector_image)
     config_filename = "acceptance-test-config.yml"
     try:
         ConnectorRunner(image_name=image_name, volume=Path("."))
