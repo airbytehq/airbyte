@@ -13,7 +13,6 @@ connectionSpecification:
     - country
   additionalProperties: true
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
     project:
       type: string
       title: Project
@@ -46,12 +45,6 @@ connectionSpecification:
       description: The title of any article in the specified project. Any spaces should be replaced with underscores. It also should be URI-encoded, so that non-URI-safe characters like %, / or ? are accepted.
       examples:
         - Are_You_the_One%3F
-    # granularity:
-    #   type: string
-    #   description: The time unit for the response data. As of today, the only supported granularity for this endpoint is daily and monthly.
-    #   examples:
-    #     - daily
-    #     - monthly
     start:
       type: string
       title: Start
@@ -60,15 +53,6 @@ connectionSpecification:
       type: string
       title: End
       description: The date of the last day to include, in YYYYMMDD or YYYYMMDDHH format.
-    # year:
-    #   type: string
-    #   description: Year in YYYY format.
-    # month:
-    #   type: string
-    #   description: Month in MM format.
-    # day:
-    #   type: string
-    #   description: Day in DD format.
     country:
       type: string
       title: Country
