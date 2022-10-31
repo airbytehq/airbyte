@@ -86,6 +86,17 @@ create table "public"."airbyte_configs_migrations"(
   constraint "airbyte_configs_migrations_pk"
     primary key ("installed_rank")
 );
+create table "public"."config_event"(
+  "id" uuid not null default null,
+  "operation_type" any null,
+  "config_type" varchar(256) not null,
+  "config_id" uuid not null,
+  "result" jsonb null,
+  "created_at" timestamptz(35) not null default null,
+  "created_by" uuid null,
+  constraint "config_event_pkey"
+    primary key ("id")
+);
 create table "public"."connection"(
   "id" uuid not null,
   "namespace_definition" namespace_definition_type not null,
@@ -273,6 +284,12 @@ create index "actor_oauth_parameter_workspace_definition_idx" on "public"."actor
 );
 create unique index "airbyte_configs_migrations_pk" on "public"."airbyte_configs_migrations"("installed_rank" asc);
 create index "airbyte_configs_migrations_s_idx" on "public"."airbyte_configs_migrations"("success" asc);
+create unique index "config_event_pkey" on "public"."config_event"("id" asc);
+create index "config_id_idx" on "public"."config_event"("config_id" asc);
+create index "config_type_and_id_idx" on "public"."config_event"(
+  "config_type" asc,
+  "config_id" asc
+);
 create index "connection_destination_id_idx" on "public"."connection"("destination_id" asc);
 create unique index "connection_pkey" on "public"."connection"("id" asc);
 create index "connection_source_id_idx" on "public"."connection"("source_id" asc);
