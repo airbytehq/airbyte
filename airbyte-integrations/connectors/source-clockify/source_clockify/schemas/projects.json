@@ -1,0 +1,173 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "archived": {
+      "type": "boolean"
+    },
+    "billable": {
+      "type": "boolean"
+    },
+    "budgetEstimate": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "properties": {
+            "estimate": {
+              "type": ["null", "string"]
+            },
+            "type": {
+              "type": "string"
+            },
+            "resetOption": {
+              "type": ["null", "string"]
+            },
+            "active": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        }
+      ]
+    },
+    "clientId": {
+      "type": "string"
+    },
+    "clientName": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "costRate": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "properties": {
+            "amount": {
+              "type": ["null", "string", "integer"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            }
+          },
+          "type": "object"
+        }
+      ]
+    },
+    "duration": {
+      "type": "string"
+    },
+    "estimate": {
+      "properties": {
+        "estimate": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "hourlyRate": {
+      "properties": {
+        "amount": {
+          "type": "integer"
+        },
+        "currency": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "memberships": {
+      "items": {
+        "properties": {
+          "costRate": {
+            "type": "null"
+          },
+          "hourlyRate": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "properties": {
+                  "amount": {
+                    "type": "integer"
+                  },
+                  "currency": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "membershipStatus": {
+            "type": "string"
+          },
+          "membershipType": {
+            "type": "string"
+          },
+          "targetId": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "name": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    },
+    "public": {
+      "type": "boolean"
+    },
+    "template": {
+      "type": "boolean"
+    },
+    "timeEstimate": {
+      "properties": {
+        "active": {
+          "type": "boolean"
+        },
+        "estimate": {
+          "type": "string"
+        },
+        "includeNonBillable": {
+          "type": "boolean"
+        },
+        "resetOption": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "workspaceId": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

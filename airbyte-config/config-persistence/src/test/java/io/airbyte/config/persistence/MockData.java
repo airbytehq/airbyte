@@ -36,6 +36,8 @@ import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
+import io.airbyte.config.WebhookConfig;
+import io.airbyte.config.WebhookOperationConfigs;
 import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AuthSpecification;
@@ -48,6 +50,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.net.URI;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -55,10 +58,11 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.Data;
 
 public class MockData {
 
-  private static final UUID WORKSPACE_ID_1 = UUID.randomUUID();
+  public static final UUID WORKSPACE_ID_1 = UUID.randomUUID();
   private static final UUID WORKSPACE_ID_2 = UUID.randomUUID();
   private static final UUID WORKSPACE_ID_3 = UUID.randomUUID();
   private static final UUID WORKSPACE_CUSTOMER_ID = UUID.randomUUID();
@@ -70,8 +74,8 @@ public class MockData {
   private static final UUID DESTINATION_DEFINITION_ID_2 = UUID.randomUUID();
   private static final UUID DESTINATION_DEFINITION_ID_3 = UUID.randomUUID();
   private static final UUID DESTINATION_DEFINITION_ID_4 = UUID.randomUUID();
-  private static final UUID SOURCE_ID_1 = UUID.randomUUID();
-  private static final UUID SOURCE_ID_2 = UUID.randomUUID();
+  public static final UUID SOURCE_ID_1 = UUID.randomUUID();
+  public static final UUID SOURCE_ID_2 = UUID.randomUUID();
   private static final UUID SOURCE_ID_3 = UUID.randomUUID();
   private static final UUID DESTINATION_ID_1 = UUID.randomUUID();
   private static final UUID DESTINATION_ID_2 = UUID.randomUUID();
@@ -89,11 +93,12 @@ public class MockData {
   private static final UUID SOURCE_OAUTH_PARAMETER_ID_2 = UUID.randomUUID();
   private static final UUID DESTINATION_OAUTH_PARAMETER_ID_1 = UUID.randomUUID();
   private static final UUID DESTINATION_OAUTH_PARAMETER_ID_2 = UUID.randomUUID();
-  private static final UUID ACTOR_CATALOG_ID_1 = UUID.randomUUID();
+  public static final UUID ACTOR_CATALOG_ID_1 = UUID.randomUUID();
   private static final UUID ACTOR_CATALOG_ID_2 = UUID.randomUUID();
-  private static final UUID ACTOR_CATALOG_ID_3 = UUID.randomUUID();
+  public static final UUID ACTOR_CATALOG_ID_3 = UUID.randomUUID();
   private static final UUID ACTOR_CATALOG_FETCH_EVENT_ID_1 = UUID.randomUUID();
   private static final UUID ACTOR_CATALOG_FETCH_EVENT_ID_2 = UUID.randomUUID();
+  private static final UUID ACTOR_CATALOG_FETCH_EVENT_ID_3 = UUID.randomUUID();
 
   public static final String MOCK_SERVICE_ACCOUNT_1 = "{\n"
       + "  \"type\" : \"service_account\",\n"
@@ -156,7 +161,9 @@ public class MockData {
         .withNotifications(Collections.singletonList(notification))
         .withFirstCompletedSync(true)
         .withFeedbackDone(true)
-        .withDefaultGeography(Geography.AUTO);
+        .withDefaultGeography(Geography.US)
+        .withWebhookOperationConfigs(Jsons.jsonNode(
+            new WebhookOperationConfigs().withWebhookConfigs(List.of(new WebhookConfig().withId(WEBHOOK_CONFIG_ID).withName("name")))));
 
     final StandardWorkspace workspace2 = new StandardWorkspace()
         .withWorkspaceId(WORKSPACE_ID_2)
@@ -471,7 +478,8 @@ public class MockData {
         .withResourceRequirements(resourceRequirements)
         .withStatus(Status.ACTIVE)
         .withSchedule(schedule)
-        .withGeography(Geography.AUTO);
+        .withGeography(Geography.AUTO)
+        .withBreakingChange(false);
 
     final StandardSync standardSync2 = new StandardSync()
         .withOperationIds(Arrays.asList(OPERATION_ID_1, OPERATION_ID_2))
@@ -487,7 +495,8 @@ public class MockData {
         .withResourceRequirements(resourceRequirements)
         .withStatus(Status.ACTIVE)
         .withSchedule(schedule)
-        .withGeography(Geography.AUTO);
+        .withGeography(Geography.AUTO)
+        .withBreakingChange(false);
 
     final StandardSync standardSync3 = new StandardSync()
         .withOperationIds(Arrays.asList(OPERATION_ID_1, OPERATION_ID_2))
@@ -503,7 +512,8 @@ public class MockData {
         .withResourceRequirements(resourceRequirements)
         .withStatus(Status.ACTIVE)
         .withSchedule(schedule)
-        .withGeography(Geography.AUTO);
+        .withGeography(Geography.AUTO)
+        .withBreakingChange(false);
 
     final StandardSync standardSync4 = new StandardSync()
         .withOperationIds(Collections.emptyList())
@@ -519,7 +529,8 @@ public class MockData {
         .withResourceRequirements(resourceRequirements)
         .withStatus(Status.DEPRECATED)
         .withSchedule(schedule)
-        .withGeography(Geography.AUTO);
+        .withGeography(Geography.AUTO)
+        .withBreakingChange(false);
 
     final StandardSync standardSync5 = new StandardSync()
         .withOperationIds(Arrays.asList(OPERATION_ID_3))
@@ -535,7 +546,8 @@ public class MockData {
         .withResourceRequirements(resourceRequirements)
         .withStatus(Status.ACTIVE)
         .withSchedule(schedule)
-        .withGeography(Geography.AUTO);
+        .withGeography(Geography.AUTO)
+        .withBreakingChange(false);
 
     final StandardSync standardSync6 = new StandardSync()
         .withOperationIds(Arrays.asList())
@@ -551,7 +563,8 @@ public class MockData {
         .withResourceRequirements(resourceRequirements)
         .withStatus(Status.DEPRECATED)
         .withSchedule(schedule)
-        .withGeography(Geography.AUTO);
+        .withGeography(Geography.AUTO)
+        .withBreakingChange(false);
 
     return Arrays.asList(standardSync1, standardSync2, standardSync3, standardSync4, standardSync5, standardSync6);
   }
@@ -612,9 +625,61 @@ public class MockData {
         .withId(ACTOR_CATALOG_FETCH_EVENT_ID_2)
         .withActorCatalogId(ACTOR_CATALOG_ID_2)
         .withActorId(SOURCE_ID_2)
+        .withConfigHash("1395")
+        .withConnectorVersion("1.42.0");
+    return Arrays.asList(actorCatalogFetchEvent1, actorCatalogFetchEvent2);
+  }
+
+  public static List<ActorCatalogFetchEvent> actorCatalogFetchEventsSameSource() {
+    final ActorCatalogFetchEvent actorCatalogFetchEvent1 = new ActorCatalogFetchEvent()
+        .withId(ACTOR_CATALOG_FETCH_EVENT_ID_1)
+        .withActorCatalogId(ACTOR_CATALOG_ID_1)
+        .withActorId(SOURCE_ID_1)
+        .withConfigHash("CONFIG_HASH")
+        .withConnectorVersion("1.0.0");
+    final ActorCatalogFetchEvent actorCatalogFetchEvent2 = new ActorCatalogFetchEvent()
+        .withId(ACTOR_CATALOG_FETCH_EVENT_ID_2)
+        .withActorCatalogId(ACTOR_CATALOG_ID_2)
+        .withActorId(SOURCE_ID_1)
         .withConfigHash("1394")
         .withConnectorVersion("1.2.0");
     return Arrays.asList(actorCatalogFetchEvent1, actorCatalogFetchEvent2);
+  }
+
+  @Data
+  public static class ActorCatalogFetchEventWithCreationDate {
+
+    private final ActorCatalogFetchEvent actorCatalogFetchEvent;
+    private final OffsetDateTime createdAt;
+
+  }
+
+  public static List<ActorCatalogFetchEventWithCreationDate> actorCatalogFetchEventsForAggregationTest() {
+    final OffsetDateTime now = OffsetDateTime.now();
+    final OffsetDateTime yesterday = OffsetDateTime.now().minusDays(1l);
+
+    final ActorCatalogFetchEvent actorCatalogFetchEvent1 = new ActorCatalogFetchEvent()
+        .withId(ACTOR_CATALOG_FETCH_EVENT_ID_1)
+        .withActorCatalogId(ACTOR_CATALOG_ID_1)
+        .withActorId(SOURCE_ID_1)
+        .withConfigHash("CONFIG_HASH")
+        .withConnectorVersion("1.0.0");
+    final ActorCatalogFetchEvent actorCatalogFetchEvent2 = new ActorCatalogFetchEvent()
+        .withId(ACTOR_CATALOG_FETCH_EVENT_ID_2)
+        .withActorCatalogId(ACTOR_CATALOG_ID_2)
+        .withActorId(SOURCE_ID_2)
+        .withConfigHash("1394")
+        .withConnectorVersion("1.2.0");
+    final ActorCatalogFetchEvent actorCatalogFetchEvent3 = new ActorCatalogFetchEvent()
+        .withId(ACTOR_CATALOG_FETCH_EVENT_ID_3)
+        .withActorCatalogId(ACTOR_CATALOG_ID_3)
+        .withActorId(SOURCE_ID_2)
+        .withConfigHash("1394")
+        .withConnectorVersion("1.2.0");
+    return Arrays.asList(
+        new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent1, now),
+        new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent2, yesterday),
+        new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent3, now));
   }
 
   public static List<WorkspaceServiceAccount> workspaceServiceAccounts() {
