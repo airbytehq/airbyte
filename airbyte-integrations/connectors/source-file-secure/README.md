@@ -1,5 +1,5 @@
 # File Source Secure
-This is the repository for the File source connector, written in Python. 
+This is the repository for the File source connector, written in Python.
 This is modificaion of another connector Source File. This version has only one difference with the origin version is this one doesn't support local file storages and is orientated for cloud and cluster platforms.
 More details about dependencies and requirement are available [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-file/README.md)
 
@@ -65,7 +65,7 @@ docker build . -t airbyte/source-file-secure:dev \
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-file-secure:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-file-secure:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.

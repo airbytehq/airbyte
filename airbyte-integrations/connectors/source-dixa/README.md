@@ -1,9 +1,9 @@
 # Dixa Source
 
 ### DISCLAIMER
-<!-- TODO acceptance tests are disabled in CI pending a Dixa Sandbox: https://github.com/airbytehq/airbyte/issues/4667 --> 
+<!-- TODO acceptance tests are disabled in CI pending a Dixa Sandbox: https://github.com/airbytehq/airbyte/issues/4667 -->
 This source is currently not running CI pending the creation of a sandbox account, tracked [here](https://github.com/airbytehq/airbyte/issues/4667).
-### END DISCLAIMER 
+### END DISCLAIMER
 
 This is the repository for the Dixa source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/dixa).
@@ -69,7 +69,7 @@ docker build . -t airbyte/source-dixa:dev
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-dixa:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-dixa:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.

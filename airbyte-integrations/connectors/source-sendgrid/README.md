@@ -1,4 +1,4 @@
-# Sendgrid Source 
+# Sendgrid Source
 
 This is the repository for the Sendgrid source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/sendgrid).
@@ -65,7 +65,7 @@ docker build . -t airbyte/source-sendgrid:dev
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-sendgrid:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-sendgrid:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.

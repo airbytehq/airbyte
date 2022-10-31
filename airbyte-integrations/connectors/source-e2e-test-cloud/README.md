@@ -11,14 +11,14 @@ From the Airbyte repository root, run:
 ```
 
 #### Create credentials
-No credential is needed for this connector. 
+No credential is needed for this connector.
 
 ### Locally running the connector docker image
 
 #### Build
 Build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-e2e-test-cloud:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-e2e-test-cloud:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.

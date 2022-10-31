@@ -1,6 +1,6 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
+    id 'airbyte-docker-bmuschko'
     id 'airbyte-integration-test-java'
     id "java-library"
     // https://docs.gradle.org/current/userguide/java_testing.html#sec:java_test_fixtures
@@ -49,5 +49,5 @@ dependencies {
     testFixturesImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
     testFixturesImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.0.0'
 
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    implementation files(project(':airbyte-integrations:bases:base-java').buildDockerImage.outputs)
 }

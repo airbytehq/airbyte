@@ -62,7 +62,7 @@ docker build . -t airbyte/destination-scaffold-destination-python:dev
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:destination-scaffold-destination-python:airbyteDocker
+./gradlew :airbyte-integrations:connectors:destination-scaffold-destination-python:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -95,7 +95,7 @@ Place custom tests inside `integration_tests/` folder, then, from the connector 
 python -m pytest integration_tests
 ```
 #### Acceptance Tests
-Coming soon: 
+Coming soon:
 
 ### Using gradle to run tests
 All commands should be run from airbyte project root.

@@ -1,6 +1,6 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
+    id 'airbyte-docker-bmuschko'
     id 'airbyte-integration-test-java'
 }
 
@@ -32,5 +32,5 @@ dependencies {
     integrationTestJavaImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-redshift')
 
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    implementation files(project(':airbyte-integrations:bases:base-java').buildDockerImage.outputs)
 }

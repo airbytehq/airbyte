@@ -1,6 +1,6 @@
-# Instagram Source 
+# Instagram Source
 
-This is the repository for the Instagram source connector, written in Python. 
+This is the repository for the Instagram source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/instagram).
 
 ## Local development
@@ -69,7 +69,7 @@ docker build . --no-cache -t airbyte/source-instagram:dev \
 ```
 or
 ```
-./acceptance-test-docker.sh 
+./acceptance-test-docker.sh
 ```
 
 To run your integration tests with docker
@@ -84,7 +84,7 @@ docker build . -t airbyte/source-instagram:dev
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-instagram:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-instagram:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.

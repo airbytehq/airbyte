@@ -1,6 +1,6 @@
-# Freshdesk Source 
+# Freshdesk Source
 
-This is the repository for the Freshdesk source connector, written in Python. 
+This is the repository for the Freshdesk source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/freshdesk).
 
 ## Local development
@@ -69,7 +69,7 @@ docker build . -t airbyte/source-freshdesk:dev
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-freshdesk:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-freshdesk:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.

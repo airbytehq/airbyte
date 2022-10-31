@@ -62,7 +62,7 @@ docker build . -t airbyte/source-google-search-console:dev
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-google-search-console:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-google-search-console:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.

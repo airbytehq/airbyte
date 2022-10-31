@@ -64,7 +64,7 @@ docker build . -t airbyte/source-woocommerce:dev
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-woocommerce:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-woocommerce:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.

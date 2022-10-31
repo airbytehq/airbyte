@@ -38,7 +38,7 @@ To build using Gradle, from the Airbyte repository root, run:
 ```
 
 #### Create credentials
-The exchangerates API does not require authentication. 
+The exchangerates API does not require authentication.
 
 ### Locally running the connector
 ```
@@ -64,7 +64,7 @@ docker build . -t airbyte/source-exchange-rates:dev
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-exchange-rates:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-exchange-rates:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.

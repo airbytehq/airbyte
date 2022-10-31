@@ -1,4 +1,4 @@
-# Kafka Source 
+# Kafka Source
 
 This is the repository for the Kafka source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/kafka).
@@ -22,7 +22,7 @@ Note that the `secrets` directory is git-ignored by default, so there is no dang
 #### Build
 Build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-kafka:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-kafka:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.

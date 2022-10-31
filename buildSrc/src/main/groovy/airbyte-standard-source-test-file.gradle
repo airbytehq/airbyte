@@ -65,14 +65,8 @@ class AirbyteStandardSourceTestFilePlugin implements Plugin<Project> {
             outputs.upToDateWhen { false }
         }
 
-        project.standardSourceTestFile.dependsOn(':airbyte-integrations:bases:base-standard-source-test-file:airbyteDocker')
+        project.standardSourceTestFile.dependsOn(':airbyte-integrations:bases:base-standard-source-test-file:buildDockerImage')
         project.standardSourceTestFile.dependsOn(project.build)
-        if (project.hasProperty('airbyteDocker')) {
-            project.standardSourceTestFile.dependsOn(project.airbyteDocker)
-        }
-        if (project.hasProperty('airbyteDockerTest')){
-            project.standardSourceTestFile.dependsOn(project.airbyteDockerTest)
-        }
         if (project.hasProperty('buildDockerImage')) {
             project.standardSourceTestFile.dependsOn(project.'buildDockerImage')
         }

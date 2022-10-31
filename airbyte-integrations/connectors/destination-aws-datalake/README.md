@@ -74,7 +74,7 @@ docker build . -t airbyte/destination-aws-datalake:dev
 You can also build the connector image via Gradle:
 
 ```bash
-./gradlew :airbyte-integrations:connectors:destination-aws-datalake:airbyteDocker
+./gradlew :airbyte-integrations:connectors:destination-aws-datalake:buildDockerImage
 ```
 
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in

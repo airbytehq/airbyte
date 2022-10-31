@@ -92,7 +92,7 @@ docker build --no-cache . -t airbyte/source-stripe:dev
 
 You can also build the connector image via Gradle:
 ```
-./gradlew clean :airbyte-integrations:connectors:source-stripe:airbyteDocker
+./gradlew clean :airbyte-integrations:connectors:source-stripe:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -125,6 +125,6 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 
 ### additional connector/streams properties of note
 
-Some stripe streams are mutable, meaning that after an incremental update, new data items could appear *before* 
+Some stripe streams are mutable, meaning that after an incremental update, new data items could appear *before*
 the latest update date. To work around that, define the lookback_window_days to define a window in days to fetch results
 before the latest state date, in order to capture "delayed" data items.

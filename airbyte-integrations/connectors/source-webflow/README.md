@@ -72,7 +72,7 @@ docker build . -t airbyte/source-webflow:dev
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-webflow:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-webflow:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -94,7 +94,7 @@ pip install .[tests]
 
 Or if you are running in OSX with zsh, you may need to execute the following instead
 ```
-pip install .'[tests]'  
+pip install .'[tests]'
 ```
 ### Unit Tests
 To run unit tests locally, from the connector directory run:

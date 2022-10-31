@@ -49,7 +49,7 @@ and place them into `secrets/config.json`.
 python main.py spec
 python main.py check --config secrets/config.json
 python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json --state integration_tests/state.json 
+python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json --state integration_tests/state.json
 ```
 
 ### Locally running the connector docker image
@@ -62,7 +62,7 @@ docker build . -t airbyte/source-azure-table:dev
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-azure-table:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-azure-table:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.

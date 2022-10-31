@@ -52,6 +52,6 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-snowflake')
     integrationTestJavaImplementation 'org.apache.commons:commons-lang3:3.11'
 
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    implementation files(project(':airbyte-integrations:bases:base-java').buildDockerImage.outputs)
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').'buildDockerImage-snowflake.Dockerfile'.outputs)
 }

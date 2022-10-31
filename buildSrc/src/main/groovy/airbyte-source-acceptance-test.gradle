@@ -28,14 +28,8 @@ class AirbyteSourceAcceptanceTestPlugin implements Plugin<Project> {
             outputs.upToDateWhen { false }
         }
 
-        project.sourceAcceptanceTest.dependsOn(':airbyte-integrations:bases:source-acceptance-test:airbyteDocker')
+        project.sourceAcceptanceTest.dependsOn(':airbyte-integrations:bases:source-acceptance-test:buildDockerImage')
         project.sourceAcceptanceTest.dependsOn(project.build)
-        if (project.hasProperty('airbyteDocker')) {
-            project.sourceAcceptanceTest.dependsOn(project.airbyteDocker)
-        }
-        if (project.hasProperty('airbyteDockerTest')){
-            project.sourceAcceptanceTest.dependsOn(project.airbyteDockerTest)
-        }
         if (project.hasProperty('buildDockerImage')) {
             project.sourceAcceptanceTest.dependsOn(project.'buildDockerImage')
         }

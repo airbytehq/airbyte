@@ -20,7 +20,7 @@ dependencies {
     testImplementation libs.postgresql
     testImplementation libs.connectors.testcontainers.postgresql
 
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    implementation files(project(':airbyte-integrations:bases:base-java').buildDockerImage.outputs)
 }
 
 jsonSchema2Pojo {

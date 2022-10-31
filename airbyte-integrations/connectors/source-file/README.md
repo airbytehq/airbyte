@@ -1,6 +1,6 @@
-# File Source 
+# File Source
 
-This is the repository for the File source connector, written in Python. 
+This is the repository for the File source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/file).
 
 ## Local development
@@ -49,7 +49,7 @@ See `sample_files/sample_config.json` for a sample config file.
 
 In order to run integrations tests in this connector, you need:
 1. Testing Google Cloud Service Storage
-    1. Download and store your Google [Service Account](https://console.cloud.google.com/iam-admin/serviceaccounts) JSON file in `secrets/gcs.json`, it should look something like this:   
+    1. Download and store your Google [Service Account](https://console.cloud.google.com/iam-admin/serviceaccounts) JSON file in `secrets/gcs.json`, it should look something like this:
         ```
         {
             "type": "service_account",
@@ -66,8 +66,8 @@ In order to run integrations tests in this connector, you need:
         ```
     1. Your Service Account should have [Storage Admin Rights](https://console.cloud.google.com/iam-admin/iam) (to create Buckets, read and store files in GCS)
 
-1. Testing Amazon S3 
-    1. Create a file at `secrets/aws.json`   
+1. Testing Amazon S3
+    1. Create a file at `secrets/aws.json`
        ```
         {
             "aws_access_key_id": "XXXXXXX",
@@ -113,7 +113,7 @@ docker build . -t airbyte/source-file:dev
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-file:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-file:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.

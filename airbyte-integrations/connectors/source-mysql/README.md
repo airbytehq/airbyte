@@ -17,7 +17,7 @@ From the Airbyte repository root, run:
 #### Build
 Build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-mysql:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-mysql:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -58,5 +58,5 @@ you need to follow a few simple steps.
    ```shell
    cd airbyte-integrations/connectors/source-mysql
    mysql -h hostname -u user database < src/test-performance/sql/create_mysql_benchmarks.sql
-   ```   
+   ```
 4. After the script finishes its work, you will receive the number of tables specified in the script, with names starting with **test_0** and ending with **test_(the number of tables minus 1)**.

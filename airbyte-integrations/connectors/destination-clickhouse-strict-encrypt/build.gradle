@@ -15,7 +15,7 @@ dependencies {
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
     implementation project(':airbyte-integrations:connectors:destination-clickhouse')
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    implementation files(project(':airbyte-integrations:bases:base-java').buildDockerImage.outputs)
 
     implementation 'com.clickhouse:clickhouse-jdbc:0.3.2-patch10:all'
 

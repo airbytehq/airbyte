@@ -17,7 +17,7 @@ Note that the `secrets` directory is git-ignored by default, so there is no dang
 #### Build
 Build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:destination-bigquery:airbyteDocker
+./gradlew :airbyte-integrations:connectors:destination-bigquery:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -65,13 +65,13 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 ## Uploading options
 There are 2 available options to upload data to bigquery `Standard` and `GCS Staging`.
 - `Standard` is option to upload data directly from your source to BigQuery storage. This way is faster and requires less resources than GCS one.
-Please be aware you may see some fails for big datasets and slow sources, i.e. if reading from source takes more than 10-12 hours. 
+Please be aware you may see some fails for big datasets and slow sources, i.e. if reading from source takes more than 10-12 hours.
 It may happen if you have a slow connection to source and\or migrate a very big dataset. If that's a case, then select a GCS Uploading type.
 This is caused by the Google BigQuery SDK client limitations. For more details please check https://github.com/airbytehq/airbyte/issues/3549
 - `GCS Uploading (CSV format)`. This approach has been implemented in order to avoid the issue for big datasets mentioned above.
 At the first step all data is uploaded to GCS bucket and then all moved to BigQuery at one shot stream by stream.
 The destination-gcs connector is partially used under the hood here, so you may check its documentation for more details.
-There is no sense to use this uploading method if your migration doesn't take more than 10 hours and if you don't see the error like this in logs: 
+There is no sense to use this uploading method if your migration doesn't take more than 10 hours and if you don't see the error like this in logs:
 <!-- markdown-link-check-disable -->
 "PUT https://www.googleapis.com/upload/bigquery/v2/projects/some-project-name/jobs?uploadType=resumable&upload_id=some_randomly_generated_upload_id".
 <!-- markdown-link-check-enable -->

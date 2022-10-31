@@ -1,6 +1,6 @@
 # Destination Dev Null
 
-This destination is a "safe" version of the [E2E Test destination](https://docs.airbyte.io/integrations/destinations/e2e-test). It only allows the "silent" mode. 
+This destination is a "safe" version of the [E2E Test destination](https://docs.airbyte.io/integrations/destinations/e2e-test). It only allows the "silent" mode.
 
 ## Local development
 
@@ -15,7 +15,7 @@ From the Airbyte repository root, run:
 #### Build
 Build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:destination-dev-null:airbyteDocker
+./gradlew :airbyte-integrations:connectors:destination-dev-null:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.

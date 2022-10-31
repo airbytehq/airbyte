@@ -65,7 +65,7 @@ docker build . -t airbyte/source-linkedin-pages:dev
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-linkedin-pages:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-linkedin-pages:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.

@@ -22,7 +22,7 @@ Note that the `secrets` directory is git-ignored by default, so there is no dang
 #### Build
 Build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-{{dashCase name}}:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-{{dashCase name}}:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -41,7 +41,7 @@ We use `JUnit` for Java tests.
 
 ### Unit and Integration Tests
 Place unit tests under `src/test/...`
-Place integration tests in `src/test-integration/...` 
+Place integration tests in `src/test-integration/...`
 
 #### Acceptance Tests
 Airbyte has a standard test suite that all source connectors must pass. Implement the `TODO`s in

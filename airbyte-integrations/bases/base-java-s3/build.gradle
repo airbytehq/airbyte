@@ -6,7 +6,7 @@ dependencies {
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    implementation files(project(':airbyte-integrations:bases:base-java').buildDockerImage.outputs)
 
     implementation 'org.apache.commons:commons-csv:1.4'
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'

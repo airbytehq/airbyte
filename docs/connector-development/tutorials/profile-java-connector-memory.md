@@ -78,7 +78,7 @@ The example focuses on docker deployment, because it is more straightforward. It
 5. Build the connector to be profiled locally. It will create a `dev` version local image: `airbyte/<connector-name>:dev`.
 
     ```sh
-    ./gradlew :airbyte-integrations:connectors:<connector-name>:airbyteDocker
+    ./gradlew :airbyte-integrations:connectors:<connector-name>:buildDockerImage
     ```
 
 6. Connect to the launched local Airbyte server at `localhost:8000`, go to the `Settings` page, and change the version of the connector to be profiled to `dev` which was just built in the previous step.

@@ -45,7 +45,7 @@ to generate the necessary credentials. Then create a file `secrets/config.json` 
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-You can get your Apify credentials from Settings > Integration [section](https://my.apify.com/account#/integrations) of the Apify app 
+You can get your Apify credentials from Settings > Integration [section](https://my.apify.com/account#/integrations) of the Apify app
 
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source apify-dataset test creds`
 and place them into `secrets/config.json`.
@@ -68,7 +68,7 @@ docker build . -t airbyte/source-apify-dataset:dev
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-apify-dataset:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-apify-dataset:buildDockerImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.

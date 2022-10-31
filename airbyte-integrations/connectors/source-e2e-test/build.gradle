@@ -1,6 +1,6 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
+    id 'airbyte-docker-bmuschko'
     id 'airbyte-integration-test-java'
 }
 
@@ -14,7 +14,7 @@ dependencies {
     implementation project(':airbyte-json-validation')
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'com.networknt:json-schema-validator:1.0.72'
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    implementation files(project(':airbyte-integrations:bases:base-java').buildDockerImage.outputs)
 
     // random Json object generation from Json schema
     // https://github.com/airbytehq/jsongenerator
@@ -27,5 +27,5 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-e2e-test')
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').buildDockerImage.outputs)
 }
