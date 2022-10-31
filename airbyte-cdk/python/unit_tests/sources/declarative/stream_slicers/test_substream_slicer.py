@@ -256,9 +256,9 @@ def test_request_option(
         ],
         options={},
     )
-    slicer.update_cursor({"first_stream_id": "1234", "second_stream_id": "4567"}, None)
+    stream_slice = {"first_stream_id": "1234", "second_stream_id": "4567"}
 
-    assert expected_req_params == slicer.get_request_params()
-    assert expected_headers == slicer.get_request_headers()
-    assert expected_body_json == slicer.get_request_body_json()
-    assert expected_body_data == slicer.get_request_body_data()
+    assert expected_req_params == slicer.get_request_params(stream_slice=stream_slice)
+    assert expected_headers == slicer.get_request_headers(stream_slice=stream_slice)
+    assert expected_body_json == slicer.get_request_body_json(stream_slice=stream_slice)
+    assert expected_body_data == slicer.get_request_body_data(stream_slice=stream_slice)

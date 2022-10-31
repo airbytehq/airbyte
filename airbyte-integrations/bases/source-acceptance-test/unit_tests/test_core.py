@@ -20,8 +20,7 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
-from source_acceptance_test.config import BasicReadTestConfig, Config, EmptyStreamConfiguration
-from source_acceptance_test.tests import test_core
+from source_acceptance_test.config import BasicReadTestConfig
 from source_acceptance_test.tests.test_core import TestBasicRead as _TestBasicRead
 from source_acceptance_test.tests.test_core import TestDiscovery as _TestDiscovery
 
@@ -260,7 +259,7 @@ def test_additional_properties_is_true(discovered_catalog, expectation):
         ),
     ],
 )
-def test_read(mocker, schema, record, expectation):
+def test_read(schema, record, expectation):
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -276,10 +275,8 @@ def test_read(mocker, schema, record, expectation):
         AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111))
     ]
     t = _TestBasicRead()
-    t.enforce_strictness_level = mocker.Mock()
     with expectation:
-        t.test_read(None, catalog, input_config, [], docker_runner_mock, MagicMock(), Config.TestStrictnessLevel.low)
-        t.enforce_strictness_level.assert_called_with(Config.TestStrictnessLevel.low, input_config)
+        t.test_read(None, catalog, input_config, [], docker_runner_mock, MagicMock())
 
 
 @pytest.mark.parametrize(
@@ -844,45 +841,3 @@ def test_validate_field_appears_at_least_once(records, configured_catalog, expec
             t._validate_field_appears_at_least_once(records=records, configured_catalog=configured_catalog)
     else:
         t._validate_field_appears_at_least_once(records=records, configured_catalog=configured_catalog)
-
-
-@pytest.mark.parametrize(
-    "test_strictness_level, basic_read_test_config, expect_test_failure",
-    [
-        pytest.param(
-            Config.TestStrictnessLevel.low,
-            BasicReadTestConfig(config_path="config_path", empty_streams={EmptyStreamConfiguration(name="my_empty_stream")}),
-            False,
-            id="[LOW test strictness level] Empty streams can be declared without bypass_reason.",
-        ),
-        pytest.param(
-            Config.TestStrictnessLevel.low,
-            BasicReadTestConfig(
-                config_path="config_path", empty_streams={EmptyStreamConfiguration(name="my_empty_stream", bypass_reason="good reason")}
-            ),
-            False,
-            id="[LOW test strictness level] Empty streams can be declared with a bypass_reason.",
-        ),
-        pytest.param(
-            Config.TestStrictnessLevel.high,
-            BasicReadTestConfig(config_path="config_path", empty_streams={EmptyStreamConfiguration(name="my_empty_stream")}),
-            True,
-            id="[HIGH test strictness level] Empty streams can't be declared without bypass_reason.",
-        ),
-        pytest.param(
-            Config.TestStrictnessLevel.high,
-            BasicReadTestConfig(
-                config_path="config_path", empty_streams={EmptyStreamConfiguration(name="my_empty_stream", bypass_reason="good reason")}
-            ),
-            False,
-            id="[HIGH test strictness level] Empty streams can be declared with a bypass_reason.",
-        ),
-    ],
-)
-def test_enforce_strictness_level(mocker, test_strictness_level, basic_read_test_config, expect_test_failure):
-    mocker.patch.object(test_core, "pytest")
-    assert _TestBasicRead.enforce_strictness_level(test_strictness_level, basic_read_test_config) is None
-    if expect_test_failure:
-        test_core.pytest.fail.assert_called_once()
-    else:
-        test_core.pytest.fail.assert_not_called()

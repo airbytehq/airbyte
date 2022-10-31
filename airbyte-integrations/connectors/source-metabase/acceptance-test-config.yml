@@ -2,13 +2,19 @@ connector_image: airbyte/source-metabase:dev
 tests:
   spec:
     - spec_path: "source_metabase/spec.yaml"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.0"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
+    - config_path: "integration_tests/config_http_url.json"
+      status: "failed"
   discovery:
     - config_path: "secrets/config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.0"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
