@@ -6,7 +6,6 @@ connectionSpecification:
   required:
     - app_secret_token
     - agreement_grant_token
-  additionalProperties: false
   properties:
     app_secret_token:
       type: string

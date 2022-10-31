@@ -72,7 +72,7 @@ class Products(VismaEconomicStream):
 
 
 class InvoicesTotal(VismaEconomicStream):
-    primary_key = "totals"
+    primary_key = None
 
     def path(self, **kwargs) -> str:
         return "invoices/totals"
