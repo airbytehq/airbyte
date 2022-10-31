@@ -9,7 +9,7 @@ RUN apk --no-cache upgrade \
     && pip install --upgrade pip \
     && apk --no-cache add tzdata build-base
 
-COPY setup.py ./
+COPY ./airbyte-integrations/bases/source-acceptance-test/setup.py ./
 # install necessary packages to a temporary folder
 RUN python setup.py egg_info
 RUN pip install --prefix=/install -r *.egg-info/requires.txt
