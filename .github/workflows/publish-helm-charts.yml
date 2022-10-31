@@ -31,7 +31,7 @@ jobs:
           tag_prefix: "v"
           major_pattern: "feat:"
           minor_pattern: "fix:"
-          format: "${major}.${minor}.${patch}"
+          format: "${major}.${minor}.${/}"
           change_path: "./charts"
           bump_each_commit: true
           namespace: helm
@@ -72,7 +72,7 @@ jobs:
       - name: "Helm package"
         shell: bash
         run: |
-          declare -a StringArray=("airbyte-bootloader" "airbyte-server" "airbyte-temporal" "airbyte-webapp" "airbyte-pod-sweeper" "airbyte-worker" "airbyte-metrics")
+          declare -a StringArray=("airbyte-bootloader" "airbyte-server" "airbyte-temporal" "airbyte-webapp" "airbyte-pod-sweeper" "airbyte-worker" "airbyte-metrics" "airbyte-cron")
           for val in ${StringArray[@]}; do
             cd ./airbyte/charts/${val} && helm dep update && cd $GITHUB_WORKSPACE
             sed -i -E  's/version: \"[0-9]+\.[0-9]+\.[0-9]+\"/version: \"${{ needs.generate-semantic-version.outputs.next-version }}\"/' ./airbyte/charts/${val}/Chart.yaml
