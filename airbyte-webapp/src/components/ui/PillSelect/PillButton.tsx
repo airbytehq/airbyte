@@ -23,7 +23,7 @@ export const PillButton: React.FC<React.PropsWithChildren<PillButtonProps>> = ({
   );
 
   return (
-    <button {...buttonProps} className={buttonClassName}>
+    <button type="button" {...buttonProps} className={buttonClassName}>
       <Text as="span" size="xs" className={styles.text}>
         {children}
       </Text>
