@@ -14,5 +14,6 @@ connectionSpecification:
       description: API Key
       airbyte_secret: true
     avatar_id:
+      title: Avatar ID
       type: string
       description: Avatar ID. See <a href="https://smartengage.com/docs/#avatars">here</a>.
