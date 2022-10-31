@@ -20,9 +20,32 @@ export var ProgressBar = ({ job }: { job: JobsWithJobs | SynchronousJobRead }) =
   let numerator = 0;
   let denominator = 0;
   let totalPercent = -1;
+  let timeRemainingString = "";
   let latestAttempt: AttemptRead | undefined;
 
   const jobStatus = getJobStatus(job);
+
+  // colors from `_colors.scss` TODO: Use the SCSS variables maybe?
+  let color = "white";
+  switch (jobStatus) {
+    case "pending":
+      color = "#cbc8ff";
+      break;
+    case "running":
+      color = "#cbc8ff";
+      break;
+    case "incomplete":
+      color = "#fdf8e1";
+      break;
+    case "failed":
+      color = "#e64228";
+      return null;
+    case "succeeded":
+      color = "#67dae1";
+      return null;
+    case "cancelled":
+      return null;
+  }
 
   if (isJobsWithJobs(job)) {
     if (job.attempts) {
@@ -44,30 +67,20 @@ export var ProgressBar = ({ job }: { job: JobsWithJobs | SynchronousJobRead }) =
     // TODO... maybe
   }
 
-  totalPercent = (numerator / denominator) * 100;
+  totalPercent = Math.floor((numerator * 100) / denominator);
 
-  // colors from `_colors.scss` TODO: Use the SCSS variables maybe?
-  let color = "white";
-  switch (jobStatus) {
-    case "pending":
-      color = "#cbc8ff";
-      break;
-    case "running":
-      color = "#cbc8ff";
-      break;
-    case "incomplete":
-      color = "#fdf8e1";
-      break;
-    case "failed":
-      color = "#e64228";
-      break;
-    case "succeeded":
-      color = "#67dae1";
-      totalPercent = 100; // just to be safe
-      break;
-    case "cancelled":
-      totalPercent = 0; // just to be safe
-      break;
+  if (latestAttempt && latestAttempt.status === Status.RUNNING) {
+    const now = new Date().getTime();
+    const elapsedTime = now - latestAttempt.createdAt * 1000;
+    const timeRemaining = Math.floor(elapsedTime / totalPercent) * (100 - totalPercent); // in ms
+
+    const minutesRemaining = Math.ceil(timeRemaining / 1000 / 60);
+    const hoursRemaining = Math.ceil(minutesRemaining / 60);
+    if (minutesRemaining <= 60) {
+      timeRemainingString = `${minutesRemaining} minutes remaining`;
+    } else {
+      timeRemainingString = `${hoursRemaining} hours remaining`;
+    }
   }
 
   return (
@@ -76,17 +89,18 @@ export var ProgressBar = ({ job }: { job: JobsWithJobs | SynchronousJobRead }) =
       {latestAttempt?.status === Status.RUNNING && latestAttempt.streamStats && (
         <>
           <div>
-            {numerator} of {denominator} {formatMessage({ id: "estimate.syncedThusFar" })}
+            {numerator} of {denominator} {formatMessage({ id: "estimate.syncedThusFar" })}{" "}
+            {timeRemainingString.length > 0 ? ` ~ ${timeRemainingString}` : ""}
           </div>
           <div>
             <br />
             <div className={classNames(styles.container)}>Stream Stats:</div>
-            {latestAttempt.streamStats?.map((stream) => {
+            {latestAttempt.streamStats?.map((stream, idx) => {
               const localNumerator = stream.stats.recordsEmitted;
               const localDenominator = stream.stats.estimatedRecords;
 
               return (
-                <div className={classNames(styles.container)}>
+                <div className={classNames(styles.container)} key={`stream-progress-${idx}`}>
                   <strong>{stream.streamName}</strong> -{" "}
                   {localNumerator && localDenominator
                     ? `${Math.round(
