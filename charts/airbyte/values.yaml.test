@@ -1058,7 +1058,7 @@ temporal:
   ## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
   ## extraInitContainers:
   ##   - name: config-loader
-  ##     image: temporalio/auto-setup:1.7.0
+  ##     image: temporalio/auto-setup:1.13.4
   ##     command:
   ##       - /bin/sh
   ##       - -c
