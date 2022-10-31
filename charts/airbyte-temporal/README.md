@@ -33,8 +33,8 @@ Helm chart to deploy airbyte-temporal
 | global.secretName | string | `""` |  |
 | global.serviceAccountName | string | `"placeholderServiceAccount"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
-| image.repository | string | `"temporalio/auto-setup"` |  |
-| image.tag | string | `"1.13.4"` |  |
+| image.repository | string | `"airbyte/temporal-auto-setup"` |  |
+| image.tag | string | `"1.13.0"` |  |
 | livenessProbe.enabled | bool | `true` |  |
 | livenessProbe.failureThreshold | int | `3` |  |
 | livenessProbe.initialDelaySeconds | int | `5` |  |
