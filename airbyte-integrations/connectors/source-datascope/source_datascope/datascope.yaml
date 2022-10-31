@@ -59,8 +59,8 @@ definitions:
 streams:
   - "*ref(definitions.location_stream)"
   - "*ref(definitions.answers_stream)"
-  #- "*ref(definitions.lists_stream)"
-  #- "*ref(definitions.notifications_stream)"
+  - "*ref(definitions.lists_stream)"
+  - "*ref(definitions.notifications_stream)"
 
 
 check:
