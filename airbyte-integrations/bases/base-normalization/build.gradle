@@ -36,12 +36,12 @@ integrationTest.dependsOn(build)
 airbyteDockerBmuschko {
     dockerfileToImageName = [
         'Dockerfile': 'normalization',
+        'clickhouse.Dockerfile': 'normalization-clickhouse',
         'mssql.Dockerfile': 'normalization-mssql',
         'mysql.Dockerfile': 'normalization-mysql',
         'oracle.Dockerfile': 'normalization-oracle',
-        'clickhouse.Dockerfile': 'normalization-clickhouse',
-        'snowflake.Dockerfile': 'normalization-snowflake',
         'redshift.Dockerfile': 'normalization-redshift',
+        'snowflake.Dockerfile': 'normalization-snowflake',
         'tidb.Dockerfile': 'normalization-tidb',
     ]
     additionalDependencies = [checkSshScriptCopy]
@@ -56,15 +56,15 @@ task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs
 
     dependsOn ':airbyte-integrations:bases:base-normalization:buildDockerImage'
 
-    dependsOn ':airbyte-integrations:connectors:destination-bigquery:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-mysql:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-postgres:airbyteDocker'
+    dependsOn ':airbyte-integrations:connectors:destination-bigquery:buildDockerImage'
+    dependsOn ':airbyte-integrations:connectors:destination-mysql:buildDockerImage'
+    dependsOn ':airbyte-integrations:connectors:destination-postgres:buildDockerImage'
     dependsOn ':airbyte-integrations:connectors:destination-redshift:buildDockerImage'
-    dependsOn ':airbyte-integrations:connectors:destination-snowflake:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-oracle:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-clickhouse:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-tidb:airbyteDocker'
+    dependsOn ':airbyte-integrations:connectors:destination-snowflake:buildDockerImage'
+    dependsOn ':airbyte-integrations:connectors:destination-oracle:buildDockerImage'
+    dependsOn ':airbyte-integrations:connectors:destination-mssql:buildDockerImage'
+    dependsOn ':airbyte-integrations:connectors:destination-clickhouse:buildDockerImage'
+    dependsOn ':airbyte-integrations:connectors:destination-tidb:buildDockerImage'
 }
 
 // not really sure what this task does differently from customIntegrationTestPython, but it seems to also run integration tests
