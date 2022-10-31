@@ -332,13 +332,12 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public <T> void writeOutput(final long jobId,
-                              final int attemptNumber,
-                              final T output,
-                              final SyncStats syncStats,
-                              final NormalizationSummary normalizationSummary)
+  public void writeOutput(final long jobId, final int attemptNumber, final JobOutput output)
       throws IOException {
     final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
+    final SyncStats syncStats = output.getSync().getStandardSyncSummary().getTotalStats();
+    final NormalizationSummary normalizationSummary = output.getSync().getNormalizationSummary();
+
     jobDatabase.transaction(ctx -> {
       ctx.update(ATTEMPTS)
           .set(ATTEMPTS.OUTPUT, JSONB.valueOf(Jsons.serialize(output)))

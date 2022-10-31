@@ -117,7 +117,6 @@ import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
-import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.LogsHandler;
 import io.airbyte.server.handlers.OAuthHandler;
@@ -158,7 +157,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   private final JobHistoryHandler jobHistoryHandler;
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
   private final WebBackendGeographiesHandler webBackendGeographiesHandler;
-  private final HealthCheckHandler healthCheckHandler;
   private final LogsHandler logsHandler;
   private final OpenApiConfigHandler openApiConfigHandler;
   private final OAuthHandler oAuthHandler;
@@ -170,7 +168,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
                           final JobPersistence jobPersistence,
                           final SecretsRepositoryReader secretsRepositoryReader,
                           final SecretsRepositoryWriter secretsRepositoryWriter,
-
                           final SynchronousSchedulerClient synchronousSchedulerClient,
                           final StatePersistence statePersistence,
                           final TrackingClient trackingClient,
@@ -239,7 +236,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         eventRunner,
         configRepository);
     webBackendGeographiesHandler = new WebBackendGeographiesHandler();
-    healthCheckHandler = new HealthCheckHandler(configRepository);
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
   }
@@ -942,9 +938,13 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   // HEALTH
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
   public HealthCheckRead getHealthCheck() {
-    return healthCheckHandler.health();
+    throw new NotImplementedException();
   }
 
   // WEB BACKEND
