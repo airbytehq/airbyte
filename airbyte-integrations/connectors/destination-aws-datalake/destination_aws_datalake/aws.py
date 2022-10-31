@@ -138,7 +138,7 @@ class AwsHandler:
             try:
                 schema: pa.Schema = pa.Schema.from_pandas(df=df[[col]], preserve_index=False)
 
-            except (pa.ArrowInvalid, TypeError) as ex:
+            except (pa.ArrowInvalid, TypeError, pa.ArrowTypeError) as ex:
                 # Handle arrays with objects of mixed types
                 logger.warning(f"Unable able to infer data type for column {col}, casting column type to string: {ex}")
 
