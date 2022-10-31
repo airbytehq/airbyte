@@ -69,7 +69,6 @@ public class MySqlSourceTests {
         .build());
   }
 
-
   @Test
   void testJdbcUrlWithEscapedDatabaseName() {
     final JsonNode jdbcConfig = new MySqlSource().toDatabaseConfig(buildConfigEscapingNeeded());
@@ -81,10 +80,10 @@ public class MySqlSourceTests {
 
   private JsonNode buildConfigEscapingNeeded() {
     return Jsons.jsonNode(ImmutableMap.of(
-            JdbcUtils.HOST_KEY, "localhost",
-            JdbcUtils.PORT_KEY, 1111,
-            JdbcUtils.USERNAME_KEY, "user",
-            JdbcUtils.DATABASE_KEY, "db/foo"));
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1111,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db/foo"));
   }
 
 }

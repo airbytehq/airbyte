@@ -565,10 +565,10 @@ class PostgresSourceTest {
 
   private JsonNode buildConfigEscapingNeeded() {
     return Jsons.jsonNode(ImmutableMap.of(
-            JdbcUtils.HOST_KEY, "localhost",
-            JdbcUtils.PORT_KEY, 1111,
-            JdbcUtils.USERNAME_KEY, "user",
-            JdbcUtils.DATABASE_KEY, "db/foo"));
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1111,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db/foo"));
   }
 
 }
