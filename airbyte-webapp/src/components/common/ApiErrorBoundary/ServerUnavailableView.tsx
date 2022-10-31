@@ -8,7 +8,7 @@ interface ServerUnavailableViewProps {
   retryDelay: number;
 }
 
-const ServerUnavailableView: React.FC<ServerUnavailableViewProps> = ({ onRetryClick, retryDelay }) => {
+export const ServerUnavailableView: React.FC<ServerUnavailableViewProps> = ({ onRetryClick, retryDelay }) => {
   useEffect(() => {
     const timer: ReturnType<typeof setTimeout> = setTimeout(() => {
       onRetryClick();
@@ -25,5 +25,3 @@ const ServerUnavailableView: React.FC<ServerUnavailableViewProps> = ({ onRetryCl
     />
   );
 };
-
-export default ServerUnavailableView;

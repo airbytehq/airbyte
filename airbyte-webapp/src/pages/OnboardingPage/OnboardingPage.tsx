@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
-import ApiErrorBoundary from "components/ApiErrorBoundary";
+import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 import { Button } from "components/ui/Button";

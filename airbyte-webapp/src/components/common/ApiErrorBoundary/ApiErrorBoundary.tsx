@@ -10,7 +10,7 @@ import { ErrorOccurredView } from "views/common/ErrorOccurredView";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 
-import ServerUnavailableView from "./components/ServerUnavailableView";
+import { ServerUnavailableView } from "./ServerUnavailableView";
 
 interface ApiErrorBoundaryState {
   errorId?: string;
@@ -37,7 +37,7 @@ interface ApiErrorBoundaryProps {
 
 const RETRY_DELAY = 2500;
 
-class ApiErrorBoundary extends React.Component<
+class ApiErrorBoundaryComponent extends React.Component<
   React.PropsWithChildren<ApiErrorBoundaryHookProps & ApiErrorBoundaryProps>,
   ApiErrorBoundaryState
 > {
@@ -107,19 +107,14 @@ class ApiErrorBoundary extends React.Component<
   }
 }
 
-const ApiErrorBoundaryWithHooks: React.FC<React.PropsWithChildren<ApiErrorBoundaryProps>> = ({
-  children,
-  ...props
-}) => {
+export const ApiErrorBoundary: React.FC<React.PropsWithChildren<ApiErrorBoundaryProps>> = ({ children, ...props }) => {
   const { reset } = useQueryErrorResetBoundary();
   const location = useLocation();
   const navigate = useNavigate();
 
   return (
-    <ApiErrorBoundary {...props} location={location} navigate={navigate} onRetry={reset}>
+    <ApiErrorBoundaryComponent {...props} location={location} navigate={navigate} onRetry={reset}>
       {children}
-    </ApiErrorBoundary>
+    </ApiErrorBoundaryComponent>
   );
 };
-
-export default ApiErrorBoundaryWithHooks;
