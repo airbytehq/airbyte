@@ -29,7 +29,7 @@ definitions:
       page_token_option:
         inject_into: "request_parameter"
         field_name: "page"
-      url_base: "https://api.mailersend.com/v1"
+      url_base: "*ref(definitions.requester.url_base)"
     requester:
       $ref: "*ref(definitions.requester)"
   base_stream:
