@@ -35,13 +35,13 @@ public class AttemptHandler {
   }
 
   public InternalOperationResult saveStats(SaveStatsRequestBody requestBody) {
-    try {
-//      jobPersistence.setAttemptTemporalWorkflowInfo(requestBody.getJobId(),
-//          requestBody.getAttemptNumber(), requestBody.getWorkflowId().toString(), requestBody.getProcessingTaskQueue());
-    } catch (IOException ioe) {
-      LOGGER.error("IOException when setting temporal workflow in attempt;", ioe);
-      return new InternalOperationResult().succeeded(false);
-    }
+//    try {
+////      jobPersistence.setAttemptTemporalWorkflowInfo(requestBody.getJobId(),
+////          requestBody.getAttemptNumber(), requestBody.getWorkflowId().toString(), requestBody.getProcessingTaskQueue());
+//    } catch (IOException ioe) {
+//      LOGGER.error("IOException when setting temporal workflow in attempt;", ioe);
+//      return new InternalOperationResult().succeeded(false);
+//    }
     return new InternalOperationResult().succeeded(true);
   }
 

@@ -351,7 +351,7 @@ public class DefaultJobPersistence implements JobPersistence {
 
       // change this into an update or
       ctx.insertInto(SYNC_STATS)
-          .onDuplicateKeyUpdate()
+//          .onDuplicateKeyUpdate()
           .set(SYNC_STATS.ID, UUID.randomUUID())
           .set(SYNC_STATS.UPDATED_AT, now)
           .set(SYNC_STATS.CREATED_AT, now)
