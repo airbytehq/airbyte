@@ -4,8 +4,8 @@ import React from "react";
 import styled from "styled-components";
 
 import { MoonIcon } from "components/icons/MoonIcon";
+import { PauseIcon } from "components/icons/PauseIcon";
 
-import PauseIcon from "../../icons/PauseIcon";
 import { CircleLoader } from "./CircleLoader";
 
 export type StatusIconStatus = "sleep" | "inactive" | "success" | "warning" | "loading" | "error";
