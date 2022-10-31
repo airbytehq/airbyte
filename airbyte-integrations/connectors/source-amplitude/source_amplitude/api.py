@@ -254,7 +254,7 @@ class AverageSessionLength(IncrementalAmplitudeStream):
             # https://developers.amplitude.com/docs/dashboard-rest-api#returns-2
             series = response_data.get("series", [])
             if len(series) > 0:
-                series = series[0] # get the nested list
+                series = series[0]  # get the nested list
                 for i, date in enumerate(response_data["xValues"]):
                     yield {"date": date, "length": series[i]}
 
