@@ -73,12 +73,12 @@ def find_file(name, path):
             return os.path.join(root, name)
 
 
-def get_depended_connectors(changed_connectors, all_build_gradle_files):
+def get_depended_connectors(changed_modules, all_build_gradle_files):
     depended_connectors = []
-    for changed_connector in changed_connectors:
+    for changed_module in changed_modules:
         for connector, gradle_file in all_build_gradle_files.items():
             with open(gradle_file) as file:
-                if changed_connector in file.read():
+                if changed_module in file.read():
                     depended_connectors.append(connector)
     return depended_connectors
 
