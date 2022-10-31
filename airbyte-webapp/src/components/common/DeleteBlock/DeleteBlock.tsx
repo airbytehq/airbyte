@@ -30,7 +30,7 @@ const Text = styled.div`
   white-space: pre-line;
 `;
 
-const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
+export const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const navigate = useNavigate();
 
@@ -62,5 +62,3 @@ const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
     </DeleteBlockComponent>
   );
 };
-
-export default DeleteBlock;
