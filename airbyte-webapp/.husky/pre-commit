@@ -1,1 +1,2 @@
 cd airbyte-webapp && npx --no lint-staged
+exit 1
