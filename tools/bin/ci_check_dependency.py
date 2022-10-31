@@ -95,7 +95,7 @@ def write_report(depended_connectors):
         else:
             affected_destinations.append(depended_connector)
 
-    with open("template.md", "r") as f:
+    with open(".github/connector_dependency_comment_template.md", "r") as f:
         template = f.read()
 
     sources_md = ""
