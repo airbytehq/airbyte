@@ -10,7 +10,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class EventsStream(HttpStream):
   primary_key = "id"
   cursor_field = "page"
-  page_size = 50000
+  page_size = 5000
   url_base = "https://prod-main-net-dashboard-api.azurewebsites.net"
     
   def __init__(self, config: Mapping[str, Any], event_id: str, **_):
