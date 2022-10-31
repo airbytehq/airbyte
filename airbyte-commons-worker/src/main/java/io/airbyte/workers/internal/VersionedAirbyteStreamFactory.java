@@ -92,6 +92,12 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
         initializeForProtocolVersion(fallbackVersion);
       }
     }
+
+    final boolean needMigration = !protocolVersion.getMajorVersion().equals(migratorFactory.getMostRecentVersion().getMajorVersion());
+    logger.info(
+        "Reading messages from protocol version {}{}",
+        protocolVersion.serialize(),
+        needMigration ? ", messages will be upgraded to protocol version " + migratorFactory.getMostRecentVersion().serialize() : "");
     return super.create(bufferedReader);
   }
 

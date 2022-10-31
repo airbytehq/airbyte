@@ -284,10 +284,6 @@ subprojects { subproj ->
     repositories {
         mavenCentral()
         maven {
-            // TODO(Issue-4915): Remove this when upstream is merged in.
-            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
-        }
-        maven {
             url 'https://jitpack.io'
         }
         maven {
