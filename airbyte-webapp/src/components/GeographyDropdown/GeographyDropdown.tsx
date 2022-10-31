@@ -40,10 +40,10 @@ interface Props<T = unknown> extends DropdownProps {
 }
 
 export const GeographyDropdown: React.FC<Props> = ({ options }) => {
-  const [selectedOption, setSelectedOption] = useState("none");
+  const [option, setOption] = useState();
   const { formatMessage } = useIntl();
-  const handleTypeSelect = (e: any) => {
-    setSelectedOption(e.label);
+  const handleOptionSelect = (e: any) => {
+    setOption(e.label);
   };
 
   const formatOptionLabel = ({ label }: { label: string }) => {
@@ -61,7 +61,7 @@ export const GeographyDropdown: React.FC<Props> = ({ options }) => {
     option: (provided: any, state: any) => ({
       ...provided,
       color: "black",
-      backgroundColor: state.isSelected ? "#eae9ff" : "white",
+      backgroundColor: state.isSelected ? "#eae9ff" : "#ffffff",
       borderRadius: "10px",
 
       "&:hover": {
@@ -72,16 +72,18 @@ export const GeographyDropdown: React.FC<Props> = ({ options }) => {
       display: "flex",
     }),
   };
+
   return (
     <DropDown
       className={styles.reactSelectContainer}
       classNamePrefix="reactSelect"
       options={options}
       components={{ Option: GeographyOption, MenuList }}
-      onChange={handleTypeSelect}
-      value={selectedOption}
+      onChange={handleOptionSelect}
+      value={option}
       formatOptionLabel={formatOptionLabel}
       styles={customStyles}
+      placeholder="Select a region..."
     />
   );
 };
