@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.debezium.internals;
 
 import io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter;
@@ -13,4 +17,5 @@ public class CustomMySQLTinyIntOneToBooleanConverter extends TinyIntOneToBoolean
     }
     super.converterFor(field, registration);
   }
+
 }
