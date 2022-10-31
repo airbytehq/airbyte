@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - account_sid
     - auth_token
+    - sid
   additionalProperties: true
   properties:
     # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
@@ -16,5 +17,9 @@ connectionSpecification:
     auth_token:
       type: string
       description: Twilio Auth Token
+      airbyte_secret: true
+    sid:
+      type: string
+      description: Workspace ID
       airbyte_secret: true
 

@@ -1,3 +1,5 @@
 {
-  "fix-me": "TODO"
+  "account_sid": "Your Account ID",
+  "auth_token": "Your Auth Token",
+  "sid": "Your Workspace ID"
 }
