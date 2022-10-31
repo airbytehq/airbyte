@@ -6677,7 +6677,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-metabase:0.1.0"
+- dockerImage: "airbyte/source-metabase:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/metabase"
     connectionSpecification:
@@ -6693,7 +6693,8 @@
           title: "Metabase Instance API URL"
           description: "URL to your metabase instance API"
           examples:
-          - "http://localhost:3000/api/"
+          - "https://localhost:3000/api/"
+          pattern: "^https://"
           order: 0
         username:
           type: "string"
