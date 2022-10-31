@@ -9891,7 +9891,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-public-apis:0.1.0"
   spec:
-    documentationUrl: https://api.publicapis.org
+    documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
     connectionSpecification:
       $schema: http://json-schema.org/draft-07/schema#
       title: Public Apis Spec
