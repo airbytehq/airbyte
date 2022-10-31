@@ -29,7 +29,7 @@ jobs:
         id: sem-ver
         with:
           tag_prefix: "v"
-          major_pattern: "feat:"
+          major_pattern: "feat!:"
           minor_pattern: "fix:"
           format: "${major}.${minor}.${patch}"
           change_path: "./charts"
