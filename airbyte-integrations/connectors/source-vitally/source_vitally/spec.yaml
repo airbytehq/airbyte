@@ -1,4 +1,4 @@
-documentationUrl: https://docs.vitally.io/pushing-data-to-vitally/rest-api
+documentationUrl: https://docs.airbyte.com/integrations/sources/vitally
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Vitally Spec
