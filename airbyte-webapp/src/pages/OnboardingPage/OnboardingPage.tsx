@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
-import HeadTitle from "components/HeadTitle";
+import { HeadTitle } from "components/common/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 import { Button } from "components/ui/Button";
 

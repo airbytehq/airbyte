@@ -28,7 +28,7 @@ interface IProps {
  * Titles defined by {@link HeadTitleDefinition} will be
  * chained together with the {@link SEPARATOR}.
  */
-const HeadTitle: React.FC<IProps> = ({ titles }) => {
+export const HeadTitle: React.FC<IProps> = ({ titles }) => {
   const intl = useIntl();
 
   const getTitle = (d: HeadTitleDefinition): string => {
@@ -42,5 +42,3 @@ const HeadTitle: React.FC<IProps> = ({ titles }) => {
     </Helmet>
   );
 };
-
-export default HeadTitle;

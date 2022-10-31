@@ -5,7 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
 import { EmptyResourceListView } from "components/common/EmptyResourceListView";
-import HeadTitle from "components/HeadTitle";
+import { HeadTitle } from "components/common/HeadTitle";
 import { MainPageWithScroll } from "components/MainPageWithScroll";
 import { Button } from "components/ui/Button";
 import { PageHeader } from "components/ui/PageHeader";

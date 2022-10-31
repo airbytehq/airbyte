@@ -1,7 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import HeadTitle from "components/HeadTitle";
+import { HeadTitle } from "components/common/HeadTitle";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import { PageHeader } from "components/ui/PageHeader";
 
