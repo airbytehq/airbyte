@@ -54,6 +54,7 @@ dependencies {
     implementation project(':airbyte-metrics:metrics-lib')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-notification')
     implementation (project(':airbyte-persistence:job-persistence')) {
         // Temporary hack to avoid dependency conflicts
         exclude group: 'io.micronaut'
