@@ -48,7 +48,7 @@ export const DefaultDataResidencyView: React.FC = () => {
       resetForm({ values });
     } catch (e) {
       registerNotification({
-        id: "confirmResetPassword.success",
+        id: "workspaceSettings.defaultGeographyError",
         title: formatMessage({ id: "connection.geographyUpdateError" }),
         isError: true,
       });
