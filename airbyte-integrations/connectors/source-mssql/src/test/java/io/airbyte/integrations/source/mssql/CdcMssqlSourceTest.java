@@ -159,6 +159,15 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     return "CREATE SCHEMA " + schemaName;
   }
 
+  @Override
+  public void newTableSnapshotTest() throws Exception {
+  }
+
+  @Override
+  protected String randomTableSchema() {
+    return MODELS_SCHEMA + "_random";
+  }
+
   private void switchCdcOnDatabase(final Boolean enable, final String db) {
     final String storedProc = enable ? "sys.sp_cdc_enable_db" : "sys.sp_cdc_disable_db";
     executeQuery("USE [" + db + "]\n" + "EXEC " + storedProc);

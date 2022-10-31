@@ -42,13 +42,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -362,14 +365,19 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final JsonNode sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
-      final Properties props = MssqlCdcHelper.getDebeziumProperties(sourceConfig);
-      final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
-          MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()),
-          props, catalog, true);
-      return handler.getIncrementalIterators(
+
+      final AirbyteDebeziumHandler handler =
+          new AirbyteDebeziumHandler(sourceConfig,
+              MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()), true, Duration.ofMinutes(5));
+
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
           new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
-          new MssqlCdcStateHandler(stateManager), new MssqlCdcConnectorMetadataInjector(),
+          new MssqlCdcStateHandler(stateManager),
+          new MssqlCdcConnectorMetadataInjector(),
+          MssqlCdcHelper.getDebeziumProperties(sourceConfig),
           emittedAt);
+
+      return Collections.singletonList(incrementalIteratorSupplier.get());
     } else {
       LOGGER.info("using CDC: {}", false);
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);

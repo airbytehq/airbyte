@@ -71,7 +71,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
       final ChangeEvent<String, String> next;
       try {
-        final Duration waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME : firstRecordWaitTime;
+        final Duration waitTime = Duration.ofSeconds(5L);
         next = queue.poll(waitTime.getSeconds(), TimeUnit.SECONDS);
       } catch (final InterruptedException e) {
         throw new RuntimeException(e);
