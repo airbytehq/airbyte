@@ -4,13 +4,13 @@ concurrency:
 
 on:
   push:
-    branches: 
-      - 'master'
+    branches:
+      - "master"
     paths:
-      - 'charts/**'
-      - '!charts/**/Chart.yaml'
-      - '!charts/**/Chart.lock'
-      - '!charts/**/README.md'
+      - "charts/**"
+      - "!charts/**/Chart.yaml"
+      - "!charts/**/Chart.lock"
+      - "!charts/**/README.md"
   workflow_dispatch:
 
 jobs:
@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      
+
       - uses: paulhatch/semantic-version@v4.0.3
         id: sem-ver
         with:
@@ -41,8 +41,7 @@ jobs:
         env:
           VERSION: ${{ steps.sem-ver.outputs.version }}
         id: ver
-        run: echo "::set-output name=fragment::${VERSION%%-*}"
-
+        run: echo "fragment=${VERSION%%-*}" >> $GITHUB_OUTPUT
 
   release-chart:
     name: Chart release
@@ -68,7 +67,6 @@ jobs:
           sed -i -E "s/    version: [[:digit:]].[[:digit:]].[[:digit:]]/    version: ${{ needs.generate-semantic-version.outputs.next-version }}/g" airbyte/Chart.yaml
           sed -i -E 's/version: [0-9]+\.[0-9]+\.[0-9]+/version: ${{ needs.generate-semantic-version.outputs.next-version }}/' airbyte/Chart.yaml
 
-
       - name: "Helm package"
         shell: bash
         run: |
@@ -79,13 +77,13 @@ jobs:
             helm package ./airbyte/charts/${val} -d airbyte-oss  --version ${{ needs.generate-semantic-version.outputs.next-version }}
           done
           helm repo index airbyte-oss/
-      
+
       - name: Commit and push changes
         uses: EndBug/add-and-commit@v9
         with:
-          message: 'Bump release to ${{ needs.generate-semantic-version.outputs.next-version }}'
-          add: '.'
-          cwd: './airbyte-oss/'
+          message: "Bump release to ${{ needs.generate-semantic-version.outputs.next-version }}"
+          add: "."
+          cwd: "./airbyte-oss/"
 
       - name: "Helm package main chart"
         shell: bash
@@ -102,18 +100,16 @@ jobs:
       - name: Commit and push changes
         uses: EndBug/add-and-commit@v9
         with:
-          message: 'Bump release to ${{ needs.generate-semantic-version.outputs.next-version }}'
-          add: '.'
-          cwd: './airbyte-oss/'
-      
+          message: "Bump release to ${{ needs.generate-semantic-version.outputs.next-version }}"
+          add: "."
+          cwd: "./airbyte-oss/"
 
       - name: "Generate changelog"
         shell: bash
         id: changelog
         run: |
           cd ./airbyte/
-          echo "::set-output name=changelog::$(PAGER=cat git log $(git describe --tags --match "*-helm" $(git rev-list --tags --max-count=1))..HEAD --oneline --decorate=no)"
-
+          echo "changelog=$(PAGER=cat git log $(git describe --tags --match "*-helm" $(git rev-list --tags --max-count=1))..HEAD --oneline --decorate=no)" >> $GITHUB_OUTPUT
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
