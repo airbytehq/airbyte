@@ -1,0 +1,10 @@
+{ "type": "object",
+  "properties": {
+    "email": {"type": ["users","string"]},
+    "id": {"type": ["users","string"]},
+    "created_at": {"type": ["users","string"]},
+    "role": {"type": ["users","string"]},
+    "first_name": {"type": ["users","string"]},
+    "last_name": {"type": ["users","string"]},
+    "name": {"type": ["users","string"]},
+    "accepted": {"type": ["users","boolean"]}}}
