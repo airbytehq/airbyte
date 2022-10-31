@@ -24,6 +24,7 @@ class CustomServiceAccountClient(oauth2.GoogleServiceAccountClient):
     """
     def __init__(self, credentials_dict: Mapping[str, str], scope: str, sub=None, proxy_config=None):
         try:
+            credentials_dict["private_key"] = credentials_dict["private_key"].replace("\\n", "\n")
             self.creds = (Credentials.from_service_account_info(credentials_dict, scopes=[scope], subject=sub))
         except KeyError as exc:
             raise GoogleAdsValueError(f"make sure the credentials dictionary has the following keys: {exc.args[0]}")
