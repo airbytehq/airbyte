@@ -32,7 +32,10 @@ def main():
 
     # Try to find dependency in build.gradle file
     depended_connectors = list(set(get_depended_connectors(changed_modules, all_build_gradle_files)))
-    write_report(depended_connectors)
+
+    # Create comment body to post on pull request
+    if depended_connectors:
+        write_report(depended_connectors)
 
 
 def get_changed_files(path):
@@ -92,15 +95,26 @@ def write_report(depended_connectors):
         else:
             affected_destinations.append(depended_connector)
 
-    if affected_sources:
-        with open("affected_sources.txt", "w") as f:
-            for source in affected_sources:
-                f.write(f"- {source}\n")
+    with open("template.md", "r") as f:
+        template = f.read()
 
-    if affected_destinations:
-        with open("affected_destinations.txt", "w") as f:
-            for destination in affected_destinations:
-                f.write(f"- {destination}\n")
+    sources_md = ""
+    for source in affected_sources:
+        sources_md += f"- {source}\n"
+
+    destinations_md = ""
+    for destination in affected_destinations:
+        destinations_md += f"- {destination}\n"
+
+    comment = template.format(
+        sources=sources_md,
+        destinations=destinations_md,
+        num_sources=len(affected_sources),
+        num_destinations=len(affected_destinations)
+    )
+
+    with open("comment_body.md", "w") as f:
+        f.write(comment)
 
 
 if __name__ == "__main__":
