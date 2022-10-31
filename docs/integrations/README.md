@@ -68,7 +68,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Freshdesk](sources/freshdesk.md)                                                           | Generally Available  | Yes                 |
 | [Freshsales](sources/freshsales.md)                                                         | Alpha                | No                  |
 | [Freshservice](sources/freshservice.md)                                                     | Alpha                | No                  |
-| [getLago](sources/getlago.md)                                                     | Alpha                | Yes                  |
+| [getLago](sources/getlago.md)                                                               | Alpha                | Yes                 |
 | [GitHub](sources/github.md)                                                                 | Generally Available  | Yes                 |
 | [GitLab](sources/gitlab.md)                                                                 | Alpha                | Yes                 |
 | [Glassfrog](sources/glassfrog.md)                                                           | Alpha                | No                  |
