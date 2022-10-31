@@ -84,8 +84,23 @@ def get_depended_connectors(changed_modules, all_build_gradle_files):
 
 
 def write_report(depended_connectors):
+    affected_sources = []
+    affected_destinations = []
     for depended_connector in depended_connectors:
-        print("- " + depended_connector)
+        if depended_connector.startswith("source"):
+            affected_sources.append(depended_connector)
+        else:
+            affected_destinations.append(depended_connector)
+
+    if affected_sources:
+        with open("affected_sources.txt", "w") as f:
+            for source in affected_sources:
+                f.write(f"- {source}\n")
+
+    if affected_destinations:
+        with open("affected_destinations.txt", "w") as f:
+            for destination in affected_destinations:
+                f.write(f"- {destination}\n")
 
 
 if __name__ == "__main__":
