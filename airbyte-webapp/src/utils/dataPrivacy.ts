@@ -58,12 +58,11 @@ export const loadOsano = (): void => {
 
   // Create style element to hide osano widget
   const style = document.createElement("style");
-  style.appendChild(document.createTextNode(".osano-cm-widget { display: none; }"));
-  style.appendChild(document.createTextNode(".osano-cm-button--type_denyAll { display: none; }"));
   style.appendChild(
-    document.createTextNode(
-      `.osano-cm-button--type_manage { background-color: inherit; border: 1px inherit; font-weight: 200; }`
-    )
+    document.createTextNode(`
+    .osano-cm-widget { display: none; }
+    .osano-cm-button--type_denyAll { display: none; }
+    .osano-cm-button--type_manage { background-color: inherit; border: 1px inherit; font-weight: 200; }`)
   );
   document.head.appendChild(style);
 
