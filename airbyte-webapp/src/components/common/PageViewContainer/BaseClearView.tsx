@@ -3,7 +3,7 @@ import { useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 
-import Version from "components/Version";
+import { Version } from "components/common/Version";
 
 const Content = styled.div`
   height: 100%;

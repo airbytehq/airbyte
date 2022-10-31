@@ -13,12 +13,12 @@ const Content = styled.div<{ primary?: boolean }>`
   margin-top: 10px;
 `;
 
-interface IProps {
+interface VersionProps {
   className?: string;
   primary?: boolean;
 }
 
-const Version: React.FC<IProps> = ({ className, primary }) => {
+export const Version: React.FC<VersionProps> = ({ className, primary }) => {
   const config = useConfig();
   return (
     <Content primary={primary} className={className}>
@@ -26,5 +26,3 @@ const Version: React.FC<IProps> = ({ className, primary }) => {
     </Content>
   );
 };
-
-export default Version;
