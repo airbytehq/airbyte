@@ -1,5 +1,4 @@
 export * from "./ArrayOfObjectsEditor";
-export * from "./DefaultLogoCatalog";
 export * from "./Label";
 export * from "./LabeledControl";
 export * from "./LabeledInput";

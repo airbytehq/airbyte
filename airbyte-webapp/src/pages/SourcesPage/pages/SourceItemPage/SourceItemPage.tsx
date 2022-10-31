@@ -4,7 +4,7 @@ import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 
 import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
-import { ConnectorIcon } from "components/ConnectorIcon";
+import { ConnectorIcon } from "components/common/ConnectorIcon";
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
