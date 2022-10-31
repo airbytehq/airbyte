@@ -77,29 +77,19 @@ class SourceMicrosoftDataverse(AbstractSource):
             response = do_request(config, f"EntityDefinitions(LogicalName='{catalog.stream.name}')")
             response_json = response.json()
 
+            args = {
+                "url": config["url"],
+                "stream_name": catalog.stream.name,
+                "stream_path": response_json["LogicalCollectionName"],
+                "primary_key": catalog.primary_key,
+                "schema": catalog.stream.json_schema,
+                "odata_maxpagesize": config["odata_maxpagesize"],
+                "authenticator": auth
+            }
+
             if catalog.sync_mode == SyncMode.incremental:
-                streams.append(
-                    IncrementalMicrosoftDataverseStream(
-                        url=config["url"],
-                        stream_name=catalog.stream.name,
-                        stream_path=response_json["LogicalCollectionName"],
-                        primary_key=catalog.primary_key,
-                        schema=catalog.stream.json_schema,
-                        odata_maxpagesize=config["odata_maxpagesize"],
-                        config_cursor_field=catalog.cursor_field,
-                        authenticator=auth,
-                    )
-                )
+                streams.append(IncrementalMicrosoftDataverseStream(**args, config_cursor_field=catalog.cursor_field))
             else:
-                streams.append(
-                    MicrosoftDataverseStream(
-                        url=config["url"],
-                        stream_name=catalog.stream.name,
-                        stream_path=response_json["LogicalCollectionName"],
-                        primary_key=catalog.primary_key,
-                        schema=catalog.stream.json_schema,
-                        odata_maxpagesize=config["odata_maxpagesize"],
-                        authenticator=auth,
-                    )
-                )
+                streams.append(MicrosoftDataverseStream(**args))
+
         return streams
