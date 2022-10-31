@@ -729,7 +729,7 @@
 - name: Metabase
   sourceDefinitionId: c7cb421b-942e-4468-99ee-e369bcabaec5
   dockerRepository: airbyte/source-metabase
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/metabase
   icon: metabase.svg
   sourceType: api
