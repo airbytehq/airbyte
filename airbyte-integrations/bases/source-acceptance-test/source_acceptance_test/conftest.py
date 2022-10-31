@@ -136,7 +136,8 @@ def docker_runner_fixture(image_tag, tmp_path) -> ConnectorRunner:
 
 
 def get_docker_image_tag(image_tag):
-    return image_tag.split(":")[0] + ":test"
+    # return image_tag.split(":")[0] + ":test"
+    return image_tag
 
 
 @pytest.fixture(name="previous_connector_image_name")
