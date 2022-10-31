@@ -21,6 +21,7 @@ export const ProgressBar = ({ job }: { job: JobsWithJobs | SynchronousJobRead })
   let denominator = 0;
   let totalPercent = -1;
   let timeRemainingString = "";
+  const unEstimatedStreams: string[] = [];
   let latestAttempt: AttemptRead | undefined;
 
   const jobStatus = getJobStatus(job);
@@ -50,14 +51,11 @@ export const ProgressBar = ({ job }: { job: JobsWithJobs | SynchronousJobRead })
   if (isJobsWithJobs(job)) {
     if (job.attempts) {
       latestAttempt = job.attempts[job.attempts?.length - 1];
-      if (latestAttempt && latestAttempt.totalStats) {
-        const totalStats = latestAttempt.totalStats;
-        if (totalStats?.recordsEmitted && totalStats?.estimatedRecords) {
-          numerator = totalStats.recordsEmitted;
-          denominator = totalStats.estimatedRecords;
-        }
-      } else if (latestAttempt && !latestAttempt.totalStats && latestAttempt.streamStats) {
+      if (latestAttempt && !latestAttempt.totalStats && latestAttempt.streamStats) {
         for (const stream of latestAttempt.streamStats) {
+          if (!stream.stats.recordsEmitted) {
+            unEstimatedStreams.push(`${stream.streamName}`);
+          }
           numerator += stream.stats.recordsEmitted ?? 0;
           denominator += stream.stats.estimatedRecords ?? 0;
         }
@@ -73,13 +71,12 @@ export const ProgressBar = ({ job }: { job: JobsWithJobs | SynchronousJobRead })
     const now = new Date().getTime();
     const elapsedTime = now - latestAttempt.createdAt * 1000;
     const timeRemaining = Math.floor(elapsedTime / totalPercent) * (100 - totalPercent); // in ms
-
     const minutesRemaining = Math.ceil(timeRemaining / 1000 / 60);
     const hoursRemaining = Math.ceil(minutesRemaining / 60);
     if (minutesRemaining <= 60) {
-      timeRemainingString = `${minutesRemaining} minutes remaining`;
+      timeRemainingString = `${minutesRemaining} ${formatMessage({ id: "estimate.minutesRemaining" })}`;
     } else {
-      timeRemainingString = `${hoursRemaining} hours remaining`;
+      timeRemainingString = `${hoursRemaining} ${formatMessage({ id: "estimate.hoursRemaining" })}`;
     }
   }
 
@@ -89,9 +86,10 @@ export const ProgressBar = ({ job }: { job: JobsWithJobs | SynchronousJobRead })
       {latestAttempt?.status === Status.RUNNING && latestAttempt.streamStats && (
         <>
           <div>
-            {numerator} of {denominator} {formatMessage({ id: "estimate.syncedThusFar" })}{" "}
+            {numerator} / {denominator} {formatMessage({ id: "estimate.recordsSynced" })}{" "}
             {timeRemainingString.length > 0 ? ` ~ ${timeRemainingString}` : ""}
           </div>
+          {unEstimatedStreams.length > 0 && <div>{unEstimatedStreams.length} un-estimated streams</div>}
           <div>
             <br />
             <div className={classNames(styles.container)}>Stream Stats:</div>
@@ -103,10 +101,12 @@ export const ProgressBar = ({ job }: { job: JobsWithJobs | SynchronousJobRead })
                 <div className={classNames(styles.container)} key={`stream-progress-${idx}`}>
                   <strong>{stream.streamName}</strong> -{" "}
                   {localNumerator && localDenominator
-                    ? `${Math.round(
-                        (localNumerator * 100) / localDenominator
-                      )}% complete (${localNumerator} / ${localDenominator} records moved)`
-                    : `${localNumerator} records moved so far`}
+                    ? `${Math.round((localNumerator * 100) / localDenominator)}${formatMessage({
+                        id: "estimate.percentComplete",
+                      })} (${localNumerator} / ${localDenominator} ${formatMessage({
+                        id: "estimate.recordsSynced",
+                      })})`
+                    : `${localNumerator} ${formatMessage({ id: "estimate.recordsSyncedThusFar" })} (no estimate)`}
                 </div>
               );
             })}
