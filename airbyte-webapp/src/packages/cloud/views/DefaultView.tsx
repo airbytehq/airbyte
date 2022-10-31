@@ -15,9 +15,7 @@ export const DefaultView: React.FC = () => {
   const sourceDefinitionId = localStorage.getItem(EXP_SOURCE_SIGNUP_SELECTOR);
 
   useEffect(() => {
-    setTimeout(() => {
-      localStorage.removeItem(EXP_SOURCE_SIGNUP_SELECTOR);
-    }, 5000);
+    localStorage.removeItem(EXP_SOURCE_SIGNUP_SELECTOR);
   }, []);
   // Only show the workspace creation list if there is more than one workspace
   // otherwise redirect to the single workspace
