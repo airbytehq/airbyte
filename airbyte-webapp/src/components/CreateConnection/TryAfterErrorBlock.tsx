@@ -1,7 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { StatusIcon } from "components/StatusIcon";
+import { StatusIcon } from "components/common/StatusIcon";
 import { Button } from "components/ui/Button";
 import { Text } from "components/ui/Text";
 

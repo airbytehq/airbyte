@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 
-import StatusIcon, { StatusIconStatus } from "./StatusIcon";
+import { StatusIcon, StatusIconStatus } from "./StatusIcon";
 
 describe("<StatusIcon />", () => {
   it("renders with title and default icon", () => {

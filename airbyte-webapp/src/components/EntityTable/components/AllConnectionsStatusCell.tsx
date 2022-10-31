@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
 
-import StatusIcon from "components/StatusIcon";
-import { StatusIconStatus } from "components/StatusIcon/StatusIcon";
+import { StatusIcon } from "components/common/StatusIcon";
+import { StatusIconStatus } from "components/common/StatusIcon/StatusIcon";
 
 import { Status } from "../types";
 

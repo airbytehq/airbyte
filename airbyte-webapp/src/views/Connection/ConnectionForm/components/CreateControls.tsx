@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { StatusIcon } from "components/StatusIcon";
+import { StatusIcon } from "components/common/StatusIcon";
 import { Button } from "components/ui/Button";
 import { Spinner } from "components/ui/Spinner";
 

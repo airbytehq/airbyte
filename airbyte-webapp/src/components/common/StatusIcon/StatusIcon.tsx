@@ -5,7 +5,7 @@ import styled from "styled-components";
 
 import { MoonIcon } from "components/icons/MoonIcon";
 
-import PauseIcon from "../icons/PauseIcon";
+import PauseIcon from "../../icons/PauseIcon";
 import { CircleLoader } from "./CircleLoader";
 
 export type StatusIconStatus = "sleep" | "inactive" | "success" | "warning" | "loading" | "error";
@@ -68,7 +68,7 @@ const Value = styled.span`
   padding-left: 3px;
 `;
 
-const StatusIcon: React.FC<StatusIconProps> = ({ title, status = "error", ...props }) => {
+export const StatusIcon: React.FC<StatusIconProps> = ({ title, status = "error", ...props }) => {
   const valueElement = props.value ? <Value>{props.value}</Value> : null;
 
   if (status === "loading") {
@@ -93,5 +93,3 @@ const StatusIcon: React.FC<StatusIconProps> = ({ title, status = "error", ...pro
     </Badge>
   );
 };
-
-export default StatusIcon;

@@ -8,5 +8,4 @@ export * from "./common/Link";
 export * from "./LoadingPage";
 export * from "./MainPageWithScroll";
 export * from "./SimpleTableComponents";
-export * from "./StatusIcon";
 export * from "./ConnectorCard";
