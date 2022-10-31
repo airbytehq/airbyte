@@ -99,17 +99,12 @@ class MicrosoftDataverseStream(HttpStream, ABC):
 class IncrementalMicrosoftDataverseStream(MicrosoftDataverseStream, IncrementalMixin, ABC):
 
     delta_token_field = "$deltatoken"
-    update_field = "modifiedon"
-    state_checkpoint_interval = None
+    state_checkpoint_interval = None  # For now we just use the change tracking as state, and it is only emitted on last page
 
     def __init__(self, url, stream_name, stream_path, schema, primary_key, odata_maxpagesize, config_cursor_field, **kwargs):
         super().__init__(url, stream_name, stream_path, schema, primary_key, odata_maxpagesize, **kwargs)
         self._cursor_value = None
         self.config_cursor_field = config_cursor_field
-
-    @property
-    def supports_incremental(self):
-        return True
 
     @property
     def state(self) -> Mapping[str, Any]:
