@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "name": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "enabled": {
+      "type": ["null", "boolean"]
+    },
+    "insertedAt": {
+      "type": ["null", "integer"]
+    },
+    "updatedAt": {
+      "type": ["null", "integer"]
+    },
+    "personaTagIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "contactListIds": {
+      "type": ["null", "object"],
+      "properties": {
+        "enrolled": {
+          "type": ["null", "integer"]
+        },
+        "active": {
+          "type": ["null", "integer"]
+        },
+        "steps": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

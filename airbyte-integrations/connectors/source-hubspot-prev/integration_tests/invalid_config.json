@@ -1,0 +1,7 @@
+{
+  "start_date": "2021-01-01T00:00:00Z",
+  "credentials": {
+    "credentials_title": "API Key Credentials",
+    "api_key": "wrongkey-key1-key2-key3-wrongkey1234"
+  }
+}

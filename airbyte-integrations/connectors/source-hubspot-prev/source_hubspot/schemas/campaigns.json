@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "appId": {
+      "type": ["null", "integer"]
+    },
+    "appName": {
+      "type": ["null", "string"]
+    },
+    "contentId": {
+      "type": ["null", "integer"]
+    },
+    "counters": {
+      "type": ["null", "object"],
+      "properties": {
+        "open": {
+          "type": ["null", "integer"]
+        },
+        "processed": {
+          "type": ["null", "integer"]
+        },
+        "sent": {
+          "type": ["null", "integer"]
+        },
+        "deferred": {
+          "type": ["null", "integer"]
+        },
+        "unsubscribed": {
+          "type": ["null", "integer"]
+        },
+        "statuschange": {
+          "type": ["null", "integer"]
+        },
+        "bounce": {
+          "type": ["null", "integer"]
+        },
+        "mta_dropped": {
+          "type": ["null", "integer"]
+        },
+        "dropped": {
+          "type": ["null", "integer"]
+        },
+        "suppressed": {
+          "type": ["null", "integer"]
+        },
+        "click": {
+          "type": ["null", "integer"]
+        },
+        "delivered": {
+          "type": ["null", "integer"]
+        },
+        "forward": {
+          "type": ["null", "integer"]
+        },
+        "print": {
+          "type": ["null", "integer"]
+        },
+        "reply": {
+          "type": ["null", "integer"]
+        },
+        "spamreport": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "numIncluded": {
+      "type": ["null", "integer"]
+    },
+    "numQueued": {
+      "type": ["null", "integer"]
+    },
+    "subType": {
+      "type": ["null", "string"]
+    },
+    "subject": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "lastUpdatedTime": {
+      "type": ["null", "integer"]
+    }
+  }
+}
