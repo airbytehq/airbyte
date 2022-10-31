@@ -1,0 +1,36 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://taskrouter.twilio.com"
+    http_method: "GET"
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['account_sid'] }}"
+      password: "{{ config['auth_token'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  workspaces_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "workspaces"
+      primary_key: "sid"
+      path: "/v1/Workspaces"
+
+streams:
+  - "*ref(definitions.workspaces_stream)"
+
+check:
+  stream_names:
+    - "workspaces"

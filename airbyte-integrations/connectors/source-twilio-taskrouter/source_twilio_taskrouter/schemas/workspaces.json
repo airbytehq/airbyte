@@ -1,0 +1,54 @@
+{
+    "type": "object",
+    "properties": {
+        "account_sid": {
+            "type": ["null", "string"]
+          },
+          "date_created": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "date_updated": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "default_activity_name": {
+            "type": ["null", "string"]
+          },
+          "default_activity_sid": {
+            "type": ["null", "string"]
+          },
+          "event_callback_url": {
+            "type": ["null", "string"]
+          },
+          "events_filter": {
+            "type": ["null", "string"]
+          },
+          "friendly_name": {
+            "type": ["null", "string"]
+          },
+          "multi_task_enabled":{
+            "type": ["null", "boolean"]
+          },
+          "sid": {
+            "type": ["null", "string"]
+          },
+          "timeout_actvity_name": {
+            "type": ["null", "string"]
+          },
+          "timeout_actvity_sid": {
+            "type": ["null", "string"]
+          },
+          "prioritize_queue_order": {
+            "type": ["null", "string"]
+          },
+          "url": {
+            "type": ["null", "string"]
+          },
+          "links": {
+            "type": ["null", "string"]
+          }
+
+
+    }
+}
