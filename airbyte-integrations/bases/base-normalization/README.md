@@ -105,7 +105,7 @@ variable to run tests against that instance.
 ### Running dbt
 
 Once you have a database available, you can run dbt commands. We recommend running dbt from inside the `airbyte/normalization:dev` image.
-This saves you the effort of installing dbt and reconfiguring dbt_project.yml. You should build the image locally with `./gradlew :airbyte-integrations:bases:base-normalization:buildDockerImage`.
+This saves you the effort of installing dbt and reconfiguring dbt_project.yml. You should build the image locally with `./gradlew :airbyte-integrations:bases:base-normalization:buildDockerImage-Dockerfile`.
 
 First, `cd integration_tests/normalization_test_output/postgres/test_simple_streams`. Then install dbt's dependencies:
 ```shell
