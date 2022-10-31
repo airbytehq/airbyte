@@ -4,14 +4,14 @@ import {
 } from "react-router-dom";
 import styled from "styled-components";
 
-export interface ILinkProps {
+export interface LinkProps {
   bold?: boolean;
   $clear?: boolean;
   $light?: boolean;
 }
 
 // TODO: fix typings
-const Link = styled(ReactLink)<ILinkProps /* & ReactLinkProps */>`
+export const Link = styled(ReactLink)<LinkProps /* & ReactLinkProps */>`
   color: ${({ theme, $light }) => ($light ? theme.darkGreyColor : theme.primaryColor)};
 
   font-weight: ${({ bold }) => (bold ? "bold" : "normal")};
@@ -21,5 +21,3 @@ const Link = styled(ReactLink)<ILinkProps /* & ReactLinkProps */>`
     opacity: 0.8;
   }
 `;
-
-export default Link;

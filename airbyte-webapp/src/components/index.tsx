@@ -4,7 +4,7 @@ export * from "./LabeledControl";
 export * from "./LabeledInput";
 export * from "./LabeledRadioButton";
 export * from "./LabeledSwitch";
-export * from "./Link";
+export * from "./common/Link";
 export * from "./LoadingPage";
 export * from "./MainPageWithScroll";
 export * from "./SimpleTableComponents";
