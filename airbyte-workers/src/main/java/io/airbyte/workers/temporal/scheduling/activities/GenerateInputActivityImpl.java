@@ -37,8 +37,10 @@ import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -122,16 +124,27 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
             .withSourceResourceRequirements(config.getSourceResourceRequirements())
             .withDestinationResourceRequirements(config.getDestinationResourceRequirements());
       } else {
-        final List<ConfiguredAirbyteStream> streamsToSplit = config.getConfiguredAirbyteCatalog().getStreams();
+        final Queue<ConfiguredAirbyteStream> streamsToSplit = new LinkedList<>(config.getConfiguredAirbyteCatalog().getStreams());
 
-        final List<ConfiguredAirbyteStream> stream1 = new ArrayList<>();
-        for (int i = 0; i < (streamsToSplit.size() + 1) / 2; i++) {
-          stream1.add(streamsToSplit.get(i));
+        final int parallelFactor = 4;
+
+        final int increment = streamsToSplit.size() / parallelFactor;
+        final int firstIncrement = increment + (streamsToSplit.size() % parallelFactor);
+
+        final List<List<ConfiguredAirbyteStream>> streams = new ArrayList<>();
+
+        final List<ConfiguredAirbyteStream> firstStream = new ArrayList<>();
+        for (int i = 0; i < firstIncrement; i++) {
+          firstStream.add(streamsToSplit.poll());
         }
+        streams.add(firstStream);
 
-        final List<ConfiguredAirbyteStream> stream2 = new ArrayList<>();
-        for (int i = (streamsToSplit.size() + 1) / 2; i < streamsToSplit.size(); i++) {
-          stream2.add(streamsToSplit.get(i));
+        while (!streamsToSplit.isEmpty()) {
+          final List<ConfiguredAirbyteStream> streamsToAdd = new ArrayList<>();
+          for (int i = 0; i < increment && !streamsToSplit.isEmpty(); i++) {
+            streamsToAdd.add(streamsToSplit.poll());
+          }
+          streams.add(streamsToAdd);
         }
 
         final StateWrapper state = (config.getState() == null || config.getState().getState() == null)
@@ -142,59 +155,32 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
             entry -> entry.getStream().getStreamDescriptor(),
             entryVal -> entryVal.getStream().getStreamState()));
 
-        final StateWrapper state1 = new StateWrapper().withStateType(StateType.STREAM).withStateMessages(new ArrayList<>());
-
-        stream1.forEach(stream -> {
-          final StreamDescriptor sd = new StreamDescriptor()
-              .withName(stream.getStream().getName())
-              .withNamespace(stream.getStream().getNamespace());
-          final JsonNode maybeState = stateBySd.get(sd);
-          if (maybeState != null) {
-            state1.getStateMessages().add(new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
-                .withStream(new AirbyteStreamState().withStreamState(maybeState).withStreamDescriptor(sd)));
+        for (final List<ConfiguredAirbyteStream> splittedStream : streams) {
+          final StateWrapper splittedState = new StateWrapper().withStateType(StateType.STREAM).withStateMessages(new ArrayList<>());
+          for (final ConfiguredAirbyteStream configuredAirbyteStream : splittedStream) {
+            final StreamDescriptor sd = new StreamDescriptor()
+                .withName(configuredAirbyteStream.getStream().getName())
+                .withNamespace(configuredAirbyteStream.getStream().getNamespace());
+            final JsonNode maybeState = stateBySd.get(sd);
+            if (maybeState != null) {
+              splittedState.getStateMessages().add(new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
+                  .withStream(new AirbyteStreamState().withStreamState(maybeState).withStreamDescriptor(sd)));
+            }
           }
-        });
-
-        final StateWrapper state2 = new StateWrapper().withStateType(StateType.STREAM).withStateMessages(new ArrayList<>());
-
-        stream2.forEach(stream -> {
-          final StreamDescriptor sd = new StreamDescriptor()
-              .withName(stream.getStream().getName())
-              .withNamespace(stream.getStream().getNamespace());
-          final JsonNode maybeState = stateBySd.get(sd);
-          if (maybeState != null) {
-            state2.getStateMessages().add(new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
-                .withStream(new AirbyteStreamState().withStreamState(maybeState).withStreamDescriptor(sd)));
-          }
-        });
-
-        result.add(new StandardSyncInput()
-            .withNamespaceDefinition(config.getNamespaceDefinition())
-            .withNamespaceFormat(config.getNamespaceFormat())
-            .withPrefix(config.getPrefix())
-            .withSourceConfiguration(config.getSourceConfiguration())
-            .withDestinationConfiguration(config.getDestinationConfiguration())
-            .withOperationSequence(config.getOperationSequence())
-            .withWebhookOperationConfigs(config.getWebhookOperationConfigs())
-            .withCatalog(new ConfiguredAirbyteCatalog().withStreams(stream1))
-            .withState(StateMessageHelper.getState(state1))
-            .withResourceRequirements(config.getResourceRequirements())
-            .withSourceResourceRequirements(config.getSourceResourceRequirements())
-            .withDestinationResourceRequirements(config.getDestinationResourceRequirements()));
-
-        result.add(new StandardSyncInput()
-            .withNamespaceDefinition(config.getNamespaceDefinition())
-            .withNamespaceFormat(config.getNamespaceFormat())
-            .withPrefix(config.getPrefix())
-            .withSourceConfiguration(config.getSourceConfiguration())
-            .withDestinationConfiguration(config.getDestinationConfiguration())
-            .withOperationSequence(config.getOperationSequence())
-            .withWebhookOperationConfigs(config.getWebhookOperationConfigs())
-            .withCatalog(new ConfiguredAirbyteCatalog().withStreams(stream2))
-            .withState(StateMessageHelper.getState(state2))
-            .withResourceRequirements(config.getResourceRequirements())
-            .withSourceResourceRequirements(config.getSourceResourceRequirements())
-            .withDestinationResourceRequirements(config.getDestinationResourceRequirements()));
+          result.add(new StandardSyncInput()
+              .withNamespaceDefinition(config.getNamespaceDefinition())
+              .withNamespaceFormat(config.getNamespaceFormat())
+              .withPrefix(config.getPrefix())
+              .withSourceConfiguration(config.getSourceConfiguration())
+              .withDestinationConfiguration(config.getDestinationConfiguration())
+              .withOperationSequence(config.getOperationSequence())
+              .withWebhookOperationConfigs(config.getWebhookOperationConfigs())
+              .withCatalog(new ConfiguredAirbyteCatalog().withStreams(splittedStream))
+              .withState(StateMessageHelper.getState(splittedState))
+              .withResourceRequirements(config.getResourceRequirements())
+              .withSourceResourceRequirements(config.getSourceResourceRequirements())
+              .withDestinationResourceRequirements(config.getDestinationResourceRequirements()));
+        }
       }
 
       return new GeneratedJobInput(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, result);

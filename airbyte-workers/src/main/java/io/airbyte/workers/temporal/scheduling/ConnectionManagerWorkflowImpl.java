@@ -857,7 +857,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
     for (final StandardSyncInput syncInput : jobInputs.getSyncInput()) {
       final int finalI = i;
-      final Promise<StandardSyncOutput> jeTePrometsLeSel = Async.function(() -> {
+      final Promise<StandardSyncOutput> runPromise = Async.function(() -> {
         final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
             ChildWorkflowOptions.newBuilder()
                 .setWorkflowId("sync_" + workflowInternalState.getJobId() + "_" + finalI)
@@ -874,7 +874,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
             connectionId);
       });
 
-      toWaitFor.add(jeTePrometsLeSel);
+      toWaitFor.add(runPromise);
       i++;
     }
 
