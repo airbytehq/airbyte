@@ -26,9 +26,9 @@ public class HostPortResolver {
     return getIpAddress(container);
   }
 
-  public static String encodeValue(String value){
+  public static String encodeValue(final String value) {
     if (value != null) {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8);
+      return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
     return null;
   }
