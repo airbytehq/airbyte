@@ -1,0 +1,35 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: ["response", "docs"]
+  requester:
+    url_base: "https://api.nytimes.com/svc"
+    http_method: "GET"
+    request_options_provider:
+      request_parameters:
+        api-key: "{{ config['api_key'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  archive_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "archive"
+      primary_key: "_id"
+      path: "/archive/v1/{{ config['year'] }}/{{ config['month'] }}.json"
+
+streams:
+  - "*ref(definitions.archive_stream)"
+
+check:
+  stream_names:
+    - "archive"

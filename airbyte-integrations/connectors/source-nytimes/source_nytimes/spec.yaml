@@ -1,0 +1,23 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Nytimes Spec
+  type: object
+  required:
+    - api_key
+  additionalProperties: true
+  properties:
+    api_key:
+      type: string
+      description: API Key
+      airbyte_secret: true
+      order: 0
+    year:
+      type: integer
+      minimum: 1851
+      order: 1
+    month:
+      type: integer
+      minimum: 1
+      maximum: 12
+      order: 2
