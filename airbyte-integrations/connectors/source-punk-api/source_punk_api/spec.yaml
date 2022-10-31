@@ -5,11 +5,12 @@ connectionSpecification:
   type: object
   required:
     - api_key
+
   additionalProperties: true
   properties:
     api_key:
       type: string
-      description: API Key
+      description: Dummy API Key, Just enter 123 for example
     id:
       type: string
-      description: Specific ID
+      description: Optional, To extract specific data with Unique ID

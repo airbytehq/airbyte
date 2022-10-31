@@ -24,38 +24,24 @@ definitions:
     retriever:
       $ref: "*ref(definitions.retriever)"
 
-  # beers_stream:
-  #   $ref: "*ref(definitions.base_stream)"
-  #   $options:
-  #     name: "fonts"
-  #     path: "/beers?food={{ config['food'] or 'Fresh crab with lemon'}}&malt={{ config['malt'] or 'Extra Pale'}}&alt={{ config['hops'] or 'Bramling Cross'}}"
-
   beers_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "beers"
       path: "/beers"
 
-  beers_random_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
-      name: "beers_random"
-      path: "/beers/random"
-
   beers_with_id_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "beers_with_id"
-      path: "/beers/{{ config['id'] or "1"}}"
+      path: "/beers/{{ config['id'] or '1'}}"
 
 
 streams:
   - "*ref(definitions.beers_stream)"
-  - "*ref(definitions.beers_random_stream)"
   - "*ref(definitions.beers_with_id_stream)"
 
 check:
   stream_names:
     - "beers"
-    - "beers_random"
     - "beers_with_id"

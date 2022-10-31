@@ -1,162 +1,120 @@
 {
   "definitions": {},
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://example.com/object1667075607.json",
+  "$id": "https://example.com/object1667227839.json",
   "title": "Root",
-  "type": "array",
+  "type": ["null", "array", "object"],
   "default": [],
   "items": {
     "$id": "#root/items",
     "title": "Items",
-    "type": "object",
-    "required": [
-      "id",
-      "name",
-      "tagline",
-      "first_brewed",
-      "description",
-      "image_url",
-      "abv",
-      "ibu",
-      "target_fg",
-      "target_og",
-      "ebc",
-      "srm",
-      "ph",
-      "attenuation_level",
-      "volume",
-      "boil_volume",
-      "method",
-      "ingredients",
-      "food_pairing",
-      "brewers_tips",
-      "contributed_by"
-    ],
+    "type": ["null", "object"],
     "properties": {
       "id": {
         "$id": "#root/items/id",
         "title": "Id",
         "type": "integer",
-        "examples": [1],
         "default": 0
       },
       "name": {
         "$id": "#root/items/name",
         "title": "Name",
-        "type": "string",
+        "type":  ["null","array","object", "string"],
         "default": "",
-        "examples": ["Buzz"],
         "pattern": "^.*$"
       },
       "tagline": {
         "$id": "#root/items/tagline",
         "title": "Tagline",
-        "type": "string",
+        "type":  ["null","array","object", "string"],
         "default": "",
-        "examples": ["A Real Bitter Experience."],
         "pattern": "^.*$"
       },
       "first_brewed": {
         "$id": "#root/items/first_brewed",
         "title": "First_brewed",
-        "type": "string",
+        "type":  ["null","array","object", "string"],
         "default": "",
-        "examples": ["09/2007"],
         "pattern": "^.*$"
       },
       "description": {
         "$id": "#root/items/description",
         "title": "Description",
-        "type": "string",
+        "type":  ["null","array","object", "string"],
         "default": "",
-        "examples": [
-          "A light, crisp and bitter IPA brewed with English and American hops. A small batch brewed only once."
-        ],
         "pattern": "^.*$"
       },
       "image_url": {
         "$id": "#root/items/image_url",
         "title": "Image_url",
-        "type": "string",
+        "type":  ["null","array","object", "string"],
         "default": "",
-        "examples": ["https://images.punkapi.com/v2/keg.png"],
         "pattern": "^.*$"
       },
       "abv": {
         "$id": "#root/items/abv",
         "title": "Abv",
         "type": "number",
-        "examples": [4.5],
         "default": 0.0
       },
       "ibu": {
         "$id": "#root/items/ibu",
         "title": "Ibu",
         "type": ["null", "number", "integer"],
-        "examples": [60],
         "default": 0
       },
       "target_fg": {
         "$id": "#root/items/target_fg",
         "title": "Target_fg",
-        "type": "integer",
-        "examples": [1010],
+        "type": ["null", "integer", "number"],
         "default": 0
       },
       "target_og": {
         "$id": "#root/items/target_og",
         "title": "Target_og",
         "type": ["null", "number", "integer"],
-        "examples": [1044],
         "default": 0
       },
       "ebc": {
         "$id": "#root/items/ebc",
         "title": "Ebc",
-        "type": ["null", "integer", "number"],
-        "examples": [20],
+        "type": ["null", "number", "integer", "string"],
         "default": 0
       },
       "srm": {
         "$id": "#root/items/srm",
         "title": "Srm",
-        "type": ["number", "integer", "null"],
-        "examples": [10],
+        "type": ["null", "number", "integer", "string"],
         "default": 0
       },
       "ph": {
         "$id": "#root/items/ph",
         "title": "Ph",
-        "type": ["null", "number", "integer"],
-        "examples": [4.4],
+        "type": ["null", "number", "integer", "string"],
         "default": 0.0
       },
       "attenuation_level": {
         "$id": "#root/items/attenuation_level",
         "title": "Attenuation_level",
-        "type": ["number", "integer"],
-        "examples": [75],
+        "type": ["null", "number", "integer", "string"],
         "default": 0
       },
       "volume": {
         "$id": "#root/items/volume",
         "title": "Volume",
-        "type": "object",
-        "required": ["value", "unit"],
+        "type": ["null", "object"],
         "properties": {
           "value": {
             "$id": "#root/items/volume/value",
             "title": "Value",
-            "type": "integer",
-            "examples": [20],
+            "type": ["null", "number", "integer"],
             "default": 0
           },
           "unit": {
             "$id": "#root/items/volume/unit",
             "title": "Unit",
-            "type": "string",
+            "type":  ["null","array","object", "string"],
             "default": "",
-            "examples": ["litres"],
             "pattern": "^.*$"
           }
         }
@@ -164,22 +122,19 @@
       "boil_volume": {
         "$id": "#root/items/boil_volume",
         "title": "Boil_volume",
-        "type": "object",
-        "required": ["value", "unit"],
+        "type": ["null", "object"],
         "properties": {
           "value": {
             "$id": "#root/items/boil_volume/value",
             "title": "Value",
-            "type": "integer",
-            "examples": [25],
+            "type": ["null", "number", "integer"],
             "default": 0
           },
           "unit": {
             "$id": "#root/items/boil_volume/unit",
             "title": "Unit",
-            "type": "string",
+            "type":  ["null","array","object", "string"],
             "default": "",
-            "examples": ["litres"],
             "pattern": "^.*$"
           }
         }
@@ -187,39 +142,34 @@
       "method": {
         "$id": "#root/items/method",
         "title": "Method",
-        "type": "object",
-        "required": ["mash_temp", "fermentation", "twist"],
+        "type": ["null", "object"],
         "properties": {
           "mash_temp": {
             "$id": "#root/items/method/mash_temp",
             "title": "Mash_temp",
-            "type": "array",
+            "type": ["null", "array", "object"],
             "default": [],
             "items": {
               "$id": "#root/items/method/mash_temp/items",
               "title": "Items",
-              "type": "object",
-              "required": ["temp", "duration"],
+              "type": ["null", "object"],
               "properties": {
                 "temp": {
                   "$id": "#root/items/method/mash_temp/items/temp",
                   "title": "Temp",
-                  "type": "object",
-                  "required": ["value", "unit"],
+                  "type": ["null", "object"],
                   "properties": {
                     "value": {
                       "$id": "#root/items/method/mash_temp/items/temp/value",
                       "title": "Value",
-                      "type": "integer",
-                      "examples": [64],
+                      "type": ["null", "integer", "number"],
                       "default": 0
                     },
                     "unit": {
                       "$id": "#root/items/method/mash_temp/items/temp/unit",
                       "title": "Unit",
-                      "type": "string",
+                      "type":  ["null","array","object", "string"],
                       "default": "",
-                      "examples": ["celsius"],
                       "pattern": "^.*$"
                     }
                   }
@@ -227,8 +177,7 @@
                 "duration": {
                   "$id": "#root/items/method/mash_temp/items/duration",
                   "title": "Duration",
-                  "type": ["number", "integer", "null"],
-                  "examples": [75],
+                  "type": ["null", "number", "integer"],
                   "default": 0
                 }
               }
@@ -237,28 +186,24 @@
           "fermentation": {
             "$id": "#root/items/method/fermentation",
             "title": "Fermentation",
-            "type": "object",
-            "required": ["temp"],
+            "type": ["null", "object"],
             "properties": {
               "temp": {
                 "$id": "#root/items/method/fermentation/temp",
                 "title": "Temp",
-                "type": "object",
-                "required": ["value", "unit"],
+                "type": ["null", "object"],
                 "properties": {
                   "value": {
                     "$id": "#root/items/method/fermentation/temp/value",
                     "title": "Value",
-                    "type": "integer",
-                    "examples": [19],
+                    "type": ["null", "integer", "number"],
                     "default": 0
                   },
                   "unit": {
                     "$id": "#root/items/method/fermentation/temp/unit",
                     "title": "Unit",
-                    "type": "string",
+                    "type":  ["null","array","object", "string"],
                     "default": "",
-                    "examples": ["celsius"],
                     "pattern": "^.*$"
                   }
                 }
@@ -268,7 +213,7 @@
           "twist": {
             "$id": "#root/items/method/twist",
             "title": "Twist",
-            "type": ["string", "null"],
+            "type": ["null", "number", "integer", "string"],
             "default": null
           }
         }
@@ -276,47 +221,41 @@
       "ingredients": {
         "$id": "#root/items/ingredients",
         "title": "Ingredients",
-        "type": "object",
-        "required": ["malt", "hops", "yeast"],
+        "type": ["null", "object"],
         "properties": {
           "malt": {
             "$id": "#root/items/ingredients/malt",
             "title": "Malt",
-            "type": "array",
+            "type": ["null", "array", "object"],
             "default": [],
             "items": {
               "$id": "#root/items/ingredients/malt/items",
               "title": "Items",
-              "type": "object",
-              "required": ["name", "amount"],
+              "type": ["null", "object"],
               "properties": {
                 "name": {
                   "$id": "#root/items/ingredients/malt/items/name",
                   "title": "Name",
-                  "type": "string",
+                  "type":  ["null","array","object", "string"],
                   "default": "",
-                  "examples": ["Maris Otter Extra Pale"],
                   "pattern": "^.*$"
                 },
                 "amount": {
                   "$id": "#root/items/ingredients/malt/items/amount",
                   "title": "Amount",
-                  "type": "object",
-                  "required": ["value", "unit"],
+                  "type": ["null", "object"],
                   "properties": {
                     "value": {
                       "$id": "#root/items/ingredients/malt/items/amount/value",
                       "title": "Value",
                       "type": "number",
-                      "examples": [3.3],
                       "default": 0.0
                     },
                     "unit": {
                       "$id": "#root/items/ingredients/malt/items/amount/unit",
                       "title": "Unit",
-                      "type": "string",
+                      "type":  ["null","array","object", "string"],
                       "default": "",
-                      "examples": ["kilograms"],
                       "pattern": "^.*$"
                     }
                   }
@@ -327,41 +266,36 @@
           "hops": {
             "$id": "#root/items/ingredients/hops",
             "title": "Hops",
-            "type": "array",
+            "type": ["null", "array", "object"],
             "default": [],
             "items": {
               "$id": "#root/items/ingredients/hops/items",
               "title": "Items",
-              "type": "object",
-              "required": ["name", "amount", "add", "attribute"],
+              "type": ["null", "object"],
               "properties": {
                 "name": {
                   "$id": "#root/items/ingredients/hops/items/name",
                   "title": "Name",
-                  "type": "string",
+                  "type":  ["null","array","object", "string"],
                   "default": "",
-                  "examples": ["Fuggles"],
                   "pattern": "^.*$"
                 },
                 "amount": {
                   "$id": "#root/items/ingredients/hops/items/amount",
                   "title": "Amount",
-                  "type": "object",
-                  "required": ["value", "unit"],
+                  "type": ["null", "object"],
                   "properties": {
                     "value": {
                       "$id": "#root/items/ingredients/hops/items/amount/value",
                       "title": "Value",
                       "type": ["null", "number", "integer"],
-                      "examples": [25],
                       "default": 0
                     },
                     "unit": {
                       "$id": "#root/items/ingredients/hops/items/amount/unit",
                       "title": "Unit",
-                      "type": "string",
+                      "type":  ["null","array","object", "string"],
                       "default": "",
-                      "examples": ["grams"],
                       "pattern": "^.*$"
                     }
                   }
@@ -369,17 +303,15 @@
                 "add": {
                   "$id": "#root/items/ingredients/hops/items/add",
                   "title": "Add",
-                  "type": "string",
+                  "type":  ["null","array","object", "string"],
                   "default": "",
-                  "examples": ["start"],
                   "pattern": "^.*$"
                 },
                 "attribute": {
                   "$id": "#root/items/ingredients/hops/items/attribute",
                   "title": "Attribute",
-                  "type": "string",
+                  "type":  ["null","array","object", "string"],
                   "default": "",
-                  "examples": ["bitter"],
                   "pattern": "^.*$"
                 }
               }
@@ -388,9 +320,8 @@
           "yeast": {
             "$id": "#root/items/ingredients/yeast",
             "title": "Yeast",
-            "type": "string",
+            "type":  ["null","array","object", "string"],
             "default": "",
-            "examples": ["Wyeast 1056 - American Ale™"],
             "pattern": "^.*$"
           }
         }
@@ -398,33 +329,28 @@
       "food_pairing": {
         "$id": "#root/items/food_pairing",
         "title": "Food_pairing",
-        "type": "array",
+        "type": ["null", "array", "object"],
         "default": [],
         "items": {
           "$id": "#root/items/food_pairing/items",
           "title": "Items",
-          "type": "string",
+          "type":  ["null","array","object", "string"],
           "default": "",
-          "examples": ["Spicy chicken tikka masala"],
           "pattern": "^.*$"
         }
       },
       "brewers_tips": {
         "$id": "#root/items/brewers_tips",
         "title": "Brewers_tips",
-        "type": "string",
+        "type":  ["null","array","object", "string"],
         "default": "",
-        "examples": [
-          "The earthy and floral aromas from the hops can be overpowering. Drop a little Cascade in at the end of the boil to lift the profile with a bit of citrus."
-        ],
         "pattern": "^.*$"
       },
       "contributed_by": {
         "$id": "#root/items/contributed_by",
         "title": "Contributed_by",
-        "type": "string",
+        "type":  ["null","array","object", "string"],
         "default": "",
-        "examples": ["Sam Mason <samjbmason>"],
         "pattern": "^.*$"
       }
     }
