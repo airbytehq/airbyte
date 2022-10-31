@@ -1,0 +1,170 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "deletedAt": {
+      "type": ["null", "string"]
+    },
+    "fieldGroups": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "fields": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "objectTypeId": {
+                  "type": ["null", "string"]
+                },
+                "name": {
+                  "type": ["null", "string"]
+                },
+                "label": {
+                  "type": ["null", "string"]
+                },
+                "required": {
+                  "type": ["null", "boolean"]
+                },
+                "hidden": {
+                  "type": ["null", "boolean"]
+                },
+                "fieldType": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          },
+          "groupType": {
+            "type": ["null", "string"]
+          },
+          "richTextType": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "configuration": {
+      "type": ["null", "object"],
+      "properties": {
+        "language": {
+          "type": ["null", "string"]
+        },
+        "cloneable": {
+          "type": ["null", "boolean"]
+        },
+        "postSubmitAction": {
+          "type": ["null", "object"],
+          "properties": {
+            "type": {
+              "type": ["null", "string"]
+            },
+            "value": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "editable": {
+          "type": ["null", "boolean"]
+        },
+        "archivable": {
+          "type": ["null", "boolean"]
+        },
+        "recaptchaEnabled": {
+          "type": ["null", "boolean"]
+        },
+        "notifyContactOwner": {
+          "type": ["null", "boolean"]
+        },
+        "notifyRecipients": {
+          "type": ["null", "array"]
+        },
+        "createNewContactForNewEmail": {
+          "type": ["null", "boolean"]
+        },
+        "prePopulateKnownValues": {
+          "type": ["null", "boolean"]
+        },
+        "allowLinkToResetKnownValues": {
+          "type": ["null", "boolean"]
+        }
+      }
+    },
+    "displayOptions": {
+      "type": ["null", "object"],
+      "properties": {
+        "renderRawHtml": {
+          "type": ["null", "boolean"]
+        },
+        "theme": {
+          "type": ["null", "string"]
+        },
+        "submitButtonText": {
+          "type": ["null", "string"]
+        },
+        "style": {
+          "type": ["null", "object"],
+          "properties": {
+            "fontFamily": {
+              "type": ["null", "string"]
+            },
+            "backgroundWidth": {
+              "type": ["null", "string"]
+            },
+            "labelTextColor": {
+              "type": ["null", "string"]
+            },
+            "labelTextSize": {
+              "type": ["null", "string"]
+            },
+            "helpTextColor": {
+              "type": ["null", "string"]
+            },
+            "helpTextSize": {
+              "type": ["null", "string"]
+            },
+            "legalConsentTextColor": {
+              "type": ["null", "string"]
+            },
+            "legalConsentTextSize": {
+              "type": ["null", "string"]
+            },
+            "submitColor": {
+              "type": ["null", "string"]
+            },
+            "submitAlignment": {
+              "type": ["null", "string"]
+            },
+            "submitFontColor": {
+              "type": ["null", "string"]
+            },
+            "submitSize": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "legalConsentOptions": {
+      "type": ["null", "object"]
+    }
+  }
+}

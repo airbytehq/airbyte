@@ -1,0 +1,196 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "appId": {
+      "type": ["null", "integer"]
+    },
+    "appName": {
+      "type": ["null", "string"]
+    },
+    "attempt": {
+      "type": ["null", "integer"]
+    },
+    "bounced": {
+      "type": ["null", "boolean"]
+    },
+    "browser": {
+      "type": ["null", "object"],
+      "properties": {
+        "family": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "producer": {
+          "type": ["null", "string"]
+        },
+        "producerUrl": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "url": {
+          "type": ["null", "string"]
+        },
+        "version": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "category": {
+      "type": ["null", "string"]
+    },
+    "causedBy": {
+      "type": ["null", "object"],
+      "properties": {
+        "created": {
+          "type": ["null", "integer"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "created": {
+      "type": ["null", "integer"]
+    },
+    "deviceType": {
+      "type": ["null", "string"]
+    },
+    "dropMessage": {
+      "type": ["null", "string"]
+    },
+    "dropReason": {
+      "type": ["null", "string"]
+    },
+    "duration": {
+      "type": ["null", "integer"]
+    },
+    "emailCampaignId": {
+      "type": ["null", "integer"]
+    },
+    "emailCampaignGroupId": {
+      "type": ["null", "integer"]
+    },
+    "filteredEvent": {
+      "type": ["null", "boolean"]
+    },
+    "from": {
+      "type": ["null", "string"]
+    },
+    "hmid": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "ipAddress": {
+      "type": ["null", "string"]
+    },
+    "linkId": {
+      "type": ["null", "integer"]
+    },
+    "location": {
+      "type": ["null", "object"],
+      "properties": {
+        "city": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        },
+        "latitude": {
+          "type": ["null", "number"]
+        },
+        "longitude": {
+          "type": ["null", "number"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        },
+        "zipcode": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "obsoletedBy": {
+      "type": ["null", "object"],
+      "properties": {
+        "created": {
+          "type": ["null", "integer"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "portalId": {
+      "type": ["null", "integer"]
+    },
+    "portalSubscriptionStatus": {
+      "type": ["null", "string"]
+    },
+    "recipient": {
+      "type": ["null", "string"]
+    },
+    "referer": {
+      "type": ["null", "string"]
+    },
+    "replyTo": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "requestedBy": {
+      "type": ["null", "string"]
+    },
+    "requestedByUserId": {
+      "type": ["null", "integer"]
+    },
+    "response": {
+      "type": ["null", "string"]
+    },
+    "sentBy": {
+      "type": ["null", "object"],
+      "properties": {
+        "created": {
+          "type": ["null", "integer"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "smtpId": {
+      "type": ["null", "string"]
+    },
+    "source": {
+      "type": ["null", "string"]
+    },
+    "sourceId": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "subject": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "userAgent": {
+      "type": ["null", "string"]
+    }
+  }
+}
