@@ -37,13 +37,14 @@ class Categories(PublicApisStream):
         return "categories"
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         return [{"name": cat} for cat in response.json()["categories"]]
+
 
 class Services(PublicApisStream):
     primary_key = "API"
@@ -54,13 +55,14 @@ class Services(PublicApisStream):
         return "entries"
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         return response.json()["entries"]
+
 
 # Source
 class SourcePublicApis(AbstractSource):
