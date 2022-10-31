@@ -18,15 +18,15 @@ jobs:
           # Check whether changed_files.txt is not empty
           [[ -s changed_files.txt ]] && echo "changes=true" >> $GITHUB_OUTPUT
       - name: Install dependencies
-        if: steps.extract_changed_files.outputs.changes == "true"
+        if: steps.extract_changed_files.outputs.changes == 'true'
         run: |
           python -m pip install --upgrade pip
       - name: Create dependency report
-        if: steps.extract_changed_files.outputs.changes == "true"
+        if: steps.extract_changed_files.outputs.changes == 'true'
         run: |
           python ./tools/bin/ci_check_dependency.py ./changed_files.txt
       - name: Find existing comment for connector dependencies
-        if: steps.extract_changed_files.outputs.changes == "true"
+        if: steps.extract_changed_files.outputs.changes == 'true'
         uses: peter-evans/find-comment@v2
         id: find_comment
         with:
@@ -34,7 +34,7 @@ jobs:
           comment-author: "github-actions[bot]"
           body-includes: "report-connectors-dependency.yml"
       - name: Comment report in PR
-        if: steps.extract_changed_files.outputs.changes == "true"
+        if: steps.extract_changed_files.outputs.changes == 'true'
         uses: peter-evans/create-or-update-comment@v2
         with:
           issue-number: ${{ github.event.pull_request.number }}
