@@ -183,7 +183,6 @@ class Config(BaseConfig):
     class TestStrictnessLevel(str, Enum):
         high = "high"
         low = "low"
-        test = "test"
 
     connector_image: str = Field(description="Docker image to test, for example 'airbyte/source-hubspot:dev'")
     acceptance_tests: AcceptanceTestConfigurations = Field(description="List of the acceptance test to run with their configs")
