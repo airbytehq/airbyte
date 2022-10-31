@@ -455,7 +455,6 @@ def test_read_incremental_with_records(config):
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
 
     with freeze_time("2021-01-02 12:00:00") as frozen_datetime:
-
         state = {}
         records = list(read_incremental(stream, state))
         assert state == {"1": {"reportDate": "20210102"}}
@@ -500,7 +499,6 @@ def test_read_incremental_without_records_start_date(config):
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
 
     with freeze_time("2021-01-02 12:00:00") as frozen_datetime:
-
         state = {}
         reportDates = ["20201231", "20210101", "20210102", "20210103", "20210104"]
         for reportDate in reportDates:
@@ -523,7 +521,6 @@ def test_read_incremental_with_records_start_date(config):
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
 
     with freeze_time("2021-01-02 12:00:00") as frozen_datetime:
-
         state = {}
         records = list(read_incremental(stream, state))
 
@@ -612,3 +609,37 @@ def test_streams_state_filter(mocker, config, state_filter, stream_class):
         assert params["stateFilter"] == ",".join(state_filter)
     else:
         assert state_filter is None
+
+
+@responses.activate
+def test_display_report_stream_single_record_type(config_gen):
+    setup_responses(
+        init_response=REPORT_INIT_RESPONSE,
+        status_response=REPORT_STATUS_RESPONSE,
+        metric_response=METRIC_RESPONSE,
+    )
+
+    profiles = make_profiles()
+    custom_record_types = ["campaigns"]
+
+    stream = SponsoredDisplayReportStream(config_gen(report_record_types=custom_record_types), profiles, authenticator=mock.MagicMock())
+    stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
+    metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
+    assert len(metrics) == len(custom_record_types) * len(stream.metrics_map)
+
+
+@responses.activate
+def test_display_report_stream_multiple_record_type(config_gen):
+    setup_responses(
+        init_response=REPORT_INIT_RESPONSE,
+        status_response=REPORT_STATUS_RESPONSE,
+        metric_response=METRIC_RESPONSE,
+    )
+
+    profiles = make_profiles()
+    custom_record_types = ["campaigns", "adGroups"]
+
+    stream = SponsoredDisplayReportStream(config_gen(report_record_types=custom_record_types), profiles, authenticator=mock.MagicMock())
+    stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
+    metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
+    assert len(metrics) == len(custom_record_types) * len(stream.metrics_map)

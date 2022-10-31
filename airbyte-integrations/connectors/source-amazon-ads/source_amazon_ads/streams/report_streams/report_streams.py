@@ -119,6 +119,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         self.report_wait_timeout = config.get("report_wait_timeout", 60)
         self.report_generation_maximum_retries = config.get("report_generation_max_retries", 5)
         self._start_date: Optional[Date] = config.get("start_date")
+        self._report_record_types = config.get("report_record_types", [])
         super().__init__(config, profiles)
 
     @property
@@ -355,6 +356,9 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         """
         report_infos = []
         for record_type, metrics in self.metrics_map.items():
+            if len(self._report_record_types) > 0 and record_type not in self._report_record_types:
+                continue
+
             report_init_body = self._get_init_report_body(report_date, record_type, profile)
             if not report_init_body:
                 continue
