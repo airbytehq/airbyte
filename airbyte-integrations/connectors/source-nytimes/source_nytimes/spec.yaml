@@ -1,4 +1,4 @@
-documentationUrl: https://docsurl.com
+documentationUrl: https://docs.airbyte.com/integrations/sources/nytimes
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Nytimes Spec
@@ -9,15 +9,36 @@ connectionSpecification:
   properties:
     api_key:
       type: string
+      title: API Key
       description: API Key
       airbyte_secret: true
       order: 0
     year:
       type: integer
+      title: Year
+      description: Year
       minimum: 1851
       order: 1
     month:
       type: integer
+      title: Month
+      description: Month
       minimum: 1
       maximum: 12
       order: 2
+    period:
+      type: integer
+      title: Period
+      description: Period
+      order: 3
+      enum:
+        - 1
+        - 7
+        - 30
+    share_type:
+      type: string
+      title: Share Type
+      description: Share Type
+      order: 4
+      enum:
+        - "facebook"
