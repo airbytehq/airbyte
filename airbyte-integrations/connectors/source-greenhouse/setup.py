@@ -7,7 +7,7 @@ import os
 
 from setuptools import find_packages, setup
 
-AIRBYTE_ROOT = os.environ.get("AIRBYTE_ROOT")  # or get it from pwd
+AIRBYTE_ROOT = "/".join(os.getcwd().split("/")[:-3])
 PATH_TO_CDK = f"{AIRBYTE_ROOT}/airbyte-cdk/python#egg=airbyte_cdk"
 
 TEST_REQUIREMENTS = [
