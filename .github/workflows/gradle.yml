@@ -942,7 +942,7 @@ jobs:
       - kube-acceptance-test
       # Todo: Kyryl turn this on.
       # - helm-acceptance-test
-    if: success()
+    if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Get Previous Workflow Status
         uses: Mercymeilya/last-workflow-status@v0.3
