@@ -4,47 +4,41 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
-
+from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union, MutableMapping
+from source_fastbill.helpers import get_request_body_json, get_next_page_token
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
 from requests.auth import HTTPBasicAuth
-class FastbillStream(HttpStream, ABC):
 
-    def __init__(self, *args, username: str = None, api_key: str = None,**kwargs):
+
+class FastbillStream(HttpStream, ABC):
+    url_base = " https://my.fastbill.com/api/1.0/api.php"
+    API_OFFSET_LIMIT = 100
+
+    def __init__(self, *args, username: str = None, api_key: str = None, **kwargs):
         super().__init__(*args, **kwargs)
         self._username = username
         self._api_key = api_key
 
-    API_OFFSET_LIMIT = 100
-
     @property
     def http_method(self) -> str:
         return "POST"
-    url_base = " https://my.fastbill.com/api/1.0/api.php"
 
     def path(
-        self,
-        *,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            *,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> str:
-        return None
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
     def request_params(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        """
-        Usually contains common params e.g. pagination size etc.
-        """
         return None
 
     def request_headers(
@@ -52,9 +46,6 @@ class FastbillStream(HttpStream, ABC):
     ) -> Mapping[str, Any]:
         return {'Content-type': 'application/json'}
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-
-        yield response.json()
 
 class Invoices(FastbillStream):
     primary_key = "INVOICE_ID"
@@ -65,42 +56,15 @@ class Invoices(FastbillStream):
             stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Mapping, str]]:
-
-        if next_page_token:
-            return next_page_token
-        else:
-            return {
-                "SERVICE": "invoice.get",
-                "FILTER": {},
-                "OFFSET": 0
-            }
+        return get_request_body_json(next_page_token, endpoint="invoice")
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        def req_body(offset):
-            return {
-                "SERVICE": "invoice.get",
-                "FILTER": {},
-                "OFFSET": offset
-            }
-
-        response = response.json()
-        offset = response["REQUEST"]["OFFSET"] if response["REQUEST"]["OFFSET"] >= 0 else None
-        if offset is None:
-            response_request = response["REQUEST"]["OFFSET"]
-            raise Exception(f"No valid offset value found:{response_request}")
-
-        if len(response["RESPONSE"]["INVOICES"]) == self.API_OFFSET_LIMIT:
-            return req_body(offset + self.API_OFFSET_LIMIT)
-        return None
+        return get_next_page_token(response=response, response_key="INVOICES",
+                                   API_OFFSET_LIMIT=self.API_OFFSET_LIMIT,
+                                   endpoint="invoice")
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        invoices = response.json().get("RESPONSE", {}).get("INVOICES", [])
-        yield from invoices
-        # for invoice in invoices:
-        #     yield self.schema_applier.apply_schema_transformations(
-        #         invoice,
-        #         self.get_json_schema()
-        #     )
+        yield from response.json().get("RESPONSE", {}).get("INVOICES", [])
 
 
 class RecurringInvoices(FastbillStream):
@@ -112,42 +76,15 @@ class RecurringInvoices(FastbillStream):
             stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Mapping, str]]:
-
-        if next_page_token:
-            return next_page_token
-        else:
-            return {
-                "SERVICE": "recurring.get",
-                "FILTER": {},
-                "OFFSET": 0
-            }
+        return get_request_body_json(next_page_token, endpoint="recurring")
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        def req_body(offset):
-            return {
-                "SERVICE": "recurring.get",
-                "FILTER": {},
-                "OFFSET": offset
-            }
-
-        response = response.json()
-        offset = response["REQUEST"]["OFFSET"] if response["REQUEST"]["OFFSET"] >= 0 else None
-        if offset is None:
-            response_request = response["REQUEST"]["OFFSET"]
-            raise Exception(f"No valid offset value found:{response_request}")
-
-        if len(response["RESPONSE"]["INVOICES"]) == self.API_OFFSET_LIMIT:
-            return req_body(offset + self.API_OFFSET_LIMIT)
-        return None
+        return get_next_page_token(response=response, response_key="INVOICES",
+                                   API_OFFSET_LIMIT=self.API_OFFSET_LIMIT,
+                                   endpoint="recurring")
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        invoices = response.json().get("RESPONSE", {}).get("INVOICES", [])
-        yield from invoices
-        # for invoice in invoices:
-        #     yield self.schema_applier.apply_schema_transformations(
-        #         invoice,
-        #         self.get_json_schema()
-        #     )
+        yield from response.json().get("RESPONSE", {}).get("INVOICES", [])
 
 
 class Products(FastbillStream):
@@ -159,42 +96,15 @@ class Products(FastbillStream):
             stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Mapping, str]]:
-
-        if next_page_token:
-            return next_page_token
-        else:
-            return {
-                "SERVICE": "article.get",
-                "FILTER": {},
-                "OFFSET": 0
-            }
+        return get_request_body_json(next_page_token, endpoint="article")
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        def req_body(offset):
-            return {
-                "SERVICE": "article.get",
-                "FILTER": {},
-                "OFFSET": offset
-            }
-
-        response = response.json()
-        offset = response["REQUEST"]["OFFSET"] if response["REQUEST"]["OFFSET"] >= 0 else None
-        if offset is None:
-            response_request = response["REQUEST"]["OFFSET"]
-            raise Exception(f"No valid offset value found:{response_request}")
-
-        if len(response["RESPONSE"]["ARTICLES"]) == self.API_OFFSET_LIMIT:
-            return req_body(offset + self.API_OFFSET_LIMIT)
-        return None
+        return get_next_page_token(response=response, response_key="ARTICLES",
+                                   API_OFFSET_LIMIT=self.API_OFFSET_LIMIT,
+                                   endpoint="article")
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        products = response.json().get("RESPONSE", {}).get("ARTICLES", [])
-        yield from products
-        # for product in products:
-        #     yield self.schema_applier.apply_schema_transformations(
-        #         product,
-        #         self.get_json_schema()
-        #     )
+        yield from response.json().get("RESPONSE", {}).get("ARTICLES", [])
 
 
 class Revenues(FastbillStream):
@@ -206,42 +116,15 @@ class Revenues(FastbillStream):
             stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Mapping, str]]:
-
-        if next_page_token:
-            return next_page_token
-        else:
-            return {
-                "SERVICE": "revenue.get",
-                "FILTER": {},
-                "OFFSET": 0
-            }
+        return get_request_body_json(next_page_token, endpoint="revenue")
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        def req_body(offset):
-            return {
-                "SERVICE": "revenue.get",
-                "FILTER": {},
-                "OFFSET": offset
-            }
-
-        response = response.json()
-        offset = response["REQUEST"]["OFFSET"] if response["REQUEST"]["OFFSET"] >= 0 else None
-        if offset is None:
-            response_request = response["REQUEST"]["OFFSET"]
-            raise Exception(f"No valid offset value found:{response_request}")
-
-        if len(response["RESPONSE"]["REVENUES"]) == self.API_OFFSET_LIMIT:
-            return req_body(offset + self.API_OFFSET_LIMIT)
-        return None
+        return get_next_page_token(response=response, response_key="REVENUES",
+                                   API_OFFSET_LIMIT=self.API_OFFSET_LIMIT,
+                                   endpoint="revenue")
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        customers = response.json().get("RESPONSE", {}).get("REVENUES", [])
-        yield from customers
-        # for customer in customers:
-        #     yield self.schema_applier.apply_schema_transformations(
-        #         customer,
-        #         self.get_json_schema()
-        #     )
+        yield from response.json().get("RESPONSE", {}).get("REVENUES", [])
 
 
 class Customers(FastbillStream):
@@ -253,42 +136,15 @@ class Customers(FastbillStream):
             stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Mapping, str]]:
-
-        if next_page_token:
-            return next_page_token
-        else:
-            return {
-                "SERVICE": "customer.get",
-                "FILTER": {},
-                "OFFSET": 0
-            }
+        return get_request_body_json(next_page_token, endpoint="customer")
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        def req_body(offset):
-            return {
-                "SERVICE": "customer.get",
-                "FILTER": {},
-                "OFFSET": offset
-            }
-
-        response = response.json()
-        offset = response["REQUEST"]["OFFSET"] if response["REQUEST"]["OFFSET"] >= 0 else None
-        if offset is None:
-            response_request = response["REQUEST"]["OFFSET"]
-            raise Exception(f"No valid offset value found:{response_request}")
-
-        if len(response["RESPONSE"]["CUSTOMERS"]) == self.API_OFFSET_LIMIT:
-            return req_body(offset + self.API_OFFSET_LIMIT)
-        return None
+        return get_next_page_token(response=response, response_key="CUSTOMERS",
+                                   API_OFFSET_LIMIT=self.API_OFFSET_LIMIT,
+                                   endpoint="customer")
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        customers = response.json().get("RESPONSE", {}).get("CUSTOMERS", [])
-        yield from customers
-        # for customer in customers:
-        #     yield self.schema_applier.apply_schema_transformations(
-        #         customer,
-        #         self.get_json_schema()
-        #     )
+        yield from response.json().get("RESPONSE", {}).get("CUSTOMERS", [])
 
 
 # Source
