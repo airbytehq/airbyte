@@ -1,8 +1,9 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
+import React, { useState } from "react";
 import { useIntl } from "react-intl";
 import { components, OptionProps, MenuListProps } from "react-select";
+
 import "/node_modules/flag-icons/css/flag-icons.min.css";
 
 import { DropDown } from "components/ui/DropDown";
@@ -36,16 +37,47 @@ const MenuList = (props: MenuListProps) => {
 
 interface Props<T = unknown> extends DropdownProps {
   options: T[];
-  placeholder: string;
 }
 
 export const GeographyDropdown: React.FC<Props> = ({ options }) => {
+  const [selectedOption, setSelectedOption] = useState("none");
+  const { formatMessage } = useIntl();
+  const handleTypeSelect = (e: any) => {
+    setSelectedOption(e.label);
+  };
+
+  const formatOptionLabel = ({ label }: { label: string }) => {
+    return (
+      <div className={styles.optionLabel}>
+        <div className={styles.flag}>
+          <span className={`fi fi-${label === "auto" ? "us" : label}`} />
+        </div>
+        <span className={styles.label}>{formatMessage({ id: `geography.${label}` })}</span>
+      </div>
+    );
+  };
+
+  const customStyles = {
+    option: (provided: any, state: any) => ({
+      ...provided,
+      color: "black",
+      backgroundColor: state.isSelected ? "#eae9ff" : "white",
+      borderRadius: state.isSelected ? "10px" : "0px",
+    }),
+    valueContainer: () => ({
+      display: "flex",
+    }),
+  };
   return (
     <DropDown
       className={styles.reactSelectContainer}
       classNamePrefix="reactSelect"
       options={options}
       components={{ Option: GeographyOption, MenuList }}
+      onChange={handleTypeSelect}
+      value={selectedOption}
+      formatOptionLabel={formatOptionLabel}
+      styles={customStyles}
     />
   );
 };
