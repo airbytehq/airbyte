@@ -1,7 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
-    "required": ["ARTICLE_ID"],
     "properties": {
       "ARTICLE_ID": {
         "type": "string"

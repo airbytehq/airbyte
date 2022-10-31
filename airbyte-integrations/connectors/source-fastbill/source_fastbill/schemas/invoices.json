@@ -1,7 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
-  "required": ["INVOICE_ID"],
   "properties": {
     "INVOICE_ID": {
       "type": "string"
@@ -51,7 +50,7 @@
     },
     "VAT_ITEMS": {
       "type": ["null","array"],
-      "items": [
+      "items":
         {
           "type": "object",
           "properties": {
@@ -64,18 +63,12 @@
             "VAT_VALUE": {
               "type": "number"
             }
-          },
-          "required": [
-            "VAT_PERCENT",
-            "COMPLETE_NET",
-            "VAT_VALUE"
-          ]
+          }
         }
-      ]
     },
     "ITEMS": {
       "type": ["null","array"],
-      "items": [
+      "items":
         {
           "type": "object",
           "properties": {
@@ -120,7 +113,6 @@
             }
           }
         }
-      ]
     },
     "TOTAL": {
       "type": "number"

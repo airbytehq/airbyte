@@ -1,7 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
-  "required": ["CUSTOMER_ID"],
   "properties": {
     "CUSTOMER_ID": {
       "type": "string"

@@ -3251,6 +3251,26 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-fastbill:dev"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/fastbill"
+    connectionSpecification:
+      $schema: http://json-schema.org/draft-07/schema#
+      title: Fastbill Spec
+      type: object
+      required:
+        - username
+        - api_key
+      properties:
+        username:
+          title: Username
+          type: string
+          description: Username for Fastbill account
+        api_key:
+          title: API Key
+          type: string
+          description: Fastbill API key
+          airbyte_secret: true
 - dockerImage: "airbyte/source-fauna:dev"
   spec:
     documentationUrl: "https://github.com/fauna/airbyte/blob/source-fauna/docs/integrations/sources/fauna.md"
