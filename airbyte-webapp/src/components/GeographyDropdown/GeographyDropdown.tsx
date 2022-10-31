@@ -14,10 +14,10 @@ const GeographyOption: React.FC<OptionProps> = (props) => {
   const { formatMessage } = useIntl();
   return (
     <components.Option className={styles.option} {...props}>
-      <>
+      <div className={styles.flag}>
         <span className={`fi fi-${props.label === "auto" ? "us" : props.label}`} />
-        <span className={styles.label}>{formatMessage({ id: `geography.${props.label}` })}</span>
-      </>
+      </div>
+      <span className={styles.label}>{formatMessage({ id: `geography.${props.label}` })}</span>
     </components.Option>
   );
 };

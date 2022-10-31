@@ -37,6 +37,14 @@
   }
 }
 
+.flag {
+  padding: 9px 6px;
+  border-radius: 7px;
+  background-color: colors.$white;
+  display: flex;
+  align-items: center;
+}
+
 .label {
-  padding-left: 10px;
+  padding-left: 8px;
 }
