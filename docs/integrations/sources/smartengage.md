@@ -30,4 +30,4 @@ This source can sync data from the [SmartEngage API](https://smartengage.com/doc
 
 | Version | Date       | Pull Request | Subject                                                    |
 |:--------|:-----------| :----------- |:-----------------------------------------------------------|
-| 0.1.0   | 2022-10-25 | [TODO](TODO) | Initial commit |
+| 0.1.0   | 2022-10-25 | [18701](https://github.com/airbytehq/airbyte/pull/18701) | Initial commit |
