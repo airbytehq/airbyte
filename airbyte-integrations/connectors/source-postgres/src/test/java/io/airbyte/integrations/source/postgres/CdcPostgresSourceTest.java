@@ -167,11 +167,17 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Test
-  void testReadWithoutPublication() throws SQLException {
+  void testReadWithoutPublication() throws Exception {
+    // Drop the publication.
     database.query(ctx -> ctx.execute("DROP PUBLICATION " + PUBLICATION + ";"));
 
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = source
+        .read(getConfig(), CONFIGURED_CATALOG, null);
+
+    // Since we have set debezium properties to not auto-create a publication, an exception should be thrown while attempting to create a
+    // publication here.
     assertThrows(Exception.class, () -> {
-      source.read(config, CONFIGURED_CATALOG, null);
+      AutoCloseableIterators.toListAndClose(firstBatchIterator);
     });
   }
 
