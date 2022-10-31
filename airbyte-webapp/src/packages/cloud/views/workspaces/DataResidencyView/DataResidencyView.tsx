@@ -1,5 +1,4 @@
 import classNames from "classnames";
-import { US } from "country-flag-icons/react/3x2";
 import { Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage } from "react-intl";
@@ -19,15 +18,6 @@ import { useInvalidateWorkspace } from "services/workspaces/WorkspacesService";
 
 import styles from "./DataResidencyView.module.scss";
 
-// const AdvancedModeSwitchLabel = () => (
-//   <>
-//     <FormattedMessage id="settings.generalSettings.form.advancedMode.switchLabel" />
-//     <InfoTooltip>
-//       <FormattedMessage id="settings.generalSettings.form.advancedMode.tooltip" />
-//     </InfoTooltip>
-//   </>
-// );
-
 const ValidationSchema = yup.object().shape({
   name: yup.string().required("form.empty.error"),
 });
@@ -37,7 +27,7 @@ const options = [
     value: "US",
     label: (
       <>
-        <US style={{ height: "14px" }} />
+        {/* <US style={{ height: "14px" }} /> */}
         <span style={{ paddingLeft: "10px" }}>United States</span>
       </>
     ),
@@ -90,7 +80,6 @@ export const DataResidencyView: React.FC = () => {
                       <FormattedMessage id="settings.dataResidency.form.dropdownLabel.tooltip" />
                     </InfoTooltip>
                   </Label>
-                  <FormattedMessage id="settings.dataResidency.IPRange.US" />
                 </div>
                 <DropDown options={options} />
               </div>

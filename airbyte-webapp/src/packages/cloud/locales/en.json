@@ -106,7 +106,6 @@
   "settings.dataResidency.description": "Choose the default preferred data processing location for all of your connections. Setting this choice means your data never leaves this region. Learn more.",
   "settings.dataResidency.form.dropdownLabel": "Geography",
   "settings.dataResidency.form.dropdownLabel.tooltip": "Tooltip here",
-  "settings.dataResidency.IPRange.US": "IP Address range : 34.106.109.131 - 34.106.109.140",
   "settings.accessManagementSettings": "Access Management",
   "userSettings.table.title": "Current users",
   "userSettings.table.column.fullname": "Full Name",
