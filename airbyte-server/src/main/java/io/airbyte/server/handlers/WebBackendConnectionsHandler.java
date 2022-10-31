@@ -297,7 +297,9 @@ public class WebBackendConnectionsHandler {
         .destination(destination)
         .operations(operations.getOperations())
         .resourceRequirements(connectionRead.getResourceRequirements())
-        .geography(connectionRead.getGeography());
+        .geography(connectionRead.getGeography())
+        .notifySchemaChanges(connectionRead.getNotifySchemaChanges())
+        .nonBreakingChangesPreference(connectionRead.getNonBreakingChangesPreference());
   }
 
   // todo (cgardens) - This logic is a headache to follow it stems from the internal data model not
