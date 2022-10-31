@@ -20,7 +20,7 @@ final class NumPendingJobs extends Emitter {
 
   public NumPendingJobs(final MetricClient client, final MetricRepository db) {
     super(client, () -> {
-      db.numberOfPendingJobs().forEach((geography, count) -> client.gauge(
+      db.numberOfPendingJobsByGeography().forEach((geography, count) -> client.gauge(
           OssMetricsRegistry.NUM_PENDING_JOBS,
           count,
           new MetricAttribute(MetricTags.GEOGRAPHY, geography)));
@@ -64,7 +64,7 @@ final class OldestRunningJob extends Emitter {
 
   OldestRunningJob(final MetricClient client, final MetricRepository db) {
     super(client, () -> {
-      db.oldestRunningJobAgeSecs().forEach((attemptQueue, count) -> client.gauge(
+      db.oldestRunningJobAgeSecsByTaskQueue().forEach((attemptQueue, count) -> client.gauge(
           OssMetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS,
           count,
           new MetricAttribute(MetricTags.ATTEMPT_QUEUE, attemptQueue)));
@@ -79,7 +79,7 @@ final class OldestPendingJob extends Emitter {
 
   OldestPendingJob(final MetricClient client, final MetricRepository db) {
     super(client, () -> {
-      db.oldestPendingJobAgeSecs().forEach((geographyType, count) -> client.gauge(
+      db.oldestPendingJobAgeSecsByGeography().forEach((geographyType, count) -> client.gauge(
           OssMetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS,
           count,
           new MetricAttribute(MetricTags.GEOGRAPHY, geographyType.getLiteral())));

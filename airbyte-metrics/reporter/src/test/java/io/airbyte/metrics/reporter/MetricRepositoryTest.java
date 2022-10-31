@@ -171,7 +171,7 @@ class MetricRepositoryTest {
           .values(4L, connectionUuid.toString(), JobStatus.running)
           .execute();
 
-      final var res = db.numberOfPendingJobs();
+      final var res = db.numberOfPendingJobsByGeography();
       assertEquals(2, res.get(EU_REGION));
     }
 
@@ -192,7 +192,7 @@ class MetricRepositoryTest {
           .values(2L, connectionUuid.toString(), JobStatus.failed)
           .execute();
 
-      final var res = db.numberOfPendingJobs();
+      final var res = db.numberOfPendingJobsByGeography();
       assertTrue(res.isEmpty());
     }
 
@@ -227,7 +227,7 @@ class MetricRepositoryTest {
           .values(4L, connectionUuid.toString(), JobStatus.failed)
           .execute();
 
-      Double result = db.oldestPendingJobAgeSecs().get(EU_REGION);
+      Double result = db.oldestPendingJobAgeSecsByGeography().get(EU_REGION);
       // expected age is 1000 seconds, but allow for +/- 1 second to account for timing/rounding errors
       assertTrue(999 < result && result < 1001);
     }
@@ -248,7 +248,7 @@ class MetricRepositoryTest {
           .values(2L, connectionUuid.toString(), JobStatus.running)
           .values(3L, connectionUuid.toString(), JobStatus.failed).execute();
 
-      final var res = db.oldestPendingJobAgeSecs();
+      final var res = db.oldestPendingJobAgeSecsByGeography();
       assertTrue(res.isEmpty());
     }
 
@@ -277,7 +277,7 @@ class MetricRepositoryTest {
           .values(4L, "", JobStatus.failed)
           .execute();
 
-      final var result = Iterators.getOnlyElement(db.oldestRunningJobAgeSecs().entrySet().iterator());
+      final var result = Iterators.getOnlyElement(db.oldestRunningJobAgeSecsByTaskQueue().entrySet().iterator());
       assertEquals(SYNC_QUEUE, result.getKey());
       // expected age is 1000 seconds, but allow for +/- 1 second to account for timing/rounding errors
       assertTrue(9999 < result.getValue() && result.getValue() < 10001L);
@@ -293,7 +293,7 @@ class MetricRepositoryTest {
           .values(3L, "", JobStatus.failed)
           .execute();
 
-      final var res = db.oldestRunningJobAgeSecs();
+      final var res = db.oldestRunningJobAgeSecsByTaskQueue();
       assertTrue(res.isEmpty());
     }
 

@@ -30,7 +30,7 @@ class MetricRepository {
     this.ctx = ctx;
   }
 
-  Map<String, Integer> numberOfPendingJobs() {
+  Map<String, Integer> numberOfPendingJobsByGeography() {
     var result = ctx.select(CONNECTION.GEOGRAPHY.cast(String.class), count(asterisk()).as("count"))
         .from(JOBS)
         .join(CONNECTION)
@@ -40,7 +40,7 @@ class MetricRepository {
     return (Map<String, Integer>) result.fetchMap(0, 1);
   }
 
-  Map<String, Integer> numberOfRunningJobs() {
+  Map<String, Integer> numberOfRunningJobsByTaskQueue() {
     var result = ctx.select(ATTEMPTS.PROCESSING_TASK_QUEUE, count(asterisk()).as("count"))
         .from(JOBS)
         .join(CONNECTION)
@@ -65,7 +65,7 @@ class MetricRepository {
         .fetchOne(0, int.class);
   }
 
-  Map<GeographyType, Double> oldestPendingJobAgeSecs() {
+  Map<GeographyType, Double> oldestPendingJobAgeSecsByGeography() {
     final var query =
         """
         SELECT cast(connection.geography as varchar) AS geography, MAX(EXTRACT(EPOCH FROM (current_timestamp - jobs.created_at))) AS run_duration_seconds
@@ -79,7 +79,7 @@ class MetricRepository {
     return (Map<GeographyType, Double>) result.intoMap(0, 1);
   }
 
-  Map<String, Double> oldestRunningJobAgeSecs() {
+  Map<String, Double> oldestRunningJobAgeSecsByTaskQueue() {
     final var query =
         """
         SELECT attempts.processing_task_queue AS task_queue, MAX(EXTRACT(EPOCH FROM (current_timestamp - jobs.created_at))) AS run_duration_seconds

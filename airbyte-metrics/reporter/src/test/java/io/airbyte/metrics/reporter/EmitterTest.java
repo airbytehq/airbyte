@@ -41,13 +41,13 @@ class EmitterTest {
   @Test
   void TestNumPendingJobs() {
     final var value = Map.of("AUTO", 101, "EU", 20);
-    when(repo.numberOfPendingJobs()).thenReturn(value);
+    when(repo.numberOfPendingJobsByGeography()).thenReturn(value);
 
     final var emitter = new NumPendingJobs(client, repo);
     emitter.Emit();
 
     assertEquals(Duration.ofSeconds(15), emitter.getDuration());
-    verify(repo).numberOfPendingJobs();
+    verify(repo).numberOfPendingJobsByGeography();
     verify(client).gauge(OssMetricsRegistry.NUM_PENDING_JOBS, 101,
         new MetricAttribute(MetricTags.GEOGRAPHY, "AUTO"));
     verify(client).gauge(OssMetricsRegistry.NUM_PENDING_JOBS, 20,
@@ -89,13 +89,13 @@ class EmitterTest {
   @Test
   void TestOldestRunningJob() {
     final var value = Map.of(SYNC_QUEUE, 101.0, AWS_QUEUE, 20.0);
-    when(repo.oldestRunningJobAgeSecs()).thenReturn(value);
+    when(repo.oldestRunningJobAgeSecsByTaskQueue()).thenReturn(value);
 
     final var emitter = new OldestRunningJob(client, repo);
     emitter.Emit();
 
     assertEquals(Duration.ofSeconds(15), emitter.getDuration());
-    verify(repo).oldestRunningJobAgeSecs();
+    verify(repo).oldestRunningJobAgeSecsByTaskQueue();
     verify(client).gauge(OssMetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS, 101,
         new MetricAttribute(MetricTags.ATTEMPT_QUEUE, SYNC_QUEUE));
     verify(client).gauge(OssMetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS, 20,
@@ -106,13 +106,13 @@ class EmitterTest {
   @Test
   void TestOldestPendingJob() {
     final var value = Map.of(GeographyType.AUTO, 101.0, GeographyType.EU, 20.0);
-    when(repo.oldestPendingJobAgeSecs()).thenReturn(value);
+    when(repo.oldestPendingJobAgeSecsByGeography()).thenReturn(value);
 
     final var emitter = new OldestPendingJob(client, repo);
     emitter.Emit();
 
     assertEquals(Duration.ofSeconds(15), emitter.getDuration());
-    verify(repo).oldestPendingJobAgeSecs();
+    verify(repo).oldestPendingJobAgeSecsByGeography();
     verify(client).gauge(OssMetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, 101,
         new MetricAttribute(MetricTags.GEOGRAPHY, AUTO_REGION));
     verify(client).gauge(OssMetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, 20,
