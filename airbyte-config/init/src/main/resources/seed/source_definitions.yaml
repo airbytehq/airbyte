@@ -1116,6 +1116,14 @@
   icon: twilio.svg
   sourceType: api
   releaseStage: generally_available
+- name: Twilio Taskrouter
+  sourceDefinitionId: 2446953b-b794-429b-a9b3-c821ba992a48
+  dockerRepository: airbyte/source-twilio-taskrouter
+  dockerImageTag:
+  documentationUrl: https://docs.airbyte.com/integrations/sources/twilio-taskrouter
+  icon: twilio.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Typeform
   sourceDefinitionId: e7eff203-90bf-43e5-a240-19ea3056c474
   dockerRepository: airbyte/source-typeform
