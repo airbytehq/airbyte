@@ -80,6 +80,15 @@
         "type": "array",
         "uniqueItems": true,
         "order": 9
+      },
+      "report_record_types": {
+        "title": "Report Record Types",
+        "description": "Optional configuration which accepts an array of string of record types. Leave blank for default behaviour to pull all report types. Use this config option only if you want to pull specific report type(s). See <a href=\"https://advertising.amazon.com/API/docs/en-us/reporting/v2/report-types\">docs</a> for more details",
+        "order": 10,
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
       }
     },
     "required": ["client_id", "client_secret", "refresh_token"],
