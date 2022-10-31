@@ -31,7 +31,7 @@ jobs:
           tag_prefix: "v"
           major_pattern: "feat:"
           minor_pattern: "fix:"
-          format: "${major}.${minor}.${/}"
+          format: "${major}.${minor}.${patch}"
           change_path: "./charts"
           bump_each_commit: true
           namespace: helm
