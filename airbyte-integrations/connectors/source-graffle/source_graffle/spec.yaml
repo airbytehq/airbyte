@@ -4,12 +4,10 @@ connectionSpecification:
   title: Graffle source connector
   type: object
   required:
-    - start_datetime
+    - page
     - company_id
   properties:
-    start_datetime:
-      type: string
-      format: date-time
-      airbyte_type: timestamp_with_timezone
+    page:
+      type: integer
     company_id:
       type: string
