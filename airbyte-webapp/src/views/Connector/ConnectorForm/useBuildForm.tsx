@@ -31,7 +31,6 @@ export function useBuildForm(jsonSchema: JSONSchema7, initialValues?: Partial<Co
   const startValues = useMemo<ConnectorFormValues>(
     () => ({
       name: "",
-      serviceType: "",
       connectionConfiguration: {},
       ...initialValues,
     }),
