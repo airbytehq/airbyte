@@ -11,7 +11,10 @@ repositories {
 
 dependencies {
     implementation 'ru.vyarus:gradle-use-python-plugin:2.3.0'
-    implementation 'com.bmuschko:gradle-docker-plugin:7.4.0'
+    implementation 'com.bmuschko:gradle-docker-plugin:8.0.0'
+    // openapi generator 6.x needs this version of jackson, but gradle doesn't resolve this smartly
+    // because we only use openapi in the airbyte-api project.
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.13.0'
 }
 
 tasks.withType(Jar) {
