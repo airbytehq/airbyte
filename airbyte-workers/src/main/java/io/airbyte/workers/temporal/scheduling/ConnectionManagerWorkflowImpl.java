@@ -80,12 +80,16 @@ import io.temporal.api.enums.v1.ParentClosePolicy;
 import io.temporal.failure.ActivityFailure;
 import io.temporal.failure.CanceledFailure;
 import io.temporal.failure.ChildWorkflowFailure;
+import io.temporal.workflow.Async;
 import io.temporal.workflow.CancellationScope;
 import io.temporal.workflow.ChildWorkflowOptions;
+import io.temporal.workflow.Promise;
 import io.temporal.workflow.Workflow;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -405,7 +409,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private SyncCheckConnectionFailure checkConnections(final GenerateInputActivity.GeneratedJobInput jobInputs) {
     final JobRunConfig jobRunConfig = jobInputs.getJobRunConfig();
-    final StandardSyncInput syncInput = jobInputs.getSyncInput();
+    final StandardSyncInput syncInput = jobInputs.getSyncInput().stream().findFirst().get();
     final JsonNode sourceConfig = syncInput.getSourceConfiguration();
     final JsonNode destinationConfig = syncInput.getDestinationConfiguration();
     final IntegrationLauncherConfig sourceLauncherConfig = jobInputs.getSourceLauncherConfig();
@@ -847,20 +851,37 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private StandardSyncOutput runChildWorkflow(final GeneratedJobInput jobInputs) {
     final String taskQueue = getSyncTaskQueue();
 
-    final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
-        ChildWorkflowOptions.newBuilder()
-            .setWorkflowId("sync_" + workflowInternalState.getJobId())
-            .setTaskQueue(taskQueue)
-            // This will cancel the child workflow when the parent is terminated
-            .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_REQUEST_CANCEL)
-            .build());
+    final List<Promise<StandardSyncOutput>> toWaitFor = new ArrayList<>();
 
-    return childSync.run(
-        jobInputs.getJobRunConfig(),
-        jobInputs.getSourceLauncherConfig(),
-        jobInputs.getDestinationLauncherConfig(),
-        jobInputs.getSyncInput(),
-        connectionId);
+    int i = 1;
+
+    for (final StandardSyncInput syncInput : jobInputs.getSyncInput()) {
+      final int finalI = i;
+      final Promise<StandardSyncOutput> jeTePrometsLeSel = Async.function(() -> {
+        final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
+            ChildWorkflowOptions.newBuilder()
+                .setWorkflowId("sync_" + workflowInternalState.getJobId() + "_" + finalI)
+                .setTaskQueue(taskQueue)
+                // This will cancel the child workflow when the parent is terminated
+                .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_REQUEST_CANCEL)
+                .build());
+
+        return childSync.run(
+            jobInputs.getJobRunConfig(),
+            jobInputs.getSourceLauncherConfig(),
+            jobInputs.getDestinationLauncherConfig(),
+            syncInput,
+            connectionId);
+      });
+
+      toWaitFor.add(jeTePrometsLeSel);
+      i++;
+    }
+
+    Promise.allOf(toWaitFor).get();
+
+    // Todo: reduce the list
+    return toWaitFor.get(0).get();
   }
 
   /**

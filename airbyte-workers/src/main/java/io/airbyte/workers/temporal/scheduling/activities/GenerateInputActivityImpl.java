@@ -7,6 +7,7 @@ package io.airbyte.workers.temporal.scheduling.activities;
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
@@ -17,16 +18,29 @@ import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.StateType;
+import io.airbyte.config.StateWrapper;
+import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobRunConfig;
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.AirbyteStreamState;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.workers.WorkerConstants;
 import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
@@ -91,21 +105,99 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withDockerImage(config.getDestinationDockerImage())
           .withProtocolVersion(config.getDestinationProtocolVersion());
 
-      final StandardSyncInput syncInput = new StandardSyncInput()
-          .withNamespaceDefinition(config.getNamespaceDefinition())
-          .withNamespaceFormat(config.getNamespaceFormat())
-          .withPrefix(config.getPrefix())
-          .withSourceConfiguration(config.getSourceConfiguration())
-          .withDestinationConfiguration(config.getDestinationConfiguration())
-          .withOperationSequence(config.getOperationSequence())
-          .withWebhookOperationConfigs(config.getWebhookOperationConfigs())
-          .withCatalog(config.getConfiguredAirbyteCatalog())
-          .withState(config.getState())
-          .withResourceRequirements(config.getResourceRequirements())
-          .withSourceResourceRequirements(config.getSourceResourceRequirements())
-          .withDestinationResourceRequirements(config.getDestinationResourceRequirements());
+      final Set<StandardSyncInput> result = new HashSet<>();
 
-      return new GeneratedJobInput(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
+      if (ConfigType.RESET_CONNECTION.equals(jobConfigType)) {
+        new StandardSyncInput()
+            .withNamespaceDefinition(config.getNamespaceDefinition())
+            .withNamespaceFormat(config.getNamespaceFormat())
+            .withPrefix(config.getPrefix())
+            .withSourceConfiguration(config.getSourceConfiguration())
+            .withDestinationConfiguration(config.getDestinationConfiguration())
+            .withOperationSequence(config.getOperationSequence())
+            .withWebhookOperationConfigs(config.getWebhookOperationConfigs())
+            .withCatalog(config.getConfiguredAirbyteCatalog())
+            .withState(config.getState())
+            .withResourceRequirements(config.getResourceRequirements())
+            .withSourceResourceRequirements(config.getSourceResourceRequirements())
+            .withDestinationResourceRequirements(config.getDestinationResourceRequirements());
+      } else {
+        final List<ConfiguredAirbyteStream> streamsToSplit = config.getConfiguredAirbyteCatalog().getStreams();
+
+        final List<ConfiguredAirbyteStream> stream1 = new ArrayList<>();
+        for (int i = 0; i < (streamsToSplit.size() + 1) / 2; i++) {
+          stream1.add(streamsToSplit.get(i));
+        }
+
+        final List<ConfiguredAirbyteStream> stream2 = new ArrayList<>();
+        for (int i = (streamsToSplit.size() + 1) / 2; i < streamsToSplit.size(); i++) {
+          stream2.add(streamsToSplit.get(i));
+        }
+
+        final StateWrapper state = (config.getState() == null || config.getState().getState() == null)
+            ? new StateWrapper().withStateType(StateType.STREAM).withStateMessages(new ArrayList<>())
+            : StateMessageHelper.getTypedState(config.getState().getState(),
+                true).get();
+        final Map<StreamDescriptor, JsonNode> stateBySd = state.getStateMessages().stream().collect(Collectors.toMap(
+            entry -> entry.getStream().getStreamDescriptor(),
+            entryVal -> entryVal.getStream().getStreamState()));
+
+        final StateWrapper state1 = new StateWrapper().withStateType(StateType.STREAM).withStateMessages(new ArrayList<>());
+
+        stream1.forEach(stream -> {
+          final StreamDescriptor sd = new StreamDescriptor()
+              .withName(stream.getStream().getName())
+              .withNamespace(stream.getStream().getNamespace());
+          final JsonNode maybeState = stateBySd.get(sd);
+          if (maybeState != null) {
+            state1.getStateMessages().add(new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
+                .withStream(new AirbyteStreamState().withStreamState(maybeState).withStreamDescriptor(sd)));
+          }
+        });
+
+        final StateWrapper state2 = new StateWrapper().withStateType(StateType.STREAM).withStateMessages(new ArrayList<>());
+
+        stream2.forEach(stream -> {
+          final StreamDescriptor sd = new StreamDescriptor()
+              .withName(stream.getStream().getName())
+              .withNamespace(stream.getStream().getNamespace());
+          final JsonNode maybeState = stateBySd.get(sd);
+          if (maybeState != null) {
+            state2.getStateMessages().add(new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
+                .withStream(new AirbyteStreamState().withStreamState(maybeState).withStreamDescriptor(sd)));
+          }
+        });
+
+        result.add(new StandardSyncInput()
+            .withNamespaceDefinition(config.getNamespaceDefinition())
+            .withNamespaceFormat(config.getNamespaceFormat())
+            .withPrefix(config.getPrefix())
+            .withSourceConfiguration(config.getSourceConfiguration())
+            .withDestinationConfiguration(config.getDestinationConfiguration())
+            .withOperationSequence(config.getOperationSequence())
+            .withWebhookOperationConfigs(config.getWebhookOperationConfigs())
+            .withCatalog(new ConfiguredAirbyteCatalog().withStreams(stream1))
+            .withState(StateMessageHelper.getState(state1))
+            .withResourceRequirements(config.getResourceRequirements())
+            .withSourceResourceRequirements(config.getSourceResourceRequirements())
+            .withDestinationResourceRequirements(config.getDestinationResourceRequirements()));
+
+        result.add(new StandardSyncInput()
+            .withNamespaceDefinition(config.getNamespaceDefinition())
+            .withNamespaceFormat(config.getNamespaceFormat())
+            .withPrefix(config.getPrefix())
+            .withSourceConfiguration(config.getSourceConfiguration())
+            .withDestinationConfiguration(config.getDestinationConfiguration())
+            .withOperationSequence(config.getOperationSequence())
+            .withWebhookOperationConfigs(config.getWebhookOperationConfigs())
+            .withCatalog(new ConfiguredAirbyteCatalog().withStreams(stream2))
+            .withState(StateMessageHelper.getState(state2))
+            .withResourceRequirements(config.getResourceRequirements())
+            .withSourceResourceRequirements(config.getSourceResourceRequirements())
+            .withDestinationResourceRequirements(config.getDestinationResourceRequirements()));
+      }
+
+      return new GeneratedJobInput(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, result);
 
     } catch (final Exception e) {
       throw new RetryableException(e);

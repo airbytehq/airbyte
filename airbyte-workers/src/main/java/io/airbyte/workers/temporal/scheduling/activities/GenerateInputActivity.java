@@ -9,6 +9,7 @@ import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -44,7 +45,7 @@ public interface GenerateInputActivity {
     private JobRunConfig jobRunConfig;
     private IntegrationLauncherConfig sourceLauncherConfig;
     private IntegrationLauncherConfig destinationLauncherConfig;
-    private StandardSyncInput syncInput;
+    private Set<StandardSyncInput> syncInput;
 
   }
 
