@@ -73,6 +73,12 @@ definitions:
       name: "nps_responses"
       primary_key: "id"
       path: "/nps_responses"
+  organizations_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "organizations"
+      primary_key: "id"
+      path: "/organizations"
   tasks_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -92,6 +98,7 @@ streams:
   - "*ref(definitions.conversations_stream)"
   - "*ref(definitions.notes_stream)"
   - "*ref(definitions.nps_responses_stream)"
+  - "*ref(definitions.organizations_stream)"
   - "*ref(definitions.tasks_stream)"
   - "*ref(definitions.users_stream)"
 
