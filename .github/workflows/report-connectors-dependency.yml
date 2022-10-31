@@ -26,7 +26,13 @@ jobs:
           output="${output//$'\n'/'%0A'}"
           output="${output//$'\r'/'%0D'}" 
           echo "changed_files_report=$output" >> $GITHUB_OUTPUT
+          echo "some_change=print_me" >> $GITHUB_OUTPUT
+          echo $GITHUB_OUTPUT
+          cat $GITHUB_OUTPUT
         id: dependency_report
+      - name: Echo some_change
+        run: |
+          echo ${{steps.dependency_report.outputs.some_change}}
       - name: Comment report in PR
         if: steps.dependency_report.outputs.changed_files_report != ''
         uses: peter-evans/create-or-update-comment@v2
