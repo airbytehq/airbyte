@@ -14,7 +14,7 @@ function isJobsWithJobs(job: JobsWithJobs | SynchronousJobRead): job is JobsWith
   return (job as JobsWithJobs).attempts !== undefined;
 }
 
-export var ProgressBar = ({ job }: { job: JobsWithJobs | SynchronousJobRead }) => {
+export const ProgressBar = ({ job }: { job: JobsWithJobs | SynchronousJobRead }) => {
   const { formatMessage } = useIntl();
 
   let numerator = 0;
