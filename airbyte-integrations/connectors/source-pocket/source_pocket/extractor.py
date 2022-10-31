@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping
 
@@ -14,7 +18,7 @@ class PocketExtractor(RecordExtractor):
     Record extractor that extracts record of the form:
 
     { "list": { "ID_1": record_1, "ID_2": record_2, ... } }
-    
+
     Attributes:
         options (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
         decoder (Decoder): The decoder responsible to transfom the response in a Mapping

@@ -34,4 +34,3 @@ def create_response(body):
     response = requests.Response()
     response._content = json.dumps(body).encode("utf-8")
     return response
-
