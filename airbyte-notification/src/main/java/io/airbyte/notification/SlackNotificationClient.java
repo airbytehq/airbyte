@@ -122,15 +122,19 @@ public class SlackNotificationClient extends NotificationClient {
   }
 
   @Override
-  public boolean notifySchemaChange() throws IOException, InterruptedException {
-    final String message = renderTemplate("slack/source_schema_change_notification_template.txt");
+  public boolean notifySchemaChange(UUID connectionId, boolean isBreaking) throws IOException, InterruptedException {
+    final String message;
+    if (isBreaking) {
+      message = renderTemplate("slack/breaking_schema_change_notification_template.txt", connectionId.toString());
+    } else {
+      message = renderTemplate("slack/non_breaking_schema_change_notification_template.txt", connectionId.toString());
+    }
     final String webhookUrl = config.getWebhook();
-    if(!Strings.isEmpty(webhookUrl)) {
+    if (!Strings.isEmpty(webhookUrl)) {
       return notify(message);
     }
     return false;
   }
-
 
   private boolean notify(final String message) throws IOException, InterruptedException {
     final ImmutableMap<String, String> body = new Builder<String, String>()

@@ -9,14 +9,15 @@ import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.notification.NotificationClient;
 import java.io.IOException;
+import java.util.UUID;
 
 public class ConnectionNotificationWorkflowImpl implements ConnectionNotificationWorkflow {
 
   @Override
-  public void sendSchemaChangeNotification() throws IOException, InterruptedException {
+  public void sendSchemaChangeNotification(UUID connectionId, boolean isBreaking) throws IOException, InterruptedException {
     Notification notification = new Notification().withNotificationType(NotificationType.SLACK);
     NotificationClient notificationClient = NotificationClient.createNotificationClient(notification);
-    notificationClient.notifySchemaChange();
+    notificationClient.notifySchemaChange(connectionId, isBreaking);
   }
 
 }
