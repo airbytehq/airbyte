@@ -1,0 +1,8 @@
+@use "../../scss/colors";
+@use "../../scss/variables";
+
+.container {
+  font-size: 12px;
+  line-height: 15px;
+  color: colors.$grey;
+}

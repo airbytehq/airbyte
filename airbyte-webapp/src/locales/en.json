@@ -544,6 +544,8 @@
   "errorView.unknown": "Unknown",
   "errorView.unknownError": "Unknown error occurred",
 
+  "estimate.syncedThusFar": "estimated records synced",
+
   "frequency.manual": "Manual",
   "frequency.cron": "Cron",
   "frequency.minutes": "{value} min",
