@@ -49,8 +49,6 @@ class BaseGoogleAdManagerReportStream(Stream, IncrementalMixin):
         """
         return "date"
     
-
-
     @state.setter
     def state(self, value: Mapping[str, Any]):
         self._cursor_value = value[self.cursor_field]
