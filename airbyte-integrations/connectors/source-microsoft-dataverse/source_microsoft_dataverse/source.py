@@ -10,7 +10,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
 from .dataverse import convert_dataverse_type, do_request, get_auth
-from .streams import IncrementalMicrosoftDataverseStream
+from .streams import IncrementalMicrosoftDataverseStream, MicrosoftDataverseStream
 
 
 class SourceMicrosoftDataverse(AbstractSource):
@@ -92,7 +92,7 @@ class SourceMicrosoftDataverse(AbstractSource):
                 )
             else:
                 streams.append(
-                    IncrementalMicrosoftDataverseStream(
+                    MicrosoftDataverseStream(
                         url=config["url"],
                         stream_name=catalog.stream.name,
                         stream_path=response_json["LogicalCollectionName"],
