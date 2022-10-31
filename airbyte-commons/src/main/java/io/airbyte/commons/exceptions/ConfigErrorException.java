@@ -6,10 +6,11 @@ package io.airbyte.commons.exceptions;
 
 public class ConfigErrorException extends RuntimeException {
 
-  private String displayMessage;
+  private final String displayMessage;
 
   public ConfigErrorException(final String displayMessage) {
     super(displayMessage);
+    this.displayMessage = displayMessage;
   }
 
   public ConfigErrorException(final String displayMessage, final Throwable exception) {
