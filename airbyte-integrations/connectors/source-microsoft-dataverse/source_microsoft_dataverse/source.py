@@ -5,7 +5,7 @@
 import logging
 from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple, Union
 
-from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, AirbyteStream, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, AirbyteStream, ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
@@ -31,9 +31,13 @@ class SourceMicrosoftDataverse(AbstractSource):
 
                 schema["properties"][attribute["LogicalName"]] = attribute_type
 
-            stream = AirbyteStream(name=entity["LogicalName"], json_schema=schema, supported_sync_modes = ["full_refresh", "incremental"])
+            sync_modes = [SyncMode.full_refresh]
+            if entity["ChangeTrackingEnabled"]:
+                sync_modes.append(SyncMode.incremental)
+
+            stream = AirbyteStream(name=entity["LogicalName"], json_schema=schema, supported_sync_modes=sync_modes)
             stream.source_defined_cursor = True
-            stream.default_cursor_field = ["_ab_cdc_updated_at"]
+            stream.default_cursor_field = ["modifiedon"]
             stream.source_defined_primary_key = [[entity["PrimaryIdAttribute"]]]
             streams.append(stream)
         return AirbyteCatalog(streams=streams)
@@ -72,15 +76,30 @@ class SourceMicrosoftDataverse(AbstractSource):
         for catalog in self.catalogs.streams:
             response = do_request(config, f"EntityDefinitions(LogicalName='{catalog.stream.name}')")
             response_json = response.json()
-            streams.append(
-                IncrementalMicrosoftDataverseStream(
-                    url=config["url"],
-                    stream_name=catalog.stream.name,
-                    stream_path=response_json["LogicalCollectionName"],
-                    primary_key=catalog.primary_key,
-                    schema=catalog.stream.json_schema,
-                    odata_maxpagesize=config["odata_maxpagesize"],
-                    authenticator=auth,
+
+            if catalog.sync_mode == SyncMode.incremental:
+                streams.append(
+                    IncrementalMicrosoftDataverseStream(
+                        url=config["url"],
+                        stream_name=catalog.stream.name,
+                        stream_path=response_json["LogicalCollectionName"],
+                        primary_key=catalog.primary_key,
+                        schema=catalog.stream.json_schema,
+                        odata_maxpagesize=config["odata_maxpagesize"],
+                        config_cursor_field=catalog.cursor_field,
+                        authenticator=auth,
+                    )
                 )
-            )
+            else:
+                streams.append(
+                    IncrementalMicrosoftDataverseStream(
+                        url=config["url"],
+                        stream_name=catalog.stream.name,
+                        stream_path=response_json["LogicalCollectionName"],
+                        primary_key=catalog.primary_key,
+                        schema=catalog.stream.json_schema,
+                        odata_maxpagesize=config["odata_maxpagesize"],
+                        authenticator=auth,
+                    )
+                )
         return streams
