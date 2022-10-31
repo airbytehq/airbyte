@@ -9867,7 +9867,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-prestashop:0.1.0"
+- dockerImage: "airbyte/source-prestashop:0.2.0"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -9877,7 +9877,6 @@
       required:
       - "url"
       - "access_key"
-      additionalProperties: false
       properties:
         url:
           type: "string"
