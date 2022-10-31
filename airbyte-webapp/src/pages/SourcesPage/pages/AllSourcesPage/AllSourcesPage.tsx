@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 import { EmptyResourceListView } from "components/common/EmptyResourceListView";
 import { HeadTitle } from "components/common/HeadTitle";
-import { MainPageWithScroll } from "components/MainPageWithScroll";
+import { MainPageWithScroll } from "components/common/MainPageWithScroll";
 import { Button } from "components/ui/Button";
 import { PageHeader } from "components/ui/PageHeader";
 

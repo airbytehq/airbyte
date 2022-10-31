@@ -6,6 +6,6 @@ export * from "./LabeledRadioButton";
 export * from "./LabeledSwitch";
 export * from "./common/Link";
 export * from "./LoadingPage";
-export * from "./MainPageWithScroll";
+export * from "./common/MainPageWithScroll";
 export * from "./SimpleTableComponents";
 export * from "./ConnectorCard";
