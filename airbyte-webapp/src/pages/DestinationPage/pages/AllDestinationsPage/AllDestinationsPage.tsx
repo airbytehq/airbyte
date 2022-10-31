@@ -4,7 +4,7 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
-import { EmptyResourceListView } from "components/EmptyResourceListView";
+import { EmptyResourceListView } from "components/common/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
 import { MainPageWithScroll } from "components/MainPageWithScroll";
 import { Button } from "components/ui/Button";

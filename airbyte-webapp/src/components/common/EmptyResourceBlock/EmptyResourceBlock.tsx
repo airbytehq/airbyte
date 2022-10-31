@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-interface IProps {
+interface EmptyResourceBlockProps {
   text: React.ReactNode;
   description?: React.ReactNode;
 }
@@ -32,7 +32,7 @@ const Description = styled.div`
   margin-top: 5px;
 `;
 
-const EmptyResourceBlock: React.FC<IProps> = ({ text, description }) => (
+export const EmptyResourceBlock: React.FC<EmptyResourceBlockProps> = ({ text, description }) => (
   <Content>
     <ImgBlock>
       <img src="/cactus.png" height={40} alt="cactus" />
@@ -41,5 +41,3 @@ const EmptyResourceBlock: React.FC<IProps> = ({ text, description }) => (
     <Description>{description}</Description>
   </Content>
 );
-
-export default EmptyResourceBlock;

@@ -3,8 +3,8 @@ import { FormattedMessage } from "react-intl";
 import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 
 import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
-import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
 import { ConnectorIcon } from "components/common/ConnectorIcon";
+import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
