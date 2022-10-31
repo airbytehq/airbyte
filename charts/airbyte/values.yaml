@@ -1237,7 +1237,7 @@ minio:
 
 ## @section cron parameters
 
-cron:
+airbyte-cron:
   enabled: true
   ##  cron.replicaCount Number of cron replicas
   replicaCount: 1
