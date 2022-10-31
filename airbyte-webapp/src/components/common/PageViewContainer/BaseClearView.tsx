@@ -28,7 +28,7 @@ const MainInfo = styled.div`
   flex-direction: column;
 `;
 
-const BaseClearView: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+export const BaseClearView: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const { formatMessage } = useIntl();
   return (
     <Content>
@@ -42,5 +42,3 @@ const BaseClearView: React.FC<React.PropsWithChildren<unknown>> = ({ children })
     </Content>
   );
 };
-
-export default BaseClearView;

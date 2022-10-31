@@ -1,7 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { PageViewContainer } from "components/CenteredPageComponents";
+import { PageViewContainer } from "components/common/PageViewContainer";
 import HeadTitle from "components/HeadTitle";
 import { Heading } from "components/ui/Heading";
 
