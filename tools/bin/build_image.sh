@@ -16,8 +16,10 @@ cd "$ROOT_DIR"
 . tools/lib/lib.sh
 assert_root
 
-cd "$PROJECT_DIR"
-echo "cd'd into projectdir= ${PROJECT_DIR}"
+FULL_PATH_TO_DOCKERFILE="${PROJECT_DIR}/${DOCKERFILE}"
+
+#cd "$PROJECT_DIR"
+#echo "cd'd into projectdir= ${PROJECT_DIR}"
 
 function validate_dockerignore() {
   excludes_all=$(grep -w '^\*$' .dockerignore)
@@ -28,7 +30,7 @@ function validate_dockerignore() {
 }
 
 args=(
-    -f "$DOCKERFILE"
+    -f "${FULL_PATH_TO_DOCKERFILE}"
     -t "$TAGGED_IMAGE"
     --iidfile "$ID_FILE"
 )
