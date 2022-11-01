@@ -1,0 +1,21 @@
+@use "scss/colors";
+
+.container {
+  font-weight: normal;
+  cursor: default;
+}
+
+.item {
+  display: inline-block;
+  cursor: pointer;
+  color: colors.$blue-400;
+  text-decoration: none;
+
+  &--unlinked {
+    font-weight: bold;
+  }
+
+  &:hover {
+    opacity: 0.8;
+  }
+}

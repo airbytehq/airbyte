@@ -1,5 +1,5 @@
 import React, { Suspense, useMemo } from "react";
-import { FormattedMessage } from "react-intl";
+import { useIntl } from "react-intl";
 import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 
 import { LoadingPage } from "components";
@@ -29,6 +29,7 @@ const DestinationItemPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.DESTINATION_ITEM);
   const params = useParams() as { "*": StepsTypes | ""; id: string };
   const navigate = useNavigate();
+  const { formatMessage } = useIntl();
   const currentStep = useMemo<string>(() => (params["*"] === "" ? StepsTypes.OVERVIEW : params["*"]), [params]);
 
   const { sources } = useSourceList();
@@ -41,8 +42,6 @@ const DestinationItemPage: React.FC = () => {
 
   const { connections } = useConnectionList();
 
-  const onClickBack = () => navigate("..");
-
   const onSelectStep = (id: string) => {
     const path = id === StepsTypes.OVERVIEW ? "." : id.toLowerCase();
     navigate(path);
@@ -50,10 +49,10 @@ const DestinationItemPage: React.FC = () => {
 
   const breadcrumbsData = [
     {
-      name: <FormattedMessage id="admin.destinations" />,
-      onClick: onClickBack,
+      label: formatMessage({ id: "admin.destinations" }),
+      to: "..",
     },
-    { name: destination.name },
+    { label: destination.name },
   ];
 
   const connectionsWithDestination = connections.filter(
