@@ -7,15 +7,11 @@ import io.airbyte.db.SqlDatabase;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * Queries related to what was in AbstractRelationalDbSource. Add generics here?
+ * Utility class for methods to query a relational db. 
  */
-public class FullTableQueryUtils {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(FullTableQueryUtils.class);
+public class RelationalDbQueryUtils {
 
   public static String getIdentifierWithQuoting(final String identifier, final String quoteString) {
     return quoteString + identifier + quoteString;

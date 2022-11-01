@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.source.bigquery;
 
-import static io.airbyte.integrations.source.relationaldb.FullTableQueryUtils.enquoteIdentifierList;
-import static io.airbyte.integrations.source.relationaldb.FullTableQueryUtils.getFullTableName;
-import static io.airbyte.integrations.source.relationaldb.FullTableQueryUtils.queryTable;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullTableName;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.QueryParameterValue;
@@ -24,7 +24,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
-import io.airbyte.integrations.source.relationaldb.FullTableQueryUtils;
+import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -145,7 +145,7 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                                                final CursorInfo cursorInfo,
                                                                final StandardSQLTypeName cursorFieldType) {
     return queryTableWithParams(database, String.format("SELECT %s FROM %s WHERE %s > ?",
-        FullTableQueryUtils.enquoteIdentifierList(columnNames, getQuoteString()),
+        RelationalDbQueryUtils.enquoteIdentifierList(columnNames, getQuoteString()),
         getFullTableName(schemaName, tableName, getQuoteString()),
         cursorInfo.getCursorField()),
         sourceOperations.getQueryParameter(cursorFieldType, cursorInfo.getCursor()));

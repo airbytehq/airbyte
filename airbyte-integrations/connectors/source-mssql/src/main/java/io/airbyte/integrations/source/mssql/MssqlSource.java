@@ -7,10 +7,10 @@ package io.airbyte.integrations.source.mssql;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.integrations.source.relationaldb.FullTableQueryUtils.enquoteIdentifierList;
-import static io.airbyte.integrations.source.relationaldb.FullTableQueryUtils.getFullTableName;
-import static io.airbyte.integrations.source.relationaldb.FullTableQueryUtils.getIdentifierWithQuoting;
-import static io.airbyte.integrations.source.relationaldb.FullTableQueryUtils.queryTable;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullTableName;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getIdentifierWithQuoting;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
