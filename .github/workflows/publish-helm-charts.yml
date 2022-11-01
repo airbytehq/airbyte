@@ -109,11 +109,7 @@ jobs:
         id: changelog
         run: |
           cd ./airbyte/
-          changelog=$(PAGER=cat git log $(git describe --tags --match "*-helm" $(git rev-list --tags --max-count=1))..HEAD --oneline --decorate=no)
-          changelog="${changelog//'%'/'%25'}"
-          changelog="${changelog//$'\n'/'%0A'}"
-          changelog="${changelog//$'\r'/'%0D'}"
-          echo "${changelog}" >> $GITHUB_OUTPUT
+          echo "::set-output name=changelog::$(PAGER=cat git log $(git describe --tags --match "*-helm" $(git rev-list --tags --max-count=1))..HEAD --oneline --decorate=no)"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
