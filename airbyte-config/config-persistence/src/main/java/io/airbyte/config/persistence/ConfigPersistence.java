@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * We are moving migrating away from this interface entirely. Use ConfigRepository instead.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public interface ConfigPersistence {
 
   <T> T getConfig(AirbyteConfig configType, String configId, Class<T> clazz) throws ConfigNotFoundException, JsonValidationException, IOException;
