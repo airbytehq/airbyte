@@ -3,12 +3,7 @@
     {
       "stream": {
         "name": "<entity_name>",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {},
-          "additionalProperties": true
-        },
+        "json_schema": {},
         "supported_sync_modes": [
           "full_refresh",
           "incremental"

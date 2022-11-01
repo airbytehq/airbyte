@@ -80,7 +80,7 @@ class SourceMicrosoftDataverse(AbstractSource):
             args = {
                 "url": config["url"],
                 "stream_name": catalog.stream.name,
-                "stream_path": response_json["LogicalCollectionName"],
+                "stream_path": response_json["EntitySetName"],
                 "primary_key": catalog.primary_key,
                 "schema": catalog.stream.json_schema,
                 "odata_maxpagesize": config["odata_maxpagesize"],

@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+from enum import Enum
 from typing import Any, Mapping, MutableMapping, Optional
 
 import requests
@@ -21,6 +21,31 @@ class MicrosoftOauth2Authenticator(Oauth2Authenticator):
         }
 
         return payload
+
+
+class AirbyteType(Enum):
+
+    String = {"type": ["null", "string"]}
+    Boolean = {"type": ["null", "boolean"]}
+    Timestamp = {"type": ["null", "string"], "format": "date-time", "airbyte_type": "timestamp_with_timezone"}
+    Integer = {"type": ["null", "integer"]}
+    Number = {"type": ["null", "number"]}
+
+
+class DataverseTypes(Enum):
+
+    def __init__(self, data_verse_type: str, airbyte_type: Optional[dict]):
+        self.data_verse_type = data_verse_type
+        self.airbyte_type = airbyte_type
+
+    String = "String", AirbyteType.String
+    DateTime = "DateTime", AirbyteType.Timestamp
+    Integer = "Integer", AirbyteType.Integer
+    Money = "Money", AirbyteType.Number
+    Boolean = "Boolean", AirbyteType.Boolean
+    Double = "Double", AirbyteType.Number
+    Decimal = "Decimal", AirbyteType.Number
+    Virtual = "Virtual", None
 
 
 def get_auth(config: Mapping[str, Any]) -> MicrosoftOauth2Authenticator:
@@ -44,23 +69,9 @@ def do_request(config: Mapping[str, Any], path: str):
 
 
 def convert_dataverse_type(dataverse_type: str) -> Optional[dict]:
-    if dataverse_type == "String":
-        attribute_type = {"type": ["null", "string"]}
-    elif dataverse_type == "DateTime":
-        attribute_type = {"type": ["null", "string"], "format": "date-time", "airbyte_type": "timestamp_with_timezone"}
-    elif dataverse_type == "Integer":
-        attribute_type = {"type": ["null", "integer"]}
-    elif dataverse_type == "Money":
-        attribute_type = {"type": ["null", "number"]}
-    elif dataverse_type == "Boolean":
-        attribute_type = {"type": ["null", "boolean"]}
-    elif dataverse_type == "Double":
-        attribute_type = {"type": ["null", "number"]}
-    elif dataverse_type == "Decimal":
-        attribute_type = {"type": ["null", "number"]}
-    elif dataverse_type == "Virtual":
-        return None
-    else:
-        attribute_type = {"type": ["null", "string"]}
+    enum_type = DataverseTypes(dataverse_type)
 
-    return attribute_type
+    if enum_type:
+        return enum_type.airbyte_type
+
+    return AirbyteType.String.value
