@@ -16,7 +16,7 @@ To set up Airbyte on your local machine:
 ```bash
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
-sudo docker compose up
+docker compose up
 ```
 3. In your browser, visit http://localhost:8000
 > **_Note:_** You will be asked for a username and password. The default username is `airbyte` and the password is `password`.
@@ -30,7 +30,7 @@ To set up Airbyte on your Windows machine:
 ```bash
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
-sudo docker compose up
+docker compose up
 ```
 3. In your browser, visit http://localhost:8000
 4. You will be asked for a username and password. The default username is `airbyte` and the password is `password`.
