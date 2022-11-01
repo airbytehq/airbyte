@@ -33,7 +33,8 @@ import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
-import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
+import io.airbyte.config.persistence.split_secrets.LocalTestingSecretPersistence;
+import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -192,7 +193,9 @@ class BootloaderAppTest {
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
 
       val secretsPersistence = SecretPersistence.getLongLived(configsDslContext, mockedConfigs);
-      val secretsReader = new SecretsRepositoryReader(configRepository, new NoOpSecretsHydrator());
+      final LocalTestingSecretPersistence localTestingSecretPersistence = new LocalTestingSecretPersistence(configDatabase);
+
+      val secretsReader = new SecretsRepositoryReader(configRepository, new RealSecretsHydrator(localTestingSecretPersistence));
       val secretsWriter = new SecretsRepositoryWriter(configRepository, secretsPersistence, Optional.empty());
 
       val spiedSecretMigrator =
