@@ -1,0 +1,4320 @@
+{
+  "destination-amazon-sqs": {
+    "date": "2021-12-10",
+    "url": "https://aws.amazon.com/sqs/",
+    "definition": {
+      "name": "Amazon SQS",
+      "destinationDefinitionId": "0eeee7fb-518f-4045-bacc-9619e31c43ea",
+      "dockerRepository": "airbyte/destination-amazon-sqs",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/amazon-sqs",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Amazon SQS - AWS",
+      "url": "https://aws.amazon.com/sqs/"
+    }
+  },
+  "destination-aws-datalake": {
+    "date": "2022-04-05",
+    "url": "https://aws.amazon.com/solutions/implementations/data-lake-solution/",
+    "definition": {
+      "name": "AWS Datalake",
+      "destinationDefinitionId": "99878c90-0fbd-46d3-9d98-ffde879d17fc",
+      "dockerRepository": "airbyte/destination-aws-datalake",
+      "dockerImageTag": "0.1.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/aws-datalake",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Data Lake | Implementations | AWS Solutions",
+      "url": "https://aws.amazon.com/solutions/implementations/data-lake-solution/"
+    }
+  },
+  "destination-azure-blob-storage": {
+    "date": "2021-08-29",
+    "url": "https://azure.microsoft.com/en-us/products/storage/blobs/",
+    "definition": {
+      "name": "Azure Blob Storage",
+      "destinationDefinitionId": "b4c5d105-31fd-4817-96b6-cb923bfc04cb",
+      "dockerRepository": "airbyte/destination-azure-blob-storage",
+      "dockerImageTag": "0.1.6",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/azureblobstorage",
+      "icon": "azureblobstorage.svg",
+      "resourceRequirements": {
+        "jobSpecific": [
+          {
+            "jobType": "sync",
+            "resourceRequirements": {
+              "memory_limit": "1Gi",
+              "memory_request": "1Gi"
+            }
+          }
+        ]
+      },
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Azure Blob Storage",
+      "url": "https://azure.microsoft.com/en-us/products/storage/blobs/"
+    }
+  },
+  "destination-bigquery": {
+    "date": "2020-10-21",
+    "url": "https://cloud.google.com/bigquery",
+    "definition": {
+      "name": "BigQuery",
+      "destinationDefinitionId": "22f6c74f-5699-40ff-833c-4a879ea40133",
+      "dockerRepository": "airbyte/destination-bigquery",
+      "dockerImageTag": "1.2.5",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/bigquery",
+      "icon": "bigquery.svg",
+      "resourceRequirements": {
+        "jobSpecific": [
+          {
+            "jobType": "sync",
+            "resourceRequirements": {
+              "memory_limit": "1Gi",
+              "memory_request": "1Gi"
+            }
+          }
+        ]
+      },
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Enterprise Data Warehouse | BigQuery - Google Cloud",
+      "url": "https://cloud.google.com/bigquery"
+    }
+  },
+  "destination-bigquery-denormalized": {
+    "date": "2021-06-23",
+    "url": "https://docs.airbyte.com/integrations/destinations/bigquery/",
+    "definition": {
+      "name": "BigQuery (denormalized typed struct)",
+      "destinationDefinitionId": "079d5540-f236-4294-ba7c-ade8fd918496",
+      "dockerRepository": "airbyte/destination-bigquery-denormalized",
+      "dockerImageTag": "1.2.5",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/bigquery",
+      "icon": "bigquery.svg",
+      "resourceRequirements": {
+        "jobSpecific": [
+          {
+            "jobType": "sync",
+            "resourceRequirements": {
+              "memory_limit": "1Gi",
+              "memory_request": "1Gi"
+            }
+          }
+        ]
+      },
+      "releaseStage": "beta"
+    },
+    "scrape": {
+      "description": "BigQuery | Airbyte Documentation",
+      "url": "https://docs.airbyte.com/integrations/destinations/bigquery/"
+    }
+  },
+  "destination-cassandra": {
+    "date": "2021-11-06",
+    "url": "https://cassandra.apache.org/_/index.html",
+    "definition": {
+      "name": "Cassandra",
+      "destinationDefinitionId": "707456df-6f4f-4ced-b5c6-03f73bcad1c5",
+      "dockerRepository": "airbyte/destination-cassandra",
+      "dockerImageTag": "0.1.4",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/cassandra",
+      "icon": "cassandra.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Apache Cassandra - The Apache Software Foundation!",
+      "url": "https://cassandra.apache.org/_/index.html"
+    }
+  },
+  "destination-clickhouse": {
+    "date": "2021-12-14",
+    "url": "https://clickhouse.com/",
+    "definition": {
+      "name": "Clickhouse",
+      "destinationDefinitionId": "ce0d828e-1dc4-496c-b122-2da42e637e48",
+      "dockerRepository": "airbyte/destination-clickhouse",
+      "dockerImageTag": "0.2.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/clickhouse",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "ClickHouse: Fast Open-Source OLAP DBMS",
+      "url": "https://clickhouse.com/"
+    }
+  },
+  "destination-clickhouse-strict-encrypt": {
+    "date": "2021-12-14",
+    "url": "https://clickhouse.com/",
+    "scrape": {
+      "description": "ClickHouse: Fast Open-Source OLAP DBMS",
+      "url": "https://clickhouse.com/"
+    }
+  },
+  "destination-csv": {
+    "date": "2020-10-21",
+    "url": "https://docs.airbyte.com/integrations/destinations/local-csv",
+    "definition": {
+      "name": "Local CSV",
+      "destinationDefinitionId": "8be1cf83-fde1-477f-a4ad-318d23c9f3c6",
+      "dockerRepository": "airbyte/destination-csv",
+      "dockerImageTag": "0.2.10",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/local-csv",
+      "icon": "file.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "A special Airbyte source for single CSV files you provide.",
+      "url": "https://docs.airbyte.com/integrations/destinations/local-csv"
+    }
+  },
+  "destination-databricks": {
+    "date": "2021-09-15",
+    "url": "https://www.databricks.com/product/data-lakehouse",
+    "definition": {
+      "name": "Databricks Lakehouse",
+      "destinationDefinitionId": "072d5540-f236-4294-ba7c-ade8fd918496",
+      "dockerRepository": "airbyte/destination-databricks",
+      "dockerImageTag": "0.3.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/databricks",
+      "icon": "databricks.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Data Lakehouse Platform by Databricks - Schedule a Demo ...",
+      "url": "https://www.databricks.com/product/data-lakehouse"
+    }
+  },
+  "destination-dev-null": {
+    "date": "2021-12-19",
+    "url": "https://devnull-as-a-service.com/",
+    "scrape": {
+      "description": "Home - /dev/null as a Service",
+      "url": "https://devnull-as-a-service.com/"
+    }
+  },
+  "destination-dynamodb": {
+    "date": "2021-09-02",
+    "url": "https://aws.amazon.com/dynamodb/",
+    "definition": {
+      "name": "DynamoDB",
+      "destinationDefinitionId": "8ccd8909-4e99-4141-b48d-4984b70b2d89",
+      "dockerRepository": "airbyte/destination-dynamodb",
+      "dockerImageTag": "0.1.5",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/dynamodb",
+      "icon": "dynamodb.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Amazon DynamoDB is a fully managed, serverless, key-value NoSQL database designed to run high-performance applications at any scale.",
+      "url": "https://aws.amazon.com/dynamodb/"
+    }
+  },
+  "destination-e2e-test": {
+    "date": "2021-05-25",
+    "url": "https://docs.airbyte.com/integrations/destinations/e2e-test",
+    "definition": {
+      "name": "E2E Testing",
+      "destinationDefinitionId": "2eb65e87-983a-4fd7-b3e3-9d9dc6eb8537",
+      "dockerRepository": "airbyte/destination-e2e-test",
+      "dockerImageTag": "0.2.4",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/e2e-test",
+      "icon": "airbyte.svg"
+    },
+    "scrape": {
+      "description": "This destination is for testing of Airbyte connections. It can be set up as a source message logger, a /dev/null, or to mimic specific behaviors (e.g. exception during the sync). Please use it with discretion. This destination may log your data, and expose sensitive information.",
+      "url": "https://docs.airbyte.com/integrations/destinations/e2e-test"
+    }
+  },
+  "destination-elasticsearch": {
+    "date": "2021-11-02",
+    "url": "https://www.elastic.co/elasticsearch",
+    "definition": {
+      "destinationDefinitionId": "68f351a7-2745-4bef-ad7f-996b8e51bb8c",
+      "name": "ElasticSearch",
+      "dockerRepository": "airbyte/destination-elasticsearch",
+      "dockerImageTag": "0.1.6",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/elasticsearch",
+      "icon": "elasticsearch.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Elasticsearch: The Official Distributed Search & Analytics Engine",
+      "url": "https://www.elastic.co/elasticsearch"
+    }
+  },
+  "destination-elasticsearch-strict-encrypt": {
+    "date": "2022-09-22",
+    "url": "https://www.elastic.co/elasticsearch",
+    "scrape": {
+      "description": "Elasticsearch: The Official Distributed Search & Analytics Engine",
+      "url": "https://www.elastic.co/elasticsearch"
+    }
+  },
+  "destination-firebolt": {
+    "date": "2022-06-28",
+    "url": "https://www.firebolt.io/",
+    "definition": {
+      "name": "Firebolt",
+      "destinationDefinitionId": "18081484-02a5-4662-8dba-b270b582f321",
+      "dockerRepository": "airbyte/destination-firebolt",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/firebolt",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Firebolt: Cloud Data Warehouse For Engineers",
+      "url": "https://www.firebolt.io/"
+    }
+  },
+  "destination-firestore": {
+    "date": "2021-11-22",
+    "url": "https://firebase.google.com/docs/firestore",
+    "definition": {
+      "name": "Google Firestore",
+      "destinationDefinitionId": "27dc7500-6d1b-40b1-8b07-e2f2aea3c9f4",
+      "dockerRepository": "airbyte/destination-firestore",
+      "dockerImageTag": "0.1.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/firestore",
+      "icon": "firestore.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Cloud Firestore - Firebase",
+      "url": "https://firebase.google.com/docs/firestore"
+    }
+  },
+  "destination-gcs": {
+    "date": "2021-07-17",
+    "url": "https://cloud.google.com/storage",
+    "definition": {
+      "name": "Google Cloud Storage (GCS)",
+      "destinationDefinitionId": "ca8f6566-e555-4b40-943a-545bf123117a",
+      "dockerRepository": "airbyte/destination-gcs",
+      "dockerImageTag": "0.2.12",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/gcs",
+      "icon": "googlecloudstorage.svg",
+      "resourceRequirements": {
+        "jobSpecific": [
+          {
+            "jobType": "sync",
+            "resourceRequirements": {
+              "memory_limit": "1Gi",
+              "memory_request": "1Gi"
+            }
+          }
+        ]
+      },
+      "releaseStage": "beta"
+    },
+    "scrape": {
+      "description": "Cloud Storage | Google Cloud",
+      "url": "https://cloud.google.com/storage"
+    }
+  },
+  "destination-google-sheets": {
+    "date": "2022-05-12",
+    "url": "https://zapier.com/blog/google-sheets-importxml-guide/",
+    "definition": {
+      "name": "Google Sheets",
+      "destinationDefinitionId": "a4cbd2d1-8dbe-4818-b8bc-b90ad782d12a",
+      "dockerRepository": "airbyte/destination-google-sheets",
+      "dockerImageTag": "0.1.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/google-sheets",
+      "icon": "google-sheets.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Collect Data from Anywhere with Google Sheet's ImportXML ...",
+      "url": "https://zapier.com/blog/google-sheets-importxml-guide/"
+    }
+  },
+  "destination-jdbc": {
+    "date": "2020-12-04",
+    "url": "https://www.oracle.com/java/technologies/javase/javase-tech-database.html",
+    "scrape": {
+      "description": "Java SE Technologies - Database - Oracle",
+      "url": "https://www.oracle.com/java/technologies/javase/javase-tech-database.html"
+    }
+  },
+  "destination-kafka": {
+    "date": "2021-07-22",
+    "url": "https://kafka.apache.org/",
+    "definition": {
+      "name": "Kafka",
+      "destinationDefinitionId": "9f760101-60ae-462f-9ee6-b7a9dafd454d",
+      "dockerRepository": "airbyte/destination-kafka",
+      "dockerImageTag": "0.1.10",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/kafka",
+      "icon": "kafka.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Apache Kafka",
+      "url": "https://kafka.apache.org/"
+    }
+  },
+  "destination-keen": {
+    "date": "2021-08-18",
+    "url": "https://keen.io/docs/integrations/chargify/",
+    "definition": {
+      "name": "Chargify (Keen)",
+      "destinationDefinitionId": "81740ce8-d764-4ea7-94df-16bb41de36ae",
+      "dockerRepository": "airbyte/destination-keen",
+      "dockerImageTag": "0.2.4",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/keen",
+      "icon": "chargify.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Chargify Integration - Keen IO",
+      "url": "https://keen.io/docs/integrations/chargify/"
+    }
+  },
+  "destination-kinesis": {
+    "date": "2021-11-22",
+    "url": "https://aws.amazon.com/kinesis/",
+    "definition": {
+      "name": "Kinesis",
+      "destinationDefinitionId": "6d1d66d4-26ab-4602-8d32-f85894b04955",
+      "dockerRepository": "airbyte/destination-kinesis",
+      "dockerImageTag": "0.1.5",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/kinesis",
+      "icon": "kinesis.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Amazon Kinesis - Process & Analyze Streaming Data - AWS",
+      "url": "https://aws.amazon.com/kinesis/"
+    }
+  },
+  "destination-kvdb": {
+    "date": "2021-07-19",
+    "url": "https://kvdb.io/",
+    "scrape": {
+      "description": "KVdb - Key-Value Store as a Service API for Serverless Apps",
+      "url": "https://kvdb.io/"
+    }
+  },
+  "destination-local-json": {
+    "date": "2020-12-22",
+    "url": "https://dev.to/sasigit7/displaying-content-on-the-webpage-using-a-local-json-file-2mpb",
+    "definition": {
+      "name": "Local JSON",
+      "destinationDefinitionId": "a625d593-bba5-4a1c-a53d-2d246268a816",
+      "dockerRepository": "airbyte/destination-local-json",
+      "dockerImageTag": "0.2.11",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/local-json",
+      "icon": "file.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Displaying Content On The Webpage Using A Local JSON ...",
+      "url": "https://dev.to/sasigit7/displaying-content-on-the-webpage-using-a-local-json-file-2mpb"
+    }
+  },
+  "destination-mariadb-columnstore": {
+    "date": "2021-11-24",
+    "url": "https://mariadb.com/kb/en/mariadb-columnstore/",
+    "definition": {
+      "name": "MariaDB ColumnStore",
+      "destinationDefinitionId": "294a4790-429b-40ae-9516-49826b9702e1",
+      "dockerRepository": "airbyte/destination-mariadb-columnstore",
+      "dockerImageTag": "0.1.7",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/mariadb-columnstore",
+      "icon": "mariadb.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "MariaDB ColumnStore - MariaDB Knowledge Base",
+      "url": "https://mariadb.com/kb/en/mariadb-columnstore/"
+    }
+  },
+  "destination-meilisearch": {
+    "date": "2021-02-09",
+    "url": "https://www.meilisearch.com/",
+    "definition": {
+      "name": "MeiliSearch",
+      "destinationDefinitionId": "af7c921e-5892-4ff2-b6c1-4a5ab258fb7e",
+      "dockerRepository": "airbyte/destination-meilisearch",
+      "dockerImageTag": "1.0.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/meilisearch",
+      "icon": "meilisearch.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Meilisearch is a flexible and powerful user-focused search engine that can be added to any website or application.",
+      "url": "https://www.meilisearch.com/"
+    }
+  },
+  "destination-mongodb": {
+    "date": "2021-09-07",
+    "url": "https://www.mongodb.com/",
+    "definition": {
+      "name": "MongoDB",
+      "destinationDefinitionId": "8b746512-8c2e-6ac1-4adc-b59faafd473c",
+      "dockerRepository": "airbyte/destination-mongodb",
+      "dockerImageTag": "0.1.8",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/mongodb",
+      "icon": "mongodb.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "MongoDB: The Developer Data Platform | MongoDB",
+      "url": "https://www.mongodb.com/"
+    }
+  },
+  "destination-mongodb-strict-encrypt": {
+    "date": "2021-10-20",
+    "url": "https://www.mongodb.com/",
+    "scrape": {
+      "description": "MongoDB: The Developer Data Platform | MongoDB",
+      "url": "https://www.mongodb.com/"
+    }
+  },
+  "destination-mqtt": {
+    "date": "2021-11-21",
+    "url": "http://www.steves-internet-guide.com/publishing-mqtt-data-web-page/",
+    "definition": {
+      "name": "MQTT",
+      "destinationDefinitionId": "f3802bc4-5406-4752-9e8d-01e504ca8194",
+      "dockerRepository": "airbyte/destination-mqtt",
+      "dockerImageTag": "0.1.3",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/mqtt",
+      "icon": "mqtt.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Publishing MQTT Data to to a Web Page - Steve's internet Guide",
+      "url": "http://www.steves-internet-guide.com/publishing-mqtt-data-web-page/"
+    }
+  },
+  "destination-mssql": {
+    "date": "2021-05-17",
+    "url": "https://www.microsoft.com/en-us/sql-server",
+    "definition": {
+      "name": "MS SQL Server",
+      "destinationDefinitionId": "d4353156-9217-4cad-8dd7-c108fd4f74cf",
+      "dockerRepository": "airbyte/destination-mssql",
+      "dockerImageTag": "0.1.22",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/mssql",
+      "icon": "mssql.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Introducing SQL Server 2022. Now in public preview. - Microsoft",
+      "url": "https://www.microsoft.com/en-us/sql-server"
+    }
+  },
+  "destination-mssql-strict-encrypt": {
+    "date": "2021-10-12",
+    "url": "https://www.microsoft.com/en-us/sql-server",
+    "scrape": {
+      "description": "Introducing SQL Server 2022. Now in public preview. - Microsoft",
+      "url": "https://www.microsoft.com/en-us/sql-server"
+    }
+  },
+  "destination-mysql": {
+    "date": "2021-05-07",
+    "url": "https://www.mysql.com/",
+    "definition": {
+      "name": "MySQL",
+      "destinationDefinitionId": "ca81ee7c-3163-4246-af40-094cc31e5e42",
+      "dockerRepository": "airbyte/destination-mysql",
+      "dockerImageTag": "0.1.20",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/mysql",
+      "icon": "mysql.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "MySQL",
+      "url": "https://www.mysql.com/"
+    }
+  },
+  "destination-mysql-strict-encrypt": {
+    "date": "2021-10-14",
+    "url": "https://www.mysql.com/",
+    "scrape": {
+      "description": "MySQL",
+      "url": "https://www.mysql.com/"
+    }
+  },
+  "destination-oracle": {
+    "date": "2021-06-03",
+    "url": "https://www.oracle.com/big-data/",
+    "definition": {
+      "name": "Oracle",
+      "destinationDefinitionId": "3986776d-2319-4de9-8af8-db14c0996e72",
+      "dockerRepository": "airbyte/destination-oracle",
+      "dockerImageTag": "0.1.19",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/oracle",
+      "icon": "oracle.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Big Data - Oracle",
+      "url": "https://www.oracle.com/big-data/"
+    }
+  },
+  "destination-oracle-strict-encrypt": {
+    "date": "2021-11-02",
+    "url": "https://www.oracle.com/big-data/",
+    "scrape": {
+      "description": "Big Data - Oracle",
+      "url": "https://www.oracle.com/big-data/"
+    }
+  },
+  "destination-postgres": {
+    "date": "2020-10-21",
+    "url": "https://www.postgresql.org/",
+    "definition": {
+      "name": "Postgres",
+      "destinationDefinitionId": "25c5221d-dce2-4163-ade9-739ef790f503",
+      "dockerRepository": "airbyte/destination-postgres",
+      "dockerImageTag": "0.3.26",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/postgres",
+      "icon": "postgresql.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "PostgreSQL: The world's most advanced open source database",
+      "url": "https://www.postgresql.org/"
+    }
+  },
+  "destination-postgres-strict-encrypt": {
+    "date": "2021-09-30",
+    "url": "https://www.postgresql.org/",
+    "scrape": {
+      "description": "PostgreSQL: The world's most advanced open source database",
+      "url": "https://www.postgresql.org/"
+    }
+  },
+  "destination-pubsub": {
+    "date": "2021-06-25",
+    "url": "https://cloud.google.com/pubsub",
+    "definition": {
+      "name": "Google PubSub",
+      "destinationDefinitionId": "356668e2-7e34-47f3-a3b0-67a8a481b692",
+      "dockerRepository": "airbyte/destination-pubsub",
+      "dockerImageTag": "0.1.6",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/pubsub",
+      "icon": "googlepubsub.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Pub/Sub for Application & Data Integration | Google Cloud",
+      "url": "https://cloud.google.com/pubsub"
+    }
+  },
+  "destination-pulsar": {
+    "date": "2021-11-06",
+    "url": "https://pulsar.apache.org/",
+    "definition": {
+      "name": "Pulsar",
+      "destinationDefinitionId": "2340cbba-358e-11ec-8d3d-0242ac130203",
+      "dockerRepository": "airbyte/destination-pulsar",
+      "dockerImageTag": "0.1.3",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/pulsar",
+      "icon": "pulsar.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Apache Pulsar is a cloud-native, multi-tenant, high-performance solution for server-to-server messaging and queuing built on the publisher-subscribe pattern.",
+      "url": "https://pulsar.apache.org/"
+    }
+  },
+  "destination-r2": {
+    "date": "2022-09-26",
+    "url": "https://www.cloudflare.com/products/r2/",
+    "definition": {
+      "name": "Cloudflare R2",
+      "destinationDefinitionId": "0fb07be9-7c3b-4336-850d-5efc006152ee",
+      "dockerRepository": "airbyte/destination-r2",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/r2",
+      "icon": "cloudflare-r2.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Cloudflare R2 | Zero Egress Distributed Object Storage",
+      "url": "https://www.cloudflare.com/products/r2/"
+    }
+  },
+  "destination-rabbitmq": {
+    "date": "2021-12-14",
+    "url": "https://www.rabbitmq.com/",
+    "definition": {
+      "name": "RabbitMQ",
+      "destinationDefinitionId": "e06ad785-ad6f-4647-b2e8-3027a5c59454",
+      "dockerRepository": "airbyte/destination-rabbitmq",
+      "dockerImageTag": "0.1.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/rabbitmq",
+      "icon": "pulsar.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Messaging that just works — RabbitMQ",
+      "url": "https://www.rabbitmq.com/"
+    }
+  },
+  "destination-redis": {
+    "date": "2021-11-20",
+    "url": "https://redis.io/",
+    "definition": {
+      "name": "Redis",
+      "destinationDefinitionId": "d4d3fef9-e319-45c2-881a-bd02ce44cc9f",
+      "dockerRepository": "airbyte/destination-redis",
+      "dockerImageTag": "0.1.4",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/redis",
+      "icon": "redis.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Redis",
+      "url": "https://redis.io/"
+    }
+  },
+  "destination-redshift": {
+    "date": "2020-12-04",
+    "url": "https://aws.amazon.com/redshift/",
+    "definition": {
+      "name": "Redshift",
+      "destinationDefinitionId": "f7a7d195-377f-cf5b-70a5-be6b819019dc",
+      "dockerRepository": "airbyte/destination-redshift",
+      "dockerImageTag": "0.3.51",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/redshift",
+      "icon": "redshift.svg",
+      "resourceRequirements": {
+        "jobSpecific": [
+          {
+            "jobType": "sync",
+            "resourceRequirements": {
+              "memory_limit": "1Gi",
+              "memory_request": "1Gi"
+            }
+          }
+        ]
+      },
+      "releaseStage": "beta"
+    },
+    "scrape": {
+      "description": "Amazon Redshift - Cloud Data Warehouse - AWS",
+      "url": "https://aws.amazon.com/redshift/"
+    }
+  },
+  "destination-rockset": {
+    "date": "2021-12-15",
+    "url": "https://rockset.com/",
+    "definition": {
+      "name": "Rockset",
+      "destinationDefinitionId": "2c9d93a7-9a17-4789-9de9-f46f0097eb70",
+      "dockerRepository": "airbyte/destination-rockset",
+      "dockerImageTag": "0.1.4",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/rockset",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Rockset: Real-Time Analytics at Cloud Scale",
+      "url": "https://rockset.com/"
+    }
+  },
+  "destination-s3": {
+    "date": "2021-06-03",
+    "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteHosting.html",
+    "definition": {
+      "name": "S3",
+      "destinationDefinitionId": "4816b78f-1489-44c1-9060-4b19d5fa9362",
+      "dockerRepository": "airbyte/destination-s3",
+      "dockerImageTag": "0.3.17",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/s3",
+      "icon": "s3.svg",
+      "resourceRequirements": {
+        "jobSpecific": [
+          {
+            "jobType": "sync",
+            "resourceRequirements": {
+              "memory_limit": "1Gi",
+              "memory_request": "1Gi"
+            }
+          }
+        ]
+      },
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Hosting a static website using Amazon S3",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteHosting.html"
+    }
+  },
+  "destination-scaffold-destination-python": {
+    "date": "2021-07-19",
+    "url": "https://realpython.com/scaffold-a-flask-project/",
+    "scrape": {
+      "description": "Scaffold a Flask Project - Real Python",
+      "url": "https://realpython.com/scaffold-a-flask-project/"
+    }
+  },
+  "destination-scylla": {
+    "date": "2021-11-17",
+    "url": "https://www.scylladb.com/",
+    "definition": {
+      "name": "Scylla",
+      "destinationDefinitionId": "3dc6f384-cd6b-4be3-ad16-a41450899bf0",
+      "dockerRepository": "airbyte/destination-scylla",
+      "dockerImageTag": "0.1.3",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/scylla",
+      "icon": "scylla.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "ScyllaDB | Monstrously Fast + Scalable NoSQL",
+      "url": "https://www.scylladb.com/"
+    }
+  },
+  "destination-sftp-json": {
+    "date": "2021-11-24",
+    "url": "https://docs.airbyte.com/integrations/destinations/sftp-json/",
+    "definition": {
+      "name": "SFTP-JSON",
+      "destinationDefinitionId": "e9810f61-4bab-46d2-bb22-edfc902e0644",
+      "dockerRepository": "airbyte/destination-sftp-json",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/sftp-json",
+      "icon": "sftp.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "SFTP JSON | Airbyte Documentation",
+      "url": "https://docs.airbyte.com/integrations/destinations/sftp-json/"
+    }
+  },
+  "destination-snowflake": {
+    "date": "2020-11-02",
+    "url": "https://www.snowflake.com/en/",
+    "definition": {
+      "name": "Snowflake",
+      "destinationDefinitionId": "424892c4-daac-4491-b35d-c6688ba547ba",
+      "dockerRepository": "airbyte/destination-snowflake",
+      "dockerImageTag": "0.4.38",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/snowflake",
+      "icon": "snowflake.svg",
+      "resourceRequirements": {
+        "jobSpecific": [
+          {
+            "jobType": "sync",
+            "resourceRequirements": {
+              "memory_limit": "1Gi",
+              "memory_request": "1Gi"
+            }
+          }
+        ]
+      },
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Execute your most critical workloads on top of Snowflake's multi-cluster shared data architecture in a fully managed platform that capitalizes on the ...",
+      "url": "https://www.snowflake.com/en/"
+    }
+  },
+  "destination-sqlite": {
+    "date": "2022-08-09",
+    "url": "https://www.sqlite.org/",
+    "definition": {
+      "name": "Local SQLite",
+      "destinationDefinitionId": "b76be0a6-27dc-4560-95f6-2623da0bd7b6",
+      "dockerRepository": "airbyte/destination-sqlite",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/local-sqlite",
+      "icon": "sqlite.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "SQLite Home Page",
+      "url": "https://www.sqlite.org/"
+    }
+  },
+  "destination-tidb": {
+    "date": "2022-09-01",
+    "url": "https://www.pingcap.com/",
+    "definition": {
+      "name": "TiDB",
+      "destinationDefinitionId": "06ec60c7-7468-45c0-91ac-174f6e1a788b",
+      "dockerRepository": "airbyte/destination-tidb",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/tidb",
+      "icon": "tidb.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "PingCAP, the company building TiDB | SQL at Scale",
+      "url": "https://www.pingcap.com/"
+    }
+  },
+  "destination-typesense": {
+    "date": "2022-10-28",
+    "url": "https://typesense.org/",
+    "definition": {
+      "name": "Typesense",
+      "destinationDefinitionId": "36be8dc6-9851-49af-b776-9d4c30e4ab6a",
+      "dockerRepository": "airbyte/destination-typesense",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/typesense",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Typesense | Fast, typo-tolerant open source search engine",
+      "url": "https://typesense.org/"
+    }
+  },
+  "destination-yugabytedb": {
+    "date": "2022-10-28",
+    "url": "https://www.yugabyte.com/",
+    "definition": {
+      "name": "YugabyteDB",
+      "destinationDefinitionId": "2300fdcf-a532-419f-9f24-a014336e7966",
+      "dockerRepository": "airbyte/destination-yugabytedb",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/yugabytedb",
+      "icon": "yugabytedb.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Yugabyte: The Distributed SQL Database for Cloud Native ...",
+      "url": "https://www.yugabyte.com/"
+    }
+  },
+  "source-activecampaign": {
+    "date": "2022-10-28",
+    "url": "https://www.activecampaign.com/",
+    "definition": {
+      "name": "ActiveCampaign",
+      "sourceDefinitionId": "9f32dab3-77cb-45a1-9d33-347aa5fbe363",
+      "dockerRepository": "airbyte/source-activecampaign",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/activecampaign",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "ActiveCampaign lets us send email campaigns, automate features, and manage contacts by staff group.",
+      "url": "https://www.activecampaign.com/"
+    }
+  },
+  "source-adjust": {
+    "date": "2022-09-27",
+    "url": "https://www.adjust.com/",
+    "definition": {
+      "name": "Adjust",
+      "sourceDefinitionId": "d3b7fa46-111b-419a-998a-d7f046f6d66d",
+      "dockerRepository": "airbyte/source-adjust",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/adjust",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Adjust: The mobile measurement company",
+      "url": "https://www.adjust.com/"
+    }
+  },
+  "source-airtable": {
+    "date": "2021-11-20",
+    "url": "https://www.airtable.com/",
+    "definition": {
+      "name": "Airtable",
+      "sourceDefinitionId": "14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212",
+      "dockerRepository": "airbyte/source-airtable",
+      "dockerImageTag": "0.1.3",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/airtable",
+      "icon": "airtable.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Airtable | Create apps that perfectly fit your team's needs",
+      "url": "https://www.airtable.com/"
+    }
+  },
+  "source-alloydb": {
+    "date": "2022-09-07",
+    "url": "https://cloud.google.com/alloydb",
+    "definition": {
+      "name": "AlloyDB for PostgreSQL",
+      "sourceDefinitionId": "1fa90628-2b9e-11ed-a261-0242ac120002",
+      "dockerRepository": "airbyte/source-alloydb",
+      "dockerImageTag": "1.0.17",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/alloydb",
+      "icon": "alloydb.svg",
+      "sourceType": "database",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "About AlloyDB | AlloyDB for PostgreSQL - Google Cloud",
+      "url": "https://cloud.google.com/alloydb"
+    }
+  },
+  "source-alloydb-strict-encrypt": {
+    "date": "2022-09-20",
+    "url": "https://cloud.google.com/alloydb",
+    "scrape": {
+      "description": "AlloyDB for PostgreSQL | Google Cloud",
+      "url": "https://cloud.google.com/alloydb"
+    }
+  },
+  "source-amazon-ads": {
+    "date": "2021-08-26",
+    "url": "https://advertising.amazon.com/",
+    "definition": {
+      "name": "Amazon Ads",
+      "sourceDefinitionId": "c6b0a29e-1da9-4512-9002-7bfd0cba2246",
+      "dockerRepository": "airbyte/source-amazon-ads",
+      "dockerImageTag": "0.1.24",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/amazon-ads",
+      "icon": "amazonads.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Amazon Ads: Online advertising for businesses of all sizes",
+      "url": "https://advertising.amazon.com/"
+    }
+  },
+  "source-amazon-seller-partner": {
+    "date": "2021-06-01",
+    "url": "https://aws.amazon.com/quickstart/architecture/amazon-selling-partner-api/",
+    "definition": {
+      "name": "Amazon Seller Partner",
+      "sourceDefinitionId": "e55879a8-0ef8-4557-abcf-ab34c53ec460",
+      "dockerRepository": "airbyte/source-amazon-seller-partner",
+      "dockerImageTag": "0.2.27",
+      "sourceType": "api",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/amazon-seller-partner",
+      "icon": "amazonsellerpartner.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Selling Partner API on AWS - Quick Start - Amazon.com",
+      "url": "https://aws.amazon.com/quickstart/architecture/amazon-selling-partner-api/"
+    }
+  },
+  "source-amazon-sqs": {
+    "date": "2021-10-27",
+    "url": "https://aws.amazon.com/sqs/",
+    "definition": {
+      "name": "Amazon SQS",
+      "sourceDefinitionId": "983fd355-6bf3-4709-91b5-37afa391eeb6",
+      "dockerRepository": "airbyte/source-amazon-sqs",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/amazon-sqs",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Amazon SQS - AWS",
+      "url": "https://aws.amazon.com/sqs/"
+    }
+  },
+  "source-amplitude": {
+    "date": "2021-06-08",
+    "url": "https://amplitude.com/",
+    "definition": {
+      "name": "Amplitude",
+      "sourceDefinitionId": "fa9f58c6-2d03-4237-aaa4-07d75e0c1396",
+      "dockerRepository": "airbyte/source-amplitude",
+      "dockerImageTag": "0.1.17",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/amplitude",
+      "icon": "amplitude.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Amplitude: Home",
+      "url": "https://amplitude.com/"
+    }
+  },
+  "source-apify-dataset": {
+    "date": "2021-08-03",
+    "url": "https://docs.apify.com/storage/dataset",
+    "definition": {
+      "name": "Apify Dataset",
+      "sourceDefinitionId": "47f17145-fe20-4ef5-a548-e29b048adf84",
+      "dockerRepository": "airbyte/source-apify-dataset",
+      "dockerImageTag": "0.1.11",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/apify-dataset",
+      "icon": "apify.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Dataset - Apify Documentation",
+      "url": "https://docs.apify.com/storage/dataset"
+    }
+  },
+  "source-appfollow": {
+    "date": "2022-08-17",
+    "url": "https://appfollow.io/",
+    "definition": {
+      "name": "Appfollow",
+      "sourceDefinitionId": "b4375641-e270-41d3-9c20-4f9cecad87a8",
+      "dockerRepository": "airbyte/source-appfollow",
+      "dockerImageTag": "0.1.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/appfollow",
+      "icon": "appfollow.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "AppFollow: App Review Management & ASO Platform",
+      "url": "https://appfollow.io/"
+    }
+  },
+  "source-appsflyer": {
+    "date": "2021-10-19",
+    "url": "https://www.appsflyer.com/",
+    "scrape": {
+      "description": "AppsFlyer | Make good choices",
+      "url": "https://www.appsflyer.com/"
+    }
+  },
+  "source-appstore-singer": {
+    "date": "2021-01-14",
+    "url": "https://developer.apple.com/app-store-connect/analytics/",
+    "definition": {
+      "name": "Appstore",
+      "sourceDefinitionId": "2af123bf-0aaf-4e0d-9784-cb497f23741a",
+      "dockerRepository": "airbyte/source-appstore-singer",
+      "dockerImageTag": "0.2.6",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/appstore",
+      "icon": "appstore.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "App Analytics - App Store Connect - Apple Developer",
+      "url": "https://developer.apple.com/app-store-connect/analytics/"
+    }
+  },
+  "source-asana": {
+    "date": "2021-05-26",
+    "url": "https://asana.com/",
+    "definition": {
+      "name": "Asana",
+      "sourceDefinitionId": "d0243522-dccf-4978-8ba0-37ed47a0bdbf",
+      "dockerRepository": "airbyte/source-asana",
+      "dockerImageTag": "0.1.4",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/asana",
+      "icon": "asana.svg",
+      "sourceType": "api",
+      "releaseStage": "beta"
+    },
+    "scrape": {
+      "description": "Manage your team's work, projects, & tasks online • Asana",
+      "url": "https://asana.com/"
+    }
+  },
+  "source-ashby": {
+    "date": "2022-10-28",
+    "url": "https://www.ashbyhq.com/",
+    "definition": {
+      "name": "Ashby",
+      "sourceDefinitionId": "4e8c9fa0-3634-499b-b948-11581b5c3efa",
+      "dockerRepository": "airbyte/source-ashby",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/ashby",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Ashby: All-in-one Recruiting Software for Ambitious Teams",
+      "url": "https://www.ashbyhq.com/"
+    }
+  },
+  "source-auth0": {
+    "date": "2022-10-26",
+    "url": "https://auth0.com/docs/secure/security-guidance/data-security/user-data-storage",
+    "definition": {
+      "name": "Auth0",
+      "sourceDefinitionId": "6c504e48-14aa-4221-9a72-19cf5ff1ae78",
+      "dockerRepository": "airbyte/source-auth0",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/auth0",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "User Data Storage - Auth0",
+      "url": "https://auth0.com/docs/secure/security-guidance/data-security/user-data-storage"
+    }
+  },
+  "source-aws-cloudtrail": {
+    "date": "2021-06-25",
+    "url": "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-data-events-with-cloudtrail.html",
+    "definition": {
+      "name": "AWS CloudTrail",
+      "sourceDefinitionId": "6ff047c0-f5d5-4ce5-8c81-204a830fa7e1",
+      "dockerRepository": "airbyte/source-aws-cloudtrail",
+      "dockerImageTag": "0.1.4",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/aws-cloudtrail",
+      "icon": "awscloudtrail.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Logging data events for trails - AWS CloudTrail",
+      "url": "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-data-events-with-cloudtrail.html"
+    }
+  },
+  "source-azure-table": {
+    "date": "2021-11-15",
+    "url": "https://azure.microsoft.com/en-us/products/storage/tables/",
+    "definition": {
+      "name": "Azure Table Storage",
+      "sourceDefinitionId": "798ae795-5189-42b6-b64e-3cb91db93338",
+      "dockerRepository": "airbyte/source-azure-table",
+      "dockerImageTag": "0.1.3",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/azure-table",
+      "icon": "azureblobstorage.svg",
+      "sourceType": "database",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Table storage | Microsoft Azure",
+      "url": "https://azure.microsoft.com/en-us/products/storage/tables/"
+    }
+  },
+  "source-bamboo-hr": {
+    "date": "2021-08-27",
+    "url": "https://www.bamboohr.com/",
+    "definition": {
+      "name": "BambooHR",
+      "sourceDefinitionId": "90916976-a132-4ce9-8bce-82a03dd58788",
+      "dockerRepository": "airbyte/source-bamboo-hr",
+      "dockerImageTag": "0.2.2",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/bamboo-hr",
+      "icon": "bamboohr.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "BambooHR: HR Software with Heart. Focus on people, not ...",
+      "url": "https://www.bamboohr.com/"
+    }
+  },
+  "source-bigcommerce": {
+    "date": "2021-08-29",
+    "url": "https://www.bigcommerce.com/",
+    "definition": {
+      "name": "BigCommerce",
+      "sourceDefinitionId": "59c5501b-9f95-411e-9269-7143c939adbd",
+      "dockerRepository": "airbyte/source-bigcommerce",
+      "dockerImageTag": "0.1.7",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/bigcommerce",
+      "icon": "bigcommerce.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "BigCommerce: Ecommerce for a New Era",
+      "url": "https://www.bigcommerce.com/"
+    }
+  },
+  "source-bigquery": {
+    "date": "2021-07-22",
+    "url": "https://cloud.google.com/bigquery",
+    "definition": {
+      "name": "BigQuery",
+      "sourceDefinitionId": "bfd1ddf8-ae8a-4620-b1d7-55597d2ba08c",
+      "dockerRepository": "airbyte/source-bigquery",
+      "dockerImageTag": "0.2.2",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/bigquery",
+      "icon": "bigquery.svg",
+      "sourceType": "database",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Enterprise Data Warehouse | BigQuery - Google Cloud",
+      "url": "https://cloud.google.com/bigquery"
+    }
+  },
+  "source-bing-ads": {
+    "date": "2021-08-14",
+    "url": "https://ads.microsoft.com/",
+    "definition": {
+      "name": "Bing Ads",
+      "sourceDefinitionId": "47f25999-dd5e-4636-8c39-e7cea2453331",
+      "dockerRepository": "airbyte/source-bing-ads",
+      "dockerImageTag": "0.1.16",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/bing-ads",
+      "icon": "bingads.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Microsoft Ads",
+      "url": "https://ads.microsoft.com/"
+    }
+  },
+  "source-braintree": {
+    "date": "2021-08-19",
+    "url": "https://www.braintreepayments.com/",
+    "definition": {
+      "name": "Braintree",
+      "sourceDefinitionId": "63cea06f-1c75-458d-88fe-ad48c7cb27fd",
+      "dockerRepository": "airbyte/source-braintree",
+      "dockerImageTag": "0.1.3",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/braintree",
+      "icon": "braintree.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Braintree | Online Payment Solutions and Global Payment ...",
+      "url": "https://www.braintreepayments.com/"
+    }
+  },
+  "source-cart": {
+    "date": "2021-07-23",
+    "url": "https://www.cart.com/",
+    "definition": {
+      "name": "Cart.com",
+      "sourceDefinitionId": "bb1a6d31-6879-4819-a2bd-3eed299ea8e2",
+      "dockerRepository": "airbyte/source-cart",
+      "dockerImageTag": "0.2.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/cart",
+      "icon": "cart.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Cart.com: The Ecommerce Platform for Growing Brands",
+      "url": "https://www.cart.com/"
+    }
+  },
+  "source-chargebee": {
+    "date": "2021-07-01",
+    "url": "https://www.chargebee.com/docs/2.0/data-centers.html",
+    "definition": {
+      "name": "Chargebee",
+      "sourceDefinitionId": "686473f1-76d9-4994-9cc7-9b13da46147c",
+      "dockerRepository": "airbyte/source-chargebee",
+      "dockerImageTag": "0.1.15",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/chargebee",
+      "icon": "chargebee.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Chargebee Data Centers - Docs",
+      "url": "https://www.chargebee.com/docs/2.0/data-centers.html"
+    }
+  },
+  "source-chargify": {
+    "date": "2022-03-17",
+    "url": "https://www.chargify.com/",
+    "definition": {
+      "name": "Chargify",
+      "sourceDefinitionId": "9b2d3607-7222-4709-9fa2-c2abdebbdd88",
+      "dockerRepository": "airbyte/source-chargify",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/chargify",
+      "icon": "chargify.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Chargify: Subscription Billing for B2B SaaS",
+      "url": "https://www.chargify.com/"
+    }
+  },
+  "source-chartmogul": {
+    "date": "2022-01-19",
+    "url": "https://chartmogul.com/",
+    "definition": {
+      "name": "Chartmogul",
+      "sourceDefinitionId": "b6604cbd-1b12-4c08-8767-e140d0fb0877",
+      "dockerRepository": "airbyte/source-chartmogul",
+      "dockerImageTag": "0.1.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/chartmogul",
+      "icon": "chartmogul.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "ChartMogul | Subscription Analytics Platform",
+      "url": "https://chartmogul.com/"
+    }
+  },
+  "source-clickhouse": {
+    "date": "2021-05-12",
+    "url": "https://clickhouse.com/",
+    "definition": {
+      "name": "ClickHouse",
+      "sourceDefinitionId": "bad83517-5e54-4a3d-9b53-63e85fbd4d7c",
+      "dockerRepository": "airbyte/source-clickhouse",
+      "dockerImageTag": "0.1.14",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/clickhouse",
+      "sourceType": "database",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "ClickHouse: Fast Open-Source OLAP DBMS",
+      "url": "https://clickhouse.com/"
+    }
+  },
+  "source-clickhouse-strict-encrypt": {
+    "date": "2021-10-25",
+    "url": "https://clickhouse.com/",
+    "scrape": {
+      "description": "ClickHouse: Fast Open-Source OLAP DBMS",
+      "url": "https://clickhouse.com/"
+    }
+  },
+  "source-clockify": {
+    "date": "2022-10-26",
+    "url": "https://clockify.me/",
+    "definition": {
+      "name": "Clockify",
+      "sourceDefinitionId": "e71aae8a-5143-11ed-bdc3-0242ac120002",
+      "dockerRepository": "airbyte/source-clockify",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/clockify",
+      "icon": "clockify.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Clockify™ - 100% FREE Time Tracking Software",
+      "url": "https://clockify.me/"
+    }
+  },
+  "source-close-com": {
+    "date": "2021-09-14",
+    "url": "https://www.close.com/",
+    "definition": {
+      "name": "Close.com",
+      "sourceDefinitionId": "dfffecb7-9a13-43e9-acdc-b92af7997ca9",
+      "dockerRepository": "airbyte/source-close-com",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/close-com",
+      "icon": "close.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Close CRM | The All-In-One CRM for Growing Teams",
+      "url": "https://www.close.com/"
+    }
+  },
+  "source-cockroachdb": {
+    "date": "2021-07-02",
+    "url": "https://www.cockroachlabs.com/",
+    "definition": {
+      "name": "Cockroachdb",
+      "sourceDefinitionId": "9fa5862c-da7c-11eb-8d19-0242ac130003",
+      "dockerRepository": "airbyte/source-cockroachdb",
+      "dockerImageTag": "0.1.18",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/cockroachdb",
+      "icon": "cockroachdb.svg",
+      "sourceType": "database",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Cockroach Labs, the company building CockroachDB",
+      "url": "https://www.cockroachlabs.com/"
+    }
+  },
+  "source-cockroachdb-strict-encrypt": {
+    "date": "2021-11-24",
+    "url": "https://www.cockroachlabs.com/",
+    "scrape": {
+      "description": "Cockroach Labs, the company building CockroachDB",
+      "url": "https://www.cockroachlabs.com/"
+    }
+  },
+  "source-coin-api": {
+    "date": "2022-10-28",
+    "url": "https://www.coinapi.io/",
+    "definition": {
+      "name": "Coin API",
+      "sourceDefinitionId": "919984ef-53a2-479b-8ffe-9c1ddb9fc3f3",
+      "dockerRepository": "airbyte/source-coin-api",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/coin-api",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "CoinAPI - Cryptocurrency Data API",
+      "url": "https://www.coinapi.io/"
+    }
+  },
+  "source-commercetools": {
+    "date": "2021-11-09",
+    "url": "https://commercetools.com/",
+    "definition": {
+      "name": "Commercetools",
+      "sourceDefinitionId": "008b2e26-11a3-11ec-82a8-0242ac130003",
+      "dockerRepository": "airbyte/source-commercetools",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/commercetools",
+      "icon": "commercetools.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Next-generation digital commerce | commercetools",
+      "url": "https://commercetools.com/"
+    }
+  },
+  "source-confluence": {
+    "date": "2021-11-05",
+    "url": "https://confluence.atlassian.com/display/DOC/Viewing+Site+Statistics",
+    "definition": {
+      "name": "Confluence",
+      "sourceDefinitionId": "cf40a7f8-71f8-45ce-a7fa-fca053e4028c",
+      "dockerRepository": "airbyte/source-confluence",
+      "dockerImageTag": "0.1.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/confluence",
+      "icon": "confluence.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Viewing Site Statistics | Confluence Data Center and Server 7.20",
+      "url": "https://confluence.atlassian.com/display/DOC/Viewing+Site+Statistics"
+    }
+  },
+  "source-convertkit": {
+    "date": "2022-10-29",
+    "url": "https://convertkit.com/privacy",
+    "definition": {
+      "name": "ConvertKit",
+      "sourceDefinitionId": "be9ee02f-6efe-4970-979b-95f797a37188",
+      "dockerRepository": "airbyte/source-convertkit",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/convertkit",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Privacy Policy - ConvertKit",
+      "url": "https://convertkit.com/privacy"
+    }
+  },
+  "source-courier": {
+    "date": "2022-10-19",
+    "url": "https://www.courier.com/",
+    "definition": {
+      "name": "Courier",
+      "sourceDefinitionId": "0541b2cd-2367-4986-b5f1-b79ff55439e4",
+      "dockerRepository": "airbyte/source-courier",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/courier",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Courier: API for Email, SMS, Web & Mobile Push Notifications",
+      "url": "https://www.courier.com/"
+    }
+  },
+  "source-db2": {
+    "date": "2021-06-24",
+    "url": "https://www.ibm.com/products/db2",
+    "definition": {
+      "name": "IBM Db2",
+      "sourceDefinitionId": "447e0381-3780-4b46-bb62-00a4e3c8b8e2",
+      "dockerRepository": "airbyte/source-db2",
+      "dockerImageTag": "0.1.16",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/db2",
+      "icon": "db2.svg",
+      "sourceType": "database",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "IBM Db2",
+      "url": "https://www.ibm.com/products/db2"
+    }
+  },
+  "source-db2-strict-encrypt": {
+    "date": "2021-11-11",
+    "url": "https://www.ibm.com/products/db2",
+    "scrape": {
+      "description": "IBM Db2",
+      "url": "https://www.ibm.com/products/db2"
+    }
+  },
+  "source-delighted": {
+    "date": "2021-11-02",
+    "url": "https://delighted.com/",
+    "definition": {
+      "name": "Delighted",
+      "sourceDefinitionId": "cc88c43f-6f53-4e8a-8c4d-b284baaf9635",
+      "dockerRepository": "airbyte/source-delighted",
+      "dockerImageTag": "0.1.4",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/delighted",
+      "icon": "delighted.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Collect customer feedback in minutes with Delighted",
+      "url": "https://delighted.com/"
+    }
+  },
+  "source-dixa": {
+    "date": "2021-07-10",
+    "url": "https://www.dixa.com/legal/data-security/",
+    "definition": {
+      "name": "Dixa",
+      "sourceDefinitionId": "0b5c867e-1b12-4d02-ab74-97b2184ff6d7",
+      "dockerRepository": "airbyte/source-dixa",
+      "dockerImageTag": "0.1.3",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/dixa",
+      "icon": "dixa.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Data Security - Dixa",
+      "url": "https://www.dixa.com/legal/data-security/"
+    }
+  },
+  "source-dockerhub": {
+    "date": "2022-06-20",
+    "url": "https://hub.docker.com/",
+    "definition": {
+      "name": "Dockerhub",
+      "sourceDefinitionId": "72d405a3-56d8-499f-a571-667c03406e43",
+      "dockerRepository": "airbyte/source-dockerhub",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/dockerhub",
+      "icon": "dockerhub.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Docker Hub Container Image Library | App Containerization",
+      "url": "https://hub.docker.com/"
+    }
+  },
+  "source-drift": {
+    "date": "2020-12-18",
+    "url": "https://www.drift.com/",
+    "definition": {
+      "name": "Drift",
+      "sourceDefinitionId": "445831eb-78db-4b1f-8f1f-0d96ad8739e2",
+      "dockerRepository": "airbyte/source-drift",
+      "dockerImageTag": "0.2.5",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/drift",
+      "icon": "drift.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Drift's Conversation Cloud helps businesses connect with customers in the moments that matter most — using chat, email, video, and more.",
+      "url": "https://www.drift.com/"
+    }
+  },
+  "source-dv-360": {
+    "date": "2022-09-28",
+    "url": "https://marketingplatform.google.com/about/display-video-360/",
+    "definition": {
+      "name": "DV 360",
+      "sourceDefinitionId": "1356e1d9-977f-4057-ad4b-65f25329cf61",
+      "dockerRepository": "airbyte/source-dv-360",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/dv-360",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Display & Video 360 - Google Marketing Platform",
+      "url": "https://marketingplatform.google.com/about/display-video-360/"
+    }
+  },
+  "source-e2e-test": {
+    "date": "2021-05-25",
+    "url": "https://docs.airbyte.com/integrations/sources/e2e-test",
+    "definition": {
+      "name": "E2E Testing",
+      "sourceDefinitionId": "d53f9084-fa6b-4a5a-976c-5b8392f4ad8a",
+      "dockerRepository": "airbyte/source-e2e-test",
+      "dockerImageTag": "2.1.3",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/e2e-test",
+      "icon": "airbyte.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "This is a mock source for testing the Airbyte pipeline. It can generate arbitrary data streams.",
+      "url": "https://docs.airbyte.com/integrations/sources/e2e-test"
+    }
+  },
+  "source-e2e-test-cloud": {
+    "date": "2022-01-24",
+    "url": "https://www.lambdatest.com/cypress-e2e-testing",
+    "scrape": {
+      "description": "Cypress E2E Testing on Cloud - LambdaTest",
+      "url": "https://www.lambdatest.com/cypress-e2e-testing"
+    }
+  },
+  "source-elasticsearch": {
+    "date": "2022-07-13",
+    "url": "https://www.elastic.co/elasticsearch",
+    "definition": {
+      "name": "Elasticsearch",
+      "sourceDefinitionId": "7cf88806-25f5-4e1a-b422-b2fa9e1b0090",
+      "dockerRepository": "airbyte/source-elasticsearch",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/elasticsearch",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Elasticsearch: The Official Distributed Search & Analytics Engine",
+      "url": "https://www.elastic.co/elasticsearch"
+    }
+  },
+  "source-exchange-rates": {
+    "date": "2021-04-22",
+    "url": "https://exchangeratesapi.io/",
+    "definition": {
+      "name": "Exchange Rates Api",
+      "sourceDefinitionId": "e2b40e36-aa0e-4bed-b41b-bcea6fa348b1",
+      "dockerRepository": "airbyte/source-exchange-rates",
+      "dockerImageTag": "1.2.6",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/exchangeratesapi",
+      "icon": "exchangeratesapi.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Exchange Rates API",
+      "url": "https://exchangeratesapi.io/"
+    }
+  },
+  "source-facebook-marketing": {
+    "date": "2021-01-15",
+    "url": "https://www.facebook.com/business/help/966883707418907",
+    "definition": {
+      "name": "Facebook Marketing",
+      "sourceDefinitionId": "e7778cfc-e97c-4458-9ecb-b4f2bba8946c",
+      "dockerRepository": "airbyte/source-facebook-marketing",
+      "dockerImageTag": "0.2.70",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/facebook-marketing",
+      "icon": "facebook.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Meta Ads Manager is a tool that lets you create and manage your ads. You can view, make changes and see results for all of your Meta campaigns, ad sets and ads.",
+      "url": "https://www.facebook.com/business/help/966883707418907"
+    }
+  },
+  "source-facebook-pages": {
+    "date": "2021-09-02",
+    "url": "https://developers.facebook.com/docs/plugins/page-plugin/",
+    "definition": {
+      "name": "Facebook Pages",
+      "sourceDefinitionId": "010eb12f-837b-4685-892d-0a39f76a98f5",
+      "dockerRepository": "airbyte/source-facebook-pages",
+      "dockerImageTag": "0.1.6",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/facebook-pages",
+      "icon": "facebook.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Page Plugin - Social Plugins - Meta for Developers",
+      "url": "https://developers.facebook.com/docs/plugins/page-plugin/"
+    }
+  },
+  "source-faker": {
+    "date": "2022-04-14",
+    "url": "https://fakerjs.dev/",
+    "definition": {
+      "name": "Faker",
+      "sourceDefinitionId": "dfd88b22-b603-4c3d-aad7-3701784586b1",
+      "dockerRepository": "airbyte/source-faker",
+      "dockerImageTag": "0.2.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/faker",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Faker | Faker",
+      "url": "https://fakerjs.dev/"
+    }
+  },
+  "source-fauna": {
+    "date": "2022-09-29",
+    "url": "https://fauna.com/",
+    "definition": {
+      "name": "Fauna",
+      "sourceDefinitionId": "3825db3e-c94b-42ac-bd53-b5a9507ace2b",
+      "dockerRepository": "airbyte/source-fauna",
+      "dockerImageTag": "dev",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/fauna",
+      "icon": "fauna.svg",
+      "sourceType": "database",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Fauna | The distributed serverless database",
+      "url": "https://fauna.com/"
+    }
+  },
+  "source-file": {
+    "date": "2020-11-03",
+    "url": "https://www.guru99.com/file-sharing-sites.html",
+    "definition": {
+      "name": "File",
+      "sourceDefinitionId": "778daa7c-feaf-4db6-96f3-70fd645acc77",
+      "dockerRepository": "airbyte/source-file",
+      "dockerImageTag": "0.2.28",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/file",
+      "icon": "file.svg",
+      "sourceType": "file",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "15 Best File Sharing Websites in 2022 (FREE Hosting) - Guru99",
+      "url": "https://www.guru99.com/file-sharing-sites.html"
+    }
+  },
+  "source-file-secure": {
+    "date": "2021-10-20",
+    "url": "https://geekflare.com/secure-file-sharing/",
+    "scrape": {
+      "description": "12 Secure File Sharing Services to Send Data Privately",
+      "url": "https://geekflare.com/secure-file-sharing/"
+    }
+  },
+  "source-firebolt": {
+    "date": "2022-06-18",
+    "url": "https://www.firebolt.io/",
+    "definition": {
+      "name": "Firebolt",
+      "sourceDefinitionId": "6f2ac653-8623-43c4-8950-19218c7caf3d",
+      "dockerRepository": "airbyte/source-firebolt",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/firebolt",
+      "sourceType": "database",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Firebolt: Cloud Data Warehouse For Engineers",
+      "url": "https://www.firebolt.io/"
+    }
+  },
+  "source-flexport": {
+    "date": "2022-01-21",
+    "url": "https://www.flexport.com/",
+    "definition": {
+      "name": "Flexport",
+      "sourceDefinitionId": "f95337f1-2ad1-4baf-922f-2ca9152de630",
+      "dockerRepository": "airbyte/source-flexport",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/flexport",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "The Flexport Platform is your supply chain source of truth. Automate orders. Onboard suppliers. Book logistics. Track cargo—even if other partners handle it ...",
+      "url": "https://www.flexport.com/"
+    }
+  },
+  "source-freshcaller": {
+    "date": "2022-08-11",
+    "url": "http://freshcaller.com/",
+    "definition": {
+      "name": "Freshcaller",
+      "sourceDefinitionId": "8a5d48f6-03bb-4038-a942-a8d3f175cca3",
+      "dockerRepository": "airbyte/source-freshcaller",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/freshcaller"
+    },
+    "scrape": {
+      "description": "Freshdesk Contact Center (formerly Freshcaller) - Freshworkshttp://freshcaller.com",
+      "url": "http://freshcaller.com/"
+    }
+  },
+  "source-freshdesk": {
+    "date": "2020-12-01",
+    "url": "https://freshdesk.com/",
+    "definition": {
+      "name": "Freshdesk",
+      "sourceDefinitionId": "ec4b9503-13cb-48ab-a4ab-6ade4be46567",
+      "dockerRepository": "airbyte/source-freshdesk",
+      "dockerImageTag": "0.3.6",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/freshdesk",
+      "icon": "freshdesk.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Online cloud-based customer service software providing helpdesk support with all smart automations to get things done faster.",
+      "url": "https://freshdesk.com/"
+    }
+  },
+  "source-freshsales": {
+    "date": "2021-11-03",
+    "url": "https://www.freshworks.com/crm/sales/",
+    "definition": {
+      "name": "Freshsales",
+      "sourceDefinitionId": "eca08d79-7b92-4065-b7f3-79c14836ebe7",
+      "dockerRepository": "airbyte/source-freshsales",
+      "dockerImageTag": "0.1.2",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/freshsales",
+      "icon": "freshsales.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Sales CRM Made Easy By Freshworks - Freshsales",
+      "url": "https://www.freshworks.com/crm/sales/"
+    }
+  },
+  "source-freshservice": {
+    "date": "2021-10-29",
+    "url": "https://freshservice.com/",
+    "definition": {
+      "name": "Freshservice",
+      "sourceDefinitionId": "9bb85338-ea95-4c93-b267-6be89125b267",
+      "dockerRepository": "airbyte/source-freshservice",
+      "dockerImageTag": "0.1.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/freshservice",
+      "icon": "freshservice.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Freshservice Cloud based ITSM software for your service desk with powerful automation tool to manage incidents, assets and more ✓ Try Freshservice ITSM ...",
+      "url": "https://freshservice.com/"
+    }
+  },
+  "source-github": {
+    "date": "2021-07-07",
+    "url": "https://github.com/",
+    "definition": {
+      "name": "GitHub",
+      "sourceDefinitionId": "ef69ef6e-aa7f-4af1-a01d-ef775033524e",
+      "dockerRepository": "airbyte/source-github",
+      "dockerImageTag": "0.3.7",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/github",
+      "icon": "github.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "GitHub is where over 83 million developers shape the future of software, together. Contribute to the open source community, manage your Git repositories, ...",
+      "url": "https://github.com/"
+    }
+  },
+  "source-gitlab": {
+    "date": "2021-07-06",
+    "url": "https://about.gitlab.com/",
+    "definition": {
+      "name": "Gitlab",
+      "sourceDefinitionId": "5e6175e5-68e1-4c17-bff9-56103bbb0d80",
+      "dockerRepository": "airbyte/source-gitlab",
+      "dockerImageTag": "0.1.6",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/gitlab",
+      "icon": "gitlab.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "GitLab: The One DevOps Platformhttps://about.gitlab.com",
+      "url": "https://about.gitlab.com/"
+    }
+  },
+  "source-glassfrog": {
+    "date": "2022-07-27",
+    "url": "https://www.glassfrog.com/",
+    "definition": {
+      "name": "Glassfrog",
+      "sourceDefinitionId": "cf8ff320-6272-4faa-89e6-4402dc17e5d5",
+      "dockerRepository": "airbyte/source-glassfrog",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/glassfrog",
+      "icon": "glassfrog.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "GlassFroghttps://www.glassfrog.com",
+      "url": "https://www.glassfrog.com/"
+    }
+  },
+  "source-gocardless": {
+    "date": "2022-10-20",
+    "url": "https://gocardless.com/",
+    "definition": {
+      "name": "GoCardless",
+      "sourceDefinitionId": "ba15ac82-5c6a-4fb2-bf24-925c23a1180c",
+      "dockerRepository": "airbyte/source-gocardless",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/gocardless",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "GoCardless collects direct bank payments. Meaning no card fees. And with all that wasted admin time cut away, the savings really stack up.",
+      "url": "https://gocardless.com/"
+    }
+  },
+  "source-google-ads": {
+    "date": "2021-06-14",
+    "url": "https://ads.google.com/home/",
+    "definition": {
+      "name": "Google Ads",
+      "sourceDefinitionId": "253487c0-2246-43ba-a21f-5116b20a2c50",
+      "dockerRepository": "airbyte/source-google-ads",
+      "dockerImageTag": "0.2.3",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-ads",
+      "icon": "google-adwords.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Google Ads - Get More Customers & Generate Leads with ...",
+      "url": "https://ads.google.com/home/"
+    }
+  },
+  "source-google-analytics-data-api": {
+    "date": "2022-06-28",
+    "url": "https://developers.google.com/analytics/devguides/reporting/data/v1",
+    "definition": {
+      "name": "Google Analytics Data API (GA4)",
+      "sourceDefinitionId": "3cc2eafd-84aa-4dca-93af-322d9dfeec1a",
+      "dockerRepository": "airbyte/source-google-analytics-data-api",
+      "dockerImageTag": "0.0.3",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-analytics-v4",
+      "icon": "google-analytics.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "The Google Analytics Data API v1 gives you programmatic access to Google Analytics 4 (GA4) report data. Google Analytics 4 helps you understand how people use your web, iOS, or Android app.",
+      "url": "https://developers.google.com/analytics/devguides/reporting/data/v1"
+    }
+  },
+  "source-google-analytics-v4": {
+    "date": "2021-08-26",
+    "url": "https://developers.google.com/analytics/devguides/reporting/core/v4",
+    "definition": {
+      "name": "Google Analytics (Universal Analytics)",
+      "sourceDefinitionId": "eff3616a-f9c3-11eb-9a03-0242ac130003",
+      "dockerRepository": "airbyte/source-google-analytics-v4",
+      "dockerImageTag": "0.1.31",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics",
+      "icon": "google-analytics.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "This connector supports Universal Analytics properties through the Reporting API v4.",
+      "url": "https://developers.google.com/analytics/devguides/reporting/core/v4"
+    }
+  },
+  "source-google-directory": {
+    "date": "2021-03-12",
+    "url": "https://www.googleguide.com/directory.html",
+    "definition": {
+      "name": "Google Directory",
+      "sourceDefinitionId": "d19ae824-e289-4b14-995a-0632eb46d246",
+      "dockerRepository": "airbyte/source-google-directory",
+      "dockerImageTag": "0.1.9",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-directory",
+      "icon": "googledirectory.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Directory: Categories of Topics - Google Guide",
+      "url": "https://www.googleguide.com/directory.html"
+    }
+  },
+  "source-google-search-console": {
+    "date": "2021-09-10",
+    "url": "https://search.google.com/search-console/about",
+    "definition": {
+      "name": "Google Search Console",
+      "sourceDefinitionId": "eb4c9e00-db83-4d63-a386-39cfa91012a8",
+      "dockerRepository": "airbyte/source-google-search-console",
+      "dockerImageTag": "0.1.18",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-search-console",
+      "icon": "googlesearchconsole.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Google Search Console Tools",
+      "url": "https://search.google.com/search-console/about"
+    }
+  },
+  "source-google-sheets": {
+    "date": "2020-10-29",
+    "url": "https://www.google.com/sheets/about/",
+    "definition": {
+      "name": "Google Sheets",
+      "sourceDefinitionId": "71607ba1-c0ac-4799-8049-7f4b90dd50f7",
+      "dockerRepository": "airbyte/source-google-sheets",
+      "dockerImageTag": "0.2.21",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-sheets",
+      "icon": "google-sheets.svg",
+      "sourceType": "file",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Google Sheets: Online Spreadsheet Editor",
+      "url": "https://www.google.com/sheets/about/"
+    }
+  },
+  "source-google-webfonts": {
+    "date": "2022-10-29",
+    "url": "https://developers.google.com/fonts",
+    "definition": {
+      "name": "Google Webfonts",
+      "sourceDefinitionId": "a68fbcde-b465-4ab3-b2a6-b0590a875835",
+      "dockerRepository": "airbyte/source-google-webfonts",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-webfonts",
+      "icon": "googleworkpace.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Fonts - Google Developers",
+      "url": "https://developers.google.com/fonts"
+    }
+  },
+  "source-google-workspace-admin-reports": {
+    "date": "2021-04-01",
+    "url": "https://developers.google.com/admin-sdk/reports/v1/get-start/overview",
+    "definition": {
+      "name": "Google Workspace Admin Reports",
+      "sourceDefinitionId": "ed9dfefa-1bbc-419d-8c5e-4d78f0ef6734",
+      "dockerRepository": "airbyte/source-google-workspace-admin-reports",
+      "dockerImageTag": "0.1.8",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-workspace-admin-reports",
+      "icon": "googleworkpace.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "The Reports API is a RESTful API you can use to access information about the Google Workspace activities of your users. The Reports API is part of the Google Workspace Admin Console SDK.",
+      "url": "https://developers.google.com/admin-sdk/reports/v1/get-start/overview"
+    }
+  },
+  "source-greenhouse": {
+    "date": "2020-12-05",
+    "url": "http://greenhouse.com/",
+    "definition": {
+      "name": "Greenhouse",
+      "sourceDefinitionId": "59f1e50a-331f-4f09-b3e8-2e8d4d355f44",
+      "dockerRepository": "airbyte/source-greenhouse",
+      "dockerImageTag": "0.3.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/greenhouse",
+      "icon": "greenhouse.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Greenhouse: Applicant tracking system & recruiting softwarehttp://greenhouse.com",
+      "url": "http://greenhouse.com/"
+    }
+  },
+  "source-gutendex": {
+    "date": "2022-10-21",
+    "url": "https://gutendex.com/",
+    "definition": {
+      "name": "Gutendex",
+      "sourceDefinitionId": "bff9a277-e01d-420d-81ee-80f28a307318",
+      "dockerRepository": "airbyte/source-gutendex",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/gutendex",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Gutendexhttps://gutendex.com",
+      "url": "https://gutendex.com/"
+    }
+  },
+  "source-harvest": {
+    "date": "2021-06-07",
+    "url": "http://harvest.com/",
+    "definition": {
+      "name": "Harvest",
+      "sourceDefinitionId": "fe2b4084-3386-4d3b-9ad6-308f61a6f1e6",
+      "dockerRepository": "airbyte/source-harvest",
+      "dockerImageTag": "0.1.11",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/harvest",
+      "icon": "harvest.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "HARVEST.com: Homehttp://harvest.com",
+      "url": "http://harvest.com/"
+    }
+  },
+  "source-hellobaton": {
+    "date": "2022-01-14",
+    "url": "https://www.hellobaton.com/",
+    "definition": {
+      "name": "Hellobaton",
+      "sourceDefinitionId": "492b56d1-937c-462e-8076-21ad2031e784",
+      "dockerRepository": "airbyte/source-hellobaton",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/hellobaton",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Baton: for Software Implementations and Onboardingshttps://www.hellobaton.com",
+      "url": "https://www.hellobaton.com/"
+    }
+  },
+  "source-hubplanner": {
+    "date": "2022-08-10",
+    "url": "https://hubplanner.com/",
+    "definition": {
+      "name": "Hubplanner",
+      "sourceDefinitionId": "8097ceb9-383f-42f6-9f92-d3fd4bcc7689",
+      "dockerRepository": "airbyte/source-hubplanner",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/hubplanner",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Hub Planner: Resource Management, Scheduling ...https://hubplanner.com",
+      "url": "https://hubplanner.com/"
+    }
+  },
+  "source-hubspot": {
+    "date": "2021-03-20",
+    "url": "https://www.hubspot.com/",
+    "definition": {
+      "name": "HubSpot",
+      "sourceDefinitionId": "36c891d9-4bd9-43ac-bad2-10e12756272c",
+      "dockerRepository": "airbyte/source-hubspot",
+      "dockerImageTag": "0.2.2",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/hubspot",
+      "icon": "hubspot.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "HubSpot's integrated CRM platform contains the marketing, sales, service, operations, and website-building software you need to grow your business.",
+      "url": "https://www.hubspot.com/"
+    }
+  },
+  "source-insightly": {
+    "date": "2022-10-20",
+    "url": "https://www.insightly.com/",
+    "definition": {
+      "name": "Insightly",
+      "sourceDefinitionId": "38f84314-fe6a-4257-97be-a8dcd942d693",
+      "dockerRepository": "airbyte/source-insightly",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/insightly",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Our CRM software can help your sales team build customer relationships, quickly create personalized marketing campaigns, and automate business processes.",
+      "url": "https://www.insightly.com/"
+    }
+  },
+  "source-instagram": {
+    "date": "2021-03-13",
+    "url": "https://www.instagram.com/",
+    "definition": {
+      "name": "Instagram",
+      "sourceDefinitionId": "6acf6b55-4f1e-4fca-944e-1a3caef8aba8",
+      "dockerRepository": "airbyte/source-instagram",
+      "dockerImageTag": "1.0.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/instagram",
+      "icon": "instagram.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Create an account or log in to Instagram - A simple, fun & creative way to capture, edit & share photos, videos & messages with friends & family.",
+      "url": "https://www.instagram.com/"
+    }
+  },
+  "source-intercom": {
+    "date": "2021-07-19",
+    "url": "https://www.intercom.com/",
+    "definition": {
+      "name": "Intercom",
+      "sourceDefinitionId": "d8313939-3782-41b0-be29-b3ca20d8dd3a",
+      "dockerRepository": "airbyte/source-intercom",
+      "dockerImageTag": "0.1.29",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/intercom",
+      "icon": "intercom.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Build lasting customer relationships with Intercom, the Engagement OS.",
+      "url": "https://www.intercom.com/"
+    }
+  },
+  "source-iterable": {
+    "date": "2021-04-20",
+    "url": "https://iterable.com/",
+    "definition": {
+      "name": "Iterable",
+      "sourceDefinitionId": "2e875208-0c0b-4ee4-9e92-1cb3156ea799",
+      "dockerRepository": "airbyte/source-iterable",
+      "dockerImageTag": "0.1.21",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/iterable",
+      "icon": "iterable.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Iterable is a cross-channel marketing platform that powers unified customer experiences and empowers you to create, optimize and measure every interaction ...",
+      "url": "https://iterable.com/"
+    }
+  },
+  "source-jdbc": {
+    "date": "2020-10-30",
+    "url": "https://docs.oracle.com/javase/tutorial/jdbc/basics/index.html",
+    "scrape": {
+      "description": "Lesson: JDBC Basics - Java™ Tutorials",
+      "url": "https://docs.oracle.com/javase/tutorial/jdbc/basics/index.html"
+    }
+  },
+  "source-jira": {
+    "date": "2020-12-10",
+    "url": "http://jira.com/",
+    "definition": {
+      "name": "Jira",
+      "sourceDefinitionId": "68e63de2-bb83-4c7e-93fa-a8a9051e3993",
+      "dockerRepository": "airbyte/source-jira",
+      "dockerImageTag": "0.2.22",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/jira",
+      "icon": "jira.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Plan, track, and manage your agile and software development projects in Jira. Customize your workflow, collaborate, and release great software.",
+      "url": "http://jira.com/"
+    }
+  },
+  "source-kafka": {
+    "date": "2021-09-23",
+    "url": "http://www.kafka.com/",
+    "definition": {
+      "name": "Kafka",
+      "sourceDefinitionId": "d917a47b-8537-4d0d-8c10-36a9928d4265",
+      "dockerRepository": "airbyte/source-kafka",
+      "dockerImageTag": "0.2.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/kafka",
+      "icon": "kafka.svg",
+      "sourceType": "database",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "kafka.comhttp://www.kafka.com",
+      "url": "http://www.kafka.com/"
+    }
+  },
+  "source-klaviyo": {
+    "date": "2021-05-20",
+    "url": "https://www.klaviyo.com/",
+    "definition": {
+      "name": "Klaviyo",
+      "sourceDefinitionId": "95e8cffd-b8c4-4039-968e-d32fb4a69bde",
+      "dockerRepository": "airbyte/source-klaviyo",
+      "dockerImageTag": "0.1.10",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/klaviyo",
+      "icon": "klaviyo.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Klaviyo, an ecommerce marketing automation platform for email marketing and sms syncs your tech stack with your website store to scale your business.",
+      "url": "https://www.klaviyo.com/"
+    }
+  },
+  "source-kustomer-singer": {
+    "date": "2021-08-05",
+    "url": "https://www.kustomer.com/",
+    "definition": {
+      "name": "Kustomer",
+      "sourceDefinitionId": "cd06e646-31bf-4dc8-af48-cbc6530fcad3",
+      "dockerRepository": "airbyte/source-kustomer-singer",
+      "dockerImageTag": "0.1.2",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/kustomer",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "With Kustomer, deliver faster, richer experiences to your customers with omnichannel messaging, a unified customer view, and AI-powered automations.",
+      "url": "https://www.kustomer.com/"
+    }
+  },
+  "source-kyriba": {
+    "date": "2022-07-13",
+    "url": "https://www.kyriba.com/",
+    "definition": {
+      "name": "Kyriba",
+      "sourceDefinitionId": "547dc08e-ab51-421d-953b-8f3745201a8c",
+      "dockerRepository": "airbyte/source-kyriba",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/kyriba",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Kyriba enterprise software manages treasury, risk management, payments, working capital and API real-time connectivity for the office of the CFO and ...",
+      "url": "https://www.kyriba.com/"
+    }
+  },
+  "source-lemlist": {
+    "date": "2021-10-27",
+    "url": "https://www.lemlist.com/",
+    "definition": {
+      "name": "Lemlist",
+      "sourceDefinitionId": "789f8e7a-2d28-11ec-8d3d-0242ac130003",
+      "dockerRepository": "airbyte/source-lemlist",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/lemlist",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Start conversations that get replies ... Personalize cold emails, automate follow-ups, and engage with leads across all channels. lemlist is your sales automation ...",
+      "url": "https://www.lemlist.com/"
+    }
+  },
+  "source-lever-hiring": {
+    "date": "2021-09-10",
+    "url": "https://hire.lever.co/",
+    "definition": {
+      "name": "Lever Hiring",
+      "sourceDefinitionId": "3981c999-bd7d-4afc-849b-e53dea90c948",
+      "dockerRepository": "airbyte/source-lever-hiring",
+      "dockerImageTag": "0.1.3",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/lever-hiring",
+      "icon": "leverhiring.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Lever Hirehttps://hire.lever.co",
+      "url": "https://hire.lever.co/"
+    }
+  },
+  "source-linkedin-ads": {
+    "date": "2021-09-25",
+    "url": "https://business.linkedin.com/marketing-solutions/ads",
+    "definition": {
+      "name": "LinkedIn Ads",
+      "sourceDefinitionId": "137ece28-5434-455c-8f34-69dc3782f451",
+      "dockerRepository": "airbyte/source-linkedin-ads",
+      "dockerImageTag": "0.1.12",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/linkedin-ads",
+      "icon": "linkedin.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Targeted Self-Service Ads - business LinkedIn",
+      "url": "https://business.linkedin.com/marketing-solutions/ads"
+    }
+  },
+  "source-linkedin-pages": {
+    "date": "2022-08-11",
+    "url": "https://business.linkedin.com/marketing-solutions/linkedin-pages",
+    "definition": {
+      "name": "LinkedIn Pages",
+      "sourceDefinitionId": "af54297c-e8f8-4d63-a00d-a94695acc9d3",
+      "dockerRepository": "airbyte/source-linkedin-pages",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/linkedin-pages",
+      "icon": "linkedin.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Create a LinkedIn Company Page - Business Linkedin",
+      "url": "https://business.linkedin.com/marketing-solutions/linkedin-pages"
+    }
+  },
+  "source-linnworks": {
+    "date": "2021-11-16",
+    "url": "https://www.linnworks.com/",
+    "definition": {
+      "name": "Linnworks",
+      "sourceDefinitionId": "7b86879e-26c5-4ef6-a5ce-2be5c7b46d1e",
+      "dockerRepository": "airbyte/source-linnworks",
+      "dockerImageTag": "0.1.5",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/linnworks",
+      "icon": "linnworks.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Linnworks is an eCommerce platform that helps online retailers automate key processes, reduce costs and grow their business.",
+      "url": "https://www.linnworks.com/"
+    }
+  },
+  "source-lokalise": {
+    "date": "2022-10-28",
+    "url": "https://lokalise.com/",
+    "definition": {
+      "name": "Lokalise",
+      "sourceDefinitionId": "45e0b135-615c-40ac-b38e-e65b0944197f",
+      "dockerRepository": "airbyte/source-lokalise",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/lokalise",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Lokalise is a continuous localization and translation management platform. It integrates into your development workflow so you can ship localized products, ...",
+      "url": "https://lokalise.com/"
+    }
+  },
+  "source-looker": {
+    "date": "2020-12-25",
+    "url": "https://www.looker.com/",
+    "definition": {
+      "name": "Looker",
+      "sourceDefinitionId": "00405b19-9768-4e0c-b1ae-9fc2ee2b2a8c",
+      "dockerRepository": "airbyte/source-looker",
+      "dockerImageTag": "0.2.7",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/looker",
+      "icon": "looker.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Looker is a business intelligence software and big data analytics platform that helps you explore, analyze and share real-time business analytics easily.",
+      "url": "https://www.looker.com/"
+    }
+  },
+  "source-mailchimp": {
+    "date": "2020-11-13",
+    "url": "https://mailchimp.com/",
+    "definition": {
+      "name": "Mailchimp",
+      "sourceDefinitionId": "b03a9f3e-22a5-11eb-adc1-0242ac120002",
+      "dockerRepository": "airbyte/source-mailchimp",
+      "dockerImageTag": "0.2.15",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/mailchimp",
+      "icon": "mailchimp.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Grow your business on your terms with Mailchimp's All-In-One marketing, automation & email marketing platform. Easy to use - start for free!",
+      "url": "https://mailchimp.com/"
+    }
+  },
+  "source-mailerlite": {
+    "date": "2022-10-28",
+    "url": "https://www.mailerlite.com/",
+    "definition": {
+      "name": "MailerLite",
+      "sourceDefinitionId": "dc3b9003-2432-4e93-a7f4-4620b0f14674",
+      "dockerRepository": "airbyte/source-mailerlite",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/mailerlite",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Today, most email marketing services offer automation and landing pages, but MailerLite is truly distinguished by its simple, beautiful UI and attentive ...",
+      "url": "https://www.mailerlite.com/"
+    }
+  },
+  "source-mailgun": {
+    "date": "2021-12-08",
+    "url": "https://www.mailgun.com/",
+    "definition": {
+      "name": "Mailgun",
+      "sourceDefinitionId": "5b9cb09e-1003-4f9c-983d-5779d1b2cd51",
+      "dockerRepository": "airbyte/source-mailgun",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/mailgun",
+      "icon": "mailgun.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Developers and product teams love using Mailgun to communicate with their users ... Based on real customer reviews, G2 Crowd named us the #1 transactional email ...",
+      "url": "https://www.mailgun.com/"
+    }
+  },
+  "source-mailjet-mail": {
+    "date": "2022-10-28",
+    "url": "https://www.mailjet.com/",
+    "definition": {
+      "name": "Mailjet Mail",
+      "sourceDefinitionId": "56582331-5de2-476b-b913-5798de77bbdf",
+      "dockerRepository": "airbyte/source-mailjet-mail",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/mailjet-mail",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Mailjet: Email Delivery Service for Marketing & Developer Teamshttps://www.mailjet.com",
+      "url": "https://www.mailjet.com/"
+    }
+  },
+  "source-mailjet-sms": {
+    "date": "2022-10-29",
+    "url": "https://www.mailjet.com/products/sms/",
+    "definition": {
+      "name": "Mailjet SMS",
+      "sourceDefinitionId": "6ec2acea-7fd1-4378-b403-41a666e0c028",
+      "dockerRepository": "airbyte/source-mailjet-sms",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/mailjet-sms",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "SMS API for Developers - Send Transactional SMS Easily",
+      "url": "https://www.mailjet.com/products/sms/"
+    }
+  },
+  "source-marketo": {
+    "date": "2021-09-24",
+    "url": "https://www.marketo.com/",
+    "definition": {
+      "name": "Marketo",
+      "sourceDefinitionId": "9e0556f4-69df-4522-a3fb-03264d36b348",
+      "dockerRepository": "airbyte/source-marketo",
+      "dockerImageTag": "0.1.11",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/marketo",
+      "icon": "marketo.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Explore Marketo Engage ; Identify, engage, and accelerate the customer experience. Engage the right customers through behavior tracking; Easily build and scale ...",
+      "url": "https://www.marketo.com/"
+    }
+  },
+  "source-metabase": {
+    "date": "2022-06-23",
+    "url": "https://www.metabase.com/",
+    "definition": {
+      "name": "Metabase",
+      "sourceDefinitionId": "c7cb421b-942e-4468-99ee-e369bcabaec5",
+      "dockerRepository": "airbyte/source-metabase",
+      "dockerImageTag": "0.2.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/metabase",
+      "icon": "metabase.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Team doesn't speak SQL? No problem. Metabase is the easy, open-source way to help everyone in your company work with data like an analyst.",
+      "url": "https://www.metabase.com/"
+    }
+  },
+  "source-microsoft-teams": {
+    "date": "2020-12-22",
+    "url": "https://www.microsoft.com/en-us/microsoft-teams/log-in",
+    "definition": {
+      "name": "Microsoft teams",
+      "sourceDefinitionId": "eaf50f04-21dd-4620-913b-2a83f5635227",
+      "dockerRepository": "airbyte/source-microsoft-teams",
+      "dockerImageTag": "0.2.5",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/microsoft-teams",
+      "icon": "microsoft-teams.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Log In | Microsoft Teams",
+      "url": "https://www.microsoft.com/en-us/microsoft-teams/log-in"
+    }
+  },
+  "source-mixpanel": {
+    "date": "2021-07-20",
+    "url": "https://mixpanel.com/",
+    "definition": {
+      "name": "Mixpanel",
+      "sourceDefinitionId": "12928b32-bf0a-4f1e-964f-07e12e37153a",
+      "dockerRepository": "airbyte/source-mixpanel",
+      "dockerImageTag": "0.1.28",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/mixpanel",
+      "icon": "mixpanel.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Unlock valuable customer insights to better convert, engage, and retain users with Mixpanel's powerful, self-serve product analytics. Try it free.",
+      "url": "https://mixpanel.com/"
+    }
+  },
+  "source-monday": {
+    "date": "2021-11-07",
+    "url": "https://monday.com/",
+    "definition": {
+      "name": "Monday",
+      "sourceDefinitionId": "80a54ea2-9959-4040-aac1-eee42423ec9b",
+      "dockerRepository": "airbyte/source-monday",
+      "dockerImageTag": "0.1.4",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/monday",
+      "icon": "monday.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "monday.com Work OS is an open platform where anyone can create the tools they need to run every aspect of their work.",
+      "url": "https://monday.com/"
+    }
+  },
+  "source-mongodb": {
+    "date": "2021-03-09",
+    "url": "https://www.mongodb.com/",
+    "scrape": {
+      "description": "With a document data model that maps to how developers think and code and a powerful, unified query API, MongoDB powers faster, more flexible application ...",
+      "url": "https://www.mongodb.com/"
+    }
+  },
+  "source-mongodb-strict-encrypt": {
+    "date": "2021-10-11",
+    "url": "https://www.mongodb.com/",
+    "scrape": {
+      "description": "With a document data model that maps to how developers think and code and a powerful, unified query API, MongoDB powers faster, more flexible application ...",
+      "url": "https://www.mongodb.com/"
+    }
+  },
+  "source-mongodb-v2": {
+    "date": "2021-09-09",
+    "url": "https://www.mongodb.com/",
+    "definition": {
+      "name": "MongoDb",
+      "sourceDefinitionId": "b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e",
+      "dockerRepository": "airbyte/source-mongodb-v2",
+      "dockerImageTag": "0.1.19",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/mongodb-v2",
+      "icon": "mongodb.svg",
+      "sourceType": "database",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "With a document data model that maps to how developers think and code and a powerful, unified query API, MongoDB powers faster, more flexible application ...",
+      "url": "https://www.mongodb.com/"
+    }
+  },
+  "source-mssql": {
+    "date": "2020-11-14",
+    "url": "https://www.microsoft.com/en-us/sql-server/sql-server-downloads",
+    "definition": {
+      "name": "Microsoft SQL Server (MSSQL)",
+      "sourceDefinitionId": "b5ea17b1-f170-46dc-bc31-cc744ca984c1",
+      "dockerRepository": "airbyte/source-mssql",
+      "dockerImageTag": "0.4.24",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/mssql",
+      "icon": "mssql.svg",
+      "sourceType": "database",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "SQL Server Downloads | Microsoft",
+      "url": "https://www.microsoft.com/en-us/sql-server/sql-server-downloads"
+    }
+  },
+  "source-mssql-strict-encrypt": {
+    "date": "2021-10-08",
+    "url": "https://www.microsoft.com/en-us/sql-server/sql-server-2019",
+    "scrape": {
+      "description": "SQL Server 2019 - Microsoft",
+      "url": "https://www.microsoft.com/en-us/sql-server/sql-server-2019"
+    }
+  },
+  "source-my-hours": {
+    "date": "2021-12-21",
+    "url": "https://myhours.com/",
+    "definition": {
+      "name": "My Hours",
+      "sourceDefinitionId": "722ba4bf-06ec-45a4-8dd5-72e4a5cf3903",
+      "dockerRepository": "airbyte/source-my-hours",
+      "dockerImageTag": "0.1.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/my-hours",
+      "icon": "my-hours.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "With My Hours you can track all your work. Add a detailed description to your time logs and expenses. We know time tracking is a hassle, so we've designed ...",
+      "url": "https://myhours.com/"
+    }
+  },
+  "source-mysql": {
+    "date": "2020-10-30",
+    "url": "https://www.mysql.com/",
+    "definition": {
+      "name": "MySQL",
+      "sourceDefinitionId": "435bb9a5-7887-4809-aa58-28c27df0d7ad",
+      "dockerRepository": "airbyte/source-mysql",
+      "dockerImageTag": "1.0.9",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/mysql",
+      "icon": "mysql.svg",
+      "sourceType": "database",
+      "releaseStage": "beta"
+    },
+    "scrape": {
+      "description": "MySQL.com ... MySQL Enterprise Edition ... MySQL Cluster enables users to meet the database challenges of next generation web, cloud, and communications ...",
+      "url": "https://www.mysql.com/"
+    }
+  },
+  "source-mysql-strict-encrypt": {
+    "date": "2021-10-05",
+    "url": "https://www.mysql.com/",
+    "scrape": {
+      "description": "MySQL.com ... MySQL Enterprise Edition ... MySQL Cluster enables users to meet the database challenges of next generation web, cloud, and communications ...",
+      "url": "https://www.mysql.com/"
+    }
+  },
+  "source-nasa": {
+    "date": "2022-10-28",
+    "url": "http://www.nasa.com/",
+    "definition": {
+      "name": "NASA",
+      "sourceDefinitionId": "1a8667d7-7978-43cd-ba4d-d32cbd478971",
+      "dockerRepository": "airbyte/source-nasa",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/nasa",
+      "icon": "nasa.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "nasa.comhttp://www.nasa.com",
+      "url": "http://www.nasa.com/"
+    }
+  },
+  "source-netsuite": {
+    "date": "2022-09-22",
+    "url": "https://www.netsuite.com/portal/home.shtml",
+    "definition": {
+      "name": "Netsuite",
+      "sourceDefinitionId": "4f2f093d-ce44-4121-8118-9d13b7bfccd0",
+      "dockerRepository": "airbyte/source-netsuite",
+      "dockerImageTag": "0.1.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/netsuite",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "NetSuite is the leading integrated cloud business software suite, including business accounting, ERP, CRM and ecommerce software.",
+      "url": "https://www.netsuite.com/portal/home.shtml"
+    }
+  },
+  "source-news-api": {
+    "date": "2022-10-27",
+    "url": "https://newsapi.org/",
+    "definition": {
+      "name": "News API",
+      "sourceDefinitionId": "df38991e-f35b-4af2-996d-36817f614587",
+      "dockerRepository": "airbyte/source-news-api",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/news-api",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "News API – Search News and Blog Articles on the Webhttps://newsapi.org",
+      "url": "https://newsapi.org/"
+    }
+  },
+  "source-notion": {
+    "date": "2021-11-19",
+    "url": "https://www.notion.so/",
+    "definition": {
+      "name": "Notion",
+      "sourceDefinitionId": "6e00b415-b02e-4160-bf02-58176a0ae687",
+      "dockerRepository": "airbyte/source-notion",
+      "dockerImageTag": "0.1.10",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/notion",
+      "icon": "notion.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Used by the world's most innovative teams · MatchGroup. Notion is a workspace that adapts to your needs. It's as minimal or as powerful as you need it to be.",
+      "url": "https://www.notion.so/"
+    }
+  },
+  "source-okta": {
+    "date": "2021-06-02",
+    "url": "https://www.okta.com/",
+    "definition": {
+      "name": "Okta",
+      "sourceDefinitionId": "1d4fdb25-64fc-4569-92da-fcdca79a8372",
+      "dockerRepository": "airbyte/source-okta",
+      "dockerImageTag": "0.1.13",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/okta",
+      "icon": "okta.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Okta: The World's #1 Identity Platformhttps://www.okta.com",
+      "url": "https://www.okta.com/"
+    }
+  },
+  "source-omnisend": {
+    "date": "2022-10-31",
+    "url": "https://www.omnisend.com/",
+    "definition": {
+      "name": "Omnisend",
+      "sourceDefinitionId": "e7f0c5e2-4815-48c4-90cf-f47124209835",
+      "dockerRepository": "airbyte/source-omnisend",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/omnisend",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Ecommerce email marketing, automated emails and SMS - switch to Omnisend and increase your sales without increasing your workload.",
+      "url": "https://www.omnisend.com/"
+    }
+  },
+  "source-onesignal": {
+    "date": "2021-10-22",
+    "url": "https://onesignal.com/",
+    "definition": {
+      "name": "OneSignal",
+      "sourceDefinitionId": "bb6afd81-87d5-47e3-97c4-e2c2901b1cf8",
+      "dockerRepository": "airbyte/source-onesignal",
+      "dockerImageTag": "0.1.2",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/onesignal",
+      "icon": "onesignal.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "OneSignal integrates with leading analytics, CMS, and eCommerce solutions including Amplitude, Mixpanel, Segment, HubSpot, Shopify, WordPress, and many more.",
+      "url": "https://onesignal.com/"
+    }
+  },
+  "source-openweather": {
+    "date": "2021-12-16",
+    "url": "https://openweathermap.org/",
+    "definition": {
+      "name": "OpenWeather",
+      "sourceDefinitionId": "d8540a80-6120-485d-b7d6-272bca477d9b",
+      "dockerRepository": "airbyte/source-openweather",
+      "dockerImageTag": "0.1.6",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/openweather",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "OpenWeather is a team of IT experts and data scientists that has been practising deep weather data science. For each point on the globe, OpenWeather provides ...",
+      "url": "https://openweathermap.org/"
+    }
+  },
+  "source-oracle": {
+    "date": "2021-04-01",
+    "url": "https://www.oracle.com/database/",
+    "definition": {
+      "name": "Oracle DB",
+      "sourceDefinitionId": "b39a7370-74c3-45a6-ac3a-380d48520a83",
+      "dockerRepository": "airbyte/source-oracle",
+      "dockerImageTag": "0.3.21",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/oracle",
+      "icon": "oracle.svg",
+      "sourceType": "database",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Database | Oracle",
+      "url": "https://www.oracle.com/database/"
+    }
+  },
+  "source-oracle-strict-encrypt": {
+    "date": "2021-10-14",
+    "url": "https://www.oracle.com/",
+    "scrape": {
+      "description": "Oracle offers a comprehensive and fully integrated stack of cloud applications and cloud platform services.",
+      "url": "https://www.oracle.com/"
+    }
+  },
+  "source-orb": {
+    "date": "2022-02-21",
+    "url": "https://orb.com/",
+    "definition": {
+      "name": "Orb",
+      "sourceDefinitionId": "7f0455fb-4518-4ec0-b7a3-d808bf8081cc",
+      "dockerRepository": "airbyte/source-orb",
+      "dockerImageTag": "0.1.4",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/orb",
+      "icon": "orb.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "orb.comhttps://orb.com",
+      "url": "https://orb.com/"
+    }
+  },
+  "source-orbit": {
+    "date": "2022-06-27",
+    "url": "https://www.orbit.com/",
+    "definition": {
+      "name": "Orbit",
+      "sourceDefinitionId": "95bcc041-1d1a-4c2e-8802-0ca5b1bfa36a",
+      "dockerRepository": "airbyte/source-orbit",
+      "dockerImageTag": "0.1.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/orbit",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Orbithttps://www.orbit.com",
+      "url": "https://www.orbit.com/"
+    }
+  },
+  "source-oura": {
+    "date": "2022-10-28",
+    "url": "https://www.oura.com/",
+    "definition": {
+      "name": "Oura",
+      "sourceDefinitionId": "2bf6c581-bec5-4e32-891d-de33036bd631",
+      "dockerRepository": "airbyte/source-oura",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/oura",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Oùra |https://www.oura.com · Translate this page",
+      "url": "https://www.oura.com/"
+    }
+  },
+  "source-outreach": {
+    "date": "2021-11-23",
+    "url": "https://www.outreach.com/",
+    "definition": {
+      "name": "Outreach",
+      "sourceDefinitionId": "3490c201-5d95-4783-b600-eaf07a4c7787",
+      "dockerRepository": "airbyte/source-outreach",
+      "dockerImageTag": "0.1.2",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/outreach",
+      "icon": "outreach.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "We empower churches to reach communities for Christ using customizable church banners, feather flags, roll up banners, church signs and displays, ...",
+      "url": "https://www.outreach.com/"
+    }
+  },
+  "source-pardot": {
+    "date": "2021-11-19",
+    "url": "http://pardot.com/",
+    "scrape": {
+      "description": "Marketing Cloud Account Engagement - Salesforce.comhttp://pardot.com",
+      "url": "http://pardot.com/"
+    }
+  },
+  "source-paypal-transaction": {
+    "date": "2021-07-09",
+    "url": "https://developer.paypal.com/docs/api/transaction-search/v1/",
+    "definition": {
+      "name": "Paypal Transaction",
+      "sourceDefinitionId": "d913b0f2-cc51-4e55-a44c-8ba1697b9239",
+      "dockerRepository": "airbyte/source-paypal-transaction",
+      "dockerImageTag": "0.1.10",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/paypal-transaction",
+      "icon": "paypal.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "The Paypal Transaction API is used to get the history of transactions for a PayPal account.",
+      "url": "https://developer.paypal.com/docs/api/transaction-search/v1/"
+    }
+  },
+  "source-paystack": {
+    "date": "2021-11-02",
+    "url": "https://paystack.com/",
+    "definition": {
+      "name": "Paystack",
+      "sourceDefinitionId": "193bdcb8-1dd9-48d1-aade-91cadfd74f9b",
+      "dockerRepository": "airbyte/source-paystack",
+      "dockerImageTag": "0.1.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/paystack",
+      "icon": "paystack.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Paystack is a growth engine for a new generation of innovative, forward-looking organizations operating in Africa. Air Peace logo. Filmhouse Cinemas logo.",
+      "url": "https://paystack.com/"
+    }
+  },
+  "source-persistiq": {
+    "date": "2022-01-22",
+    "url": "https://www.persistiq.com/",
+    "definition": {
+      "name": "PersistIq",
+      "sourceDefinitionId": "3052c77e-8b91-47e2-97a0-a29a22794b4b",
+      "dockerRepository": "airbyte/source-persistiq",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/persistiq",
+      "icon": "persistiq.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "PersistIQ: Affordable, Easy-to-Use Sales Email Automation ...https://www.persistiq.com",
+      "url": "https://www.persistiq.com/"
+    }
+  },
+  "source-pinterest": {
+    "date": "2021-11-09",
+    "url": "https://www.pinterest.com/",
+    "definition": {
+      "name": "Pinterest",
+      "sourceDefinitionId": "5cb7e5fe-38c2-11ec-8d3d-0242ac130003",
+      "dockerRepository": "airbyte/source-pinterest",
+      "dockerImageTag": "0.1.8",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/pinterest",
+      "icon": "pinterest.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Discover recipes, home ideas, style inspiration and other ideas to try.",
+      "url": "https://www.pinterest.com/"
+    }
+  },
+  "source-pipedrive": {
+    "date": "2021-07-19",
+    "url": "https://www.pipedrive.com/",
+    "definition": {
+      "name": "Pipedrive",
+      "sourceDefinitionId": "d8286229-c680-4063-8c59-23b9b391c700",
+      "dockerRepository": "airbyte/source-pipedrive",
+      "dockerImageTag": "0.1.13",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/pipedrive",
+      "icon": "pipedrive.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Pipedrive is the easy-to-use, #1 user-rated CRM tool. Get more qualified leads and grow your business. Sign up for a 14-day free trial.",
+      "url": "https://www.pipedrive.com/"
+    }
+  },
+  "source-pivotal-tracker": {
+    "date": "2022-04-05",
+    "url": "https://www.pivotaltracker.com/",
+    "definition": {
+      "name": "Pivotal Tracker",
+      "sourceDefinitionId": "d60f5393-f99e-4310-8d05-b1876820f40e",
+      "dockerRepository": "airbyte/source-pivotal-tracker",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/pivotal-tracker",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Pivotal Tracker: Agile Project Managementhttps://www.pivotaltracker.com",
+      "url": "https://www.pivotaltracker.com/"
+    }
+  },
+  "source-plaid": {
+    "date": "2020-12-31",
+    "url": "https://plaid.com/",
+    "definition": {
+      "name": "Plaid",
+      "sourceDefinitionId": "ed799e2b-2158-4c66-8da4-b40fe63bc72a",
+      "dockerRepository": "airbyte/source-plaid",
+      "dockerImageTag": "0.3.2",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/plaid",
+      "icon": "plaid.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Plaid helps all companies build fintech solutions by making it easy, safe and reliable for people to connect their financial data to apps and services.",
+      "url": "https://plaid.com/"
+    }
+  },
+  "source-pokeapi": {
+    "date": "2021-05-05",
+    "url": "https://pokeapi.co/",
+    "definition": {
+      "name": "PokeAPI",
+      "sourceDefinitionId": "6371b14b-bc68-4236-bfbd-468e8df8e968",
+      "dockerRepository": "airbyte/source-pokeapi",
+      "dockerImageTag": "0.1.5",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/pokeapi",
+      "icon": "pokeapi.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "PokeAPI proudly announces Beta support for GraphQL. Access our free console at ... name: \"limber\"; url: \"api/v2/ability/7/\".",
+      "url": "https://pokeapi.co/"
+    }
+  },
+  "source-postgres": {
+    "date": "2020-11-03",
+    "url": "https://www.postgresql.org/",
+    "definition": {
+      "name": "Postgres",
+      "sourceDefinitionId": "decd338e-5647-4c0b-adf4-da0e75f5a750",
+      "dockerRepository": "airbyte/source-postgres",
+      "dockerImageTag": "1.0.22",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgres",
+      "icon": "postgresql.svg",
+      "sourceType": "database",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "PostgreSQL: The world's most advanced open source databasehttps://www.postgresql.org",
+      "url": "https://www.postgresql.org/"
+    }
+  },
+  "source-postgres-strict-encrypt": {
+    "date": "2021-09-27",
+    "url": "https://www.postgresql.org/",
+    "scrape": {
+      "description": "PostgreSQL: The world's most advanced open source databasehttps://www.postgresql.org",
+      "url": "https://www.postgresql.org/"
+    }
+  },
+  "source-posthog": {
+    "date": "2021-06-09",
+    "url": "https://posthog.com/",
+    "definition": {
+      "name": "PostHog",
+      "sourceDefinitionId": "af6d50ee-dddf-4126-a8ee-7faee990774f",
+      "dockerRepository": "airbyte/source-posthog",
+      "dockerImageTag": "0.1.7",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/posthog",
+      "icon": "posthog.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "PostHog is the all-in-one platform for building better products - with product analytics, feature flags, session recordings, a/b testing, heatmaps, ...",
+      "url": "https://posthog.com/"
+    }
+  },
+  "source-prestashop": {
+    "date": "2021-07-27",
+    "url": "https://www.prestashop.com/en",
+    "definition": {
+      "name": "Prestashop",
+      "sourceDefinitionId": "d60a46d4-709f-4092-a6b7-2457f7d455f5",
+      "dockerRepository": "airbyte/source-prestashop",
+      "dockerImageTag": "0.2.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/presta-shop",
+      "icon": "prestashop.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "PrestaShop is a reliable software that has enabled us to constantly evolve our site over the last 6 years, all while allowing us to work independently, ...",
+      "url": "https://www.prestashop.com/en"
+    }
+  },
+  "source-primetric": {
+    "date": "2022-09-22",
+    "url": "https://www.prometric.com/",
+    "definition": {
+      "name": "Primetric",
+      "sourceDefinitionId": "f636c3c6-4077-45ac-b109-19fc62a283c1",
+      "dockerRepository": "airbyte/source-primetric",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/presta-shop",
+      "icon": "primetric.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Futures Start Here ... We believe in enhancing lives and positively impacting the world for the better through advancements in the way we all learn, assess, and ...",
+      "url": "https://www.prometric.com/"
+    }
+  },
+  "source-python-http-tutorial": {
+    "date": "2021-04-27",
+    "url": "https://www.tutorialspoint.com/python_network_programming/python_http_requests.htm",
+    "scrape": {
+      "description": "Python - HTTP Requests - Tutorialspoint",
+      "url": "https://www.tutorialspoint.com/python_network_programming/python_http_requests.htm"
+    }
+  },
+  "source-qualaroo": {
+    "date": "2021-12-22",
+    "url": "https://qualaroo.com/",
+    "definition": {
+      "name": "Qualaroo",
+      "sourceDefinitionId": "b08e4776-d1de-4e80-ab5c-1e51dad934a2",
+      "dockerRepository": "airbyte/source-qualaroo",
+      "dockerImageTag": "0.1.2",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/qualaroo",
+      "icon": "qualaroo.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Qualaroo: User Research & Customer Feedback Softwarehttps://qualaroo.com",
+      "url": "https://qualaroo.com/"
+    }
+  },
+  "source-quickbooks-singer": {
+    "date": "2021-04-17",
+    "url": "http://quickbooks.com/",
+    "definition": {
+      "name": "QuickBooks",
+      "sourceDefinitionId": "29b409d9-30a5-4cc8-ad50-886eb846fea3",
+      "dockerRepository": "airbyte/source-quickbooks-singer",
+      "dockerImageTag": "0.1.5",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/quickbooks",
+      "icon": "qb.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "QuickBooks®: Official Site | Smart Tools. Better Business.http://quickbooks.com",
+      "url": "http://quickbooks.com/"
+    }
+  },
+  "source-rd-station-marketing": {
+    "date": "2022-10-28",
+    "url": "https://www.rdstation.com/en/",
+    "definition": {
+      "name": "RD Station Marketing",
+      "sourceDefinitionId": "fb141f29-be2a-450b-a4f2-2cd203a00f84",
+      "dockerRepository": "airbyte/source-rd-station-marketing",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/rd-station-marketing",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "RD Station - The Complete Platform to Build a Real Growth...",
+      "url": "https://www.rdstation.com/en/"
+    }
+  },
+  "source-recharge": {
+    "date": "2021-05-20",
+    "url": "https://www.recharge.com/en/us",
+    "definition": {
+      "name": "Recharge",
+      "sourceDefinitionId": "45d2e135-2ede-49e1-939f-3e3ec357a65e",
+      "dockerRepository": "airbyte/source-recharge",
+      "dockerImageTag": "0.2.4",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/recharge",
+      "icon": "recharge.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Worldwide mobile recharge: send credit and data to any phone. Recipient's country: ... Save time with the Recharge.com app. Recharge anytime, anywhere in ...",
+      "url": "https://www.recharge.com/en/us"
+    }
+  },
+  "source-recurly": {
+    "date": "2020-11-25",
+    "url": "https://recurly.com/",
+    "definition": {
+      "name": "Recurly",
+      "sourceDefinitionId": "cd42861b-01fc-4658-a8ab-5d11d0510f01",
+      "dockerRepository": "airbyte/source-recurly",
+      "dockerImageTag": "0.4.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/recurly",
+      "icon": "recurly.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Recurly is the subscription and billing platform trusted by leading brands to grow their recurring revenue faster, smarter, and stronger.",
+      "url": "https://recurly.com/"
+    }
+  },
+  "source-redshift": {
+    "date": "2020-12-01",
+    "url": "https://www.redshift.com/",
+    "definition": {
+      "name": "Redshift",
+      "sourceDefinitionId": "e87ffa8e-a3b5-f69c-9076-6011339de1f6",
+      "dockerRepository": "airbyte/source-redshift",
+      "dockerImageTag": "0.3.14",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/redshift",
+      "icon": "redshift.svg",
+      "sourceType": "database",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Red Shift Internet Solutionshttps://www.redshift.com",
+      "url": "https://www.redshift.com/"
+    }
+  },
+  "source-relational-db": {
+    "date": "2021-07-06",
+    "url": "https://www.oracle.com/database/what-is-a-relational-database/",
+    "scrape": {
+      "description": "What is a Relational Database (RDBMS)? - Oracle",
+      "url": "https://www.oracle.com/database/what-is-a-relational-database/"
+    }
+  },
+  "source-retently": {
+    "date": "2021-11-02",
+    "url": "https://www.retently.com/",
+    "definition": {
+      "name": "Retently",
+      "sourceDefinitionId": "db04ecd1-42e7-4115-9cec-95812905c626",
+      "dockerRepository": "airbyte/source-retently",
+      "dockerImageTag": "0.1.2",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/retently",
+      "icon": "retently.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Retentlyhttps://www.retently.com",
+      "url": "https://www.retently.com/"
+    }
+  },
+  "source-rki-covid": {
+    "date": "2022-05-30",
+    "url": "https://www.rki.de/EN/Content/infections/epidemiology/outbreaks/COVID-19/COVID19.html",
+    "definition": {
+      "name": "RKI Covid",
+      "sourceDefinitionId": "d78e5de0-aa44-4744-aa4f-74c818ccfe19",
+      "dockerRepository": "airbyte/source-rki-covid",
+      "dockerImageTag": "0.1.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/rki-covid",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "COVID-19 - RKI",
+      "url": "https://www.rki.de/EN/Content/infections/epidemiology/outbreaks/COVID-19/COVID19.html"
+    }
+  },
+  "source-s3": {
+    "date": "2021-07-30",
+    "url": "https://s3.com/",
+    "definition": {
+      "name": "S3",
+      "sourceDefinitionId": "69589781-7828-43c5-9f63-8925b1c1ccc2",
+      "dockerRepository": "airbyte/source-s3",
+      "dockerImageTag": "0.1.25",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/s3",
+      "icon": "s3.svg",
+      "sourceType": "file",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "S3: Compliance Reporting and Trade Analytics Softwarehttps://s3.com",
+      "url": "https://s3.com/"
+    }
+  },
+  "source-salesforce": {
+    "date": "2021-09-08",
+    "url": "https://www.salesforce.com/",
+    "definition": {
+      "name": "Salesforce",
+      "sourceDefinitionId": "b117307c-14b6-41aa-9422-947e34922962",
+      "dockerRepository": "airbyte/source-salesforce",
+      "dockerImageTag": "1.0.22",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/salesforce",
+      "icon": "salesforce.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Personalize every experience along the customer journey with the Customer 360. Unify marketing, sales, service, commerce, and IT on the world's #1 CRM.",
+      "url": "https://www.salesforce.com/"
+    }
+  },
+  "source-salesloft": {
+    "date": "2021-10-22",
+    "url": "https://salesloft.com/",
+    "definition": {
+      "name": "SalesLoft",
+      "sourceDefinitionId": "41991d12-d4b5-439e-afd0-260a31d4c53f",
+      "dockerRepository": "airbyte/source-salesloft",
+      "dockerImageTag": "0.1.3",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/salesloft",
+      "icon": "salesloft.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Salesloft lets you know what's working and what's not to help you set strategy, drive alignment, predictably generate revenue, and scale your sales organization ...",
+      "url": "https://salesloft.com/"
+    }
+  },
+  "source-scaffold-java-jdbc": {
+    "date": "2021-06-09",
+    "url": "https://github.com/airbytehq/airbyte/issues/10618",
+    "scrape": {
+      "description": "A special Airbyte source for Java JDBC connectors.",
+      "url": "https://github.com/airbytehq/airbyte/issues/10618"
+    }
+  },
+  "source-scaffold-source-http": {
+    "date": "2021-04-26",
+    "url": "https://docs.airbyte.com/",
+    "scrape": {
+      "description": "A special Airbyte source for HTTP connectors.",
+      "url": "https://docs.airbyte.com/"
+    }
+  },
+  "source-scaffold-source-python": {
+    "date": "2021-02-17",
+    "url": "https://docs.airbyte.com/",
+    "scrape": {
+      "description": "A special Airbyte source for Python connectors.",
+      "url": "https://docs.airbyte.com/"
+    }
+  },
+  "source-search-metrics": {
+    "date": "2021-12-23",
+    "url": "https://www.searchmetrics.com/",
+    "definition": {
+      "name": "SearchMetrics",
+      "sourceDefinitionId": "8d7ef552-2c0f-11ec-8d3d-0242ac130003",
+      "dockerRepository": "airbyte/source-search-metrics",
+      "dockerImageTag": "0.1.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/search-metrics",
+      "icon": "searchmetrics.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "We help enterprises understand digital demand, build strategies for tapping into it, and execute at scale. Turn search data into revenue.",
+      "url": "https://www.searchmetrics.com/"
+    }
+  },
+  "source-sendgrid": {
+    "date": "2020-11-24",
+    "url": "https://sendgrid.com/",
+    "definition": {
+      "name": "Sendgrid",
+      "sourceDefinitionId": "fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87",
+      "dockerRepository": "airbyte/source-sendgrid",
+      "dockerImageTag": "0.2.15",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/sendgrid",
+      "icon": "sendgrid.svg",
+      "sourceType": "api",
+      "releaseStage": "beta"
+    },
+    "scrape": {
+      "description": "SendGrid delivers your transactional and marketing emails through the world's largest cloud-based email delivery platform. Send with confidence.",
+      "url": "https://sendgrid.com/"
+    }
+  },
+  "source-sentry": {
+    "date": "2021-11-03",
+    "url": "https://www.sentry.com/",
+    "definition": {
+      "sourceDefinitionId": "cdaf146a-9b75-49fd-9dd2-9d64a0bb4781",
+      "name": "Sentry",
+      "dockerRepository": "airbyte/source-sentry",
+      "dockerImageTag": "0.1.7",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/sentry",
+      "icon": "sentry.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "At Sentry, we work to understand your business. We offer customizable business insurance, employee 401(k) plans, business life insurance, and the security ...",
+      "url": "https://www.sentry.com/"
+    }
+  },
+  "source-sftp": {
+    "date": "2022-05-30",
+    "url": "https://www.sftp.net/",
+    "definition": {
+      "name": "SFTP",
+      "sourceDefinitionId": "a827c52e-791c-4135-a245-e233c5255199",
+      "dockerRepository": "airbyte/source-sftp",
+      "dockerImageTag": "0.1.2",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/sftp",
+      "sourceType": "file",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "SFTP Protocol Info Site for Developers - SFTP.nethttps://www.sftp.net",
+      "url": "https://www.sftp.net/"
+    }
+  },
+  "source-sftp-bulk": {
+    "date": "2022-10-28",
+    "url": "https://www.sftp.net/",
+    "definition": {
+      "name": "SFTP Bulk",
+      "sourceDefinitionId": "31e3242f-dee7-4cdc-a4b8-8e06c5458517",
+      "dockerRepository": "airbyte/source-sftp-bulk",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/sftp-bulk",
+      "sourceType": "file",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "A special Airbyte source for SFTP bulk uploads",
+      "url": "https://www.sftp.net/"
+    }
+  },
+  "source-shopify": {
+    "date": "2021-06-08",
+    "url": "https://www.shopify.com/",
+    "definition": {
+      "name": "Shopify",
+      "sourceDefinitionId": "9da77001-af33-4bcd-be46-6252bf9342b9",
+      "dockerRepository": "airbyte/source-shopify",
+      "dockerImageTag": "0.2.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/shopify",
+      "icon": "shopify.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Try Shopify free and start a business or grow an existing one. Get more than ecommerce software with tools to manage every part of your business.",
+      "url": "https://www.shopify.com/"
+    }
+  },
+  "source-shortio": {
+    "date": "2021-08-16",
+    "url": "https://short.io/",
+    "definition": {
+      "name": "Short.io",
+      "sourceDefinitionId": "2fed2292-5586-480c-af92-9944e39fe12d",
+      "dockerRepository": "airbyte/source-shortio",
+      "dockerImageTag": "0.1.3",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/shortio",
+      "icon": "short.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Short.io — White label URL Shortener. Create your own short ...https://short.io",
+      "url": "https://short.io/"
+    }
+  },
+  "source-slack": {
+    "date": "2021-04-20",
+    "url": "https://slack.com/",
+    "definition": {
+      "name": "Slack",
+      "sourceDefinitionId": "c2281cee-86f9-4a86-bb48-d23286b4c7bd",
+      "dockerRepository": "airbyte/source-slack",
+      "dockerImageTag": "0.1.18",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/slack",
+      "icon": "slack.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Slack is a new way to communicate with your team. It's faster, better organized, and more secure than email.",
+      "url": "https://slack.com/"
+    }
+  },
+  "source-smartsheets": {
+    "date": "2021-04-15",
+    "url": "https://www.smartsheet.com/",
+    "definition": {
+      "name": "Smartsheets",
+      "sourceDefinitionId": "374ebc65-6636-4ea0-925c-7d35999a8ffc",
+      "dockerRepository": "airbyte/source-smartsheets",
+      "dockerImageTag": "0.1.12",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/smartsheets",
+      "icon": "smartsheet.svg",
+      "sourceType": "api",
+      "releaseStage": "beta"
+    },
+    "scrape": {
+      "description": "Smartsheet offers a rich set of views, workflows, reports, and dashboards to capture and track your plans, resources, and schedules.",
+      "url": "https://www.smartsheet.com/"
+    }
+  },
+  "source-snapchat-marketing": {
+    "date": "2021-07-29",
+    "url": "https://forbusiness.snapchat.com/en-US/",
+    "definition": {
+      "name": "Snapchat Marketing",
+      "sourceDefinitionId": "200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b",
+      "dockerRepository": "airbyte/source-snapchat-marketing",
+      "dockerImageTag": "0.1.8",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/snapchat-marketing",
+      "icon": "snapchat.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Snapchat Ads | Snapchat for Business",
+      "url": "https://forbusiness.snapchat.com/en-US/"
+    }
+  },
+  "source-snowflake": {
+    "date": "2021-06-11",
+    "url": "https://www.snowflake.com/en/",
+    "definition": {
+      "name": "Snowflake",
+      "sourceDefinitionId": "e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2",
+      "dockerRepository": "airbyte/source-snowflake",
+      "dockerImageTag": "0.1.24",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/snowflake",
+      "icon": "snowflake.svg",
+      "sourceType": "database",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "ONE PLATFORM THAT. POWERS THE DATA CLOUD ... Execute your most critical workloads on top of Snowflake's multi-cluster shared data architecture in a fully managed ...",
+      "url": "https://www.snowflake.com/en/"
+    }
+  },
+  "source-sonar-cloud": {
+    "date": "2022-10-28",
+    "url": "https://www.sonarsource.com/products/sonarcloud/",
+    "definition": {
+      "name": "Sonar Cloud",
+      "sourceDefinitionId": "3ab1d7d0-1577-4ab9-bcc4-1ff6a4c2c9f2",
+      "dockerRepository": "airbyte/source-sonar-cloud",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/sonar-cloud",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "As a service | SonarCloud | Sonar - SonarSource",
+      "url": "https://www.sonarsource.com/products/sonarcloud/"
+    }
+  },
+  "source-square": {
+    "date": "2021-07-08",
+    "url": "http://square.com/",
+    "definition": {
+      "name": "Square",
+      "sourceDefinitionId": "77225a51-cd15-4a13-af02-65816bd0ecf4",
+      "dockerRepository": "airbyte/source-square",
+      "dockerImageTag": "0.1.4",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/square",
+      "icon": "square.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Square | Solutions For Your Small, Medium & Large Businesshttp://square.com",
+      "url": "http://square.com/"
+    }
+  },
+  "source-stock-ticker-api-tutorial": {
+    "date": "2021-01-07",
+    "url": "https://rapidapi.com/blog/best-stock-api/",
+    "scrape": {
+      "description": "Top 7 Best Stock Market APIs for Developers in 2022 - RapidAPI",
+      "url": "https://rapidapi.com/blog/best-stock-api/"
+    }
+  },
+  "source-strava": {
+    "date": "2021-10-26",
+    "url": "https://www.strava.com/",
+    "definition": {
+      "sourceDefinitionId": "7a4327c4-315a-11ec-8d3d-0242ac130003",
+      "name": "Strava",
+      "dockerRepository": "airbyte/source-strava",
+      "dockerImageTag": "0.1.2",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/strava",
+      "icon": "strava.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Designed by athletes, for athletes, Strava's mobile app and website connect millions of runners and cyclists through the sports they love.",
+      "url": "https://www.strava.com/"
+    }
+  },
+  "source-stripe": {
+    "date": "2021-04-07",
+    "url": "https://stripe.com/",
+    "definition": {
+      "name": "Stripe",
+      "sourceDefinitionId": "e094cb9a-26de-4645-8761-65c0c425d1de",
+      "dockerRepository": "airbyte/source-stripe",
+      "dockerImageTag": "0.1.40",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/stripe",
+      "icon": "stripe.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Stripe is a suite of APIs powering online payment processing and commerce solutions for internet businesses of all sizes. Accept payments and scale faster.",
+      "url": "https://stripe.com/"
+    }
+  },
+  "source-surveymonkey": {
+    "date": "2021-07-06",
+    "url": "https://www.surveymonkey.com/",
+    "definition": {
+      "name": "SurveyMonkey",
+      "sourceDefinitionId": "badc5925-0485-42be-8caa-b34096cb71b5",
+      "dockerRepository": "airbyte/source-surveymonkey",
+      "dockerImageTag": "0.1.11",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/surveymonkey",
+      "icon": "surveymonkey.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Use SurveyMonkey to drive your business forward by using our free online survey tool to capture the voices and opinions of the people who matter most to ...",
+      "url": "https://www.surveymonkey.com/"
+    }
+  },
+  "source-talkdesk-explore": {
+    "date": "2022-05-27",
+    "url": "https://docs.talkdesk.com/docs/explore-api",
+    "definition": {
+      "name": "TalkDesk Explore",
+      "sourceDefinitionId": "f00d2cf4-3c28-499a-ba93-b50b6f26359e",
+      "dockerRepository": "airbyte/source-talkdesk-explore",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/talkdesk-explore",
+      "icon": "talkdesk-explore.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Talkdesk Explore API allows getting valuable trends and insights regarding the performance of your company by correlating Talkdesk data with data from other systems.",
+      "url": "https://docs.talkdesk.com/docs/explore-api"
+    }
+  },
+  "source-tempo": {
+    "date": "2021-01-12",
+    "url": "https://www.tempo.com/",
+    "definition": {
+      "name": "Tempo",
+      "sourceDefinitionId": "d1aa448b-7c54-498e-ad95-263cbebcd2db",
+      "dockerRepository": "airbyte/source-tempo",
+      "dockerImageTag": "0.2.6",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/tempo",
+      "icon": "tempo.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Previsão do Tempo para 14 dias - tempo.com",
+      "url": "https://www.tempo.com/"
+    }
+  },
+  "source-tidb": {
+    "date": "2022-04-21",
+    "url": "http://tidb.com/",
+    "definition": {
+      "name": "TiDB",
+      "sourceDefinitionId": "0dad1a35-ccf8-4d03-b73e-6788c00b13ae",
+      "dockerRepository": "airbyte/source-tidb",
+      "dockerImageTag": "0.2.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/tidb",
+      "icon": "tidb.svg",
+      "sourceType": "database",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Welcome to Tidb.comhttp://tidb.comhttp://tidb.com",
+      "url": "http://tidb.com/"
+    }
+  },
+  "source-tiktok-marketing": {
+    "date": "2021-10-16",
+    "url": "https://www.tiktok.com/business/en-US",
+    "definition": {
+      "name": "TikTok Marketing",
+      "sourceDefinitionId": "4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35",
+      "dockerRepository": "airbyte/source-tiktok-marketing",
+      "dockerImageTag": "0.1.17",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/tiktok-marketing",
+      "icon": "tiktok.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "url": "https://www.tiktok.com/business/en-US",
+      "description": "Advertise on TikTok. Make ads that entertain and campaigns that connect. Where large and small businesses, agencies & creators can achieve big results."
+    }
+  },
+  "source-timely": {
+    "date": "2022-07-15",
+    "url": "http://timely.com/",
+    "definition": {
+      "name": "Timely",
+      "sourceDefinitionId": "bc617b5f-1b9e-4a2d-bebe-782fd454a771",
+      "dockerRepository": "airbyte/source-timely",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/timely",
+      "icon": "timely.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Timely.comhttp://timely.comhttp://timely.com",
+      "url": "http://timely.com/"
+    }
+  },
+  "source-tplcentral": {
+    "date": "2021-12-28",
+    "url": "http://www.tplcentral.com/",
+    "scrape": {
+      "description": "TPL Enterprises | Responsive Website Design | Logo Design ...http://www.tplcentral.comhttp://www.tplcentral.com",
+      "url": "http://www.tplcentral.com/"
+    }
+  },
+  "source-trello": {
+    "date": "2021-08-25",
+    "url": "https://trello.com/",
+    "definition": {
+      "name": "Trello",
+      "sourceDefinitionId": "8da67652-004c-11ec-9a03-0242ac130003",
+      "dockerRepository": "airbyte/source-trello",
+      "dockerImageTag": "0.1.6",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/trello",
+      "icon": "trelllo.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Trello is the ultimate project management tool. Start up a board in seconds, automate tedious tasks, and collaborate anywhere, even on mobile.",
+      "url": "https://trello.com/"
+    }
+  },
+  "source-tvmaze-schedule": {
+    "date": "2022-10-28",
+    "url": "https://www.tvmaze.com/schedule",
+    "definition": {
+      "name": "TVMaze Schedule",
+      "sourceDefinitionId": "bd14b08f-9f43-400f-b2b6-7248b5c72561",
+      "dockerRepository": "airbyte/source-tvmaze-schedule",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/tvmaze-schedule",
+      "icon": "trelllo.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Schedule for Monday October 31 - TVmaze.com",
+      "url": "https://www.tvmaze.com/schedule"
+    }
+  },
+  "source-twilio": {
+    "date": "2021-07-04",
+    "url": "https://www.twilio.com/",
+    "definition": {
+      "name": "Twilio",
+      "sourceDefinitionId": "b9dc6155-672e-42ea-b10d-9f1f1fb95ab1",
+      "dockerRepository": "airbyte/source-twilio",
+      "dockerImageTag": "0.1.13",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/twilio",
+      "icon": "twilio.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Build personal relationships with each and every customer, cut customer acquisition costs, and increase lifetime value. Twilio Engage uniquely puts the power of ...",
+      "url": "https://www.twilio.com/"
+    }
+  },
+  "source-typeform": {
+    "date": "2021-07-13",
+    "url": "https://www.typeform.com/",
+    "definition": {
+      "name": "Typeform",
+      "sourceDefinitionId": "e7eff203-90bf-43e5-a240-19ea3056c474",
+      "dockerRepository": "airbyte/source-typeform",
+      "dockerImageTag": "0.1.9",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/typeform",
+      "icon": "typeform.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "One question at a time — like a conversation — keeps your audience engaged. You get more thoughtful responses, and higher completion rates. ... Built-in photo and ...",
+      "url": "https://www.typeform.com/"
+    }
+  },
+  "source-us-census": {
+    "date": "2021-07-20",
+    "url": "https://www.census.gov/",
+    "definition": {
+      "name": "US Census",
+      "sourceDefinitionId": "c4cfaeda-c757-489a-8aba-859fb08b6970",
+      "dockerRepository": "airbyte/source-us-census",
+      "dockerImageTag": "0.1.2",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/us-census",
+      "icon": "uscensus.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "The Census Bureau's mission is to serve as the nation's leading provider of quality data about its ... Measuring America's People, Places, and Economy.",
+      "url": "https://www.census.gov/"
+    }
+  },
+  "source-waiteraid": {
+    "date": "2022-10-29",
+    "url": "https://waiteraid.com/",
+    "definition": {
+      "name": "Waiteraid",
+      "sourceDefinitionId": "03a53b13-794a-4d6b-8544-3b36ed8f3ce4",
+      "dockerRepository": "airbyte/source-waiteraid",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/waiteraid",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "WaiterAid",
+      "url": "https://waiteraid.com/"
+    }
+  },
+  "source-webflow": {
+    "date": "2022-06-22",
+    "url": "https://webflow.com/",
+    "definition": {
+      "name": "Webflow",
+      "sourceDefinitionId": "ef580275-d9a9-48bb-af5e-db0f5855be04",
+      "dockerRepository": "airbyte/source-webflow",
+      "dockerImageTag": "0.1.2",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/webflow",
+      "icon": "webflow.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Create professional, custom websites in a completely visual canvas with no code. Learn how to create a website by trying Webflow for free!",
+      "url": "https://webflow.com/"
+    }
+  },
+  "source-whisky-hunter": {
+    "date": "2022-10-21",
+    "url": "https://whiskyhunter.net/",
+    "definition": {
+      "name": "Whisky Hunter",
+      "sourceDefinitionId": "e65f84c0-7598-458a-bfac-f770c381ff5d",
+      "dockerRepository": "airbyte/source-whisky-hunter",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/whisky-hunter",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Whisky Hunter — Market Research Tools For Collectors ...",
+      "url": "https://whiskyhunter.net/"
+    }
+  },
+  "source-woocommerce": {
+    "date": "2021-10-07",
+    "url": "https://woocommerce.com/",
+    "definition": {
+      "name": "WooCommerce",
+      "sourceDefinitionId": "2a2552ca-9f78-4c1c-9eb7-4d0dc66d72df",
+      "dockerRepository": "airbyte/source-woocommerce",
+      "dockerImageTag": "0.1.2",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/woocommerce",
+      "icon": "woocommerce.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "WooCommerce is a customizable, open-source eCommerce platform built on WordPress.",
+      "url": "https://woocommerce.com/"
+    }
+  },
+  "source-workable": {
+    "date": "2022-10-27",
+    "url": "https://www.workable.com/",
+    "definition": {
+      "name": "Workable",
+      "sourceDefinitionId": "ef3c99c6-9e90-43c8-9517-926cfd978517",
+      "dockerRepository": "airbyte/source-workable",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/workable",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "More than an applicant tracking system, Workable's talent acquisition software helps teams find candidates, evaluate applicants and make the right hire, ...",
+      "url": "https://www.workable.com/"
+    }
+  },
+  "source-wrike": {
+    "date": "2022-09-16",
+    "url": "https://www.wrike.com/",
+    "definition": {
+      "name": "Wrike",
+      "sourceDefinitionId": "9c13f986-a13b-4988-b808-4705badf71c2",
+      "dockerRepository": "airbyte/source-wrike",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/wrike",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Only Wrike's work management platform gives your team full visibility and control over all your tasks and projects. Project management software has never ...",
+      "url": "https://www.wrike.com/"
+    }
+  },
+  "source-xkcd": {
+    "date": "2022-10-22",
+    "url": "https://xkcd.com/",
+    "definition": {
+      "name": "xkcd",
+      "sourceDefinitionId": "80fddd16-17bd-4c0c-bf4a-80df7863fc9d",
+      "dockerRepository": "airbyte/source-xkcd",
+      "dockerImageTag": "0.1.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/xkcd",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Archive · What If? Blag · About · Feed•Email · TW•FB•IG · -Books- · What If? 2 · WI?•TE•HT · xkcd.com logo A webcomic of romance,",
+      "url": "https://xkcd.com/"
+    }
+  },
+  "source-yahoo-finance-price": {
+    "date": "2022-03-24",
+    "url": "https://finance.yahoo.com/",
+    "scrape": {
+      "description": "Yahoo Finance - Stock Market Live, Quotes, Business ...",
+      "url": "https://finance.yahoo.com/"
+    }
+  },
+  "source-yandex-metrica": {
+    "date": "2022-09-20",
+    "url": "https://metrica.yandex.com/",
+    "definition": {
+      "name": "Yandex Metrica",
+      "sourceDefinitionId": "7865dce4-2211-4f6a-88e5-9d0fe161afe7",
+      "dockerRepository": "airbyte/source-yandex-metrica",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/yandex-metrica",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Yandex.Metrica — free All-Round Web Analytics: session ...",
+      "url": "https://metrica.yandex.com/"
+    }
+  },
+  "source-youtube-analytics": {
+    "date": "2021-11-19",
+    "url": "https://analytics.youtube.com/",
+    "definition": {
+      "sourceDefinitionId": "afa734e4-3571-11ec-991a-1e0031268139",
+      "name": "YouTube Analytics",
+      "dockerRepository": "airbyte/source-youtube-analytics",
+      "dockerImageTag": "0.1.3",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/youtube-analytics",
+      "icon": "youtube.svg",
+      "sourceType": "api",
+      "releaseStage": "beta"
+    },
+    "scrape": {
+      "description": "YouTube Analytics",
+      "url": "https://analytics.youtube.com/"
+    }
+  },
+  "source-zendesk-chat": {
+    "date": "2021-05-04",
+    "url": "https://developer.zendesk.com/documentation/live-chat/getting-started/auth/",
+    "definition": {
+      "name": "Zendesk Chat",
+      "sourceDefinitionId": "40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4",
+      "dockerRepository": "airbyte/source-zendesk-chat",
+      "dockerImageTag": "0.1.11",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/zendesk-chat",
+      "icon": "zendesk.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "The Zendesk Live Chat Conversations API allows your application to act as a Zendesk Chat agent and interact with your website visitors.The API uses the GraphQL data query language to give you more flexibility.",
+      "url": "https://developer.zendesk.com/documentation/live-chat/getting-started/auth/"
+    }
+  },
+  "source-zendesk-sell": {
+    "date": "2022-10-29",
+    "url": "https://www.zendesk.com/sell/",
+    "definition": {
+      "name": "Zendesk Sell",
+      "sourceDefinitionId": "982eaa4c-bba1-4cce-a971-06a41f700b8c",
+      "dockerRepository": "airbyte/source-zendesk-sell",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/zendesk-sell",
+      "icon": "zendesk.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Zendesk CRM for Sales | All-in-One Sales Platform Zendesk Sell",
+      "url": "https://www.zendesk.com/sell/"
+    }
+  },
+  "source-zendesk-sunshine": {
+    "date": "2021-07-09",
+    "url": "https://www.zendesk.com/platform/",
+    "definition": {
+      "name": "Zendesk Sunshine",
+      "sourceDefinitionId": "325e0640-e7b3-4e24-b823-3361008f603f",
+      "dockerRepository": "airbyte/source-zendesk-sunshine",
+      "dockerImageTag": "0.1.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/zendesk-sunshine",
+      "icon": "zendesk.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Develop custom experiences with the Zendesk Platform",
+      "url": "https://www.zendesk.com/platform/"
+    }
+  },
+  "source-zendesk-support": {
+    "date": "2021-08-03",
+    "url": "https://www.zendesk.com/",
+    "definition": {
+      "name": "Zendesk Support",
+      "sourceDefinitionId": "79c1aa37-dae3-42ae-b333-d1c105477715",
+      "dockerRepository": "airbyte/source-zendesk-support",
+      "dockerImageTag": "0.2.16",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/zendesk-support",
+      "icon": "zendesk.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "url": "https://www.zendesk.com/",
+      "description": "Zendesk is award-winning customer service software trusted by 200K+ customers. Make customers happy via text, mobile, phone, email, live chat, social media."
+    }
+  },
+  "source-zendesk-talk": {
+    "date": "2021-04-14",
+    "url": "https://www.zendesk.com/service/voice/",
+    "definition": {
+      "name": "Zendesk Talk",
+      "sourceDefinitionId": "c8630570-086d-4a40-99ae-ea5b18673071",
+      "dockerRepository": "airbyte/source-zendesk-talk",
+      "dockerImageTag": "0.1.5",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/zendesk-talk",
+      "icon": "zendesk.svg",
+      "sourceType": "api",
+      "releaseStage": "generally_available"
+    },
+    "scrape": {
+      "description": "Best customer service phone software 2022 - Zendesk",
+      "url": "https://www.zendesk.com/service/voice/"
+    }
+  },
+  "source-zenefits": {
+    "date": "2022-09-22",
+    "url": "https://www.zenefits.com/",
+    "definition": {
+      "name": "Zenefits",
+      "sourceDefinitionId": "8baba53d-2fe3-4e33-bc85-210d0eb62884",
+      "dockerRepository": "airbyte/source-zenefits",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/zenefits",
+      "icon": "zenefits.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Zenefits is an award-winning People Ops Platform that makes it easy to manage your employee documents, HR, benefits, payroll, time and attendance, ...",
+      "url": "https://www.zenefits.com/"
+    }
+  },
+  "source-zenloop": {
+    "date": "2021-11-23",
+    "url": "https://www.zenloop.com/en/",
+    "definition": {
+      "name": "Zenloop",
+      "sourceDefinitionId": "f1e4c7f6-db5c-4035-981f-d35ab4998794",
+      "dockerRepository": "airbyte/source-zenloop",
+      "dockerImageTag": "0.1.3",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/zenloop",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "zenloop | Customer Experience Management Platform",
+      "url": "https://www.zenloop.com/en/"
+    }
+  },
+  "source-zoho-crm": {
+    "date": "2022-04-06",
+    "url": "https://www.zoho.com/crm/",
+    "definition": {
+      "name": "ZohoCRM",
+      "sourceDefinitionId": "4942d392-c7b5-4271-91f9-3b4f4e51eb3e",
+      "dockerRepository": "airbyte/source-zoho-crm",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/zoho-crm",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Top-rated Sales CRM Software by Customers - Zoho",
+      "url": "https://www.zoho.com/crm/"
+    }
+  },
+  "source-zoom": {
+    "date": "2022-10-26",
+    "url": "http://zoom.com/",
+    "definition": {
+      "name": "Zoom",
+      "sourceDefinitionId": "cbfd9856-1322-44fb-bcf1-0b39b7a8e92e",
+      "dockerRepository": "airbyte/source-zoom",
+      "dockerImageTag": "0.1.0",
+      "documentationUrl": "https://docs.airbyte.io/integrations/sources/zoom",
+      "sourceType": "api",
+      "icon": "zoom.svg",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Zoom: Video Conferencing, Cloud Phone, Webinars, Chat ...http://zoom.comhttp://zoom.com",
+      "url": "http://zoom.com/"
+    }
+  },
+  "source-zuora": {
+    "date": "2021-08-05",
+    "url": "https://www.zuora.com/",
+    "definition": {
+      "name": "Zuora",
+      "sourceDefinitionId": "3dc3037c-5ce8-4661-adc2-f7a9e3c5ece5",
+      "dockerRepository": "airbyte/source-zuora",
+      "dockerImageTag": "0.1.3",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/zuora",
+      "icon": "zuora.svg",
+      "sourceType": "api",
+      "releaseStage": "alpha"
+    },
+    "scrape": {
+      "description": "Zuora is the industry leader in subscription management. Build, run and grow your subscription business with Zuora's suite of advanced billing and revenue ...",
+      "url": "https://www.zuora.com/"
+    }
+  }
+}

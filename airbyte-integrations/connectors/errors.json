@@ -1,0 +1,263 @@
+{
+  "source-adjust": {
+    "3": "Error 3: icon defined but NOT FOUND for source-adjust!!! bad data!"
+  },
+  "source-alloydb-strict-encrypt": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "destination-mongodb-strict-encrypt": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "destination-jdbc": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "destination-kvdb": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "destination-firebolt": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "destination-clickhouse-strict-encrypt": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "destination-clickhouse": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "destination-aws-datalake": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "destination-elasticsearch-strict-encrypt": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "destination-amazon-sqs": {
+    "3": "Error 3: icon defined but NOT FOUND for destination-amazon-sqs!!! bad data!"
+  },
+  "destination-dev-null": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-amazon-sqs": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "destination-postgres-strict-encrypt": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "destination-oracle-strict-encrypt": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "destination-mysql-strict-encrypt": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "destination-rockset": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "destination-mssql-strict-encrypt": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "destination-scaffold-destination-python": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "destination-typesense": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-appsflyer": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-activecampaign": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-clickhouse-strict-encrypt": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-convertkit": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-auth0": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-clickhouse": {
+    "3": "Error 3: icon defined but NOT FOUND for source-clickhouse!!! bad data!"
+  },
+  "source-ashby": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-courier": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-coin-api": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-cockroachdb-strict-encrypt": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-db2-strict-encrypt": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-dv-360": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-firebolt": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-file-secure": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-faker": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-flexport": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-e2e-test-cloud": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-elasticsearch": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-freshcaller": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-gocardless": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-gutendex": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-insightly": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-hubplanner": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-hellobaton": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-lokalise": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-lemlist": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-jdbc": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-kustomer-singer": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-kyriba": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-mailjet-mail": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-netsuite": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-mailerlite": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-mysql-strict-encrypt": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-mongodb": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-mongodb-strict-encrypt": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-mssql-strict-encrypt": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-mailjet-sms": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-news-api": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-omnisend": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-openweather": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-oracle-strict-encrypt": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-pardot": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-postgres-strict-encrypt": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-orbit": {
+    "3": "Error 3: icon defined but NOT FOUND for source-orbit!!! bad data!"
+  },
+  "source-oura": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-rd-station-marketing": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-python-http-tutorial": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-pivotal-tracker": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-stock-ticker-api-tutorial": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-scaffold-java-jdbc": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-sftp": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-relational-db": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-sftp-bulk": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-scaffold-source-python": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-scaffold-source-http": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-rki-covid": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-sonar-cloud": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-wrike": {
+    "3": "Error 3: icon defined but NOT FOUND for source-wrike!!! bad data!"
+  },
+  "source-tplcentral": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-workable": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-zoho-crm": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-zenloop": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-yahoo-finance-price": {
+    "1": "Error 1: no definition found in definitions.yaml"
+  },
+  "source-xkcd": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-yandex-metrica": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-waiteraid": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  },
+  "source-whisky-hunter": {
+    "2": "Error 2: no icon defined in definitions.yaml"
+  }
+}
