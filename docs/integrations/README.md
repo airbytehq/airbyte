@@ -176,7 +176,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Wrike](sources/wrike.md)                                                                   | Alpha                | No                  |
 | [YouTube Analytics](sources/youtube-analytics.md)                                           | Beta                 | Yes                 |
 | [Xkcd](sources/xkcd.md)                                                                     | Alpha                | No                  |
-| [Zapier Supported Storage](sources/zapier-supported-storage.md)                             | Beta                 | Yes                 |
+| [Zapier Supported Storage](sources/zapier-supported-storage.md)                             | Alpha                 | No                 |
 | [Zencart](sources/zencart.md)                                                               | Alpha                | No                  |
 | [Zendesk Chat](sources/zendesk-chat.md)                                                     | Generally Available  | Yes                 |
 | [Zendesk Sunshine](sources/zendesk-sunshine.md)                                             | Alpha                | Yes                 |
