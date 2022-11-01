@@ -154,7 +154,6 @@ def test_parse_response_empty_content(applications_stream):
     assert records == []
 
 
-"""
 def test_ignore_403(applications_stream):
     response = requests.Response()
     response.status_code = 403
@@ -162,7 +161,6 @@ def test_ignore_403(applications_stream):
     parsed_response = applications_stream.retriever.parse_response(response, stream_state={})
     records = [record for record in parsed_response]
     assert records == []
-"""
 
 
 def test_retry_429(applications_stream):
