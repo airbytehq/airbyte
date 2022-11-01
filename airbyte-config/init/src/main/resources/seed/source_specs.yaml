@@ -2835,7 +2835,7 @@
     supportsDBT: false
     supported_destination_sync_modes: []
     protocol_version: "0.2.1"
-- dockerImage: "airbyte/source-exchange-rates:1.2.6"
+- dockerImage: "airbyte/source-exchange-rates:1.2.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/exchangeratesapi"
     connectionSpecification:
