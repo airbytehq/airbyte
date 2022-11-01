@@ -30,6 +30,11 @@ class EventsStream(HttpStream):
     }
 
   def parse_response(self, response: requests.Response, **_) -> Iterable[Mapping]:
+
+    print("############################# Extracting")
+    print("#############################" + response.request.url)
+    print("#############################")
+
     lower_response = json.loads(json.dumps(response.json()).lower())
     yield from lower_response
 
@@ -51,7 +56,7 @@ class EventsStream(HttpStream):
 
   @state.setter
   def state(self, value: Mapping[str, Any]):
-    self._cursor_value = self._cursor_value
+    self._cursor_value = value["page"]
 
 
 class MintedEvents(EventsStream):
@@ -112,13 +117,3 @@ class RoyaltyEvents(EventsStream):
 class BurnedNftsEvents(EventsStream):
   def path(self, **_) -> str:
     return f"api/company/{self.company_id}/search"
-
-
-def str_timestamp_to_str_unix_of_last_value(response):
-  latest_timestamp = response[-1]["eventDate"][:25].replace("+", "")
-  return str(int(time.mktime(
-    datetime.datetime.strptime(
-      latest_timestamp, 
-      "%Y-%m-%dT%H:%M:%S.%f"
-    ).timetuple()
-  )))
