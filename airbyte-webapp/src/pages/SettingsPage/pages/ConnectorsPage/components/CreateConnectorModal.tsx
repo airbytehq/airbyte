@@ -5,9 +5,9 @@ import styled from "styled-components";
 import * as yup from "yup";
 
 import { LabeledInput, Link } from "components";
-import { StatusIcon } from "components/common/StatusIcon";
 import { Button } from "components/ui/Button";
 import { Modal } from "components/ui/Modal";
+import { StatusIcon } from "components/ui/StatusIcon";
 
 import { links } from "utils/links";
 

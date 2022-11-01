@@ -3,7 +3,7 @@ import { ComponentStory, ComponentMeta } from "@storybook/react";
 import { StatusIcon } from "./StatusIcon";
 
 export default {
-  title: "common/StatusIcon",
+  title: "UI/StatusIcon",
   component: StatusIcon,
   argTypes: {
     value: { type: { name: "number", required: false } },

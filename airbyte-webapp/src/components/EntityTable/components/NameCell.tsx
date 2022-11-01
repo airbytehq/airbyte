@@ -3,8 +3,8 @@ import { useIntl } from "react-intl";
 import styled from "styled-components";
 
 import { ConnectorIcon } from "components/common/ConnectorIcon";
-import { StatusIcon } from "components/common/StatusIcon";
-import { StatusIconStatus } from "components/common/StatusIcon/StatusIcon";
+import { StatusIcon } from "components/ui/StatusIcon";
+import { StatusIconStatus } from "components/ui/StatusIcon/StatusIcon";
 
 import { Status } from "../types";
 
