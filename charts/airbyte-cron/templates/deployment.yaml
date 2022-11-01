@@ -141,5 +141,5 @@ spec:
           {{- end }}
 
           {{- if .Values.resources }}
-          resources: {{- toYaml .Values.resources | nindent 10 }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
           {{- end }}
