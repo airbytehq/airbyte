@@ -1163,19 +1163,6 @@ public class ConfigRepository {
   }
 
   /**
-   * MUST NOT ACCEPT SECRETS - Package private so that secrets are not accidentally passed in. Should
-   * only be called from { @link SecretsRepositoryWriter }
-   *
-   * Loads all Data from a ConfigPersistence into the database.
-   *
-   * @param seedPersistenceWithoutSecrets - seed persistence WITHOUT secrets
-   * @throws IOException - you never know when you IO
-   */
-  public void loadDataNoSecrets(final ConfigPersistence seedPersistenceWithoutSecrets) throws IOException {
-    persistence.loadData(seedPersistenceWithoutSecrets);
-  }
-
-  /**
    * The following methods are present to allow the JobCreationAndStatusUpdateActivity class to emit
    * metrics without exposing the underlying database connection.
    */

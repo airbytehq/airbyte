@@ -24,10 +24,8 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.Geography;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.init.DefinitionProviderToConfigPersistenceAdapter;
 import io.airbyte.config.init.DefinitionsProvider;
 import io.airbyte.config.init.LocalDefinitionsProvider;
-import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
@@ -213,8 +211,7 @@ class BootloaderAppTest {
       initBootloader.load();
 
       final DefinitionsProvider localDefinitions = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
-      final ConfigPersistence localConfigPersistence = new DefinitionProviderToConfigPersistenceAdapter(localDefinitions);
-      configRepository.loadDataNoSecrets(localConfigPersistence);
+      configRepository.seedActorDefinitions(localDefinitions.getSourceDefinitions(), localDefinitions.getDestinationDefinitions());
 
       final String sourceSpecs = """
                                  {
