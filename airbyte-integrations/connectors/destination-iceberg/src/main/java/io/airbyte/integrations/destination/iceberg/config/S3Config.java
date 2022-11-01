@@ -219,8 +219,12 @@ public class S3Config implements StorageConfig {
     public Map<String, String> sparkConfigMap(String catalogName) {
         Map<String, String> sparkConfig = new HashMap<>();
         sparkConfig.put("spark.sql.catalog." + catalogName + ".io-impl", "org.apache.iceberg.aws.s3.S3FileIO");
-        sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.endpoint", this.endpointWithSchema);
         sparkConfig.put("spark.sql.catalog." + catalogName + ".warehouse", this.warehouseUri);
+        sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.endpoint", this.endpointWithSchema);
+        sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.access-key-id", this.accessKeyId);
+        sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.secret-access-key", this.secretKey);
+        sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.path-style-access",
+            String.valueOf(this.pathStyleAccess));
         sparkConfig.put("spark.hadoop.fs.s3a.access.key", this.accessKeyId);
         sparkConfig.put("spark.hadoop.fs.s3a.secret.key", this.secretKey);
         sparkConfig.put("spark.hadoop.fs.s3a.path.style.access", String.valueOf(this.pathStyleAccess));
