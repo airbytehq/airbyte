@@ -22,6 +22,7 @@ import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.model.generated.DestinationSyncMode;
 import io.airbyte.api.model.generated.DestinationUpdate;
+import io.airbyte.api.model.generated.FieldTransform;
 import io.airbyte.api.model.generated.JobConfigType;
 import io.airbyte.api.model.generated.JobIdRequestBody;
 import io.airbyte.api.model.generated.JobInfoRead;
@@ -33,6 +34,7 @@ import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceUpdate;
+import io.airbyte.api.model.generated.StreamTransform;
 import io.airbyte.api.model.generated.StreamTransform.TransformTypeEnum;
 import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.commons.docker.DockerUtils;
@@ -73,7 +75,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -442,16 +443,18 @@ public class SchedulerHandler {
   }
 
   private boolean containsBreakingChange(final CatalogDiff diff) {
-    AtomicBoolean isBreaking = new AtomicBoolean(false);
-    diff.getTransforms().stream().forEach(streamTransform -> {
+    for (StreamTransform streamTransform : diff.getTransforms()) {
       if (streamTransform.getTransformType() != TransformTypeEnum.UPDATE_STREAM) {
-        return;
+        continue;
       }
 
-      boolean anyBreakingFieldTransforms = streamTransform.getUpdateStream().stream().anyMatch(fieldTransform -> fieldTransform.getBreaking());
-      isBreaking.set(anyBreakingFieldTransforms);
-    });
-    return isBreaking.get();
+      boolean anyBreakingFieldTransforms = streamTransform.getUpdateStream().stream().anyMatch(FieldTransform::getBreaking);
+      if (anyBreakingFieldTransforms) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
 }
