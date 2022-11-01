@@ -1,9 +1,12 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-# @Todo: is the number of stream increase, separate each stream in a different file and do the same for the tests
-
+# @Todo: if the number of stream increases, separate each stream in a different file and do the same for the tests
+import pytest
 from source_google_ad_manager.utils import convert_time_to_dict
+from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
+from unittest.mock import MagicMock
+from source_google_ad_manager.streams import AdUnitPerReferrerReportStream
 
 
 def test_convert_time_to_dict(test_date):
@@ -17,7 +20,7 @@ def test_convert_time_to_dict(test_date):
 
 def test_ad_unit_per_hour_read_report(ad_unit_per_hour_stream):
     "this should test the read report method for the class ad unit per hour"
-    assert ad_unit_per_hour_stream.primary_key == ["ad_unit", "hour", "date"]
+    assert ad_unit_per_hour_stream.primary_key == ["ad_unit", "hour", "date", "customer_name"]
     records = ad_unit_per_hour_stream.read_records()
     for record in records:
         assert isinstance(record, dict)
@@ -71,8 +74,25 @@ def test_ad_unit_per_referrer_read_record(ad_unit_per_referrer_stream):
     test ad unit per referrer read record
     """
     "this should test the read report method for the class ad unit per hour"
-    assert ad_unit_per_referrer_stream.primary_key == ["ad_unit", "referrer", "date"]
+    assert ad_unit_per_referrer_stream.primary_key == ["ad_unit", "referrer", "date", "customer_name"]
     records = ad_unit_per_referrer_stream.read_records()
     for record in records:
         assert isinstance(record, dict)
         assert list(record.keys()) == ['ad_unit', 'referrer', 'impressions', 'cpm_cpc_revenue', 'eCpm', 'click', 'date']
+
+
+def test_value_error_raised_when_wrong_timezone():
+    """test if value error is raised when the wrong timezone is passed to the constructor
+    """
+    google_ad_manager_client = MagicMock()
+    with pytest.raises(InvalidTimezone):
+        AdUnitPerReferrerReportStream(google_ad_manager_client=google_ad_manager_client,
+                                      customer_name="test_customer_name",
+                                      start_date="2022-10-01",
+                                      timezone="America/Chio")
+
+def test_return_null_record_when_incorects_values(ad_unit_per_referrer_stream):
+    """"
+    test if a empty value is None value is returned when 
+    """
+    assert not ad_unit_per_referrer_stream.generate_item({"fake_key": "fake_value"})

@@ -31,12 +31,18 @@ class SourceGoogleAdManager(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         customer_name = config.pop("customer_name")
+        start_date = config.pop("start_date")
+        timezone = config.pop("timezone")
         google_ad_manager_authenticator = self._get_authenticator(config=config)
         google_ad_manager_client = google_ad_manager_authenticator.get_client()
         ad_unit_per_hour_report_stream = AdUnitPerHourReportStream(google_ad_manager_client=google_ad_manager_client,
-                                                                   customer_name=customer_name)
+                                                                   customer_name=customer_name,
+                                                                   start_date=start_date,
+                                                                   timezone=timezone)
         ad_unit_per_referrer_report_stream = AdUnitPerReferrerReportStream(google_ad_manager_client=google_ad_manager_client,
-                                                                           customer_name=customer_name)
+                                                                           customer_name=customer_name,
+                                                                           start_date=start_date,
+                                                                           timezone=timezone)
         return [ad_unit_per_hour_report_stream, ad_unit_per_referrer_report_stream]
 
     def _get_authenticator(self, config: Mapping[str, Any]) -> GoogleAdManagerAuthenticator:

@@ -4,11 +4,13 @@
 
 
 from abc import ABC, abstractmethod
+from zoneinfo import ZoneInfo
 from typing import Any, Iterable, Mapping, Optional, List
 import logging
 import time
 import requests
-from pendulum import parse as pendulum_parse
+from pendulum import parse as pendulum_parse, now as pendulum_now
+from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
 from airbyte_cdk.sources.streams import Stream, IncrementalMixin
 from datetime import datetime
 from googleads import ad_manager
@@ -30,17 +32,24 @@ class BaseGoogleAdManagerReportStream(Stream, IncrementalMixin):
     this is the base stream class used to generate the report
     """
 
-    def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient) -> None:
+    def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient, start_date: str, timezone: str) -> None:
         super().__init__()
         self.google_ad_manager_client = google_ad_manager_client
         self.report_downloader = self.google_ad_manager_client.GetDataDownloader(version=API_VERSION)
+        self.start_date = start_date
+        self.timezone = timezone
+        try:
+            self.start_date = pendulum_parse(self.start_date).date()
+            self.today_date = pendulum_now(timezone).date()
+        except InvalidTimezone:
+            raise InvalidTimezone(f"Timezone {timezone} is not supported by pendulum, please use a valid timezone")
 
     @property
     def state(self) -> Mapping[str, Any]:
         if getattr(self, '_cursor_value', None):
             return {self.cursor_field: self._cursor_value}
         else:
-            return {self.cursor_field: datetime.today().strftime('%Y-%m-%d')}
+            return {self.cursor_field: self.today_date.strftime('%Y-%m-%d')}
 
     @property
     def cursor_field(self) -> str:
@@ -96,14 +105,19 @@ class BaseGoogleAdManagerReportStream(Stream, IncrementalMixin):
             lines = chunk.decode('utf-8')
             reader = csv_dict_reader(lines.splitlines())
             for row in reader:
+                logger.error(row)
+                logger.error(f"this is the row we are testing for {10 * '***'}")
                 item = self.generate_item(row)
                 # this section deals with the cursor, to be revisited
-                current_cursor_value = pendulum_parse(self.state.get(self.cursor_field))
-                upcoming_cursor_value = pendulum_parse(getattr(item, self.cursor_field).strftime('%Y-%m-%d'))
-                cursor_value = (max(upcoming_cursor_value, current_cursor_value)).to_date_string()
-                max_cursor_value = {self.cursor_field: cursor_value}
-                self.state = max_cursor_value
-                yield item.dict()
+                if item:
+                    current_cursor_value = pendulum_parse(self.state.get(self.cursor_field))
+                    upcoming_cursor_value = pendulum_parse(getattr(item, self.cursor_field).strftime('%Y-%m-%d'))
+                    cursor_value = (max(upcoming_cursor_value, current_cursor_value)).to_date_string()
+                    max_cursor_value = {self.cursor_field: cursor_value}
+                    self.state = max_cursor_value
+                    yield item.dict()
+                else:
+                    pass
     
     def run_report(self, report_job: str) -> str:
         """Runs a report, then waits (blocks) for the report to finish generating.
@@ -200,12 +214,11 @@ class AdUnitPerHourReportStream(BaseGoogleAdManagerReportStream):
                "TOTAL_CODE_SERVED_COUNT"]
     dimensions = ['AD_UNIT_NAME', 'HOUR', "DATE"]
 
-    def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient, customer_name: str) -> None:
-        super().__init__(google_ad_manager_client)
-        self.customer_name = customer_name
-        start_date = datetime.strptime(self.state[self.cursor_field], "%Y-%m-%d").date()
-        start_date = convert_time_to_dict(start_date)
-        end_date = convert_time_to_dict(datetime.today())
+    def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient, customer_name: str, start_date: str, timezone: str) -> None:
+        super().__init__(google_ad_manager_client, start_date, timezone)
+        self.customer_name = customer_name  
+        start_date = convert_time_to_dict(self.start_date)
+        end_date = convert_time_to_dict(self.today_date)
         self.report_job = self.generate_report_query(start_date=start_date, end_date=end_date)
 
     def generate_report_query(self, start_date: Mapping, end_date: Mapping) -> Mapping:
@@ -231,7 +244,12 @@ class AdUnitPerHourReportStream(BaseGoogleAdManagerReportStream):
             _type_: _description_
         """
         row['customer_name'] = self.customer_name
-        return AdUnitPerHourItem.from_dict(row)
+        try:
+
+            return AdUnitPerHourItem.from_dict(row)
+        except Exception as e:
+            logger.error(f"error while parsing the row {row}, the error is {e}")
+            return None
     
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -241,7 +259,7 @@ class AdUnitPerHourReportStream(BaseGoogleAdManagerReportStream):
         list of list of strings if composite primary key consisting of nested fields.
         If the stream has no primary keys, return None.
         """
-        return ["ad_unit", "hour", "date"]
+        return ["ad_unit", "hour", "date", "customer_name"]
 
 
 class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
@@ -261,12 +279,11 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
             ]
     dimensions = ['ADVERTISER_NAME', 'CUSTOM_CRITERIA', 'AD_UNIT_ID', "DATE"]
     
-    def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient, customer_name: str) -> None:
-        super().__init__(google_ad_manager_client)
+    def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient, customer_name: str, start_date:str, timezone:str) -> None:
+        super().__init__(google_ad_manager_client, start_date, timezone)
         targeting_values = self.get_custom_targeting_keys_ids("referrer")  # @TODO: I can make this manual instead of getting from the api.
-        start_date = datetime.strptime(self.state[self.cursor_field], "%Y-%m-%d").date()
-        start_date = convert_time_to_dict(start_date)
-        end_date = convert_time_to_dict(datetime.today())
+        start_date = convert_time_to_dict(self.start_date)
+        end_date = convert_time_to_dict(self.today_date)
         self.customer_name = customer_name
         self.report_job = self.generate_report_query(targeting_values, start_date=start_date, end_date=end_date)
 
@@ -363,7 +380,13 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
             _type_: _description_
         """
         row['customer_name'] = self.customer_name
-        return AdUnitPerReferrerItem.from_dict(row)
+        try:
+
+            return AdUnitPerReferrerItem.from_dict(row)
+        except Exception as e:
+            # todo: sometimes null values are returned from the apis, ignoring them now and they will be pulled on the next run
+            logger.error(f"error while parsing the row {row}, the error is {e}")
+            return None
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -373,5 +396,4 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
         list of list of strings if composite primary key consisting of nested fields.
         If the stream has no primary keys, return None.
         """
-        return ["ad_unit", "referrer", "date"]
-
+        return ["ad_unit", "referrer", "date", "customer_name"]
