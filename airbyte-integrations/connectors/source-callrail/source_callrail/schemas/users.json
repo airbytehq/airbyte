@@ -1,10 +1,11 @@
 { "type": "object",
   "properties": {
-    "email": {"type": ["users","string"]},
-    "id": {"type": ["users","string"]},
-    "created_at": {"type": ["users","string"]},
-    "role": {"type": ["users","string"]},
-    "first_name": {"type": ["users","string"]},
-    "last_name": {"type": ["users","string"]},
-    "name": {"type": ["users","string"]},
-    "accepted": {"type": ["users","boolean"]}}}
+    "email": {"type": ["null","string"]},
+    "id": {"type": ["null","string"]},
+    "created_at": {"type": ["null","string"],
+                   "format": "date-time"},
+    "role": {"type": ["null","string"]},
+    "first_name": {"type": ["null","string"]},
+    "last_name": {"type": ["null","string"]},
+    "name": {"type": ["null","string"]},
+    "accepted": {"type": ["null","boolean"]}}}
