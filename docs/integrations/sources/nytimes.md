@@ -39,7 +39,7 @@ The New York Times connector should not run into limitations under normal usage.
 3. Write the key into `secrets/config.json` file.
 
 ## Changelog
-TODO
+
 | Version | Date       | Pull Request                                             | Subject                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
-| 0.1.0   | 2022-11-01 | [](https://github.com/airbytehq/airbyte/pull/) | 🎉 New Source: New York Times                        |
+| 0.1.0   | 2022-11-01 | [18746](https://github.com/airbytehq/airbyte/pull/18746) | 🎉 New Source: New York Times                   |
