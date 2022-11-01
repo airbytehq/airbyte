@@ -39,7 +39,7 @@ const CATALOG_FILE_NAME: &str = "catalog.json";
 const STATE_FILE_NAME: &str = "state.json";
 
 const SPEC_PATCH_FILE_NAME: &str = "spec.patch.json";
-const OAUTH2_PATCH_FILE_NAME: &str = "spec.patch.json";
+const OAUTH2_PATCH_FILE_NAME: &str = "oauth2.patch.json";
 const DOC_URL_PATCH_FILE_NAME: &str = "documentation_url.patch.json";
 const STREAM_PATCH_DIR_NAME: &str = "streams";
 
@@ -83,8 +83,14 @@ impl AirbyteSourceInterceptor {
                 merge(&mut endpoint_spec, &p);
             }
 
-            if let (Some(p), Some(spec)) = (oauth2_patch.as_ref(), auth_spec.as_mut()) {
-                merge(spec, p);
+            match (auth_spec.as_mut(), oauth2_patch.as_ref()) {
+                (Some(spec), Some(p)) => {
+                    merge(spec, p);
+                }
+                (None, Some(p)) => {
+                    auth_spec = Some(p.clone())
+                }
+                _ => {}
             }
 
             let documentation_url = match documentation_url_patch {
