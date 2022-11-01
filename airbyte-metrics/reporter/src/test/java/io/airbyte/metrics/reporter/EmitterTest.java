@@ -58,13 +58,13 @@ class EmitterTest {
   @Test
   void TestNumRunningJobs() {
     final var value = Map.of(SYNC_QUEUE, 101, AWS_QUEUE, 20);
-    when(repo.numberOfRunningJobs()).thenReturn(value);
+    when(repo.numberOfRunningJobsByTaskQueue()).thenReturn(value);
 
     final var emitter = new NumRunningJobs(client, repo);
     emitter.Emit();
 
     assertEquals(Duration.ofSeconds(15), emitter.getDuration());
-    verify(repo).numberOfRunningJobs();
+    verify(repo).numberOfRunningJobsByTaskQueue();
     verify(client).gauge(OssMetricsRegistry.NUM_RUNNING_JOBS, 101,
         new MetricAttribute(MetricTags.ATTEMPT_QUEUE, SYNC_QUEUE));
     verify(client).gauge(OssMetricsRegistry.NUM_RUNNING_JOBS, 20,

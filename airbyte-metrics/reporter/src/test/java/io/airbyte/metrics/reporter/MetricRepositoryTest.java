@@ -138,7 +138,7 @@ class MetricRepositoryTest {
           .values(5L, inactiveConnectionId.toString(), JobStatus.running)
           .execute();
 
-      assertEquals(2, db.numberOfRunningJobs().get(SYNC_QUEUE));
+      assertEquals(2, db.numberOfRunningJobsByTaskQueue().get(SYNC_QUEUE));
       assertEquals(1, db.numberOfOrphanRunningJobs());
     }
 
@@ -148,7 +148,7 @@ class MetricRepositoryTest {
       ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.pending).execute();
       ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute();
 
-      final var res = db.numberOfRunningJobs();
+      final var res = db.numberOfRunningJobsByTaskQueue();
       assertTrue(res.isEmpty());
     }
 
