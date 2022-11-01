@@ -1,0 +1,141 @@
+# Welcome to Airbyte Docs
+
+import Tutorials from './.components/Tutorials.jsx'
+export const items = {
+  catalog: {
+    sectionName: 'Connector Catalog',
+    list: [
+      { displayName: 'Product release stages', link: '/stages'},
+      { displayName: 'Open source connectors', link: '/stages'},
+      { displayName: 'Cloud connectors', link: '/stages'},
+    ]
+  },
+  cloud: {
+    sectionName: 'Use Cloud',
+    list: [
+      { displayName: 'Start trial', link: '/stages'},
+      { displayName: 'Get started', link: '/stages'},
+      { displayName: 'Manage Cloud account', link: '/stages'},
+    ]
+  },
+  oss: {
+    sectionName: 'Open Source',
+    list: [
+      { displayName: 'Deploy locally', link: '/stages'},
+      { displayName: 'Deploy on Cloud', link: '/stages'},
+      { displayName: 'Manage Deployment', link: '/stages'},
+    ]
+  },
+  concepts: {
+    sectionName: 'Core Concepts',
+    list: [
+      { displayName: 'Namespaces', link: '/stages'},
+      { displayName: 'Normalization', link: '/stages'},
+      { displayName: 'Sync Modes', link: '/stages'},
+    ]
+  },
+  contribute: {
+    sectionName: 'Contribute',
+    list: [
+      { displayName: 'Build a connector', link: '/stages'},
+      { displayName: 'Contribute to Code', link: '/stages'},
+      { displayName: 'Contribute to Docs', link: '/stages'},
+    ]
+  },
+  help: {
+    sectionName: 'Get Help',
+    list: [
+      { displayName: 'Chat with Support', link: '/stages'},
+      { displayName: 'Join us on Community Slack', link: '/stages'},
+      { displayName: 'Report issues on GitHub', link: '/stages'},
+    ]
+  },
+}
+
+export function Section({data}) {
+  return <div className="dark:bg-white dark:text-indigo-800 border border-solid border-indigo-600 rounded-xl p-8">
+    <h2 className="text-2xl font-bold">{data.sectionName}</h2>
+    <ul className="list-none pl-0">
+      {data.list.map((item, i) => <li key={i}><a href={item.link}>{item.displayName}</a></li>)}
+    </ul>
+  </div>
+}
+
+Whether you are an Airbyte user or contributor, we have docs for you!
+
+<div className="grid grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-8 mx-auto">
+  <Section data={items.catalog} />
+  <Section data={items.cloud} />
+  <Section data={items.oss} />
+  <Section data={items.concepts} />
+  <Section data={items.contribute} />
+  <Section data={items.help} />
+</div>
+
+## Tutorials
+
+<div className="grid grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-8 ">
+  <Tutorials />
+  <a className="text-xl" href="https://airbyte.com/tutorials">See all 30+ tutorials!</a>
+</div>
+
+## Videos
+
+
+export function VideoCard({id, title, length}) {
+  return (
+    <div className="flex flex-col dark:bg-white rounded-xl">
+      <div className="relative">
+        <img src={`https://img.youtube.com/vi/${id}/mqdefault.jpg`} className="w-full h-24 rounded-none" />
+        <div className="absolute bottom-0 right-0 bg-indigo-600 text-white rounded-bl-xl px-2 py-1">
+          {length}
+        </div>
+      </div>
+      <div className="flex flex-col ml-4 py-4">
+        <a href={"https://www.youtube.com/watch?v=" + id} className="text-xl font-bold dark:text-black">{title}</a>
+        {/* <p className="text-gray-500">Airbyte is a new open source data integration tool that makes it easy to replicate data from applications, APIs & databases to data warehouses, lakes & DBs.</p>
+        <p className="text-gray-500">1.5K views • 2 months ago</p> */}
+      </div>
+      </div>)
+}
+
+
+<div className="grid grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-8  mb-8">
+  <VideoCard id="aLUr8QNbQp4" title="Sync your data anywhere with Airbyte Cloud" length="3:14" />
+  <VideoCard id="sKDviQrOAbU" title="How to replicate data from Salesforce to Snowflake" length="1:51" />
+  <VideoCard id="kJ3hLoNfz_E" title="Build ETL Sources in Under 20 minutes" length="19:30" />
+</div>
+<a className="text-xl" href="https://youtube.com/airbytehq">Subscribe to our YouTube for more!</a>
+
+### For Airbyte Cloud users
+
+Browse the [connector catalog](integrations) to find the connector you want. In case the connector is not yet supported on Airbyte Cloud, consider using [Airbyte Open Source](#for-airbyte-open-source-users).
+
+Next, check out the [step-by-step tutorial](cloud/getting-started-with-airbyte-cloud) to sign up for Airbyte Cloud, understand Airbyte [concepts](cloud/core-concepts.md), and run your first sync. Then learn how to [manage your Airbyte Cloud account](cloud/managing-airbyte-cloud.md).
+
+### For Airbyte Open Source users
+
+Browse the [connector catalog](integrations) to find the connector you want. If the connector is not yet supported on Airbyte Open Source, [build your own connector](connector-development).
+
+Next, check out the [Airbyte Open Source QuickStart](quickstart/deploy-airbyte.md). Then learn how to [deploy](deploying-airbyte/local-deployment) and [manage](operator-guides/upgrading-airbyte) Airbyte Open Source in your cloud infrastructure. 
+
+
+To get help with Airbyte deployments, check out the [Troubleshooting & FAQ](troubleshooting/README.md), chat with Support on [Discourse](https://discuss.airbyte.io/), or join us on [Community Slack](https://slack.airbyte.io/).
+
+### For Airbyte contributors
+
+To contribute to Airbyte code, connectors, and documentation, refer to our [Contributing Guide](contributing-to-airbyte). 
+
+[![GitHub stars](https://img.shields.io/github/stars/airbytehq/airbyte?style=social&label=Star&maxAge=2592000)](https://GitHub.com/airbytehq/airbyte/stargazers/) [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI)](https://github.com/airbytehq/airbyte/actions/workflows/gradle.yml) [![License](https://img.shields.io/static/v1?label=license&message=MIT&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md) [![License](https://img.shields.io/static/v1?label=license&message=ELv2&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md)
+
+
+## Running these docs locally
+
+The markdown content is in `/docs`, but the docs site generator is in `/docusaurus`.
+
+```bash
+# assuming you have node.js and yarn installed. brew install yarn if need to
+cd docusaurus
+yarn install
+yarn start
+```
