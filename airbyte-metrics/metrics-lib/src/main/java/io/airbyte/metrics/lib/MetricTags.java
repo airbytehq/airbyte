@@ -20,6 +20,8 @@ public class MetricTags {
   public static final String RELEASE_STAGE = "release_stage";
   public static final String RESET_WORKFLOW_FAILURE_CAUSE = "failure_cause";
   public static final String WORKFLOW_TYPE = "workflow_type";
+  public static final String ATTEMPT_QUEUE = "attempt_queue";
+  public static final String GEOGRAPHY = "geography";
 
   public static String getReleaseStage(final ReleaseStage stage) {
     return stage.getLiteral();

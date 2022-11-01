@@ -29,9 +29,8 @@ connectionSpecification:
     symbols:
       title: Symbol
       type: array
-      items: {
-        "type": "string"
-      }
+      items: 
+        type: string
       description: Cryptocurrency symbols. (only used for quotes stream)
       minItems: 1
       examples:
