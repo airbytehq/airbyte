@@ -466,6 +466,15 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public Long getAttemptId(Long jobId, Long attemptNumber) throws IOException {
+    final Optional<Record> record =
+        jobDatabase.query(ctx -> ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
+            attemptNumber).stream().findFirst());
+
+    return record.get().get("id", Long.class);
+  }
+
+  @Override
   public List<NormalizationSummary> getNormalizationSummary(final Long attemptId) throws IOException, JsonProcessingException {
     return jobDatabase
         .query(ctx -> ctx.select(DSL.asterisk()).from(NORMALIZATION_SUMMARIES).where(NORMALIZATION_SUMMARIES.ATTEMPT_ID.eq(attemptId))

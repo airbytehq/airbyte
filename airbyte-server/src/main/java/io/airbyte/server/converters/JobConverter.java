@@ -172,7 +172,9 @@ public class JobConverter {
         .bytesEmitted(totalStats.getBytesEmitted())
         .recordsEmitted(totalStats.getRecordsEmitted())
         .stateMessagesEmitted(totalStats.getSourceStateMessagesEmitted())
-        .recordsCommitted(totalStats.getRecordsCommitted());
+        .recordsCommitted(totalStats.getRecordsCommitted())
+        .estimatedRecords(totalStats.getEstimatedRecords())
+        .estimatedBytes(totalStats.getEstimatedBytes());
   }
 
   private static List<AttemptStreamStats> getAttemptStreamStats(final Attempt attempt) {
