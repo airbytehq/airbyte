@@ -130,6 +130,9 @@ class SalesforceStream(HttpStream, ABC):
                     return
             raise error
 
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        return super().get_error_display_message(exception)
+
 
 class BulkSalesforceStream(SalesforceStream):
     page_size = 15000
