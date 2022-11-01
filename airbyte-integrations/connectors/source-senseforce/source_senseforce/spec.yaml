@@ -12,6 +12,7 @@ connectionSpecification:
   properties:
     access_token:
       type: string
+      title: API Access Token
       description: >-
         Your API access token. See <a
         href="https://manual.senseforce.io/manual/sf-platform/public-api/get-your-access-token/">here</a>.
@@ -19,6 +20,7 @@ connectionSpecification:
       airbyte_secret: true
     backend_url:
       type: string
+      title: Senseforce backend URL
       examples:
         - "https://galaxyapi.senseforce.io"
       description: >-
@@ -28,6 +30,7 @@ connectionSpecification:
         (Note: Most Senseforce backend APIs have the term 'galaxy' in their ULR)
     dataset_id:
       type: string
+      title: Dataset ID
       examples:
         - 8f418098-ca28-4df5-9498-0df9fe78eda7
       description: >-
