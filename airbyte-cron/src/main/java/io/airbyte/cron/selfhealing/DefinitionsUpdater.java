@@ -69,7 +69,7 @@ public class DefinitionsUpdater {
           remoteDefinitionsProvider.getDestinationDefinitions().size());
 
       try {
-        final ApplyDefinitionsHelper applyHelper = new ApplyDefinitionsHelper(configDatabase, configRepository, remoteDefinitionsProvider);
+        final ApplyDefinitionsHelper applyHelper = new ApplyDefinitionsHelper(configRepository, remoteDefinitionsProvider);
         applyHelper.apply(deploymentMode == DeploymentMode.CLOUD);
 
         log.info("Done applying remote connector definitions");

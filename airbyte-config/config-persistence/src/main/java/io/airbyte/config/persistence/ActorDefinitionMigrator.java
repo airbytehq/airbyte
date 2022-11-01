@@ -27,6 +27,7 @@ import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,6 @@ public class ActorDefinitionMigrator {
   private static final Logger LOGGER = LoggerFactory.getLogger(ActorDefinitionMigrator.class);
 
   private static final String UNKNOWN_CONFIG_TYPE = "Unknown Config Type ";
-  private static final String NOT_FOUND = " not found";
 
   private final ExceptionWrappingDatabase database;
 
@@ -55,7 +55,11 @@ public class ActorDefinitionMigrator {
   public void migrate(final List<StandardSourceDefinition> latestSources, final List<StandardDestinationDefinition> latestDestinations)
       throws IOException {
     database.transaction(ctx -> {
-      updateConfigsFromSeed(ctx, latestSources, latestDestinations);
+      try {
+        updateConfigsFromSeed(ctx, latestSources, latestDestinations);
+      } catch (final IOException e) {
+        throw new SQLException(e);
+      }
       return null;
     });
   }

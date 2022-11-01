@@ -94,10 +94,17 @@ public class ConfigRepository {
 
   private final ConfigPersistence persistence;
   private final ExceptionWrappingDatabase database;
+  private final ActorDefinitionMigrator actorDefinitionMigrator;
 
   public ConfigRepository(final ConfigPersistence persistence, final Database database) {
+    this(persistence, database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)));
+  }
+
+  @VisibleForTesting
+  ConfigRepository(final ConfigPersistence persistence, final Database database, final ActorDefinitionMigrator actorDefinitionMigrator) {
     this.persistence = persistence;
     this.database = new ExceptionWrappingDatabase(database);
+    this.actorDefinitionMigrator = actorDefinitionMigrator;
   }
 
   public ConfigPersistence getConfigPersistence() {
@@ -917,7 +924,7 @@ public class ConfigRepository {
 
   public void updateActorDefinitions(final List<StandardSourceDefinition> sourceDefs, final List<StandardDestinationDefinition> destDefs)
       throws IOException {
-    new ActorDefinitionMigrator(database).migrate(sourceDefs, destDefs);
+    actorDefinitionMigrator.migrate(sourceDefs, destDefs);
   }
 
   // Data-carrier records to hold combined result of query for a Source or Destination and its
