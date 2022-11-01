@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server.apis;
 
 import io.airbyte.api.generated.LogsApi;
@@ -11,7 +15,9 @@ public class LogsApiController implements LogsApi {
 
   private final LogsHandler logsHandler;
 
-  @Override public File getLogs(final LogsRequestBody logsRequestBody) {
+  @Override
+  public File getLogs(final LogsRequestBody logsRequestBody) {
     return ConfigurationApi.execute(() -> logsHandler.getLogs(logsRequestBody));
   }
+
 }
