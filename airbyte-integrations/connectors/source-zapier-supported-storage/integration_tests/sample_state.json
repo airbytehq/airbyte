@@ -1,5 +1,5 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "value"
+  "zapier_supported_storage_stream": {
+    "data": "any_value"
   }
 }

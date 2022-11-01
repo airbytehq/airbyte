@@ -3,7 +3,14 @@
     {
       "stream": {
         "name": "zapier_supported_storage",
-        "json_schema": {},
+        "json_schema": {
+          "type" : "object",
+          "properties" : {
+            "base" : {
+              "type" : "string"
+            }
+          }
+        },
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
