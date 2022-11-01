@@ -16,7 +16,7 @@
               "type": ["null", "string"]
             },
             "attributes": {
-              "type": ["null", "object"]
+              "type": ["null", "string"]
             },
             "date_status_changed": {
               "type": ["null", "string"],

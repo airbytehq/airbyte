@@ -20,4 +20,6 @@ connectionSpecification:
     sid:
       type: string
       description: Workspace ID
-
+    page_size:
+      type: integer
+      description: Number for Pagination
