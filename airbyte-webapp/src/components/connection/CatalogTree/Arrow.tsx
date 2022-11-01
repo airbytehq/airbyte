@@ -14,7 +14,7 @@ interface ArrowProps {
 
 const Arrow: React.FC<ArrowProps> = ({ isItemHasChildren, isItemOpen, onExpand }) => {
   return (
-    <div className={styles.container}>
+    <span className={styles.container}>
       {(isItemHasChildren || !onExpand) && (
         <FontAwesomeIcon
           icon={faChevronRight}
@@ -22,7 +22,7 @@ const Arrow: React.FC<ArrowProps> = ({ isItemHasChildren, isItemOpen, onExpand }
           className={classNames(styles.arrow, { [styles["arrow--rotated"]]: isItemOpen })}
         />
       )}
-    </div>
+    </span>
   );
 };
 
