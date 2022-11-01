@@ -17,7 +17,6 @@ import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.AttemptStats;
 import io.airbyte.api.client.model.generated.SaveStatsRequestBody;
 import io.airbyte.commons.io.LineGobbler;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
@@ -88,8 +87,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   private static final AirbyteApiClient CLIENT = new AirbyteApiClient(
       new ApiClient().setScheme("http")
-          .setHost(new EnvConfigs().getAirbyteApiHost())
-          .setPort(new EnvConfigs().getAirbyteApiPort())
+          .setHost("airbyte-server-svc")
+          .setPort(8001)
           .setBasePath("/api"));
 
   private final String jobId;
@@ -446,7 +445,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
-  private static void saveStats(MessageTracker messageTracker, Long jobId, Integer attemptNumber) throws ApiException {
+  private static void saveStats(MessageTracker messageTracker, Long jobId, Integer attemptNumber) {
     final AttemptStats attemptStats = new AttemptStats()
         .bytesEmitted(messageTracker.getTotalBytesEmitted())
         .recordsEmitted(messageTracker.getTotalRecordsEmitted())
@@ -457,7 +456,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         .jobId(jobId)
         .attemptNumber(attemptNumber)
         .stats(attemptStats);
-    CLIENT.getAttemptApi().saveStats(saveStatsRequestBody);
+    LOGGER.info("saving stats");
+    try {
+      CLIENT.getAttemptApi().saveStats(saveStatsRequestBody);
+    } catch (ApiException e) {
+      LOGGER.warn("error trying to save stats: ", e);
+    }
   }
 
   private static void validateSchema(final RecordSchemaValidator recordSchemaValidator,
