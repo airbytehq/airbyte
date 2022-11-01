@@ -8,16 +8,26 @@ import io.airbyte.commons.temporal.scheduling.ConnectionNotificationWorkflow;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.notification.NotificationClient;
+import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
+import io.airbyte.workers.temporal.scheduling.activities.NotifySchemaChangeActivity;
+import io.airbyte.workers.temporal.sync.PersistStateActivity;
 import java.io.IOException;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ConnectionNotificationWorkflowImpl implements ConnectionNotificationWorkflow {
 
+  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  private NotifySchemaChangeActivity notifySchemaChangeActivity;
+
   @Override
-  public void sendSchemaChangeNotification(UUID connectionId, boolean isBreaking) throws IOException, InterruptedException {
+  public boolean sendSchemaChangeNotification(UUID connectionId, boolean isBreaking) throws IOException, InterruptedException {
+    log.info("inside sending schema change notification");
     Notification notification = new Notification().withNotificationType(NotificationType.SLACK);
     NotificationClient notificationClient = NotificationClient.createNotificationClient(notification);
-    notificationClient.notifySchemaChange(connectionId, isBreaking);
+    log.info("notification client is: " + notificationClient);
+    return notifySchemaChangeActivity.notifySchemaChange(notificationClient, connectionId, isBreaking);
   }
 
 }

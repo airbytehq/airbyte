@@ -13,6 +13,6 @@ import java.util.UUID;
 public interface ConnectionNotificationWorkflow {
 
   @WorkflowMethod
-  void sendSchemaChangeNotification(UUID connectionId, boolean isBreaking) throws IOException, InterruptedException;
+  boolean sendSchemaChangeNotification(UUID connectionId, boolean isBreaking) throws IOException, InterruptedException;
 
 }
