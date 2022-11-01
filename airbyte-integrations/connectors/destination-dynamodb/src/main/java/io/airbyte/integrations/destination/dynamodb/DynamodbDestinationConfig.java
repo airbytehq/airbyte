@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public class DynamodbDestinationConfig {
 
+  private final static String DYNAMODB_DEFAULT_URL = "https://dynamodb.amazonaws.com:443";
   private final String endpoint;
   private final String tableNamePrefix;
   private final String accessKeyId;
@@ -29,7 +30,8 @@ public class DynamodbDestinationConfig {
 
   public static DynamodbDestinationConfig getDynamodbDestinationConfig(final JsonNode config) {
     return new DynamodbDestinationConfig(
-        config.get("dynamodb_endpoint") == null ? "" : config.get("dynamodb_endpoint").asText(),
+        config.get("dynamodb_endpoint") == null || config.get("dynamodb_endpoint").asText().isEmpty() ? DYNAMODB_DEFAULT_URL
+            : config.get("dynamodb_endpoint").asText(),
         config.get("dynamodb_table_name_prefix").asText(),
         config.get("dynamodb_region").asText(),
         config.get("access_key_id").asText(),

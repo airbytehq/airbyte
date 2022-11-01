@@ -21,7 +21,14 @@ public class DynamodbDestination extends BaseConnector implements Destination {
   private static final Logger LOGGER = LoggerFactory.getLogger(DynamodbDestination.class);
 
   public static void main(final String[] args) throws Exception {
-    new IntegrationRunner(new DynamodbDestination()).run(args);
+    LOGGER.info("starting destination: {}", DynamodbDestination.class);
+    final Destination destination = DynamodbDestination.sshWrappedDestination();
+    new IntegrationRunner(destination).run(args);
+    LOGGER.info("completed destination: {}", DynamodbDestination.class);
+  }
+
+  public static Destination sshWrappedDestination() {
+    return new DynamodbSshWrapper(new DynamodbDestination(), "dynamodb_endpoint");
   }
 
   @Override

@@ -7,7 +7,8 @@ package io.airbyte.integrations.destination.dynamodb;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
+import com.amazonaws.retry.PredefinedRetryPolicies;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.*;
@@ -65,12 +66,19 @@ public class DynamodbChecker {
           .build();
 
     } else {
-      final ClientConfiguration clientConfiguration = new ClientConfiguration();
-      clientConfiguration.setSignerOverride("AWSDynamodbSignerType");
+      ClientConfiguration clientConfiguration = new ClientConfiguration()
+          .withConnectionTimeout(3000)
+          .withClientExecutionTimeout(3000)
+          .withRequestTimeout(3000)
+          .withSocketTimeout(3000)
+          .withRetryPolicy(PredefinedRetryPolicies
+                  .getDynamoDBDefaultRetryPolicyWithCustomMaxRetries(
+                      1));
+
 
       return AmazonDynamoDBClientBuilder
           .standard()
-          .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, region))
+          .withEndpointConfiguration(new EndpointConfiguration(endpoint, region))
           .withClientConfiguration(clientConfiguration)
           .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
           .build();
