@@ -50,11 +50,6 @@ spec:
               configMapKeyRef:
                 name: {{ .Release.Name }}-airbyte-env
                 key: AIRBYTE_VERSION
-          - name: CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Release.Name }}-airbyte-env
-                key: CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS
           - name: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
             valueFrom:
               configMapKeyRef:
