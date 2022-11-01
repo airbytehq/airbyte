@@ -98,7 +98,8 @@ public class GlobalStateManagerTest {
                 .withStreamName(STREAM_NAME1)
                 .withStreamNamespace(NAMESPACE)
                 .withCursorField(List.of(CURSOR_FIELD1))
-                .withCursor("a"),
+                .withCursor("a")
+                .withCursorRecordCount(1L),
             new DbStreamState()
                 .withStreamName(STREAM_NAME2)
                 .withStreamNamespace(NAMESPACE)
@@ -117,7 +118,8 @@ public class GlobalStateManagerTest {
                     .withStreamName(STREAM_NAME1)
                     .withStreamNamespace(NAMESPACE)
                     .withCursorField(List.of(CURSOR_FIELD1))
-                    .withCursor("a"))),
+                    .withCursor("a")
+                    .withCursorRecordCount(1L))),
             new AirbyteStreamState()
                 .withStreamDescriptor(new StreamDescriptor().withName(STREAM_NAME2).withNamespace(NAMESPACE))
                 .withStreamState(Jsons.jsonNode(new DbStreamState()
@@ -187,7 +189,8 @@ public class GlobalStateManagerTest {
                     .withStreamName(STREAM_NAME1)
                     .withStreamNamespace(NAMESPACE)
                     .withCursorField(List.of(CURSOR_FIELD1))
-                    .withCursor("a"))),
+                    .withCursor("a")
+                    .withCursorRecordCount(1L))),
             new AirbyteStreamState()
                 .withStreamDescriptor(new StreamDescriptor().withName(STREAM_NAME2).withNamespace(NAMESPACE))
                 .withStreamState(Jsons.jsonNode(new DbStreamState()
