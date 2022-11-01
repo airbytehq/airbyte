@@ -1,5 +1,6 @@
 import React from "react";
-import { Link } from "react-router-dom";
+
+import { Link } from "components";
 
 import styles from "./Breadcrumbs.module.scss";
 
@@ -18,11 +19,11 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ data }) => {
       {data.map((item, index) => (
         <span key={index}>
           {item.to ? (
-            <Link to={item.to} className={styles.item}>
+            <Link to={item.to} $clear className={styles.item}>
               {item.label}
             </Link>
           ) : (
-            <span className={styles["item--unlinked"]} key={index}>
+            <span className={styles.unlinked} key={index}>
               {item.label}
             </span>
           )}

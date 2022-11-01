@@ -7,15 +7,12 @@
 
 .item {
   display: inline-block;
-  cursor: pointer;
-  color: colors.$blue-400;
-  text-decoration: none;
 
-  &--unlinked {
-    font-weight: bold;
+  a {
+    text-decoration: none;
   }
+}
 
-  &:hover {
-    opacity: 0.8;
-  }
+.unlinked {
+  font-weight: bold;
 }
