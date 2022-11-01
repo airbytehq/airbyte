@@ -1,4 +1,9 @@
 {
   "type": "object",
-  "required": ["secret"]
+  "required": ["data"],
+  "properties": {
+    "data" : {
+      "type" : "object"
+    }
+  }
 }

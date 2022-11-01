@@ -6,7 +6,7 @@
         "json_schema": {
           "type" : "object",
           "properties" : {
-            "base" : {
+            "data" : {
               "type" : "string"
             }
           }
