@@ -59,7 +59,7 @@ dependencies:
     repository: "https://airbytehq.github.io/helm-charts/"
     version: 0.40.36
   - condition: cron.enabled
-    name: airbyte-cron 
+    name: cron 
     repository: "https://airbytehq.github.io/helm-charts/"
     version: 0.40.36
 
