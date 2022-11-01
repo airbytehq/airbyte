@@ -60,7 +60,6 @@ class Helpers(object):
             logger.warn(f"Duplicate headers found in {sheet_name}. Ignoring them :{duplicate_fields}")
 
         props = {field: {"type": "string"} for field in fields}
-
         props["row_id"] = {"type": "integer"}
 
         sheet_json_schema = {
@@ -72,8 +71,10 @@ class Helpers(object):
         }
 
         return AirbyteStream(
-            name=sheet_name, json_schema=sheet_json_schema,
-            supported_sync_modes=[SyncMode.full_refresh], source_defined_primary_key=[["row_id"]]
+            name=sheet_name,
+            json_schema=sheet_json_schema,
+            supported_sync_modes=[SyncMode.full_refresh],
+            source_defined_primary_key=[["row_id"]],
         )
 
     @staticmethod

@@ -1,0 +1,78 @@
+{
+  "properties": {
+    "spreadsheet_id": {
+      "description": "The link to your spreadsheet. See this guide for more details https://go.estuary.dev/phEkVt"
+    },
+    "credentials": {
+        "type": "object",
+        "title": "Authentication",
+        "description": "Credentials for connecting to the Google Sheets API",
+        "discriminator": {
+          "propertyName": "auth_type"
+        },
+        "oneOf": [
+            {
+                "title": "Google OAuth",
+                "type": "object",
+                "required": [
+                    "auth_type",
+                    "client_id",
+                    "client_secret",
+                    "refresh_token"
+                ],
+                "x-oauth2-provider": "google",
+                "properties": {
+                    "auth_type": {
+                        "type": "string",
+                        "const": "Client",
+                        "default": "Client"
+                    },
+                    "client_id": {
+                        "title": "Client ID",
+                        "type": "string",
+                        "description": "Enter your Google application's Client ID",
+                        "airbyte_secret": true
+                    },
+                    "client_secret": {
+                        "title": "Client Secret",
+                        "type": "string",
+                        "description": "Enter your Google application's Client Secret",
+                        "airbyte_secret": true
+                    },
+                    "refresh_token": {
+                        "title": "Refresh Token",
+                        "type": "string",
+                        "description": "Enter your Google application's refresh token",
+                        "airbyte_secret": true
+                    }
+                }
+            },
+            {
+                "title": "Service Account Key",
+                "type": "object",
+                "required": [
+                    "auth_type",
+                    "service_account_info"
+                ],
+                "properties": {
+                    "auth_type": {
+                        "type": "string",
+                        "const": "Service",
+                        "default": "Service"
+                    },
+                    "service_account_info": {
+                        "type": "string",
+                        "title": "Service Account JSON",
+                        "description": "The JSON key of the service account to use for authorization. See this setup guide for more details https://go.estuary.dev/RP7TxO",
+                        "airbyte_secret": true,
+                        "multiline": true,
+                        "examples": [
+                            "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+  }
+}

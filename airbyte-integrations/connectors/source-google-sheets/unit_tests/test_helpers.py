@@ -13,7 +13,7 @@ from airbyte_cdk.models.airbyte_protocol import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
-    SyncMode
+    SyncMode,
 )
 from google_sheets_source.client import GoogleSheetsClient
 from google_sheets_source.helpers import Helpers
@@ -134,14 +134,12 @@ class TestHelpers(unittest.TestCase):
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
-                    stream=AirbyteStream(name=sheet1, json_schema=sheet1_schema,
-                    supported_sync_modes=[SyncMode.full_refresh]),
+                    stream=AirbyteStream(name=sheet1, json_schema=sheet1_schema, supported_sync_modes=[SyncMode.full_refresh]),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 ),
                 ConfiguredAirbyteStream(
-                    stream=AirbyteStream(name=sheet2, json_schema=sheet2_schema,
-                    supported_sync_modes=[SyncMode.full_refresh]),
+                    stream=AirbyteStream(name=sheet2, json_schema=sheet2_schema, supported_sync_modes=[SyncMode.full_refresh]),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 ),
