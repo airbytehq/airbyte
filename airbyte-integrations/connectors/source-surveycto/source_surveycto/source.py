@@ -4,6 +4,7 @@
 
 
 from abc import ABC
+from imaplib import _Authenticator
 from pydoc import doc
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -28,10 +29,10 @@ class SurveyctoStream(HttpStream,  IncrementalMixin, ABC):
     cursor_field = 'CompletionDate'
     _cursor_value = None
    
-    def __init__(self, config: Mapping[str, Any], **kwargs):
+    def __init__(self, config: Mapping[str, Any], form_id, **kwargs):
         super().__init__()
         self.server_name = config['server_name']
-        self.form_id = config.get("form_id", [])
+        self.form_id = form_id
         self.start_date = config['start_date']
         #base64 encode username and password as auth token
         user_name_password = f"{config['username']}:{config['password']}"
@@ -44,7 +45,10 @@ class SurveyctoStream(HttpStream,  IncrementalMixin, ABC):
             return {self.cursor_field: self._cursor_value}
         else:
             return {self.cursor_field: initial_date}
-    
+    @property
+    def name(self) -> str:
+        return self.form_id
+
     @state.setter
     def state(self, value: Mapping[str, Any]):
         self._cursor_value = datetime.strptime(value[self.cursor_field], self.dateformat)
@@ -55,18 +59,30 @@ class SurveyctoStream(HttpStream,  IncrementalMixin, ABC):
     def _base64_encode(self,string:str) -> str:
         return base64.b64encode(string.encode("ascii")).decode("ascii")
 
+    def get_json_schema(self):
+        json_schema = {"properties": {
+             "CompletionDate": {
+                            "type": [
+                                "null",
+                                "string"
+                            ],
+                            "format": "date-time"
+           }
+        } }
+
+        return {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "additionalProperties": True,
+            "type": "object",
+            "properties": json_schema,
+        }
+
     @property
     def url_base(self) -> str:
          return f"https://{self.server_name}.surveycto.com/api/v2/forms/data/wide/json/"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-         return f"{stream_slice['id']}"
-
-
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-       yield from [{"id": id} for id in self.form_id]
+         return self.form_id
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -88,14 +104,8 @@ class SurveyctoStream(HttpStream,  IncrementalMixin, ABC):
     ) -> Iterable[Mapping]:
         response_json = response.json()
 
-        stream_slice = stream_slice.get('id')
         for data in response_json:
             try:
-                data["form_id"] = stream_slice
-                key = data["KEY"]
-                o = key.replace('uuid:', '')
-                data["KEY"] = o
-               
                 yield data
             except Exception as e:
                 msg = f"""Encountered an exception parsing schema"""
@@ -105,6 +115,7 @@ class SurveyctoStream(HttpStream,  IncrementalMixin, ABC):
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
             self._cursor_value = datetime.strptime(record[self.cursor_field], self.date_format)
+            print(f'=========>>>>{record}')
             yield record
 
 # Source
@@ -112,9 +123,23 @@ class SourceSurveycto(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         return True, None
 
+    def no_auth(self):
+        return NoAuth()     
+
+    def generate_streams(self, config: str) -> List[Stream]:
+        forms = config.get("form_id", [])
+        for form_id in forms:
+            yield SurveyctoStream(
+                config=config,
+                form_id=form_id
+            )
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         # auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
         # return [Customers(authenticator=auth), Employees(authenticator=auth)]
-        auth = NoAuth()
-        return [SurveyctoStream(authenticator=auth, config=config)]
+        # auth = NoAuth()        
+
+        streams = self.generate_streams(config=config)
+        return streams
+
 
