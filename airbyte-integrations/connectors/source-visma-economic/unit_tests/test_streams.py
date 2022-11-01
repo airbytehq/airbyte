@@ -8,6 +8,7 @@ from unittest.mock import MagicMock
 import pytest
 from source_visma_economic.source import VismaEconomicStream
 
+import requests
 
 @pytest.fixture
 def patch_base_class(mocker):
@@ -19,21 +20,35 @@ def patch_base_class(mocker):
 
 def test_request_params(patch_base_class):
     stream = VismaEconomicStream()
-    # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request parameters
     expected_params = {'pagesize': 1000, 'skippages': 0}
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class):
     stream = VismaEconomicStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
-    expected_token = None
+    response = MagicMock(requests.Response)
+    json = {'pagination': {'maxPageSizeAllowed': 1000,
+                           'skipPages': 0,
+                           'pageSize': 100,
+                           'results': 200,
+                           'resultsWithoutFilter': 200,
+                           'firstPage': 'https://restapi.e-conomic.com/stream?skippages=0&pagesize=100',
+                           'nextPage': 'https://restapi.e-conomic.com/stream?skippages=1&pagesize=100',
+                           'lastPage': 'https://restapi.e-conomic.com/stream?skippages=1&pagesize=100'}}
+    response.json = MagicMock(return_value=json)
+    inputs = {"response": response}
+
+    expected_token = {'skippages': ['1'], 'pagesize': ['100']}
     assert stream.next_page_token(**inputs) == expected_token
 
+def test_no_next_page_token(patch_base_class):
+    stream = VismaEconomicStream()
+    response = MagicMock(requests.Response)
+    response.json = MagicMock(return_value={})
+    inputs = {"response": response}
+    expected_token = None
+    assert stream.next_page_token(**inputs) == expected_token
 
 def test_request_headers(patch_base_class):
     stream = VismaEconomicStream()
@@ -44,7 +59,6 @@ def test_request_headers(patch_base_class):
 
 def test_http_method(patch_base_class):
     stream = VismaEconomicStream()
-    # TODO: replace this with your expected http request method
     expected_method = "GET"
     assert stream.http_method == expected_method
 

@@ -24,11 +24,10 @@ class VismaEconomicStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_json = response.json()
-        if 'pagination' in response_json:
-            if 'nextPage' in response_json['pagination']:
-                parsed_url = urlparse(response_json['pagination']['nextPage'])
-                query_params = parse_qs(parsed_url.query)
-                return query_params
+        if 'nextPage' in response_json.get('pagination', {}).keys():
+            parsed_url = urlparse(response_json['pagination']['nextPage'])
+            query_params = parse_qs(parsed_url.query)
+            return query_params
         else:
             return None
 
