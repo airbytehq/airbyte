@@ -140,7 +140,7 @@ class DestinationAwsDatalake(Destination):
 
             path = f"{bucket}/{connector_config.lakeformation_database_name}/airbyte_test/"
             logger.debug(f"Writing test file to {path}")
-            aws_handler.write(df, path, connector_config.lakeformation_database_name, "airbyte_test", None)
+            aws_handler.write(df, path, connector_config.lakeformation_database_name, "airbyte_test", None, None)
             aws_handler.delete_table(connector_config.lakeformation_database_name, "airbyte_test")
 
         except Exception as e:

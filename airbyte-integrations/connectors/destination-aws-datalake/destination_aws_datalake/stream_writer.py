@@ -5,7 +5,7 @@
 import logging
 import pandas as pd
 
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Union
 from destination_aws_datalake.config_reader import ConnectorConfig, PartitionOptions
 from airbyte_cdk.models import DestinationSyncMode, ConfiguredAirbyteStream
 
@@ -74,6 +74,148 @@ class StreamWriter:
 
         return fields
 
+    def _get_json_schema_type(self, types: Union[List[str], str] ) -> str:
+        if isinstance(types, str):
+            return types
+
+        if not isinstance(types, list):
+            return "string"
+
+        if "null" in types:
+            types.remove("null")
+
+        if len(types) == 1:
+            return types[0]
+
+        # when multiple types, cast to string
+        return "string"
+
+    def _get_pandas_dtypes_from_json_schema(self, df: pd.DataFrame) -> Dict[str, str]:
+        type_mapper = {
+            "string": "string",
+            "integer": "int64",
+            "number": "float64",
+            "boolean": "bool",
+            "object": "object",
+            "array": "object",
+        }
+
+        column_types = {}
+
+        typ = "string"
+        for col in df.columns:
+            if col in self._schema:
+                typ = self._schema[col].get("type", "string")
+                typ = self._get_json_schema_type(typ)
+
+            column_types[col] = type_mapper.get(typ, "string")
+
+        return column_types
+
+    def _get_json_schema_types(self):
+        types = {}
+        for key, val in self._schema.items():
+            typ = val.get("type")
+            types[key] = self._get_json_schema_type(typ)
+        return types
+
+    def _is_invalid_struct_or_array(self, schema: Dict[str, Any]) -> bool:
+        """
+        Helper that detects issues with nested objects/arrays in the json schema.
+        When a complex data type is detected (schema with oneOf) or a nested object without properties
+        the columns' dtype will be casted to string to avoid pyarrow conversion issues.
+        """
+        result = True
+        def check_properties(schema):
+            nonlocal result
+            for val in schema.values():
+                # Complex types can't be casted to an athena/glue type
+                oneOf = val.get("oneOf")
+                if oneOf:
+                    result = False
+                    continue
+
+                typ = val.get("type")
+                typ = self._get_json_schema_type(typ)
+
+                if typ != "object":
+                    continue
+
+                else:
+                    properties = val.get("properties")
+                    if not properties:
+                        result = False
+
+                    if properties:
+                        check_properties(properties)
+
+        check_properties(schema)
+        return result
+
+    def _get_glue_dtypes_from_json_schema(self, schema: Dict[str, Any], nested: bool = False) -> Dict[str, str]:
+        """
+        Helper that infers glue dtypes from a json schema.
+        """
+
+        type_mapper = {
+            "string": "string",
+            "integer": "bigint",
+            "number": "decimal(38, 18)" if self._config.glue_catalog_float_as_decimal else "double",
+            "boolean": "boolean",
+            "null": "string",
+        }
+
+        column_types = {}
+        for (col, definition) in schema.items():
+
+            result_typ = None
+            col_typ = definition.get("type")
+            col_format = definition.get("format")
+
+            col_typ = self._get_json_schema_type(col_typ)
+
+            if col_typ == "string" and col_format == "date-time":
+                result_typ = "timestamp"
+
+            if col_typ == "string" and col_format == "date":
+                result_typ = "date"
+
+            if col_typ == "object":
+                properties = definition.get("properties")
+                if properties and self._is_invalid_struct_or_array(properties):
+                    object_props = self._get_glue_dtypes_from_json_schema(properties)
+                    result_typ = f"struct<{','.join([f'{k}:{v}' for k, v in object_props.items()])}>"
+                else:
+                    result_typ = "string"
+
+            if col_typ == "array":
+                items = definition.get("items")
+                if isinstance(items, list):
+                    items = items[0]
+
+                item_type = self._get_json_schema_type(items.get("type"))
+                item_properties = items.get("properties")
+
+                if isinstance(items, dict) and item_properties:
+                    # Check if nested object has properties and no mixed type objects
+                    if self._is_invalid_struct_or_array(item_properties):
+                        item_dtypes = self._get_glue_dtypes_from_json_schema(item_properties)
+                        inner_struct = f"struct<{','.join([f'{k}:{v}' for k, v in item_dtypes.items()])}>"
+                        result_typ = f"array<{inner_struct}>"
+                    else:
+                        result_typ = "string"
+
+                elif item_type:
+                    result_typ = f"array<{type_mapper[item_type]}>"
+
+            if result_typ is None:
+                result_typ = type_mapper.get(col_typ, "string")
+
+            column_types[col] = result_typ
+
+        return column_types
+
+
     @property
     def _cursor_fields(self) -> Optional[List[str]]:
         return self._configured_stream.cursor_field
@@ -92,6 +234,8 @@ class StreamWriter:
         logger.debug(f"Flushing {len(self._messages)} messages to table {self._database}:{self._table}")
 
         df = pd.DataFrame(self._messages)
+        # best effort to convert pandas types
+        df = df.astype(self._get_pandas_dtypes_from_json_schema(df), errors="ignore")
 
         if len(df) < 1:
             logger.info(f"No messages to write to {self._database}:{self._table}")
@@ -108,6 +252,7 @@ class StreamWriter:
                     fields = self._add_partition_column(col, df)
                     partition_fields.extend(fields)
 
+        dtype = self._get_glue_dtypes_from_json_schema(self._schema)
         if self._sync_mode == DestinationSyncMode.overwrite and not force_append:
             logger.debug(f"Overwriting {len(df)} records to {self._database}:{self._table}")
             self._aws_handler.write(
@@ -115,6 +260,7 @@ class StreamWriter:
                 self._get_path(),
                 self._database,
                 self._table,
+                dtype,
                 partition_fields,
             )
 
@@ -125,6 +271,7 @@ class StreamWriter:
                 self._get_path(),
                 self._database,
                 self._table,
+                dtype,
                 partition_fields,
             )
 

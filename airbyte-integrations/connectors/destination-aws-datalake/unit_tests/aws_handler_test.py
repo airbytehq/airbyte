@@ -29,18 +29,3 @@ def test_get_compression_type():
 
     for codec, expected in tests.items():
         assert aws_handler._get_compression_type(codec) == expected
-
-
-def test_validate_athena_types():
-    df = pd.DataFrame({
-        "id": [1, 2, 3],
-        "name": ["shoes", "tshirt", "ball"],
-        "price": [50.3, 10.5, 20.0],
-        "in_stock": [None, None, None]
-    })
-
-    aws_handler._validate_athena_types(df)
-    assert df["in_stock"].dtype == 'O'
-    assert df["price"].dtype == 'float64'
-    assert df["name"].dtype == 'O'
-    assert df["id"].dtype == 'int64'
