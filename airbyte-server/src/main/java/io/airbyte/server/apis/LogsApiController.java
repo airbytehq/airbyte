@@ -8,8 +8,10 @@ import io.airbyte.api.generated.LogsApi;
 import io.airbyte.api.model.generated.LogsRequestBody;
 import io.airbyte.server.handlers.LogsHandler;
 import java.io.File;
+import javax.ws.rs.Path;
 import lombok.AllArgsConstructor;
 
+@Path("/v1/logs/get")
 @AllArgsConstructor
 public class LogsApiController implements LogsApi {
 
