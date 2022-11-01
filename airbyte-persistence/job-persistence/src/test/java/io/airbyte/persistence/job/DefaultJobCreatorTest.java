@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
@@ -61,7 +62,9 @@ class DefaultJobCreatorTest {
   private static final StreamDescriptor STREAM2_DESCRIPTOR = new StreamDescriptor().withName(STREAM2_NAME).withNamespace(NAMESPACE);
 
   private static final String SOURCE_IMAGE_NAME = "daxtarity/sourceimagename";
+  private static final Version SOURCE_PROTOCOL_VERSION = new Version("0.2.2");
   private static final String DESTINATION_IMAGE_NAME = "daxtarity/destinationimagename";
+  private static final Version DESTINATION_PROTOCOL_VERSION = new Version("0.2.3");
   private static final SourceConnection SOURCE_CONNECTION;
   private static final DestinationConnection DESTINATION_CONNECTION;
   private static final StandardSync STANDARD_SYNC;
@@ -73,10 +76,17 @@ class DefaultJobCreatorTest {
   private JobCreator jobCreator;
   private ResourceRequirements workerResourceRequirements;
 
+  private static final JsonNode PERSISTED_WEBHOOK_CONFIGS;
+
+  private static final UUID WEBHOOK_CONFIG_ID;
+  private static final String WEBHOOK_NAME;
+
   static {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceId = UUID.randomUUID();
     final UUID sourceDefinitionId = UUID.randomUUID();
+    WEBHOOK_CONFIG_ID = UUID.randomUUID();
+    WEBHOOK_NAME = "test-name";
 
     final JsonNode implementationJson = Jsons.jsonNode(ImmutableMap.builder()
         .put("apiKey", "123-abc")
@@ -104,11 +114,17 @@ class DefaultJobCreatorTest {
     final UUID operationId = UUID.randomUUID();
 
     final ConfiguredAirbyteStream stream1 = new ConfiguredAirbyteStream()
-        .withStream(CatalogHelpers.createAirbyteStream(STREAM1_NAME, Field.of(FIELD_NAME, JsonSchemaType.STRING)));
+        .withStream(CatalogHelpers.createAirbyteStream(STREAM1_NAME, Field.of(FIELD_NAME, JsonSchemaType.STRING)))
+        .withSyncMode(SyncMode.FULL_REFRESH)
+        .withDestinationSyncMode(DestinationSyncMode.APPEND);
     final ConfiguredAirbyteStream stream2 = new ConfiguredAirbyteStream()
-        .withStream(CatalogHelpers.createAirbyteStream(STREAM2_NAME, NAMESPACE, Field.of(FIELD_NAME, JsonSchemaType.STRING)));
+        .withStream(CatalogHelpers.createAirbyteStream(STREAM2_NAME, NAMESPACE, Field.of(FIELD_NAME, JsonSchemaType.STRING)))
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withDestinationSyncMode(DestinationSyncMode.APPEND);
     final ConfiguredAirbyteStream stream3 = new ConfiguredAirbyteStream()
-        .withStream(CatalogHelpers.createAirbyteStream(STREAM3_NAME, NAMESPACE, Field.of(FIELD_NAME, JsonSchemaType.STRING)));
+        .withStream(CatalogHelpers.createAirbyteStream(STREAM3_NAME, NAMESPACE, Field.of(FIELD_NAME, JsonSchemaType.STRING)))
+        .withSyncMode(SyncMode.FULL_REFRESH)
+        .withDestinationSyncMode(DestinationSyncMode.OVERWRITE);
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(stream1, stream2, stream3));
 
     STANDARD_SYNC = new StandardSync()
@@ -129,6 +145,10 @@ class DefaultJobCreatorTest {
         .withTombstone(false)
         .withOperatorType(OperatorType.NORMALIZATION)
         .withOperatorNormalization(new OperatorNormalization().withOption(Option.BASIC));
+
+    PERSISTED_WEBHOOK_CONFIGS = Jsons.deserialize(
+        String.format("{\"webhookConfigs\": [{\"id\": \"%s\", \"name\": \"%s\", \"authToken\": {\"_secret\": \"a-secret_v1\"}}]}",
+            WEBHOOK_CONFIG_ID, WEBHOOK_NAME));
   }
 
   @BeforeEach
@@ -151,13 +171,16 @@ class DefaultJobCreatorTest {
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
+        .withSourceProtocolVersion(SOURCE_PROTOCOL_VERSION)
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
+        .withDestinationProtocolVersion(DESTINATION_PROTOCOL_VERSION)
         .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
         .withResourceRequirements(workerResourceRequirements)
         .withSourceResourceRequirements(workerResourceRequirements)
-        .withDestinationResourceRequirements(workerResourceRequirements);
+        .withDestinationResourceRequirements(workerResourceRequirements)
+        .withWebhookOperationConfigs(PERSISTED_WEBHOOK_CONFIGS);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
@@ -171,8 +194,11 @@ class DefaultJobCreatorTest {
         DESTINATION_CONNECTION,
         STANDARD_SYNC,
         SOURCE_IMAGE_NAME,
+        SOURCE_PROTOCOL_VERSION,
         DESTINATION_IMAGE_NAME,
+        DESTINATION_PROTOCOL_VERSION,
         List.of(STANDARD_SYNC_OPERATION),
+        PERSISTED_WEBHOOK_CONFIGS,
         null,
         null).orElseThrow();
     assertEquals(JOB_ID, jobId);
@@ -186,8 +212,10 @@ class DefaultJobCreatorTest {
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
+        .withDestinationProtocolVersion(SOURCE_PROTOCOL_VERSION)
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
+        .withDestinationProtocolVersion(DESTINATION_PROTOCOL_VERSION)
         .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
         .withResourceRequirements(workerResourceRequirements);
@@ -204,8 +232,11 @@ class DefaultJobCreatorTest {
         DESTINATION_CONNECTION,
         STANDARD_SYNC,
         SOURCE_IMAGE_NAME,
+        SOURCE_PROTOCOL_VERSION,
         DESTINATION_IMAGE_NAME,
+        DESTINATION_PROTOCOL_VERSION,
         List.of(STANDARD_SYNC_OPERATION),
+        null,
         null,
         null).isEmpty());
   }
@@ -217,8 +248,11 @@ class DefaultJobCreatorTest {
         DESTINATION_CONNECTION,
         STANDARD_SYNC,
         SOURCE_IMAGE_NAME,
+        SOURCE_PROTOCOL_VERSION,
         DESTINATION_IMAGE_NAME,
+        DESTINATION_PROTOCOL_VERSION,
         List.of(STANDARD_SYNC_OPERATION),
+        null,
         null,
         null);
 
@@ -228,8 +262,10 @@ class DefaultJobCreatorTest {
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
+        .withSourceProtocolVersion(SOURCE_PROTOCOL_VERSION)
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
+        .withDestinationProtocolVersion(DESTINATION_PROTOCOL_VERSION)
         .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
         .withResourceRequirements(workerResourceRequirements)
@@ -259,8 +295,11 @@ class DefaultJobCreatorTest {
         DESTINATION_CONNECTION,
         standardSync,
         SOURCE_IMAGE_NAME,
+        SOURCE_PROTOCOL_VERSION,
         DESTINATION_IMAGE_NAME,
+        DESTINATION_PROTOCOL_VERSION,
         List.of(STANDARD_SYNC_OPERATION),
+        null,
         null,
         null);
 
@@ -270,8 +309,10 @@ class DefaultJobCreatorTest {
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
+        .withSourceProtocolVersion(SOURCE_PROTOCOL_VERSION)
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
+        .withDestinationProtocolVersion(DESTINATION_PROTOCOL_VERSION)
         .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
         .withResourceRequirements(standardSyncResourceRequirements)
@@ -305,8 +346,11 @@ class DefaultJobCreatorTest {
         DESTINATION_CONNECTION,
         STANDARD_SYNC,
         SOURCE_IMAGE_NAME,
+        SOURCE_PROTOCOL_VERSION,
         DESTINATION_IMAGE_NAME,
+        DESTINATION_PROTOCOL_VERSION,
         List.of(STANDARD_SYNC_OPERATION),
+        null,
         new ActorDefinitionResourceRequirements().withDefault(sourceResourceRequirements),
         new ActorDefinitionResourceRequirements().withJobSpecific(List.of(
             new JobTypeResourceLimit().withJobType(JobType.SYNC).withResourceRequirements(destResourceRequirements))));
@@ -317,8 +361,10 @@ class DefaultJobCreatorTest {
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
+        .withSourceProtocolVersion(SOURCE_PROTOCOL_VERSION)
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
+        .withDestinationProtocolVersion(DESTINATION_PROTOCOL_VERSION)
         .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
         .withResourceRequirements(workerResourceRequirements)
@@ -362,6 +408,7 @@ class DefaultJobCreatorTest {
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
+        .withDestinationProtocolVersion(DESTINATION_PROTOCOL_VERSION)
         .withConfiguredAirbyteCatalog(expectedCatalog)
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
         .withResourceRequirements(workerResourceRequirements)
@@ -379,6 +426,7 @@ class DefaultJobCreatorTest {
         DESTINATION_CONNECTION,
         STANDARD_SYNC,
         DESTINATION_IMAGE_NAME,
+        DESTINATION_PROTOCOL_VERSION,
         List.of(STANDARD_SYNC_OPERATION),
         streamsToReset);
 
@@ -415,6 +463,7 @@ class DefaultJobCreatorTest {
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
+        .withDestinationProtocolVersion(DESTINATION_PROTOCOL_VERSION)
         .withConfiguredAirbyteCatalog(expectedCatalog)
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
         .withResourceRequirements(workerResourceRequirements)
@@ -432,6 +481,7 @@ class DefaultJobCreatorTest {
         DESTINATION_CONNECTION,
         STANDARD_SYNC,
         DESTINATION_IMAGE_NAME,
+        DESTINATION_PROTOCOL_VERSION,
         List.of(STANDARD_SYNC_OPERATION),
         streamsToReset);
 

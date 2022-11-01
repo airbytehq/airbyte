@@ -36,6 +36,7 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.OperatorNormalization;
+import io.airbyte.config.OperatorWebhook;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -580,6 +581,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .withOperatorType(Enums.toEnum(record.get(OPERATION.OPERATOR_TYPE, String.class), OperatorType.class).orElseThrow())
         .withOperatorNormalization(Jsons.deserialize(record.get(OPERATION.OPERATOR_NORMALIZATION).data(), OperatorNormalization.class))
         .withOperatorDbt(Jsons.deserialize(record.get(OPERATION.OPERATOR_DBT).data(), OperatorDbt.class))
+        .withOperatorWebhook(record.get(OPERATION.OPERATOR_WEBHOOK) == null ? null
+            : Jsons.deserialize(record.get(OPERATION.OPERATOR_WEBHOOK).data(), OperatorWebhook.class))
         .withTombstone(record.get(OPERATION.TOMBSTONE));
   }
 
@@ -765,6 +768,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(WORKSPACE.NOTIFICATIONS, JSONB.valueOf(Jsons.serialize(standardWorkspace.getNotifications())))
             .set(WORKSPACE.FIRST_SYNC_COMPLETE, standardWorkspace.getFirstCompletedSync())
             .set(WORKSPACE.FEEDBACK_COMPLETE, standardWorkspace.getFeedbackDone())
+            .set(WORKSPACE.GEOGRAPHY, Enums.toEnum(
+                standardWorkspace.getDefaultGeography().value(),
+                io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType.class).orElseThrow())
             .set(WORKSPACE.UPDATED_AT, timestamp)
             .set(WORKSPACE.WEBHOOK_OPERATION_CONFIGS, standardWorkspace.getWebhookOperationConfigs() == null ? null
                 : JSONB.valueOf(Jsons.serialize(standardWorkspace.getWebhookOperationConfigs())))
@@ -788,6 +794,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(WORKSPACE.FEEDBACK_COMPLETE, standardWorkspace.getFeedbackDone())
             .set(WORKSPACE.CREATED_AT, timestamp)
             .set(WORKSPACE.UPDATED_AT, timestamp)
+            .set(WORKSPACE.GEOGRAPHY, Enums.toEnum(
+                standardWorkspace.getDefaultGeography().value(),
+                io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType.class).orElseThrow())
             .set(WORKSPACE.WEBHOOK_OPERATION_CONFIGS, standardWorkspace.getWebhookOperationConfigs() == null ? null
                 : JSONB.valueOf(Jsons.serialize(standardWorkspace.getWebhookOperationConfigs())))
             .execute();
@@ -1033,6 +1042,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                 io.airbyte.db.instance.configs.jooq.generated.enums.OperatorType.class).orElseThrow())
             .set(OPERATION.OPERATOR_NORMALIZATION, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorNormalization())))
             .set(OPERATION.OPERATOR_DBT, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorDbt())))
+            .set(OPERATION.OPERATOR_WEBHOOK, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorWebhook())))
             .set(OPERATION.TOMBSTONE, standardSyncOperation.getTombstone() != null && standardSyncOperation.getTombstone())
             .set(OPERATION.UPDATED_AT, timestamp)
             .where(OPERATION.ID.eq(standardSyncOperation.getOperationId()))
@@ -1047,6 +1057,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                 io.airbyte.db.instance.configs.jooq.generated.enums.OperatorType.class).orElseThrow())
             .set(OPERATION.OPERATOR_NORMALIZATION, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorNormalization())))
             .set(OPERATION.OPERATOR_DBT, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorDbt())))
+            .set(OPERATION.OPERATOR_WEBHOOK, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorWebhook())))
             .set(OPERATION.TOMBSTONE, standardSyncOperation.getTombstone() != null && standardSyncOperation.getTombstone())
             .set(OPERATION.CREATED_AT, timestamp)
             .set(OPERATION.UPDATED_AT, timestamp)
@@ -1099,6 +1110,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                 JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
             .set(CONNECTION.UPDATED_AT, timestamp)
             .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
+            .set(CONNECTION.BREAKING_CHANGE, standardSync.getBreakingChange())
             .set(CONNECTION.GEOGRAPHY, Enums.toEnum(standardSync.getGeography().value(),
                 io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType.class).orElseThrow())
             .where(CONNECTION.ID.eq(standardSync.getConnectionId()))
@@ -1143,6 +1155,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
             .set(CONNECTION.GEOGRAPHY, Enums.toEnum(standardSync.getGeography().value(),
                 io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType.class).orElseThrow())
+            .set(CONNECTION.BREAKING_CHANGE, standardSync.getBreakingChange())
             .set(CONNECTION.CREATED_AT, timestamp)
             .set(CONNECTION.UPDATED_AT, timestamp)
             .execute();

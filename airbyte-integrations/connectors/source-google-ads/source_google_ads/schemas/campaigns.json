@@ -245,6 +245,15 @@
     "metrics.clicks": {
       "type": ["null", "integer"]
     },
+    "metrics.ctr": {
+      "type": ["null", "number"]
+    },
+    "metrics.conversions": {
+      "type": ["null", "integer"]
+    },
+    "metrics.conversions_value": {
+      "type": ["null", "integer"]
+    },
     "metrics.cost_micros": {
       "type": ["null", "integer"]
     },
@@ -260,6 +269,9 @@
     "segments.date": {
       "type": ["null", "string"],
       "format": "date"
+    },
+    "segments.hour": {
+      "type": ["null", "number"]
     }
   }
 }

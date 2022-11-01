@@ -177,6 +177,19 @@ class TestLinkedinAdsStream:
         assert result == expected
 
 
+class TestAccountUsers:
+    stream: AccountUsers = AccountUsers(TEST_CONFIG)
+
+    def test_state_checkpoint_interval(self):
+        assert self.stream.state_checkpoint_interval == 500
+
+    def test_get_updated_state(self):
+        state = self.stream.get_updated_state(
+            current_stream_state={"lastModified": "2021-01-01"}, latest_record={"lastModified": "2021-08-01"}
+        )
+        assert state == {"lastModified": "2021-08-01"}
+
+
 class TestLinkedInAdsStreamSlicing:
     @pytest.mark.parametrize(
         "stream_cls, slice, expected",

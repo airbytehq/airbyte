@@ -7,12 +7,11 @@ import os
 import pathlib
 import re
 import shutil
-import tempfile
-from distutils.dir_util import copy_tree
 from typing import Any, Dict
 
 import pytest
 from integration_tests.dbt_integration_test import DbtIntegrationTest
+from integration_tests.utils import setup_test_dir
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog import TransformCatalog
 
@@ -108,7 +107,7 @@ def run_test(destination_type: DestinationType, column_count: int, expected_exce
     print("Testing ephemeral")
     integration_type = destination_type.value
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
-    test_root_dir = setup_test_dir(integration_type)
+    test_root_dir = setup_test_dir(integration_type, temporary_folders)
     destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
     # generate a catalog and associated dbt models files
     generate_dbt_models(destination_type, test_root_dir, column_count)
@@ -129,30 +128,6 @@ def search_logs_for_pattern(log_file: str, pattern: str):
             if re.search(pattern, line):
                 return True
     return False
-
-
-def setup_test_dir(integration_type: str) -> str:
-    """
-    We prepare a clean folder to run the tests from.
-    """
-    test_root_dir = f"{pathlib.Path().joinpath('..', 'build', 'normalization_test_output', integration_type.lower()).resolve()}"
-    os.makedirs(test_root_dir, exist_ok=True)
-    test_root_dir = tempfile.mkdtemp(dir=test_root_dir)
-    temporary_folders.add(test_root_dir)
-    shutil.rmtree(test_root_dir, ignore_errors=True)
-    print(f"Setting up test folder {test_root_dir}")
-    copy_tree("../dbt-project-template", test_root_dir)
-    if integration_type == DestinationType.MSSQL.value:
-        copy_tree("../dbt-project-template-mssql", test_root_dir)
-    elif integration_type == DestinationType.MYSQL.value:
-        copy_tree("../dbt-project-template-mysql", test_root_dir)
-    elif integration_type == DestinationType.ORACLE.value:
-        copy_tree("../dbt-project-template-oracle", test_root_dir)
-    elif integration_type == DestinationType.SNOWFLAKE.value:
-        copy_tree("../dbt-project-template-snowflake", test_root_dir)
-    elif integration_type == DestinationType.TIDB.value:
-        copy_tree("../dbt-project-template-tidb", test_root_dir)
-    return test_root_dir
 
 
 def setup_input_raw_data(integration_type: str, test_root_dir: str, destination_config: Dict[str, Any]) -> bool:

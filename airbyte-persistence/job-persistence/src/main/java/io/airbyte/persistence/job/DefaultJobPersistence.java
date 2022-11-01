@@ -304,10 +304,15 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void setAttemptTemporalWorkflowId(final long jobId, final int attemptNumber, final String temporalWorkflowId) throws IOException {
+  public void setAttemptTemporalWorkflowInfo(final long jobId,
+                                             final int attemptNumber,
+                                             final String temporalWorkflowId,
+                                             final String processingTaskQueue)
+      throws IOException {
     jobDatabase.query(ctx -> ctx.execute(
-        " UPDATE attempts SET temporal_workflow_id = ? WHERE job_id = ? AND attempt_number = ?",
+        " UPDATE attempts SET temporal_workflow_id = ? , processing_task_queue = ? WHERE job_id = ? AND attempt_number = ?",
         temporalWorkflowId,
+        processingTaskQueue,
         jobId,
         attemptNumber));
   }
@@ -327,13 +332,12 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public <T> void writeOutput(final long jobId,
-                              final int attemptNumber,
-                              final T output,
-                              final SyncStats syncStats,
-                              final NormalizationSummary normalizationSummary)
+  public void writeOutput(final long jobId, final int attemptNumber, final JobOutput output)
       throws IOException {
     final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
+    final SyncStats syncStats = output.getSync().getStandardSyncSummary().getTotalStats();
+    final NormalizationSummary normalizationSummary = output.getSync().getNormalizationSummary();
+
     jobDatabase.transaction(ctx -> {
       ctx.update(ATTEMPTS)
           .set(ATTEMPTS.OUTPUT, JSONB.valueOf(Jsons.serialize(output)))

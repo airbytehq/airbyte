@@ -32,6 +32,8 @@ services:
       - DATABASE_USER=${DATABASE_USER}
       - LOG_LEVEL=${LOG_LEVEL}
       - RUN_DATABASE_MIGRATION_ON_STARTUP=${RUN_DATABASE_MIGRATION_ON_STARTUP}
+    networks:
+      - airbyte_internal
   db:
     image: airbyte/db:${VERSION}
     logging: *default-logging
@@ -48,6 +50,8 @@ services:
       - POSTGRES_USER=${DATABASE_USER}
     volumes:
       - db:/var/lib/postgresql/data
+    networks:
+      - airbyte_internal
   worker:
     image: airbyte/worker:${VERSION}
     logging: *default-logging
@@ -106,7 +110,9 @@ services:
       - workspace:${WORKSPACE_ROOT}
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
     ports:
-      - 9000:9000
+      - 9000
+    networks:
+      - airbyte_internal
   server:
     image: airbyte/server:${VERSION}
     logging: *default-logging
@@ -140,18 +146,20 @@ services:
       - WORKSPACE_ROOT=${WORKSPACE_ROOT}
       - GITHUB_STORE_BRANCH=${GITHUB_STORE_BRANCH}
     ports:
-      - 8001:8001
+      - 8001
     volumes:
       - workspace:${WORKSPACE_ROOT}
       - data:${CONFIG_ROOT}
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
+    networks:
+      - airbyte_internal
   webapp:
     image: airbyte/webapp:${VERSION}
     logging: *default-logging
     container_name: airbyte-webapp
     restart: unless-stopped
     ports:
-      - 8000:80
+      - 80
     environment:
       - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
       - AIRBYTE_VERSION=${VERSION}
@@ -160,13 +168,13 @@ services:
       - OPENREPLAY=${OPENREPLAY:-}
       - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
+    networks:
+      - airbyte_internal
   airbyte-temporal:
     image: airbyte/temporal:${VERSION}
     logging: *default-logging
     container_name: airbyte-temporal
     restart: unless-stopped
-    ports:
-      - 7233:7233
     environment:
       - DB=postgresql
       - DB_PORT=${DATABASE_PORT}
@@ -177,6 +185,8 @@ services:
       - POSTGRES_USER=${DATABASE_USER}
     volumes:
       - ./temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
+    networks:
+      - airbyte_internal
   airbyte-cron:
     image: airbyte/cron:${VERSION}
     logging: *default-logging
@@ -194,8 +204,26 @@ services:
       - TEMPORAL_HISTORY_RETENTION_IN_DAYS=${TEMPORAL_HISTORY_RETENTION_IN_DAYS}
       - UPDATE_DEFINITIONS_CRON_ENABLED=${UPDATE_DEFINITIONS_CRON_ENABLED}
       - WORKSPACE_ROOT=${WORKSPACE_ROOT}
+      - MICRONAUT_ENVIRONMENTS=${CRON_MICRONAUT_ENVIRONMENTS}
     volumes:
       - workspace:${WORKSPACE_ROOT}
+    networks:
+      - airbyte_internal
+  airbyte-proxy:
+    image: airbyte/proxy:${VERSION}
+    container_name: airbyte-proxy
+    ports:
+      - 8000:8000
+      - 8001:8001
+    environment:
+      - BASIC_AUTH_USERNAME=${BASIC_AUTH_USERNAME}
+      - BASIC_AUTH_PASSWORD=${BASIC_AUTH_PASSWORD}
+    networks:
+      - airbyte_internal
+      - airbyte_public
+    depends_on:
+      - webapp
+      - server
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}
@@ -206,3 +234,6 @@ volumes:
     name: ${DATA_DOCKER_MOUNT}
   db:
     name: ${DB_DOCKER_MOUNT}
+networks:
+  airbyte_public:
+  airbyte_internal:
