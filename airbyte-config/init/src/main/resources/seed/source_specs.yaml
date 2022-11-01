@@ -219,7 +219,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:1.0.16"
+- dockerImage: "airbyte/source-alloydb:1.0.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -1140,7 +1140,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.16"
+- dockerImage: "airbyte/source-amplitude:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amplitude"
     connectionSpecification:
@@ -4188,7 +4188,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.30"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.31"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics"
     connectionSpecification:
@@ -5426,7 +5426,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-intercom:0.1.28"
+- dockerImage: "airbyte/source-intercom:0.1.29"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/intercom"
     connectionSpecification:
@@ -6677,7 +6677,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-metabase:0.1.0"
+- dockerImage: "airbyte/source-metabase:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/metabase"
     connectionSpecification:
@@ -6693,7 +6693,8 @@
           title: "Metabase Instance API URL"
           description: "URL to your metabase instance API"
           examples:
-          - "http://localhost:3000/api/"
+          - "https://localhost:3000/api/"
+          pattern: "^https://"
           order: 0
         username:
           type: "string"
@@ -7545,7 +7546,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.8"
+- dockerImage: "airbyte/source-mysql:1.0.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -8405,6 +8406,25 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+- dockerImage: "airbyte/source-omnisend:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/omnisend"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Omnisend Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API Key"
+          type: "string"
+          description: "API Key"
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-onesignal:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/onesignal"
@@ -9442,7 +9462,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.21"
+- dockerImage: "airbyte/source-postgres:1.0.22"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -9847,7 +9867,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-prestashop:0.1.0"
+- dockerImage: "airbyte/source-prestashop:0.2.0"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -9857,7 +9877,6 @@
       required:
       - "url"
       - "access_key"
-      additionalProperties: false
       properties:
         url:
           type: "string"
