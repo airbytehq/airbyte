@@ -28,10 +28,6 @@ definitions:
       name: "avatars"
       primary_key: "avatar_id"
       path: "/avatars/list"
-    requester:
-      url_base: "*ref(definitions.requester.url_base)"
-      http_method: "*ref(definitions.requester.http_method)"
-      authenticator: "*ref(definitions.requester.authenticator)"
   avatars_stream_slicer:
     type: SubstreamSlicer
     parent_stream_configs:
