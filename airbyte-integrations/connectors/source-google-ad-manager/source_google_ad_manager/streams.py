@@ -105,8 +105,6 @@ class BaseGoogleAdManagerReportStream(Stream, IncrementalMixin):
             lines = chunk.decode('utf-8')
             reader = csv_dict_reader(lines.splitlines())
             for row in reader:
-                logger.error(row)
-                logger.error(f"this is the row we are testing for {10 * '***'}")
                 item = self.generate_item(row)
                 # this section deals with the cursor, to be revisited
                 if item:
@@ -216,8 +214,9 @@ class AdUnitPerHourReportStream(BaseGoogleAdManagerReportStream):
 
     def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient, customer_name: str, start_date: str, timezone: str) -> None:
         super().__init__(google_ad_manager_client, start_date, timezone)
-        self.customer_name = customer_name  
-        start_date = convert_time_to_dict(self.start_date)
+        self.customer_name = customer_name
+        last_date_pulled = pendulum_parse(self.state.get(self.cursor_field))
+        start_date = convert_time_to_dict(last_date_pulled)
         end_date = convert_time_to_dict(self.today_date)
         self.report_job = self.generate_report_query(start_date=start_date, end_date=end_date)
 
@@ -282,7 +281,8 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
     def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient, customer_name: str, start_date:str, timezone:str) -> None:
         super().__init__(google_ad_manager_client, start_date, timezone)
         targeting_values = self.get_custom_targeting_keys_ids("referrer")  # @TODO: I can make this manual instead of getting from the api.
-        start_date = convert_time_to_dict(self.start_date)
+        last_date_pulled = pendulum_parse(self.state.get(self.cursor_field))
+        start_date = convert_time_to_dict(last_date_pulled)
         end_date = convert_time_to_dict(self.today_date)
         self.customer_name = customer_name
         self.report_job = self.generate_report_query(targeting_values, start_date=start_date, end_date=end_date)
