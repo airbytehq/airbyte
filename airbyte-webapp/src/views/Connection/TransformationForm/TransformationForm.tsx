@@ -4,7 +4,7 @@ import { getIn, useFormik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { FormChangeTracker } from "components/FormChangeTracker";
+import { FormChangeTracker } from "components/common/FormChangeTracker";
 import { ControlLabels } from "components/LabeledControl";
 import { Button } from "components/ui/Button";
 import { DropDown } from "components/ui/DropDown";
