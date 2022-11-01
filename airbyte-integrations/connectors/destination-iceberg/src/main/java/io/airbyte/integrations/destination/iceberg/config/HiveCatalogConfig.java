@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.ToString;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.hive.HiveCatalog;
@@ -16,6 +17,7 @@ import org.apache.iceberg.hive.HiveCatalog;
  * @author Leibniz on 2022/10/26.
  */
 @Data
+@ToString(callSuper = true)
 @AllArgsConstructor
 public class HiveCatalogConfig extends IcebergCatalogConfig {
 
@@ -51,10 +53,11 @@ public class HiveCatalogConfig extends IcebergCatalogConfig {
     @Override
     public Catalog genCatalog() {
         HiveCatalog catalog = new HiveCatalog();
-        Map<String, String> properties = new HashMap<>(this.storageConfig.catalogInitializeProperties());
+        Map<String, String> properties = new HashMap<>();
         properties.put(CatalogProperties.URI, thriftUri);
         properties.put(CatalogProperties.WAREHOUSE_LOCATION, this.storageConfig.getWarehouseUri());
-        catalog.initialize(CATALOG_NAME, properties);
+        properties.putAll(this.storageConfig.catalogInitializeProperties());
+        catalog.initialize("hive", properties);
         return catalog;
     }
 }

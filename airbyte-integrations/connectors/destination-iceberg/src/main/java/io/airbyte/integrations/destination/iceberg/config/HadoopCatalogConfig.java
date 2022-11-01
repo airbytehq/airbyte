@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import lombok.Data;
+import lombok.ToString;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.catalog.Catalog;
@@ -15,6 +17,8 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author Leibniz on 2022/11/1.
  */
+@Data
+@ToString(callSuper = true)
 public class HadoopCatalogConfig extends IcebergCatalogConfig {
 
     public static final String SPARK_HADOOP_CONFIG_PREFIX = "spark.hadoop.";

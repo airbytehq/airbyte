@@ -6,6 +6,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.iceberg.IcebergConstants;
 import java.util.Map;
 import lombok.Data;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
@@ -22,6 +23,7 @@ import org.apache.iceberg.types.Types.NestedField;
  * @author Leibniz on 2022/10/26.
  */
 @Data
+@ToString
 @Slf4j
 public abstract class IcebergCatalogConfig {
 

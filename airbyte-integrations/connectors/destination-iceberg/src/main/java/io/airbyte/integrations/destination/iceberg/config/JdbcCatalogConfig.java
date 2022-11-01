@@ -11,6 +11,8 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.Data;
+import lombok.ToString;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.jdbc.JdbcCatalog;
@@ -19,6 +21,8 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author Leibniz on 2022/11/1.
  */
+@Data
+@ToString(callSuper = true)
 public class JdbcCatalogConfig extends IcebergCatalogConfig {
 
     private final String jdbcUrl;

@@ -27,6 +27,7 @@ dependencies {
     implementation "org.apache.hadoop:hadoop-client-api:3.3.2"
     implementation "org.apache.hadoop:hadoop-client-runtime:3.3.2"
     implementation "org.postgresql:postgresql:42.5.0"
+    implementation "commons-collections:commons-collections:3.2.2"
 
 //    implementation "software.amazon.awssdk:utils:2.17.131"
 
