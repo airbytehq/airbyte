@@ -72,6 +72,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [GitHub](sources/github.md)                                                                 | Generally Available  | Yes                 |
 | [GitLab](sources/gitlab.md)                                                                 | Alpha                | Yes                 |
 | [Glassfrog](sources/glassfrog.md)                                                           | Alpha                | No                  |
+| [GNews](sources/gnews.md)                                                                   | Alpha                | Yes                 |
 | [Google Ads](sources/google-ads.md)                                                         | Generally Available  | Yes                 |
 | [Google Analytics (v4)](sources/google-analytics-v4.md)                                     | Alpha                | Yes                 |
 | [Google Analytics (Universal Analytics)](sources/google-analytics-universal-analytics.md)   | Generally Available  | Yes                 |

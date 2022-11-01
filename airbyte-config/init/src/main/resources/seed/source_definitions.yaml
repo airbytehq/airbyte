@@ -432,6 +432,13 @@
   icon: glassfrog.svg
   sourceType: api
   releaseStage: alpha
+- name: GNews
+  sourceDefinitionId: ce38aec4-5a77-439a-be29-9ca44fd4e811
+  dockerRepository: airbyte/source-gnews
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gnews
+  sourceType: api
+  releaseStage: alpha
 - name: GoCardless
   sourceDefinitionId: ba15ac82-5c6a-4fb2-bf24-925c23a1180c
   dockerRepository: airbyte/source-gocardless
