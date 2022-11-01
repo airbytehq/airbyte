@@ -109,7 +109,7 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
 
             inputDir = project.file("${project.projectDir}/build/docker")
             platform = buildPlatform
-            images.add("airbyte/${imageName}")
+            images.add("${imageName}")
             buildArgs.put('JDK_VERSION', jdkVersion)
             buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
             buildArgs.put('ALPINE_IMAGE', alpineImage)
