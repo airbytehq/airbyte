@@ -1,14 +1,8 @@
 {
-  "calls_stream": {
-    "start_time": "2022-01-01T00:00:00Z"
+   "calls": {
+    "start_time": "2999-10-30T00:00:00.000Z"
   },
-  "text_messages_stream": {
-    "last_message_at": "2022-01-01T00:00:00Z"
-  },
-  "users_stream": {
-    "created_at": "2022-01-01T00:00:00Z"
-  },
-  "companies_stream": {
-    "created_at": "2022-01-01T00:00:00Z"
+  "conversations": {
+    "last_message_at": "2999-10-30T00:00:00.000Z"
   }
 }
