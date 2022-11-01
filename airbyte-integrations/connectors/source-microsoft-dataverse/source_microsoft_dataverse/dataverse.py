@@ -32,20 +32,18 @@ class AirbyteType(Enum):
     Number = {"type": ["null", "number"]}
 
 
-class DataverseTypes(Enum):
+class DataverseType(Enum):
 
-    def __init__(self, data_verse_type: str, airbyte_type: Optional[dict]):
-        self.data_verse_type = data_verse_type
-        self.airbyte_type = airbyte_type
-
-    String = "String", AirbyteType.String
-    DateTime = "DateTime", AirbyteType.Timestamp
-    Integer = "Integer", AirbyteType.Integer
-    Money = "Money", AirbyteType.Number
-    Boolean = "Boolean", AirbyteType.Boolean
-    Double = "Double", AirbyteType.Number
-    Decimal = "Decimal", AirbyteType.Number
-    Virtual = "Virtual", None
+    String = AirbyteType.String
+    Uniqueidentifier = AirbyteType.String
+    DateTime = AirbyteType.Timestamp
+    Integer = AirbyteType.Integer
+    Bigint = AirbyteType.Integer
+    Money = AirbyteType.Number
+    Boolean = AirbyteType.Boolean
+    Double = AirbyteType.Number
+    Decimal = AirbyteType.Number
+    Virtual = None
 
 
 def get_auth(config: Mapping[str, Any]) -> MicrosoftOauth2Authenticator:
@@ -69,9 +67,10 @@ def do_request(config: Mapping[str, Any], path: str):
 
 
 def convert_dataverse_type(dataverse_type: str) -> Optional[dict]:
-    enum_type = DataverseTypes(dataverse_type)
-
-    if enum_type:
-        return enum_type.airbyte_type
-
-    return AirbyteType.String.value
+    if dataverse_type in list(DataverseType.__members__):
+        enum_type = DataverseType[dataverse_type].value
+        if enum_type:
+            return enum_type.value
+        return AirbyteType.String.value
+    else:
+        return AirbyteType.String.value

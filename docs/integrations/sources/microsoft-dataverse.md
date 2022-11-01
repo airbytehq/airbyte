@@ -13,16 +13,20 @@ https://<url>/api/data/v9.2/EntityDefinitions?$expand=Attributes
 
 ### Data type mapping
 
-| Integration Type | Airbyte Type              | Notes                 |
-|:-----------------|:--------------------------|:----------------------|
-| `String`         | `string`                  |                       |
-| `DateTime`       | `timestamp with timezone` |                       |
-| `Integer`        | `integer`                 |                       |
-| `Money`          | `number`                  |                       |
-| `Boolean`        | `boolean`                 |                       |
-| `Double`         | `number`                  |                       |
-| `Decimal`        | `number`                  |                       |
-| `Virtual`        | None                      | We skip virtual types |
+| Integration Type   | Airbyte Type              | Notes                 |
+|:-------------------|:--------------------------|:----------------------|
+| `String`           | `string`                  |                       |
+| `UniqueIdentifier` | `string`                  |                       |
+| `DateTime`         | `timestamp with timezone` |                       |
+| `Integer`          | `integer`                 |                       |
+| `BigInt`           | `integer`                 |                       |
+| `Money`            | `number`                  |                       |
+| `Boolean`          | `boolean`                 |                       |
+| `Double`           | `number`                  |                       |
+| `Decimal`          | `number`                  |                       |
+| `Virtual`          | None                      | We skip virtual types |
+
+Other types are defined as `string`.
 
 ### Features
 
@@ -45,10 +49,12 @@ https://<url>/api/data/v9.2/EntityDefinitions?$expand=Attributes
 
 ### Setup guide
 
-The Microsoft Dataverse API uses OAuth2 for authentication. We need a 'client_credentials' type, that usually
-we get by using an App Registration.
-
+The Microsoft Dataverse API uses OAuth2 for authentication. We need a 'client_credentials' type, that we usually get by using an App Registration.
 https://learn.microsoft.com/en-us/power-apps/developer/data-platform/authenticate-oauth
+
+The procedure to generate the credentials and setup the necessary permissions is well described in this post from Magnetism blog:
+https://blog.magnetismsolutions.com/blog/paulnieuwelaar/2021/9/21/setting-up-an-application-user-in-dynamics-365
+
 
 ## CHANGELOG
 
