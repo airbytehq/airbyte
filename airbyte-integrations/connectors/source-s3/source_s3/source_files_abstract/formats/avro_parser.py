@@ -6,6 +6,7 @@ from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
 
 import fastavro
 from fastavro import reader
+from source_s3.source_files_abstract.file_info import FileInfo
 
 from .abstract_file_parser import AbstractFileParser
 
@@ -69,18 +70,20 @@ class AvroParser(AbstractFileParser):
         else:
             return schema
 
-    def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> dict:
+    def get_inferred_schema(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> dict:
         """Return schema
         :param file: file-like object (opened via StorageFile)
+        :param file_info: file metadata
         :return: mapping of {columns:datatypes} where datatypes are JsonSchema types
         """
         avro_schema = self._get_avro_schema(file)
         schema_dict = self._parse_data_type(data_type_mapping, avro_schema)
         return schema_dict
 
-    def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
+    def stream_records(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Iterator[Mapping[str, Any]]:
         """Stream the data using a generator
         :param file: file-like object (opened via StorageFile)
+        :param file_info: file metadata
         :yield: data record as a mapping of {columns:values}
         """
         avro_reader = reader(file)
