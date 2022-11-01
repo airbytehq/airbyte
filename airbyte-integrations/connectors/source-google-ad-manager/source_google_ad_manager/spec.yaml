@@ -14,6 +14,8 @@ connectionSpecification:
     - private_key
     - client_id
     - client_email
+    - start_date
+    - timezone
   properties:
     customer_name:
      title: Customer Name
@@ -35,16 +37,17 @@ connectionSpecification:
       description: "The start date in ISO 8601 format."
       examples:
       - "2019-01-01"
+      order: 2
     timezone:
       type: "string"
-      title: "TIMEZONE"
+      title: "timezone"
       description: "Timezone to use when generating reports. Only IANA timezones\
         \ are supported (https://nodatime.org/TimeZones)"
       examples:
       - "Europe/London"
       - "America/Chicago"
-      default: "UTC"
-      order: 2
+      default: "America/Chicago"
+      order: 3
     project_id:
       title: Project ID
       type: string
@@ -52,13 +55,13 @@ connectionSpecification:
       airbyte_secret: true
       examples:
         - "1030xxxxxxxxxxxxxxx53"
-      order: 3
+      order: 4
     private_key_id:
       title: Private Key ID
       type: string
       description: Id of the ssh private key to use
       airbyte_secret: true
-      order: 4
+      order: 5
     private_key:
       title: Private Key
       type: string
@@ -66,7 +69,7 @@ connectionSpecification:
       airbyte_secret: true
       examples:
         - "-----BEGIN PRIVATE KEY----- xxxxxxxx -----END PRIVATE KEY----- " 
-      order: 5
+      order: 6
     client_email:
       title: Client Email
       type: string
@@ -74,7 +77,7 @@ connectionSpecification:
       airbyte_secret: true
       examples:
         - "xxxx@xxxx.iam.gserviceaccount.com"
-      order: 6
+      order: 7
     client_id:
       title: Client ID
       type: string
@@ -82,7 +85,7 @@ connectionSpecification:
       airbyte_secret: true
       examples:
         - "1030xxxxxxxxxxxxxxx53"
-      order: 7
+      order: 8
     auth_uri:
       title: Auth URI
       type: string
@@ -90,7 +93,7 @@ connectionSpecification:
       default: "https://accounts.google.com/o/oauth2/auth"
       examples:
         - "https://accounts.google.com/o/oauth2/auth"
-      order: 8
+      order: 9
     token_uri:
       title: Token URI
       type: string
@@ -98,7 +101,7 @@ connectionSpecification:
       default: "https://oauth2.googleapis.com/token"
       examples:
         - "https://oauth2.googleapis.com/token"
-      order: 9
+      order: 10
     auth_provider_x509_cert_url:
       title: Auth Provider X509 Cert URL
       type: string
@@ -106,4 +109,4 @@ connectionSpecification:
       default: "https://www.googleapis.com/oauth2/v1/certs"
       examples:
         - "https://www.googleapis.com/oauth2/v1/certs"
-      order: 10
+      order: 11
