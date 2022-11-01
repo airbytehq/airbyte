@@ -1,0 +1,65 @@
+{
+  "type": "object",
+  "required": ["error", "amount"],
+  "properties": {
+      "error": {
+        "type": ["null","boolean"]
+      },
+      "amount": {
+        "type": ["null", "integer"]
+      },
+      "jokes": [
+        {
+          "type": "object",
+          "required": ["category", "type", "setup", "delivery", "safe", "id", "lang"],
+          "properties": {
+            "category":{
+              "type": ["null","string"]
+            },
+            "type":{
+              "type": ["null","string"]
+            },
+            "setup":{
+              "type": ["null","string"]
+            },
+            "delivery":{
+              "type": ["null","string"]
+            },
+            "flags": {
+              "type": "object",
+              "required": ["nsfw", "religious", "political", "racist", "sexist", "explicit"],
+              "properties": {
+                "nsfw":{
+                  "type": ["null","boolean"]
+                },
+                "religious":{
+                  "type": ["null","boolean"]
+                },
+                "political":{
+                  "type": ["null","boolean"]
+                },
+                "racist":{
+                  "type": ["null","boolean"]
+                },
+                "sexist":{
+                  "type": ["null","boolean"]
+                },
+                "explicit": {
+                  "type": ["null","boolean"]
+                }
+              }
+            },
+            "safe": {
+              "type": ["null","boolean"]
+            },
+            "id": {
+              "type": ["null","integer"]
+            },
+            "lang": {
+              "type": ["null","string"]
+            }
+          }
+        }
+      ]
+  }
+}

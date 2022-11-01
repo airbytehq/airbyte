@@ -1,0 +1,36 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://v2.jokeapi.dev"
+    http_method: "GET"
+  authenticator:
+      type: ApiKeyAuthenticator
+      header: "X-CoinAPI-Key"
+      api_token: "{{ config['access_key'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  jokes_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "jokes"
+      primary_key: "id"
+      path: "/joke/Any?amount={{ config['amount'] }}"
+
+streams:
+  - "*ref(definitions.jokes_stream)"
+
+check:
+  stream_names:
+    - "jokes"
