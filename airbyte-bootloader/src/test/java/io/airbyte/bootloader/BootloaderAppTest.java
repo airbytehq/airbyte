@@ -30,7 +30,10 @@ import io.airbyte.config.init.LocalDefinitionsProvider;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -185,10 +188,15 @@ class BootloaderAppTest {
       val jobDatabase = new JobsDatabaseTestProvider(jobsDslContext, jobsFlyway).create(false);
 
       val configPersistence = new DatabaseConfigPersistence(configDatabase, jsonSecretsProcessor);
+      val configRepository = new ConfigRepository(configPersistence, configDatabase);
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
 
+      val secretsPersistence = SecretPersistence.getLongLived(configsDslContext, mockedConfigs);
+      val secretsReader = new SecretsRepositoryReader(configRepository, new NoOpSecretsHydrator());
+      val secretsWriter = new SecretsRepositoryWriter(configRepository, secretsPersistence, Optional.empty());
+
       val spiedSecretMigrator =
-          spy(new SecretMigrator(configPersistence, jobsPersistence, SecretPersistence.getLongLived(configsDslContext, mockedConfigs)));
+          spy(new SecretMigrator(secretsReader, secretsWriter, configRepository, jobsPersistence, secretsPersistence));
 
       // Although we are able to inject mocked configs into the Bootloader, a particular migration in the
       // configs database requires the env var to be set. Flyway prevents injection, so we dynamically set
@@ -202,7 +210,6 @@ class BootloaderAppTest {
       initBootloader.load();
 
       final DefinitionsProvider localDefinitions = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
-      final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
       final ConfigPersistence localConfigPersistence = new DefinitionProviderToConfigPersistenceAdapter(localDefinitions);
       configRepository.loadDataNoSecrets(localConfigPersistence);
 
