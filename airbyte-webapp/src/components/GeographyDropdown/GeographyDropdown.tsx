@@ -63,16 +63,30 @@ export const GeographyDropdown: React.FC<DropdownProps<GeographySelectOption>> =
   };
 
   const customStyles: StylesConfig<GeographySelectOption> = {
-    option: (provided, state) => ({
-      ...provided,
-      color: "black",
-      backgroundColor: state.isFocused ? theme.blue50 : theme.white,
-      borderRadius: "10px",
+    option: (base, state) => {
+      let backgroundColor = theme.white;
+      const color = theme.black;
+      const borderRadius = "10px";
 
-      "&:hover": {
-        backgroundColor: state.isSelected ? theme.blue50 : theme.grey50,
-      },
-    }),
+      if (state.isSelected) {
+        backgroundColor = theme.blue50;
+      }
+
+      if (state.isFocused) {
+        backgroundColor = theme.grey50;
+      }
+
+      if (state.isFocused && state.isSelected) {
+        backgroundColor = theme.blue50;
+      }
+
+      return {
+        ...base,
+        backgroundColor,
+        color,
+        borderRadius,
+      };
+    },
     valueContainer: () => ({
       display: "flex",
     }),
