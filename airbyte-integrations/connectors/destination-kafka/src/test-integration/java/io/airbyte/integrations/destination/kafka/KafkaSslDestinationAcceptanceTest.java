@@ -30,9 +30,9 @@ import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
-public class KafkaSshDestinationAcceptanceTest extends DestinationAcceptanceTest {
+public class KafkaSslDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(KafkaSshDestinationAcceptanceTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(KafkaSslDestinationAcceptanceTest.class);
   private static final ObjectMapper mapper = MoreMappers.initMapper();
   private static final String TOPIC_NAME = "test.topic";
 
