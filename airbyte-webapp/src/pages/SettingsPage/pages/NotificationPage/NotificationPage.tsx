@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 
-import HeadTitle from "components/HeadTitle";
+import { HeadTitle } from "components/common/HeadTitle";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import useWorkspace, { useCurrentWorkspace, WebhookPayload } from "hooks/services/useWorkspace";

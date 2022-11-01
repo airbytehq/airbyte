@@ -460,9 +460,9 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
-                    stream=AirbyteStream(name=catalog_stream_name,
-                                         supported_sync_modes=[SyncMode.full_refresh],
-                                         json_schema={"type": "object"}),
+                    stream=AirbyteStream(
+                        name=catalog_stream_name, supported_sync_modes=[SyncMode.full_refresh], json_schema={"type": "object"}
+                    ),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 )
@@ -498,7 +498,9 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
                 ],
             },
         )
-        streams = SourceSalesforce().streams(config=stream_config, catalog=catalog)
+        source = SourceSalesforce()
+        source.catalog = catalog
+        streams = source.streams(config=stream_config)
     expected_names = catalog_stream_names if catalog else stream_names
     assert not set(expected_names).symmetric_difference(set(stream.name for stream in streams)), "doesn't match excepted streams"
 
