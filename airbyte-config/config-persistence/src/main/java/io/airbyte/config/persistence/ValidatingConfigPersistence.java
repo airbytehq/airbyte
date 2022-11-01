@@ -14,9 +14,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Validates that json input and outputs for the ConfigPersistence against their schemas.
@@ -92,27 +89,6 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   @Override
   public void deleteConfig(final AirbyteConfig configType, final String configId) throws ConfigNotFoundException, IOException {
     decoratedPersistence.deleteConfig(configType, configId);
-  }
-
-  @Override
-  public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
-    final Map<AirbyteConfig, Stream<?>> augmentedMap = new HashMap<>(configs).entrySet()
-        .stream()
-        .collect(Collectors.toMap(
-            Entry::getKey,
-            entry -> entry.getValue().peek(config -> {
-              try {
-                validateJson(config, entry.getKey());
-              } catch (final JsonValidationException e) {
-                throw new RuntimeException(e);
-              }
-            })));
-    decoratedPersistence.replaceAllConfigs(augmentedMap, dryRun);
-  }
-
-  @Override
-  public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
-    return decoratedPersistence.dumpConfigs();
   }
 
   private <T> void validateJson(final T config, final AirbyteConfig configType) throws JsonValidationException {

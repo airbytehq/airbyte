@@ -70,7 +70,7 @@ public class DatabaseBeanFactory {
   @Singleton
   public ConfigPersistence configPersistence(@Named("configDatabase") final Database configDatabase,
                                              final JsonSecretsProcessor jsonSecretsProcessor) {
-    return DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
+    return DatabaseConfigPersistence.createWithValidation(configDatabase);
   }
 
   @Singleton
