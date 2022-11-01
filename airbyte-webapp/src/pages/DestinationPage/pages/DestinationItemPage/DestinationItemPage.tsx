@@ -3,10 +3,10 @@ import { FormattedMessage } from "react-intl";
 import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 
 import { LoadingPage } from "components";
-import ApiErrorBoundary from "components/ApiErrorBoundary";
+import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
+import { ConnectorIcon } from "components/common/ConnectorIcon";
+import { HeadTitle } from "components/common/HeadTitle";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
-import { ConnectorIcon } from "components/ConnectorIcon";
-import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import { Breadcrumbs } from "components/ui/Breadcrumbs";
 import { DropDownOptionDataItem } from "components/ui/DropDown";
