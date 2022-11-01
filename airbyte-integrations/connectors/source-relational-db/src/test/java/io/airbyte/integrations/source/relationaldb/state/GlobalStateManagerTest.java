@@ -90,6 +90,7 @@ public class GlobalStateManagerTest {
             .stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()));
     final StateManager stateManager = new GlobalStateManager(new AirbyteStateMessage().withData(Jsons.jsonNode(dbState)), catalog);
 
+    final long expectedRecordCount = 19L;
     final DbState expectedDbState = new DbState()
         .withCdc(true)
         .withCdcState(cdcState)
@@ -99,7 +100,7 @@ public class GlobalStateManagerTest {
                 .withStreamNamespace(NAMESPACE)
                 .withCursorField(List.of(CURSOR_FIELD1))
                 .withCursor("a")
-                .withCursorRecordCount(1L),
+                .withCursorRecordCount(expectedRecordCount),
             new DbStreamState()
                 .withStreamName(STREAM_NAME2)
                 .withStreamNamespace(NAMESPACE)
@@ -119,7 +120,7 @@ public class GlobalStateManagerTest {
                     .withStreamNamespace(NAMESPACE)
                     .withCursorField(List.of(CURSOR_FIELD1))
                     .withCursor("a")
-                    .withCursorRecordCount(2L))),
+                    .withCursorRecordCount(expectedRecordCount))),
             new AirbyteStreamState()
                 .withStreamDescriptor(new StreamDescriptor().withName(STREAM_NAME2).withNamespace(NAMESPACE))
                 .withStreamState(Jsons.jsonNode(new DbStreamState()
@@ -137,7 +138,7 @@ public class GlobalStateManagerTest {
         .withGlobal(expectedGlobalState)
         .withType(AirbyteStateType.GLOBAL);
 
-    final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a", 2L);
+    final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a", expectedRecordCount);
     assertEquals(expected, actualFirstEmission);
   }
 

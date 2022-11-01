@@ -128,6 +128,7 @@ public class StreamStateManagerTest {
     final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a");
     assertEquals(expectedFirstEmission, actualFirstEmission);
 
+    final long expectedRecordCount = 17L;
     final DbState expectedSecondDbState = new DbState()
         .withCdc(false)
         .withStreams(List.of(
@@ -141,15 +142,15 @@ public class StreamStateManagerTest {
                 .withStreamNamespace(NAMESPACE)
                 .withCursorField(List.of(CURSOR_FIELD2))
                 .withCursor("b")
-                .withCursorRecordCount(2L),
+                .withCursorRecordCount(expectedRecordCount),
             new DbStreamState()
                 .withStreamName(STREAM_NAME3)
                 .withStreamNamespace(NAMESPACE))
             .stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()));
     final AirbyteStateMessage expectedSecondEmission =
-        createStreamState(STREAM_NAME2, NAMESPACE, List.of(CURSOR_FIELD2), "b", 2L).withData(Jsons.jsonNode(expectedSecondDbState));
+        createStreamState(STREAM_NAME2, NAMESPACE, List.of(CURSOR_FIELD2), "b", expectedRecordCount).withData(Jsons.jsonNode(expectedSecondDbState));
 
-    final AirbyteStateMessage actualSecondEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR2, "b", 2L);
+    final AirbyteStateMessage actualSecondEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR2, "b", expectedRecordCount);
     assertEquals(expectedSecondEmission, actualSecondEmission);
   }
 
