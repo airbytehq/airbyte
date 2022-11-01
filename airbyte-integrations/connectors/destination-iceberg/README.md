@@ -21,6 +21,8 @@ conforming to the spec file in `src/main/resources/spec.json`.
 Note that the `secrets` directory is git-ignored by default, so there is no danger of accidentally checking in sensitive
 information.
 
+Please get examples in `secrets-examples` directory.
+
 **If you are an Airbyte core member**, follow
 the [instructions](https://docs.airbyte.io/connector-development#using-credentials-in-ci) to set up the credentials.
 
@@ -85,8 +87,8 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 world. Now what?
 
 1. Make sure your changes are passing unit and integration tests.
-1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version`
+2. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version`
    appropriately (we use [SemVer](https://semver.org/)).
-1. Create a Pull Request.
-1. Pat yourself on the back for being an awesome contributor.
-1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+3. Create a Pull Request.
+4. Pat yourself on the back for being an awesome contributor.
+5. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.

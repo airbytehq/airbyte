@@ -1,26 +1,19 @@
 # Iceberg
 
-TODO: update this doc
+This page guides you through the process of setting up the Iceberg destination connector.
 
 ## Sync overview
 
 ### Output schema
 
-Is the output schema fixed (e.g: for an API like Stripe)? If so, point to the connector's schema (e.g: link to Stripe’s
-documentation) or describe the schema here directly (e.g: include a diagram or paragraphs describing the schema).
+The incoming airbyte data is structured in keyspaces and tables and is partitioned and replicated across different nodes
+in the cluster. This connector maps an incoming `stream` to an Iceberg `table` and a `namespace` to an
+Iceberg `database`. Fields in the airbyte message become different columns in the Iceberg tables. Each table will
+contain the following columns.
 
-Describe how the connector's schema is mapped to Airbyte concepts. An example description might be: "MagicDB tables
-become Airbyte Streams and MagicDB columns become Airbyte Fields. In addition, an extracted\_at column is appended to
-each row being read."
-
-### Data type mapping
-
-This section should contain a table mapping each of the connector's data types to Airbyte types. At the moment, Airbyte
-uses the same types used by [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html)
-. `string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number` are the most commonly used data types.
-
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
+* `_airbyte_ab_id`: A random generated uuid.
+* `_airbyte_emitted_at`: a timestamp representing when the event was received from the data source.
+* `_airbyte_data`: a json text representing the extracted data.
 
 ### Features
 
@@ -28,33 +21,35 @@ This section should contain a table with the following format:
 
 | Feature | Supported?(Yes/No) | Notes |
 | :--- | :--- | :--- |
-| Full Refresh Sync |  |  |
-| Incremental Sync |  |  |
-| Replicate Incremental Deletes |  |  |
-| For databases, WAL/Logical replication |  |  |
-| SSL connection |  |  |
-| SSH Tunnel Support |  |  |
-| (Any other source-specific features) |  |  |
+| Full Refresh Sync | ✅ |  |
+| Incremental Sync | ✅ |  |
+| Replicate Incremental Deletes | ❌ |  |
+| SSH Tunnel Support | ❌ |  |
 
 ### Performance considerations
 
-Could this connector hurt the user's database/API/etc... or put too much strain on it in certain circumstances? For
-example, if there are a lot of tables or rows in a table? What is the breaking point (e.g: 100mm&gt; records)? What can
-the user do to prevent this? (e.g: use a read-only replica, or schedule frequent syncs, etc..)
+Every thousand pieces of incoming airbyte data in a stream ————we call it a batch, would produce one data file(
+Parquet/ORC/Avro) in an Iceberg table. Until now, the batch size is still not configurable.  
+As the quantity of Iceberg data files grows, it causes an unnecessary amount of metadata and less efficient queries from
+file open costs.  
+Iceberg provides data file compaction action to improve this case, you can read more about
+compaction [HERE](https://iceberg.apache.org/docs/latest/maintenance/#compact-data-files).
 
 ## Getting started
 
 ### Requirements
 
-* What versions of this connector does this implementation support? (e.g: `postgres v3.14 and above`)
-* What configurations, if any, are required on the connector? (e.g: `buffer_size > 1024`)
-* Network accessibility requirements
-* Credentials/authentication requirements? (e.g: A DB user with read permissions on certain tables)
+* **Iceberg catalog** : Iceberg uses `catalog` to manage tables. this connector already supports:
+    * [HiveCatalog](https://iceberg.apache.org/docs/latest/hive/#global-hive-catalog)  connects to a **Hive metastore**
+      to keep track of Iceberg tables.
+    * [HadoopCatalog](https://iceberg.apache.org/docs/latest/java-api-quickstart/#using-a-hadoop-catalog) doesn’t need
+      to connect to a Hive MetaStore, but can only be used with **HDFS or similar file systems** that support atomic
+      rename. For `HadoopCatalog`, this connector use **Storage Config** (S3 or HDFS) to manage Iceberg tables.
+    * [JdbcCatalog](https://iceberg.apache.org/docs/latest/jdbc/) uses a table in a relational database to manage
+      Iceberg tables through JDBC. So far, this connector supports **PostgreSQL** only.
+* **Storage medium** means where Iceberg data files storages in. So far, this connector supports **S3/S3N/S3N**
+  object-storage only.
 
 ### Setup guide
 
-For each of the above high-level requirements as appropriate, add or point to a follow-along guide. See existing source
-or destination guides for an example.
-
-For each major cloud provider we support, also add a follow-along guide for setting up Airbyte to connect to that
-destination. See the Postgres destination guide for an example of what this should look like.
+######TODO: more info
