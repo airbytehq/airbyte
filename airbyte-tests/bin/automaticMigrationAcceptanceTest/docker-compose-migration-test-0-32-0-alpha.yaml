@@ -1,0 +1,203 @@
+version: "3.7"
+#https://github.com/compose-spec/compose-spec/blob/master/spec.md#using-extensions-as-fragments
+x-logging: &default-logging
+  options:
+    max-size: "100m"
+    max-file: "5"
+  driver: json-file
+services:
+  # hook in case we need to add init behavior
+  # every root service (no depends_on) should depend on init
+  init:
+    image: airbyte/init:${VERSION}
+    logging: *default-logging
+    container_name: init
+    command: /bin/sh -c "./scripts/create_mount_directories.sh /local_parent ${HACK_LOCAL_ROOT_PARENT} ${LOCAL_ROOT}"
+    environment:
+      - LOCAL_ROOT=${LOCAL_ROOT}
+      - HACK_LOCAL_ROOT_PARENT=${HACK_LOCAL_ROOT_PARENT}
+    volumes:
+      - ${HACK_LOCAL_ROOT_PARENT}:/local_parent
+  db:
+    image: airbyte/db:${VERSION}
+    logging: *default-logging
+    container_name: airbyte-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+      - CONFIG_DATABASE_USER=${CONFIG_DATABASE_USER:-}
+      - CONFIG_DATABASE_PASSWORD=${CONFIG_DATABASE_PASSWORD:-}
+      - CONFIG_DATABASE_URL=${CONFIG_DATABASE_URL:-}
+    volumes:
+      - db:/var/lib/postgresql/data
+  scheduler:
+    image: airbyte/scheduler:${VERSION}
+    logging: *default-logging
+    container_name: airbyte-scheduler
+    restart: unless-stopped
+    environment:
+      - WEBAPP_URL=${WEBAPP_URL}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+      - CONFIG_DATABASE_USER=${CONFIG_DATABASE_USER:-}
+      - CONFIG_DATABASE_PASSWORD=${CONFIG_DATABASE_PASSWORD:-}
+      - CONFIG_DATABASE_URL=${CONFIG_DATABASE_URL:-}
+      - RUN_DATABASE_MIGRATION_ON_STARTUP=${RUN_DATABASE_MIGRATION_ON_STARTUP}
+      - WORKSPACE_ROOT=${WORKSPACE_ROOT}
+      - WORKSPACE_DOCKER_MOUNT=${WORKSPACE_DOCKER_MOUNT}
+      - LOCAL_ROOT=${LOCAL_ROOT}
+      - LOCAL_DOCKER_MOUNT=${LOCAL_DOCKER_MOUNT}
+      - CONFIG_ROOT=${CONFIG_ROOT}
+      - TRACKING_STRATEGY=${TRACKING_STRATEGY}
+      - AIRBYTE_VERSION=${VERSION}
+      - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
+      - TEMPORAL_HOST=${TEMPORAL_HOST}
+      - WORKER_ENVIRONMENT=${WORKER_ENVIRONMENT}
+      - S3_LOG_BUCKET=${S3_LOG_BUCKET}
+      - S3_LOG_BUCKET_REGION=${S3_LOG_BUCKET_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - GCP_STORAGE_BUCKET=${GCP_STORAGE_BUCKET}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - SUBMITTER_NUM_THREADS=${SUBMITTER_NUM_THREADS}
+      - RESOURCE_CPU_REQUEST=${RESOURCE_CPU_REQUEST}
+      - RESOURCE_CPU_LIMIT=${RESOURCE_CPU_LIMIT}
+      - RESOURCE_MEMORY_REQUEST=${RESOURCE_MEMORY_REQUEST}
+      - RESOURCE_MEMORY_LIMIT=${RESOURCE_MEMORY_LIMIT}
+      - MAX_SYNC_JOB_ATTEMPTS=${MAX_SYNC_JOB_ATTEMPTS}
+      - MAX_SYNC_TIMEOUT_DAYS=${MAX_SYNC_TIMEOUT_DAYS}
+      - INTERNAL_API_HOST=${INTERNAL_API_HOST}
+      - SECRET_PERSISTENCE=${SECRET_PERSISTENCE}
+    volumes:
+      - workspace:${WORKSPACE_ROOT}
+      - ${LOCAL_ROOT}:${LOCAL_ROOT}
+      - data:${CONFIG_ROOT}
+  worker:
+    image: airbyte/worker:${VERSION}
+    logging: *default-logging
+    container_name: airbyte-worker
+    restart: unless-stopped
+    environment:
+      - WEBAPP_URL=${WEBAPP_URL}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+      - CONFIG_DATABASE_USER=${CONFIG_DATABASE_USER:-}
+      - CONFIG_DATABASE_PASSWORD=${CONFIG_DATABASE_PASSWORD:-}
+      - CONFIG_DATABASE_URL=${CONFIG_DATABASE_URL:-}
+      - RUN_DATABASE_MIGRATION_ON_STARTUP=${RUN_DATABASE_MIGRATION_ON_STARTUP}
+      - WORKSPACE_ROOT=${WORKSPACE_ROOT}
+      - WORKSPACE_DOCKER_MOUNT=${WORKSPACE_DOCKER_MOUNT}
+      - LOCAL_ROOT=${LOCAL_ROOT}
+      - LOCAL_DOCKER_MOUNT=${LOCAL_DOCKER_MOUNT}
+      - CONFIG_ROOT=${CONFIG_ROOT}
+      - TRACKING_STRATEGY=${TRACKING_STRATEGY}
+      - AIRBYTE_VERSION=${VERSION}
+      - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
+      - TEMPORAL_HOST=${TEMPORAL_HOST}
+      - WORKER_ENVIRONMENT=${WORKER_ENVIRONMENT}
+      - S3_LOG_BUCKET=${S3_LOG_BUCKET}
+      - S3_LOG_BUCKET_REGION=${S3_LOG_BUCKET_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - GCP_STORAGE_BUCKET=${GCP_STORAGE_BUCKET}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - SUBMITTER_NUM_THREADS=${SUBMITTER_NUM_THREADS}
+      - RESOURCE_CPU_REQUEST=${RESOURCE_CPU_REQUEST}
+      - RESOURCE_CPU_LIMIT=${RESOURCE_CPU_LIMIT}
+      - RESOURCE_MEMORY_REQUEST=${RESOURCE_MEMORY_REQUEST}
+      - RESOURCE_MEMORY_LIMIT=${RESOURCE_MEMORY_LIMIT}
+      - MAX_SYNC_JOB_ATTEMPTS=${MAX_SYNC_JOB_ATTEMPTS}
+      - MAX_SYNC_TIMEOUT_DAYS=${MAX_SYNC_TIMEOUT_DAYS}
+      - INTERNAL_API_HOST=${INTERNAL_API_HOST}
+      - SECRET_PERSISTENCE=${SECRET_PERSISTENCE}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - workspace:${WORKSPACE_ROOT}
+      - ${LOCAL_ROOT}:${LOCAL_ROOT}
+  server:
+    image: airbyte/server:${VERSION}
+    logging: *default-logging
+    container_name: airbyte-server
+    restart: unless-stopped
+    environment:
+      - WEBAPP_URL=${WEBAPP_URL}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+      - CONFIG_DATABASE_USER=${CONFIG_DATABASE_USER:-}
+      - CONFIG_DATABASE_PASSWORD=${CONFIG_DATABASE_PASSWORD:-}
+      - CONFIG_DATABASE_URL=${CONFIG_DATABASE_URL:-}
+      - RUN_DATABASE_MIGRATION_ON_STARTUP=${RUN_DATABASE_MIGRATION_ON_STARTUP}
+      - WORKSPACE_ROOT=${WORKSPACE_ROOT}
+      - CONFIG_ROOT=${CONFIG_ROOT}
+      - TRACKING_STRATEGY=${TRACKING_STRATEGY}
+      - AIRBYTE_VERSION=${VERSION}
+      - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
+      - TEMPORAL_HOST=${TEMPORAL_HOST}
+      - WORKER_ENVIRONMENT=${WORKER_ENVIRONMENT}
+      - S3_LOG_BUCKET=${S3_LOG_BUCKET}
+      - S3_LOG_BUCKET_REGION=${S3_LOG_BUCKET_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - GCP_STORAGE_BUCKET=${GCP_STORAGE_BUCKET}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - RESOURCE_CPU_REQUEST=${RESOURCE_CPU_REQUEST}
+      - RESOURCE_CPU_LIMIT=${RESOURCE_CPU_LIMIT}
+      - RESOURCE_MEMORY_REQUEST=${RESOURCE_MEMORY_REQUEST}
+      - RESOURCE_MEMORY_LIMIT=${RESOURCE_MEMORY_LIMIT}
+      - SECRET_PERSISTENCE=${SECRET_PERSISTENCE}
+      - VERSION_0_32_0_FORCE_UPGRADE=${VERSION_0_32_0_FORCE_UPGRADE}
+    ports:
+      - 8001:8001
+    volumes:
+      - workspace:${WORKSPACE_ROOT}
+      - data:${CONFIG_ROOT}
+      - ${LOCAL_ROOT}:${LOCAL_ROOT}
+  webapp:
+    image: airbyte/webapp:${VERSION}
+    logging: *default-logging
+    container_name: airbyte-webapp
+    restart: unless-stopped
+    ports:
+      - 8000:80
+    environment:
+      - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
+      - AIRBYTE_VERSION=${VERSION}
+      - API_URL=${API_URL:-}
+      - TRACKING_STRATEGY=${TRACKING_STRATEGY}
+      - INTERNAL_API_HOST=${INTERNAL_API_HOST}
+      - OPENREPLAY=${OPENREPLAY:-}
+      - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
+  airbyte-temporal:
+    image: airbyte/temporal:${VERSION}
+    logging: *default-logging
+    container_name: airbyte-temporal
+    restart: unless-stopped
+    ports:
+      - 7233:7233
+    environment:
+      - DB=postgresql
+      - DB_PORT=${DATABASE_PORT}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PWD=${DATABASE_PASSWORD}
+      - POSTGRES_SEEDS=${DATABASE_HOST}
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
+      - LOG_LEVEL=${LOG_LEVEL}
+    volumes:
+      - ./temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
+volumes:
+  workspace:
+    name: ${WORKSPACE_DOCKER_MOUNT}
+  # the data volume is only needed for backward compatibility; when users upgrade
+  # from an old Airbyte version that relies on file-based configs, the server needs
+  # to read this volume to copy their configs to the database
+  data:
+    name: ${DATA_DOCKER_MOUNT}
+  db:
+    name: ${DB_DOCKER_MOUNT}

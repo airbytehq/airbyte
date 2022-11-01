@@ -1,0 +1,11 @@
+{
+  "sourceDefinitionId": "eaf50f04-21dd-4620-913b-2a83f5635227",
+  "name": "Microsoft teams",
+  "dockerRepository": "airbyte/source-microsoft-teams",
+  "dockerImageTag": "0.2.0",
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-microsoft-teams",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/microsoft-teams",
+    "connectionSpecification": {}
+  }
+}

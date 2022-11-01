@@ -1,0 +1,11 @@
+{
+  "sourceDefinitionId": "4eb22946-2a79-4d20-a3e6-effd234613c3",
+  "name": "Old connector still being used",
+  "dockerRepository": "airbyte/source-mysql",
+  "dockerImageTag": "0.2.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/mysql",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mysql",
+    "connectionSpecification": {}
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "type": "object",
+  "properties": {
+    "username": {
+      "type": "string"
+    },
+    "rotating_keys": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["key1"],
+            "properties": {
+              "key1": {
+                "type": "string",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["key2", "key3"],
+            "properties": {
+              "key2": {
+                "type": "string",
+                "airbyte_secret": true
+              },
+              "key3": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "string"
+          }
+        ]
+      }
+    }
+  },
+  "required": ["username", "rotating_keys"]
+}

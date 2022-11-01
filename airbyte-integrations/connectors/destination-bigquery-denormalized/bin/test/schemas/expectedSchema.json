@@ -1,0 +1,33 @@
+{
+  "type": ["object"],
+  "properties": {
+    "accepts_marketing_updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "name": { "type": ["string"] },
+    "permission-list": {
+      "type": ["object"],
+      "properties": {
+        "big_query_array": {
+          "type": ["array"],
+          "items": {
+            "type": ["object"],
+            "properties": {
+              "domain": { "type": ["string"] },
+              "grants": {
+                "type": ["object"],
+                "properties": {
+                  "big_query_array": {
+                    "type": ["array"],
+                    "items": { "type": ["string"] }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,227 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/databricks",
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["overwrite", "append"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Databricks Lakehouse Destination Spec",
+    "type": "object",
+    "required": [
+      "accept_terms",
+      "databricks_server_hostname",
+      "databricks_http_path",
+      "databricks_personal_access_token",
+      "data_source"
+    ],
+    "properties": {
+      "accept_terms": {
+        "title": "Agree to the Databricks JDBC Driver Terms & Conditions",
+        "type": "boolean",
+        "description": "You must agree to the Databricks JDBC Driver <a href=\"https://databricks.com/jdbc-odbc-driver-license\">Terms & Conditions</a> to use this connector.",
+        "default": false,
+        "order": 1
+      },
+      "databricks_server_hostname": {
+        "title": "Server Hostname",
+        "type": "string",
+        "description": "Databricks Cluster Server Hostname.",
+        "examples": ["abc-12345678-wxyz.cloud.databricks.com"],
+        "order": 2
+      },
+      "databricks_http_path": {
+        "title": "HTTP Path",
+        "type": "string",
+        "description": "Databricks Cluster HTTP Path.",
+        "examples": ["sql/protocolvx/o/1234567489/0000-1111111-abcd90"],
+        "order": 3
+      },
+      "databricks_port": {
+        "title": "Port",
+        "type": "string",
+        "description": "Databricks Cluster Port.",
+        "default": "443",
+        "examples": ["443"],
+        "order": 4
+      },
+      "databricks_personal_access_token": {
+        "title": "Access Token",
+        "type": "string",
+        "description": "Databricks Personal Access Token for making authenticated requests.",
+        "examples": ["dapi0123456789abcdefghij0123456789AB"],
+        "airbyte_secret": true,
+        "order": 5
+      },
+      "database_schema": {
+        "title": "Database Schema",
+        "type": "string",
+        "description": "The default schema tables are written to if the source does not specify a namespace. Unless specifically configured, the usual value for this field is \"public\".",
+        "default": "public",
+        "examples": ["public"],
+        "order": 6
+      },
+      "data_source": {
+        "title": "Data Source",
+        "type": "object",
+        "description": "Storage on which the delta lake is built.",
+        "oneOf": [
+          {
+            "title": "Amazon S3",
+            "required": [
+              "data_source_type",
+              "s3_bucket_name",
+              "s3_bucket_path",
+              "s3_bucket_region",
+              "s3_access_key_id",
+              "s3_secret_access_key"
+            ],
+            "properties": {
+              "data_source_type": {
+                "type": "string",
+                "enum": ["S3"],
+                "default": "S3",
+                "order": 1
+              },
+              "s3_bucket_name": {
+                "title": "S3 Bucket Name",
+                "type": "string",
+                "description": "The name of the S3 bucket to use for intermittent staging of the data.",
+                "examples": ["airbyte.staging"],
+                "order": 2
+              },
+              "s3_bucket_path": {
+                "title": "S3 Bucket Path",
+                "type": "string",
+                "description": "The directory under the S3 bucket where data will be written.",
+                "examples": ["data_sync/test"],
+                "order": 3
+              },
+              "s3_bucket_region": {
+                "title": "S3 Bucket Region",
+                "type": "string",
+                "default": "",
+                "description": "The region of the S3 staging bucket to use if utilising a copy strategy.",
+                "enum": [
+                  "",
+                  "us-east-1",
+                  "us-east-2",
+                  "us-west-1",
+                  "us-west-2",
+                  "af-south-1",
+                  "ap-east-1",
+                  "ap-south-1",
+                  "ap-northeast-1",
+                  "ap-northeast-2",
+                  "ap-northeast-3",
+                  "ap-southeast-1",
+                  "ap-southeast-2",
+                  "ca-central-1",
+                  "cn-north-1",
+                  "cn-northwest-1",
+                  "eu-central-1",
+                  "eu-north-1",
+                  "eu-south-1",
+                  "eu-west-1",
+                  "eu-west-2",
+                  "eu-west-3",
+                  "sa-east-1",
+                  "me-south-1",
+                  "us-gov-east-1",
+                  "us-gov-west-1"
+                ],
+                "order": 4
+              },
+              "s3_access_key_id": {
+                "type": "string",
+                "description": "The Access Key Id granting allow one to access the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket.",
+                "title": "S3 Access Key ID",
+                "examples": ["A012345678910EXAMPLE"],
+                "airbyte_secret": true,
+                "order": 5
+              },
+              "s3_secret_access_key": {
+                "title": "S3 Secret Access Key",
+                "type": "string",
+                "description": "The corresponding secret to the above access key id.",
+                "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],
+                "airbyte_secret": true,
+                "order": 6
+              },
+              "file_name_pattern": {
+                "type": "string",
+                "description": "The pattern allows you to set the file-name format for the S3 staging file(s)",
+                "title": "S3 Filename pattern",
+                "examples": [
+                  "{date}",
+                  "{date:yyyy_MM}",
+                  "{timestamp}",
+                  "{part_number}",
+                  "{sync_id}"
+                ],
+                "order": 7
+              }
+            }
+          },
+          {
+            "title": "Azure Blob Storage",
+            "required": [
+              "data_source_type",
+              "azure_blob_storage_account_name",
+              "azure_blob_storage_container_name",
+              "azure_blob_storage_sas_token"
+            ],
+            "properties": {
+              "data_source_type": {
+                "type": "string",
+                "enum": ["Azure_Blob_Storage"],
+                "default": "Azure_Blob_Storage",
+                "order": 0
+              },
+              "azure_blob_storage_endpoint_domain_name": {
+                "title": "Endpoint Domain Name",
+                "type": "string",
+                "default": "blob.core.windows.net",
+                "description": "This is Azure Blob Storage endpoint domain name. Leave default value (or leave it empty if run container from command line) to use Microsoft native from example.",
+                "examples": ["blob.core.windows.net"],
+                "order": 1
+              },
+              "azure_blob_storage_account_name": {
+                "title": "Azure Blob Storage Account Name",
+                "type": "string",
+                "description": "The account's name of the Azure Blob Storage.",
+                "examples": ["airbyte5storage"],
+                "order": 2
+              },
+              "azure_blob_storage_container_name": {
+                "title": "Azure Blob Storage Container Name",
+                "type": "string",
+                "description": "The name of the Azure blob storage container.",
+                "examples": ["airbytetestcontainername"],
+                "order": 3
+              },
+              "azure_blob_storage_sas_token": {
+                "title": "SAS Token",
+                "type": "string",
+                "airbyte_secret": true,
+                "description": "Shared access signature (SAS) token to grant limited access to objects in your storage account.",
+                "examples": [
+                  "?sv=2016-05-31&ss=b&srt=sco&sp=rwdl&se=2018-06-27T10:05:50Z&st=2017-06-27T02:05:50Z&spr=https,http&sig=bgqQwoXwxzuD2GJfagRg7VOS8hzNr3QLT7rhS8OFRLQ%3D"
+                ],
+                "order": 4
+              }
+            }
+          }
+        ],
+        "order": 7
+      },
+      "purge_staging_data": {
+        "title": "Purge Staging Files and Tables",
+        "type": "boolean",
+        "description": "Default to 'true'. Switch it to 'false' for debugging purpose.",
+        "default": true,
+        "order": 8
+      }
+    }
+  }
+}

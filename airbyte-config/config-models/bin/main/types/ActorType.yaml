@@ -1,0 +1,9 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/ActorType.yaml
+title: ActorType
+description: enum that describes different types of actors
+type: string
+enum:
+  - source
+  - destination

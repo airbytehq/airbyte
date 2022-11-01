@@ -1,0 +1,11 @@
+{
+  "sourceDefinitionId": "445831eb-78db-4b1f-8f1f-0d96ad8739e2",
+  "name": "Drift",
+  "dockerRepository": "airbyte/source-drift",
+  "dockerImageTag": "0.2.0",
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-drift",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/drift",
+    "connectionSpecification": {}
+  }
+}

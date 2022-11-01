@@ -1,0 +1,6 @@
+Your connection from %s to %s was automatically disabled because it failed 100 times consecutively or has been failing for 14 days in a row.
+
+Please address the failing issues to ensure your syncs continue to run. The most recent attempted %s
+
+Workspace ID: %s
+Connection ID: %s

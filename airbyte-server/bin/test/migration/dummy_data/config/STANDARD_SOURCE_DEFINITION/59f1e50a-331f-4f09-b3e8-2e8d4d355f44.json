@@ -1,0 +1,11 @@
+{
+  "sourceDefinitionId": "59f1e50a-331f-4f09-b3e8-2e8d4d355f44",
+  "name": "Greenhouse",
+  "dockerRepository": "airbyte/source-greenhouse",
+  "dockerImageTag": "0.2.0",
+  "documentationUrl": "https://https://docs.airbyte.io/integrations/sources/greenhouse",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/greenhouse",
+    "connectionSpecification": {}
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "properties": {
+      "type": "object",
+      "required": ["text", "author"],
+      "properties": {
+        "text":{
+          "type": ["null","string"]
+        },
+        "author":{
+          "type": ["null","string"]
+        }
+      }
+  }
+}

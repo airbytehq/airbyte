@@ -1,0 +1,11 @@
+{
+  "sourceDefinitionId": "cd42861b-01fc-4658-a8ab-5d11d0510f01",
+  "name": "Recurly",
+  "dockerRepository": "airbyte/source-recurly",
+  "dockerImageTag": "0.3.1",
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-recurly",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/recurly",
+    "connectionSpecification": {}
+  }
+}

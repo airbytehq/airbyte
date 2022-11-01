@@ -1,0 +1,37 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://type.fit/api"
+    http_method: "GET"
+  authenticator:
+      type: ApiKeyAuthenticator
+      header: "X-CoinAPI-Key"
+      api_token: "{{ config['access_key'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  quotes_api_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "quotes_api"
+      primary_key: "text"
+      path: "/{{ config['access_params'] }}"
+      stream_cursor_field: "text"
+
+streams:
+  - "*ref(definitions.quotes_api_stream)"
+
+check:
+  stream_names:
+    - "quotes_api"

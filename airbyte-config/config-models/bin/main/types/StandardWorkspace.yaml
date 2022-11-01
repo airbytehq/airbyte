@@ -1,0 +1,58 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardWorkspaceConfiguration.yaml
+title: StandardWorkspace
+description: workspace configuration
+type: object
+required:
+  - workspaceId
+  - name
+  - slug
+  - initialSetupComplete
+  - defaultGeography
+additionalProperties: false
+properties:
+  workspaceId:
+    type: string
+    format: uuid
+  customerId:
+    type: string
+    format: uuid
+  name:
+    type: string
+  slug:
+    type: string
+  email:
+    type: string
+    format: email
+  initialSetupComplete:
+    type: boolean
+  anonymousDataCollection:
+    type: boolean
+  news:
+    type: boolean
+  securityUpdates:
+    type: boolean
+  displaySetupWizard:
+    type: boolean
+  tombstone:
+    description:
+      if not set or false, the configuration is active. if true, then this
+      configuration is permanently off.
+    type: boolean
+  notifications:
+    type: array
+    items:
+      "$ref": Notification.yaml
+  firstCompletedSync:
+    type: boolean
+  feedbackDone:
+    type: boolean
+  defaultGeography:
+    "$ref": Geography.yaml
+  webhookOperationConfigs:
+    description:
+      Configurations for webhooks operations, stored as a JSON object so we can replace sensitive info with
+      coordinates in the secrets manager. Must conform to WebhookOperationConfigs.yaml.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode

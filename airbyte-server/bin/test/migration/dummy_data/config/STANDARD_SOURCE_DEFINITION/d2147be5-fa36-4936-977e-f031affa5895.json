@@ -1,0 +1,11 @@
+{
+  "sourceDefinitionId": "d2147be5-fa36-4936-977e-f031affa5895",
+  "name": "Old Connector",
+  "dockerRepository": "airbyte/source-appstore-singer",
+  "dockerImageTag": "0.2.0",
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-appstore-singer",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/appstore",
+    "connectionSpecification": {}
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/azureblobstorage",
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["overwrite", "append"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "AzureBlobStorage Destination Spec",
+    "type": "object",
+    "required": [
+      "azure_blob_storage_account_name",
+      "azure_blob_storage_account_key",
+      "format"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "azure_blob_storage_endpoint_domain_name": {
+        "title": "Endpoint Domain Name",
+        "type": "string",
+        "default": "blob.core.windows.net",
+        "description": "This is Azure Blob Storage endpoint domain name. Leave default value (or leave it empty if run container from command line) to use Microsoft native from example.",
+        "examples": ["blob.core.windows.net"]
+      },
+      "azure_blob_storage_container_name": {
+        "title": "Azure blob storage container (Bucket) Name",
+        "type": "string",
+        "description": "The name of the Azure blob storage container. If not exists - will be created automatically. May be empty, then will be created automatically airbytecontainer+timestamp",
+        "examples": ["airbytetescontainername"]
+      },
+      "azure_blob_storage_account_name": {
+        "title": "Azure Blob Storage account name",
+        "type": "string",
+        "description": "The account's name of the Azure Blob Storage.",
+        "examples": ["airbyte5storage"]
+      },
+      "azure_blob_storage_account_key": {
+        "title": "Azure Blob Storage account key",
+        "description": "The Azure blob storage account key.",
+        "airbyte_secret": true,
+        "type": "string",
+        "examples": [
+          "Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd=="
+        ]
+      },
+      "azure_blob_storage_output_buffer_size": {
+        "title": "Azure Blob Storage output buffer size (Megabytes)",
+        "type": "integer",
+        "description": "The amount of megabytes to buffer for the output stream to Azure. This will impact memory footprint on workers, but may need adjustment for performance and appropriate block size in Azure.",
+        "minimum": 1,
+        "maximum": 2047,
+        "default": 5,
+        "examples": [5]
+      },
+      "format": {
+        "title": "Output Format",
+        "type": "object",
+        "description": "Output data format",
+        "oneOf": [
+          {
+            "title": "CSV: Comma-Separated Values",
+            "required": ["format_type", "flattening"],
+            "properties": {
+              "format_type": {
+                "type": "string",
+                "const": "CSV"
+              },
+              "flattening": {
+                "type": "string",
+                "title": "Normalization (Flattening)",
+                "description": "Whether the input json data should be normalized (flattened) in the output CSV. Please refer to docs for details.",
+                "default": "No flattening",
+                "enum": ["No flattening", "Root level flattening"]
+              }
+            }
+          },
+          {
+            "title": "JSON Lines: newline-delimited JSON",
+            "required": ["format_type"],
+            "properties": {
+              "format_type": {
+                "type": "string",
+                "const": "JSONL"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
