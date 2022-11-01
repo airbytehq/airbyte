@@ -15,17 +15,7 @@ definitions:
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
-      type: "DefaultPaginator"
-      page_size_option:
-        inject_into: "request_parameter"
-        field_name: "page_size"
-      pagination_strategy:
-        type: "PageIncrement"
-        page_size: config['page']
-      page_token_option:
-        inject_into: "request_parameter"
-        field_name: "page"
-      url_base: "https://taskrouter.twilio.com"
+      type: NoPagination
     requester:
       $ref: "*ref(definitions.requester)"
   base_stream:
@@ -59,6 +49,18 @@ definitions:
       record_selector:
         extractor:
           field_pointer: ["workers"]
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          inject_into: "request_parameter"
+          field_name: "page_size"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+        page_token_option:
+          inject_into: "request_parameter"
+          field_name: "page"
+        url_base: "https://taskrouter.twilio.com"
    
 streams:
   - "*ref(definitions.workspaces_stream)"
@@ -71,3 +73,4 @@ check:
     - "allworkspaces"
     - "workspaces"
     - "workers"
+
