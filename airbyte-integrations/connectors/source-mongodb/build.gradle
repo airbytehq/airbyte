@@ -38,5 +38,5 @@ dependencies {
 }
 
 airbyteDockerBmuschko {
-    dockerfileToImageName = ['Dockerfile.test': 'mongodb-integration-test-seed']
+    additionalDockerfileNames = ['Dockerfile.test']
 }

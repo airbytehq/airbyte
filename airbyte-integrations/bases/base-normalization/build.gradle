@@ -34,15 +34,14 @@ test.dependsOn(checkSshScriptCopy)
 integrationTest.dependsOn(build)
 
 airbyteDockerBmuschko {
-    dockerfileToImageName = [
-        'Dockerfile': 'normalization',
-        'clickhouse.Dockerfile': 'normalization-clickhouse',
-        'mssql.Dockerfile': 'normalization-mssql',
-        'mysql.Dockerfile': 'normalization-mysql',
-        'oracle.Dockerfile': 'normalization-oracle',
-        'redshift.Dockerfile': 'normalization-redshift',
-        'snowflake.Dockerfile': 'normalization-snowflake',
-        'tidb.Dockerfile': 'normalization-tidb',
+    additionalDockerfileNames = [
+        'clickhouse.Dockerfile',
+        'mssql.Dockerfile',
+        'mysql.Dockerfile',
+        'oracle.Dockerfile',
+        'redshift.Dockerfile',
+        'snowflake.Dockerfile',
+        'tidb.Dockerfile',
     ]
     additionalDependencies = [checkSshScriptCopy]
 
