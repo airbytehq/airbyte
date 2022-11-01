@@ -115,11 +115,6 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
     return decoratedPersistence.dumpConfigs();
   }
 
-  @Override
-  public void loadData(final ConfigPersistence seedPersistence) throws IOException {
-    decoratedPersistence.loadData(seedPersistence);
-  }
-
   private <T> void validateJson(final T config, final AirbyteConfig configType) throws JsonValidationException {
     final JsonNode schema = JsonSchemaValidator.getSchema(configType.getConfigSchemaFile());
     schemaValidator.ensure(schema, Jsons.jsonNode(config));

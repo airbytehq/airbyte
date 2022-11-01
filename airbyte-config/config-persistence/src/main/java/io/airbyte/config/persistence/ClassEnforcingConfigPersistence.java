@@ -91,9 +91,4 @@ public class ClassEnforcingConfigPersistence implements ConfigPersistence {
     return decoratedPersistence.dumpConfigs();
   }
 
-  @Override
-  public void loadData(final ConfigPersistence seedPersistence) throws IOException {
-    decoratedPersistence.loadData(seedPersistence);
-  }
-
 }
