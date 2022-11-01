@@ -32,7 +32,7 @@ export default function MyCombobox() {
         setselectedConnector(value);
       }}
     >
-      <Combobox.Label className="block text-sm font-medium">
+      <Combobox.Label className="block">
         Quick navigate to Connector docs:
       </Combobox.Label>
       <div className="relative mt-1">
@@ -42,9 +42,9 @@ export default function MyCombobox() {
           displayValue={(person) => person?.name}
           placeholder="Search for a connector"
         />
-        <Combobox.Button className="absolute inset-y-0 right-0 flex items-center px-2 border-none rounded-r-md focus:outline-none">
+        <Combobox.Button className="absolute inset-y-0 right-0 flex items-center px-2 bg-indigo-800 border-none dark:shadow-sm dark:bg-indigo-200 rounded-r-md focus:outline-none">
           <ChevronUpDownIcon
-            className="w-5 h-5 text-gray-400"
+            className="w-5 h-5 text-gray-400 dark:text-gray-900"
             aria-hidden="true"
           />
         </Combobox.Button>
