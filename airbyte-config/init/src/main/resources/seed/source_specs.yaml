@@ -219,7 +219,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:1.0.16"
+- dockerImage: "airbyte/source-alloydb:1.0.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -7546,7 +7546,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.8"
+- dockerImage: "airbyte/source-mysql:1.0.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -9462,7 +9462,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.21"
+- dockerImage: "airbyte/source-postgres:1.0.22"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -9867,7 +9867,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-prestashop:0.1.0"
+- dockerImage: "airbyte/source-prestashop:0.2.0"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -9877,7 +9877,6 @@
       required:
       - "url"
       - "access_key"
-      additionalProperties: false
       properties:
         url:
           type: "string"
@@ -10699,7 +10698,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.22"
+- dockerImage: "airbyte/source-salesforce:1.0.23"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
