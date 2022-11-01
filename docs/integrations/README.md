@@ -125,6 +125,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Notion](sources/notion.md)                                                                 | Generally Available  | Yes                 |
 | [New York Times](sources/nytimes.md)                                                        | Alpha                | Yes                 |
 | [Okta](sources/okta.md)                                                                     | Alpha                | Yes                 |
+| [Omnisend](sources/omnisend.md)                                                             | Alpha                | No                  |
 | [OneSignal](sources/onesignal.md)                                                           | Alpha                | No                  |
 | [OpenWeather](sources/openweather.md)                                                       | Alpha                | No                  |
 | [Oracle DB](sources/oracle.md)                                                              | Alpha                | Yes                 |
