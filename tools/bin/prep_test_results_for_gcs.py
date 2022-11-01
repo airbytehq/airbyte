@@ -40,7 +40,7 @@ def main():
                     "time": elem['states'][conclusion][i]['time'],
                     "state": conclusion,
                     "check_run_id": check_run_id,
-                    "repo": "oss"
+                    "repo": "airbytehq/airbyte"
                 }
                 out.append(output)
 
