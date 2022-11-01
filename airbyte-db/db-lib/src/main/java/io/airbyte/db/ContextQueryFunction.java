@@ -4,12 +4,13 @@
 
 package io.airbyte.db;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import org.jooq.DSLContext;
 
 @FunctionalInterface
 public interface ContextQueryFunction<T> {
 
-  T query(DSLContext context) throws SQLException;
+  T query(DSLContext context) throws SQLException, IOException;
 
 }

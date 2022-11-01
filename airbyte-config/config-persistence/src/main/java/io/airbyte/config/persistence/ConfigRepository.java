@@ -657,7 +657,7 @@ public class ConfigRepository {
    * @return destinations
    * @throws IOException - you never know when you IO
    */
-  public List<DestinationConnection> listWorkspaceDestinationConnection(UUID workspaceId) throws IOException {
+  public List<DestinationConnection> listWorkspaceDestinationConnection(final UUID workspaceId) throws IOException {
     final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
         .from(ACTOR)
         .where(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
@@ -673,7 +673,7 @@ public class ConfigRepository {
    * @return sources
    * @throws IOException
    */
-  public List<SourceConnection> listSourcesForDefinition(UUID definitionId) throws IOException {
+  public List<SourceConnection> listSourcesForDefinition(final UUID definitionId) throws IOException {
     final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
         .from(ACTOR)
         .where(ACTOR.ACTOR_TYPE.eq(ActorType.source))
@@ -689,7 +689,7 @@ public class ConfigRepository {
    * @return destinations
    * @throws IOException
    */
-  public List<DestinationConnection> listDestinationsForDefinition(UUID definitionId) throws IOException {
+  public List<DestinationConnection> listDestinationsForDefinition(final UUID definitionId) throws IOException {
     final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
         .from(ACTOR)
         .where(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
@@ -913,6 +913,11 @@ public class ConfigRepository {
       result.put(record.get(ACTOR_CATALOG.ID), catalog);
     }
     return result;
+  }
+
+  public void updateActorDefinitions(final List<StandardSourceDefinition> sourceDefs, final List<StandardDestinationDefinition> destDefs)
+      throws IOException {
+    new ActorDefinitionMigrator(database).migrate(sourceDefs, destDefs);
   }
 
   // Data-carrier records to hold combined result of query for a Source or Destination and its

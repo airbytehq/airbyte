@@ -65,7 +65,7 @@ class ApplyDefinitionsHelperTest {
     configRepository = mock(ConfigRepository.class);
     definitionsProvider = mock(DefinitionsProvider.class);
 
-    applyDefinitionsHelper = new ApplyDefinitionsHelper(configRepository, definitionsProvider);
+    applyDefinitionsHelper = new ApplyDefinitionsHelper(configDatabase, configRepository, definitionsProvider);
 
     // default calls to empty.
     when(configRepository.listStandardDestinationDefinitions(true)).thenReturn(Collections.emptyList());
