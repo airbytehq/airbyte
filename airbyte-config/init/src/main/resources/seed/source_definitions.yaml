@@ -225,6 +225,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/coin-api
   sourceType: api
   releaseStage: alpha
+- name: CoinMarketCap
+  sourceDefinitionId: 239463f5-64bb-4d88-b4bd-18ce673fd572
+  dockerRepository: airbyte/source-coinmarketcap
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/coinmarketcap
+  sourceType: api
+  releaseStage: alpha
 - name: Commercetools
   sourceDefinitionId: 008b2e26-11a3-11ec-82a8-0242ac130003
   dockerRepository: airbyte/source-commercetools
