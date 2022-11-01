@@ -1,0 +1,48 @@
+documentationUrl: https://docs.airbyte.io/integrations/sources/senseforce
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Senseforce Source Spec
+  type: object
+  required:
+    - access_token
+    - backend_url
+    - dataset_id
+    - start_date
+  additionalProperties: true
+  properties:
+    access_token:
+      type: string
+      description: >-
+        Your API access token. See <a
+        href="https://manual.senseforce.io/manual/sf-platform/public-api/get-your-access-token/">here</a>.
+        The toke is case sensitive.
+      airbyte_secret: true
+    backend_url:
+      type: string
+      examples:
+        - "https://galaxyapi.senseforce.io"
+      description: >-
+        Your Senseforce API backend URL. This is the URL shown during the Login screen. See <a
+        href="https://manual.senseforce.io/manual/sf-platform/public-api/get-your-access-token/">here</a>
+        for more details.
+        (Note: Most Senseforce backend APIs have the term 'galaxy' in their ULR)
+    dataset_id:
+      type: string
+      examples:
+        - 8f418098-ca28-4df5-9498-0df9fe78eda7
+      description: >-
+        The ID of the dataset you want to synchronize. The ID can be found in the URL when opening the dataset.
+        See <a
+        href="https://manual.senseforce.io/manual/sf-platform/public-api/get-your-access-token/">here</a>
+        for more details.
+        (Note: As the Senseforce API only allows to synchronize a specific dataset, each dataset you 
+        want to synchronize needs to be implemented as a separate airbyte source).
+    start_date:
+      type: string
+      title: The first datetime when to read data from.
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      description: >-
+        UTC date and time in the format 2017-01-25T00:00:00Z. Only data with "Timestamp"
+        after this date will be replicated.
+      examples:
+        - "2017-01-25T00:00:00Z"

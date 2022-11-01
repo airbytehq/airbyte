@@ -1,0 +1,46 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    type: HttpRequester
+    name: "{{ options['name'] }}"
+    url_base: "https://galaxyapi.senseforce.io"
+    http_method: "POST"
+    request_options_provider:
+      request_body_data:
+        - clause:
+            type: timestamp
+            operator: 4
+          columnName: Timestamp
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['access_token'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  dataset_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "dataset"
+      primary_key:
+        - "Timestamp"
+        - "Thing"
+        - "Id"
+      path: "/api/dataset/execute/8f418098-ca28-4df5-9498-0df9fe78eda7"
+
+streams:
+  - "*ref(definitions.dataset_stream)"
+
+check:
+  stream_names:
+    - "dataset"
