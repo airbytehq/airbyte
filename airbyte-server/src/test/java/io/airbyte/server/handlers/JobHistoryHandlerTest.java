@@ -20,6 +20,7 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.Attempt;
+import io.airbyte.persistence.job.models.AttemptNormalizationStatus;
 import io.airbyte.persistence.job.models.AttemptStatus;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobStatus;
@@ -374,6 +375,21 @@ class JobHistoryHandlerTest {
   @DisplayName("Should have compatible config enums")
   void testEnumConversion() {
     assertTrue(Enums.isCompatible(JobConfig.ConfigType.class, JobConfigType.class));
+  }
+
+  @Test
+  @DisplayName("Should return attempt normalization info for the job")
+  void testGetAttemptNormalizationStatuses() throws IOException {
+
+    AttemptNormalizationStatus databaseReadResult = new AttemptNormalizationStatus(1, Optional.of(10L), /* hasNormalizationFailed= */ false);
+
+    when(jobPersistence.getAttemptNormalizationStatusesForJob(JOB_ID)).thenReturn(List.of(databaseReadResult));
+
+    AttemptNormalizationStatusReadList expectedStatus = new AttemptNormalizationStatusReadList().attemptNormalizationStatuses(
+        List.of(new AttemptNormalizationStatusRead().attemptNumber(1).hasRecordsCommitted(true).hasNormalizationFailed(false).recordsCommitted(10L)));
+
+    assertEquals(expectedStatus, jobHistoryHandler.getAttemptNormalizationStatuses(new JobIdRequestBody().id(JOB_ID)));
+
   }
 
 }

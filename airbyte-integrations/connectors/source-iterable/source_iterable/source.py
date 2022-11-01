@@ -4,12 +4,14 @@
 
 from typing import Any, List, Mapping, Tuple
 
+import requests.exceptions
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 from .streams import (
+    AccessCheck,
     Campaigns,
     CampaignsMetrics,
     Channels,
@@ -75,6 +77,18 @@ class SourceIterable(AbstractSource):
             return False, f"Unable to connect to Iterable API with the provided credentials - {e}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        def all_streams_accessible():
+            access_check_stream = AccessCheck(authenticator=authenticator)
+            slice_ = next(iter(access_check_stream.stream_slices(sync_mode=SyncMode.full_refresh)))
+            try:
+                list(access_check_stream.read_records(stream_slice=slice_, sync_mode=SyncMode.full_refresh))
+            except requests.exceptions.RequestException as e:
+                if e.response.status_code == requests.codes.UNAUTHORIZED:
+                    return False
+                raise
+            else:
+                return True
+
         authenticator = TokenAuthenticator(token=config["api_key"], auth_header="Api-Key", auth_method="")
         # end date is provided for integration tests only
         start_date, end_date = config["start_date"], config.get("end_date")
@@ -95,13 +109,7 @@ class SourceIterable(AbstractSource):
         # A simple check is done - a read operation on a stream that can be accessed only via a Server side API key.
         # If read is successful - other streams should be supported as well.
         # More on this - https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-
-        users_stream = ListUsers(authenticator=authenticator)
-        for slice_ in users_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-            users = users_stream.read_records(stream_slice=slice_, sync_mode=SyncMode.full_refresh)
-            # first slice is enough
-            break
-
-        if next(users, None):
+        if all_streams_accessible():
             streams.extend(
                 [
                     Users(authenticator=authenticator, **date_range),

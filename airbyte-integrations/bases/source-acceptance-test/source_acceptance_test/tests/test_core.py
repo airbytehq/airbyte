@@ -385,13 +385,14 @@ class TestBasicRead(BaseTest):
         """
         Only certain streams allowed to be empty
         """
+        allowed_empty_stream_names = set([allowed_empty_stream.name for allowed_empty_stream in allowed_empty_streams])
         counter = Counter(record.stream for record in records)
 
         all_streams = set(stream.stream.name for stream in configured_catalog.streams)
         streams_with_records = set(counter.keys())
         streams_without_records = all_streams - streams_with_records
 
-        streams_without_records = streams_without_records - allowed_empty_streams
+        streams_without_records = streams_without_records - allowed_empty_stream_names
         assert not streams_without_records, f"All streams should return some records, streams without records: {streams_without_records}"
 
     def _validate_field_appears_at_least_once_in_stream(self, records: List, schema: Dict):
@@ -434,14 +435,17 @@ class TestBasicRead(BaseTest):
         assert not stream_name_to_empty_fields_mapping, msg
 
     def _validate_expected_records(
-        self, records: List[AirbyteRecordMessage], expected_records: List[AirbyteRecordMessage], flags, detailed_logger: Logger
+        self,
+        records: List[AirbyteRecordMessage],
+        expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
+        flags,
+        detailed_logger: Logger,
     ):
         """
         We expect some records from stream to match expected_records, partially or fully, in exact or any order.
         """
         actual_by_stream = self.group_by_stream(records)
-        expected_by_stream = self.group_by_stream(expected_records)
-        for stream_name, expected in expected_by_stream.items():
+        for stream_name, expected in expected_records_by_stream.items():
             actual = actual_by_stream.get(stream_name, [])
             detailed_logger.info(f"Actual records for stream {stream_name}:")
             detailed_logger.log_json_list(actual)
@@ -463,7 +467,7 @@ class TestBasicRead(BaseTest):
         connector_config,
         configured_catalog,
         inputs: BasicReadTestConfig,
-        expected_records: List[AirbyteRecordMessage],
+        expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
         docker_runner: ConnectorRunner,
         detailed_logger,
     ):
@@ -486,9 +490,12 @@ class TestBasicRead(BaseTest):
         if inputs.validate_data_points:
             self._validate_field_appears_at_least_once(records=records, configured_catalog=configured_catalog)
 
-        if expected_records:
+        if expected_records_by_stream:
             self._validate_expected_records(
-                records=records, expected_records=expected_records, flags=inputs.expect_records, detailed_logger=detailed_logger
+                records=records,
+                expected_records_by_stream=expected_records_by_stream,
+                flags=inputs.expect_records,
+                detailed_logger=detailed_logger,
             )
 
     def test_airbyte_trace_message_on_failure(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):
