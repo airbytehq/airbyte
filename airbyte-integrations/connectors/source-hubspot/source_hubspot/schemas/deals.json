@@ -1,9 +1,27 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": ["null", "object"],
+  "type": ["object"],
+  "required": ["id"],
   "properties": {
     "id": {
-      "type": ["null", "string"]
+      "type": ["string"]
+    },
+    "dealstage": {
+      "type": ["null", "object"],
+      "properties": {
+        "value": {
+          "type": ["null", "string"]
+        },
+        "timestamp": {
+          "type": ["null", "integer"]
+        },
+        "versions": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"]
+          }
+        }
+      }
     },
     "properties": {
       "type": ["null", "object"],
@@ -331,12 +349,6 @@
       }
     },
     "contacts": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
-    },
-    "line_items": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]

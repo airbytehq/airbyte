@@ -65,7 +65,28 @@
     },
     {
       "stream": {
+        "name": "email_events",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["created"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "engagements",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "form_submissions",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -101,6 +122,18 @@
     },
     {
       "stream": {
+        "name": "marketing_emails",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "default_cursor_field": ["updated"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "owners",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
@@ -121,32 +154,28 @@
       "stream": {
         "name": "property_history",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["timestamp"]
       },
+      "default_cursor_field": ["timestamp"],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
-        "name": "quotes",
+        "name": "subscription_changes",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["timestamp"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["timestamp"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "tickets",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "ticket_pipelines",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "required": ["id"],
   "additionalProperties": true,
   "properties": {
     "object": {
@@ -49,7 +50,7 @@
                   "type": {
                     "enum": ["title"]
                   },
-                  "title": { "$ref": "title.json" }
+                  "title": { "$ref": "title.json" }                  
                 }
               },
               {
@@ -100,7 +101,7 @@
                     "type": ["null", "object"],
                     "properties": {
                       "type": {
-                        "enum": ["string", "number", "boolean", "date"]
+                        "enum": ["string", "number", "boolean"]
                       },
                       "string": { "type": ["null", "string"] },
                       "number": { "type": ["null", "number"] },
@@ -197,7 +198,7 @@
                 "properties": {
                   "id": { "type": "string" },
                   "type": { "enum": ["url"] },
-                  "url": { "type": "string" }
+                  "url": { "type": ["string", "null"]}
                 }
               },
               {

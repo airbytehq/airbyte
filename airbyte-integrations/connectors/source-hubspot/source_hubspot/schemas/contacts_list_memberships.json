@@ -1,9 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "required": ["canonical-vid"],
   "properties": {
     "canonical-vid": {
-      "type": ["null", "integer"]
+      "type": ["integer"]
     },
     "static-list-id": {
       "type": ["null", "integer"]

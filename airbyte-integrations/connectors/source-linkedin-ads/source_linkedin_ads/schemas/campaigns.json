@@ -1,5 +1,6 @@
 {
-  "type": ["null", "object"],
+  "type": ["object"],
+  "required": ["id"],
   "properties": {
     "targetingCriteria": {
       "type": ["null", "object"],
@@ -141,7 +142,7 @@
       "type": ["null", "boolean"]
     },
     "id": {
-      "type": ["null", "integer"]
+      "type": ["integer"]
     },
     "audienceExpansionEnabled": {
       "type": ["null", "boolean"]

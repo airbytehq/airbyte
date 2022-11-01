@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -15,7 +15,7 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=[
-        "airbyte-cdk~=0.1",
+        "estuary-airbyte-cdk~=0.1",
         "pytest~=6.1",
     ],
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},

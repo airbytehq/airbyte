@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
+    "estuary-airbyte-cdk",
 ]
 
 TEST_REQUIREMENTS = [

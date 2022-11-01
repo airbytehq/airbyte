@@ -1,8 +1,9 @@
 {
-  "type": ["null", "object"],
+  "type": ["object"],
+  "required": ["account"],
   "properties": {
     "account": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "created": {
       "type": ["null", "string"],

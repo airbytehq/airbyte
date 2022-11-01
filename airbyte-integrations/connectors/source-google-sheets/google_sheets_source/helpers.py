@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -37,7 +37,13 @@ class Helpers(object):
     def get_authenticated_google_credentials(credentials: Dict[str, str], scopes: List[str] = SCOPES):
         auth_type = credentials.pop("auth_type")
         if auth_type == "Service":
-            return service_account.Credentials.from_service_account_info(json.loads(credentials["service_account_info"]), scopes=scopes)
+            try:
+                service_account_json = json.loads(credentials["service_account_info"])
+                return service_account.Credentials.from_service_account_info(service_account_json, scopes=scopes)
+            except json.JSONDecodeError:
+                logger.error("Failed to parse Service Account JSON credentials, please make sure the input is valid JSON.")
+                raise
+
         elif auth_type == "Client":
             return client_account.Credentials.from_authorized_user_info(info=credentials)
 
@@ -53,14 +59,22 @@ class Helpers(object):
         if duplicate_fields:
             logger.warn(f"Duplicate headers found in {sheet_name}. Ignoring them :{duplicate_fields}")
 
+        props = {field: {"type": "string"} for field in fields}
+
+        props["row_id"] = {"type": "integer"}
+
         sheet_json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
+            "required": ["row_id"],
             # For simplicity, the type of every cell is a string
-            "properties": {field: {"type": "string"} for field in fields},
+            "properties": props,
         }
 
-        return AirbyteStream(name=sheet_name, json_schema=sheet_json_schema, supported_sync_modes=[SyncMode.full_refresh])
+        return AirbyteStream(
+            name=sheet_name, json_schema=sheet_json_schema,
+            supported_sync_modes=[SyncMode.full_refresh], source_defined_primary_key=[["row_id"]]
+        )
 
     @staticmethod
     def get_valid_headers_and_duplicates(header_row_values: List[str]) -> (List[str], List[str]):
@@ -121,8 +135,10 @@ class Helpers(object):
         return sheet_to_column_name
 
     @staticmethod
-    def row_data_to_record_message(sheet_name: str, cell_values: List[str], column_index_to_name: Dict[int, str]) -> AirbyteRecordMessage:
-        data = {}
+    def row_data_to_record_message(
+        sheet_name: str, row_id: int, cell_values: List[str], column_index_to_name: Dict[int, str]
+    ) -> AirbyteRecordMessage:
+        data = {"row_id": row_id}
         for relevant_index in sorted(column_index_to_name.keys()):
             if relevant_index >= len(cell_values):
                 break
@@ -202,7 +218,7 @@ class Helpers(object):
         if re.match(r"(http://)|(https://)", id_or_url):
             # This is a URL
             m = re.search(r"(/)([-\w]{40,})([/]?)", id_or_url)
-            if m is not None and m.group(2):
+            if m.group(2):
                 return m.group(2)
         else:
             return id_or_url
