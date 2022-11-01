@@ -64,7 +64,7 @@ Define imageTag
 */}}
 
 {{- define "webapp.imageTag" -}}
-{{- else if .Values.image.tag }}
+{{- if .Values.image.tag }}
     {{- printf "%s" .Values.image.tag }}
 {{- else if ((.Values.global.image).tag) }}
     {{- printf "%s" .Values.global.image.tag }}
