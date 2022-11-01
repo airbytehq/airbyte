@@ -12,7 +12,11 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-  # incremental test doesn't work if a single stream has multiple states right now
+      empty_streams: ["webhooks"]
+      expect_records:
+        path: "integration_tests/expected_records.txt"
+  # Although incremental tests pass, they don't actually test anything because SATs currently
+  # do not support nested dynamic state. That's why incremental read is tested with a dedicated integration test.
   #incremental:
   #  - config_path: "secrets/config.json"
   #    configured_catalog_path: "integration_tests/configured_catalog.json"

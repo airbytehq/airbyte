@@ -1,0 +1,229 @@
+micronaut:
+  application:
+    name: airbyte-workers
+  security:
+    intercept-url-map:
+      - pattern: /**
+        httpMethod: GET
+        access:
+          - isAnonymous()
+  server:
+    port: 9000
+
+airbyte:
+  activity:
+    initial-delay: ${ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS:30}
+    max-attempts: ${ACTIVITY_MAX_ATTEMPT:5}
+    max-delay: ${ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS:600}
+    max-timeout: ${ACTIVITY_MAX_TIMEOUT_SECOND:120}
+  cloud:
+    storage:
+      logs:
+        type: ${WORKER_LOGS_STORAGE_TYPE:}
+        gcs:
+          application-credentials: ${GOOGLE_APPLICATION_CREDENTIALS:}
+          bucket: ${GCS_LOG_BUCKET:}
+        minio:
+          access-key: ${AWS_ACCESS_KEY_ID:}
+          bucket: ${S3_LOG_BUCKET:}
+          endpoint: ${S3_MINIO_ENDPOINT:}
+          secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+        s3:
+          access-key: ${AWS_ACCESS_KEY_ID:}
+          bucket: ${S3_LOG_BUCKET:}
+          region: ${S3_LOG_BUCKET_REGION:}
+          secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+      state:
+        type: ${WORKER_STATE_STORAGE_TYPE:}
+        gcs:
+          application-credentials: ${STATE_STORAGE_GCS_APPLICATION_CREDENTIALS:}
+          bucket: ${STATE_STORAGE_GCS_BUCKET_NAME:}
+        minio:
+          access-key: ${STATE_STORAGE_MINIO_ACCESS_KEY:}
+          bucket: ${STATE_STORAGE_MINIO_BUCKET_NAME:}
+          endpoint: ${STATE_STORAGE_MINIO_ENDPOINT:}
+          secret-access-key: ${STATE_STORAGE_MINIO_SECRET_ACCESS_KEY:}
+        s3:
+          access-key: ${STATE_STORAGE_S3_ACCESS_KEY:}
+          bucket: ${STATE_STORAGE_S3_BUCKET_NAME:}
+          region: ${STATE_STORAGE_S3_BUCKET_REGION:}
+          secret-access-key: ${STATE_STORAGE_S3_SECRET_ACCESS_KEY:}
+  connector:
+    specific-resource-defaults-enabled: ${CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED:false}
+  container:
+    orchestrator:
+      enabled: ${CONTAINER_ORCHESTRATOR_ENABLED:false}
+      image: ${CONTAINER_ORCHESTRATOR_IMAGE:}
+      java-opts: ${CONTAINER_ORCHESTRATOR_JAVA_OPTS:}
+      secret-mount-path: ${CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH:}
+      secret-name: ${CONTAINER_ORCHESTRATOR_SECRET_NAME:}
+  control:
+    plane:
+      auth-endpoint: ${CONTROL_PLANE_AUTH_ENDPOINT:}
+  data:
+    sync:
+      task-queue: ${DATA_SYNC_TASK_QUEUES:SYNC}
+    plane:
+      service-account:
+        credentials-path: ${DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH:}
+        email: ${DATA_PLANE_SERVICE_ACCOUNT_EMAIL:}
+  deployment-mode: ${DEPLOYMENT_MODE:OSS}
+  flyway:
+    configs:
+      initialization-timeout-ms: ${CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
+      minimum-migration-version: ${CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
+    jobs:
+      initialization-timeout-ms: ${JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
+      minimum-migration-version: ${JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
+  internal:
+    api:
+      auth-header:
+        name: ${AIRBYTE_API_AUTH_HEADER_NAME:}
+        value: ${AIRBYTE_API_AUTH_HEADER_VALUE:}
+      host: ${INTERNAL_API_HOST}
+  local:
+    docker-mount: ${LOCAL_DOCKER_MOUNT:}
+    root: ${LOCAL_ROOT}
+  metric:
+    client: ${METRIC_CLIENT:}
+    should-publish: ${PUBLISH_METRICS:false}
+  worker:
+    check:
+      enabled: ${SHOULD_RUN_CHECK_CONNECTION_WORKFLOWS:true}
+      kube:
+        annotations: ${CHECK_JOB_KUBE_ANNOTATIONS:}
+        node-selectors: ${CHECK_JOB_KUBE_NODE_SELECTORS:}
+      max-workers: ${MAX_CHECK_WORKERS:5}
+      main:
+        container:
+          cpu:
+            limit: ${CHECK_JOB_MAIN_CONTAINER_CPU_LIMIT:}
+            request: ${CHECK_JOB_MAIN_CONTAINER_CPU_REQUEST:}
+          memory:
+            limit: ${CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT:}
+            request: ${CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST:}
+    connection:
+      enabled: ${SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS:true}
+    discover:
+      enabled: ${SHOULD_RUN_DISCOVER_WORKFLOWS:true}
+      kube:
+        annotations: ${DISCOVER_JOB_KUBE_ANNOTATIONS:}
+        node-selectors: ${DISCOVER_JOB_KUBE_NODE_SELECTORS:}
+      max-workers: ${MAX_DISCOVER_WORKERS:5}
+    job:
+      error-reporting:
+        sentry:
+          dsn: ${JOB_ERROR_REPORTING_SENTRY_DSN}
+        strategy: ${JOB_ERROR_REPORTING_STRATEGY:LOGGING}
+      failed:
+        max-days: ${MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE:14}
+        max-jobs: ${MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE:100}
+      kube:
+        annotations: ${JOB_KUBE_ANNOTATIONS:}
+        images:
+          busybox: ${JOB_KUBE_BUSYBOX_IMAGE:`busybox:1.28`}
+          curl: ${JOB_KUBE_CURL_IMAGE:`curlimages/curl:7.83.1`}
+          socat: ${JOB_KUBE_SOCAT_IMAGE:`alpine/socat:1.7.4.3-r0`}
+        main:
+          container:
+            image-pull-policy: ${JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY:IfNotPresent}
+            image-pull-secret: ${JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET:}
+        namespace: ${JOB_KUBE_NAMESPACE:default}
+        node-selectors: ${JOB_KUBE_NODE_SELECTORS:}
+        sidecar:
+          container:
+            image-pull-policy: ${JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY:IfNotPresent}
+        tolerations: ${JOB_KUBE_TOLERATIONS:}
+      main:
+        container:
+          cpu:
+            limit: ${JOB_MAIN_CONTAINER_CPU_LIMIT:}
+            request: ${JOB_MAIN_CONTAINER_CPU_REQUEST:}
+          memory:
+            limit: ${JOB_MAIN_CONTAINER_MEMORY_LIMIT:}
+            request: ${JOB_MAIN_CONTAINER_MEMORY_REQUEST:}
+    normalization:
+      main:
+        container:
+          cpu:
+            limit: ${NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT:}
+            request: ${NORMALIZATION_JOB_MAIN_CONTAINER_CPU_REQUEST:}
+          memory:
+            limit: ${NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT:}
+            request: ${NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST:}
+    replication:
+      orchestrator:
+        cpu:
+          limit: ${REPLICATION_ORCHESTRATOR_CPU_LIMIT:}
+          request: ${REPLICATION_ORCHESTRATOR_CPU_REQUEST:}
+        memory:
+          limit: ${REPLICATION_ORCHESTRATOR_MEMORY_LIMIT:}
+          request: ${REPLICATION_ORCHESTRATOR_MEMORY_REQUEST:}
+    spec:
+      enabled: ${SHOULD_RUN_GET_SPEC_WORKFLOWS:true}
+      kube:
+        annotations: ${SPEC_JOB_KUBE_ANNOTATIONS:}
+        node-selectors: ${SPEC_JOB_KUBE_NODE_SELECTORS:}
+      max-workers: ${MAX_SPEC_WORKERS:5}
+    sync:
+      enabled: ${SHOULD_RUN_SYNC_WORKFLOWS:true}
+      max-workers: ${MAX_SYNC_WORKERS:5}
+      max-attempts: ${SYNC_JOB_MAX_ATTEMPTS:3}
+      max-timeout: ${SYNC_JOB_MAX_TIMEOUT_DAYS:3}
+  role: ${AIRBYTE_ROLE:}
+  secret:
+    persistence: ${SECRET_PERSISTENCE:TESTING_CONFIG_DB_TABLE}
+    store:
+      gcp:
+        credentials: ${SECRET_STORE_GCP_CREDENTIALS:}
+        project-id: ${SECRET_STORE_GCP_PROJECT_ID:}
+      vault:
+        address: ${VAULT_ADDRESS:}
+        prefix: ${VAULT_PREFIX:}
+        token: ${VAULT_AUTH_TOKEN:}
+  temporal:
+    worker:
+      ports: ${TEMPORAL_WORKER_PORTS:}
+  tracking-strategy: ${TRACKING_STRATEGY:LOGGING}
+  version: ${AIRBYTE_VERSION}
+  web-app:
+    url: ${WEBAPP_URL:}
+  workflow:
+    failure:
+      restart-delay: ${WORKFLOW_FAILURE_RESTART_DELAY_SECONDS:600}
+  workspace:
+    docker-mount: ${WORKSPACE_DOCKER_MOUNT:}
+    root: ${WORKSPACE_ROOT}
+
+datadog:
+  agent:
+    host: ${DD_AGENT_HOST:}
+    port: ${DD_DOGSTATSD_PORT:}
+
+docker:
+  network: ${DOCKER_NETWORK:host}
+
+endpoints:
+  all:
+    enabled: true
+
+google:
+  application:
+    credentials: ${GOOGLE_APPLICATION_CREDENTIALS:}
+
+temporal:
+  cloud:
+    client:
+      cert: ${TEMPORAL_CLOUD_CLIENT_CERT:}
+      key: ${TEMPORAL_CLOUD_CLIENT_KEY:}
+    enabled: ${TEMPORAL_CLOUD_ENABLED:false}
+    host: ${TEMPORAL_CLOUD_HOST:}
+    namespace: ${TEMPORAL_CLOUD_NAMESPACE:}
+  host: ${TEMPORAL_HOST:`airbyte-temporal:7233`}
+  retention: ${TEMPORAL_HISTORY_RETENTION_IN_DAYS:30}
+
+logger:
+  levels:
+    io.airbyte.bootloader: DEBUG
+# Uncomment to help resolve issues with conditional beans
+#    io.micronaut.context.condition: DEBUG

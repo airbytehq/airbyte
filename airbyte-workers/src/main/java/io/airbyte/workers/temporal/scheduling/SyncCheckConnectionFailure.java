@@ -11,7 +11,7 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.SyncStats;
-import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.helper.FailureHelper;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -68,8 +68,9 @@ public class SyncCheckConnectionFailure {
                 .withTotalStats(new SyncStats()
                     .withRecordsEmitted(0L)
                     .withBytesEmitted(0L)
-                    .withStateMessagesEmitted(0L)
-                    .withRecordsCommitted(0L)));;
+                    .withSourceStateMessagesEmitted(0L)
+                    .withDestinationStateMessagesEmitted(0L)
+                    .withRecordsCommitted(0L)));
 
     if (failureOutput.getFailureReason() != null) {
       syncOutput.setFailures(List.of(failureOutput.getFailureReason().withFailureOrigin(origin)));

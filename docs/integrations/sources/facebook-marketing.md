@@ -1,5 +1,11 @@
 # Facebook Marketing
 
+:::warning
+We are currently experiencing an issue for anyone setting up a Facebook Marketing Source Connector who's Facebook Graph API has been updated to v15.0. Our team is blocked until the v15.0 SDK is made available, but once we have access to it we will begin working on a fix. 
+
+Thank you for your patience and understanding! 
+:::
+
 This page guides you through the process of setting up the Facebook Marketing source connector.
 
 ## Prerequisites
@@ -91,6 +97,7 @@ You can replicate the following tables using the Facebook Marketing connector:
 * [Ads](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)
 * [AdInsights](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
 * [Campaigns](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields)
+* [CustomConversions](https://developers.facebook.com/docs/marketing-api/reference/custom-conversion)
 * [Images](https://developers.facebook.com/docs/marketing-api/reference/ad-image)
 * [Videos](https://developers.facebook.com/docs/marketing-api/reference/video)
 
@@ -110,7 +117,7 @@ Please be informed that the connector uses the `lookback_window` parameter to pe
 ## Data type mapping
 
 | Integration Type | Airbyte Type |
-|:----------------:|:------------:|
+| :--------------: | :----------: |
 |      string      |    string    |
 |      number      |    number    |
 |      array       |    array     |
@@ -120,9 +127,21 @@ Please be informed that the connector uses the `lookback_window` parameter to pe
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.2.58  | 2022-07-25 | [15012](https://github.com/airbytehq/airbyte/pull/15012) | Add `DATA_RETENTION_PERIOD`validation and fix `failed_delivery_checks` field schema type issue                                                                                                                                                                                                    |     
-| 0.2.57  | 2022-07-25 | [14831](https://github.com/airbytehq/airbyte/pull/14831) | Update Facebook SDK to version 14.0.0                                                                                                                                                                                                                                                             | 
-| 0.2.56  | 2022-07-19 | [14831](https://github.com/airbytehq/airbyte/pull/14831) | Add future `start_date` and `end_date` validation                                                                                                                                                                                                                                                 |     
+| 0.2.70  | 2022-10-26 | [18045](https://github.com/airbytehq/airbyte/pull/18045) | Upgrade FB SDK to v15.0 |
+| 0.2.69  | 2022-10-17 | [18045](https://github.com/airbytehq/airbyte/pull/18045) | Remove "pixel" field from the Custom Conversions stream schema                                                                                                                                                                                                                                    |
+| 0.2.68  | 2022-10-12 | [17869](https://github.com/airbytehq/airbyte/pull/17869) | Remove "format" from optional datetime `end_date` field                                                                                                                                                                                                                                           |
+| 0.2.67  | 2022-10-04 | [17551](https://github.com/airbytehq/airbyte/pull/17551) | Add `cursor_field` for custom_insights stream schema                                                                                                                                                                                                                                              |
+| 0.2.65  | 2022-09-29 | [17371](https://github.com/airbytehq/airbyte/pull/17371) | Fix stream CustomConversions `enable_deleted=False`                                                                                                                                                                                                                                               |
+| 0.2.64  | 2022-09-22 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state.                                                                                                                                                                                                                                                                      |
+| 0.2.64  | 2022-09-22 | [17027](https://github.com/airbytehq/airbyte/pull/17027) | Limit time range with 37 months when creating an insight job from lower edge object. Retry bulk request when getting error code `960`                                                                                                                                                             |
+| 0.2.63  | 2022-09-06 | [15724](https://github.com/airbytehq/airbyte/pull/15724) | Add the Custom Conversion stream                                                                                                                                                                                                                                                                  |
+| 0.2.62  | 2022-09-01 | [16222](https://github.com/airbytehq/airbyte/pull/16222) | Remove `end_date` from config if empty value (re-implement #16096)                                                                                                                                                                                                                                |
+| 0.2.61  | 2022-08-29 | [16096](https://github.com/airbytehq/airbyte/pull/16096) | Remove `end_date` from config if empty value                                                                                                                                                                                                                                                      |
+| 0.2.60  | 2022-08-19 | [15788](https://github.com/airbytehq/airbyte/pull/15788) | Retry FacebookBadObjectError                                                                                                                                                                                                                                                                      |
+| 0.2.59  | 2022-08-04 | [15327](https://github.com/airbytehq/airbyte/pull/15327) | Shift date validation from config validation to stream method                                                                                                                                                                                                                                     |
+| 0.2.58  | 2022-07-25 | [15012](https://github.com/airbytehq/airbyte/pull/15012) | Add `DATA_RETENTION_PERIOD`validation and fix `failed_delivery_checks` field schema type issue                                                                                                                                                                                                    |
+| 0.2.57  | 2022-07-25 | [14831](https://github.com/airbytehq/airbyte/pull/14831) | Update Facebook SDK to version 14.0.0                                                                                                                                                                                                                                                             |
+| 0.2.56  | 2022-07-19 | [14831](https://github.com/airbytehq/airbyte/pull/14831) | Add future `start_date` and `end_date` validation                                                                                                                                                                                                                                                 |
 | 0.2.55  | 2022-07-18 | [14786](https://github.com/airbytehq/airbyte/pull/14786) | Check if the authorized user has the "MANAGE" task permission when getting the `funding_source_details` field in the ad\_account stream                                                                                                                                                           |
 | 0.2.54  | 2022-06-29 | [14267](https://github.com/airbytehq/airbyte/pull/14267) | Make MAX_BATCH_SIZE available in config                                                                                                                                                                                                                                                           |
 | 0.2.53  | 2022-06-16 | [13623](https://github.com/airbytehq/airbyte/pull/13623) | Add fields `bid_amount` `bid_strategy` `bid_constraints` to `ads_set` stream                                                                                                                                                                                                                      |

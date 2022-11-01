@@ -8,7 +8,11 @@ tests:
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
   discovery:
+    # schemas were changed in `0.2.1` compare to `0.2.0`,
+    # plase remove this bypass, once updated to the newer version!
     - config_path: "secrets/config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.2.0"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/streams_with_output_records_catalog.json"

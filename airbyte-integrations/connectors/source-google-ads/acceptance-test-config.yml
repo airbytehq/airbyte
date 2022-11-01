@@ -1,9 +1,11 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-google-ads:dev
 tests:
   spec:
     - spec_path: "source_google_ads/spec.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.45"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
@@ -22,6 +24,7 @@ tests:
           "display_topics_performance_report",
           "shopping_performance_report",
           "unhappytable",
+          "click_view",
         ]
       timeout_seconds: 600
     - config_path: "secrets/config.json"

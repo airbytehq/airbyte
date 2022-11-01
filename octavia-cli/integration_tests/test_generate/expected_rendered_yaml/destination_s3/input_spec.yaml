@@ -199,7 +199,7 @@ spec:
                 description:
                   "This is the size of a \"Part\" being buffered in memory.\
                   \ It limits the memory usage when writing. Larger values will allow\
-                  \ to upload a bigger files and improve the speed, but consumes9\
+                  \ to upload a bigger files and improve the speed, but consumes\
                   \ more memory. Allowed values: min=5MB, max=525MB Default: 5MB."
                 type: "integer"
                 default: 5
@@ -230,7 +230,7 @@ spec:
                 description:
                   "This is the size of a \"Part\" being buffered in memory.\
                   \ It limits the memory usage when writing. Larger values will allow\
-                  \ to upload a bigger files and improve the speed, but consumes9\
+                  \ to upload a bigger files and improve the speed, but consumes\
                   \ more memory. Allowed values: min=5MB, max=525MB Default: 5MB."
                 type: "integer"
                 default: 5
@@ -250,7 +250,7 @@ spec:
                 description:
                   "This is the size of a \"Part\" being buffered in memory.\
                   \ It limits the memory usage when writing. Larger values will allow\
-                  \ to upload a bigger files and improve the speed, but consumes9\
+                  \ to upload a bigger files and improve the speed, but consumes\
                   \ more memory. Allowed values: min=5MB, max=525MB Default: 5MB."
                 type: "integer"
                 default: 5

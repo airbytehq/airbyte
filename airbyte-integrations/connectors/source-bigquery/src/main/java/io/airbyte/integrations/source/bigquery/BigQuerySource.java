@@ -19,6 +19,7 @@ import io.airbyte.db.bigquery.BigQuerySourceOperations;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
+import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -136,14 +137,18 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
                                                                final List<String> columnNames,
                                                                final String schemaName,
                                                                final String tableName,
-                                                               final String cursorField,
-                                                               final StandardSQLTypeName cursorFieldType,
-                                                               final String cursor) {
+                                                               final CursorInfo cursorInfo,
+                                                               final StandardSQLTypeName cursorFieldType) {
     return queryTableWithParams(database, String.format("SELECT %s FROM %s WHERE %s > ?",
         enquoteIdentifierList(columnNames),
         getFullTableName(schemaName, tableName),
-        cursorField),
-        sourceOperations.getQueryParameter(cursorFieldType, cursor));
+        cursorInfo.getCursorField()),
+        sourceOperations.getQueryParameter(cursorFieldType, cursorInfo.getCursor()));
+  }
+
+  @Override
+  public boolean isCursorType(final StandardSQLTypeName standardSQLTypeName) {
+    return true;
   }
 
   private AutoCloseableIterator<JsonNode> queryTableWithParams(final BigQueryDatabase database,

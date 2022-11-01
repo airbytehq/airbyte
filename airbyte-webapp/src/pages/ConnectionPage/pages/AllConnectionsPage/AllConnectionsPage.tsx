@@ -1,24 +1,29 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { Suspense } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
+import { useNavigate } from "react-router-dom";
 
-import { Button, LoadingPage, MainPageWithScroll, PageTitle } from "components";
-import { EmptyResourceListView } from "components/EmptyResourceListView";
-import HeadTitle from "components/HeadTitle";
+import { LoadingPage, MainPageWithScroll } from "components";
+import { EmptyResourceListView } from "components/common/EmptyResourceListView";
+import { HeadTitle } from "components/common/HeadTitle";
+import { Button } from "components/ui/Button";
+import { PageHeader } from "components/ui/PageHeader";
 
-import { FeatureItem, useFeature } from "hooks/services/Feature";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
-import useRouter from "hooks/useRouter";
 
 import { RoutePaths } from "../../../routePaths";
 import ConnectionsTable from "./components/ConnectionsTable";
 
 const AllConnectionsPage: React.FC = () => {
-  const { push } = useRouter();
+  const navigate = useNavigate();
+  const { formatMessage } = useIntl();
 
+  useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
   const { connections } = useConnectionList();
-  const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
 
-  const onCreateClick = () => push(`${RoutePaths.ConnectionNew}`);
+  const onCreateClick = () => navigate(`${RoutePaths.ConnectionNew}`);
 
   return (
     <Suspense fallback={<LoadingPage />}>
@@ -26,10 +31,10 @@ const AllConnectionsPage: React.FC = () => {
         <MainPageWithScroll
           headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
           pageTitle={
-            <PageTitle
+            <PageHeader
               title={<FormattedMessage id="sidebar.connections" />}
               endComponent={
-                <Button onClick={onCreateClick} disabled={!allowCreateConnection}>
+                <Button icon={<FontAwesomeIcon icon={faPlus} />} variant="primary" size="sm" onClick={onCreateClick}>
                   <FormattedMessage id="connection.newConnection" />
                 </Button>
               }
@@ -42,7 +47,7 @@ const AllConnectionsPage: React.FC = () => {
         <EmptyResourceListView
           resourceType="connections"
           onCreateClick={onCreateClick}
-          disableCreateButton={!allowCreateConnection}
+          buttonLabel={formatMessage({ id: "connection.createFirst" })}
         />
       )}
     </Suspense>

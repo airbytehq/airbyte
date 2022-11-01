@@ -111,7 +111,6 @@ export const theme = {
   dangerColor: scss.red,
   dangerColor25: scss.red50,
   warningColor: scss.yellow,
-  warningBackgroundColor: scss.yellow100,
   lightDangerColor: scss.red50,
   dangerTransparentColor: scss.red50,
   successColor: scss.green,
@@ -146,9 +145,6 @@ export const theme = {
   transparentColor: scss.transparentColor,
 
   regularFont: scss.regularFont,
-  highlightFont: scss.highlightFont,
-  codeFont: scss.codeFont,
-  italicFont: scss.italicFont,
 };
 
 export const barChartColors = [scss.grey500, scss.grey300];

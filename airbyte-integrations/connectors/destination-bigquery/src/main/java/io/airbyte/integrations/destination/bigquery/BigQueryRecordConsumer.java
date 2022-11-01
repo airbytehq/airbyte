@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,12 +25,15 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   private final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap;
   private final Consumer<AirbyteMessage> outputRecordCollector;
+  private final String datasetId;
   private AirbyteMessage lastStateMessage = null;
 
   public BigQueryRecordConsumer(final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap,
-                                final Consumer<AirbyteMessage> outputRecordCollector) {
+                                final Consumer<AirbyteMessage> outputRecordCollector,
+                                final String datasetId) {
     this.uploaderMap = uploaderMap;
     this.outputRecordCollector = outputRecordCollector;
+    this.datasetId = datasetId;
   }
 
   @Override
@@ -41,14 +45,18 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   public void acceptTracked(final AirbyteMessage message) {
     if (message.getType() == Type.STATE) {
       lastStateMessage = message;
+      outputRecordCollector.accept(message);
     } else if (message.getType() == Type.RECORD) {
+      if (StringUtils.isEmpty(message.getRecord().getNamespace())) {
+        message.getRecord().setNamespace(datasetId);
+      }
       processRecord(message);
     } else {
       LOGGER.warn("Unexpected message: {}", message.getType());
     }
   }
 
-  private void processRecord(AirbyteMessage message) {
+  private void processRecord(final AirbyteMessage message) {
     final var pair = AirbyteStreamNameNamespacePair.fromRecordMessage(message.getRecord());
     uploaderMap.get(pair).upload(message);
   }
@@ -60,7 +68,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     uploaderMap.values().forEach(uploader -> {
       try {
         uploader.close(hasFailed, outputRecordCollector, lastStateMessage);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         exceptionsThrown.add(e);
         LOGGER.error("Exception while closing uploader {}", uploader, e);
       }

@@ -23,6 +23,14 @@ import org.mockito.Mockito;
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class JsonSchemasTest {
 
+  private static final String UNCHECKED = "unchecked";
+  private static final String NAME = "name";
+  private static final String PROPERTIES = "properties";
+  private static final String PETS = "pets";
+  private static final String COMPANY = "company";
+  private static final String ITEMS = "items";
+  private static final String USER = "user";
+
   @Test
   void testMutateTypeToArrayStandard() {
     final JsonNode expectedWithoutType = Jsons.deserialize("{\"test\":\"abc\"}");
@@ -41,7 +49,7 @@ class JsonSchemasTest {
     assertEquals(expectedWithoutArrayType, actualWithStringType);
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings(UNCHECKED)
   @Test
   void testTraverse() throws IOException {
     final JsonNode jsonWithAllTypes = Jsons.deserialize(MoreResources.readResource("json_schemas/json_with_all_types.json"));
@@ -50,23 +58,23 @@ class JsonSchemasTest {
     JsonSchemas.traverseJsonSchema(jsonWithAllTypes, mock);
     final InOrder inOrder = Mockito.inOrder(mock);
     inOrder.verify(mock).accept(jsonWithAllTypes, Collections.emptyList());
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("name"), List.of(FieldNameOrList.fieldName("name")));
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("name").get("properties").get("first"),
-        List.of(FieldNameOrList.fieldName("name"), FieldNameOrList.fieldName("first")));
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("name").get("properties").get("last"),
-        List.of(FieldNameOrList.fieldName("name"), FieldNameOrList.fieldName("last")));
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("company"), List.of(FieldNameOrList.fieldName("company")));
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("pets"), List.of(FieldNameOrList.fieldName("pets")));
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("pets").get("items"),
-        List.of(FieldNameOrList.fieldName("pets"), FieldNameOrList.list()));
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("pets").get("items").get("properties").get("type"),
-        List.of(FieldNameOrList.fieldName("pets"), FieldNameOrList.list(), FieldNameOrList.fieldName("type")));
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("pets").get("items").get("properties").get("number"),
-        List.of(FieldNameOrList.fieldName("pets"), FieldNameOrList.list(), FieldNameOrList.fieldName("number")));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(PROPERTIES).get(NAME), List.of(FieldNameOrList.fieldName(NAME)));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(PROPERTIES).get(NAME).get(PROPERTIES).get("first"),
+        List.of(FieldNameOrList.fieldName(NAME), FieldNameOrList.fieldName("first")));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(PROPERTIES).get(NAME).get(PROPERTIES).get("last"),
+        List.of(FieldNameOrList.fieldName(NAME), FieldNameOrList.fieldName("last")));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(PROPERTIES).get(COMPANY), List.of(FieldNameOrList.fieldName(COMPANY)));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(PROPERTIES).get(PETS), List.of(FieldNameOrList.fieldName(PETS)));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(PROPERTIES).get(PETS).get(ITEMS),
+        List.of(FieldNameOrList.fieldName(PETS), FieldNameOrList.list()));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(PROPERTIES).get(PETS).get(ITEMS).get(PROPERTIES).get("type"),
+        List.of(FieldNameOrList.fieldName(PETS), FieldNameOrList.list(), FieldNameOrList.fieldName("type")));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(PROPERTIES).get(PETS).get(ITEMS).get(PROPERTIES).get("number"),
+        List.of(FieldNameOrList.fieldName(PETS), FieldNameOrList.list(), FieldNameOrList.fieldName("number")));
     inOrder.verifyNoMoreInteractions();
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings(UNCHECKED)
   @ValueSource(strings = {
     "anyOf",
     "oneOf",
@@ -85,18 +93,18 @@ class JsonSchemasTest {
     inOrder.verify(mock).accept(jsonWithAllTypes, Collections.emptyList());
     inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(0), Collections.emptyList());
     inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(1), Collections.emptyList());
-    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(1).get("properties").get("prop1"),
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(1).get(PROPERTIES).get("prop1"),
         List.of(FieldNameOrList.fieldName("prop1")));
     inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(2), Collections.emptyList());
-    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(2).get("items"), List.of(FieldNameOrList.list()));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(2).get(ITEMS), List.of(FieldNameOrList.list()));
     inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(3).get(compositeKeyword).get(0), Collections.emptyList());
     inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(3).get(compositeKeyword).get(1), Collections.emptyList());
-    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(3).get(compositeKeyword).get(1).get("items"),
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(3).get(compositeKeyword).get(1).get(ITEMS),
         List.of(FieldNameOrList.list()));
     inOrder.verifyNoMoreInteractions();
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings(UNCHECKED)
   @Test
   void testTraverseMultiType() throws IOException {
     final JsonNode jsonWithAllTypes = Jsons.deserialize(MoreResources.readResource("json_schemas/json_with_array_type_fields.json"));
@@ -105,14 +113,14 @@ class JsonSchemasTest {
     JsonSchemas.traverseJsonSchema(jsonWithAllTypes, mock);
     final InOrder inOrder = Mockito.inOrder(mock);
     inOrder.verify(mock).accept(jsonWithAllTypes, Collections.emptyList());
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("company"), List.of(FieldNameOrList.fieldName("company")));
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("items"), List.of(FieldNameOrList.list()));
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("items").get("properties").get("user"),
-        List.of(FieldNameOrList.list(), FieldNameOrList.fieldName("user")));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(PROPERTIES).get(COMPANY), List.of(FieldNameOrList.fieldName(COMPANY)));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(ITEMS), List.of(FieldNameOrList.list()));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(ITEMS).get(PROPERTIES).get(USER),
+        List.of(FieldNameOrList.list(), FieldNameOrList.fieldName(USER)));
     inOrder.verifyNoMoreInteractions();
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings(UNCHECKED)
   @Test
   void testTraverseMultiTypeComposite() throws IOException {
     final String compositeKeyword = "anyOf";
@@ -123,17 +131,17 @@ class JsonSchemasTest {
 
     final InOrder inOrder = Mockito.inOrder(mock);
     inOrder.verify(mock).accept(jsonWithAllTypes, Collections.emptyList());
-    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(0).get("properties").get("company"),
-        List.of(FieldNameOrList.fieldName("company")));
-    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(1).get("properties").get("organization"),
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(0).get(PROPERTIES).get(COMPANY),
+        List.of(FieldNameOrList.fieldName(COMPANY)));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(1).get(PROPERTIES).get("organization"),
         List.of(FieldNameOrList.fieldName("organization")));
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("items"), List.of(FieldNameOrList.list()));
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("items").get("properties").get("user"),
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(ITEMS), List.of(FieldNameOrList.list()));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(ITEMS).get(PROPERTIES).get(USER),
         List.of(FieldNameOrList.list(), FieldNameOrList.fieldName("user")));
     inOrder.verifyNoMoreInteractions();
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings(UNCHECKED)
   @Test
   void testTraverseArrayTypeWithNoItemsDoNotThrowsException() throws IOException {
     final JsonNode jsonWithAllTypes = Jsons.deserialize(MoreResources.readResource("json_schemas/json_with_array_type_fields_no_items.json"));

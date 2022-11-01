@@ -21,6 +21,7 @@ class Type(Enum):
     CONNECTION_STATUS = "CONNECTION_STATUS"
     CATALOG = "CATALOG"
     TRACE = "TRACE"
+    CONTROL = "CONTROL"
 
 
 class AirbyteRecordMessage(BaseModel):
@@ -72,6 +73,10 @@ class AirbyteLogMessage(BaseModel):
 
     level: Level = Field(..., description="log level")
     message: str = Field(..., description="log message")
+    stack_trace: Optional[str] = Field(
+        None,
+        description="an optional stack trace if the log message corresponds to an exception",
+    )
 
 
 class TraceType(Enum):
@@ -91,6 +96,17 @@ class AirbyteErrorTraceMessage(BaseModel):
     internal_message: Optional[str] = Field(None, description="The internal error that caused the failure")
     stack_trace: Optional[str] = Field(None, description="The full stack trace of the error")
     failure_type: Optional[FailureType] = Field(None, description="The type of error")
+
+
+class OrchestratorType(Enum):
+    CONNECTOR_CONFIG = "CONNECTOR_CONFIG"
+
+
+class AirbyteControlConnectorConfigMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    config: Dict[str, Any] = Field(..., description="the config items from this connector's spec to update")
 
 
 class Status(Enum):
@@ -199,13 +215,25 @@ class AirbyteTraceMessage(BaseModel):
     error: Optional[AirbyteErrorTraceMessage] = Field(None, description="error trace message: the error object")
 
 
+class AirbyteControlMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: OrchestratorType = Field(..., description="the type of orchestrator message", title="orchestrator type")
+    emitted_at: float = Field(..., description="the time in ms that the message was emitted")
+    connectorConfig: Optional[AirbyteControlConnectorConfigMessage] = Field(
+        None,
+        description="connector config orchestrator message: the updated config for the platform to store for this connector",
+    )
+
+
 class AirbyteStream(BaseModel):
     class Config:
         extra = Extra.allow
 
     name: str = Field(..., description="Stream's name.")
     json_schema: Dict[str, Any] = Field(..., description="Stream schema using Json Schema specs.")
-    supported_sync_modes: Optional[List[SyncMode]] = None
+    supported_sync_modes: List[SyncMode] = Field(..., description="List of sync modes supported by this stream.", min_items=1)
     source_defined_cursor: Optional[bool] = Field(
         None,
         description="If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.",
@@ -278,6 +306,10 @@ class ConnectorSpecification(BaseModel):
         None,
         description="Additional and optional specification object to describe what an 'advanced' Auth flow would need to function.\n  - A connector should be able to fully function with the configuration as described by the ConnectorSpecification in a 'basic' mode.\n  - The 'advanced' mode provides easier UX for the user with UI improvements and automations. However, this requires further setup on the\n  server side by instance or workspace admins beforehand. The trade-off is that the user does not have to provide as many technical\n  inputs anymore and the auth process is faster and easier to complete.",
     )
+    protocol_version: Optional[str] = Field(
+        None,
+        description="the Airbyte Protocol version supported by the connector. Protocol versioning uses SemVer. ",
+    )
 
 
 class AirbyteStateMessage(BaseModel):
@@ -324,6 +356,10 @@ class AirbyteMessage(BaseModel):
     trace: Optional[AirbyteTraceMessage] = Field(
         None,
         description="trace message: a message to communicate information about the status and performance of a connector",
+    )
+    control: Optional[AirbyteControlMessage] = Field(
+        None,
+        description="connector config message: a message to communicate an updated configuration from a connector that should be persisted",
     )
 
 

@@ -1,28 +1,17 @@
+import classnames from "classnames";
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
-import { Button } from "components";
+import { Button } from "components/ui/Button";
+import { Text } from "components/ui/Text";
 
 import { ConnectorSpecification } from "core/domain/connector";
 
 import { useServiceForm } from "../../../serviceFormContext";
+import { useAuthentication } from "../../../useAuthentication";
+import styles from "./AuthButton.module.scss";
 import GoogleAuthButton from "./GoogleAuthButton";
 import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
-
-const AuthSectionRow = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-const SuccessMessage = styled.div`
-  color: ${({ theme }) => theme.successColor};
-  font-style: normal;
-  font-weight: normal;
-  font-size: 14px;
-  line-height: 17px;
-  margin-left: 14px;
-`;
 
 function isGoogleConnector(connectorDefinitionId: string): boolean {
   return [
@@ -33,6 +22,7 @@ function isGoogleConnector(connectorDefinitionId: string): boolean {
     "71607ba1-c0ac-4799-8049-7f4b90dd50f7", // google sheets source
     "a4cbd2d1-8dbe-4818-b8bc-b90ad782d12a", // google sheets destination
     "ed9dfefa-1bbc-419d-8c5e-4d78f0ef6734", // google workspace admin reports
+    "afa734e4-3571-11ec-991a-1e0031268139", // YouTube analytics
   ].includes(connectorDefinitionId);
 }
 
@@ -52,8 +42,11 @@ function getAuthenticateMessageId(connectorDefinitionId: string): string {
 
 export const AuthButton: React.FC = () => {
   const { selectedService, selectedConnector } = useServiceForm();
+  const { hiddenAuthFieldErrors } = useAuthentication();
+  const authRequiredError = Object.values(hiddenAuthFieldErrors).includes("form.empty.error");
+
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { loading, done, run } = useFormikOauthAdapter(selectedConnector!);
+  const { loading, done, run, hasRun } = useFormikOauthAdapter(selectedConnector!);
 
   if (!selectedConnector) {
     console.error("Entered non-auth flow while no connector is selected");
@@ -62,20 +55,31 @@ export const AuthButton: React.FC = () => {
 
   const definitionId = ConnectorSpecification.id(selectedConnector);
   const Component = getButtonComponent(definitionId);
+
+  const messageStyle = classnames(styles.message, {
+    [styles.error]: authRequiredError,
+    [styles.success]: !authRequiredError,
+  });
+  const buttonLabel = done ? (
+    <FormattedMessage id="connectorForm.reauthenticate" />
+  ) : (
+    <FormattedMessage id={getAuthenticateMessageId(definitionId)} values={{ connector: selectedService?.name }} />
+  );
   return (
-    <AuthSectionRow>
-      <Component isLoading={loading} type="button" onClick={() => run()}>
-        {done ? (
-          <FormattedMessage id="connectorForm.reauthenticate" />
-        ) : (
-          <FormattedMessage id={getAuthenticateMessageId(definitionId)} values={{ connector: selectedService?.name }} />
-        )}
+    <div className={styles.authSectionRow}>
+      <Component isLoading={loading} type="button" onClick={run}>
+        {buttonLabel}
       </Component>
-      {done && (
-        <SuccessMessage>
+      {done && hasRun && (
+        <Text as="div" size="lg" className={messageStyle}>
           <FormattedMessage id="connectorForm.authenticate.succeeded" />
-        </SuccessMessage>
+        </Text>
       )}
-    </AuthSectionRow>
+      {authRequiredError && (
+        <Text as="div" size="lg" className={messageStyle}>
+          <FormattedMessage id="connectorForm.authenticate.required" />
+        </Text>
+      )}
+    </div>
   );
 };

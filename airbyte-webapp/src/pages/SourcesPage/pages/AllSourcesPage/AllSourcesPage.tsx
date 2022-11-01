@@ -1,30 +1,35 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
+import { useNavigate } from "react-router-dom";
 
-import { Button, MainPageWithScroll } from "components";
-import { EmptyResourceListView } from "components/EmptyResourceListView";
-import HeadTitle from "components/HeadTitle";
-import PageTitle from "components/PageTitle";
+import { EmptyResourceListView } from "components/common/EmptyResourceListView";
+import { HeadTitle } from "components/common/HeadTitle";
+import { MainPageWithScroll } from "components/common/MainPageWithScroll";
+import { Button } from "components/ui/Button";
+import { PageHeader } from "components/ui/PageHeader";
 
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useSourceList } from "hooks/services/useSourceHook";
-import useRouter from "hooks/useRouter";
 
 import { RoutePaths } from "../../../routePaths";
 import SourcesTable from "./components/SourcesTable";
 
 const AllSourcesPage: React.FC = () => {
-  const { push } = useRouter();
+  const navigate = useNavigate();
+  const { formatMessage } = useIntl();
   const { sources } = useSourceList();
-
-  const onCreateSource = () => push(`${RoutePaths.SourceNew}`);
+  useTrackPage(PageTrackingCodes.SOURCE_LIST);
+  const onCreateSource = () => navigate(`${RoutePaths.SourceNew}`);
   return sources.length ? (
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "admin.sources" }]} />}
       pageTitle={
-        <PageTitle
+        <PageHeader
           title={<FormattedMessage id="sidebar.sources" />}
           endComponent={
-            <Button onClick={onCreateSource} data-id="new-source">
+            <Button icon={<FontAwesomeIcon icon={faPlus} />} onClick={onCreateSource} size="sm" data-id="new-source">
               <FormattedMessage id="sources.newSource" />
             </Button>
           }
@@ -34,7 +39,11 @@ const AllSourcesPage: React.FC = () => {
       <SourcesTable sources={sources} />
     </MainPageWithScroll>
   ) : (
-    <EmptyResourceListView resourceType="sources" onCreateClick={onCreateSource} />
+    <EmptyResourceListView
+      resourceType="sources"
+      onCreateClick={onCreateSource}
+      buttonLabel={formatMessage({ id: "sources.createFirst" })}
+    />
   );
 };
 

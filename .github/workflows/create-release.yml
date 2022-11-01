@@ -1,7 +1,8 @@
 # This is an action that runs when an Airbyte version bump is merged into master.
 # It fetches the changelog from the version bump PR and automatically creates a
 # Release for the version bump.
-name: Create Release
+
+name: Create Airbyte GH Release
 
 on:
   push:
@@ -31,7 +32,7 @@ jobs:
           # The sed removes carriage returns so that the body is easier to parse later, and
           #   escapes backticks so that they are not executed as commands.
           PR_BODY=$(printf '%s' "$PR" | jq '.[0].body' | sed 's/\\r//g' | sed 's/`/\\`/g')
-          echo ::set-output name=pr_body::${PR_BODY}
+          echo pr_body=${PR_BODY} >> $GITHUB_OUTPUT
       - name: Extract Changelog
         id: extract_changelog
         shell: bash
@@ -60,12 +61,11 @@ jobs:
         shell: bash
         run: |
           VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
-          echo ::set-output name=VERSION::${VERSION}
+          echo VERSION=${VERSION} >> $GITHUB_OUTPUT
       - name: Create Release
         id: create_release
         uses: ncipollo/release-action@v1
         with:
           body: ${{ env.CHANGELOG }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: true
           tag: v${{ steps.get_version.outputs.VERSION }}

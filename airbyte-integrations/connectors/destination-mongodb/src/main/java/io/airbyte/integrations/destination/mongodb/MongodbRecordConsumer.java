@@ -65,6 +65,7 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
   @Override
   protected void acceptTracked(final AirbyteMessage message) {
     if (message.getType() == AirbyteMessage.Type.STATE) {
+      outputRecordCollector.accept(message);
       lastStateMessage = message;
     } else if (message.getType() == AirbyteMessage.Type.RECORD) {
       final AirbyteRecordMessage recordMessage = message.getRecord();

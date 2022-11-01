@@ -13,6 +13,19 @@ from source_s3.source_files_abstract.file_info import FileInfo
 class AbstractFileParser(ABC):
     logger = AirbyteLogger()
 
+    NON_SCALAR_TYPES = {"struct": "struct", "list": "list"}
+    TYPE_MAP = {
+        "boolean": ("bool_", "bool"),
+        "integer": ("int64", "int8", "int16", "int32", "uint8", "uint16", "uint32", "uint64"),
+        "number": ("float64", "float16", "float32", "decimal128", "decimal256", "halffloat", "float", "double"),
+        "string": ("large_string", "string"),
+        # TODO: support object type rather than coercing to string
+        "object": ("large_string",),
+        # TODO: support array type rather than coercing to string
+        "array": ("large_string",),
+        "null": ("large_string",),
+    }
+
     def __init__(self, format: dict, master_schema: dict = None):
         """
         :param format: file format specific mapping as described in spec.json
@@ -32,12 +45,13 @@ class AbstractFileParser(ABC):
         """
 
     @abstractmethod
-    def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> dict:
+    def get_inferred_schema(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> dict:
         """
         Override this with format-specifc logic to infer the schema of file
         Note: needs to return inferred schema with JsonSchema datatypes
 
         :param file: file-like object (opened via StorageFile)
+        :param file_info: file metadata
         :return: mapping of {columns:datatypes} where datatypes are JsonSchema types
         """
 
@@ -52,8 +66,8 @@ class AbstractFileParser(ABC):
         :yield: data record as a mapping of {columns:values}
         """
 
-    @staticmethod
-    def json_type_to_pyarrow_type(typ: str, reverse: bool = False, logger: AirbyteLogger = AirbyteLogger()) -> str:
+    @classmethod
+    def json_type_to_pyarrow_type(cls, typ: str, reverse: bool = False, logger: AirbyteLogger = AirbyteLogger()) -> str:
         """
         Converts Json Type to PyArrow types to (or the other way around if reverse=True)
 
@@ -63,35 +77,28 @@ class AbstractFileParser(ABC):
         :return: PyArrow type if reverse is False, else Json type
         """
         str_typ = str(typ)
-        # this is a map of airbyte types to pyarrow types. The first list element of the pyarrow types should be the one to use where required.
-        map = {
-            "boolean": ("bool_", "bool"),
-            "integer": ("int64", "int8", "int16", "int32", "uint8", "uint16", "uint32", "uint64"),
-            "number": ("float64", "float16", "float32", "decimal128", "decimal256", "halffloat", "float", "double"),
-            "string": ("large_string", "string"),
-            # TODO: support object type rather than coercing to string
-            "object": ("large_string",),
-            # TODO: support array type rather than coercing to string
-            "array": ("large_string",),
-            "null": ("large_string",),
-        }
+        # This is a map of airbyte types to pyarrow types.
+        # The first list element of the pyarrow types should be the one to use where required.
+
         if not reverse:
-            for json_type, pyarrow_types in map.items():
+            for json_type, pyarrow_types in cls.TYPE_MAP.items():
                 if str_typ.lower() == json_type:
-                    return str(
-                        getattr(pa, pyarrow_types[0]).__call__()
-                    )  # better way might be necessary when we decide to handle more type complexity
+                    type_ = next(iter(pyarrow_types))
+                    if type_ in cls.NON_SCALAR_TYPES:
+                        return cls.NON_SCALAR_TYPES[type_]
+                    # better way might be necessary when we decide to handle more type complexity
+                    return str(getattr(pa, type_).__call__())
             logger.debug(f"JSON type '{str_typ}' is not mapped, falling back to default conversion to large_string")
             return str(pa.large_string())
         else:
-            for json_type, pyarrow_types in map.items():
+            for json_type, pyarrow_types in cls.TYPE_MAP.items():
                 if any(str_typ.startswith(pa_type) for pa_type in pyarrow_types):
                     return json_type
             logger.debug(f"PyArrow type '{str_typ}' is not mapped, falling back to default conversion to string")
             return "string"  # default type if unspecified in map
 
-    @staticmethod
-    def json_schema_to_pyarrow_schema(schema: Mapping[str, Any], reverse: bool = False) -> Mapping[str, Any]:
+    @classmethod
+    def json_schema_to_pyarrow_schema(cls, schema: Mapping[str, Any], reverse: bool = False) -> Mapping[str, Any]:
         """
         Converts a schema with JsonSchema datatypes to one with PyArrow types (or the other way if reverse=True)
         This utilises json_type_to_pyarrow_type() to convert each datatype
@@ -100,4 +107,4 @@ class AbstractFileParser(ABC):
         :param reverse: switch to True for PyArrow schema -> Json schema, defaults to False
         :return: converted schema dict
         """
-        return {column: AbstractFileParser.json_type_to_pyarrow_type(json_type, reverse=reverse) for column, json_type in schema.items()}
+        return {column: cls.json_type_to_pyarrow_type(json_type, reverse=reverse) for column, json_type in schema.items()}

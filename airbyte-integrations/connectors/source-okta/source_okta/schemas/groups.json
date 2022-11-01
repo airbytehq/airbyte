@@ -5,18 +5,18 @@
     },
     "created": {
       "format": "date-time",
-      "type": "string"
+      "type": ["string", "null"]
     },
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "lastMembershipUpdated": {
       "format": "date-time",
-      "type": "string"
+      "type": ["string", "null"]
     },
     "lastUpdated": {
       "format": "date-time",
-      "type": "string"
+      "type": ["string", "null"]
     },
     "objectClass": {
       "items": {
@@ -33,12 +33,11 @@
           "type": ["string", "null"]
         }
       },
-      "type": "object"
+      "type": ["object", "null"]
     },
     "type": {
-      "enum": ["OKTA_GROUP", "APP_GROUP", "BUILT_IN"],
-      "type": "string"
+      "type": ["string", "null"]
     }
   },
-  "type": "object"
+  "type": ["object", "null"]
 }

@@ -10,7 +10,9 @@ from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDate
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -18,7 +20,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_han
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import RequestOption
+from airbyte_cdk.sources.declarative.requesters.paginators.default_paginator import RequestOption
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
@@ -50,11 +52,12 @@ DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     InterpolatedString: InterpolatedString,
     MinMaxDatetime: MinMaxDatetime,
     Paginator: NoPagination,
+    ParentStreamConfig: ParentStreamConfig,
+    RecordExtractor: DpathExtractor,
     RequestOption: RequestOption,
     RequestOptionsProvider: InterpolatedRequestOptionsProvider,
     Requester: HttpRequester,
     Retriever: SimpleRetriever,
-    ParentStreamConfig: ParentStreamConfig,
     SchemaLoader: JsonSchema,
     Stream: DeclarativeStream,
     StreamSlicer: SingleSlice,

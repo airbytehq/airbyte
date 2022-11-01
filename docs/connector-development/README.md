@@ -6,6 +6,10 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 **Note: you are not required to maintain the connectors you create.** The goal is that the Airbyte core team and the community help maintain the connector.
 
+## Low-code Connector-Development Framework
+
+You can use the [low-code framework](config-based/low-code-cdk-overview.md) to build source connectors for REST APIs by modifying boilerplate YAML files.
+
 ## Python Connector-Development Kit \(CDK\)
 
 You can build a connector very quickly in Python with the [Airbyte CDK](cdk-python/), which generates 75% of the code required for you.

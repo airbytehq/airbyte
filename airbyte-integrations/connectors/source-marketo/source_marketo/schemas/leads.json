@@ -1,6 +1,6 @@
 {
   "type": ["object", "null"],
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "company": {
       "type": ["string", "null"]

@@ -37,7 +37,7 @@ We’ve had that issue once. \(no spinner & 500 http error\). We don’t know wh
 You receive the error below when you tried to sync a database with a lot of tables \(6000 or more\).
 
 ```bash
-airbyte-scheduler   | io.grpc.StatusRuntimeException: RESOURCE_EXHAUSTED: grpc: received message larger than max (<NUMBER> vs. 4194304)
+airbyte-server   | io.grpc.StatusRuntimeException: RESOURCE_EXHAUSTED: grpc: received message larger than max (<NUMBER> vs. 4194304)
 ```
 
 There are two Github issues tracking this problem: [Issue \#3942](https://github.com/airbytehq/airbyte/issues/3942) and [Issue \#3943](https://github.com/airbytehq/airbyte/issues/3943)

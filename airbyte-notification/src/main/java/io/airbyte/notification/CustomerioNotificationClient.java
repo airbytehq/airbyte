@@ -63,13 +63,21 @@ public class CustomerioNotificationClient extends NotificationClient {
   }
 
   @Override
-  public boolean notifyJobFailure(final String sourceConnector, final String destinationConnector, final String jobDescription, final String logUrl)
+  public boolean notifyJobFailure(final String sourceConnector,
+                                  final String destinationConnector,
+                                  final String jobDescription,
+                                  final String logUrl,
+                                  final Long jobId)
       throws IOException, InterruptedException {
     throw new NotImplementedException();
   }
 
   @Override
-  public boolean notifyJobSuccess(final String sourceConnector, final String destinationConnector, final String jobDescription, final String logUrl)
+  public boolean notifyJobSuccess(final String sourceConnector,
+                                  final String destinationConnector,
+                                  final String jobDescription,
+                                  final String logUrl,
+                                  final Long jobId)
       throws IOException, InterruptedException {
     throw new NotImplementedException();
   }

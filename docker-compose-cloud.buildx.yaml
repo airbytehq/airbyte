@@ -84,3 +84,19 @@ services:
         platforms:
           - linux/amd64
           - linux/arm64
+  cron:
+    image: airbyte/cron:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-cron/build/docker
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+      args:
+        VERSION: ${VERSION}
+      x-bake:
+        tags:
+          - airbyte/cron:${VERSION}
+          - airbyte/cron:${ALT_TAG:-${VERSION}}
+        platforms:
+          - linux/amd64
+          - linux/arm64

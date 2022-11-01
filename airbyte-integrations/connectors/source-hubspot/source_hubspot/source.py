@@ -2,14 +2,14 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import copy
 import logging
-from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.schema_helpers import split_config
 from airbyte_cdk.utils.event_timing import create_timer
@@ -32,7 +32,6 @@ from source_hubspot.streams import (
     EngagementsMeetings,
     EngagementsNotes,
     EngagementsTasks,
-    FeedbackSubmissions,
     Forms,
     FormSubmissions,
     LineItems,
@@ -105,7 +104,6 @@ class SourceHubspot(AbstractSource):
             EngagementsMeetings(**common_params),
             EngagementsNotes(**common_params),
             EngagementsTasks(**common_params),
-            FeedbackSubmissions(**common_params),
             Forms(**common_params),
             FormSubmissions(**common_params),
             LineItems(**common_params),
@@ -139,17 +137,21 @@ class SourceHubspot(AbstractSource):
         return available_streams
 
     def read(
-        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
+        self,
+        logger: logging.Logger,
+        config: Mapping[str, Any],
+        catalog: ConfiguredAirbyteCatalog,
+        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
     ) -> Iterator[AirbyteMessage]:
         """
         This method is overridden to check whether the stream `quotes` exists in the source, if not skip reading that stream.
         """
-        connector_state = copy.deepcopy(state or {})
         logger.info(f"Starting syncing {self.name}")
         config, internal_config = split_config(config)
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
+        state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
         self._stream_to_instance_map = stream_instances
         with create_timer(self.name) as timer:
             for configured_stream in catalog.streams:
@@ -167,7 +169,7 @@ class SourceHubspot(AbstractSource):
                         logger=logger,
                         stream_instance=stream_instance,
                         configured_stream=configured_stream,
-                        connector_state=connector_state,
+                        state_manager=state_manager,
                         internal_config=internal_config,
                     )
                 except Exception as e:

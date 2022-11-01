@@ -22,7 +22,7 @@ clean-targets:
 - dbt_modules
 quoting:
   database: true
-  schema: false
+  schema: true
   identifier: true
 models:
   airbyte_utils:
@@ -30,7 +30,7 @@ models:
     generated:
       airbyte_ctes:
         +tags: airbyte_internal_cte
-        +materialized: ephemeral
+        +materialized: view
       airbyte_incremental:
         +tags: incremental_tables
         +materialized: incremental

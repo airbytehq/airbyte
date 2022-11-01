@@ -67,8 +67,8 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition {
   public static MssqlCdcTargetPosition getTargetPosition(final JdbcDatabase database, final String dbName) {
     try {
       final List<JsonNode> jsonNodes = database
-          .bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(
-              "USE " + dbName + "; SELECT sys.fn_cdc_get_max_lsn() AS max_lsn;"), JdbcUtils.getDefaultSourceOperations()::rowToJson);
+          .bufferedResultSetQuery(connection -> connection.createStatement().executeQuery(
+              "USE [" + dbName + "]; SELECT sys.fn_cdc_get_max_lsn() AS max_lsn;"), JdbcUtils.getDefaultSourceOperations()::rowToJson);
       Preconditions.checkState(jsonNodes.size() == 1);
       if (jsonNodes.get(0).get("max_lsn") != null) {
         final Lsn maxLsn = Lsn.valueOf(jsonNodes.get(0).get("max_lsn").binaryValue());

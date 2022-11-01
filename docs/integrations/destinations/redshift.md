@@ -18,6 +18,7 @@ For INSERT strategy:
 * **Schema**
 * **Database**
     * This database needs to exist within the cluster provided.
+* **JDBC URL Params** (optional)
 
 2. COPY: Replicates data by first uploading data to an S3 bucket and issuing a COPY command. This is the recommended loading approach described by Redshift [best practices](https://docs.aws.amazon.com/redshift/latest/dg/c_loading-data-best-practices.html). Requires an S3 bucket and credentials.
 
@@ -65,7 +66,7 @@ Optional parameters:
 4. Fill in all the required fields to use the INSERT or COPY strategy
 5. Click `Set up destination`.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
@@ -140,6 +141,10 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.51  | 2022-10-26 | [\#18434](https://github.com/airbytehq/airbyte/pull/18434) | Fix empty S3 bucket path handling |
+| 0.3.50  | 2022-09-14 | [\#15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage |
+| 0.3.49  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields) |
+| 0.3.48  | 2022-09-01 |  | Added JDBC URL params                                                                                                                                                                                            |
 | 0.3.47  | 2022-07-15 | [\#14494](https://github.com/airbytehq/airbyte/pull/14494) | Make S3 output filename configurable.                                                                                                                                                                            |
 | 0.3.46  | 2022-06-27 | [\#14190](https://github.com/airbytehq/airbyte/pull/13916) | Correctly cleanup S3 bucket when using a configured bucket path for S3 staging operations.                                                                                                                       |
 | 0.3.45  | 2022-06-25 | [\#13916](https://github.com/airbytehq/airbyte/pull/13916) | Use the configured bucket path for S3 staging operations.                                                                                                                                                        |
@@ -147,8 +152,8 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 | 0.3.43  | 2022-06-24 | [\#13690](https://github.com/airbytehq/airbyte/pull/13690) | Improved discovery for NOT SUPER column                                                                                                                                                                          |
 | 0.3.42  | 2022-06-21 | [\#14013](https://github.com/airbytehq/airbyte/pull/14013) | Add an option to use encryption with staging in Redshift Destination                                                                                                                                             |
 | 0.3.40  | 2022-06-17 | [\#13753](https://github.com/airbytehq/airbyte/pull/13753) | Deprecate and remove PART_SIZE_MB fields from connectors based on StreamTransferManager                                                                                                                          |
-| 0.3.39  | 2022-06-02 | [13415](https://github.com/airbytehq/airbyte/pull/13415)   | Add dropdown to select Uploading Method. <br /> **PLEASE NOTICE**: After this update your **uploading method** will be set to **Standard**, you will need to reconfigure the method to use **S3 Staging** again. | 
-| 0.3.37  | 2022-05-23 | [13090](https://github.com/airbytehq/airbyte/pull/13090)   | Removed redshiftDataTmpTableMode. Some refactoring.                                                                                                                                                              | 
+| 0.3.39  | 2022-06-02 | [13415](https://github.com/airbytehq/airbyte/pull/13415)   | Add dropdown to select Uploading Method. <br /> **PLEASE NOTICE**: After this update your **uploading method** will be set to **Standard**, you will need to reconfigure the method to use **S3 Staging** again. |
+| 0.3.37  | 2022-05-23 | [13090](https://github.com/airbytehq/airbyte/pull/13090)   | Removed redshiftDataTmpTableMode. Some refactoring.                                                                                                                                                              |
 | 0.3.36  | 2022-05-23 | [12820](https://github.com/airbytehq/airbyte/pull/12820)   | Improved 'check' operation performance                                                                                                                                                                           |
 | 0.3.35  | 2022-05-18 | [12940](https://github.com/airbytehq/airbyte/pull/12940)   | Fixed maximum record size for SUPER type                                                                                                                                                                         |
 | 0.3.34  | 2022-05-16 | [12869](https://github.com/airbytehq/airbyte/pull/12869)   | Fixed NPE in S3 staging check                                                                                                                                                                                    |

@@ -2,15 +2,16 @@ import React, { Suspense, useEffect, useMemo } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
-import ApiErrorBoundary from "components/ApiErrorBoundary";
+import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 import LoadingPage from "components/LoadingPage";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
-import { useTrackPageAnalytics } from "hooks/services/Analytics/useTrackPageAnalytics";
+import { useExperiment } from "hooks/services/Experiment";
 import { FeatureItem, FeatureSet, useFeatureService } from "hooks/services/Feature";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
-import useRouter from "hooks/useRouter";
+import { useQuery } from "hooks/useQuery";
+import { useExperimentSpeedyConnection } from "packages/cloud/components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useIntercom";
 import { Auth } from "packages/cloud/views/auth";
@@ -22,15 +23,14 @@ import DestinationPage from "pages/DestinationPage";
 import OnboardingPage from "pages/OnboardingPage";
 import SourcesPage from "pages/SourcesPage";
 import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
+import { setSegmentAnonymousId, useGetSegmentAnonymousId } from "utils/crossDomainUtils";
 import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
 import { RoutePaths } from "../../pages/routePaths";
 import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
-import { useConfig } from "./services/config";
-import useFullStory from "./services/thirdParty/fullstory/useFullStory";
-import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly/LDExperimentService";
-import { useGetCloudWorkspace } from "./services/workspaces/WorkspacesService";
+import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly";
+import { useGetCloudWorkspace } from "./services/workspaces/CloudWorkspacesService";
 import { DefaultView } from "./views/DefaultView";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
 import { CloudSettingsPage } from "./views/settings/CloudSettingsPage";
@@ -59,6 +59,7 @@ const MainRoutes: React.FC = () => {
   const { setWorkspaceFeatures } = useFeatureService();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
+  const hideOnboardingExperiment = useExperiment("onboarding.hideOnboarding", false);
 
   useEffect(() => {
     const outOfCredits =
@@ -66,9 +67,7 @@ const MainRoutes: React.FC = () => {
       cloudWorkspace.creditStatus === CreditStatus.NEGATIVE_MAX_THRESHOLD;
     // If the workspace is out of credits it doesn't allow creation of new connections
     // or syncing existing connections.
-    setWorkspaceFeatures(
-      outOfCredits ? ({ [FeatureItem.AllowCreateConnection]: false, [FeatureItem.AllowSync]: false } as FeatureSet) : []
-    );
+    setWorkspaceFeatures(outOfCredits ? ({ [FeatureItem.AllowSync]: false } as FeatureSet) : []);
     return () => {
       setWorkspaceFeatures(undefined);
     };
@@ -83,8 +82,11 @@ const MainRoutes: React.FC = () => {
   );
   useAnalyticsRegisterValues(analyticsContext);
 
-  const mainNavigate = workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections;
+  const mainNavigate =
+    workspace.displaySetupWizard && !hideOnboardingExperiment ? RoutePaths.Onboarding : RoutePaths.Connections;
 
+  // exp-speedy-connection
+  const { isExperimentVariant } = useExperimentSpeedyConnection();
   return (
     <ApiErrorBoundary>
       <Routes>
@@ -94,7 +96,7 @@ const MainRoutes: React.FC = () => {
         <Route path={`${RoutePaths.Settings}/*`} element={<CloudSettingsPage />} />
         <Route path={CloudRoutes.Credits} element={<CreditsPage />} />
 
-        {workspace.displaySetupWizard && (
+        {(workspace.displaySetupWizard || isExperimentVariant) && !hideOnboardingExperiment && (
           <Route
             path={RoutePaths.Onboarding}
             element={
@@ -113,7 +115,7 @@ const MainRoutes: React.FC = () => {
 const MainViewRoutes = () => {
   useApiHealthPoll();
   useIntercom();
-  const { query } = useRouter();
+  const query = useQuery<{ from: string }>();
 
   return (
     <Routes>
@@ -136,14 +138,13 @@ const MainViewRoutes = () => {
 };
 
 export const Routing: React.FC = () => {
-  const { user, inited } = useAuthService();
-  const config = useConfig();
-  useFullStory(config.fullstory, config.fullstory.enabled, user);
+  const { user, inited, providers } = useAuthService();
 
   const { search } = useLocation();
 
   useEffectOnce(() => {
     storeUtmFromQuery(search);
+    setSegmentAnonymousId(search);
   });
 
   const analyticsContext = useMemo(
@@ -155,9 +156,9 @@ export const Routing: React.FC = () => {
         : null,
     [user]
   );
+  useGetSegmentAnonymousId();
   useAnalyticsRegisterValues(analyticsContext);
-  useAnalyticsIdentifyUser(user?.userId);
-  useTrackPageAnalytics();
+  useAnalyticsIdentifyUser(user?.userId, { providers, email: user?.email });
 
   if (!inited) {
     return <LoadingPage />;

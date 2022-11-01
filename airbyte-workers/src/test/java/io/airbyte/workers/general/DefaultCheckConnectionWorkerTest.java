@@ -20,7 +20,6 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -28,12 +27,11 @@ import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.exception.WorkerException;
-import io.airbyte.workers.internal.AirbyteMessageUtils;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
+import io.airbyte.workers.test_utils.AirbyteMessageUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,7 +46,6 @@ class DefaultCheckConnectionWorkerTest {
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final JsonNode CREDS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
 
-  private WorkerConfigs workerConfigs;
   private Path jobRoot;
   private StandardCheckConnectionInput input;
   private IntegrationLauncher integrationLauncher;
@@ -59,7 +56,6 @@ class DefaultCheckConnectionWorkerTest {
 
   @BeforeEach
   void setup() throws IOException, WorkerException {
-    workerConfigs = WorkerConfigs.buildCheckWorkerConfigs(new EnvConfigs());
     input = new StandardCheckConnectionInput().withConnectionConfiguration(CREDS);
 
     jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "");
@@ -92,7 +88,7 @@ class DefaultCheckConnectionWorkerTest {
 
   @Test
   void testSuccessfulConnection() throws WorkerException {
-    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, successStreamFactory);
+    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, successStreamFactory);
     final ConnectorJobOutput output = worker.run(input, jobRoot);
 
     assertEquals(output.getOutputType(), OutputType.CHECK_CONNECTION);
@@ -105,7 +101,7 @@ class DefaultCheckConnectionWorkerTest {
 
   @Test
   void testFailedConnection() throws WorkerException {
-    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, failureStreamFactory);
+    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, failureStreamFactory);
     final ConnectorJobOutput output = worker.run(input, jobRoot);
 
     assertEquals(output.getOutputType(), OutputType.CHECK_CONNECTION);
@@ -120,7 +116,7 @@ class DefaultCheckConnectionWorkerTest {
   void testProcessFail() {
     when(process.exitValue()).thenReturn(1);
 
-    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, failureStreamFactory);
+    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, failureStreamFactory);
     assertThrows(WorkerException.class, () -> worker.run(input, jobRoot));
   }
 
@@ -128,7 +124,7 @@ class DefaultCheckConnectionWorkerTest {
   void testProcessFailWithTraceMessage() throws WorkerException {
     when(process.exitValue()).thenReturn(1);
 
-    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, traceMessageStreamFactory);
+    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, traceMessageStreamFactory);
     final ConnectorJobOutput output = worker.run(input, jobRoot);
 
     assertEquals(output.getOutputType(), OutputType.CHECK_CONNECTION);
@@ -142,14 +138,14 @@ class DefaultCheckConnectionWorkerTest {
   void testExceptionThrownInRun() throws WorkerException {
     doThrow(new RuntimeException()).when(integrationLauncher).check(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDS));
 
-    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, failureStreamFactory);
+    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, failureStreamFactory);
 
     assertThrows(WorkerException.class, () -> worker.run(input, jobRoot));
   }
 
   @Test
   void testCancel() throws WorkerException {
-    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, successStreamFactory);
+    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, successStreamFactory);
     worker.run(input, jobRoot);
 
     worker.cancel();

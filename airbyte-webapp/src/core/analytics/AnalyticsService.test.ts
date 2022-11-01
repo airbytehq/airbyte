@@ -10,6 +10,18 @@ describe("AnalyticsService", () => {
       identify: jest.fn(),
       page: jest.fn(),
       reset: jest.fn(),
+      user: jest.fn(),
+      setAnonymousId: jest.fn(),
+      init: jest.fn(),
+      use: jest.fn(),
+      addIntegration: jest.fn(),
+      load: jest.fn(),
+      trackLink: jest.fn(),
+      trackForm: jest.fn(),
+      ready: jest.fn(),
+      debug: jest.fn(),
+      on: jest.fn(),
+      timeout: jest.fn(),
     };
   });
 

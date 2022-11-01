@@ -17,6 +17,8 @@ dependencies {
     implementation 'org.apache.kafka:kafka-clients:2.8.0'
     implementation 'com.joestelmach:natty:0.11'
 
+    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
+
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-keen')
 

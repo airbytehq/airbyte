@@ -37,8 +37,6 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final NamingConventionTransformer nameTransformer;
 
-  private AirbyteMessage lastStateMessage = null;
-
   public KafkaRecordConsumer(final KafkaDestinationConfig kafkaDestinationConfig,
                              final ConfiguredAirbyteCatalog catalog,
                              final Consumer<AirbyteMessage> outputRecordCollector,
@@ -60,7 +58,7 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   @Override
   protected void acceptTracked(final AirbyteMessage airbyteMessage) {
     if (airbyteMessage.getType() == AirbyteMessage.Type.STATE) {
-      lastStateMessage = airbyteMessage;
+      outputRecordCollector.accept(airbyteMessage);
     } else if (airbyteMessage.getType() == AirbyteMessage.Type.RECORD) {
       final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
 
@@ -98,7 +96,6 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
     });
     if (sync) {
       producer.flush();
-      outputRecordCollector.accept(lastStateMessage);
     }
   }
 
@@ -106,7 +103,6 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   protected void close(final boolean hasFailed) {
     producer.flush();
     producer.close();
-    outputRecordCollector.accept(lastStateMessage);
   }
 
 }

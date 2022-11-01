@@ -145,18 +145,19 @@ class Users(SlackStream):
 
 
 # Incremental Streams
-def chunk_date_range(start_date: DateTime, interval=pendulum.duration(days=1)) -> Iterable[Period]:
+def chunk_date_range(start_date: DateTime, interval=pendulum.duration(days=1), end_date: Optional[DateTime] = None) -> Iterable[Period]:
     """
     Yields a list of the beginning and ending timestamps of each day between the start date and now.
     The return value is a pendulum.period
     """
 
-    now = pendulum.now()
+    end_date = end_date or pendulum.now()
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
-    while start_date <= now:
-        end_date = start_date + interval
-        yield pendulum.period(start_date, end_date)
-        start_date = end_date
+    chunk_start_date = start_date
+    while chunk_start_date < end_date:
+        chunk_end_date = min(chunk_start_date + interval, end_date)
+        yield pendulum.period(chunk_start_date, chunk_end_date)
+        chunk_start_date = chunk_end_date
 
 
 class IncrementalMessageStream(ChanneledStream, ABC):
@@ -164,8 +165,9 @@ class IncrementalMessageStream(ChanneledStream, ABC):
     cursor_field = "float_ts"
     primary_key = ["channel_id", "ts"]
 
-    def __init__(self, default_start_date: DateTime, **kwargs):
+    def __init__(self, default_start_date: DateTime, end_date: Optional[DateTime] = None, **kwargs):
         self._start_ts = default_start_date.timestamp()
+        self._end_ts = end_date and end_date.timestamp()
         self.set_sub_primary_key()
         super().__init__(**kwargs)
 
@@ -196,18 +198,40 @@ class IncrementalMessageStream(ChanneledStream, ABC):
 
         return current_stream_state
 
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        if not stream_slice:
+            # this is done to emit at least one state message when no slices are generated
+            return []
+        return super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
+
 
 class ChannelMessages(HttpSubStream, IncrementalMessageStream):
     def path(self, **kwargs) -> str:
         return "conversations.history"
 
+    @property
+    def use_cache(self) -> bool:
+        return True
+
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
         start_date = pendulum.from_timestamp(stream_state.get(self.cursor_field, self._start_ts))
+        end_date = self._end_ts and pendulum.from_timestamp(self._end_ts)
+        slice_yielded = False
         for parent_slice in super().stream_slices(sync_mode=SyncMode.full_refresh):
             channel = parent_slice["parent"]
-            for period in chunk_date_range(start_date):
+            for period in chunk_date_range(start_date=start_date, end_date=end_date):
                 yield {"channel": channel["id"], "oldest": period.start.timestamp(), "latest": period.end.timestamp()}
+                slice_yielded = True
+        if not slice_yielded:
+            # yield an empty slice to checkpoint state later
+            yield {}
 
 
 class Threads(IncrementalMessageStream):
@@ -222,16 +246,17 @@ class Threads(IncrementalMessageStream):
         """
         The logic for incrementally syncing threads is not very obvious, so buckle up.
 
-        To get all messages in a thread, one must specify the channel and timestamp of the parent (first) message of that thread, basically its ID.
+        To get all messages in a thread, one must specify the channel and timestamp of the parent (first) message of that thread,
+        basically its ID.
 
-        One complication is that threads can be updated at any time in the future. Therefore, if we wanted to comprehensively sync data i.e: get every
-        single response in a thread, we'd have to read every message in the slack instance every time we ran a sync, because otherwise there is no
-        way to guarantee that a thread deep in the past didn't receive a new message.
+        One complication is that threads can be updated at any time in the future. Therefore, if we wanted to comprehensively sync data
+        i.e: get every single response in a thread, we'd have to read every message in the slack instance every time we ran a sync,
+        because otherwise there is no way to guarantee that a thread deep in the past didn't receive a new message.
 
-        A pragmatic workaround is to say we want threads to be at least N days fresh i.e: look back N days into the past, get every message since,
-        and read all of the thread responses. This is essentially the approach we're taking here via slicing: create slices from N days into the
-        past and read all messages in threads since then. We could optionally filter out records we have already read, but that's omitted to keep
-        the logic simple to reason about.
+        A pragmatic workaround is to say we want threads to be at least N days fresh i.e: look back N days into the past,
+        get every message since, and read all of the thread responses. This is essentially the approach we're taking here via slicing:
+        create slices from N days into the past and read all messages in threads since then. We could optionally filter out records we have
+        already read, but that's omitted to keep the logic simple to reason about.
 
         Good luck.
         """
@@ -240,28 +265,36 @@ class Threads(IncrementalMessageStream):
         channels_stream = Channels(authenticator=self._session.auth, channel_filter=self.channel_filter)
 
         if self.cursor_field in stream_state:
-            # Since new messages can be posted to threads continuously after the parent message has been posted, we get messages from the latest date
+            # Since new messages can be posted to threads continuously after the parent message has been posted,
+            # we get messages from the latest date
             # found in the state minus X days to pick up any new messages in threads.
             # If there is state always use lookback
             messages_start_date = pendulum.from_timestamp(stream_state[self.cursor_field]) - self.messages_lookback_window
         else:
-            # If there is no state i.e: this is the first sync then there is no use for lookback, just get messages from the default start date
+            # If there is no state i.e: this is the first sync then there is no use for lookback, just get messages
+            # from the default start date
             messages_start_date = pendulum.from_timestamp(self._start_ts)
 
-        messages_stream = ChannelMessages(parent=channels_stream, authenticator=self._session.auth, default_start_date=messages_start_date)
+        messages_stream = ChannelMessages(
+            parent=channels_stream,
+            authenticator=self._session.auth,
+            default_start_date=messages_start_date,
+            end_date=self._end_ts and pendulum.from_timestamp(self._end_ts),
+        )
 
+        slice_yielded = False
         for message_chunk in messages_stream.stream_slices(stream_state={self.cursor_field: messages_start_date.timestamp()}):
             self.logger.info(f"Syncing replies {message_chunk}")
-
-            for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
-                message_chunk["channel"] = channel["id"]
-
-                for message in messages_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=message_chunk):
-                    yield {"channel": channel["id"], self.sub_primary_key_2: message[self.sub_primary_key_2]}
+            for message in messages_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=message_chunk):
+                yield {"channel": message_chunk["channel"], self.sub_primary_key_2: message[self.sub_primary_key_2]}
+                slice_yielded = True
+        if not slice_yielded:
+            # yield an empty slice to checkpoint state later
+            yield {}
 
     def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         """
-        Filtering already readed records for incremental sync. Copied state value to X after the last sync
+        Filtering already read records for incremental sync. Copied state value to X after the last sync
         to really 100% make sure no one can edit the state during the run.
         """
 
@@ -306,7 +339,7 @@ class SourceSlack(AbstractSource):
         if "api_token" in config:
             return TokenAuthenticator(config["api_token"])
 
-        credentials = config.get("credentials")
+        credentials = config.get("credentials", {})
         credentials_title = credentials.get("option_title")
         if credentials_title == "Default OAuth2.0 authorization":
             # We can get `refresh_token` only if the token rotation function is enabled for the Slack Oauth Application.
@@ -331,12 +364,19 @@ class SourceSlack(AbstractSource):
             users_stream = Users(authenticator=authenticator)
             next(users_stream.read_records(SyncMode.full_refresh))
             return True, None
-        except Exception:
-            return False, "There are no users in the given Slack instance or your token is incorrect"
+        except Exception as e:
+            return (
+                False,
+                f"Got an exception while trying to set up the connection: {e}. "
+                f"Most probably, there are no users in the given Slack instance or your token is incorrect",
+            )
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self._get_authenticator(config)
         default_start_date = pendulum.parse(config["start_date"])
+        # this field is not exposed to spec, used only for testing purposes
+        end_date = config.get("end_date")
+        end_date = end_date and pendulum.parse(end_date)
         threads_lookback_window = pendulum.Duration(days=config["lookback_window"])
         channel_filter = config["channel_filter"]
 
@@ -345,11 +385,16 @@ class SourceSlack(AbstractSource):
             channels,
             ChannelMembers(authenticator=authenticator, channel_filter=channel_filter),
             ChannelMessages(
-                parent=channels, authenticator=authenticator, default_start_date=default_start_date, channel_filter=channel_filter
+                parent=channels,
+                authenticator=authenticator,
+                default_start_date=default_start_date,
+                end_date=end_date,
+                channel_filter=channel_filter,
             ),
             Threads(
                 authenticator=authenticator,
                 default_start_date=default_start_date,
+                end_date=end_date,
                 lookback_window=threads_lookback_window,
                 channel_filter=channel_filter,
             ),

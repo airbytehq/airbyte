@@ -1,0 +1,29 @@
+@use "../../../../scss/colors";
+@use "../../../../scss/variables";
+
+.content {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-direction: row;
+  margin-top: variables.$spacing-lg;
+  gap: variables.$spacing-lg;
+  padding: variables.$spacing-sm;
+}
+
+.controlButton {
+  margin-left: variables.$spacing-md;
+}
+
+// currently only implemented on transformation view form card, margins are specific to that implementation
+// todo: standardize the margin sizes here
+.line {
+  min-width: 100%;
+  height: variables.$border-thin;
+  background: colors.$grey-100;
+  margin: variables.$spacing-lg -27px 0 -24px;
+}
+
+.buttonsContainer {
+  display: flex;
+}

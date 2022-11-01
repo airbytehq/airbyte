@@ -14,7 +14,7 @@ select
     HKD_special___characters,
     NZD,
     USD,
-    {{ quote('column`_\'with""_quotes') }},
+    {{ quote('column___with__quotes') }},
     datetime_tz,
     datetime_no_tz,
     time_tz,

@@ -94,7 +94,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   @Override
   protected JsonNode getConfig() throws Exception {
     return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, DB_NAME)
-        .put("schema", DB_NAME).put(JdbcUtils.TCP_PORT_KEY, 9000));
+        .put("schema", DB_NAME));
   }
 
   @Override

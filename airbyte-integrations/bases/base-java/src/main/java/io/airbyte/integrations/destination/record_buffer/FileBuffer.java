@@ -32,14 +32,23 @@ public class FileBuffer implements BufferStorage {
   public static final long MAX_TOTAL_BUFFER_SIZE_BYTES = 1024 * 1024 * 1024; // mb
   // we limit number of stream being buffered simultaneously anyway (limit how many files are
   // stored/open for writing)
-  public static final int MAX_CONCURRENT_STREAM_IN_BUFFER = 10;
+  public static final int DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER = 10;
 
   private final String fileExtension;
   private File tempFile;
   private OutputStream outputStream;
+  private final int maxConcurrentStreams;
 
   public FileBuffer(final String fileExtension) {
     this.fileExtension = fileExtension;
+    this.maxConcurrentStreams = DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
+    tempFile = null;
+    outputStream = null;
+  }
+
+  public FileBuffer(final String fileExtension, final int maxConcurrentStreams) {
+    this.fileExtension = fileExtension;
+    this.maxConcurrentStreams = maxConcurrentStreams;
     tempFile = null;
     outputStream = null;
   }
@@ -94,7 +103,7 @@ public class FileBuffer implements BufferStorage {
 
   @Override
   public int getMaxConcurrentStreamsInBuffer() {
-    return MAX_CONCURRENT_STREAM_IN_BUFFER;
+    return maxConcurrentStreams;
   }
 
 }

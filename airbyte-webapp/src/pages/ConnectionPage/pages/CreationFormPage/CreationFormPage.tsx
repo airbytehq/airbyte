@@ -1,30 +1,33 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { useLocation, useNavigate } from "react-router-dom";
 
-import { LoadingPage, PageTitle } from "components";
+import { LoadingPage } from "components";
+import { CloudInviteUsersHint } from "components/CloudInviteUsersHint";
+import { HeadTitle } from "components/common/HeadTitle";
 import ConnectionBlock from "components/ConnectionBlock";
 import { FormPageContent } from "components/ConnectorBlocks";
-import CreateConnectionContent from "components/CreateConnectionContent";
-import HeadTitle from "components/HeadTitle";
-import StepsMenu from "components/StepsMenu";
-
-import { useGetDestination } from "hooks/services/useDestinationHook";
-import { useGetSource } from "hooks/services/useSourceHook";
-import useRouter from "hooks/useRouter";
-import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
-import { useSourceDefinition } from "services/connector/SourceDefinitionService";
-import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
+import { CreateConnectionForm } from "components/CreateConnection/CreateConnectionForm";
+import { PageHeader } from "components/ui/PageHeader";
+import { StepsMenu } from "components/ui/StepsMenu";
 
 import {
   DestinationDefinitionRead,
   DestinationRead,
   SourceDefinitionRead,
   SourceRead,
-  WebBackendConnectionRead,
-} from "../../../../core/request/AirbyteClient";
-import { ConnectionCreateDestinationForm } from "./components/DestinationForm";
-import ExistingEntityForm from "./components/ExistingEntityForm";
-import { ConnectionCreateSourceForm } from "./components/SourceForm";
+} from "core/request/AirbyteClient";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
+import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
+import { useGetDestination } from "hooks/services/useDestinationHook";
+import { useGetSource } from "hooks/services/useSourceHook";
+import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
+import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
+
+import { ConnectionCreateDestinationForm } from "./ConnectionCreateDestinationForm";
+import { ConnectionCreateSourceForm } from "./ConnectionCreateSourceForm";
+import ExistingEntityForm from "./ExistingEntityForm";
 
 export enum StepsTypes {
   CREATE_ENTITY = "createEntity",
@@ -56,7 +59,7 @@ function usePreloadData(): {
   source?: SourceRead;
   destinationDefinition?: DestinationDefinitionRead;
 } {
-  const { location } = useRouter();
+  const location = useLocation();
 
   const source = useGetSource(hasSourceId(location.state) ? location.state.sourceId : null);
 
@@ -69,7 +72,10 @@ function usePreloadData(): {
 }
 
 export const CreationFormPage: React.FC = () => {
-  const { location, push } = useRouter();
+  useTrackPage(PageTrackingCodes.CONNECTIONS_NEW);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { clearAllFormChanges } = useFormChangeTrackerService();
 
   // TODO: Probably there is a better way to figure it out instead of just checking third elem
   const locationType = location.pathname.split("/")[3];
@@ -81,9 +87,12 @@ export const CreationFormPage: React.FC = () => {
       ? EntityStepsTypes.DESTINATION
       : EntityStepsTypes.SOURCE;
 
-  const hasConnectors = hasSourceId(location.state) && hasDestinationId(location.state);
   const [currentStep, setCurrentStep] = useState(
-    hasConnectors ? StepsTypes.CREATE_CONNECTION : StepsTypes.CREATE_ENTITY
+    hasSourceId(location.state) && hasDestinationId(location.state)
+      ? StepsTypes.CREATE_CONNECTION
+      : hasSourceId(location.state) && !hasDestinationId(location.state)
+      ? StepsTypes.CREATE_CONNECTOR
+      : StepsTypes.CREATE_ENTITY
   );
 
   const [currentEntityStep, setCurrentEntityStep] = useState(
@@ -93,7 +102,8 @@ export const CreationFormPage: React.FC = () => {
   const { destinationDefinition, sourceDefinition, source, destination } = usePreloadData();
 
   const onSelectExistingSource = (id: string) => {
-    push("", {
+    clearAllFormChanges();
+    navigate("", {
       state: {
         ...(location.state as Record<string, unknown>),
         sourceId: id,
@@ -104,7 +114,8 @@ export const CreationFormPage: React.FC = () => {
   };
 
   const onSelectExistingDestination = (id: string) => {
-    push("", {
+    clearAllFormChanges();
+    navigate("", {
       state: {
         ...(location.state as Record<string, unknown>),
         destinationId: id,
@@ -134,6 +145,7 @@ export const CreationFormPage: React.FC = () => {
                 }
               }}
             />
+            <CloudInviteUsersHint connectorType="source" />
           </>
         );
       } else if (currentEntityStep === EntityStepsTypes.DESTINATION) {
@@ -148,37 +160,18 @@ export const CreationFormPage: React.FC = () => {
                 setCurrentStep(StepsTypes.CREATE_CONNECTION);
               }}
             />
+            <CloudInviteUsersHint connectorType="destination" />
           </>
         );
       }
     }
-
-    const afterSubmitConnection = (connection: WebBackendConnectionRead) => {
-      switch (type) {
-        case EntityStepsTypes.DESTINATION:
-          push(`../${source?.sourceId}`);
-          break;
-        case EntityStepsTypes.SOURCE:
-          push(`../${destination?.destinationId}`);
-          break;
-        default:
-          push(`../${connection.connectionId}`);
-          break;
-      }
-    };
 
     if (!source || !destination) {
       console.error("unexpected state met");
       return <LoadingPage />;
     }
 
-    return (
-      <CreateConnectionContent
-        source={source}
-        destination={destination}
-        afterSubmitConnection={afterSubmitConnection}
-      />
-    );
+    return <CreateConnectionForm source={source} destination={destination} />;
   };
 
   const steps =
@@ -225,7 +218,7 @@ export const CreationFormPage: React.FC = () => {
     <>
       <HeadTitle titles={[{ id: "connection.newConnectionTitle" }]} />
       <ConnectorDocumentationWrapper>
-        <PageTitle
+        <PageHeader
           title={<FormattedMessage id={titleId} />}
           middleComponent={<StepsMenu lightMode data={steps} activeStep={currentStep} />}
         />

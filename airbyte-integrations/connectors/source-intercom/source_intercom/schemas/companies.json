@@ -45,22 +45,17 @@
           "type": "array",
           "items": {
             "type": ["null", "object"],
-            "anyOf": [
-              {
-                "type": "object",
-                "properties": {
-                  "type": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "integer"
-                  }
-                }
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "id": {
+                "type": "integer"
               }
-            ]
+            }
           }
         }
       }
@@ -75,19 +70,14 @@
           "type": "array",
           "items": {
             "type": ["null", "object"],
-            "anyOf": [
-              {
-                "type": "object",
-                "properties": {
-                  "type": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "string"
-                  }
-                }
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
               }
-            ]
+            }
           }
         }
       }

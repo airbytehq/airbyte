@@ -7,19 +7,19 @@ package io.airbyte.workers.run;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.temporal.TemporalClient;
+import io.airbyte.commons.temporal.TemporalJobType;
+import io.airbyte.commons.temporal.TemporalResponse;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
-import io.airbyte.scheduler.models.Job;
+import io.airbyte.persistence.job.models.Job;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.temporal.TemporalClient;
-import io.airbyte.workers.temporal.TemporalJobType;
-import io.airbyte.workers.temporal.TemporalResponse;
 import java.nio.file.Path;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -58,6 +58,7 @@ public class TemporalWorkerRunFactory {
             .withPrefix(resetConnection.getPrefix())
             .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
             .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
+            .withDestinationProtocolVersion(resetConnection.getDestinationProtocolVersion())
             .withSourceConfiguration(Jsons.emptyObject())
             .withDestinationConfiguration(resetConnection.getDestinationConfiguration())
             .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog())

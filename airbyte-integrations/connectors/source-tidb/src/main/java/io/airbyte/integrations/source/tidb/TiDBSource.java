@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TiDBSource.class);
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
   static final String DRIVER_CLASS = DatabaseDriver.MYSQL.getDriverClassName();
   public static final List<String> SSL_PARAMETERS = List.of(
@@ -73,6 +74,11 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
         "metrics_schema",
         "performance_schema",
         "mysql");
+  }
+
+  @Override
+  protected int getStateEmissionFrequency() {
+    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
   public static void main(final String[] args) throws Exception {

@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
@@ -29,6 +30,7 @@ import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.StreamDescriptor;
+import io.airbyte.protocol.models.SyncMode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -66,10 +68,12 @@ public class StreamStateManagerTest {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
         .withStreams(List.of(
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME1).withNamespace(NAMESPACE))
+                .withStream(new AirbyteStream().withName(STREAM_NAME1).withNamespace(NAMESPACE)
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)))
                 .withCursorField(List.of(CURSOR_FIELD1)),
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME2).withNamespace(NAMESPACE))));
+                .withStream(new AirbyteStream().withName(STREAM_NAME2).withNamespace(NAMESPACE)
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)))));
 
     final StateManager stateManager = new StreamStateManager(state, catalog);
 
@@ -89,13 +93,16 @@ public class StreamStateManagerTest {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
         .withStreams(List.of(
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME1).withNamespace(NAMESPACE))
+                .withStream(new AirbyteStream().withName(STREAM_NAME1).withNamespace(NAMESPACE)
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)))
                 .withCursorField(List.of(CURSOR_FIELD1)),
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME2).withNamespace(NAMESPACE))
+                .withStream(new AirbyteStream().withName(STREAM_NAME2).withNamespace(NAMESPACE)
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)))
                 .withCursorField(List.of(CURSOR_FIELD2)),
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME3).withNamespace(NAMESPACE))));
+                .withStream(new AirbyteStream().withName(STREAM_NAME3).withNamespace(NAMESPACE)
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)))));
 
     final StateManager stateManager = new StreamStateManager(createDefaultState(), catalog);
 
@@ -106,7 +113,8 @@ public class StreamStateManagerTest {
                 .withStreamName(STREAM_NAME1)
                 .withStreamNamespace(NAMESPACE)
                 .withCursorField(List.of(CURSOR_FIELD1))
-                .withCursor("a"),
+                .withCursor("a")
+                .withCursorRecordCount(1L),
             new DbStreamState()
                 .withStreamName(STREAM_NAME2)
                 .withStreamNamespace(NAMESPACE)
@@ -150,13 +158,16 @@ public class StreamStateManagerTest {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
         .withStreams(List.of(
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME1).withNamespace(NAMESPACE))
+                .withStream(new AirbyteStream().withName(STREAM_NAME1).withNamespace(NAMESPACE)
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)))
                 .withCursorField(List.of(CURSOR_FIELD1)),
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME2).withNamespace(NAMESPACE))
+                .withStream(new AirbyteStream().withName(STREAM_NAME2).withNamespace(NAMESPACE)
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)))
                 .withCursorField(List.of(CURSOR_FIELD2)),
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME3).withNamespace(NAMESPACE))));
+                .withStream(new AirbyteStream().withName(STREAM_NAME3).withNamespace(NAMESPACE)
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)))));
     final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair = new AirbyteStreamNameNamespacePair("other", "other");
 
     final StateManager stateManager = new StreamStateManager(createDefaultState(), catalog);
@@ -171,13 +182,16 @@ public class StreamStateManagerTest {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
         .withStreams(List.of(
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME1).withNamespace(NAMESPACE))
+                .withStream(new AirbyteStream().withName(STREAM_NAME1).withNamespace(NAMESPACE)
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)))
                 .withCursorField(List.of(CURSOR_FIELD1)),
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME2).withNamespace(NAMESPACE))
+                .withStream(new AirbyteStream().withName(STREAM_NAME2).withNamespace(NAMESPACE)
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)))
                 .withCursorField(List.of(CURSOR_FIELD2)),
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME3).withNamespace(NAMESPACE))));
+                .withStream(new AirbyteStream().withName(STREAM_NAME3).withNamespace(NAMESPACE)
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)))));
 
     final StateManager stateManager = new StreamStateManager(createDefaultState(), catalog);
     final AirbyteStateMessage airbyteStateMessage = stateManager.toState(Optional.empty());
@@ -192,10 +206,12 @@ public class StreamStateManagerTest {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
         .withStreams(List.of(
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME1).withNamespace(NAMESPACE))
+                .withStream(new AirbyteStream().withName(STREAM_NAME1).withNamespace(NAMESPACE)
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)))
                 .withCursorField(List.of(CURSOR_FIELD1)),
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME2).withNamespace(NAMESPACE))));
+                .withStream(new AirbyteStream().withName(STREAM_NAME2).withNamespace(NAMESPACE)
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)))));
     final StateManager stateManager = new StreamStateManager(createDefaultState(), catalog);
 
     final DbState expectedFirstDbState = new DbState()

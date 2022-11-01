@@ -2,10 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import socket
 import sys
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from typing import Any, Iterator, Mapping, Optional
+from urllib.error import URLError
 
 import backoff
 import pendulum
@@ -69,7 +71,7 @@ class Client:
             auth_creds["client_secret"] = client_secret
         return OAuthWebAuthCodeGrant(**auth_creds)
 
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=4)
     def _get_auth_data(self, customer_id: str = None, account_id: Optional[str] = None) -> AuthorizationData:
         return AuthorizationData(
             account_id=account_id,
@@ -94,6 +96,9 @@ class Client:
         return False if token_updated_expires_in > self.refresh_token_safe_delta else True
 
     def should_retry(self, error: WebFault) -> bool:
+        if isinstance(error, URLError) and isinstance(error.reason, socket.timeout):
+            return False
+
         error_code = str(errorcode_of_exception(error))
         give_up = error_code not in self.retry_on_codes
         if give_up:
@@ -112,7 +117,7 @@ class Client:
     def request(self, **kwargs: Mapping[str, Any]) -> Mapping[str, Any]:
         return backoff.on_exception(
             backoff.expo,
-            WebFault,
+            (WebFault, URLError),
             max_tries=self.max_retries,
             factor=self.retry_factor,
             jitter=None,
@@ -142,7 +147,7 @@ class Client:
 
         return getattr(service, operation_name)(**params)
 
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=4)
     def get_service(
         self,
         service_name: str,
@@ -156,7 +161,7 @@ class Client:
             environment=self.environment,
         )
 
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=4)
     def _get_reporting_service(
         self,
         customer_id: Optional[str] = None,

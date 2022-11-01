@@ -1,16 +1,15 @@
 import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useEffectOnce } from "react-use";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
-import { Button } from "components";
-import ApiErrorBoundary from "components/ApiErrorBoundary";
-import HeadTitle from "components/HeadTitle";
+import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
+import { HeadTitle } from "components/common/HeadTitle";
 import LoadingPage from "components/LoadingPage";
+import { Button } from "components/ui/Button";
 
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import useWorkspace from "hooks/services/useWorkspace";
-import useRouterHook from "hooks/useRouter";
 import { useCurrentWorkspaceState } from "services/workspaces/WorkspacesService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
@@ -29,7 +28,7 @@ import useGetStepsConfig from "./useStepsConfig";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;
-  max-width: ${({ big, medium }) => (big ? 1140 : medium ? 730 : 550)}px;
+  max-width: ${({ big, medium }) => (big ? 1279 : medium ? 730 : 550)}px;
   margin: 0 auto;
   padding: 75px 0 30px;
   display: flex;
@@ -37,7 +36,6 @@ const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   align-items: center;
   min-height: 100%;
   position: relative;
-  z-index: 2;
 `;
 
 const Footer = styled.div`
@@ -47,7 +45,6 @@ const Footer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px 0;
 `;
 
 const ScreenContent = styled.div`
@@ -62,12 +59,9 @@ const TITLE_BY_STEP: Partial<Record<StepType, string>> = {
 };
 
 const OnboardingPage: React.FC = () => {
-  const analyticsService = useAnalyticsService();
-  const { push } = useRouterHook();
+  useTrackPage(PageTrackingCodes.ONBOARDING);
 
-  useEffectOnce(() => {
-    analyticsService.page("Onboarding Page");
-  });
+  const navigate = useNavigate();
 
   const { finishOnboarding } = useWorkspace();
   const { hasConnections, hasDestinations, hasSources } = useCurrentWorkspaceState();
@@ -88,7 +82,7 @@ const OnboardingPage: React.FC = () => {
 
   const handleFinishOnboarding = () => {
     finishOnboarding(currentStep);
-    push(RoutePaths.Connections);
+    navigate(RoutePaths.Connections);
   };
 
   return (
@@ -151,12 +145,10 @@ const OnboardingPage: React.FC = () => {
             </ApiErrorBoundary>
           </Suspense>
           <Footer>
-            <Button secondary onClick={() => handleFinishOnboarding()}>
-              {currentStep === StepType.FINAL ? (
-                <FormattedMessage id="onboarding.closeOnboarding" />
-              ) : (
-                <FormattedMessage id="onboarding.skipOnboarding" />
-              )}
+            <Button variant="secondary" onClick={handleFinishOnboarding}>
+              <FormattedMessage
+                id={currentStep === StepType.FINAL ? "onboarding.closeOnboarding" : "onboarding.skipOnboarding"}
+              />
             </Button>
           </Footer>
         </Content>
