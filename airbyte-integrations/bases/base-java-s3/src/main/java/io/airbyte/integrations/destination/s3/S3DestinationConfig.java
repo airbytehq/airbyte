@@ -13,6 +13,7 @@ import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_BU
 import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_REGION;
 import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_ENDPOINT;
 import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_PATH_FORMAT;
+import static io.airbyte.integrations.destination.s3.constant.S3Constants.PATH_STYLE_ACCESS_ENABLED;
 
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
@@ -56,6 +57,8 @@ public class S3DestinationConfig {
 
   private int uploadThreadsCount = S3StorageOperations.DEFAULT_UPLOAD_THREADS;
 
+  private boolean pathStyleAccessEnabled = true;
+
   public S3DestinationConfig(final String endpoint,
                              final String bucketName,
                              final String bucketPath,
@@ -84,7 +87,8 @@ public class S3DestinationConfig {
                              final AmazonS3 s3Client,
                              final String fileNamePattern,
                              final boolean checkIntegrity,
-                             final int uploadThreadsCount) {
+                             final int uploadThreadsCount,
+                             final boolean pathStyleAccessEnabled) {
     this.endpoint = endpoint;
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
@@ -96,6 +100,7 @@ public class S3DestinationConfig {
     this.fileNamePattern = fileNamePattern;
     this.checkIntegrity = checkIntegrity;
     this.uploadThreadsCount = uploadThreadsCount;
+    this.pathStyleAccessEnabled = pathStyleAccessEnabled;
   }
 
   public static Builder create(final String bucketName, final String bucketPath, final String bucketRegion) {
@@ -145,6 +150,9 @@ public class S3DestinationConfig {
       default -> {
         if (config.has(S_3_ENDPOINT)) {
           builder = builder.withEndpoint(config.get(S_3_ENDPOINT).asText());
+        }
+        if (config.has(PATH_STYLE_ACCESS_ENABLED)) {
+          builder = builder.withPathStyleAccessEnabled(config.get(PATH_STYLE_ACCESS_ENABLED).asBoolean());
         }
       }
     }
@@ -215,6 +223,10 @@ public class S3DestinationConfig {
     return uploadThreadsCount;
   }
 
+  public boolean isPathStyleAccessEnabled() {
+    return pathStyleAccessEnabled;
+  }
+
   public AmazonS3 getS3Client() {
     synchronized (lock) {
       if (s3Client == null) {
@@ -259,7 +271,7 @@ public class S3DestinationConfig {
 
     return AmazonS3ClientBuilder.standard()
         .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, bucketRegion))
-        .withPathStyleAccessEnabled(true)
+        .withPathStyleAccessEnabled(pathStyleAccessEnabled)
         .withClientConfiguration(clientConfiguration)
         .withCredentials(credentialsProvider)
         .build();
@@ -301,6 +313,8 @@ public class S3DestinationConfig {
     private boolean checkIntegrity = true;
 
     private int uploadThreadsCount = S3StorageOperations.DEFAULT_UPLOAD_THREADS;
+
+    private boolean pathStyleAccessEnabled = true;
 
     protected Builder(final String bucketName, final String bucketPath, final String bucketRegion) {
       this.bucketName = bucketName;
@@ -368,6 +382,11 @@ public class S3DestinationConfig {
       return this;
     }
 
+    public Builder withPathStyleAccessEnabled(final boolean pathStyleAccessEnabled) {
+      this.pathStyleAccessEnabled = pathStyleAccessEnabled;
+      return this;
+    }
+
     public S3DestinationConfig get() {
       return new S3DestinationConfig(
           endpoint,
@@ -380,7 +399,8 @@ public class S3DestinationConfig {
           s3Client,
           fileNamePattern,
           checkIntegrity,
-          uploadThreadsCount);
+          uploadThreadsCount,
+          pathStyleAccessEnabled);
     }
 
   }
