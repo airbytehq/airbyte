@@ -354,8 +354,7 @@ class JobCreationAndStatusUpdateActivityTest {
     void setJobSuccess() throws IOException {
       jobCreationAndStatusUpdateActivity.jobSuccess(new JobSuccessInput(JOB_ID, ATTEMPT_ID, CONNECTION_ID, standardSyncOutput));
 
-      verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput, jobOutput.getSync().getStandardSyncSummary().getTotalStats(),
-          jobOutput.getSync().getNormalizationSummary());
+      verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput);
       verify(mJobPersistence).succeedAttempt(JOB_ID, ATTEMPT_ID);
       verify(mJobNotifier).successJob(Mockito.any());
       verify(mJobtracker).trackSync(Mockito.any(), eq(JobState.SUCCEEDED));
@@ -421,8 +420,7 @@ class JobCreationAndStatusUpdateActivityTest {
           .attemptFailure(new AttemptFailureInput(JOB_ID, ATTEMPT_ID, CONNECTION_ID, standardSyncOutput, failureSummary));
 
       verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
-      verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput, jobOutput.getSync().getStandardSyncSummary().getTotalStats(),
-          jobOutput.getSync().getNormalizationSummary());
+      verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput);
       verify(mJobPersistence).writeAttemptFailureSummary(JOB_ID, ATTEMPT_ID, failureSummary);
     }
 

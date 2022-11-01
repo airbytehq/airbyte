@@ -331,6 +331,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                             | Subject                                          |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------|
+| 1.0.17  | 2022-10-31 | [18538](https://github.com/airbytehq/airbyte/pull/18538)   | Encode database name                           |
 | 1.0.16  | 2022-10-25 | [18256](https://github.com/airbytehq/airbyte/pull/18256)   | Disable allow and prefer ssl modes in CDC mode |
 |         | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238)   | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
 | 1.0.15  | 2022-10-11 | [17782](https://github.com/airbytehq/airbyte/pull/17782)   | Align with Postgres source v.1.0.15              |
