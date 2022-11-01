@@ -50,7 +50,6 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
 import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.config.helpers.ScheduleHelpers;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
@@ -62,8 +61,6 @@ import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -87,27 +84,22 @@ import org.slf4j.LoggerFactory;
 public class DatabaseConfigPersistence implements ConfigPersistence {
 
   private final ExceptionWrappingDatabase database;
-  private final JsonSecretsProcessor jsonSecretsProcessor;
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseConfigPersistence.class);
   private static final String UNKNOWN_CONFIG_TYPE = "Unknown Config Type ";
-  private static final String NOT_FOUND = " not found";
 
   /**
    * Entrypoint into DatabaseConfigPersistence. Except in testing, we should never be using it without
    * it being decorated with validation classes.
    *
    * @param database - database where configs are stored
-   * @param jsonSecretsProcessor - for filtering secrets in export
    * @return database config persistence wrapped in validation decorators
    */
-  public static ConfigPersistence createWithValidation(final Database database,
-                                                       final JsonSecretsProcessor jsonSecretsProcessor) {
-    return new ValidatingConfigPersistence(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
+  public static ConfigPersistence createWithValidation(final Database database) {
+    return new ValidatingConfigPersistence(new DatabaseConfigPersistence(database));
   }
 
-  public DatabaseConfigPersistence(final Database database, final JsonSecretsProcessor jsonSecretsProcessor) {
+  public DatabaseConfigPersistence(final Database database) {
     this.database = new ExceptionWrappingDatabase(database);
-    this.jsonSecretsProcessor = jsonSecretsProcessor;
   }
 
   @Override
@@ -1372,270 +1364,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       deleteConfig(CONNECTION, CONNECTION.ID, connectionId, ctx);
       return null;
     });
-  }
-
-  @Override
-  public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
-    if (dryRun) {
-      return;
-    }
-
-    LOGGER.info("Replacing all configs");
-    final Set<AirbyteConfig> originalConfigs = new HashSet<>(configs.keySet());
-    database.transaction(ctx -> {
-      ctx.truncate(WORKSPACE).restartIdentity().cascade().execute();
-      ctx.truncate(ACTOR_DEFINITION).restartIdentity().cascade().execute();
-      ctx.truncate(ACTOR).restartIdentity().cascade().execute();
-      ctx.truncate(ACTOR_OAUTH_PARAMETER).restartIdentity().cascade().execute();
-      ctx.truncate(OPERATION).restartIdentity().cascade().execute();
-      ctx.truncate(CONNECTION).restartIdentity().cascade().execute();
-      ctx.truncate(CONNECTION_OPERATION).restartIdentity().cascade().execute();
-      ctx.truncate(STATE).restartIdentity().cascade().execute();
-      ctx.truncate(ACTOR_CATALOG).restartIdentity().cascade().execute();
-      ctx.truncate(ACTOR_CATALOG_FETCH_EVENT).restartIdentity().cascade().execute();
-      ctx.truncate(WORKSPACE_SERVICE_ACCOUNT).restartIdentity().cascade().execute();
-
-      if (configs.containsKey(ConfigSchema.STANDARD_WORKSPACE)) {
-        configs.get(ConfigSchema.STANDARD_WORKSPACE).map(c -> (StandardWorkspace) c)
-            .forEach(c -> writeStandardWorkspace(Collections.singletonList(c), ctx));
-        originalConfigs.remove(ConfigSchema.STANDARD_WORKSPACE);
-      } else {
-        LOGGER.warn(ConfigSchema.STANDARD_WORKSPACE + NOT_FOUND);
-      }
-      if (configs.containsKey(ConfigSchema.STANDARD_SOURCE_DEFINITION)) {
-        configs.get(ConfigSchema.STANDARD_SOURCE_DEFINITION).map(c -> (StandardSourceDefinition) c)
-            .forEach(c -> ConfigWriter.writeStandardSourceDefinition(Collections.singletonList(c), ctx));
-        originalConfigs.remove(ConfigSchema.STANDARD_SOURCE_DEFINITION);
-      } else {
-        LOGGER.warn(ConfigSchema.STANDARD_SOURCE_DEFINITION + NOT_FOUND);
-      }
-
-      if (configs.containsKey(ConfigSchema.STANDARD_DESTINATION_DEFINITION)) {
-        configs.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION).map(c -> (StandardDestinationDefinition) c)
-            .forEach(c -> ConfigWriter.writeStandardDestinationDefinition(Collections.singletonList(c), ctx));
-        originalConfigs.remove(ConfigSchema.STANDARD_DESTINATION_DEFINITION);
-      } else {
-        LOGGER.warn(ConfigSchema.STANDARD_DESTINATION_DEFINITION + NOT_FOUND);
-      }
-
-      if (configs.containsKey(ConfigSchema.SOURCE_CONNECTION)) {
-        configs.get(ConfigSchema.SOURCE_CONNECTION).map(c -> (SourceConnection) c)
-            .forEach(c -> writeSourceConnection(Collections.singletonList(c), ctx));
-        originalConfigs.remove(ConfigSchema.SOURCE_CONNECTION);
-      } else {
-        LOGGER.warn(ConfigSchema.SOURCE_CONNECTION + NOT_FOUND);
-      }
-
-      if (configs.containsKey(ConfigSchema.DESTINATION_CONNECTION)) {
-        configs.get(ConfigSchema.DESTINATION_CONNECTION).map(c -> (DestinationConnection) c)
-            .forEach(c -> writeDestinationConnection(Collections.singletonList(c), ctx));
-        originalConfigs.remove(ConfigSchema.DESTINATION_CONNECTION);
-      } else {
-        LOGGER.warn(ConfigSchema.DESTINATION_CONNECTION + NOT_FOUND);
-      }
-
-      if (configs.containsKey(ConfigSchema.SOURCE_OAUTH_PARAM)) {
-        configs.get(ConfigSchema.SOURCE_OAUTH_PARAM).map(c -> (SourceOAuthParameter) c)
-            .forEach(c -> writeSourceOauthParameter(Collections.singletonList(c), ctx));
-        originalConfigs.remove(ConfigSchema.SOURCE_OAUTH_PARAM);
-      } else {
-        LOGGER.warn(ConfigSchema.SOURCE_OAUTH_PARAM + NOT_FOUND);
-      }
-
-      if (configs.containsKey(ConfigSchema.DESTINATION_OAUTH_PARAM)) {
-        configs.get(ConfigSchema.DESTINATION_OAUTH_PARAM).map(c -> (DestinationOAuthParameter) c)
-            .forEach(c -> writeDestinationOauthParameter(Collections.singletonList(c), ctx));
-        originalConfigs.remove(ConfigSchema.DESTINATION_OAUTH_PARAM);
-      } else {
-        LOGGER.warn(ConfigSchema.DESTINATION_OAUTH_PARAM + NOT_FOUND);
-      }
-
-      if (configs.containsKey(ConfigSchema.STANDARD_SYNC_OPERATION)) {
-        configs.get(ConfigSchema.STANDARD_SYNC_OPERATION).map(c -> (StandardSyncOperation) c)
-            .forEach(c -> writeStandardSyncOperation(Collections.singletonList(c), ctx));
-        originalConfigs.remove(ConfigSchema.STANDARD_SYNC_OPERATION);
-      } else {
-        LOGGER.warn(ConfigSchema.STANDARD_SYNC_OPERATION + NOT_FOUND);
-      }
-
-      if (configs.containsKey(ConfigSchema.ACTOR_CATALOG)) {
-        configs.get(ConfigSchema.ACTOR_CATALOG).map(c -> (ActorCatalog) c)
-            .forEach(c -> writeActorCatalog(Collections.singletonList(c), ctx));
-        originalConfigs.remove(ConfigSchema.ACTOR_CATALOG);
-      } else {
-        LOGGER.warn(ConfigSchema.ACTOR_CATALOG + NOT_FOUND);
-      }
-      if (configs.containsKey(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT)) {
-        configs.get(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT).map(c -> (ActorCatalogFetchEvent) c)
-            .forEach(c -> writeActorCatalogFetchEvent(Collections.singletonList(c), ctx));
-        originalConfigs.remove(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT);
-      } else {
-        LOGGER.warn(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT + NOT_FOUND);
-      }
-
-      // Syncs need to be imported after Actor Catalogs as they have a foreign key association with Actor
-      // Catalogs.
-      // e.g. They reference catalogs and thus catalogs need to exist before or the insert will fail.
-      if (configs.containsKey(ConfigSchema.STANDARD_SYNC)) {
-        configs.get(ConfigSchema.STANDARD_SYNC).map(c -> (StandardSync) c).forEach(c -> writeStandardSync(Collections.singletonList(c), ctx));
-        originalConfigs.remove(ConfigSchema.STANDARD_SYNC);
-      } else {
-        LOGGER.warn(ConfigSchema.STANDARD_SYNC + NOT_FOUND);
-      }
-
-      if (configs.containsKey(ConfigSchema.STANDARD_SYNC_STATE)) {
-        configs.get(ConfigSchema.STANDARD_SYNC_STATE).map(c -> (StandardSyncState) c)
-            .forEach(c -> writeStandardSyncState(Collections.singletonList(c), ctx));
-        originalConfigs.remove(ConfigSchema.STANDARD_SYNC_STATE);
-      } else {
-        LOGGER.warn(ConfigSchema.STANDARD_SYNC_STATE + NOT_FOUND);
-      }
-
-      if (!originalConfigs.isEmpty()) {
-        originalConfigs.forEach(c -> LOGGER.warn("Unknown Config " + c + " ignored"));
-      }
-
-      return null;
-    });
-
-    LOGGER.info("Config database is reset");
-  }
-
-  @Override
-  public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
-    LOGGER.info("Exporting all configs...");
-
-    final Map<String, Stream<JsonNode>> result = new HashMap<>();
-    final List<ConfigWithMetadata<StandardWorkspace>> standardWorkspaceWithMetadata = listStandardWorkspaceWithMetadata();
-    if (!standardWorkspaceWithMetadata.isEmpty()) {
-      result.put(ConfigSchema.STANDARD_WORKSPACE.name(),
-          standardWorkspaceWithMetadata
-              .stream()
-              .map(ConfigWithMetadata::getConfig)
-              .map(Jsons::jsonNode));
-    }
-    final List<ConfigWithMetadata<StandardSourceDefinition>> standardSourceDefinitionWithMetadata = listStandardSourceDefinitionWithMetadata();
-    if (!standardSourceDefinitionWithMetadata.isEmpty()) {
-      result.put(ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
-          standardSourceDefinitionWithMetadata
-              .stream()
-              .map(ConfigWithMetadata::getConfig)
-              .map(Jsons::jsonNode));
-    }
-    final List<ConfigWithMetadata<StandardDestinationDefinition>> standardDestinationDefinitionWithMetadata =
-        listStandardDestinationDefinitionWithMetadata();
-    if (!standardDestinationDefinitionWithMetadata.isEmpty()) {
-      result.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(),
-          standardDestinationDefinitionWithMetadata
-              .stream()
-              .map(ConfigWithMetadata::getConfig)
-              .map(Jsons::jsonNode));
-    }
-    final List<ConfigWithMetadata<SourceConnection>> sourceConnectionWithMetadata = listSourceConnectionWithMetadata();
-    if (!sourceConnectionWithMetadata.isEmpty()) {
-      result.put(ConfigSchema.SOURCE_CONNECTION.name(),
-          sourceConnectionWithMetadata
-              .stream()
-              .map(configWithMetadata -> {
-                try {
-                  final UUID sourceDefinitionId = configWithMetadata.getConfig().getSourceDefinitionId();
-                  final StandardSourceDefinition standardSourceDefinition = getConfig(
-                      ConfigSchema.STANDARD_SOURCE_DEFINITION,
-                      sourceDefinitionId.toString(),
-                      StandardSourceDefinition.class);
-
-                  final JsonNode connectionSpecs = standardSourceDefinition.getSpec().getConnectionSpecification();
-                  final JsonNode sanitizedConfig =
-                      jsonSecretsProcessor.prepareSecretsForOutput(configWithMetadata.getConfig().getConfiguration(), connectionSpecs);
-
-                  configWithMetadata.getConfig().setConfiguration(sanitizedConfig);
-                  return Jsons.jsonNode(configWithMetadata.getConfig());
-                } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
-                  throw new RuntimeException(e);
-                }
-              }));
-    }
-    final List<ConfigWithMetadata<DestinationConnection>> destinationConnectionWithMetadata = listDestinationConnectionWithMetadata();
-    if (!destinationConnectionWithMetadata.isEmpty()) {
-      final Stream<JsonNode> jsonNodeStream = destinationConnectionWithMetadata
-          .stream()
-          .map(configWithMetadata -> {
-            try {
-              final UUID destinationDefinition = configWithMetadata.getConfig().getDestinationDefinitionId();
-              final StandardDestinationDefinition standardDestinationDefinition = getConfig(
-                  ConfigSchema.STANDARD_DESTINATION_DEFINITION,
-                  destinationDefinition.toString(),
-                  StandardDestinationDefinition.class);
-              final JsonNode connectionSpecs = standardDestinationDefinition.getSpec().getConnectionSpecification();
-              final JsonNode sanitizedConfig =
-                  jsonSecretsProcessor.prepareSecretsForOutput(configWithMetadata.getConfig().getConfiguration(), connectionSpecs);
-
-              configWithMetadata.getConfig().setConfiguration(sanitizedConfig);
-              return Jsons.jsonNode(configWithMetadata.getConfig());
-            } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
-              throw new RuntimeException(e);
-            }
-          });
-      result.put(ConfigSchema.DESTINATION_CONNECTION.name(), jsonNodeStream);
-
-    }
-    final List<ConfigWithMetadata<SourceOAuthParameter>> sourceOauthParamWithMetadata = listSourceOauthParamWithMetadata();
-    if (!sourceOauthParamWithMetadata.isEmpty()) {
-      result.put(ConfigSchema.SOURCE_OAUTH_PARAM.name(),
-          sourceOauthParamWithMetadata
-              .stream()
-              .map(ConfigWithMetadata::getConfig)
-              .map(Jsons::jsonNode));
-    }
-    final List<ConfigWithMetadata<DestinationOAuthParameter>> destinationOauthParamWithMetadata = listDestinationOauthParamWithMetadata();
-    if (!destinationOauthParamWithMetadata.isEmpty()) {
-      result.put(ConfigSchema.DESTINATION_OAUTH_PARAM.name(),
-          destinationOauthParamWithMetadata
-              .stream()
-              .map(ConfigWithMetadata::getConfig)
-              .map(Jsons::jsonNode));
-    }
-    final List<ConfigWithMetadata<StandardSyncOperation>> standardSyncOperationWithMetadata = listStandardSyncOperationWithMetadata();
-    if (!standardSyncOperationWithMetadata.isEmpty()) {
-      result.put(ConfigSchema.STANDARD_SYNC_OPERATION.name(),
-          standardSyncOperationWithMetadata
-              .stream()
-              .map(ConfigWithMetadata::getConfig)
-              .map(Jsons::jsonNode));
-    }
-    final List<ConfigWithMetadata<StandardSync>> standardSyncWithMetadata = listStandardSyncWithMetadata();
-    if (!standardSyncWithMetadata.isEmpty()) {
-      result.put(ConfigSchema.STANDARD_SYNC.name(),
-          standardSyncWithMetadata
-              .stream()
-              .map(ConfigWithMetadata::getConfig)
-              .map(Jsons::jsonNode));
-    }
-    final List<ConfigWithMetadata<StandardSyncState>> standardSyncStateWithMetadata = listStandardSyncStateWithMetadata();
-    if (!standardSyncStateWithMetadata.isEmpty()) {
-      result.put(ConfigSchema.STANDARD_SYNC_STATE.name(),
-          standardSyncStateWithMetadata
-              .stream()
-              .map(ConfigWithMetadata::getConfig)
-              .map(Jsons::jsonNode));
-    }
-    final List<ConfigWithMetadata<ActorCatalog>> actorCatalogWithMetadata = listActorCatalogWithMetadata();
-    if (!actorCatalogWithMetadata.isEmpty()) {
-      result.put(ConfigSchema.ACTOR_CATALOG.name(),
-          actorCatalogWithMetadata
-              .stream()
-              .map(ConfigWithMetadata::getConfig)
-              .map(Jsons::jsonNode));
-    }
-    final List<ConfigWithMetadata<ActorCatalogFetchEvent>> actorCatalogFetchEventWithMetadata = listActorCatalogFetchEventWithMetadata();
-    if (!actorCatalogFetchEventWithMetadata.isEmpty()) {
-      result.put(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT.name(),
-          actorCatalogFetchEventWithMetadata
-              .stream()
-              .map(ConfigWithMetadata::getConfig)
-              .map(Jsons::jsonNode));
-    }
-    return result;
   }
 
   @VisibleForTesting
