@@ -38,6 +38,4 @@ public interface ConfigPersistence {
 
   Map<String, Stream<JsonNode>> dumpConfigs() throws IOException;
 
-  void loadData(ConfigPersistence seedPersistence) throws IOException;
-
 }
