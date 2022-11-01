@@ -45,6 +45,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Commercetools](sources/commercetools.md)                                                   | Alpha                 | No                  |
 | [Confluence](sources/confluence.md)                                                         | Alpha                 | No                  |
 | [Courier](sources/courier.md)                                                               | Alpha                 | No                  |
+| [Copper](sources/copper.md)                                                                 | Alpha                 | No                  |
 | [Customer.io](sources/customer-io.md)                                                       | Alpha                 | No                  |
 | [Db2](sources/db2.md)                                                                       | Alpha                 | No                  |
 | [Delighted](sources/delighted.md)                                                           | Alpha                 | Yes                 |
@@ -174,7 +175,6 @@ For more information about the grading system, see [Product Release Stages](http
 | [WooCommerce](sources/woocommerce.md)                                                       | Alpha                 | No                  |
 | [Wordpress](sources/wordpress.md)                                                           | Alpha                 | No                  |
 | [Wrike](sources/wrike.md)                                                                   | Alpha                 | No                  |
-| [Younium](sources/younium.md)                                                               | Alpha                 | No                  |
 | [YouTube Analytics](sources/youtube-analytics.md)                                           | Beta                  | Yes                 |
 | [Xkcd](sources/xkcd.md)                                                                     | Alpha                 | No                  |
 | [Zencart](sources/zencart.md)                                                               | Alpha                 | No                  |
