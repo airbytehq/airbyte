@@ -9,7 +9,7 @@ RUN apk --no-cache upgrade \
     && pip install --upgrade pip \
     && apk --no-cache add tzdata build-base
 
-COPY ./airbyte-integrations/bases/source-acceptance-test/setup.py ./
+COPY setup.py ./
 # install necessary packages to a temporary folder
 RUN python setup.py egg_info
 RUN pip install --prefix=/install -r *.egg-info/requires.txt
@@ -29,9 +29,8 @@ RUN apk --no-cache add bash
 ENV ACCEPTANCE_TEST_DOCKER_CONTAINER 1
 
 # copy payload code only
-COPY ./airbyte-integrations/bases/source-acceptance-test/pytest.ini ./
-COPY ./airbyte-integrations/bases/source-acceptance-test/setup.py ./
-COPY ./airbyte-integrations/bases/source-acceptance-test/source_acceptance_test ./source_acceptance_test
+COPY pytest.ini setup.py ./
+COPY source_acceptance_test ./source_acceptance_test
 RUN pip install .
 
 LABEL io.airbyte.version=0.2.15
