@@ -44,6 +44,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [ClickHouse](sources/clickhouse.md)                                                         | Alpha                | Yes                 |
 | [Close.com](sources/close-com.md)                                                           | Alpha                | Yes                 |
 | [CockroachDB](sources/cockroachdb.md)                                                       | Alpha                | No                  |
+| [Coinmarketcap](sources/coinmarketcap.md)                                                   | Alpha                | Yes                 |
 | [Commercetools](sources/commercetools.md)                                                   | Alpha                | No                  |
 | [Confluence](sources/confluence.md)                                                         | Alpha                | No                  |
 | [ConvertKit](sources/convertkit.md)                                                         | Alpha                | No                  |
