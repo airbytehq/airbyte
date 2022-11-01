@@ -13,6 +13,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -34,12 +35,10 @@ public class DynamodbDestination extends BaseConnector implements Destination {
           DynamodbDestinationConfig.getDynamodbDestinationConfig(config);
 
       // enforce ssl connection
-      if (!dynamodbDestinationConfig.getEndpoint().isBlank()) {
-        if (new URL(dynamodbDestinationConfig.getEndpoint()).getProtocol().equals(Protocol.HTTP.toString())) {
-          return new AirbyteConnectionStatus()
-              .withStatus(AirbyteConnectionStatus.Status.FAILED)
-              .withMessage(NON_SECURE_URL_ERR_MSG);
-        }
+      if (isNotSsl(dynamodbDestinationConfig.getEndpoint())) {
+        return new AirbyteConnectionStatus()
+            .withStatus(AirbyteConnectionStatus.Status.FAILED)
+            .withMessage(NON_SECURE_URL_ERR_MSG);
       }
 
       DynamodbChecker.attemptDynamodbWriteAndDelete(dynamodbDestinationConfig);
@@ -51,6 +50,11 @@ public class DynamodbDestination extends BaseConnector implements Destination {
           .withMessage("Could not connect to the DynamoDB table with the provided configuration. \n" + e
               .getMessage());
     }
+  }
+
+  private boolean isNotSsl(String endpoint) throws MalformedURLException {
+    return !endpoint.isBlank() &&
+        new URL(endpoint).getProtocol().equals(Protocol.HTTP.toString());
   }
 
   @Override
