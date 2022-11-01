@@ -28,8 +28,7 @@ def before_all_tests(request):
         "test_type": "ephemeral",
         "tmp_folders": temporary_folders,
     }
-    if DestinationType.POSTGRES.value not in destinations_to_test:
-        destinations_to_test.append(DestinationType.POSTGRES.value)
+
     dbt_test_utils.set_target_schema("test_ephemeral")
     dbt_test_utils.change_current_test_dir(request)
     dbt_test_utils.setup_db(destinations_to_test)
@@ -54,10 +53,10 @@ def setup_test_path(request):
 @pytest.mark.parametrize("column_count", [1000])
 @pytest.mark.parametrize("destination_type", list(DestinationType))
 def test_destination_supported_limits(destination_type: DestinationType, column_count: int):
-    if destination_type.value not in dbt_test_utils.get_test_targets() or destination_type.value == DestinationType.MYSQL.value:
+    if destination_type.value == DestinationType.MYSQL.value:
         # In MySQL, the max number of columns is limited by row size (8KB),
         # not by absolute column count. It is way fewer than 1000.
-        pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable (MYSQL is also skipped)")
+        pytest.skip("Skipping test for column limit, because in MySQL, the max number of columns is limited by row size (8KB)")
     if destination_type.value == DestinationType.ORACLE.value:
         # Airbyte uses a few columns for metadata and Oracle limits are right at 1000
         column_count = 993
@@ -85,15 +84,20 @@ def test_destination_failure_over_limits(integration_type: str, column_count: in
     run_test(destination_type, column_count, expected_exception_message)
 
 
-def test_empty_streams(setup_test_path):
-    run_test(DestinationType.POSTGRES, 0)
+@pytest.mark.parametrize("destination_type", list(DestinationType))
+def test_empty_streams(destination_type: DestinationType, setup_test_path):
+    run_test(destination_type, 0)
 
 
-def test_stream_with_1_airbyte_column(setup_test_path):
-    run_test(DestinationType.POSTGRES, 1)
+@pytest.mark.parametrize("destination_type", list(DestinationType))
+def test_stream_with_1_airbyte_column(destination_type: DestinationType, setup_test_path):
+    run_test(destination_type, 1)
 
 
 def run_test(destination_type: DestinationType, column_count: int, expected_exception_message: str = ""):
+    if destination_type.value not in dbt_test_utils.get_test_targets():
+        pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
+
     if destination_type.value == DestinationType.CLICKHOUSE.value:
         pytest.skip("ephemeral materialization isn't supported in ClickHouse yet")
     if destination_type.value == DestinationType.ORACLE.value:
@@ -104,7 +108,7 @@ def run_test(destination_type: DestinationType, column_count: int, expected_exce
         dbt_test_utils.set_target_schema(dbt_test_utils.generate_random_string("test_ephemeral_"))
     else:
         dbt_test_utils.set_target_schema("test_ephemeral")
-    print("Testing ephemeral")
+    print(f"Testing ephemeral for destination {destination_type.value} with column count {column_count}")
     integration_type = destination_type.value
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
     test_root_dir = setup_test_dir(integration_type, temporary_folders)
