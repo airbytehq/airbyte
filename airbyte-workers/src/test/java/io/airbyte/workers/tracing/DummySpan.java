@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 class DummySpan implements MutableSpan {
-  
+
   private final Map<String, Object> tags = new HashMap<>();
   private boolean error = false;
 
