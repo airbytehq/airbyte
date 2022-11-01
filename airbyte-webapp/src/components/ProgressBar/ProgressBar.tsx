@@ -114,23 +114,34 @@ export const ProgressBar = ({
 
   return (
     <div className={classNames(styles.container)}>
-      <Line percent={totalPercentRecords} strokeColor={[color]} />
+      {unEstimatedStreams.length === 0 && <Line percent={totalPercentRecords} strokeColor={[color]} />}
       {latestAttempt?.status === Status.RUNNING && latestAttempt.streamStats && (
         <>
+          {unEstimatedStreams.length === 0 && (
+            <div>
+              {totalPercentRecords}% | {timeRemainingString.length > 0 ? ` ~ ${timeRemainingString}` : ""}
+            </div>
+          )}
+          {unEstimatedStreams.length > 0 && (
+            <div>
+              {unEstimatedStreams.length} {formatMessage({ id: "estimate.unEstimatedStreams" })}
+            </div>
+          )}
           <div>
-            {totalPercentRecords}% | {timeRemainingString.length > 0 ? ` ~ ${timeRemainingString}` : ""}
-            {unEstimatedStreams.length > 0 && (
-              <div>
-                {unEstimatedStreams.length} {formatMessage({ id: "estimate.unEstimatedStreams" })}
-              </div>
-            )}
+            {numeratorRecords} {unEstimatedStreams.length > 0 ? "" : `/ ${denominatorRecords}`}{" "}
+            {formatMessage({ id: "estimate.recordsSynced" })} @ {Math.round((numeratorRecords / elapsedTimeMS) * 1000)}{" "}
+            {formatMessage({ id: "estimate.recordsPerSecond" })}
           </div>
           <div>
-            {numeratorRecords} / {denominatorRecords} {formatMessage({ id: "estimate.recordsSynced" })} @{" "}
-            {Math.round((numeratorRecords / elapsedTimeMS) * 1000)} {formatMessage({ id: "estimate.recordsPerSecond" })}
-          </div>
-          <div>
-            {formatBytes(numeratorBytes)} / {formatBytes(denominatorBytes)}{" "}
+            {formatBytes(numeratorBytes)}{" "}
+            {unEstimatedStreams.length > 0 ? (
+              ""
+            ) : (
+              <>
+                <span>/ </span>
+                {formatBytes(denominatorBytes)}
+              </>
+            )}{" "}
             {formatMessage({ id: "estimate.bytesSynced" })} @ {formatBytes((numeratorBytes * 1000) / elapsedTimeMS)}
             {formatMessage({ id: "estimate.bytesPerSecond" })}
           </div>
