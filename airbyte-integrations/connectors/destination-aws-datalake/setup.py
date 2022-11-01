@@ -8,7 +8,7 @@ from setuptools import find_packages, setup
 MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1",
     "retrying",
-    "awswrangler==2.16.1",
+    "awswrangler==2.17.0",
     "pandas==1.4.4",
 ]
 
