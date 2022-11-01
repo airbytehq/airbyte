@@ -123,6 +123,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [MySQL](sources/mysql.md)                                                                   | Beta                 | Yes                 |
 | [NASA](sources/nasa.md)                                                                     | Alpha                | Yes                 |
 | [Notion](sources/notion.md)                                                                 | Generally Available  | Yes                 |
+| [New York Times](sources/nytimes.md)                                                        | Alpha                | Yes                 |
 | [Okta](sources/okta.md)                                                                     | Alpha                | Yes                 |
 | [OneSignal](sources/onesignal.md)                                                           | Alpha                | No                  |
 | [OpenWeather](sources/openweather.md)                                                       | Alpha                | No                  |
