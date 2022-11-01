@@ -2286,6 +2286,47 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-coinmarketcap:0.1.1"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/coinmarketcap"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Coinmarketcap Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "data_type"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API Key"
+          type: "string"
+          description: "Your API Key. See <a href=\"https://coinmarketcap.com/api/documentation/v1/#section/Authentication\"\
+            >here</a>. The token is case sensitive."
+          airbyte_secret: true
+        data_type:
+          title: "Data type"
+          type: "string"
+          enum:
+          - "latest"
+          - "historical"
+          description: "/latest: Latest market ticker quotes and averages for cryptocurrencies\
+            \ and exchanges. /historical: Intervals of historic market data like OHLCV\
+            \ data or data for use in charting libraries. See <a href=\"https://coinmarketcap.com/api/documentation/v1/#section/Endpoint-Overview\"\
+            >here</a>."
+        symbols:
+          title: "Symbol"
+          type: "array"
+          items:
+            type: "string"
+          description: "Cryptocurrency symbols. (only used for quotes stream)"
+          minItems: 1
+          examples:
+          - "AVAX"
+          - "BTC"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-commercetools:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/commercetools"
@@ -2832,7 +2873,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.70"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.71"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -9923,6 +9964,18 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-public-apis:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/public-apis"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Public Apis Spec"
+      type: "object"
+      required: []
+      properties: {}
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-qualaroo:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/qualaroo"
@@ -10698,7 +10751,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.22"
+- dockerImage: "airbyte/source-salesforce:1.0.23"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:

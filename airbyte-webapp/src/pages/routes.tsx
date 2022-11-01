@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
-import ApiErrorBoundary from "components/ApiErrorBoundary";
+import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
 import { useApiHealthPoll } from "hooks/services/Health";
