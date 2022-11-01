@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the Twilio Task
 
 ## Prerequisites
 
-Twilio Taskroute HTTP requests to the REST API are protected with HTTP Basic authentication. You will use your Twilio Account SID as the username and your Auth Token as the password for HTTP Basic authentication. You will also have to use your Workspace ID as the sid.
+Twilio Taskroute HTTP requests to the REST API are protected with HTTP Basic authentication. You will use your Twilio Account SID as the username and your Auth Token as the password for HTTP Basic authentication. You will also have to use your Workspace ID as the sid if you wish to access a particular workspace or it's subresources.
 
 You can find your Account SID and Auth Token on your [dashboard](https://www.twilio.com/user/account).
 You can find the Workspace ID's from the taskrouter [box](https://console.twilio.com/develop/explore) in the list.
@@ -47,6 +47,8 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 ## Supported Streams
 
 * [Workspaces](https://www.twilio.com/docs/taskrouter/api/workspace)
+* [All Workspaces](https://www.twilio.com/docs/taskrouter/api/workspace)
+* [Workers](https://www.twilio.com/docs/taskrouter/api/worker)
 
 ## Performance considerations
 
