@@ -5,7 +5,6 @@ connectionSpecification:
   type: object
   required:
     - api_key
-    - avatar_id
   additionalProperties: true
   properties:
     api_key:
@@ -13,7 +12,3 @@ connectionSpecification:
       type: string
       description: API Key
       airbyte_secret: true
-    avatar_id:
-      title: Avatar ID
-      type: string
-      description: Avatar ID. See <a href="https://smartengage.com/docs/#avatars">here</a>.

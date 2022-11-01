@@ -24,7 +24,6 @@ This source can sync data from the [SmartEngage API](https://smartengage.com/doc
 ### Requirements
 
 * SmartEngage API Key
-* SmartEngage [Avatar ID](https://smartengage.com/docs/#avatars)
 
 ## Changelog
 
