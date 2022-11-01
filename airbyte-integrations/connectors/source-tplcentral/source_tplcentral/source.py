@@ -7,11 +7,16 @@ from typing import Any, List, Mapping, MutableMapping, Tuple
 
 import requests
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from requests.auth import HTTPBasicAuth
 from source_tplcentral.streams import Customers, Inventory, Items, Orders, StockDetails, StockSummaries
+
+
+class ConfigurationError(Exception):
+    """Source mis-configured"""
 
 
 class TplcentralAuthenticator(Oauth2Authenticator):
@@ -63,6 +68,11 @@ class TplcentralAuthenticator(Oauth2Authenticator):
 
 class SourceTplcentral(AbstractSource):
     def _auth(self, config):
+        url_base = config.get("url_base")
+        if url_base.startswith("http://"):
+            error_msg = "'url_base' parameter should be a HTTPS URL"
+            logger.error(error_msg)
+            raise ConfigurationError(error_msg)
         return TplcentralAuthenticator(
             token_refresh_endpoint=f"{config['url_base']}AuthServer/api/Token",
             client_id=config["client_id"],
