@@ -17,6 +17,7 @@
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
+  gap: variables.$spacing-md;
 }
 
 .pathContainer,
@@ -31,13 +32,11 @@
   padding: variables.$spacing-md variables.$spacing-xl;
   background-color: white;
   border-radius: 10px;
-  gap: variables.$spacing-md;
 }
 
 .enabledControlContainer {
   display: flex;
   justify-content: space-around;
-  padding: variables.$spacing-md;
 }
 
 .schemaChanges {

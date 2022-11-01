@@ -17,7 +17,7 @@ import { useDestinationDefinition } from "services/connector/DestinationDefiniti
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useRefreshSourceSchemaWithConfirmationOnDirty } from "views/Connection/ConnectionForm/components/refreshSourceSchemaWithConfirmationOnDirty";
 
-import EnabledControl from "./EnabledControl";
+import { EnabledControl } from "./EnabledControl";
 import styles from "./StatusMainInfo.module.scss";
 
 export const StatusMainInfo: React.FC = () => {
