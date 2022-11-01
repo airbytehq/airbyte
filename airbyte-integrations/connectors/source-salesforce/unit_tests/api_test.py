@@ -460,9 +460,9 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
-                    stream=AirbyteStream(name=catalog_stream_name,
-                                         supported_sync_modes=[SyncMode.full_refresh],
-                                         json_schema={"type": "object"}),
+                    stream=AirbyteStream(
+                        name=catalog_stream_name, supported_sync_modes=[SyncMode.full_refresh], json_schema={"type": "object"}
+                    ),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 )
