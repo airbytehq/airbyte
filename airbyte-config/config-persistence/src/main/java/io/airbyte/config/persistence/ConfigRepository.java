@@ -93,8 +93,8 @@ public class ConfigRepository {
   private final ExceptionWrappingDatabase database;
   private final ActorDefinitionMigrator actorDefinitionMigrator;
 
-  public ConfigRepository(final ConfigPersistence persistence, final Database database) {
-    this(persistence, database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)));
+  public ConfigRepository(final Database database) {
+    this(DatabaseConfigPersistence.createWithValidation(database), database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)));
   }
 
   @VisibleForTesting
