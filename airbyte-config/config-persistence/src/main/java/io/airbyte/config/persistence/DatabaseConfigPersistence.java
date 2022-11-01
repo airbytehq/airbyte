@@ -79,6 +79,7 @@ import org.jooq.impl.TableImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated(forRemoval = true)
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.CognitiveComplexity", "PMD.NPathComplexity", "PMD.ExcessiveMethodLength",
   "PMD.AvoidThrowingRawExceptionTypes", "PMD.ShortVariable", "PMD.LongVariable", "PMD.ExcessiveClassLength", "PMD.AvoidLiteralsInIfCondition"})
 public class DatabaseConfigPersistence implements ConfigPersistence {

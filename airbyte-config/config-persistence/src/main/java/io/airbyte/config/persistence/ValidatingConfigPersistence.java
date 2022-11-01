@@ -19,6 +19,7 @@ import java.util.Map;
  * Validates that json input and outputs for the ConfigPersistence against their schemas.
  */
 @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
+@Deprecated(forRemoval = true)
 public class ValidatingConfigPersistence implements ConfigPersistence {
 
   private final JsonSchemaValidator schemaValidator;

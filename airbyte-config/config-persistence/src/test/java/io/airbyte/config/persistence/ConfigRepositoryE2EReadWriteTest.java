@@ -32,6 +32,7 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
 import io.airbyte.config.persistence.ConfigRepository.SourceAndDefinition;
 import io.airbyte.db.Database;
+import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.init.DatabaseInitializationException;
@@ -97,7 +98,7 @@ class ConfigRepositoryE2EReadWriteTest {
         ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
     database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(false);
     configPersistence = spy(new DatabaseConfigPersistence(database));
-    configRepository = spy(new ConfigRepository(configPersistence, database));
+    configRepository = spy(new ConfigRepository(configPersistence, database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database))));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, flyway);
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);

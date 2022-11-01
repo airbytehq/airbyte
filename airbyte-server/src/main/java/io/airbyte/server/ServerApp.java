@@ -22,9 +22,7 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.StreamResetPersistence;
@@ -189,11 +187,10 @@ public class ServerApp implements ServerRunnable {
 
     LOGGER.info("Creating config repository...");
     final Database configsDatabase = new Database(configsDslContext);
-    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configsDatabase);
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configsDslContext, configs);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configsDslContext, configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configsDslContext, configs);
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence, configsDatabase);
+    final ConfigRepository configRepository = new ConfigRepository(configsDatabase);
     final SecretsRepositoryReader secretsRepositoryReader = new SecretsRepositoryReader(configRepository, secretsHydrator);
     final SecretsRepositoryWriter secretsRepositoryWriter =
         new SecretsRepositoryWriter(configRepository, secretPersistence, ephemeralSecretPersistence);
