@@ -25,7 +25,7 @@ class CopperStream(HttpStream, ABC):
     @property
     def http_method(self) -> str:
         return "POST"
-    
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         body = json.loads(response.request.body)
         result = response.json()
