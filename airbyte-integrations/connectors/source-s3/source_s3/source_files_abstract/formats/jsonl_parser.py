@@ -7,6 +7,7 @@ from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
 
 import pyarrow as pa
 from pyarrow import json as pa_json
+from source_s3.source_files_abstract.file_info import FileInfo
 
 from .abstract_file_parser import AbstractFileParser
 from .jsonl_spec import JsonlFormat
@@ -73,7 +74,7 @@ class JsonlParser(AbstractFileParser):
             file, pa.json.ReadOptions(**self._read_options()), pa.json.ParseOptions(**self._parse_options(json_schema))
         )
 
-    def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> Mapping[str, Any]:
+    def get_inferred_schema(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Mapping[str, Any]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.json.read_json.html
         Json reader support multi thread hence, donot need to add external process
@@ -93,7 +94,7 @@ class JsonlParser(AbstractFileParser):
         schema_dict = {field.name: field_type_to_str(field.type) for field in table.schema}
         return self.json_schema_to_pyarrow_schema(schema_dict, reverse=True)
 
-    def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
+    def stream_records(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Iterator[Mapping[str, Any]]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.json.read_json.html
 

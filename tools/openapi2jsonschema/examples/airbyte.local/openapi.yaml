@@ -2694,6 +2694,13 @@ components:
             - non_breaking
             - breaking
           type: string
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          enum:
+            - ignore
+            - disable
+          type: string
       required:
         - connectionId
         - name
@@ -2756,6 +2763,13 @@ components:
           $ref: "#/components/schemas/AirbyteCatalog"
         skipReset:
           type: boolean
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          enum:
+            - ignore
+            - disable
+          type: string
       required:
         - connectionId
         - syncCatalog
