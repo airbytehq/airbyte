@@ -107,10 +107,6 @@ public class ConfigRepository {
     this.actorDefinitionMigrator = actorDefinitionMigrator;
   }
 
-  public ConfigPersistence getConfigPersistence() {
-    return persistence;
-  }
-
   /**
    * Conduct a health check by attempting to read from the database. Since there isn't an
    * out-of-the-box call for this, mimic doing so by reading the ID column from the Workspace table's
@@ -922,9 +918,17 @@ public class ConfigRepository {
     return result;
   }
 
-  public void updateActorDefinitions(final List<StandardSourceDefinition> sourceDefs, final List<StandardDestinationDefinition> destDefs)
+  /**
+   * Updates the database with the most up-to-date source and destination definitions in the connector
+   * catalog.
+   *
+   * @param seedSourceDefs - most up-to-date source definitions
+   * @param seedDestDefs - most up-to-date destination definitions
+   * @throws IOException - throws if exception when interacting with db
+   */
+  public void seedActorDefinitions(final List<StandardSourceDefinition> seedSourceDefs, final List<StandardDestinationDefinition> seedDestDefs)
       throws IOException {
-    actorDefinitionMigrator.migrate(sourceDefs, destDefs);
+    actorDefinitionMigrator.migrate(seedSourceDefs, seedDestDefs);
   }
 
   // Data-carrier records to hold combined result of query for a Source or Destination and its

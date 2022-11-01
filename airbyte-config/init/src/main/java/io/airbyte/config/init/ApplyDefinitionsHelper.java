@@ -48,7 +48,7 @@ public class ApplyDefinitionsHelper {
     } else {
       // todo (pedroslopez): Logic to apply definitions should be moved outside of the
       // DatabaseConfigPersistence class and behavior standardized
-      configRepository.updateActorDefinitions(
+      configRepository.seedActorDefinitions(
           definitionsProvider.getSourceDefinitions(),
           definitionsProvider.getDestinationDefinitions());
     }

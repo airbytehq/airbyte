@@ -40,6 +40,10 @@ import org.jooq.Record1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Takes in most up-to-date source and destination definitions from the Airbyte connector catalog
+ * and merges them with those already present in the database. See javadocs on methods for rules.
+ */
 public class ActorDefinitionMigrator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ActorDefinitionMigrator.class);
