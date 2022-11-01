@@ -1,4 +1,6 @@
 *
+!documentation_url.patch.json
+!spec.patch.json
 !Dockerfile
 !main.py
 !source_amplitude
