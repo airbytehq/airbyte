@@ -194,6 +194,26 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY
+            - name: MAX_SYNC_WORKERS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: MAX_SYNC_WORKERS
+            - name: MAX_SPEC_WORKERS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: MAX_SPEC_WORKERS
+            - name: MAX_CHECK_WORKERS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: MAX_CHECK_WORKERS
+            - name: MAX_DISCOVER_WORKERS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: MAX_DISCOVER_WORKERS
             # todo: add other state storage keys
             - name: STATE_STORAGE_MINIO_BUCKET_NAME
               valueFrom:
