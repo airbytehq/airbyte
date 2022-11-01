@@ -8,7 +8,7 @@ import os
 This script is intended to be run in conjuction with https://github.com/EnricoMi/publish-unit-test-result-action to upload trimmed
 test results from the output to a GCS bucket for further analysis.
 
-The script takes as input the filename of the json output by the aforementioned action, trims it, and uploads it to GCS with a ".jsonl" filename 
+The script takes as input the filename of the json output by the aforementioned action, trims it, and writes it out in jsonl format with ".jsonl" filename 
 
 '''
 
@@ -21,8 +21,6 @@ parser.add_argument("--json", "-j", help="Path to the result json output by http
 def main():
     # Read arguments from the command line
     args = parser.parse_args()
-
-    token = os.getenv('GITHUB_TOKEN')
 
     f = open(args.json)
     d = json.load(f)

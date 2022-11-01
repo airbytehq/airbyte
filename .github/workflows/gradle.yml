@@ -743,6 +743,7 @@ jobs:
           CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
 
       - uses: actions/setup-python@v2
+        if: always()
         with:
           python-version: "3.9"
 
