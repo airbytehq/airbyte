@@ -6,13 +6,12 @@ This page contains the setup guide and reference information for the Greenhouse 
 
 Please follow the [Greenhouse documentation for generating an API key](https://developers.greenhouse.io/harvest.html#authentication).
 
-## Setup guide
-## Step 1: Set up the Greenhouse connector in Airbyte
+## Set up the Greenhouse connector in Airbyte
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Source**. In the top-right corner, click **+new source**.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Source**. In the top-right corner, click **+New source**.
 3. On the Set up the source page, enter the name for the Greenhouse connector and select **Greenhouse** from the Source type dropdown. 
 4. Enter your `api_key`
 5. Click **Set up source**
@@ -49,7 +48,7 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 * [Job Posts](https://developers.greenhouse.io/harvest.html#get-list-job-posts)
 * [Job Stages](https://developers.greenhouse.io/harvest.html#get-list-job-stages)
 * [Jobs](https://developers.greenhouse.io/harvest.html#get-list-jobs)
-* [Jobs Openings](https://developers.greenhouse.io/harvest.html#get-list-job-openings)
+* [Job Openings](https://developers.greenhouse.io/harvest.html#get-list-job-openings)
 * [Jobs Stages](https://developers.greenhouse.io/harvest.html#get-list-job-stages-for-job)
 * [Offers](https://developers.greenhouse.io/harvest.html#get-list-offers)
 * [Rejection Reasons](https://developers.greenhouse.io/harvest.html#get-list-rejection-reasons)
@@ -58,8 +57,8 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 * [Users](https://developers.greenhouse.io/harvest.html#get-list-users)
 
 ## Setting permissions for API Keys
-You can specify which API endpoints your API keys have access to from the Greenhouse Dev Center. This will allow you to permit or deny access to each endpoint individually. Any API keys created before January 18th, 2017 will have full permissions to all API endpoints that existed at that time, but any new API keys created after that point will need to be explicitly granted the required endpoint permissions.
-To add or remove endpoint permissions on an API key, go to the Dev Center in Greenhouse, click “API Credential Management,” then click “Manage Permissions” next to your Harvest API Key. From there, check or uncheck permissions for any endpoints.
+You can specify which API endpoints your API keys have access to from the Greenhouse Dev Center. This will allow you to permit or deny access to each endpoint individually. Any API keys created before January 18th, 2017 will have full permissions to all API endpoints that existed at that time, but any new API keys created after that point will need the required endpoint permissions to be explicitly granted.
+To add or remove endpoint permissions on an API key, go to the Dev Center in Greenhouse, click “API Credential Management”, then click “Manage Permissions” next to your Harvest API Key. From there, check or uncheck permissions for any endpoints.
 
 **Important Note**: Users with Harvest API keys may access all the data in the endpoint. Access to data in Harvest is binary: everything or nothing. Harvest API keys should be given to internal developers with this understanding and to third parties with caution. Each key should only be allowed to access the endpoints it absolutely needs.
 See more on this [here](https://developers.greenhouse.io/harvest.html#authentication).

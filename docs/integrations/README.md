@@ -124,6 +124,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [NASA](sources/nasa.md)                                                                     | Alpha                | Yes                 |
 | [Notion](sources/notion.md)                                                                 | Generally Available  | Yes                 |
 | [Okta](sources/okta.md)                                                                     | Alpha                | Yes                 |
+| [Omnisend](sources/omnisend.md)                                                             | Alpha                | No                  |
 | [OneSignal](sources/onesignal.md)                                                           | Alpha                | No                  |
 | [OpenWeather](sources/openweather.md)                                                       | Alpha                | No                  |
 | [Oracle DB](sources/oracle.md)                                                              | Alpha                | Yes                 |
@@ -220,6 +221,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Google Cloud Storage (GCS)](destinations/gcs.md)          | Beta                 | Yes                 |
 | [Google Pubsub](destinations/pubsub.md)                    | Alpha                | Yes                 |
 | [Google Sheets](destinations/google-sheets.md)             | Alpha                | Yes                 |
+| [Heap Analytics](destinations/heap-analytics.md)           | Alpha                | No                 |
 | [Kafka](destinations/kafka.md)                             | Alpha                | No                  |
 | [Keen](destinations/keen.md)                               | Alpha                | No                  |
 | [Kinesis](destinations/kinesis.md)                         | Alpha                | No                  |
