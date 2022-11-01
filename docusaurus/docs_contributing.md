@@ -11,8 +11,7 @@ any broken links that you are able to do.
 For consistency across other Airbyte projects we use yarn (A Javascript based software package manager)
 
 ```bash
-brew install yarn
-
+# assuming you have node.js and yarn installed. brew install yarn if need to
 cd docusaurus
 yarn install
 yarn build
