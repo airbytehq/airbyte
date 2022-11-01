@@ -60,44 +60,14 @@ A connection is an automated data pipeline that replicates data from a source to
 
 Setting up a connection involves configuring the following parameters:
 
-<table>
-  <tr>
-   <td><strong>Parameter</strong>
-   </td>
-   <td><strong>Description</strong>
-   </td>
-  </tr>
-  <tr>
-   <td>Replication frequency
-   </td>
-   <td>How often should the data sync?
-   </td>
-  </tr>
-  <tr>
-   <td>Destination Namespace and stream names
-   </td>
-   <td>Where should the replicated data be written?
-   </td>
-  </tr>
-  <tr>
-   <td>Catalog selection
-   </td>
-   <td>Which streams and fields should be replicated from the source to the destination?
-   </td>
-  </tr>
-  <tr>
-   <td>Sync mode
-   </td>
-   <td>How should the streams be replicated (read and written)?
-   </td>
-  </tr>
-  <tr>
-   <td>Optional transformations
-   </td>
-   <td>How should Airbyte protocol messages (raw JSON blob) data be converted into other data representations?
-   </td>
-  </tr>
-</table>
+| Parameter                              | Description                                                                                                                                                                                                                                                           |
+|----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Replication frequency                  | How often should the data sync?                                                                                                                                                                                                                                       |
+| Data residency                         | Where is the data processing location for this connection? To choose the preferred data processing location for all of your connections, set your default [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud#choose-your-default-data-residency). |
+| Destination Namespace and stream names | Where should the replicated data be written?                                                                                                                                                                                                                          |
+| Catalog selection                      | Which streams and fields should be replicated from the source to the destination?                                                                                                                                                                                     |
+| Sync mode                              | How should the streams be replicated (read and written)?                                                                                                                                                                                                              |
+| Optional transformations               | How should Airbyte protocol messages (raw JSON blob) data be converted into other data representations?                                                                                                                                                               |
 
 For more information, see [Connections and Sync Modes](../understanding-airbyte/connections/README.md) and [Namespaces](../understanding-airbyte/namespaces.md)
 
@@ -214,7 +184,17 @@ Verify the sync by checking the logs:
 
 ## Allowlist IP address
 
-You may need to allowlist one of our IP addresses to enable access to Airbyte:
-- 34.106.109.131
-- 34.106.196.165
-- 34.106.60.246
+Depending on your data residency location, you may need to allowlist the following IP addresses to enable access to Airbyte:
+
+### United States and Airbyte Default
+* 34.106.109.131
+* 34.106.196.165
+* 34.106.60.246
+
+### Europe
+* 34.106.109.131
+* 34.106.196.165
+* 34.106.60.246
+* 13.37.4.46
+* 13.37.142.60
+* 35.181.124.238
