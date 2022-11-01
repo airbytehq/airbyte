@@ -46,6 +46,8 @@ class HttpStream(Stream, ABC):
         elif authenticator:
             self._authenticator = authenticator
 
+        raise RuntimeError("ERROR")
+
     @property
     def cache_filename(self):
         """
