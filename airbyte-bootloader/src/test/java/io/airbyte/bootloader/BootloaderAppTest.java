@@ -27,7 +27,6 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.init.DefinitionsProvider;
 import io.airbyte.config.init.LocalDefinitionsProvider;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.LocalTestingSecretPersistence;
@@ -181,8 +180,7 @@ class BootloaderAppTest {
       val configDatabase = new ConfigsDatabaseTestProvider(configsDslContext, configsFlyway).create(false);
       val jobDatabase = new JobsDatabaseTestProvider(jobsDslContext, jobsFlyway).create(false);
 
-      val configPersistence = new DatabaseConfigPersistence(configDatabase);
-      val configRepository = new ConfigRepository(configPersistence, configDatabase);
+      val configRepository = new ConfigRepository(configDatabase);
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
 
       val secretsPersistence = SecretPersistence.getLongLived(configsDslContext, mockedConfigs);
@@ -236,6 +234,7 @@ class BootloaderAppTest {
           .withSourceId(sourceId)
           .withName("test source")
           .withWorkspaceId(workspaceId)
+          .withTombstone(false)
           .withConfiguration(mapper.readTree(sourceSpecs)));
 
       when(mockedFeatureFlags.forceSecretMigration()).thenReturn(false);
