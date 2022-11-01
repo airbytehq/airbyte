@@ -11,6 +11,7 @@ IGNORE_LIST = [
     "/integration_tests/", "/unit_tests/",
     # Common
     "acceptance-test-config.yml", "acceptance-test-docker.sh", ".md", ".dockerignore", ".gitignore", "requirements.txt"]
+COMMENT_TEMPLATE_PATH = ".github/comment_templates/connector_dependency_template.md"
 
 
 def main():
@@ -95,7 +96,7 @@ def write_report(depended_connectors):
         else:
             affected_destinations.append(depended_connector)
 
-    with open(".github/connector_dependency_comment_template.md", "r") as f:
+    with open(COMMENT_TEMPLATE_PATH, "r") as f:
         template = f.read()
 
     sources_md = ""
