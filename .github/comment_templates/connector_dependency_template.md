@@ -22,3 +22,4 @@ Destinations ({num_destinations})
 
 </details>
 
+{others}

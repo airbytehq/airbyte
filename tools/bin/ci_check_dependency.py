@@ -87,29 +87,37 @@ def get_depended_connectors(changed_modules, all_build_gradle_files):
     return depended_connectors
 
 
+def as_bulleted_markdown_list(items):
+    text = ""
+    for item in items:
+        text += f"- {item}\n"
+    return text
+
+
 def write_report(depended_connectors):
     affected_sources = []
     affected_destinations = []
+    affected_others = []
     for depended_connector in depended_connectors:
         if depended_connector.startswith("source"):
             affected_sources.append(depended_connector)
-        else:
+        elif depended_connector.startswith("destination"):
             affected_destinations.append(depended_connector)
+        else:
+            affected_others.append(depended_connector)
 
     with open(COMMENT_TEMPLATE_PATH, "r") as f:
         template = f.read()
 
-    sources_md = ""
-    for source in affected_sources:
-        sources_md += f"- {source}\n"
-
-    destinations_md = ""
-    for destination in affected_destinations:
-        destinations_md += f"- {destination}\n"
+    others_md = ""
+    if affected_others:
+        others_md += "The following were also affected:\n"
+        others_md += as_bulleted_markdown_list(affected_others)
 
     comment = template.format(
-        sources=sources_md,
-        destinations=destinations_md,
+        sources=as_bulleted_markdown_list(affected_sources),
+        destinations=as_bulleted_markdown_list(affected_destinations),
+        others=others_md,
         num_sources=len(affected_sources),
         num_destinations=len(affected_destinations)
     )
