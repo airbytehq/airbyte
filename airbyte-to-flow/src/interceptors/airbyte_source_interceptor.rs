@@ -149,11 +149,20 @@ impl AirbyteSourceInterceptor {
                         .collect();
                 let recommended_name = stream_to_recommended_name(&stream.name);
 
+
+                let mut doc_schema = sj::from_str::<sj::Value>(stream.json_schema.get())?;
+                let doc_schema_patch = std::fs::read_to_string(format!("{}/{}.patch.json", STREAM_PATCH_DIR_NAME, recommended_name))
+                    .ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
+
+                if let Some(p) = doc_schema_patch {
+                    merge(&mut doc_schema, &p);
+                }
+
                 resp.bindings.push(discover_response::Binding {
                     recommended_name,
                     resource_spec_json: serde_json::to_string(&resource_spec)?,
                     key_ptrs,
-                    document_schema_json: fix_document_schema_keys(&stream.json_schema, source_defined_primary_key)?.to_string(),
+                    document_schema_json: fix_document_schema_keys(doc_schema, source_defined_primary_key)?.to_string(),
                 })
             }
 

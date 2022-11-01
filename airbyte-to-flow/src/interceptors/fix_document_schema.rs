@@ -1,13 +1,13 @@
 use doc::ptr::Token;
-use serde_json::{value::RawValue, json};
+use serde_json::json;
 
 use crate::errors::Error;
 
 
 /// Given a document_schema_json and key ptrs, updates the document_schema to ensure that
 /// the key pointers are always present in the document
-pub fn fix_document_schema_keys(document_schema_json: &RawValue, key_ptrs: Vec<Vec<String>>) -> Result<serde_json::Value, Error> {
-    let mut doc = serde_json::to_value(document_schema_json)?;
+pub fn fix_document_schema_keys(mut doc: serde_json::Value, key_ptrs: Vec<Vec<String>>) -> Result<serde_json::Value, Error> {
+    let original = doc.clone();
     for key in key_ptrs {
         let ptr = doc::Pointer::from_vec(&key);
 
@@ -78,7 +78,7 @@ pub fn fix_document_schema_keys(document_schema_json: &RawValue, key_ptrs: Vec<V
                         .get_mut("properties")
                         .and_then(|props| props.get_mut(prop))
                         .and_then(|schema| schema.as_object_mut())
-                        .ok_or(Error::InvalidAirbyteSchema(format!("expected key {:?} to exist in 'properties' of \"{}\" in {}", prop, current, document_schema_json)))?;
+                        .ok_or(Error::InvalidAirbyteSchema(format!("expected key {:?} to exist in 'properties' of \"{}\" in {}", prop, current, original)))?;
 
                     prop_schema.entry("type").and_modify(|e| {
                         if let Some(vec) = e.as_array_mut() {
@@ -91,7 +91,7 @@ pub fn fix_document_schema_keys(document_schema_json: &RawValue, key_ptrs: Vec<V
                     current.push(Token::Property("properties"));
                     current.push(Token::Property(prop));
                 },
-                doc::ptr::Token::NextIndex => return Err(Error::InvalidAirbyteSchema(format!("cannot use JSONPointer next index pointer /-/ in key pointer at {:?} in {:?}", current, document_schema_json))),
+                doc::ptr::Token::NextIndex => return Err(Error::InvalidAirbyteSchema(format!("cannot use JSONPointer next index pointer /-/ in key pointer at {:?} in {:?}", current, original))),
             }
         }
     }
@@ -101,7 +101,7 @@ pub fn fix_document_schema_keys(document_schema_json: &RawValue, key_ptrs: Vec<V
 
 #[cfg(test)]
 mod test {
-    use serde_json::{json, value::RawValue};
+    use serde_json::json;
 
     use super::fix_document_schema_keys;
 
@@ -118,7 +118,7 @@ mod test {
         let key_ptrs = vec![vec!["id".to_string()]];
 
         assert_eq!(
-            fix_document_schema_keys(&RawValue::from_string(doc_schema).unwrap(), key_ptrs).unwrap(),
+            fix_document_schema_keys(serde_json::from_str(&doc_schema).unwrap(), key_ptrs).unwrap(),
             json!({
                 "properties": {
                     "id": {
@@ -148,7 +148,7 @@ mod test {
         let key_ptrs = vec![vec!["id".to_string()]];
 
         assert_eq!(
-            fix_document_schema_keys(&RawValue::from_string(doc_schema).unwrap(), key_ptrs).unwrap(),
+            fix_document_schema_keys(serde_json::from_str(&doc_schema).unwrap(), key_ptrs).unwrap(),
             json!({
                 "$defs": {
                     "test": {
@@ -190,7 +190,7 @@ mod test {
         let key_ptrs = vec![vec!["id".to_string()]];
 
         assert_eq!(
-            fix_document_schema_keys(&RawValue::from_string(doc_schema).unwrap(), key_ptrs).unwrap(),
+            fix_document_schema_keys(serde_json::from_str(&doc_schema).unwrap(), key_ptrs).unwrap(),
             json!({
                 "$defs": {
                     "test": {
@@ -224,7 +224,7 @@ mod test {
         let key_ptrs = vec![vec!["0".to_string()]];
 
         assert_eq!(
-            fix_document_schema_keys(&RawValue::from_string(doc_schema).unwrap(), key_ptrs).unwrap(),
+            fix_document_schema_keys(serde_json::from_str(&doc_schema).unwrap(), key_ptrs).unwrap(),
             json!({
                 "properties": {
                     "0": {
@@ -254,7 +254,7 @@ mod test {
         let key_ptrs = vec![vec!["doc".to_string(), "id".to_string()]];
 
         assert_eq!(
-            fix_document_schema_keys(&RawValue::from_string(doc_schema).unwrap(), key_ptrs).unwrap(),
+            fix_document_schema_keys(serde_json::from_str(&doc_schema).unwrap(), key_ptrs).unwrap(),
             json!({
                 "properties": {
                     "doc": {
@@ -289,7 +289,7 @@ mod test {
         let key_ptrs = vec![vec!["0".to_string(), "id".to_string()]];
 
         assert_eq!(
-            fix_document_schema_keys(&RawValue::from_string(doc_schema).unwrap(), key_ptrs).unwrap(),
+            fix_document_schema_keys(serde_json::from_str(&doc_schema).unwrap(), key_ptrs).unwrap(),
             json!({
                 "minItems": 1,
                 "items": {
@@ -324,7 +324,7 @@ mod test {
         let key_ptrs = vec![vec!["0".to_string(), "id".to_string()]];
 
         assert_eq!(
-            fix_document_schema_keys(&RawValue::from_string(doc_schema).unwrap(), key_ptrs).unwrap(),
+            fix_document_schema_keys(serde_json::from_str(&doc_schema).unwrap(), key_ptrs).unwrap(),
             json!({
                 "minItems": 1,
                 "items": {
