@@ -349,23 +349,41 @@ public class DefaultJobPersistence implements JobPersistence {
               attemptNumber).stream().findFirst();
       final Long attemptId = record.get().get("id", Long.class);
 
-      // change this into an update or
-      ctx.insertInto(SYNC_STATS)
-//          .onDuplicateKeyUpdate()
-          .set(SYNC_STATS.ID, UUID.randomUUID())
-          .set(SYNC_STATS.UPDATED_AT, now)
-          .set(SYNC_STATS.CREATED_AT, now)
-          .set(SYNC_STATS.ATTEMPT_ID, attemptId)
-          .set(SYNC_STATS.BYTES_EMITTED, syncStats.getBytesEmitted())
-          .set(SYNC_STATS.RECORDS_EMITTED, syncStats.getRecordsEmitted())
-          .set(SYNC_STATS.RECORDS_COMMITTED, syncStats.getRecordsCommitted())
-          .set(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED, syncStats.getSourceStateMessagesEmitted())
-          .set(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED, syncStats.getDestinationStateMessagesEmitted())
-          .set(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMaxSecondsBeforeSourceStateMessageEmitted())
-          .set(SYNC_STATS.MEAN_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMeanSecondsBeforeSourceStateMessageEmitted())
-          .set(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted())
-          .set(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted())
-          .execute();
+      final var needToCreate = !ctx.fetchExists(SYNC_STATS, SYNC_STATS.ATTEMPT_ID.eq(attemptId));
+      // A record might already created by the writeSyncStats method.
+      // TODO(Davin): This is ugly and can be removed.
+      if (needToCreate) {
+        ctx.insertInto(SYNC_STATS)
+            .set(SYNC_STATS.ID, UUID.randomUUID())
+            .set(SYNC_STATS.ATTEMPT_ID, attemptId)
+            .set(SYNC_STATS.CREATED_AT, now)
+            .set(SYNC_STATS.UPDATED_AT, now)
+            .set(SYNC_STATS.BYTES_EMITTED, syncStats.getBytesEmitted())
+            .set(SYNC_STATS.RECORDS_EMITTED, syncStats.getRecordsEmitted())
+            .set(SYNC_STATS.RECORDS_COMMITTED, syncStats.getRecordsCommitted())
+            .set(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED, syncStats.getSourceStateMessagesEmitted())
+            .set(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED, syncStats.getDestinationStateMessagesEmitted())
+            .set(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMaxSecondsBeforeSourceStateMessageEmitted())
+            .set(SYNC_STATS.MEAN_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMeanSecondsBeforeSourceStateMessageEmitted())
+            .set(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted())
+            .set(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted())
+            .execute();
+      } else {
+        ctx.update(SYNC_STATS)
+            .set(SYNC_STATS.UPDATED_AT, now)
+            .set(SYNC_STATS.BYTES_EMITTED, syncStats.getBytesEmitted())
+            .set(SYNC_STATS.RECORDS_EMITTED, syncStats.getRecordsEmitted())
+            .set(SYNC_STATS.RECORDS_COMMITTED, syncStats.getRecordsCommitted())
+            .set(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED, syncStats.getSourceStateMessagesEmitted())
+            .set(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED, syncStats.getDestinationStateMessagesEmitted())
+            .set(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMaxSecondsBeforeSourceStateMessageEmitted())
+            .set(SYNC_STATS.MEAN_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMeanSecondsBeforeSourceStateMessageEmitted())
+            .set(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted())
+            .set(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted())
+            .where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
+            .execute();
+      }
+
 
       if (normalizationSummary != null) {
         ctx.insertInto(NORMALIZATION_SUMMARIES)
@@ -384,8 +402,43 @@ public class DefaultJobPersistence implements JobPersistence {
 
   }
 
-  public void writeRunningSyncStats(final long jobId, final long attemptId, final SyncStats stats) {
+  @Override
+  public void writeSyncStats(long jobId, int attemptNumber, long estimatedRecords, long estimatedBytes, long recordsEmitted, long bytesEmitted) throws IOException {
+    // Although the attempt table's output has a copy of the sync summary, we do not update it for running sync stat updates.
+    final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
+    jobDatabase.transaction(ctx -> {
+        final Optional<Record> record =
+            ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
+                attemptNumber).stream().findFirst();
+        final Long attemptId = record.get().get("id", Long.class);
 
+        final var isExisting = ctx.fetchExists(SYNC_STATS, SYNC_STATS.ATTEMPT_ID.eq(attemptId));
+
+        if (isExisting) {
+          ctx.update(SYNC_STATS)
+              .set(SYNC_STATS.BYTES_EMITTED, bytesEmitted)
+              .set(SYNC_STATS.RECORDS_EMITTED, recordsEmitted)
+              .set(SYNC_STATS.ESTIMATED_BYTES, estimatedBytes)
+              .set(SYNC_STATS.ESTIMATED_RECORDS, estimatedRecords)
+              .set(SYNC_STATS.UPDATED_AT, now)
+              .where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
+              .execute();
+          return null;
+        }
+
+        // does this upsert work?
+        ctx.insertInto(SYNC_STATS)
+            .set(SYNC_STATS.ID, UUID.randomUUID())
+            .set(SYNC_STATS.UPDATED_AT, now)
+            .set(SYNC_STATS.CREATED_AT, now)
+            .set(SYNC_STATS.ATTEMPT_ID, attemptId)
+            .set(SYNC_STATS.BYTES_EMITTED, bytesEmitted)
+            .set(SYNC_STATS.RECORDS_EMITTED, recordsEmitted)
+            .set(SYNC_STATS.ESTIMATED_BYTES, estimatedBytes)
+            .set(SYNC_STATS.ESTIMATED_RECORDS, estimatedRecords)
+            .execute();
+        return null;
+      });
   }
 
   @Override
@@ -423,6 +476,8 @@ public class DefaultJobPersistence implements JobPersistence {
         .withSourceStateMessagesEmitted(record.get(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED))
         .withDestinationStateMessagesEmitted(record.get(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED))
         .withRecordsCommitted(record.get(SYNC_STATS.RECORDS_COMMITTED))
+        .withEstimatedBytes(record.get(SYNC_STATS.ESTIMATED_BYTES))
+        .withEstimatedRecords(record.get(SYNC_STATS.ESTIMATED_RECORDS))
         .withMeanSecondsBeforeSourceStateMessageEmitted(record.get(SYNC_STATS.MEAN_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED))
         .withMaxSecondsBeforeSourceStateMessageEmitted(record.get(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED))
         .withMeanSecondsBetweenStateMessageEmittedandCommitted(record.get(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED))

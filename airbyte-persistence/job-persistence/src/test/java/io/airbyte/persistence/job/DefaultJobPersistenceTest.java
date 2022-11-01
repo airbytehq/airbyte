@@ -308,6 +308,62 @@ class DefaultJobPersistenceTest {
     assertEquals(List.of(failureReason1, failureReason2), storedNormalizationSummary.getFailures());
   }
 
+  @Nested
+  class SyncStatsTest {
+    @Test
+    @DisplayName("Writing sync stats the first time should only write record and bytes information correctly")
+    void testWriteSyncStatsFirst() throws IOException, SQLException {
+      final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+      jobPersistence.writeSyncStats(jobId, attemptNumber, 1000, 1000, 1000, 1000);
+
+      final Optional<Record> record =
+          jobDatabase.query(ctx -> ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
+              attemptNumber).stream().findFirst());
+      final Long attemptId = record.get().get("id", Long.class);
+
+      final var stats = jobPersistence.getSyncStats(attemptId).stream().findFirst().get();
+      assertEquals(1000, stats.getBytesEmitted());
+      assertEquals(1000, stats.getRecordsEmitted());
+      assertEquals(1000, stats.getEstimatedBytes());
+      assertEquals(1000, stats.getEstimatedRecords());
+
+      assertEquals(null, stats.getRecordsCommitted());
+      assertEquals(null, stats.getDestinationStateMessagesEmitted());
+    }
+
+    @Test
+    @DisplayName("Writing sync stats multiple times should write record and bytes information correctly without exceptions")
+    void testWriteSyncStatsRepeated() throws IOException, SQLException {
+      final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+
+      jobPersistence.writeSyncStats(jobId, attemptNumber, 1000, 1000, 1000, 1000);
+
+      final Optional<Record> record =
+          jobDatabase.query(ctx -> ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
+              attemptNumber).stream().findFirst());
+      final Long attemptId = record.get().get("id", Long.class);
+
+      var stat = jobPersistence.getSyncStats(attemptId).stream().findFirst().get();
+      assertEquals(1000, stat.getBytesEmitted());
+      assertEquals(1000, stat.getRecordsEmitted());
+      assertEquals(1000, stat.getEstimatedBytes());
+      assertEquals(1000, stat.getEstimatedRecords());
+
+      jobPersistence.writeSyncStats(jobId, attemptNumber, 2000, 2000, 2000, 2000);
+      var stats = jobPersistence.getSyncStats(attemptId);
+      assertEquals(1, stats.size());
+
+      stat = stats.stream().findFirst().get();
+      assertEquals(2000, stat.getBytesEmitted());
+      assertEquals(2000, stat.getRecordsEmitted());
+      assertEquals(2000, stat.getEstimatedBytes());
+      assertEquals(2000, stat.getEstimatedRecords());
+
+    }
+  }
+
   @Test
   @DisplayName("Should be able to read attemptFailureSummary that was written")
   void testWriteAttemptFailureSummary() throws IOException {

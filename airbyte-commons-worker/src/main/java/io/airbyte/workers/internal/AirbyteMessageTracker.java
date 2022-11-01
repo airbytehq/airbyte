@@ -166,6 +166,8 @@ public class AirbyteMessageTracker implements MessageTracker {
     sourceOutputState.set(new State().withState(stateMessage.getData()));
     final int stateHash = getStateHashCode(stateMessage);
 
+    // make a call to the save_stats endpoint
+
     try {
       if (!unreliableCommittedCounts) {
         stateDeltaTracker.addState(stateHash, streamToRunningCount);
