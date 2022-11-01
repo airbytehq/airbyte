@@ -4,7 +4,7 @@ import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
-import { FormattedMessage, FormattedNumber } from "react-intl";
+import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import { NavLink } from "react-router-dom";
 
 import { Link } from "components";
@@ -40,6 +40,7 @@ const SideBar: React.FC = () => {
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
   const { show } = useIntercom();
+  const { formatMessage } = useIntl();
   const handleChatUs = () => show();
   const hideOnboardingExperiment = useExperiment("onboarding.hideOnboarding", false);
 
@@ -115,25 +116,25 @@ const SideBar: React.FC = () => {
                 type: DropdownMenuItemType.LINK,
                 href: links.docsLink,
                 icon: <DocsIcon />,
-                displayName: <FormattedMessage id="sidebar.documentation" />,
+                displayName: formatMessage({ id: "sidebar.documentation" }),
               },
               {
                 type: DropdownMenuItemType.LINK,
                 href: links.slackLink,
                 icon: <FontAwesomeIcon icon={faSlack} />,
-                displayName: <FormattedMessage id="sidebar.joinSlack" />,
+                displayName: formatMessage({ id: "sidebar.joinSlack" }),
               },
               {
                 type: DropdownMenuItemType.LINK,
                 href: links.statusLink,
                 icon: <StatusIcon />,
-                displayName: <FormattedMessage id="sidebar.status" />,
+                displayName: formatMessage({ id: "sidebar.status" }),
               },
               {
                 type: DropdownMenuItemType.LINK,
                 href: links.tutorialLink,
                 icon: <RecipesIcon />,
-                displayName: <FormattedMessage id="sidebar.recipes" />,
+                displayName: formatMessage({ id: "sidebar.recipes" }),
               },
             ]}
           >
@@ -156,15 +157,16 @@ const SideBar: React.FC = () => {
                 type: DropdownMenuItemType.LINK,
                 href: links.supportTicketLink,
                 icon: <FontAwesomeIcon icon={faEnvelope} />,
-                displayName: <FormattedMessage id="sidebar.supportTicket" />,
+                displayName: formatMessage({ id: "sidebar.supportTicket" }),
               },
               {
                 type: DropdownMenuItemType.BUTTON,
-                onSelect: handleChatUs,
                 icon: <ChatIcon />,
-                displayName: <FormattedMessage id="sidebar.chat" />,
+                value: "chatUs",
+                displayName: formatMessage({ id: "sidebar.chat" }),
               },
             ]}
+            onChange={(data) => data.value === "chatUs" && handleChatUs}
           >
             {({ open }) => (
               <button className={classNames(styles.dropdownMenuButton, { [styles.open]: open })}>

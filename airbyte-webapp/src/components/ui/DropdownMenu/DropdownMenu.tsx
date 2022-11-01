@@ -21,43 +21,45 @@ interface MenuItemLink {
   type: DropdownMenuItemType.LINK;
   href: string;
   icon?: React.ReactNode;
-  displayName: React.ReactNode | string;
+  value?: any;
+  displayName: string;
   iconPosition?: IconPositionType;
 }
 
 interface MenuItemButton {
   type: DropdownMenuItemType.BUTTON;
-  // icon?: React.ReactNode;
-  icon?: any;
-  displayName: React.ReactNode | string;
+  value?: any;
+  icon?: React.ReactNode;
+  displayName: string;
   iconPosition?: IconPositionType;
   primary?: boolean;
-  onSelect?: (item: MenuItemLink | MenuItemButton) => void;
 }
 
-// interface MenuItem {
-//   data: MenuItemLink | MenuItemButton;
-// }
-//
-// const MenuItem: React.FC<React.PropsWithChildren<MenuItem>> = ({ data }) => {
-//   return (
-//     <>
-//       {((data?.icon && data?.iconPosition === IconPositionType.LEFT) || !data?.iconPosition) && (
-//         <span className={classNames(styles.icon, styles.positionLeft)}>{data.icon}</span>
-//       )}
-//       <Text className={styles.text} size="lg">
-//         {data.displayName}
-//       </Text>
-//       {data?.icon && data?.iconPosition === IconPositionType.RIGHT && (
-//         <span className={classNames(styles.icon, styles.positionRight)}>{data.icon}</span>
-//       )}
-//     </>
-//   );
-// };
+interface MenuItemContent {
+  data: MenuItemLink | MenuItemButton;
+  active?: boolean;
+}
+
+const MenuItemContent: React.FC<React.PropsWithChildren<MenuItemContent>> = ({ data }) => {
+  return (
+    <>
+      {((data?.icon && data?.iconPosition === IconPositionType.LEFT) || !data?.iconPosition) && (
+        <span className={classNames(styles.icon, styles.positionLeft)}>{data.icon}</span>
+      )}
+      <Text className={styles.text} size="lg">
+        {data.displayName}
+      </Text>
+      {data?.icon && data?.iconPosition === IconPositionType.RIGHT && (
+        <span className={classNames(styles.icon, styles.positionRight)}>{data.icon}</span>
+      )}
+    </>
+  );
+};
 
 interface DropdownMenu {
   options: Array<MenuItemLink | MenuItemButton>;
   children: ({ open }: { open: boolean }) => React.ReactNode;
+  onChange?: (data: MenuItemLink | MenuItemButton) => void;
   placement?: Placement;
   displacement?: number;
 }
@@ -65,6 +67,7 @@ interface DropdownMenu {
 export const DropdownMenu: React.FC<React.PropsWithChildren<DropdownMenu>> = ({
   options,
   children,
+  onChange,
   placement = "bottom",
   displacement = 5,
 }) => {
@@ -73,22 +76,6 @@ export const DropdownMenu: React.FC<React.PropsWithChildren<DropdownMenu>> = ({
     whileElementsMounted: autoUpdate,
     placement,
   });
-
-  // const menuItem = (item: MenuItemLink | MenuItemButton) => {
-  //   return (
-  //     <>
-  //       {((item?.icon && item?.iconPosition === IconPositionType.LEFT) || !item?.iconPosition) && (
-  //         <span className={classNames(styles.icon, styles.positionLeft)}>{item.icon}</span>
-  //       )}
-  //       <Text className={styles.text} size="lg">
-  //         {item.displayName}
-  //       </Text>
-  //       {item?.icon && item?.iconPosition === IconPositionType.RIGHT && (
-  //         <span className={classNames(styles.icon, styles.positionRight)}>{item.icon}</span>
-  //       )}
-  //     </>
-  //   );
-  // };
 
   return (
     <Menu ref={reference} className={styles.dropdownMenu} as="div">
@@ -106,55 +93,34 @@ export const DropdownMenu: React.FC<React.PropsWithChildren<DropdownMenu>> = ({
           >
             {options.map((item, index) => (
               <Menu.Item key={index}>
-                {({ active }) => (
-                  <>
-                    {item.type === DropdownMenuItemType.LINK && (
-                      <a
-                        className={classNames(styles.item, { [styles.active]: active })}
-                        href={item.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        data-id={item.displayName}
-                      >
-                        {((item?.icon && item?.iconPosition === IconPositionType.LEFT) || !item?.iconPosition) && (
-                          <span className={classNames(styles.icon, styles.positionLeft)}>{item.icon}</span>
-                        )}
-                        <Text className={styles.text} size="lg">
-                          {item.displayName}
-                        </Text>
-                        {item?.icon && item?.iconPosition === IconPositionType.RIGHT && (
-                          <span className={classNames(styles.icon, styles.positionRight)}>{item.icon}</span>
-                        )}
-                        {/* <MenuItem data={item} /> */}
-                      </a>
-                    )}
-                    {item.type === DropdownMenuItemType.BUTTON && (
-                      <button
-                        className={classNames(styles.item, {
-                          [styles.active]: active,
-                          [styles.primary]: item?.primary,
-                        })}
-                        onClick={() => {
-                          if (item?.onSelect) {
-                            item.onSelect(item);
-                          }
-                        }}
-                        data-id={item.displayName}
-                      >
-                        {((item?.icon && item?.iconPosition === IconPositionType.LEFT) || !item?.iconPosition) && (
-                          <span className={classNames(styles.icon, styles.positionLeft)}>{item.icon}</span>
-                        )}
-                        <Text className={styles.text} size="lg">
-                          {item.displayName}
-                        </Text>
-                        {item?.icon && item?.iconPosition === IconPositionType.RIGHT && (
-                          <span className={classNames(styles.icon, styles.positionRight)}>{item.icon}</span>
-                        )}
-                        {/* <MenuItem data={item} /> */}
-                      </button>
-                    )}
-                  </>
-                )}
+                {({ active }) =>
+                  item.type === DropdownMenuItemType.LINK ? (
+                    <a
+                      className={classNames(styles.item, {
+                        [styles.active]: active,
+                      })}
+                      target="_blank"
+                      rel="noreferrer"
+                      href={item?.href}
+                      title={item.displayName}
+                      data-id={item.displayName}
+                    >
+                      <MenuItemContent data={item} />
+                    </a>
+                  ) : (
+                    <button
+                      className={classNames(styles.item, {
+                        [styles.active]: active,
+                        [styles.primary]: item?.primary,
+                      })}
+                      data-id={item.displayName}
+                      title={item.displayName}
+                      onClick={() => onChange && onChange(item)}
+                    >
+                      <MenuItemContent data={item} />
+                    </button>
+                  )
+                }
               </Menu.Item>
             ))}
           </Menu.Items>

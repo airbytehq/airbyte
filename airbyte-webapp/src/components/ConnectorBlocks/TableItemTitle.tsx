@@ -96,10 +96,11 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
                   icon: item.img,
                   iconPosition: IconPositionType.RIGHT,
                   displayName: item.label,
-                  onSelect,
+                  value: item.value,
                 } as any)
             ),
           ]}
+          onChange={onSelect}
         >
           {() => (
             <Button data-id={`select-${type}`}>
