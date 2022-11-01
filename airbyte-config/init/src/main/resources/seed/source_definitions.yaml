@@ -328,7 +328,7 @@
 - name: Exchange Rates Api
   sourceDefinitionId: e2b40e36-aa0e-4bed-b41b-bcea6fa348b1
   dockerRepository: airbyte/source-exchange-rates
-  dockerImageTag: 1.2.6
+  dockerImageTag: 1.2.7
   documentationUrl: https://docs.airbyte.com/integrations/sources/exchangeratesapi
   icon: exchangeratesapi.svg
   sourceType: api
