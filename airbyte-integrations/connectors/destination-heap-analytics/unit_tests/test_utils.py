@@ -39,9 +39,9 @@ class TestFlattenJson:
     def test_flatten_array_of_strings(self):
         assert flatten_json({"myStrings": ["a", "1", "b", "2"]}) == {
             "myStrings.0": "a",
-            "myStrings.1": 1,
+            "myStrings.1": "1",
             "myStrings.2": "b",
-            "myStrings.3": 2,
+            "myStrings.3": "2",
         }
 
     def test_flatten_array_of_booleans(self):
