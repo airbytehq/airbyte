@@ -471,14 +471,14 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     if (PostgresUtils.isCdc(config)) {
-      if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)){
+      if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
         String sslModeValue = config.get(SSL_MODE).get(MODE).asText();
         if (INVALID_CDC_SSL_MODES.contains(sslModeValue)) {
           return new AirbyteConnectionStatus()
-                  .withStatus(Status.FAILED)
-                  .withMessage(String.format(
-                          "In CDC replication mode ssl value '%s' is invalid. Please use one of the following SSL modes: disable, require, verify-ca, verify-full",
-                          sslModeValue));
+              .withStatus(Status.FAILED)
+              .withMessage(String.format(
+                  "In CDC replication mode ssl value '%s' is invalid. Please use one of the following SSL modes: disable, require, verify-ca, verify-full",
+                  sslModeValue));
         }
       }
     }

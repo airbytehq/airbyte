@@ -1,9 +1,6 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/destinations/heap-analytics",
-  "supported_destination_sync_modes": [
-    "append",
-    "append_dedup"
-  ],
+  "supported_destination_sync_modes": ["append", "append_dedup"],
   "supportsIncremental": true,
   "supportsDBT": false,
   "supportsNormalization": false,
@@ -11,11 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Heap Analytics Destination Spec",
     "type": "object",
-    "required": [
-      "base_url",
-      "app_id",
-      "api"
-    ],
+    "required": ["base_url", "app_id", "api"],
     "additionalProperties": true,
     "properties": {
       "app_id": {
@@ -31,9 +24,7 @@
         "title": "Base URL",
         "description": "The Base URL for Heap Analytics",
         "default": "https://heapanalytics.com",
-        "examples": [
-          "https://heapanalytics.com"
-        ]
+        "examples": ["https://heapanalytics.com"]
       },
       "api": {
         "order": 2,
@@ -63,36 +54,28 @@
                 "title": "Property Columns",
                 "default": "*",
                 "description": "Please list all columns populated to the properties attribute, split by comma(,). It's case sensitive.",
-                "examples": [
-                  "subject,variation"
-                ]
+                "examples": ["subject,variation"]
               },
               "event_column": {
                 "order": 2,
                 "type": "string",
                 "title": "Event Column",
                 "description": "Please pick the column populated to the event attribute. It's case sensitive.",
-                "examples": [
-                  "order_name"
-                ]
+                "examples": ["order_name"]
               },
               "identity_column": {
                 "order": 3,
                 "type": "string",
                 "title": "Identity Column",
                 "description": "Please pick the column populated to the identity attribute.",
-                "examples": [
-                  "email"
-                ]
+                "examples": ["email"]
               },
               "timestamp_column": {
                 "order": 4,
                 "type": "string",
                 "title": "Identity Column",
                 "description": "Please pick the column populated to the (optional) timestamp attribute. time_now() will be used if missing.",
-                "examples": [
-                  "updated_at"
-                ]
+                "examples": ["updated_at"]
               }
             }
           },
@@ -100,11 +83,7 @@
             "order": 1,
             "type": "object",
             "title": "Add User Properties",
-            "required": [
-              "api_type",
-              "property_columns",
-              "identity_column"
-            ],
+            "required": ["api_type", "property_columns", "identity_column"],
             "properties": {
               "api_type": {
                 "order": 0,
@@ -117,18 +96,14 @@
                 "title": "Property Columns",
                 "default": "*",
                 "description": "Please list all columns populated to the properties attribute, split by comma(,). It's case sensitive.",
-                "examples": [
-                  "age,language,profession"
-                ]
+                "examples": ["age,language,profession"]
               },
               "identity_column": {
                 "order": 3,
                 "type": "string",
                 "title": "Identity Column",
                 "description": "Please pick the column populated to the identity attribute.",
-                "examples": [
-                  "user_id"
-                ]
+                "examples": ["user_id"]
               }
             }
           },
@@ -136,11 +111,7 @@
             "order": 2,
             "type": "object",
             "title": "Add Account Properties",
-            "required": [
-              "api_type",
-              "property_columns",
-              "account_id_column"
-            ],
+            "required": ["api_type", "property_columns", "account_id_column"],
             "properties": {
               "api_type": {
                 "order": 0,
@@ -162,9 +133,7 @@
                 "type": "string",
                 "title": "Account ID Column",
                 "description": "Please pick the column populated to the account_id attribute.",
-                "examples": [
-                  "company_name"
-                ]
+                "examples": ["company_name"]
               }
             }
           }
