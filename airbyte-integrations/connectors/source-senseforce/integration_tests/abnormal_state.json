@@ -1,5 +1,5 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+  "dataset": {
+    "airbyte_cursor": 5595570341.224
   }
 }
