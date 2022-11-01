@@ -1638,14 +1638,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     return result;
   }
 
-  @Override
-  public void loadData(final ConfigPersistence seedConfigPersistence) throws IOException {
-    database.transaction(ctx -> {
-      updateConfigsFromSeed(ctx, seedConfigPersistence);
-      return null;
-    });
-  }
-
   @VisibleForTesting
   void updateConfigsFromSeed(final DSLContext ctx, final ConfigPersistence seedConfigPersistence) throws SQLException {
     LOGGER.info("Updating connector definitions from the seed if necessary...");
@@ -1940,8 +1932,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     ConnectorInfo(final String definitionId, final JsonNode definition) {
       this.definitionId = definitionId;
       this.definition = definition;
-      this.dockerRepository = definition.get("dockerRepository").asText();
-      this.dockerImageTag = definition.get("dockerImageTag").asText();
+      dockerRepository = definition.get("dockerRepository").asText();
+      dockerImageTag = definition.get("dockerImageTag").asText();
     }
 
     @Override
