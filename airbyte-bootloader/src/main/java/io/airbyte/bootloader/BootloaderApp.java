@@ -23,7 +23,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
@@ -195,11 +194,7 @@ public class BootloaderApp {
   }
 
   private static ConfigPersistence getConfigPersistence(final Database configDatabase) throws IOException {
-    final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
-        .copySecrets(true)
-        .build();
-
-    return DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
+    return DatabaseConfigPersistence.createWithValidation(configDatabase);
   }
 
   private static DefinitionsProvider getLocalDefinitionsProvider() throws IOException {
