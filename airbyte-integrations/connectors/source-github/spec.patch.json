@@ -1,79 +1,82 @@
 {
-  "start_date": {
-    "description": "The date from which you'd like to replicate data from GitHub in the format YYYY-MM-DDT00:00:00Z. For the streams which support this configuration, only data generated on or after the startdate will be replicated. This field doesn't apply to all streams, see the docs for more info: https://go.estuary.dev/xLGlPL",
-    "order": 0
-  },
-  "repository": {
-    "description": "Space-delimited list of GitHub organizations/repositories, e.g. `estuary/flow` for single repository, `estuary/*`to get all repositories from organization and `estuary/flow estuary/another-repo` for multiple repositories.",
-    "examples": [
-      "estuary/flow estuary/another-repo",
-      "estuary/*",
-      "estuary/connectors"
-    ],
-    "order": 1
-  },
-  "branch": {
-    "title": "Branch (Optional)",
-    "examples": ["estuary/flow/examples estuary/flow/scripts"],
-    "description": "Space-delimited list of GitHub repository branches to pull commits for, e.g. `estuary/flow/your-branch`. If no branches are specified for a repository, the default branch will be pulled.",
-    "order": 2
-  },
-  "page_size_for_large_streams": {
-    "title": "Page size for large streams (Optional)",
-    "order": 3
-  },
-  "credentials": {
-    "order": 4,
-    "oneOf": [{
-        "type": "object",
-        "title": "OAuth",
-        "required": ["access_token"],
-        "properties": {
-          "option_title": {
-            "type": "string",
-            "const": "OAuth Credentials",
-            "default": "OAuth Credentials",
-            "order": 0
-          },
-          "access_token": {
-            "type": "string",
-            "title": "Access Token",
-            "description": "OAuth access token",
-            "airbyte_secret": true
-          },
-          "client_id": {
-            "type": "string",
-            "title": "client_id",
-            "description": "client_id",
-            "airbyte_secret": true
-          },
-          "client_secret": {
-            "type": "string",
-            "title": "client_secret",
-            "description": "client_secret",
-            "airbyte_secret": true
+  "properties": {
+    "start_date": {
+      "description": "The date from which you'd like to replicate data from GitHub in the format YYYY-MM-DDT00:00:00Z. For the streams which support this configuration, only data generated on or after the startdate will be replicated. This field doesn't apply to all streams, see the docs for more info: https://go.estuary.dev/xLGlPL",
+      "order": 0
+    },
+    "repository": {
+      "description": "Space-delimited list of GitHub organizations/repositories, e.g. `estuary/flow` for single repository, `estuary/*`to get all repositories from organization and `estuary/flow estuary/another-repo` for multiple repositories.",
+      "examples": [
+        "estuary/flow estuary/another-repo",
+        "estuary/*",
+        "estuary/connectors"
+      ],
+      "order": 1
+    },
+    "branch": {
+      "title": "Branch (Optional)",
+      "examples": ["estuary/flow/examples estuary/flow/scripts"],
+      "description": "Space-delimited list of GitHub repository branches to pull commits for, e.g. `estuary/flow/your-branch`. If no branches are specified for a repository, the default branch will be pulled.",
+      "order": 2
+    },
+    "page_size_for_large_streams": {
+      "title": "Page size for large streams (Optional)",
+      "order": 3
+    },
+    "credentials": {
+      "order": 4,
+      "oneOf": [{
+          "type": "object",
+          "title": "OAuth",
+          "x-oauth2-provider": "github",
+          "required": ["access_token"],
+          "properties": {
+            "option_title": {
+              "type": "string",
+              "const": "OAuth Credentials",
+              "default": "OAuth Credentials",
+              "order": 0
+            },
+            "access_token": {
+              "type": "string",
+              "title": "Access Token",
+              "description": "OAuth access token",
+              "airbyte_secret": true
+            },
+            "client_id": {
+              "type": "string",
+              "title": "client_id",
+              "description": "client_id",
+              "airbyte_secret": true
+            },
+            "client_secret": {
+              "type": "string",
+              "title": "client_secret",
+              "description": "client_secret",
+              "airbyte_secret": true
+            }
+          }
+        },
+        {
+          "type": "object",
+          "title": "Personal Access Token",
+          "required": ["personal_access_token"],
+          "properties": {
+            "option_title": {
+              "type": "string",
+              "const": "PAT Credentials",
+              "default": "PAT Credentials",
+              "order": 0
+            },
+            "personal_access_token": {
+              "type": "string",
+              "title": "Personal Access Tokens",
+              "description": "Log into GitHub and then generate a personal access token: https://github.com/settings/tokens. To load balance your API quota consumption across multiple API tokens, input multipletokens separated with \",\"",
+              "airbyte_secret": true
+            }
           }
         }
-      },
-      {
-        "type": "object",
-        "title": "Personal Access Token",
-        "required": ["personal_access_token"],
-        "properties": {
-          "option_title": {
-            "type": "string",
-            "const": "PAT Credentials",
-            "default": "PAT Credentials",
-            "order": 0
-          },
-          "personal_access_token": {
-            "type": "string",
-            "title": "Personal Access Tokens",
-            "description": "Log into GitHub and then generate a personal access token: https://github.com/settings/tokens. To load balance your API quota consumption across multiple API tokens, input multipletokens separated with \",\"",
-            "airbyte_secret": true
-          }
-        }
-      }
-    ]
+      ]
+    }
   }
 }

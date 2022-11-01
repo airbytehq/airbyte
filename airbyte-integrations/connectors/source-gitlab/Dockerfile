@@ -10,8 +10,6 @@ COPY source_gitlab ./source_gitlab
 COPY main.py ./
 COPY setup.py ./
 RUN pip install .
-COPY documentation_url.patch.json ./
-COPY spec.patch.json ./
 
 COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./
  

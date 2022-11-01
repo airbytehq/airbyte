@@ -1,0 +1,47 @@
+{
+  "properties": {
+    "credentials": {
+      "x-oauth2-provider": "google",
+      "properties": {
+        "developer_token": {
+          "description": "Developer token granted by Google to use their APIs. More instruction on how to find this value in our docs: https://go.estuary.dev/q3rQAD"
+        },
+        "client_id": {
+          "description": "The Client ID of your Google Ads developer application. More instruction on how to find this value in our docs: https://go.estuary.dev/q3rQAD"
+        },
+        "client_secret": {
+          "description": "The Client Secret of your Google Ads developer application. More instruction on how to find this value in our docs: https://go.estuary.dev/q3rQAD"
+        },
+        "refresh_token": {
+          "description": "The token for obtaining a new access token. More instruction on how to find this value in our docs: https://go.estuary.dev/q3rQAD"
+        },
+        "access_token": {
+          "description": "Access Token for making authenticated requests. More instruction on how to find this value in our docs: https://go.estuary.dev/q3rQAD"
+        }
+      }
+    },
+    "end_date": {
+      "title": "End Date (Optional)",
+      "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "custom_queries": {
+      "title": "Custom GAQL Queries (Optional)",
+      "items": {
+        "required": ["query", "table_name"],
+        "properties": {
+          "query": {
+            "description": "A custom defined GAQL query for building the report. Should not contain segments.date expression because it is used by incremental streams. See Google's query builder for more informa tion: https://developers.google.com/google-ads/api/fields/v11/overview_query_builder"
+          }
+        }
+      }
+    },
+    "login_customer_id": {
+      "title": "Login Customer ID for Managed Accounts (Optional)",
+      "description": "If your access to the customer account is through a manager account, this field is required and must be set to the customer ID of the manager account (10-digit number without dashes). Moreinformation about this field you can see here: https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid"
+    },
+    "conversion_window_days": {
+      "title": "Conversion Window (Optional)",
+      "description": "A conversion window is the period of time after an ad interaction (such as an ad click or video view) during which a conversion, such as a purchase, is recorded in Google Ads. For more information, see Google's docs: https://support.google.com/google-ads/answer/3123169?hl=en"
+    }
+  }
+}
