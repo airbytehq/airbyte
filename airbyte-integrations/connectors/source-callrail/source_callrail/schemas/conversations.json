@@ -20,7 +20,7 @@
     "company_id": {"type": ["null","string"]},
     "recent_messages": {
       "type": ["null","array"],
-      "items": [{
+      "items": {
           "type": ["null","object"],
           "properties": {
             "direction": {"type": ["null","string"]},
@@ -28,4 +28,4 @@
             "created_at": {
               "type": ["null","string"],
                    "format": "date-time"}
-          } } ] } } }
+          } }  } } }
