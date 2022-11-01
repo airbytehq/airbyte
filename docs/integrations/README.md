@@ -146,6 +146,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Postgres](sources/postgres.md)                                                             | Generally Available  | Yes                 |
 | [PostHog](sources/posthog.md)                                                               | Alpha                | Yes                 |
 | [PrestaShop](sources/presta-shop.md)                                                        | Alpha                | Yes                 |
+| [Public APIs](sources/public-apis.md)                                                       | Alpha                | Yes                 |
 | [Qualaroo](sources/qualaroo.md)                                                             | Alpha                | Yes                 |
 | [QuickBooks](sources/quickbooks.md)                                                         | Alpha                | No                  |
 | [RD Station Marketing](sources/rd-station-marketing.md)                                     | Alpha                | No                  |
