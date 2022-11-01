@@ -245,7 +245,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       onSubmit={onFormSubmit}
       enableReinitialize
     >
-      {({ dirty }) => (
+      {({ dirty, values, touched }) => (
         <ServiceFormContextProvider
           widgetsInfo={uiWidgetsInfo}
           getValues={getValues}
@@ -258,6 +258,14 @@ export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           isLoadingSchema={isLoading}
           validationSchema={validationSchema}
         >
+          {/* TODO: Debugging, remove before merging */}
+          {console.log(
+            "values",
+            Object.fromEntries(
+              Object.entries(values.connectionConfiguration as object).filter(([, v]) => typeof v === "string")
+            )
+          )}
+          {console.log("touched", touched.connectionConfiguration)}
           {!isEditMode && <SetDefaultName />}
           <RevalidateOnValidationSchemaChange validationSchema={validationSchema} />
           <FormikPatch />

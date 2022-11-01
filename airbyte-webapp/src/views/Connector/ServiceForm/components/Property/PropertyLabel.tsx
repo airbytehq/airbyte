@@ -24,7 +24,13 @@ export const PropertyLabel: React.FC<React.PropsWithChildren<PropertyLabelProps>
   children,
   htmlFor,
 }) => {
-  const examples = property._type === "formItem" || property._type === "formGroup" ? property.examples : undefined;
+  const examples =
+    // Show examples for individual items and groups, unless its a date field, since we don't
+    // want to confuse the user around potential date format examples
+    (property._type === "formItem" && property.format !== "date-time" && property.format !== "date") ||
+    property._type === "formGroup"
+      ? property.examples
+      : undefined;
   const descriptionToDisplay = description ?? property.description;
 
   return (

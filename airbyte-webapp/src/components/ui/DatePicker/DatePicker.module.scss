@@ -1,0 +1,17 @@
+@use "scss/colors";
+@use "scss/z-indices";
+
+.popup {
+z-index: z-indices.$datepicker;
+}
+
+.clearButton {
+  &::after {
+    background: transparent;
+    color: colors.$grey-300;
+  }
+
+  &:hover::after, &:focus-visible::after {
+    color: colors.$grey-900;
+  }
+}

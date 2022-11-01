@@ -1,6 +1,7 @@
 import { Field, useField } from "formik";
 import React from "react";
 
+import { DatePicker } from "components/ui/DatePicker";
 import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
 import { Multiselect } from "components/ui/Multiselect";
@@ -62,6 +63,19 @@ export const Control: React.FC<ControlProps> = ({
         onChange={(dataItems) => helpers.setValue(dataItems)}
         value={field.value}
         disabled={disabled}
+      />
+    );
+  }
+
+  if (property.type === "string" && (property.format === "date-time" || property.format === "date")) {
+    return (
+      <DatePicker
+        error={error}
+        withTime={property.format === "date-time"}
+        onChange={(value) => helpers.setValue(value)}
+        value={field.value}
+        disabled={disabled}
+        onBlur={() => helpers.setTouched(true)}
       />
     );
   }
