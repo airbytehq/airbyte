@@ -60,6 +60,7 @@ import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
+import io.airbyte.server.handlers.OAuthHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
@@ -302,6 +303,8 @@ public class ServerApp implements ServerRunnable {
 
     final HealthCheckHandler healthCheckHandler = new HealthCheckHandler(configRepository);
 
+    final OAuthHandler oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient);
+
     LOGGER.info("Starting server...");
 
     return apiFactory.create(
@@ -327,6 +330,7 @@ public class ServerApp implements ServerRunnable {
         destinationDefinitionsHandler,
         destinationHandler,
         healthCheckHandler,
+        oAuthHandler,
         operationsHandler,
         schedulerHandler);
   }

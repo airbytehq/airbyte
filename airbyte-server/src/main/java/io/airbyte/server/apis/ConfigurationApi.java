@@ -384,40 +384,58 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   // OAUTH
 
+  /**
+   * This implementation has been moved to {@link SourceOauthApiController}. Since the path of
+   * {@link SourceOauthApiController} is more granular, it will override this implementation
+   */
   @Override
   public OAuthConsentRead getSourceOAuthConsent(final SourceOauthConsentRequest sourceOauthConsentRequest) {
-    return execute(() -> oAuthHandler.getSourceOAuthConsent(sourceOauthConsentRequest));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceOauthApiController}. Since the path of
+   * {@link SourceOauthApiController} is more granular, it will override this implementation
+   */
   @Override
   public Map<String, Object> completeSourceOAuth(final CompleteSourceOauthRequest completeSourceOauthRequest) {
-    return execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationOauthApiController}. Since the path of
+   * {@link DestinationOauthApiController} is more granular, it will override this implementation
+   */
   @Override
   public OAuthConsentRead getDestinationOAuthConsent(final DestinationOauthConsentRequest destinationOauthConsentRequest) {
-    return execute(() -> oAuthHandler.getDestinationOAuthConsent(destinationOauthConsentRequest));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationOauthApiController}. Since the path of
+   * {@link DestinationOauthApiController} is more granular, it will override this implementation
+   */
   @Override
   public Map<String, Object> completeDestinationOAuth(final CompleteDestinationOAuthRequest requestBody) {
-    return execute(() -> oAuthHandler.completeDestinationOAuth(requestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationOauthApiController}. Since the path of
+   * {@link DestinationOauthApiController} is more granular, it will override this implementation
+   */
   @Override
   public void setInstancewideDestinationOauthParams(final SetInstancewideDestinationOauthParamsRequestBody requestBody) {
-    execute(() -> {
-      oAuthHandler.setDestinationInstancewideOauthParams(requestBody);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceOauthApiController}. Since the path of
+   * {@link SourceOauthApiController} is more granular, it will override this implementation
+   */
   @Override
   public void setInstancewideSourceOauthParams(final SetInstancewideSourceOauthParamsRequestBody requestBody) {
-    execute(() -> {
-      oAuthHandler.setSourceInstancewideOauthParams(requestBody);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
   /**
