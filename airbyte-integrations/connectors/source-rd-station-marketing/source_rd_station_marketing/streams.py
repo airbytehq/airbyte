@@ -94,10 +94,6 @@ class AnalyticsConversions(IncrementalRDStationMarketingStream):
     cursor_field = "asset_updated_at"
     primary_key = "asset_id"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        records = response.json().get(self.data_field)[0].get(self.data_field)
-        yield from records
-
 
 class AnalyticsEmails(IncrementalRDStationMarketingStream):
     """
