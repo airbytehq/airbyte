@@ -20,6 +20,9 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
 import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
+import static io.airbyte.integrations.source.relationaldb.FullTableQueryUtils.enquoteIdentifierList;
+import static io.airbyte.integrations.source.relationaldb.FullTableQueryUtils.getFullTableName;
+import static io.airbyte.integrations.source.relationaldb.FullTableQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -40,7 +43,7 @@ import io.airbyte.db.jdbc.streaming.JdbcStreamingQueryConfig;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
-import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
+import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
@@ -81,7 +84,7 @@ import org.slf4j.LoggerFactory;
  * relational DB source which can be accessed via JDBC driver. If you are implementing a connector
  * for a relational DB which has a JDBC driver, make an effort to use this class.
  */
-public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbSource<Datatype, JdbcDatabase> implements Source {
+public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Datatype, JdbcDatabase> implements Source {
 
   public static final String SSL_MODE = "sslMode";
 
@@ -134,6 +137,17 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     this.driverClass = driverClass;
     this.streamingQueryConfigProvider = streamingQueryConfigProvider;
     this.sourceOperations = sourceOperations;
+  }
+
+  @Override
+  protected AutoCloseableIterator<JsonNode> queryTableFullRefresh(final JdbcDatabase database,
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName) {
+    LOGGER.info("Queueing query for table: {}", tableName);
+    return queryTable(database, String.format("SELECT %s FROM %s",
+        enquoteIdentifierList(columnNames, getQuoteString()),
+        getFullTableName(schemaName, tableName, getQuoteString())));
   }
 
   /**
