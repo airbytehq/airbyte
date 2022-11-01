@@ -1,4 +1,4 @@
-# Typeform
+# Zapier Supported Storage
 
 ## Overview
 
