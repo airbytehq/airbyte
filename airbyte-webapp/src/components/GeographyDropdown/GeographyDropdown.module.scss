@@ -1,5 +1,5 @@
-@use "../../scss/variables";
-@use "../../scss/colors";
+@use "scss/variables";
+@use "scss/colors";
 
 .menuList {
   padding: 10px 16px;
@@ -26,14 +26,7 @@
     padding: 6px 20px 6px 6px;
     margin: 0 10px;
     max-width: 280px;
-
-    // background-color: colors.$white;
     font-weight: 500;
-
-    // &:hover {
-    //   background-color: colors.$grey-50;
-    //   // border-radius: 10px;
-    // }
   }
 }
 

@@ -2,12 +2,15 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
 import { useIntl } from "react-intl";
-import { components, OptionProps, MenuListProps } from "react-select";
+import { components, OptionProps, MenuListProps, StylesConfig } from "react-select";
 
 import "/node_modules/flag-icons/css/flag-icons.min.css";
 
 import { DropDown } from "components/ui/DropDown";
 import { DropdownProps } from "components/ui/DropDown";
+
+import { Geography } from "core/request/AirbyteClient";
+import { theme } from "packages/cloud/theme";
 
 import styles from "./GeographyDropdown.module.scss";
 
@@ -24,22 +27,24 @@ const GeographyOption: React.FC<OptionProps> = (props) => {
 };
 
 const MenuList = (props: MenuListProps) => {
+  const { formatMessage } = useIntl();
   return (
     <components.MenuList {...props}>
       {props.children}
       <div className={styles.menuList}>
         <FontAwesomeIcon icon={faPlus} />
-        <span>Request a new geography</span>
+        <span>{formatMessage({ id: "geography.new" })}</span>
       </div>
     </components.MenuList>
   );
 };
 
-interface Props<T = unknown> extends DropdownProps {
-  options: T[];
+interface GeographySelectOption {
+  label: Geography;
+  value: Geography;
 }
 
-export const GeographyDropdown: React.FC<Props> = ({ options }) => {
+export const GeographyDropdown: React.FC<DropdownProps<GeographySelectOption>> = ({ options }) => {
   const [option, setOption] = useState();
   const { formatMessage } = useIntl();
   const handleOptionSelect = (e: any) => {
@@ -57,15 +62,15 @@ export const GeographyDropdown: React.FC<Props> = ({ options }) => {
     );
   };
 
-  const customStyles = {
-    option: (provided: any, state: any) => ({
+  const customStyles: StylesConfig<GeographySelectOption> = {
+    option: (provided, state) => ({
       ...provided,
       color: "black",
-      backgroundColor: state.isSelected ? "#eae9ff" : "#ffffff",
+      backgroundColor: state.isFocused ? theme.blue50 : theme.white,
       borderRadius: "10px",
 
       "&:hover": {
-        backgroundColor: state.isSelected ? "#eae9ff" : "#f8f8fa",
+        backgroundColor: state.isSelected ? theme.blue50 : theme.grey50,
       },
     }),
     valueContainer: () => ({
