@@ -1,19 +1,16 @@
-@use "../../../scss/colors";
-@use "../../../scss/variables";
-@use "../../../scss/z-indices";
+@use "scss/colors";
+@use "scss/variables";
+@use "scss/z-indices";
 
-.dropDownMenu {
+.dropdownMenu {
   position: relative;
 }
 
 .items {
   z-index: z-indices.$dropdownMenu;
   overflow: auto;
-  position: absolute;
-  right: 0;
   width: 260px;
   max-height: 300px;
-  margin-top: variables.$spacing-xs;
   padding: variables.$spacing-sm 0;
   outline: none;
   border-radius: variables.$border-radius-xs;
@@ -28,7 +25,6 @@
     cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: space-between;
     height: 42px;
     width: 100%;
     padding: 0 variables.$spacing-lg;
@@ -36,11 +32,27 @@
     background-color: transparent;
     text-decoration: none;
 
+    .icon {
+      display: flex;
+      align-items: center;
+      font-size: 22px;
+      color: colors.$dark-blue;
+
+      &.positionLeft {
+        margin-right: variables.$spacing-md;
+      }
+
+      &.positionRight {
+        margin-left: variables.$spacing-md;
+      }
+    }
+
     .text {
-      padding-right: variables.$spacing-xs;
+      width: 100%;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      text-align: left;
     }
 
     &.primary .text {

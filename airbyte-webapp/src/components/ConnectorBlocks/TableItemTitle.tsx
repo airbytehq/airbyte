@@ -8,13 +8,14 @@ import { Text } from "components/ui/Text";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
 
-import { DropdownMenuItemType } from "../ui/DropdownMenu/DropdownMenu";
+import { Button } from "../ui/Button";
+import { DropdownMenuItemType, IconPositionType } from "../ui/DropdownMenu/DropdownMenu";
 import styles from "./TableItemTitle.module.scss";
 
 interface TableItemTitleProps {
   type: "source" | "destination";
-  dropDownData: DropdownMenuItemType[];
-  onSelect: (item: DropdownMenuItemType) => void;
+  dropDownData: any[];
+  onSelect: (item: any) => void;
   entity: string;
   entityName: string;
   entityIcon?: React.ReactNode;
@@ -31,17 +32,37 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
   releaseStage,
 }) => {
   const { formatMessage } = useIntl();
-  const options = [
-    {
-      label: formatMessage({
-        id: `tables.${type}AddNew`,
-      }),
-      value: "create-new-item",
-      primary: true,
-    },
-    ...dropDownData,
-  ];
+  // const options = [
+  //   {
+  //     label: formatMessage({
+  //       id: `tables.${type}AddNew`,
+  //     }),
+  //     value: "create-new-item",
+  //     primary: true,
+  //   },
+  //   ...dropDownData,
+  // ];
+  // onChange={onSelect}
 
+  // type: DropdownMenuItemType.BUTTON;
+  // icon: React.ReactNode;
+  // displayName: React.ReactNode;
+  // iconPosition?: IconPositionType;
+  // primary?: boolean;
+  // onClick?: () => void;
+  console.log(onSelect);
+  console.log(dropDownData);
+  // const options = [
+  //   {
+  //     type: DropdownMenuItemType.BUTTON,
+  //     icon: <span>Hi</span>,
+  //     iconPosition: IconPositionType.RIGHT,
+  //     primary: true,
+  //     displayName: formatMessage({
+  //       id: `tables.${type}AddNew`,
+  //     }),
+  //   },
+  // ];
   return (
     <>
       <div className={styles.entityInfo}>
@@ -59,11 +80,33 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
           <FormattedMessage id="tables.connections" />
         </Heading>
         <DropdownMenu
-          testId={`select-${type}`}
-          label={<FormattedMessage id={`tables.${type}Add`} />}
-          options={options}
-          onChange={onSelect}
-        />
+          placement="bottom-end"
+          options={[
+            {
+              type: DropdownMenuItemType.BUTTON,
+              primary: true,
+              displayName: formatMessage({
+                id: `tables.${type}AddNew`,
+              }),
+            },
+            ...dropDownData.map(
+              (item) =>
+                ({
+                  type: DropdownMenuItemType.BUTTON,
+                  icon: item.img,
+                  iconPosition: IconPositionType.RIGHT,
+                  displayName: item.label,
+                  onSelect,
+                } as any)
+            ),
+          ]}
+        >
+          {() => (
+            <Button data-id={`select-${type}`}>
+              <FormattedMessage id={`tables.${type}Add`} />
+            </Button>
+          )}
+        </DropdownMenu>
       </div>
     </>
   );
