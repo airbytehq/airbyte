@@ -1,7 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import HeadTitle from "components/HeadTitle";
+import { HeadTitle } from "components/common/HeadTitle";
 import { Heading } from "components/ui/Heading";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";

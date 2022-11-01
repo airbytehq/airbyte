@@ -4,9 +4,9 @@ import classNames from "classnames";
 import React, { useMemo } from "react";
 import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 
-import { StatusIcon } from "components";
 import { ProgressBar } from "components/ProgressBar";
 import { Cell, Row } from "components/SimpleTableComponents";
+import { StatusIcon } from "components/ui/StatusIcon";
 
 import { AttemptRead, JobStatus, SynchronousJobRead } from "core/request/AirbyteClient";
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
