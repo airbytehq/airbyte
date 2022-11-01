@@ -33,7 +33,7 @@ abstract class AirbyteDockerTask extends DefaultTask {
     String dockerfileName
 
     @Input
-    String runFromPath
+    String runFromPath = ""
 
     @Input
     boolean followSymlinks = false
@@ -171,7 +171,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
         }
     }
 
-    static def createTask(Project project, String taskName, String dockerFile, String runFrom) {
+    static def createTask(Project project, String taskName, String dockerFile) {
         if (project.file(dockerFile).exists()) {
             def filteredProjectFiles = project.fileTree(project.projectDir).filter {
                 file -> !file.toString().contains(".venv")
@@ -182,7 +182,6 @@ class AirbyteDockerPlugin implements Plugin<Project> {
                 def hash = MessageDigest.getInstance("MD5").digest(dockerPath.getBytes()).encodeHex().toString()
                 dockerfileName = dockerFile
                 rootDir = project.rootProject.rootDir
-                runFromPath = runFrom
                 projectDir = project.projectDir
                 projectFiles = filteredProjectFiles
                 idFileOutput = project.file(Paths.get(project.rootProject.rootDir.absolutePath, '.dockerversions', hash).toString())
@@ -223,8 +222,8 @@ class AirbyteDockerPlugin implements Plugin<Project> {
             }
         }()
 
-        createTask(project, 'airbyteDocker', 'Dockerfile', "")
-        createTask(project, 'airbyteDockerTest', 'Dockerfile.test', "")
+        createTask(project, 'airbyteDocker', 'Dockerfile')
+        createTask(project, 'airbyteDockerTest', 'Dockerfile.test')
 
         project.build.dependsOn project.airbyteDocker
     }
