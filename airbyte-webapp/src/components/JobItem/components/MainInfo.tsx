@@ -89,7 +89,7 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
         <div className={styles.justification}>
           {label}
           <div>
-            <ProgressBar job={job} />
+            <ProgressBar job={job} jobConfigType={jobConfigType} />
           </div>
           {attempts.length > 0 && (
             <>

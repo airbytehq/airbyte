@@ -547,6 +547,10 @@
   "estimate.minutesRemaining": "minutes remaining",
   "estimate.hoursRemaining": "hours remaining",
   "estimate.recordsSynced": "records synced",
+  "estimate.recordsPerSecond": "records/sec",
+  "estimate.bytesSynced": "synced",
+  "estimate.bytesPerSecond": "/sec",
+  "estimate.unEstimatedStreams": "un-estimated streams",
   "estimate.recordsSyncedThusFar": "records synced thus far",
   "estimate.percentComplete": "% complete",
 

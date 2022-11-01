@@ -1,10 +1,10 @@
 import classNames from "classnames";
 import { Line } from "rc-progress";
-import { useIntl } from "react-intl";
+import { useIntl, FormattedMessage } from "react-intl";
 
 import { getJobStatus } from "components/JobItem/JobItem";
 
-import { AttemptRead, SynchronousJobRead } from "core/request/AirbyteClient";
+import { AttemptRead, JobConfigType, SynchronousJobRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 
@@ -14,12 +14,40 @@ function isJobsWithJobs(job: JobsWithJobs | SynchronousJobRead): job is JobsWith
   return (job as JobsWithJobs).attempts !== undefined;
 }
 
-export const ProgressBar = ({ job }: { job: JobsWithJobs | SynchronousJobRead }) => {
+const formatBytes = (bytes?: number) => {
+  if (!bytes) {
+    return <FormattedMessage id="sources.countBytes" values={{ count: bytes || 0 }} />;
+  }
+
+  const k = 1024;
+  const dm = 2;
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  const result = parseFloat((bytes / Math.pow(k, i)).toFixed(dm));
+
+  return <FormattedMessage id={`sources.count${sizes[i]}`} values={{ count: result }} />;
+};
+
+export const ProgressBar = ({
+  job,
+  jobConfigType,
+}: {
+  job: JobsWithJobs | SynchronousJobRead;
+  jobConfigType: JobConfigType;
+}) => {
   const { formatMessage } = useIntl();
 
-  let numerator = 0;
-  let denominator = 0;
-  let totalPercent = -1;
+  if (jobConfigType !== "sync") {
+    return null;
+  }
+
+  let numeratorRecords = 0;
+  let denominatorRecords = 0;
+  let totalPercentRecords = -1;
+  let numeratorBytes = 0;
+  let denominatorBytes = 0;
+  // let totalPercentBytes = -1;
+  let elapsedTimeMS = -1;
   let timeRemainingString = "";
   const unEstimatedStreams: string[] = [];
   let latestAttempt: AttemptRead | undefined;
@@ -56,8 +84,10 @@ export const ProgressBar = ({ job }: { job: JobsWithJobs | SynchronousJobRead })
           if (!stream.stats.recordsEmitted) {
             unEstimatedStreams.push(`${stream.streamName}`);
           }
-          numerator += stream.stats.recordsEmitted ?? 0;
-          denominator += stream.stats.estimatedRecords ?? 0;
+          numeratorRecords += stream.stats.recordsEmitted ?? 0;
+          denominatorRecords += stream.stats.estimatedRecords ?? 0;
+          numeratorBytes += stream.stats.bytesEmitted ?? 0;
+          denominatorBytes += stream.stats.estimatedBytes ?? 0;
         }
       }
     }
@@ -65,12 +95,14 @@ export const ProgressBar = ({ job }: { job: JobsWithJobs | SynchronousJobRead })
     // TODO... maybe
   }
 
-  totalPercent = Math.floor((numerator * 100) / denominator);
+  totalPercentRecords = Math.floor((numeratorRecords * 100) / denominatorRecords);
+  // totalPercentBytes = Math.floor((numeratorBytes * 100) / denominatorBytes);
 
+  // chose to estimate time remaining based on records rather than bytes
   if (latestAttempt && latestAttempt.status === Status.RUNNING) {
     const now = new Date().getTime();
-    const elapsedTime = now - latestAttempt.createdAt * 1000;
-    const timeRemaining = Math.floor(elapsedTime / totalPercent) * (100 - totalPercent); // in ms
+    elapsedTimeMS = now - latestAttempt.createdAt * 1000;
+    const timeRemaining = Math.floor(elapsedTimeMS / totalPercentRecords) * (100 - totalPercentRecords); // in ms
     const minutesRemaining = Math.ceil(timeRemaining / 1000 / 60);
     const hoursRemaining = Math.ceil(minutesRemaining / 60);
     if (minutesRemaining <= 60) {
@@ -82,14 +114,27 @@ export const ProgressBar = ({ job }: { job: JobsWithJobs | SynchronousJobRead })
 
   return (
     <div className={classNames(styles.container)}>
-      <Line percent={totalPercent} strokeColor={[color]} />
+      <Line percent={totalPercentRecords} strokeColor={[color]} />
       {latestAttempt?.status === Status.RUNNING && latestAttempt.streamStats && (
         <>
           <div>
-            {numerator} / {denominator} {formatMessage({ id: "estimate.recordsSynced" })}{" "}
-            {timeRemainingString.length > 0 ? ` ~ ${timeRemainingString}` : ""}
+            {totalPercentRecords}% | {timeRemainingString.length > 0 ? ` ~ ${timeRemainingString}` : ""}
+            {unEstimatedStreams.length > 0 && (
+              <div>
+                {unEstimatedStreams.length} {formatMessage({ id: "estimate.unEstimatedStreams" })}
+              </div>
+            )}
           </div>
-          {unEstimatedStreams.length > 0 && <div>{unEstimatedStreams.length} un-estimated streams</div>}
+          <div>
+            {numeratorRecords} / {denominatorRecords} {formatMessage({ id: "estimate.recordsSynced" })} @{" "}
+            {Math.round((numeratorRecords / elapsedTimeMS) * 1000)} {formatMessage({ id: "estimate.recordsPerSecond" })}
+          </div>
+          <div>
+            {formatBytes(numeratorBytes)} / {formatBytes(denominatorBytes)}{" "}
+            {formatMessage({ id: "estimate.bytesSynced" })} @ {formatBytes((numeratorBytes * 1000) / elapsedTimeMS)}
+            {formatMessage({ id: "estimate.bytesPerSecond" })}
+          </div>
+
           <div>
             <br />
             <div className={classNames(styles.container)}>Stream Stats:</div>
