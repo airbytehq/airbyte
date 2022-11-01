@@ -20,7 +20,7 @@
     },
        {
       "stream": {
-        "name": "text_messages",
+        "name": "conversations",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"]
       },

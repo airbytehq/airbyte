@@ -69,7 +69,7 @@ definitions:
 
   text_messages_stream:
     $options:
-      name: "text_messages"
+      name: "conversations"
       stream_cursor_field: "last_message_at"
     primary_key: "id"
     schema_loader:
