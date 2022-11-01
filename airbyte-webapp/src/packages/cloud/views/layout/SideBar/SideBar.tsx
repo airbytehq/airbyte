@@ -8,6 +8,7 @@ import { NavLink } from "react-router-dom";
 
 import { Link } from "components";
 import { CreditsIcon } from "components/icons/CreditsIcon";
+import { DocsIcon } from "components/icons/DocsIcon";
 import { Text } from "components/ui/Text";
 
 import { useExperiment } from "hooks/services/Experiment";
@@ -21,7 +22,6 @@ import { links } from "utils/links";
 import ChatIcon from "views/layout/SideBar/components/ChatIcon";
 import ConnectionsIcon from "views/layout/SideBar/components/ConnectionsIcon";
 import DestinationIcon from "views/layout/SideBar/components/DestinationIcon";
-import DocsIcon from "views/layout/SideBar/components/DocsIcon";
 import OnboardingIcon from "views/layout/SideBar/components/OnboardingIcon";
 import RecipesIcon from "views/layout/SideBar/components/RecipesIcon";
 import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
