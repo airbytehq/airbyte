@@ -1,0 +1,86 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://api.postmarkapp.com"
+    http_method: "GET"
+    request_options_provider:
+      request_body_json:
+          Accept: "application/json"
+    authenticator:
+      type: "ApiKeyAuthenticator"
+      header: "X-Postmark-Server-Token"
+      api_token: "{{ config['X-Postmark-Server-Token'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    offset_paginator:
+      type: DefaultPaginator
+      $options:
+        url_base: "*ref(definitions.requester.url_base)"
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 500
+      page_token_option:
+        inject_into: "request_parameter"
+        field_name: "offset"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "count"
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  deliverystats:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "deliverystats"
+      primary_key: "Type"
+      path: "/deliverystats"
+  message-streams:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "message-streams"
+      primary_key: "ID"
+      path: "/message-streams"
+  bounces:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "bounces"
+      primary_key: "ID"
+      path: "/bounces"
+  server:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "server"
+      primary_key: "ID"
+      path: "/server"
+  servers:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "servers"
+      primary_key: "ID"
+      path: "/servers"
+  messages:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "messages"
+      primary_key: "MessageID"
+      path: "/messages/outbound"
+
+streams:
+  - "*ref(definitions.deliverystats)"
+  - "*ref(definitions.message-streams)"
+  - "*ref(definitions.server)"
+  #- "*ref(definitions.messages)"
+  #- "*ref(definitions.outbound-stats)"
+  #- "*ref(definitions.bounces)"
+
+
+check:
+  stream_names:
+    - "deliverystats"

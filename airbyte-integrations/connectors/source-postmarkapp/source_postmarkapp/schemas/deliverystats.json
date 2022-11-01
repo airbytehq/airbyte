@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "InactiveMails": {
+      "type": "integer"
+    },
+    "Bounces": {
+      "type": "array",
+      "items":
+        {
+          "type": "object",
+          "properties": {
+            "Name": {
+              "type": "string"
+            },
+            "Count": {
+              "type": "integer"
+            }
+          }
+        }
+    }
+  }
+}
