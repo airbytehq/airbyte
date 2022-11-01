@@ -17,6 +17,9 @@ import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.AttemptStats;
 import io.airbyte.api.client.model.generated.SaveStatsRequestBody;
 import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.config.Configs;
+import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
@@ -85,11 +88,26 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultReplicationWorker.class);
 
-  private static final AirbyteApiClient CLIENT = new AirbyteApiClient(
-      new ApiClient().setScheme("http")
-          .setHost("airbyte-server-svc")
-          .setPort(8001)
-          .setBasePath("/api"));
+  private static final Configs CONFIGS = new EnvConfigs();
+  private static final AirbyteApiClient CLIENT = getAirbyteApiClient();
+
+  // Passing env vars to the container orchestrator isn't working properly. Hack around this for now.
+  // TODO(Davin): This doesn't work for Kube. Need to figure it out.
+  private static AirbyteApiClient getAirbyteApiClient() {
+    if (CONFIGS.getWorkerEnvironment() == WorkerEnvironment.DOCKER) {
+      return new AirbyteApiClient(
+          new ApiClient().setScheme("http")
+              .setHost(CONFIGS.getAirbyteApiHost())
+              .setPort(CONFIGS.getAirbyteApiPort())
+              .setBasePath("/api"));
+    }
+
+    return new AirbyteApiClient(
+        new ApiClient().setScheme("http")
+            .setHost("airbyte-server-svc")
+            .setPort(8001)
+            .setBasePath("/api"));
+  }
 
   private final String jobId;
   private final int attempt;
@@ -381,12 +399,15 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             validateSchema(recordSchemaValidator, validationErrors, airbyteMessage);
             final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
 
+            // metrics block
             messageTracker.acceptFromSource(message);
 
+            // config/mutating platform state block
             if (message.getType() == Type.STATE || message.getType() == Type.TRACE) {
               saveStats(messageTracker, jobId, attemptNumber);
             }
 
+            // continue processing
             try {
               if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
                 destination.accept(message);
