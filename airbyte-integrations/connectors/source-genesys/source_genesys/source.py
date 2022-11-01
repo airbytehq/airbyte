@@ -264,6 +264,14 @@ class SourceGenesys(AbstractSource):
             raise Exception(f"Error while refreshing access token: {e}") from e
         return response
 
+    def build_refresh_request_body(self) -> Mapping[str, Any]:
+        return {
+            "grant_type": "client_credentials",
+            "client_id": self.get_client_id(),
+            "client_secret": self.get_client_secret(),
+        }
+        
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         TODO: Implement true connection checks using an endpoint that is always live
