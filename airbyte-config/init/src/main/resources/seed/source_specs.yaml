@@ -2324,9 +2324,6 @@
           examples:
           - "AVAX"
           - "BTC"
-        supportsNormalization: false
-        supportsDBT: false
-        supported_destination_sync_modes: []
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
