@@ -93,8 +93,8 @@ public class ConfigRepository {
   private final ExceptionWrappingDatabase database;
   private final ActorDefinitionMigrator actorDefinitionMigrator;
 
-  public ConfigRepository(final ConfigPersistence persistence, final Database database) {
-    this(persistence, database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)));
+  public ConfigRepository(final Database database) {
+    this(DatabaseConfigPersistence.createWithValidation(database), database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)));
   }
 
   @VisibleForTesting
@@ -579,6 +579,16 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, partialSource.getSourceId().toString(), partialSource);
   }
 
+  public boolean deleteSource(final UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    try {
+      getSourceConnection(sourceId);
+      persistence.deleteConfig(ConfigSchema.SOURCE_CONNECTION, sourceId.toString());
+      return true;
+    } catch (final ConfigNotFoundException e) {
+      return false;
+    }
+  }
+
   /**
    * Returns all sources in the database. Does not contain secrets. To hydrate with secrets see
    * { @link SecretsRepositoryReader#listSourceConnectionWithSecrets() }.
@@ -636,6 +646,16 @@ public class ConfigRepository {
    */
   public void writeDestinationConnectionNoSecrets(final DestinationConnection partialDestination) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, partialDestination.getDestinationId().toString(), partialDestination);
+  }
+
+  public boolean deleteDestination(final UUID destId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    try {
+      getDestinationConnection(destId);
+      persistence.deleteConfig(ConfigSchema.DESTINATION_CONNECTION, destId.toString());
+      return true;
+    } catch (final ConfigNotFoundException e) {
+      return false;
+    }
   }
 
   /**
