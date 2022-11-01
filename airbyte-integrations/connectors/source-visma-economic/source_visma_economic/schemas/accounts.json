@@ -13,7 +13,7 @@
       "description": "The account's number."
     },
     "accountType": {
-      "enum": ["profitAndLoss", "status", "totalFrom", "heading", "headingStart", "sumInterval", "sumAlpha"],
+      "type": "string",
       "default": "profitAndLoss",
       "filterable": true,
       "sortable": true,
