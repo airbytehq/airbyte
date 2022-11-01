@@ -72,7 +72,7 @@ definitions:
     $options:
       name: "nps_responses"
       primary_key: "id"
-      path: "/nps_responses"
+      path: "/npsResponses"
   organizations_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:

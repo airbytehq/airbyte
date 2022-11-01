@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "organizations",
+        "name": "accounts",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
