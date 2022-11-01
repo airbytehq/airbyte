@@ -1,37 +1,26 @@
 package io.airbyte.integrations.destination.iceberg.config;
 
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.CATALOG_NAME;
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.HIVE_THRIFT_URI_CONFIG_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.HashMap;
 import java.util.Map;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import java.util.Map.Entry;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.catalog.Catalog;
-import org.apache.iceberg.hive.HiveCatalog;
+import org.apache.iceberg.hadoop.HadoopCatalog;
+import org.jetbrains.annotations.NotNull;
 
 /**
- * @author Leibniz on 2022/10/26.
+ * @author Leibniz on 2022/11/1.
  */
-@Data
-@AllArgsConstructor
-public class HiveCatalogConfig extends IcebergCatalogConfig {
+public class HadoopCatalogConfig extends IcebergCatalogConfig {
 
-    private final String thriftUri;
+    public static final String SPARK_HADOOP_CONFIG_PREFIX = "spark.hadoop.";
 
-    public HiveCatalogConfig(JsonNode catalogConfig) {
-        this.thriftUri = catalogConfig.get(HIVE_THRIFT_URI_CONFIG_KEY).asText();
+    public HadoopCatalogConfig(@NotNull JsonNode catalogConfigJson) {
     }
-
-  /*  @Override
-    public void check() {
-        if (!thriftUri.startsWith("thrift://")) {
-            throw new IllegalArgumentException(HIVE_THRIFT_URI_CONFIG_KEY + " must start with 'thrift://'");
-        }
-        //TODO check hive metastore thrift uri is available
-    }*/
 
     @Override
     public Map<String, String> sparkConfigMap() {
@@ -39,8 +28,7 @@ public class HiveCatalogConfig extends IcebergCatalogConfig {
         configMap.put("spark.network.timeout", "300000");
         configMap.put("spark.sql.defaultCatalog", CATALOG_NAME);
         configMap.put("spark.sql.catalog." + CATALOG_NAME, "org.apache.iceberg.spark.SparkCatalog");
-        configMap.put("spark.sql.catalog." + CATALOG_NAME + ".type", "hive");
-        configMap.put("spark.sql.catalog." + CATALOG_NAME + ".uri", this.thriftUri);
+        configMap.put("spark.sql.catalog." + CATALOG_NAME + ".type", "hadoop");
         configMap.put("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions");
         configMap.put("spark.driver.extraJavaOptions", "-Dpackaging.type=jar -Djava.io.tmpdir=/tmp");
 
@@ -50,9 +38,17 @@ public class HiveCatalogConfig extends IcebergCatalogConfig {
 
     @Override
     public Catalog genCatalog() {
-        HiveCatalog catalog = new HiveCatalog();
+        Configuration conf = new Configuration();
+        for (Entry<String, String> entry : this.storageConfig.sparkConfigMap(CATALOG_NAME).entrySet()) {
+            String key = entry.getKey();
+            if (key.startsWith(SPARK_HADOOP_CONFIG_PREFIX + "fs.")) {
+                conf.set(key.substring(SPARK_HADOOP_CONFIG_PREFIX.length()), entry.getValue());
+            }
+        }
+
+        HadoopCatalog catalog = new HadoopCatalog();
+        catalog.setConf(conf);
         Map<String, String> properties = new HashMap<>(this.storageConfig.catalogInitializeProperties());
-        properties.put(CatalogProperties.URI, thriftUri);
         properties.put(CatalogProperties.WAREHOUSE_LOCATION, this.storageConfig.getWarehouseUri());
         catalog.initialize(CATALOG_NAME, properties);
         return catalog;

@@ -7,9 +7,28 @@ import java.util.Map;
  */
 public interface StorageConfig {
 
+    /**
+     * Checks about read, write, privileges
+     *
+     * @throws Exception maybe IOException
+     */
+    void check() throws Exception;
+
     String getWarehouseUri();
 
-    void appendSparkConfig(Map<String, String> sparkConfig, String catalogName);
+    /**
+     * append Spark storage configurations for Iceberg, including (but not limited to): 1.
+     * spark.sql.catalog.{catalogName}.xxx = yyy 2. spark.hadoop.fs.xxx = yyy
+     *
+     * @param catalogName name of Iceberg catalog
+     * @return a configuration Map to build Spark Session
+     */
+    Map<String, String> sparkConfigMap(String catalogName);
 
-    void appendCatalogInitializeProperties(Map<String, String> properties);
+    /**
+     * append storage configurations for Iceberg Catalog For calling org.apache.iceberg.catalog.Catalog#initialize()
+     *
+     * @return a configuration Map to build Catalog(org.apache.iceberg.catalog.Catalog)
+     */
+    Map<String, String> catalogInitializeProperties();
 }

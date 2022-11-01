@@ -1,5 +1,6 @@
 package io.airbyte.integrations.destination.iceberg.config;
 
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.DEFAULT_DATABASE_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBERG_CATALOG_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBERG_CATALOG_TYPE_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBERG_FORMAT_CONFIG_KEY;
@@ -29,6 +30,7 @@ public class IcebergCatalogConfigFactory {
         IcebergCatalogConfig icebergCatalogConfig = genIcebergCatalogConfig(catalogConfigJson);
         icebergCatalogConfig.formatConfig = formatConfig;
         icebergCatalogConfig.storageConfig = storageConfig;
+        icebergCatalogConfig.setDefaultDatabase(catalogConfigJson.get(DEFAULT_DATABASE_CONFIG_KEY).asText());
 
         return icebergCatalogConfig;
     }
@@ -42,6 +44,7 @@ public class IcebergCatalogConfigFactory {
         switch (storageType) {
             case S3:
                 return S3Config.fromDestinationConfig(storageConfigJson);
+            case HDFS:
             default:
                 throw new RuntimeException("Unexpected storage config: " + storageTypeStr);
         }
@@ -55,18 +58,12 @@ public class IcebergCatalogConfigFactory {
         }
         CatalogType catalogType = CatalogType.valueOf(catalogTypeStr.toUpperCase());
 
-        IcebergCatalogConfig icebergCatalogConfig;
-        switch (catalogType) {
-            case HIVE:
-                icebergCatalogConfig = new HiveCatalogConfig(catalogConfigJson);
-                break;
-            //TODO support other catalog types
-            case HADOOP:
-            case JDBC:
-            default:
-                throw new RuntimeException("Unexpected catalog config: " + catalogTypeStr);
-        }
-        return icebergCatalogConfig;
+        return switch (catalogType) {
+            case HIVE -> new HiveCatalogConfig(catalogConfigJson);
+            case HADOOP -> new HadoopCatalogConfig(catalogConfigJson);
+            case JDBC -> new JdbcCatalogConfig(catalogConfigJson);
+            default -> throw new RuntimeException("Unexpected catalog config: " + catalogTypeStr);
+        };
     }
 
     static String getProperty(@Nonnull final JsonNode config, @Nonnull final String key) {

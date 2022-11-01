@@ -48,14 +48,26 @@ public class IcebergDestination extends BaseConnector implements Destination {
             IcebergCatalogConfig icebergCatalogConfig = icebergCatalogConfigFactory.fromJsonNodeConfig(config);
             icebergCatalogConfig.check();
 
-            //getting here means s3 check success
+            //getting here means Iceberg catalog check success
             return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
         } catch (final Exception e) {
-            log.error("Exception attempting to access the S3 bucket: ", e);
+            log.error("Exception attempting to access the Iceberg catalog: ", e);
+            Throwable rootCause = getRootCause(e);
+            String errMessage =
+                "Could not connect to the Iceberg catalog with the provided configuration. \n" + e.getMessage()
+                + ", root cause: " + rootCause.getClass().getSimpleName() + "(" + rootCause.getMessage() + ")";
             return new AirbyteConnectionStatus()
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                .withMessage("Could not connect to the S3 bucket with the provided configuration. \n" + e
-                    .getMessage());
+                .withMessage(errMessage);
+        }
+    }
+
+    private Throwable getRootCause(Throwable exp) {
+        Throwable curCause = exp.getCause();
+        if (curCause == null) {
+            return exp;
+        } else {
+            return getRootCause(curCause);
         }
     }
 

@@ -21,7 +21,7 @@
         "description" : "Catalog config of Iceberg.",
         "oneOf" : [
           {
-            "title" : "Hive: Apache Hive MetaStore",
+            "title" : "HiveCatalog: Use Apache Hive MetaStore",
             "required" : [
               "catalog_type",
               "hive_thrift_uri"
@@ -53,6 +53,100 @@
                   "default"
                 ],
                 "order" : 2
+              }
+            }
+          },
+          {
+            "title" : "HadoopCatalog: Use hierarchical file systems as same as storage config",
+            "description" : "A Hadoop catalog doesn’t need to connect to a Hive MetaStore, but can only be used with HDFS or similar file systems that support atomic rename.",
+            "required" : [
+              "catalog_type"
+            ],
+            "properties" : {
+              "catalog_type" : {
+                "title" : "Catalog Type",
+                "type" : "string",
+                "default" : "Hadoop",
+                "enum" : [
+                  "Hadoop"
+                ],
+                "order" : 0
+              },
+              "database" : {
+                "title" : "Default database",
+                "description" : "The default database tables are written to if the source does not specify a namespace. The usual value for this field is \"default\".",
+                "type" : "string",
+                "default" : "default",
+                "examples" : [
+                  "default"
+                ],
+                "order" : 1
+              }
+            }
+          },
+          {
+            "title" : "JdbcCatalog: Use relational database",
+            "description" : "Using a table in a relational database to manage Iceberg tables through JDBC. Read more <a href=\"https://iceberg.apache.org/docs/latest/jdbc/\">here</a>. Supporting: PostgreSQL",
+            "required" : [
+              "catalog_type"
+            ],
+            "properties" : {
+              "catalog_type" : {
+                "title" : "Catalog Type",
+                "type" : "string",
+                "default" : "Jdbc",
+                "enum" : [
+                  "Jdbc"
+                ],
+                "order" : 0
+              },
+              "database" : {
+                "title" : "Default schema",
+                "description" : "The default schema tables are written to if the source does not specify a namespace. The usual value for this field is \"public\".",
+                "type" : "string",
+                "default" : "public",
+                "examples" : [
+                  "public"
+                ],
+                "order" : 1
+              },
+              "jdbc_url" : {
+                "title" : "Jdbc url",
+                "type" : "string",
+                "examples" : [
+                  "jdbc:postgresql://{host}:{port}/{database}"
+                ],
+                "order" : 2
+              },
+              "username" : {
+                "title" : "User",
+                "description" : "Username to use to access the database.",
+                "type" : "string",
+                "order" : 3
+              },
+              "password" : {
+                "title" : "Password",
+                "description" : "Password associated with the username.",
+                "type" : "string",
+                "airbyte_secret" : true,
+                "order" : 4
+              },
+              "ssl" : {
+                "title" : "SSL Connection",
+                "description" : "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
+                "type" : "boolean",
+                "default" : false,
+                "order" : 5
+              },
+              "catalog_schema" : {
+                "title" : "schema for Iceberg catalog",
+                "description" : "Iceberg catalog metadata tables are written to catalog schema. The usual value for this field is \"public\".",
+                "type" : "string",
+                "default" : "public",
+                "examples" : [
+                  "public"
+                ],
+                "order" : 6
               }
             }
           }

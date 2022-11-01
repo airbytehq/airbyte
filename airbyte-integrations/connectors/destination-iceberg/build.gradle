@@ -14,14 +14,19 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
-    implementation 'org.apache.spark:spark-sql_2.12:3.1.3'
-    implementation 'org.apache.spark:spark-hive_2.12:3.1.3'
+    implementation('org.apache.spark:spark-sql_2.12:3.1.3') {
+        exclude(group: 'org.apache.hadoop', module: 'hadoop-common')
+    }
+    implementation('org.apache.spark:spark-hive_2.12:3.1.3') {
+        exclude(group: 'org.apache.hadoop', module: 'hadoop-common')
+    }
     implementation 'org.apache.iceberg:iceberg-spark-runtime-3.1_2.12:1.0.0'
     implementation "software.amazon.awssdk:bundle:2.17.131"
     implementation "software.amazon.awssdk:url-connection-client:2.17.131"
     implementation "org.apache.hadoop:hadoop-aws:3.3.2"
     implementation "org.apache.hadoop:hadoop-client-api:3.3.2"
     implementation "org.apache.hadoop:hadoop-client-runtime:3.3.2"
+    implementation "org.postgresql:postgresql:42.5.0"
 
 //    implementation "software.amazon.awssdk:utils:2.17.131"
 
@@ -33,6 +38,8 @@ dependencies {
 
     testCompileOnly 'org.projectlombok:lombok:1.18.24'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+    testImplementation 'org.mockito:mockito-inline:4.7.0'
 }
 
 task prepareKotlinBuildScriptModel {

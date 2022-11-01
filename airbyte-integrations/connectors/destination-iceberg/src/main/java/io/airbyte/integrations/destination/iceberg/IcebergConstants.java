@@ -17,7 +17,12 @@ public class IcebergConstants {
      */
     public static final String ICEBERG_CATALOG_TYPE_CONFIG_KEY = "catalog_type";
     public static final String HIVE_THRIFT_URI_CONFIG_KEY = "hive_thrift_uri";
-    public static final String HIVE_DATABASE_CONFIG_KEY = "database";
+    public static final String DEFAULT_DATABASE_CONFIG_KEY = "database";
+    public static final String JDBC_URL_CONFIG_KEY = "jdbc_url";
+    public static final String JDBC_USERNAME_CONFIG_KEY = "username";
+    public static final String JDBC_PASSWORD_CONFIG_KEY = "password";
+    public static final String JDBC_SSL_CONFIG_KEY = "ssl";
+    public static final String JDBC_CATALOG_SCHEMA_CONFIG_KEY = "catalog_schema";
 
     /**
      * Storage Config keys

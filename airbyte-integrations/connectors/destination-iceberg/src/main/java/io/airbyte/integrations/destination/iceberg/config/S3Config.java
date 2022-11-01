@@ -21,6 +21,7 @@ import io.airbyte.integrations.destination.iceberg.config.credential.S3AWSDefaul
 import io.airbyte.integrations.destination.iceberg.config.credential.S3AccessKeyCredentialConfig;
 import io.airbyte.integrations.destination.iceberg.config.credential.S3CredentialConfig;
 import io.airbyte.integrations.destination.iceberg.config.credential.S3CredentialType;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nonnull;
@@ -28,6 +29,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.iceberg.CatalogProperties;
 
 /**
  * @author Leibniz on 2022/10/26.
@@ -179,11 +181,10 @@ public class S3Config implements StorageConfig {
         final AmazonS3 s3Client = this.getS3Client();
 
         //normalize path
-
-        final var prefix = this.warehouseUri + (this.warehouseUri.endsWith("/") ? "" : "/");
-        final String tempObjectName =
-            prefix + "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
-        final var bucket = this.warehouseUri;
+        String prefix = this.warehouseUri.replaceAll("^s3[an]?://.+?/(.+?)/?$", "$1/");
+        String tempObjectName = prefix + "_airbyte_connection_test_" +
+                                UUID.randomUUID().toString().replaceAll("-", "");
+        String bucket = this.warehouseUri.replaceAll("^s3[an]?://(.+?)/.+$", "$1");
 
         //check bucket exists
         if (!s3Client.doesBucketExistV2(bucket)) {
@@ -215,7 +216,8 @@ public class S3Config implements StorageConfig {
     }
 
     @Override
-    public void appendSparkConfig(Map<String, String> sparkConfig, String catalogName) {
+    public Map<String, String> sparkConfigMap(String catalogName) {
+        Map<String, String> sparkConfig = new HashMap<>();
         sparkConfig.put("spark.sql.catalog." + catalogName + ".io-impl", "org.apache.iceberg.aws.s3.S3FileIO");
         sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.endpoint", this.endpointWithSchema);
         sparkConfig.put("spark.sql.catalog." + catalogName + ".warehouse", this.warehouseUri);
@@ -227,15 +229,18 @@ public class S3Config implements StorageConfig {
         sparkConfig.put("spark.hadoop.fs.s3a.connection.ssl.enabled", String.valueOf(this.sslEnabled));
         sparkConfig.put("spark.hadoop.fs.s3a.aws.credentials.provider",
             "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider");
+        return sparkConfig;
     }
 
     @Override
-    public void appendCatalogInitializeProperties(Map<String, String> properties) {
-        properties.put("io-impl", "org.apache.iceberg.aws.s3.S3FileIO");
+    public Map<String, String> catalogInitializeProperties() {
+        Map<String, String> properties = new HashMap<>();
+        properties.put(CatalogProperties.FILE_IO_IMPL, "org.apache.iceberg.aws.s3.S3FileIO");
         properties.put("s3.endpoint", this.endpointWithSchema);
         properties.put("s3.access-key-id", this.accessKeyId);
         properties.put("s3.secret-access-key", this.secretKey);
         properties.put("s3.path-style-access", String.valueOf(this.pathStyleAccess));
+        return properties;
     }
 
     public static class S3ConfigFactory {
