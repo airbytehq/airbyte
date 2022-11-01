@@ -11,6 +11,6 @@ connectionSpecification:
       type: string
       description: Copper API key
       airbyte_secret: true
-      user_email:
-        type: string
-        description: user email used to login in to Copper
+    user_email:
+      type: string
+      description: user email used to login in to Copper
