@@ -34,19 +34,20 @@ Use this to filter the results by a particular section. See <a href="https://con
 
 ##### `order-by`
 
-Use this to sort the results. The three available sorting options are - newest, oldest, relevance.
+Use this to sort the results. The three available sorting options are - newest, oldest, relevance. For enabling incremental syncs set order-by to oldest.
 
 ---
 
-##### `from-date`
+##### `start_date`
 
-Use this to set the minimum date (YYYY-MM-DD) of the results. Results older than the from-date will not be shown.
+Use this to set the minimum date (YYYY-MM-DD) of the results. Results older than the start_date will not be shown.
 
 ---
 
-##### `to-date`
+##### `end_date`
 
-Use this to set the maximum date (YYYY-MM-DD) of the results. Results newer than the to-date will not be shown.
+Use this to set the maximum date (YYYY-MM-DD) of the results. Results newer than the end_date will not be shown.
+Default is set to the current date (today) for incremental syncs.
 
 ---
 

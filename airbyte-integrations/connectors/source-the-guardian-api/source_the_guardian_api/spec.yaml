@@ -5,6 +5,7 @@ connectionSpecification:
   type: object
   required:
     - api_key
+    - start_date
   additionalProperties: true
   properties:
     api_key:
@@ -12,6 +13,13 @@ connectionSpecification:
       type: string
       description: Your API Key. See <a href="https://open-platform.theguardian.com/access/">here</a>. The key is case sensitive.
       airbyte_secret: true
+    start_date:
+      title: Start Date
+      type: string
+      description: Use this to set the minimum date (YYYY-MM-DD) of the results. Results older than the start_date will not be shown.
+      pattern: ^([1-9][0-9]{3})\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$
+      examples:
+        - YYYY-MM-DD
     query:
       title: Query
       type: string
@@ -40,23 +48,16 @@ connectionSpecification:
     order-by:
       title: Order By
       type: string
-      description: (Optional) Use this to sort the results. The three available sorting options are - newest, oldest, relevance.
+      description: (Optional) Use this to sort the results. The three available sorting options are - newest, oldest, relevance. Set this to oldest for enabling incremental syncs (set by default).
       pattern: ^(newest|oldest|relevance)$
       examples:
         - newest
         - oldest
         - relevance
-    from-date:
-      title: From Date
+    end_date:
+      title: End Date
       type: string
-      description: (Optional) Use this to set the minimum date (YYYY-MM-DD) of the results. Results older than the from-date will not be shown.
-      pattern: ^([1-9][0-9]{3})\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$
-      examples:
-        - YYYY-MM-DD
-    to-date:
-      title: To Date
-      type: string
-      description: (Optional) Use this to set the maximum date (YYYY-MM-DD) of the results. Results newer than the to-date will not be shown.
+      description: (Optional) Use this to set the maximum date (YYYY-MM-DD) of the results. Results newer than the end_date will not be shown. Default is set to the current date (today) for incremental syncs.
       pattern: ^([1-9][0-9]{3})\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$
       examples:
         - YYYY-MM-DD

@@ -13,8 +13,8 @@ class CustomPageIncrement(PageIncrement):
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
         res = response.json().get("response")
         currPage = res.get("currentPage")
-        totalPages = res.get("pageSize")
-        if currPage and (currPage <= totalPages):
+        totalPages = res.get("pages")
+        if currPage < totalPages:
             self._page += 1
             return self._page
         else:
