@@ -30,7 +30,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.LocalTestingSecretPersistence;
 import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
@@ -173,10 +172,6 @@ class BootloaderAppTest {
 
     val mockedFeatureFlags = mock(FeatureFlags.class);
 
-    final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
-        .copySecrets(true)
-        .build();
-
     try (val configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
         val jobsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES)) {
 
@@ -186,7 +181,7 @@ class BootloaderAppTest {
       val configDatabase = new ConfigsDatabaseTestProvider(configsDslContext, configsFlyway).create(false);
       val jobDatabase = new JobsDatabaseTestProvider(jobsDslContext, jobsFlyway).create(false);
 
-      val configPersistence = new DatabaseConfigPersistence(configDatabase, jsonSecretsProcessor);
+      val configPersistence = new DatabaseConfigPersistence(configDatabase);
       val configRepository = new ConfigRepository(configPersistence, configDatabase);
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
 
