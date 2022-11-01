@@ -201,7 +201,6 @@ class AirbyteDockerPlugin implements Plugin<Project> {
 
     void apply(Project project) {
         // set (and cache) global image to version map
-        //def extension = project.extensions.create("airbyteDocker", AirbyteDockerConfiguration)
         project.rootProject.ext.imageToHash = {
             if (!project.rootProject.hasProperty("imageToHash")) {
                 def imageToHash = [:]
