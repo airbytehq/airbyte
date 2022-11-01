@@ -28,7 +28,7 @@ public abstract class AbstractRelationalDbSource<DataType, Database extends SqlD
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRelationalDbSource.class);
 
   @Override
-  protected AutoCloseableIterator<JsonNode> queryTableFullRefresh(final Database database,
+  public AutoCloseableIterator<JsonNode> queryTableFullRefresh(final Database database,
                                                                final List<String> columnNames,
                                                                final String schemaName,
                                                                final String tableName) {
