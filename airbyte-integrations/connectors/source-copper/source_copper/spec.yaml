@@ -4,9 +4,13 @@ connectionSpecification:
   title: Copper Spec
   type: object
   required:
-    - TODO
+    - api_key
+    - user_email
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    api_key:
       type: string
-      description: describe me
+      description: Copper API key
+      airbyte_secret: true
+      user_email:
+        type: string
+        description: user email used to login in to Copper

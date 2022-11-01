@@ -6,6 +6,8 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
+import responses
+
 from source_copper.source import CopperStream
 
 
@@ -26,30 +28,17 @@ def test_request_params(patch_base_class):
     assert stream.request_params(**inputs) == expected_params
 
 
-def test_next_page_token(patch_base_class):
-    stream = CopperStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
-    expected_token = None
-    assert stream.next_page_token(**inputs) == expected_token
-
-
-def test_parse_response(patch_base_class):
-    stream = CopperStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected parced object
-    expected_parsed_object = {}
-    assert next(stream.parse_response(**inputs)) == expected_parsed_object
-
-
 def test_request_headers(patch_base_class):
     stream = CopperStream()
     # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
     # TODO: replace this with your expected request headers
-    expected_headers = {}
+    expected_headers = {
+        'Content-type': 'application/json',
+        'X-PW-AccessToken': None,
+        'X-PW-Application': 'developer_api',
+        'X-PW-UserEmail': None
+    }
     assert stream.request_headers(**inputs) == expected_headers
 
 
