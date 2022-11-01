@@ -114,7 +114,7 @@ public class JobHistoryHandler {
     final var totalRecords = 1000;
     final var totalBytes = 100_000;
 
-    for (JobWithAttemptsRead jwar: jobReads) {
+    for (JobWithAttemptsRead jwar : jobReads) {
       for (final AttemptRead attempt : jwar.getAttempts()) {
         final var streamStats = attempt.getStreamStats();
         // if this doesn't exist, mock something.
@@ -145,7 +145,7 @@ public class JobHistoryHandler {
             s.estimatedRecords(s.getRecordsEmitted());
           }
         }
-     }
+      }
     }
 
     return new JobReadList().jobs(jobReads).totalJobCount(totalJobCount);

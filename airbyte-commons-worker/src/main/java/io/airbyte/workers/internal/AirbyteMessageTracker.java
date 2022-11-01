@@ -25,7 +25,9 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.helper.FailureHelper;
+import io.airbyte.workers.internal.StateDeltaTracker.StateDeltaTrackerException;
 import io.airbyte.workers.internal.StateMetricsTracker.StateMetricsTrackerNoStateMatchException;
+import io.airbyte.workers.internal.StateMetricsTracker.StateMetricsTrackerOomException;
 import io.airbyte.workers.internal.state_aggregator.DefaultStateAggregator;
 import io.airbyte.workers.internal.state_aggregator.StateAggregator;
 import java.time.LocalDateTime;
@@ -51,6 +53,10 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final BiMap<String, Short> streamNameToIndex;
   private final Map<Short, Long> streamToTotalBytesEmitted;
   private final Map<Short, Long> streamToTotalRecordsEmitted;
+
+  private final Map<Short, Long> streamToTotalBytesEstimated;
+
+  private final Map<Short, Long> streamToTotalRecordsEstimated;
   private final StateDeltaTracker stateDeltaTracker;
   private final StateMetricsTracker stateMetricsTracker;
   private final List<AirbyteTraceMessage> destinationErrorTraceMessages;
@@ -93,6 +99,8 @@ public class AirbyteMessageTracker implements MessageTracker {
     this.hashFunction = Hashing.murmur3_32_fixed();
     this.streamToTotalBytesEmitted = new HashMap<>();
     this.streamToTotalRecordsEmitted = new HashMap<>();
+    this.streamToTotalBytesEstimated = new HashMap<>();
+    this.streamToTotalRecordsEstimated = new HashMap<>();
     this.stateDeltaTracker = stateDeltaTracker;
     this.stateMetricsTracker = stateMetricsTracker;
     this.nextStreamIndex = 0;
@@ -166,8 +174,6 @@ public class AirbyteMessageTracker implements MessageTracker {
     sourceOutputState.set(new State().withState(stateMessage.getData()));
     final int stateHash = getStateHashCode(stateMessage);
 
-    // make a call to the save_stats endpoint
-
     try {
       if (!unreliableCommittedCounts) {
         stateDeltaTracker.addState(stateHash, streamToRunningCount);
@@ -175,12 +181,12 @@ public class AirbyteMessageTracker implements MessageTracker {
       if (!unreliableStateTimingMetrics) {
         stateMetricsTracker.addState(stateMessage, stateHash, timeEmittedStateMessage);
       }
-    } catch (final StateDeltaTracker.StateDeltaTrackerException e) {
+    } catch (final StateDeltaTrackerException e) {
       log.warn("The message tracker encountered an issue that prevents committed record counts from being reliably computed.");
       log.warn("This only impacts metadata and does not indicate a problem with actual sync data.");
       log.warn(e.getMessage(), e);
       unreliableCommittedCounts = true;
-    } catch (final StateMetricsTracker.StateMetricsTrackerOomException e) {
+    } catch (final StateMetricsTrackerOomException e) {
       log.warn("The StateMetricsTracker encountered an out of memory error that prevents new state metrics from being recorded");
       log.warn("This only affects metrics and does not indicate a problem with actual sync data.");
       unreliableStateTimingMetrics = true;
@@ -253,7 +259,7 @@ public class AirbyteMessageTracker implements MessageTracker {
   private void handleEmittedTrace(final AirbyteTraceMessage traceMessage, final ConnectorType connectorType) {
     switch (traceMessage.getType()) {
       case ERROR -> handleEmittedErrorTrace(traceMessage, connectorType);
-      case ESTIMATE -> handleEmittedEstimateTrace(traceMessage, connectorType);
+      case ESTIMATE -> handleEmittedEstimateTrace(traceMessage);
       default -> log.warn("Invalid message type for trace message: {}", traceMessage);
     }
   }
@@ -267,8 +273,14 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   @SuppressWarnings("PMD") // until method is implemented
-  private void handleEmittedEstimateTrace(final AirbyteTraceMessage estimateTraceMessage, final ConnectorType connectorType) {
-    // TODO!
+  private void handleEmittedEstimateTrace(final AirbyteTraceMessage estimateTraceMessage) {
+    // Assume the estimate is a whole number and not a sum i.e. each estimate replaces the previous
+    // estimate.
+    final var estimate = estimateTraceMessage.getEstimate();
+    final var index = getStreamIndex(estimate.getName());
+
+    streamToTotalRecordsEmitted.put(index, estimate.getRowEstimate());
+    streamToTotalBytesEmitted.put(index, estimate.getByteEstimate());
   }
 
   private short getStreamIndex(final String streamName) {
@@ -389,12 +401,22 @@ public class AirbyteMessageTracker implements MessageTracker {
     return streamToTotalRecordsEmitted.values().stream().reduce(0L, Long::sum);
   }
 
+  @Override
+  public long getTotalRecordsEstimated() {
+    return streamToTotalRecordsEstimated.values().stream().reduce(0L, Long::sum);
+  }
+
   /**
    * Compute sum of emitted bytes across all streams.
    */
   @Override
   public long getTotalBytesEmitted() {
     return streamToTotalBytesEmitted.values().stream().reduce(0L, Long::sum);
+  }
+
+  @Override
+  public long getTotalBytesEstimated() {
+    return streamToTotalBytesEstimated.values().stream().reduce(0L, Long::sum);
   }
 
   /**

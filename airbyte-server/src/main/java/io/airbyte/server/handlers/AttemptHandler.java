@@ -7,7 +7,6 @@ package io.airbyte.server.handlers;
 import io.airbyte.api.model.generated.InternalOperationResult;
 import io.airbyte.api.model.generated.SaveStatsRequestBody;
 import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
-import io.airbyte.config.JobOutput;
 import io.airbyte.persistence.job.JobPersistence;
 import java.io.IOException;
 import org.slf4j.Logger;
@@ -48,7 +47,5 @@ public class AttemptHandler {
 
     return new InternalOperationResult().succeeded(true);
   }
-
-
 
 }

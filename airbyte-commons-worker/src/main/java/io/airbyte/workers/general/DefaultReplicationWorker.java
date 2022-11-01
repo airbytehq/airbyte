@@ -11,7 +11,13 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import datadog.trace.api.Trace;
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.generated.ApiClient;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.AttemptStats;
+import io.airbyte.api.client.model.generated.SaveStatsRequestBody;
 import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
@@ -79,6 +85,12 @@ import org.slf4j.MDC;
 public class DefaultReplicationWorker implements ReplicationWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultReplicationWorker.class);
+
+  private static final AirbyteApiClient CLIENT = new AirbyteApiClient(
+      new ApiClient().setScheme("http")
+          .setHost(new EnvConfigs().getAirbyteApiHost())
+          .setPort(new EnvConfigs().getAirbyteApiPort())
+          .setBasePath("/api"));
 
   private final String jobId;
   private final int attempt;
@@ -180,7 +192,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             });
 
         final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
-            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, metricReporter, timeTracker),
+            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, metricReporter, timeTracker,
+                Long.parseLong(jobId), attempt),
             executors)
             .whenComplete((msg, ex) -> {
               if (ex != null) {
@@ -347,7 +360,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                  final Map<String, String> mdc,
                                                  final RecordSchemaValidator recordSchemaValidator,
                                                  final WorkerMetricReporter metricReporter,
-                                                 final ThreadedTimeTracker timeHolder) {
+                                                 final ThreadedTimeTracker timeHolder,
+                                                 final Long jobId,
+                                                 final Integer attemptNumber) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -368,6 +383,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
 
             messageTracker.acceptFromSource(message);
+
+            if (message.getType() == Type.STATE || message.getType() == Type.TRACE) {
+              saveStats(messageTracker, jobId, attemptNumber);
+            }
 
             try {
               if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
@@ -425,6 +444,20 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         }
       }
     };
+  }
+
+  private static void saveStats(MessageTracker messageTracker, Long jobId, Integer attemptNumber) throws ApiException {
+    final AttemptStats attemptStats = new AttemptStats()
+        .bytesEmitted(messageTracker.getTotalBytesEmitted())
+        .recordsEmitted(messageTracker.getTotalRecordsEmitted())
+        .estimatedBytes(messageTracker.getTotalBytesEstimated())
+        .estimatedRecords(messageTracker.getTotalRecordsEstimated());
+
+    final SaveStatsRequestBody saveStatsRequestBody = new SaveStatsRequestBody()
+        .jobId(jobId)
+        .attemptNumber(attemptNumber)
+        .stats(attemptStats);
+    CLIENT.getAttemptApi().saveStats(saveStatsRequestBody);
   }
 
   private static void validateSchema(final RecordSchemaValidator recordSchemaValidator,

@@ -19,7 +19,6 @@ public class AttemptApiController implements AttemptApi {
     this.attemptHandler = attemptHandler;
   }
 
-
   @Override
   @Path("/v1/attempt/save_stats")
   public InternalOperationResult saveStats(SaveStatsRequestBody requestBody) {

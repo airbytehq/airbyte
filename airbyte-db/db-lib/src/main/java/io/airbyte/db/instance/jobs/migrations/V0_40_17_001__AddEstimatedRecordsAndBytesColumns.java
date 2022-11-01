@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.db.instance.jobs.migrations;
 
 import org.flywaydb.core.api.migration.BaseJavaMigration;
@@ -23,8 +27,7 @@ public class V0_40_17_001__AddEstimatedRecordsAndBytesColumns extends BaseJavaMi
     ctx.alterTable("sync_stats")
         .add(
             DSL.field("estimated_records", SQLDataType.BIGINT.nullable(true)),
-            DSL.field("estimated_bytes", SQLDataType.BIGINT.nullable(true))
-        )
+            DSL.field("estimated_bytes", SQLDataType.BIGINT.nullable(true)))
         .execute();
   }
 

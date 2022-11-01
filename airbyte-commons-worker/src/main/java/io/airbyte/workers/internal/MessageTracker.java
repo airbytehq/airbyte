@@ -81,6 +81,8 @@ public interface MessageTracker {
    */
   long getTotalRecordsEmitted();
 
+  long getTotalRecordsEstimated();
+
   /**
    * Get the overall emitted bytes. This includes messages that were emitted by the source, but never
    * committed by the destination.
@@ -88,6 +90,8 @@ public interface MessageTracker {
    * @return returns the total emitted bytes across all streams.
    */
   long getTotalBytesEmitted();
+
+  long getTotalBytesEstimated();
 
   /**
    * Get the overall committed record count.

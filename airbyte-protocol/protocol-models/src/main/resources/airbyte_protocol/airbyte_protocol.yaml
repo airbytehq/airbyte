@@ -226,10 +226,10 @@ definitions:
         type: string
       row_estimate:
         description: The estimated number of rows to be emitted by this sync for this stream
-        type: number
+        type: integer
       byte_estimate:
         description: The estimated number of bytes to be emitted by this sync for this stream
-        type: number
+        type: integer
   AirbyteControlMessage:
     type: object
     additionalProperties: true

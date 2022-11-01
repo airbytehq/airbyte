@@ -310,6 +310,7 @@ class DefaultJobPersistenceTest {
 
   @Nested
   class SyncStatsTest {
+
     @Test
     @DisplayName("Writing sync stats the first time should only write record and bytes information correctly")
     void testWriteSyncStatsFirst() throws IOException, SQLException {
@@ -362,6 +363,7 @@ class DefaultJobPersistenceTest {
       assertEquals(2000, stat.getEstimatedRecords());
 
     }
+
   }
 
   @Test

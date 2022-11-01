@@ -136,7 +136,8 @@ public interface JobPersistence {
    */
   void writeOutput(long jobId, int attemptNumber, JobOutput output) throws IOException;
 
-  void writeSyncStats(long jobId, int attemptNumber, long estimatedRecords, long estimatedBytes, long recordsEmitted, long bytesEmitted) throws IOException;
+  void writeSyncStats(long jobId, int attemptNumber, long estimatedRecords, long estimatedBytes, long recordsEmitted, long bytesEmitted)
+      throws IOException;
 
   /**
    * Writes a summary of all failures that occurred during the attempt.
