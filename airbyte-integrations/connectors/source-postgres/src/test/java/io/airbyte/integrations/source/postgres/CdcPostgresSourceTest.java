@@ -171,13 +171,31 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     // Drop the publication.
     database.query(ctx -> ctx.execute("DROP PUBLICATION " + PUBLICATION + ";"));
 
+    final int recordsToCreate = 20;
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = source
         .read(getConfig(), CONFIGURED_CATALOG, null);
+
+    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators.toListAndClose(firstBatchIterator);
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
+
+    // second batch of records again 20 being created
+    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated));
+      writeModelRecord(record);
+    }
+
+    final JsonNode state = Jsons.jsonNode(stateAfterFirstBatch);
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
+        .read(getConfig(), CONFIGURED_CATALOG, state);
 
     // Since we have set debezium properties to not auto-create a publication, an exception should be thrown while attempting to create a
     // publication here.
     assertThrows(Exception.class, () -> {
-      AutoCloseableIterators.toListAndClose(firstBatchIterator);
+      AutoCloseableIterators
+          .toListAndClose(secondBatchIterator);
     });
   }
 
