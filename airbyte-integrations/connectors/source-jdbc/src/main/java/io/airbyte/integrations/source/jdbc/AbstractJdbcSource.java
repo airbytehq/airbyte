@@ -141,7 +141,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
    *
    * @return list of consumers that run queries for the check command.
    */
-  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
+  protected List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
     return ImmutableList.of(database -> {
       LOGGER.info("Attempting to get metadata from the database to see if we can connect.");
       database.bufferedResultSetQuery(connection -> connection.getMetaData().getCatalogs(), sourceOperations::rowToJson);
@@ -258,7 +258,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
    * @param field Essential column information returned from
    *        {@link AbstractJdbcSource#getColumnMetadata}.
    */
-  public Datatype getFieldType(final JsonNode field) {
+  private Datatype getFieldType(final JsonNode field) {
     return sourceOperations.getFieldType(field);
   }
 
@@ -515,7 +515,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
    * @param config configuration
    * @return map containing relevant parsed values including location of keystore or an empty map
    */
-  public Map<String, String> parseSSLConfig(final JsonNode config) {
+  protected Map<String, String> parseSSLConfig(final JsonNode config) {
     LOGGER.debug("source config: {}", config);
 
     final Map<String, String> additionalParameters = new HashMap<>();
@@ -572,7 +572,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
    * @param sslParams
    * @return SSL portion of JDBC question params or and empty string
    */
-  public String toJDBCQueryParams(final Map<String, String> sslParams) {
+  protected String toJDBCQueryParams(final Map<String, String> sslParams) {
     return Objects.isNull(sslParams) ? ""
         : sslParams.entrySet()
             .stream()
