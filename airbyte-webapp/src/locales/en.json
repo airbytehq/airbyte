@@ -484,6 +484,9 @@
 
   "settings.accountSettings": "Account Settings",
   "settings.webhook": "Connection status Webhook",
+  "settings.webhook.test.passed": "Webhook test passed!",
+  "settings.webhook.test.failed": "Webhook test failed. Please verify that the webhook URL is valid.",
+  "settings.webhook.save.failed": "Cannot save changes because the webhook test failed. Please verify that the webhook URL is valid.",
   "settings.webhookTitle": "Connection status Webhook URL",
   "settings.webhookTestText": "Testing the Webhook will send a “Hello World”.",
   "settings.syncNotifications.label": "Notify me:",

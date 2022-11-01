@@ -58,16 +58,16 @@ export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
       switch (await testWebhookAction(data)) {
         case true: {
           registerNotification({
-            id: "webhook-success",
-            title: "Webhook URL test successfully passed",
+            id: "settings.webhook.test.passed",
+            title: formatMessage({ id: "settings.webhook.test.passed" }),
             isError: false,
           });
           break;
         }
         case false: {
           registerNotification({
-            id: "webhook-error",
-            title: "Webhook URL test is not passed. Please verify your webhook URL",
+            id: "settings.webhook.test.failed",
+            title: formatMessage({ id: "settings.webhook.test.failed" }),
             isError: true,
           });
           break;
@@ -82,8 +82,8 @@ export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
         }
         case false: {
           registerNotification({
-            id: "save-error",
-            title: "Settings is not saved. Please verify your webhook URL",
+            id: "settings.webhook.save.failed",
+            title: formatMessage({ id: "settings.webhook.save.failed" }),
             isError: true,
           });
           break;
@@ -95,7 +95,9 @@ export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
 
   const testWebhookAction = async (data: WebhookPayload): Promise<boolean> => {
     try {
-      return (await testWebhook(data))?.status === "succeeded";
+      // TODO: Temporary solution. The current implementation of the back-end requires at least one selected trigger). Should be removed after back-end fixes
+      const payload = { ...data, sendOnSuccess: true };
+      return (await testWebhook(payload))?.status === "succeeded";
     } catch (e) {
       return false;
     }
