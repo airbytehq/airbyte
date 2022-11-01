@@ -13,6 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+/**
+ * We are moving migrating away from this interface entirely. Use ConfigRepository instead.
+ */
+@Deprecated
 public interface ConfigPersistence {
 
   <T> T getConfig(AirbyteConfig configType, String configId, Class<T> clazz) throws ConfigNotFoundException, JsonValidationException, IOException;
