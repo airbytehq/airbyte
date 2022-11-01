@@ -22,6 +22,10 @@ class CopperStream(HttpStream, ABC):
 
     url_base = "https://api.copper.com/developer_api/v1/"
 
+    @property
+    def http_method(self) -> str:
+        return "POST"
+    
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         body = json.loads(response.request.body)
         result = response.json()
@@ -67,10 +71,6 @@ class CopperStream(HttpStream, ABC):
 class People(CopperStream):
     primary_key = "id"
 
-    @property
-    def http_method(self) -> str:
-        return "POST"
-
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -78,10 +78,6 @@ class People(CopperStream):
 
 class Projects(CopperStream):
     primary_key = "id"
-
-    @property
-    def http_method(self) -> str:
-        return "POST"
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -91,10 +87,6 @@ class Projects(CopperStream):
 
 class Companies(CopperStream):
     primary_key = "id"
-
-    @property
-    def http_method(self) -> str:
-        return "POST"
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
