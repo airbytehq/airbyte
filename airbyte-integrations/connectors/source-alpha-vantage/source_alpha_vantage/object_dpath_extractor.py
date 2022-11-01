@@ -1,5 +1,9 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 from dataclasses import dataclass
-from typing import Mapping, Any, Union
+from typing import Any, Mapping, Union
 
 import dpath.util
 import requests
@@ -54,6 +58,7 @@ class ObjectDpathExtractor(DpathExtractor):
         ...
     ]
     """
+
     inject_key_as_field: Union[str, InterpolatedString] = None
 
     def __post_init__(self, options: Mapping[str, Any]):

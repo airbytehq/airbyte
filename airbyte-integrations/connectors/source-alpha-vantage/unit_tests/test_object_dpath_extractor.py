@@ -1,8 +1,11 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 import json
 from typing import Any
 
 from requests import Response
-
 from source_alpha_vantage.object_dpath_extractor import ObjectDpathExtractor
 
 
