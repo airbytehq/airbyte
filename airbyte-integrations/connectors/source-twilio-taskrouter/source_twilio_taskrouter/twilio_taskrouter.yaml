@@ -21,6 +21,19 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
+  allworkspaces_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "allworkspaces"
+      path: "/v1/Workspaces"
+      primary_key: "sid"
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      record_selector:
+        extractor:
+          field_pointer: ["workspaces"]
+
+
   workspaces_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -30,7 +43,10 @@ definitions:
 
 streams:
   - "*ref(definitions.workspaces_stream)"
+  - "*ref(definitions.allworkspaces_stream)"
+
 
 check:
   stream_names:
+    - "allworkspaces"
     - "workspaces"

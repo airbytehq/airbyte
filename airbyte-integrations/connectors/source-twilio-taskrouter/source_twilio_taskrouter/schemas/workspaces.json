@@ -40,7 +40,8 @@
               "type": ["null", "string"]
             },
             "prioritize_queue_order": {
-              "type": ["null", "string"]
+              "type": ["null", "string"],
+              "enum": ["FIFO", "LIFO"]
             },
             "url": {
               "type": ["null", "string"]

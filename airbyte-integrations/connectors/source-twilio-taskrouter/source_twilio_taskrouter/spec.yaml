@@ -6,7 +6,6 @@ connectionSpecification:
   required:
     - account_sid
     - auth_token
-    - sid
   additionalProperties: true
   properties:
     # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
@@ -21,5 +20,4 @@ connectionSpecification:
     sid:
       type: string
       description: Workspace ID
-      airbyte_secret: true
 
