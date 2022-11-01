@@ -50,7 +50,6 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
 import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.config.helpers.ScheduleHelpers;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
@@ -85,27 +84,22 @@ import org.slf4j.LoggerFactory;
 public class DatabaseConfigPersistence implements ConfigPersistence {
 
   private final ExceptionWrappingDatabase database;
-  private final JsonSecretsProcessor jsonSecretsProcessor;
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseConfigPersistence.class);
   private static final String UNKNOWN_CONFIG_TYPE = "Unknown Config Type ";
-  private static final String NOT_FOUND = " not found";
 
   /**
    * Entrypoint into DatabaseConfigPersistence. Except in testing, we should never be using it without
    * it being decorated with validation classes.
    *
    * @param database - database where configs are stored
-   * @param jsonSecretsProcessor - for filtering secrets in export
    * @return database config persistence wrapped in validation decorators
    */
-  public static ConfigPersistence createWithValidation(final Database database,
-                                                       final JsonSecretsProcessor jsonSecretsProcessor) {
-    return new ValidatingConfigPersistence(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
+  public static ConfigPersistence createWithValidation(final Database database) {
+    return new ValidatingConfigPersistence(new DatabaseConfigPersistence(database));
   }
 
-  public DatabaseConfigPersistence(final Database database, final JsonSecretsProcessor jsonSecretsProcessor) {
+  public DatabaseConfigPersistence(final Database database) {
     this.database = new ExceptionWrappingDatabase(database);
-    this.jsonSecretsProcessor = jsonSecretsProcessor;
   }
 
   @Override

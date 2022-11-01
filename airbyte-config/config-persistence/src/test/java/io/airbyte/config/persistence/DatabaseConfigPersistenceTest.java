@@ -59,7 +59,7 @@ class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
     flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
         ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
     database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(false);
-    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
+    configPersistence = spy(new DatabaseConfigPersistence(database));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, flyway);
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);

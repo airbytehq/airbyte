@@ -74,6 +74,7 @@ public class SecretsRepositoryReader {
     return Jsons.clone(sourceWithPartialConfig).withConfiguration(hydratedConfig);
   }
 
+  @SuppressWarnings("unused")
   private void hydrateValuesIfKeyPresent(final String key, final Map<String, Stream<JsonNode>> dump) {
     if (dump.containsKey(key)) {
       final Stream<JsonNode> augmentedValue = dump.get(key).map(secretsHydrator::hydrate);

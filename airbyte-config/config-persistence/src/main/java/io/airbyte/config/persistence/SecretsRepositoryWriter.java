@@ -115,6 +115,7 @@ public class SecretsRepositoryWriter {
    * @param spec connector specification
    * @return partial config
    */
+  @SuppressWarnings("unused")
   private JsonNode statefulSplitSecrets(final UUID workspaceId, final JsonNode fullConfig, final ConnectorSpecification spec) {
     return splitSecretConfig(workspaceId, fullConfig, spec, longLivedSecretPersistence);
   }
