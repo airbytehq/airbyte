@@ -234,6 +234,7 @@ class BootloaderAppTest {
           .withSourceId(sourceId)
           .withName("test source")
           .withWorkspaceId(workspaceId)
+          .withTombstone(false)
           .withConfiguration(mapper.readTree(sourceSpecs)));
 
       when(mockedFeatureFlags.forceSecretMigration()).thenReturn(false);
