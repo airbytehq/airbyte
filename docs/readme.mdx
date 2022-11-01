@@ -1,6 +1,7 @@
 # Welcome to Airbyte Docs
 
 import Tutorials from './.components/Tutorials.jsx'
+import Combobox from './.components/Combobox.jsx'
 export const items = {
   catalog: {
     sectionName: 'Connector Catalog',
@@ -11,7 +12,7 @@ export const items = {
     ]
   },
   cloud: {
-    sectionName: 'Use Cloud',
+    sectionName: 'Airbyte Cloud',
     list: [
       { displayName: 'Start trial', link: '/stages'},
       { displayName: 'Get started', link: '/stages'},
@@ -62,6 +63,11 @@ export function Section({data}) {
 }
 
 Whether you are an Airbyte user or contributor, we have docs for you!
+
+<div className="mb-8">
+  <Combobox />
+</div>
+
 
 <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-8 mx-auto">
   <Section data={items.catalog} />

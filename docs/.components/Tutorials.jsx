@@ -84,7 +84,7 @@ const data = [
 ];
 
 export default function Tutorials() {
-  return data.map((tutorial) => <Tutorial {...tutorial} />);
+  return data.map((tutorial, i) => <Tutorial key={i} {...tutorial} />);
 }
 
 /**
@@ -241,7 +241,7 @@ export function Tutorial({
         }}
       >
         <div
-          className="card-metadata-text mb-8"
+          className="mb-8 card-metadata-text"
           style={{
             WebkitBoxAlign: "center",
             alignItems: "center",
@@ -462,7 +462,7 @@ export function Tutorial({
             textDecoration: "none",
           }}
         >
-          <text> Published on {publishedAt} </text>
+          <span> Published on {publishedAt} </span>
         </div>
       </div>
     </div>
