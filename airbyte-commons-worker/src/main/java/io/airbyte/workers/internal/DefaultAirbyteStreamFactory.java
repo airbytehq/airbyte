@@ -117,7 +117,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
       case WARN -> logger.warn(combinedMessage);
       case DEBUG -> logger.debug(combinedMessage);
       case TRACE -> logger.trace(combinedMessage);
-      default -> logger.info(combinedMessage);
+      default -> logger.debug(combinedMessage);
     }
   }
 

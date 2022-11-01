@@ -30,6 +30,10 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
+import io.airbyte.config.StateType;
+import io.airbyte.config.StateWrapper;
+import io.airbyte.config.SyncStats;
+import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
@@ -881,7 +885,103 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     Promise.allOf(toWaitFor).get();
 
     // Todo: reduce the list
-    return toWaitFor.get(0).get();
+    final StandardSyncOutput result = new StandardSyncOutput()
+        .withFailures(new ArrayList<>())
+        .withState(StateMessageHelper.getState(
+            new StateWrapper()
+                .withStateType(StateType.STREAM)
+                .withStateMessages(new ArrayList<>())))
+        .withStandardSyncSummary(
+            new StandardSyncSummary()
+                .withRecordsSynced(0L)
+                .withBytesSynced(0L)
+                .withStreamStats(new ArrayList<>())
+                .withStatus(ReplicationStatus.COMPLETED)
+                .withTotalStats(new SyncStats()
+                    .withDestinationStateMessagesEmitted(0L)
+                    .withSourceStateMessagesEmitted(0L)
+                    .withBytesEmitted(0L)
+                    .withRecordsCommitted(0L)
+                    .withRecordsEmitted(0L)))
+        // TODO: Finish that
+        .withNormalizationSummary(
+            null)
+        .withWebhookOperationSummary(
+            null)
+        .withOutputCatalog(
+            null);
+
+    toWaitFor.stream().map(Promise::get)
+        .collect(() -> result,
+            ConnectionManagerWorkflowImpl::mergeStandardSyncOutput,
+            ConnectionManagerWorkflowImpl::mergeStandardSyncOutput);
+    return result;
+  }
+
+  /*
+   * Merge right into left
+   */
+  private static void mergeStandardSyncOutput(final StandardSyncOutput left, final StandardSyncOutput right) {
+    // Failures
+    final List<FailureReason> failureReasons = left.getFailures();
+    failureReasons.addAll(right.getFailures());
+    left.setFailures(failureReasons);
+
+    // State
+    // TODO: check per stream
+    final StateWrapper leftState =
+        StateMessageHelper.getTypedState(left.getState().getState(), true)
+            .orElse(new StateWrapper().withStateType(StateType.STREAM).withStateMessages(new ArrayList<>()));
+    final StateWrapper rightState = StateMessageHelper.getTypedState(right.getState().getState(), true)
+        .orElse(new StateWrapper().withStateType(StateType.STREAM).withStateMessages(new ArrayList<>()));
+    leftState.getStateMessages().addAll(rightState.getStateMessages());
+    left.setState(StateMessageHelper.getState(leftState));
+
+    // Standard Sync Summary
+    final StandardSyncSummary leftSyncSummary = left.getStandardSyncSummary();
+    final StandardSyncSummary rightSyncSummary = left.getStandardSyncSummary();
+    leftSyncSummary.setBytesSynced(leftSyncSummary.getBytesSynced() + rightSyncSummary.getBytesSynced());
+    leftSyncSummary.setRecordsSynced(leftSyncSummary.getRecordsSynced() + rightSyncSummary.getRecordsSynced());
+    leftSyncSummary.setStartTime(
+        leftSyncSummary.getStartTime() == null || leftSyncSummary.getStartTime() > rightSyncSummary.getStartTime() ? rightSyncSummary.getStartTime()
+            : leftSyncSummary.getStartTime());
+    leftSyncSummary.setEndTime(
+        leftSyncSummary.getEndTime() == null || leftSyncSummary.getEndTime() < rightSyncSummary.getEndTime() ? rightSyncSummary.getEndTime()
+            : leftSyncSummary.getEndTime());
+    leftSyncSummary.getStreamStats().addAll(rightSyncSummary.getStreamStats());
+    final SyncStats leftSyncStats = leftSyncSummary.getTotalStats();
+    final SyncStats rightSyncStats = rightSyncSummary.getTotalStats();
+    leftSyncStats.setRecordsCommitted(leftSyncStats.getRecordsCommitted() + rightSyncStats.getRecordsCommitted());
+    leftSyncStats.setRecordsEmitted(leftSyncStats.getRecordsEmitted() + rightSyncStats.getRecordsEmitted());
+    leftSyncStats.setBytesEmitted(leftSyncStats.getBytesEmitted() + rightSyncStats.getBytesEmitted());
+    leftSyncStats.setDestinationStateMessagesEmitted(leftSyncStats.getDestinationStateMessagesEmitted() +
+        rightSyncStats.getDestinationStateMessagesEmitted());
+    leftSyncStats.setSourceStateMessagesEmitted(leftSyncStats.getSourceStateMessagesEmitted() +
+        rightSyncStats.getSourceStateMessagesEmitted());
+    // TODO: find a way to recalculate the mean
+    leftSyncStats.setMeanSecondsBeforeSourceStateMessageEmitted(rightSyncStats.getMeanSecondsBeforeSourceStateMessageEmitted());
+    leftSyncStats.setMeanSecondsBetweenStateMessageEmittedandCommitted(rightSyncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted());
+    leftSyncStats.setMaxSecondsBeforeSourceStateMessageEmitted(
+        leftSyncStats.getMeanSecondsBeforeSourceStateMessageEmitted() == null
+            || leftSyncStats.getMaxSecondsBeforeSourceStateMessageEmitted() < rightSyncStats.getMaxSecondsBeforeSourceStateMessageEmitted()
+                ? rightSyncStats.getMaxSecondsBeforeSourceStateMessageEmitted()
+                : leftSyncStats.getMaxSecondsBeforeSourceStateMessageEmitted());
+    leftSyncStats.setMaxSecondsBetweenStateMessageEmittedandCommitted(
+        leftSyncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted() == null || leftSyncStats
+            .getMaxSecondsBetweenStateMessageEmittedandCommitted() < rightSyncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted()
+                ? rightSyncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted()
+                : leftSyncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted());
+    leftSyncStats.setReplicationStartTime(
+        leftSyncStats.getReplicationStartTime() == null || leftSyncStats.getReplicationStartTime() > rightSyncStats.getReplicationStartTime()
+            ? rightSyncStats.getReplicationStartTime()
+            : leftSyncStats.getReplicationStartTime());
+    leftSyncStats.setReplicationEndTime(
+        leftSyncStats.getReplicationEndTime() == null || leftSyncStats.getReplicationEndTime() < rightSyncStats.getReplicationEndTime()
+            ? rightSyncStats.getReplicationEndTime()
+            : leftSyncStats.getReplicationEndTime());
+    // TODO: other times and think about what we want here
+    leftSyncSummary.setTotalStats(leftSyncStats);
+    left.setStandardSyncSummary(leftSyncSummary);
   }
 
   /**
