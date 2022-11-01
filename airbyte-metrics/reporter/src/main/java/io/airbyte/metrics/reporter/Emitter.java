@@ -36,7 +36,7 @@ final class NumRunningJobs extends Emitter {
 
   public NumRunningJobs(final MetricClient client, final MetricRepository db) {
     super(client, () -> {
-      db.numberOfRunningJobs().forEach((attemptQueue, count) -> client.gauge(
+      db.numberOfRunningJobsByTaskQueue().forEach((attemptQueue, count) -> client.gauge(
           OssMetricsRegistry.NUM_RUNNING_JOBS,
           count,
           new MetricAttribute(MetricTags.ATTEMPT_QUEUE, attemptQueue)));
