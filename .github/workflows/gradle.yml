@@ -249,7 +249,7 @@ jobs:
           json_test_case_results: true
           check_name: "Connectors Base Test Results"
           
-      - name: Setup Cloud SDK
+      - name: Setup Google Cloud SDK
         if: always()
         uses: google-github-actions/setup-gcloud@v0
         with:
@@ -267,7 +267,7 @@ jobs:
           gcs_bucket_name="dev-ab-ci-run-results"
           filename=$(echo "${{ fromJSON( steps.connectors-test-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
           echo "$filename"
-          gsutil -h "Cache-Control:public" cp connectors_base_results.jsonl "gs://$gcs_bucket_name/$filename.jsonl"
+          gsutil -h "Cache-Control:public" cp connectors_base_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
         
       - name: Generate Test Report
         uses: dorny/test-reporter@v1
@@ -572,7 +572,7 @@ jobs:
           json_test_case_results: true
           check_name: "Platform Test Results"
 
-      - name: Setup Cloud SDK
+      - name: Setup Google Cloud SDK
         if: always()
         uses: google-github-actions/setup-gcloud@v0
         with:
@@ -590,7 +590,7 @@ jobs:
           gcs_bucket_name="dev-ab-ci-run-results"
           filename=$(echo "${{ fromJSON( steps.platform-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
           echo "$filename"
-          gsutil -h "Cache-Control:public" cp platform_results.jsonl "gs://$gcs_bucket_name/$filename.jsonl"
+          gsutil -h "Cache-Control:public" cp platform_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
         
       - name: Generate Test Report
         uses: dorny/test-reporter@v1
@@ -757,7 +757,7 @@ jobs:
           json_test_case_results: true
           check_name: "Kube Test Results"
       
-      - name: Setup Cloud SDK
+      - name: Setup Google Cloud SDK
         if: always()
         uses: google-github-actions/setup-gcloud@v0
         with:
@@ -775,7 +775,7 @@ jobs:
           gcs_bucket_name="dev-ab-ci-run-results"
           filename=$(echo "${{ fromJSON( steps.kube-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
           echo "$filename"
-          gsutil -h "Cache-Control:public" cp kube_results.jsonl "gs://$gcs_bucket_name/$filename.jsonl"
+          gsutil -h "Cache-Control:public" cp kube_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
       
       - name: Generate Test Report
         uses: dorny/test-reporter@v1

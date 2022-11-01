@@ -29,37 +29,18 @@ def main():
     out = []
     
     check_run_id = int(d["check_url"].split("/")[-1])
+
     for elem in d['cases']:
-        if 'success' in elem['states']:
-            for i in range(len(elem['states']['success'])):
+        for conclusion in ('success', 'failure', 'skipped'):
+            if conclusion not in elem['states']: 
+                continue
+            for i in range(len(elem['states'][conclusion])):
                 output = {
-                    "test_name": elem['states']['success'][i]['test_name'],
-                    "class_name": elem['states']['success'][i]['class_name'],
-                    "result_file": elem['states']['success'][i]['result_file'],
-                    "time": elem['states']['success'][i]['time'],
-                    "state": "success",
-                    "check_run_id": check_run_id,
-                }
-                out.append(output)
-        if 'failure' in elem['states']:
-            for i in range(len(elem['states']['failure'])):
-                output = {
-                    "test_name": elem['states']['failure'][i]['test_name'],
-                    "class_name": elem['states']['failure'][i]['class_name'],
-                    "result_file": elem['states']['failure'][i]['result_file'],
-                    "time": elem['states']['failure'][i]['time'],
-                    "state": "failure",
-                    "check_run_id": check_run_id,
-                }
-                out.append(output)
-        if 'skipped' in elem['states']:
-            for i in range(len(elem['states']['skipped'])):
-                output = {
-                    "test_name": elem['states']['skipped'][i]['test_name'],
-                    "class_name": elem['states']['skipped'][i]['class_name'],
-                    "result_file": elem['states']['skipped'][i]['result_file'],
-                    "time": elem['states']['skipped'][i]['time'],
-                    "state": "skipped",
+                    "test_name": elem['states'][conclusion][i]['test_name'],
+                    "class_name": elem['states'][conclusion][i]['class_name'],
+                    "result_file": elem['states'][conclusion][i]['result_file'],
+                    "time": elem['states'][conclusion][i]['time'],
+                    "state": conclusion,
                     "check_run_id": check_run_id,
                 }
                 out.append(output)
