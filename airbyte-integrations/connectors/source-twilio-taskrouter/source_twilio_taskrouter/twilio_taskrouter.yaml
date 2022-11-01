@@ -32,21 +32,32 @@ definitions:
       record_selector:
         extractor:
           field_pointer: ["workspaces"]
-
-
   workspaces_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "workspaces"
       primary_key: "sid"
       path: "/v1/Workspaces/{{config['sid']}}"
-
+  workers_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "workers"
+      primary_key: "sid"
+      path: "/v1/Workspaces/{{config['sid']}}/Workers"
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      record_selector:
+        extractor:
+          field_pointer: ["workers"]
+   
 streams:
   - "*ref(definitions.workspaces_stream)"
   - "*ref(definitions.allworkspaces_stream)"
+  - "*ref(definitions.workers_stream)"
 
 
 check:
   stream_names:
     - "allworkspaces"
     - "workspaces"
+    - "workers"
