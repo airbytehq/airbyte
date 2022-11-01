@@ -189,6 +189,14 @@
   icon: close.svg
   sourceType: api
   releaseStage: alpha
+- name: CoinGecko Coins
+  sourceDefinitionId: 9cdd4183-d0ba-40c3-aad3-6f46d4103974
+  dockerRepository: airbyte/source-coingecko-coins
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/coingecko-coins
+  icon: coingeckocoins.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Cockroachdb
   sourceDefinitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
   dockerRepository: airbyte/source-cockroachdb
