@@ -10,7 +10,6 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 /**
  * We are moving migrating away from this interface entirely. Use ConfigRepository instead.
@@ -32,7 +31,5 @@ public interface ConfigPersistence {
   <T> void writeConfigs(AirbyteConfig configType, Map<String, T> configs) throws IOException, JsonValidationException;
 
   void deleteConfig(AirbyteConfig configType, String configId) throws ConfigNotFoundException, IOException;
-
-  void replaceAllConfigs(Map<AirbyteConfig, Stream<?>> configs, boolean dryRun) throws IOException;
 
 }

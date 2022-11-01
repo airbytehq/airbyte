@@ -18,7 +18,6 @@ import static org.mockito.Mockito.spy;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -41,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Stream;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -147,26 +145,6 @@ class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
     assertThat(configPersistence
         .listConfigs(STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
             .hasSameElementsAs(List.of(DESTINATION_SNOWFLAKE));
-  }
-
-  @Test
-  void testReplaceAllConfigs() throws Exception {
-    writeDestination(configPersistence, DESTINATION_S3);
-    writeDestination(configPersistence, DESTINATION_SNOWFLAKE);
-
-    final Map<AirbyteConfig, Stream<?>> newConfigs = Map.of(STANDARD_SOURCE_DEFINITION, Stream.of(SOURCE_GITHUB, SOURCE_POSTGRES));
-
-    configPersistence.replaceAllConfigs(newConfigs, true);
-
-    // dry run does not change anything
-    assertRecordCount(2, ACTOR_DEFINITION);
-    assertHasDestination(DESTINATION_S3);
-    assertHasDestination(DESTINATION_SNOWFLAKE);
-
-    configPersistence.replaceAllConfigs(newConfigs, false);
-    assertRecordCount(2, ACTOR_DEFINITION);
-    assertHasSource(SOURCE_GITHUB);
-    assertHasSource(SOURCE_POSTGRES);
   }
 
   @Test

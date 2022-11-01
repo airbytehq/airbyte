@@ -10,12 +10,8 @@ import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Validates that the class of inputs and outputs matches the class specified in the AirbyteConfig
@@ -73,16 +69,6 @@ public class ClassEnforcingConfigPersistence implements ConfigPersistence {
   @Override
   public void deleteConfig(final AirbyteConfig configType, final String configId) throws ConfigNotFoundException, IOException {
     decoratedPersistence.deleteConfig(configType, configId);
-  }
-
-  @Override
-  public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
-    final Map<AirbyteConfig, Stream<?>> augmentedMap = new HashMap<>(configs).entrySet()
-        .stream()
-        .collect(Collectors.toMap(
-            Entry::getKey,
-            entry -> entry.getValue().peek(config -> Preconditions.checkArgument(entry.getKey().getClassName().equals(config.getClass())))));
-    decoratedPersistence.replaceAllConfigs(augmentedMap, dryRun);
   }
 
 }
