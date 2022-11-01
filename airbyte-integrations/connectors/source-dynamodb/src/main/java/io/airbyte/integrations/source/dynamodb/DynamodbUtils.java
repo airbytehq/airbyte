@@ -22,7 +22,7 @@ public class DynamodbUtils {
 
     }
 
-    public static DynamoDbClient initDynamoDbClient(DynamodbConfig dynamodbConfig) {
+    public static DynamoDbClient createDynamoDbClient(DynamodbConfig dynamodbConfig) {
         var dynamoDbClientBuilder = DynamoDbClient.builder();
 
         // configure access credentials

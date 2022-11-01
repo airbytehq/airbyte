@@ -7,27 +7,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.IntStream;
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.CreateTableRequest;
-import software.amazon.awssdk.services.dynamodb.model.CreateTableResponse;
-import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement;
-import software.amazon.awssdk.services.dynamodb.model.KeyType;
-import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
-import software.amazon.awssdk.services.dynamodb.model.TableClass;
 
 public class DynamodbOperationsTest {
 
@@ -43,17 +33,12 @@ public class DynamodbOperationsTest {
 
     @BeforeEach
     void setup() {
-        dynamodbContainer = DynamodbContainer.initWithStart();
+        dynamodbContainer = DynamodbContainer.createWithStart();
 
-        var jsonConfig = Jsons.jsonNode(ImmutableMap.builder()
-            .put("dynamodb_endpoint", dynamodbContainer.getEndpointOverride().toString())
-            .put("dynamodb_region", dynamodbContainer.getRegion())
-            .put("access_key_id", dynamodbContainer.getAccessKey())
-            .put("secret_access_key", dynamodbContainer.getSecretKey())
-            .build());
+        var jsonConfig = DynamodbDataFactory.createJsonConfig(dynamodbContainer);
 
-        this.dynamodbOperations = new DynamodbOperations(DynamodbConfig.initConfigFromJson(jsonConfig));
-        this.dynamoDbClient = DynamodbUtils.initDynamoDbClient(DynamodbConfig.initConfigFromJson(jsonConfig));
+        this.dynamodbOperations = new DynamodbOperations(DynamodbConfig.createDynamodbConfig(jsonConfig));
+        this.dynamoDbClient = DynamodbUtils.createDynamoDbClient(DynamodbConfig.createDynamodbConfig(jsonConfig));
 
         this.objectMapper = new ObjectMapper()
             .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true)
@@ -66,13 +51,14 @@ public class DynamodbOperationsTest {
         dynamoDbClient.close();
         dynamodbOperations.close();
         dynamodbContainer.stop();
-        dynamodbOperations.close();
+        dynamodbContainer.close();
     }
 
     @Test
     void testListTables() {
 
-        createTables(5);
+        var createTableRequests = DynamodbDataFactory.createTables(TABLE_NAME, 5);
+        createTableRequests.forEach(dynamoDbClient::createTable);
 
         List<String> tables = dynamodbOperations.listTables();
 
@@ -88,9 +74,10 @@ public class DynamodbOperationsTest {
     @Test
     void testPrimaryKey() {
 
-        var createTableResponses = createTables(1);
+        var createTableRequests = DynamodbDataFactory.createTables(TABLE_NAME, 1);
+        var createTableResponse = dynamoDbClient.createTable(createTableRequests.get(0));
 
-        var primaryKey = dynamodbOperations.primaryKey(createTableResponses.get(0).tableDescription().tableName());
+        var primaryKey = dynamodbOperations.primaryKey(createTableResponse.tableDescription().tableName());
 
         assertThat(primaryKey).hasSize(2)
             .anyMatch(t -> t.equals("attr_1"))
@@ -101,34 +88,23 @@ public class DynamodbOperationsTest {
     @Test
     void testInferSchema() throws JsonProcessingException, JSONException {
 
-        var createTableResponses = createTables(1);
-        String tableName = createTableResponses.get(0).tableDescription().tableName();
+        var createTableRequests = DynamodbDataFactory.createTables(TABLE_NAME, 1);
+        var createTableResponse = dynamoDbClient.createTable(createTableRequests.get(0));
+        String tableName = createTableResponse.tableDescription().tableName();
 
-        PutItemRequest putItemRequest1 = PutItemRequest
-            .builder()
-            .tableName(tableName)
-            .item(
-                Map.of(
-                    "attr_1", AttributeValue.builder().s("str_4").build(),
-                    "attr_2", AttributeValue.builder().s("str_5").build(),
-                    "attr_3", AttributeValue.builder().n("1234").build(),
-                    "attr_4", AttributeValue.builder().ns("12.5", "74.5").build())
-            )
-            .build();
+        PutItemRequest putItemRequest1 = DynamodbDataFactory.putItemRequest(tableName, Map.of(
+            "attr_1", AttributeValue.builder().s("str_4").build(),
+            "attr_2", AttributeValue.builder().s("str_5").build(),
+            "attr_3", AttributeValue.builder().n("1234").build(),
+            "attr_4", AttributeValue.builder().ns("12.5", "74.5").build()));
 
         dynamoDbClient.putItem(putItemRequest1);
 
-        PutItemRequest putItemRequest2 = PutItemRequest
-            .builder()
-            .tableName(tableName)
-            .item(
-                Map.of(
-                    "attr_1", AttributeValue.builder().s("str_6").build(),
-                    "attr_2", AttributeValue.builder().s("str_7").build(),
-                    "attr_5", AttributeValue.builder().bool(true).build(),
-                    "attr_6", AttributeValue.builder().ss("str_1", "str_2").build())
-            )
-            .build();
+        PutItemRequest putItemRequest2 = DynamodbDataFactory.putItemRequest(tableName, Map.of(
+            "attr_1", AttributeValue.builder().s("str_6").build(),
+            "attr_2", AttributeValue.builder().s("str_7").build(),
+            "attr_5", AttributeValue.builder().bool(true).build(),
+            "attr_6", AttributeValue.builder().ss("str_1", "str_2").build()));
 
         dynamoDbClient.putItem(putItemRequest2);
 
@@ -168,34 +144,24 @@ public class DynamodbOperationsTest {
     @Test
     void testScanTable() throws JsonProcessingException, JSONException {
 
-        var createTableResponses = createTables(1);
-        String tableName = createTableResponses.get(0).tableDescription().tableName();
+        var createTableRequests = DynamodbDataFactory.createTables(TABLE_NAME, 1);
+        var createTableResponse = dynamoDbClient.createTable(createTableRequests.get(0));
+        String tableName = createTableResponse.tableDescription().tableName();
 
-        PutItemRequest putItemRequest1 = PutItemRequest
-            .builder()
-            .tableName(tableName)
-            .item(
-                Map.of(
-                    "attr_1", AttributeValue.builder().s("str_4").build(),
-                    "attr_2", AttributeValue.builder().s("str_5").build(),
-                    "attr_3", AttributeValue.builder().s("2017-12-21T17:42:34Z").build(),
-                    "attr_4", AttributeValue.builder().ns("12.5", "74.5").build())
-            )
-            .build();
+        PutItemRequest putItemRequest1 = DynamodbDataFactory.putItemRequest(tableName, Map.of(
+            "attr_1", AttributeValue.builder().s("str_4").build(),
+            "attr_2", AttributeValue.builder().s("str_5").build(),
+            "attr_3", AttributeValue.builder().s("2017-12-21T17:42:34Z").build(),
+            "attr_4", AttributeValue.builder().ns("12.5", "74.5").build()));
 
         dynamoDbClient.putItem(putItemRequest1);
 
-        PutItemRequest putItemRequest2 = PutItemRequest
-            .builder()
-            .tableName(tableName)
-            .item(
-                Map.of(
-                    "attr_1", AttributeValue.builder().s("str_6").build(),
-                    "attr_2", AttributeValue.builder().s("str_7").build(),
-                    "attr_3", AttributeValue.builder().s("2019-12-21T17:42:34Z").build(),
-                    "attr_6", AttributeValue.builder().ss("str_1", "str_2").build())
-            )
-            .build();
+
+        PutItemRequest putItemRequest2 = DynamodbDataFactory.putItemRequest(tableName, Map.of(
+            "attr_1", AttributeValue.builder().s("str_6").build(),
+            "attr_2", AttributeValue.builder().s("str_7").build(),
+            "attr_3", AttributeValue.builder().s("2019-12-21T17:42:34Z").build(),
+            "attr_6", AttributeValue.builder().ss("str_1", "str_2").build()));
 
         dynamoDbClient.putItem(putItemRequest2);
 
@@ -214,41 +180,6 @@ public class DynamodbOperationsTest {
             }
             """, true);
 
-    }
-
-    private List<CreateTableResponse> createTables(int tables) {
-        List<CreateTableResponse> createTableResponses = new ArrayList<>();
-        IntStream.range(0, tables).mapToObj(range -> CreateTableRequest
-                .builder()
-                .tableClass(TableClass.STANDARD)
-                .tableName(TABLE_NAME + (range + 1))
-                .attributeDefinitions(
-                    AttributeDefinition.builder()
-                        .attributeName("attr_1")
-                        .attributeType(ScalarAttributeType.S)
-                        .build(),
-                    AttributeDefinition.builder()
-                        .attributeName("attr_2")
-                        .attributeType(ScalarAttributeType.S)
-                        .build()
-                )
-                .keySchema(
-                    KeySchemaElement.builder()
-                        .attributeName("attr_1")
-                        .keyType(KeyType.HASH)
-                        .build(),
-                    KeySchemaElement.builder()
-                        .attributeName("attr_2")
-                        .keyType(KeyType.RANGE)
-                        .build()
-                )
-                .provisionedThroughput(ProvisionedThroughput.builder()
-                    .readCapacityUnits(10L)
-                    .writeCapacityUnits(10L).build())
-                .build())
-            .map(dynamoDbClient::createTable)
-            .forEach(createTableResponses::add);
-        return createTableResponses;
     }
 
 

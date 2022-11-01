@@ -15,7 +15,7 @@ For more information about the grading system, see [Product Release Stages](http
 ## Sources
 
 | Connector                                                                                   | Product Release Stage| Available in Cloud? |
-|:--------------------------------------------------------------------------------------------| :------------------- | :------------------ |
+|:--------------------------------------------------------------------------------------------| :------------------- |:--------------------|
 | [3PL Central](sources/tplcentral.md)                                                        | Alpha                | No                  |
 | [ActiveCampaign](sources/activecampaign.md)                                                 | Alpha                | No                  |
 | [Adjust](sources/adjust.md)                                                                 | Alpha                | No                  |
@@ -187,7 +187,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Whisky Hunter](sources/whisky-hunter.md        )                                           | Alpha                | No                  |
 | [WooCommerce](sources/woocommerce.md)                                                       | Alpha                | No                  |
 | [Wordpress](sources/wordpress.md)                                                           | Alpha                | No                  |
-| [Workable](sources/workable.md)                                                           | Alpha                | No                  |
+| [Workable](sources/workable.md)                                                             | Alpha                | No                  |
 | [Wrike](sources/wrike.md)                                                                   | Alpha                | No                  |
 | [YouTube Analytics](sources/youtube-analytics.md)                                           | Beta                 | Yes                 |
 | [Xkcd](sources/xkcd.md)                                                                     | Alpha                | No                  |
@@ -200,6 +200,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Zoho CRM](sources/zoho-crm.md)                                                             | Alpha                | No                  |
 | [Zoom](sources/zoom.md)                                                                     | Alpha                | No                  |
 | [Zuora](sources/zuora.md)                                                                   | Alpha                | Yes                 |
+| [Dynamodb](sources/dynamodb.md)                                                             | Alpha                | No                  |
 
 ## Destinations
 
