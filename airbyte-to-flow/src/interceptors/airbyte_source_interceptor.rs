@@ -83,14 +83,8 @@ impl AirbyteSourceInterceptor {
                 merge(&mut endpoint_spec, &p);
             }
 
-            match (auth_spec.as_mut(), oauth2_patch.as_ref()) {
-                (Some(spec), Some(p)) => {
-                    merge(spec, p);
-                }
-                (None, Some(p)) => {
-                    auth_spec = Some(p.clone())
-                }
-                _ => {}
+            if let Some(p) = oauth2_patch.as_ref() {
+                auth_spec = Some(p.clone());
             }
 
             let documentation_url = match documentation_url_patch {
