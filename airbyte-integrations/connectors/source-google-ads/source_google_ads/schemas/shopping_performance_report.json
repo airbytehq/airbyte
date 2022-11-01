@@ -1,13 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["segments.ad_network_type", "segments.device", "segments.date", "ad_group.id", "customer.id", "campaign.id", "segments.product_item_id"],
   "properties": {
     "customer.descriptive_name": {
       "type": ["null", "string"]
     },
     "ad_group.id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "ad_group.name": {
       "type": ["null", "string"]
@@ -16,7 +15,7 @@
       "type": ["null", "string"]
     },
     "segments.ad_network_type": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "segments.product_aggregator_id": {
       "type": ["null", "integer"]
@@ -37,7 +36,7 @@
       "type": ["null", "string"]
     },
     "campaign.id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "campaign.name": {
       "type": ["null", "string"]
@@ -115,17 +114,17 @@
       "type": ["null", "string"]
     },
     "segments.date": {
-      "type": ["string"],
+      "type": ["null", "string"],
       "format": "datetime"
     },
     "segments.day_of_week": {
       "type": ["null", "string"]
     },
     "segments.device": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "customer.id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "metrics.impressions": {
       "type": ["null", "integer"]
@@ -140,7 +139,7 @@
       "type": ["null", "string"]
     },
     "segments.product_item_id": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "segments.product_condition": {
       "type": ["null", "string"]

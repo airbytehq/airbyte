@@ -1,13 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["segments.date", "ad_group.id", "geographic_view.country_criterion_id", "customer.descriptive_name"],
   "properties": {
     "customer.descriptive_name": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "geographic_view.country_criterion_id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "geographic_view.location_type": {
       "type": ["null", "string"],
@@ -19,10 +18,10 @@
       ]
     },
     "ad_group.id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "segments.date": {
-      "type": ["string"],
+      "type": ["null", "string"],
       "format": "date"
     }
   }

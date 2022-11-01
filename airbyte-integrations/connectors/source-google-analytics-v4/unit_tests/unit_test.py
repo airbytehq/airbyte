@@ -1,18 +1,14 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import copy
-import json
 import logging
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 from urllib.parse import unquote
 
 import pendulum
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
-from airbyte_cdk.sources.streams.http.auth import NoAuth
+from airbyte_cdk.models import SyncMode, Type
 from freezegun import freeze_time
 from source_google_analytics_v4.source import (
     DATA_IS_NOT_GOLDEN_MSG,
@@ -23,119 +19,10 @@ from source_google_analytics_v4.source import (
     SourceGoogleAnalyticsV4,
 )
 
-
-def read_file(file_name):
-    parent_location = Path(__file__).absolute().parent
-    file = open(parent_location / file_name).read()
-    return file
-
-
 expected_metrics_dimensions_type_map = (
     {"ga:users": "INTEGER", "ga:newUsers": "INTEGER"},
     {"ga:date": "STRING", "ga:country": "STRING"},
 )
-
-
-@pytest.fixture
-def mock_metrics_dimensions_type_list_link(requests_mock):
-    requests_mock.get(
-        "https://www.googleapis.com/analytics/v3/metadata/ga/columns",
-        json=json.loads(read_file("metrics_dimensions_type_list.json")),
-    )
-
-
-@pytest.fixture
-def mock_auth_call(requests_mock):
-    yield requests_mock.post(
-        "https://oauth2.googleapis.com/token",
-        json={"access_token": "", "expires_in": 0},
-    )
-
-
-@pytest.fixture
-def mock_auth_check_connection(requests_mock):
-    yield requests_mock.post(
-        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
-        json={"data": {"test": "value"}},
-    )
-
-
-@pytest.fixture
-def mock_unknown_metrics_or_dimensions_error(requests_mock):
-    yield requests_mock.post(
-        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
-        status_code=400,
-        json={"error": {"message": "Unknown metrics or dimensions"}},
-    )
-
-
-@pytest.fixture
-def mock_api_returns_no_records(requests_mock):
-    """API returns empty data for given date based slice"""
-    yield requests_mock.post(
-        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
-        json=json.loads(read_file("empty_response.json")),
-    )
-
-
-@pytest.fixture
-def mock_api_returns_valid_records(requests_mock):
-    """API returns valid data for given date based slice"""
-    yield requests_mock.post(
-        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
-        json=json.loads(read_file("response_with_records.json")),
-    )
-
-
-@pytest.fixture
-def mock_api_returns_sampled_results(requests_mock):
-    """API returns valid data for given date based slice"""
-    yield requests_mock.post(
-        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
-        json=json.loads(read_file("response_with_sampling.json")),
-    )
-
-
-@pytest.fixture
-def mock_api_returns_is_data_golden_false(requests_mock):
-    """API returns valid data for given date based slice"""
-    yield requests_mock.post(
-        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
-        json=json.loads(read_file("response_is_data_golden_false.json")),
-    )
-
-
-@pytest.fixture
-def configured_catalog():
-    return ConfiguredAirbyteCatalog.parse_obj(json.loads(read_file("./configured_catalog.json")))
-
-
-@pytest.fixture()
-def test_config():
-    test_conf = {
-        "view_id": "1234567",
-        "window_in_days": 1,
-        "authenticator": NoAuth(),
-        "metrics": [],
-        "start_date": pendulum.now().subtract(days=2).date().strftime("%Y-%m-%d"),
-        "dimensions": [],
-        "credentials": {
-            "auth_type": "Client",
-            "client_id": "client_id_val",
-            "client_secret": "client_secret_val",
-            "refresh_token": "refresh_token_val",
-        },
-    }
-    return copy.deepcopy(test_conf)
-
-
-@pytest.fixture()
-def test_config_auth_service(test_config):
-    test_config["credentials"] = {
-        "auth_type": "Service",
-        "credentials_json": '{"client_email": "", "private_key": "", "private_key_id": ""}',
-    }
-    return copy.deepcopy(test_config)
 
 
 def test_metrics_dimensions_type_list(mock_metrics_dimensions_type_list_link):
@@ -147,7 +34,7 @@ def test_metrics_dimensions_type_list(mock_metrics_dimensions_type_list_link):
 def get_metrics_dimensions_mapping():
     test_metrics_dimensions_map = {
         "metric": [("ga:users", "integer"), ("ga:newUsers", "integer")],
-        "dimension": [("ga:dimension", "string")],
+        "dimension": [("ga:dimension", "string"), ("ga:dateHourMinute", "integer")],
     }
     for field_type, attribute_expected_pairs in test_metrics_dimensions_map.items():
         for attribute_expected_pair in attribute_expected_pairs:
@@ -304,19 +191,28 @@ def test_check_connection_success_oauth(
     assert mock_api_returns_valid_records.called
 
 
-def test_unknown_metrics_or_dimensions_error_validation(mock_metrics_dimensions_type_list_link, mock_unknown_metrics_or_dimensions_error):
-    records = GoogleAnalyticsV4Stream(MagicMock()).read_records(sync_mode=None)
-    assert records
+def test_unknown_metrics_or_dimensions_error_validation(
+    mocker, test_config, mock_metrics_dimensions_type_list_link, mock_unknown_metrics_or_dimensions_error
+):
+    records = GoogleAnalyticsV4Stream(test_config).read_records(sync_mode=None)
+    assert list(records) == []
+
+
+def test_daily_request_limit_error_validation(mocker, test_config, mock_metrics_dimensions_type_list_link, mock_daily_request_limit_error):
+    records = GoogleAnalyticsV4Stream(test_config).read_records(sync_mode=None)
+    assert list(records) == []
 
 
 @freeze_time("2021-11-30")
-def test_stream_slices_limited_by_current_date(test_config, mock_metrics_dimensions_type_list_link):
+def test_stream_slice_limits(test_config, mock_metrics_dimensions_type_list_link):
     test_config["window_in_days"] = 14
     g = GoogleAnalyticsV4IncrementalObjectsBase(config=test_config)
     stream_state = {"ga_date": "2021-11-25"}
     slices = g.stream_slices(stream_state=stream_state)
     current_date = pendulum.now().date().strftime("%Y-%m-%d")
-    assert slices == [{"startDate": "2021-11-26", "endDate": current_date}]
+    expected_start_date = "2021-11-24"  # always resync two days back
+    expected_end_date = current_date  # do not try to sync future dates
+    assert slices == [{"startDate": expected_start_date, "endDate": expected_end_date}]
 
 
 @freeze_time("2021-11-30")
@@ -345,7 +241,7 @@ def test_state_saved_after_each_record(test_config, mock_metrics_dimensions_type
 
 def test_connection_fail_invalid_reports_json(test_config):
     source = SourceGoogleAnalyticsV4()
-    test_config["custom_reports"] = "[{'data': {'ga:foo': 'ga:bar'}}]"
+    test_config["custom_reports"] = '[{{"name": "test", "dimensions": [], "metrics": []}}]'
     ok, error = source.check_connection(logging.getLogger(), test_config)
     assert not ok
     assert "Invalid custom reports json structure." in error
@@ -370,3 +266,27 @@ def test_connection_fail_due_to_http_status(
         assert "Please check the permissions for the requested view_id" in error
         assert test_config["view_id"] in error
     assert json_resp["error"] in error
+
+
+def test_is_data_golden_flag_missing_equals_false(
+    mock_api_returns_is_data_golden_false, test_config, configured_catalog, mock_metrics_dimensions_type_list_link, mock_auth_call
+):
+    source = SourceGoogleAnalyticsV4()
+    for message in source.read(logging.getLogger(), test_config, configured_catalog):
+        if message.type == Type.RECORD:
+            assert message.record.data["isDataGolden"] is False
+
+
+@pytest.mark.parametrize(
+    "configured_response, expected_token",
+    (
+        ({}, None),
+        ({"reports": []}, None),
+        ({"reports": [{"data": {}, "columnHeader": {}}]}, None),
+        ({"reports": [{"data": {}, "columnHeader": {}, "nextPageToken": 100000}]}, {"pageToken": 100000}),
+    ),
+)
+def test_next_page_token(test_config, configured_response, expected_token):
+    response = MagicMock(json=MagicMock(return_value=configured_response))
+    token = GoogleAnalyticsV4Stream(test_config).next_page_token(response)
+    assert token == expected_token

@@ -1,7 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["ad_group_ad.ad.id", "segments.date"],
   "properties": {
     "ad_group_ad.ad.added_by_google_ads": {
       "type": ["null", "boolean"]
@@ -214,7 +213,7 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "ad_group_ad.ad.image_ad.image_url": {
       "type": ["null", "string"]
@@ -568,7 +567,7 @@
       "type": ["null", "string"]
     },
     "segments.date": {
-      "type": ["string"],
+      "type": ["null", "string"],
       "format": "date"
     }
   }

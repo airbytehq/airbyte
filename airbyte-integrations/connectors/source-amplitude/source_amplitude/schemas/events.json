@@ -1,7 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["uuid"],
   "properties": {
     "server_received_time": {
       "type": ["null", "string"],
@@ -23,7 +22,7 @@
       "type": ["null", "string"]
     },
     "uuid": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "event_time": {
       "type": ["null", "string"],

@@ -1,13 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": ["object"],
-  "required": ["id"],
+  "type": ["null", "object"],
   "properties": {
     "label": {
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "archived": {
       "type": ["null", "boolean"]
@@ -38,10 +37,12 @@
             "type": ["null", "string"]
           },
           "createdAt": {
-            "type": ["null", "integer"]
+            "type": ["null", "string"],
+            "format": "date-time"
           },
           "updatedAt": {
-            "type": ["null", "integer"]
+            "type": ["null", "string"],
+            "format": "date-time"
           },
           "active": {
             "type": ["null", "boolean"]
@@ -50,10 +51,12 @@
       }
     },
     "createdAt": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "updatedAt": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }

@@ -1,18 +1,18 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "estuary-airbyte-cdk~=0.1.56",
+    "airbyte-cdk~=0.1",
     "backoff",
     "requests",
     "google-auth-httplib2",
     "google-api-python-client",
     "PyYAML==5.4",
-    "pydantic==1.6.2",
+    "pydantic~=1.9.2",
 ]
 
 TEST_REQUIREMENTS = [

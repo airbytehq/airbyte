@@ -2,8 +2,7 @@
   {
     "name": "daily_active_users",
     "dimensions": ["ga:date"],
-    "metrics": ["ga:1dayUsers"],
-    "primary_key": ["ga_date", "view_id"]
+    "metrics": ["ga:1dayUsers"]
   },
   {
     "name": "devices",
@@ -24,14 +23,12 @@
       "ga:avgTimeOnPage",
       "ga:bounceRate",
       "ga:exitRate"
-    ],
-    "primary_key": ["ga_date", "ga_browser", "ga_deviceCategory", "ga_operatingSystem", "view_id"]
+    ]
   },
   {
     "name": "four_weekly_active_users",
     "dimensions": ["ga:date"],
-    "metrics": ["ga:28dayUsers"],
-    "primary_key": ["ga_date", "view_id"]
+    "metrics": ["ga:28dayUsers"]
   },
   {
     "name": "locations",
@@ -55,14 +52,12 @@
       "ga:avgTimeOnPage",
       "ga:bounceRate",
       "ga:exitRate"
-    ],
-    "primary_key": ["ga_date", "ga_city", "ga_continent", "ga_country", "ga_metro", "ga_region", "ga_subContinent", "view_id"]
+    ]
   },
   {
     "name": "monthly_active_users",
     "dimensions": ["ga:date"],
-    "metrics": ["ga:30dayUsers"],
-    "primary_key": ["ga_date", "view_id"]
+    "metrics": ["ga:30dayUsers"]
   },
   {
     "name": "pages",
@@ -76,8 +71,7 @@
       "ga:bounceRate",
       "ga:exits",
       "ga:exitRate"
-    ],
-    "primary_key": ["ga_date", "ga_pagePath", "ga_hostname", "view_id"]
+    ]
   },
   {
     "name": "traffic_sources",
@@ -93,14 +87,12 @@
       "ga:avgTimeOnPage",
       "ga:bounceRate",
       "ga:exitRate"
-    ],
-    "primary_key": ["ga_date", "ga_source", "ga_socialNetwork", "ga_medium", "view_id"]
+    ]
   },
   {
     "name": "two_weekly_active_users",
     "dimensions": ["ga:date"],
-    "metrics": ["ga:14dayUsers"],
-    "primary_key": ["ga_date", "view_id"]
+    "metrics": ["ga:14dayUsers"]
   },
   {
     "name": "website_overview",
@@ -116,13 +108,11 @@
       "ga:avgTimeOnPage",
       "ga:bounceRate",
       "ga:exitRate"
-    ],
-    "primary_key": ["ga_date", "view_id"]
+    ]
   },
   {
     "name": "weekly_active_users",
     "dimensions": ["ga:date"],
-    "metrics": ["ga:7dayUsers"],
-    "primary_key": ["ga_date", "view_id"]
+    "metrics": ["ga:7dayUsers"]
   }
 ]

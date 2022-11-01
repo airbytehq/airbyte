@@ -1,6 +1,5 @@
 {
-  "type": ["object"],
-  "required": ["id"],
+  "type": ["null", "object"],
   "properties": {
     "campaign": {
       "type": ["null", "string"]
@@ -14,7 +13,7 @@
       "format": "date-time"
     },
     "id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "reference": {
       "type": ["null", "string"]

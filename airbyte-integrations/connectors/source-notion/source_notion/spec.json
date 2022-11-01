@@ -1,10 +1,10 @@
 {
-  "documentationUrl": "https://go.estuary.dev/9iXgpB",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/notion",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Notion Source Spec",
     "type": "object",
-    "required": ["start_date", "credentials"],
+    "required": ["start_date"],
     "properties": {
       "start_date": {
         "title": "Start Date",
@@ -21,18 +21,16 @@
         "oneOf": [
           {
             "type": "object",
-            "x-oauth2-provider": "notion",
             "title": "OAuth2.0",
             "required": [
+              "auth_type",
               "client_id",
               "client_secret",
-              "access_token",
-              "auth_type"
+              "access_token"
             ],
             "properties": {
               "auth_type": {
                 "type": "string",
-                "default": "OAuth2.0",
                 "const": "OAuth2.0"
               },
               "client_id": {
@@ -66,7 +64,7 @@
               },
               "token": {
                 "title": "Access Token",
-                "description": "Notion API access token, see the docs for more information https://developers.notion.com/docs/authorization",
+                "description": "Notion API access token, see the <a href=\"https://developers.notion.com/docs/authorization\">docs</a> for more information on how to obtain this token.",
                 "type": "string",
                 "airbyte_secret": true
               }
@@ -77,11 +75,11 @@
     }
   },
   "authSpecification": {
-    "provider": "notion",
-    "authUrlTemplate": "https://api.notion.com/v1/oauth/authorize?client_id={{ client_id }}&redirect_uri={{ redirect_uri }}&response_type=code&owner=user&state={{ state }}",
-    "accessTokenUrlTemplate": "https://api.notion.com/v1/oauth/token",
-    "accessTokenHeaders": "{\"Authorization\": \"Basic {{ basicauth client_id client_secret }}\", \"Content-Type\": \"application/json\"}",
-    "accessTokenBody": "{\"grant_type\": \"authorization_code\", \"redirect_uri\": \"{{ redirect_uri }}\", \"code\": \"{{ code }}\"}",
-    "accessTokenResponseMap": "{\"access_token\": \"/access_token\"}"
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["credentials", "0"],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["access_token"]]
+    }
   }
 }

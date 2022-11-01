@@ -1,6 +1,5 @@
 {
-  "type": ["object"],
-  "required": ["account"],
+  "type": ["null", "object"],
   "properties": {
     "owner": {
       "type": ["null", "string"]
@@ -15,7 +14,7 @@
       "type": ["null", "string"]
     },
     "account": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "status": {
       "type": ["null", "string"]

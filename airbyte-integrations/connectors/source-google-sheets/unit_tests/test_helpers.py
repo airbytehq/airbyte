@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -13,7 +13,7 @@ from airbyte_cdk.models.airbyte_protocol import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
-    SyncMode
+    SyncMode,
 )
 from google_sheets_source.client import GoogleSheetsClient
 from google_sheets_source.helpers import Helpers
@@ -27,19 +27,15 @@ class TestHelpers(unittest.TestCase):
         sheet_name = "sheet1"
         header_values = ["h1", "h2", "h3"]
 
-        props = {header: {"type": "string"} for header in header_values}
-        props["row_id"] = {"type": "integer"}
         expected_stream = AirbyteStream(
             name=sheet_name,
             json_schema={
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
-                "required": ["row_id"],
                 # For simplicity, the type of every cell is a string
-                "properties": props,
+                "properties": {header: {"type": "string"} for header in header_values},
             },
             supported_sync_modes=[SyncMode.full_refresh],
-            source_defined_primary_key=[["row_id"]],
         )
 
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
@@ -62,19 +58,15 @@ class TestHelpers(unittest.TestCase):
 
         # h1 is ignored because it is duplicate
         expected_stream_header_values = ["h3"]
-        props = {header: {"type": "string"} for header in expected_stream_header_values}
-        props["row_id"] = {"type": "integer"}
         expected_stream = AirbyteStream(
             name=sheet_name,
             json_schema={
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
-                "required": ["row_id"],
                 # For simplicity, the type of every cell is a string
-                "properties": props,
+                "properties": {header: {"type": "string"} for header in expected_stream_header_values},
             },
             supported_sync_modes=[SyncMode.full_refresh],
-            source_defined_primary_key=[["row_id"]],
         )
 
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
@@ -84,19 +76,15 @@ class TestHelpers(unittest.TestCase):
         sheet_name = "sheet1"
         header_values = ["h1", "", "h3"]
 
-        props = {"h1": {"type": "string"}}
-        props["row_id"] = {"type": "integer"}
         expected_stream = AirbyteStream(
             name=sheet_name,
             json_schema={
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
-                "required": ["row_id"],
                 # For simplicity, the type of every cell is a string
-                "properties": props,
+                "properties": {"h1": {"type": "string"}},
             },
             supported_sync_modes=[SyncMode.full_refresh],
-            source_defined_primary_key=[["row_id"]],
         )
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
 
@@ -134,14 +122,12 @@ class TestHelpers(unittest.TestCase):
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
-                    stream=AirbyteStream(name=sheet1, json_schema=sheet1_schema,
-                    supported_sync_modes=[SyncMode.full_refresh]),
+                    stream=AirbyteStream(name=sheet1, json_schema=sheet1_schema, supported_sync_modes=["full_refresh"]),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 ),
                 ConfiguredAirbyteStream(
-                    stream=AirbyteStream(name=sheet2, json_schema=sheet2_schema,
-                    supported_sync_modes=[SyncMode.full_refresh]),
+                    stream=AirbyteStream(name=sheet2, json_schema=sheet2_schema, supported_sync_modes=["full_refresh"]),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 ),
@@ -157,11 +143,10 @@ class TestHelpers(unittest.TestCase):
         sheet = "my_sheet"
         cell_values = ["v1", "v2", "v3", "v4"]
         column_index_to_name = {0: "c1", 3: "c4"}
-        row_id = 2
 
-        actual = Helpers.row_data_to_record_message(sheet, row_id, cell_values, column_index_to_name)
+        actual = Helpers.row_data_to_record_message(sheet, cell_values, column_index_to_name)
 
-        expected = AirbyteRecordMessage(stream=sheet, data={"row_id": row_id, "c1": "v1", "c4": "v4"}, emitted_at=1)
+        expected = AirbyteRecordMessage(stream=sheet, data={"c1": "v1", "c4": "v4"}, emitted_at=1)
         self.assertEqual(expected.stream, actual.stream)
         self.assertEqual(expected.data, actual.data)
 

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from pytest import fixture
@@ -25,7 +25,7 @@ def access_token_fixture():
 def oauth_config_fixture(access_token):
     return {
         "credentials": {
-            "auth_type": "OAuth2.0",
+            "auth_type": "oauth2.0",
             "client_id": "111111111",
             "client_secret": "secret_1111111111",
             "access_token": access_token,

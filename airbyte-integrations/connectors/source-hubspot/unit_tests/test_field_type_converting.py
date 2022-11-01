@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -73,7 +73,7 @@ def test_bad_field_type_converting(field_type, expected, caplog, capsys):
         # Test casting fields with format specified
         (["null", "string"], "some_field", "", "date-time", None),
         (["string"], "some_field", "", "date-time", ""),
-        (["null", "string"], "some_field", "2020", "date-time", "2020-01-01 00:00:00"),
+        (["null", "string"], "some_field", "2020", "date-time", "2020-01-01T00:00:00+00:00"),
     ],
 )
 def test_cast_type_if_needed(declared_field_types, field_name, field_value, format, casted_value):
@@ -89,14 +89,14 @@ def test_cast_type_if_needed(declared_field_types, field_name, field_value, form
     "field_value, declared_format, expected_casted_value",
     [
         ("1653696000000", "date", "2022-05-28"),
-        ("1645608465000", "date-time", "2022-02-23 09:27:45"),
-        (1645608465000, "date-time", "2022-02-23 09:27:45"),
+        ("1645608465000", "date-time", "2022-02-23T09:27:45+00:00"),
+        (1645608465000, "date-time", "2022-02-23T09:27:45+00:00"),
         ("2022-05-28", "date", "2022-05-28"),
-        ("2022-02-23 09:27:45", "date-time", "2022-02-23 09:27:45"),
+        ("2022-02-23 09:27:45", "date-time", "2022-02-23T09:27:45+00:00"),
         ("", "date", ""),
         (None, "date", None),
         ("2022-02-23 09:27:45", "date", "2022-02-23"),
-        ("2022-05-28", "date-time", "2022-05-28 00:00:00"),
+        ("2022-05-28", "date-time", "2022-05-28T00:00:00+00:00"),
     ],
 )
 def test_cast_timestamp_to_date(field_value, declared_format, expected_casted_value):

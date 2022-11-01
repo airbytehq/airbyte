@@ -1,22 +1,22 @@
 {
-  "documentationUrl": "https://go.estuary.dev/94rlKl",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/amplitude",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Amplitude Spec",
     "type": "object",
     "required": ["api_key", "secret_key", "start_date"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "api_key": {
         "type": "string",
         "title": "API Key",
-        "description": "Amplitude API Key. See the setup guide for more information on how to obtain this key: https://go.estuary.dev/CTEm20",
+        "description": "Amplitude API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/amplitude#setup-guide\">setup guide</a> for more information on how to obtain this key.",
         "airbyte_secret": true
       },
       "secret_key": {
         "type": "string",
         "title": "Secret Key",
-        "description": "Amplitude Secret Key. See the setup guide for more information on how to obtain this key: https://go.estuary.dev/CTEm20",
+        "description": "Amplitude Secret Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/amplitude#setup-guide\">setup guide</a> for more information on how to obtain this key.",
         "airbyte_secret": true
       },
       "start_date": {

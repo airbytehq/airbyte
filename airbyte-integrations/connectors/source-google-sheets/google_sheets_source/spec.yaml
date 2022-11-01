@@ -1,7 +1,7 @@
-documentationUrl: https://go.estuary.dev/xk4acK
+documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
-  title: Google Sheets Spec
+  title: Google Sheets Source Spec
   type: object
   required:
     - spreadsheet_id
@@ -12,24 +12,21 @@ connectionSpecification:
       type: string
       title: Spreadsheet Link
       description: >-
-        The link to your spreadsheet. See this guide for more details https://go.estuary.dev/phEkVt
+        Enter the link to the Google spreadsheet you want to sync
       examples:
         - https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit
+    row_batch_size:
+      type: integer
+      title: Row Batch Size
+      description: Number of rows fetched when making a Google Sheet API call. Defaults to 200.
+      default: 200
     credentials:
       type: object
       title: Authentication
       description: >-
-        Google API Credentials for connecting to Google Sheets and Google Drive
-        APIs
-      discriminator:
-        propertyName: auth_type
-      required:
-        - auth_type
-      default:
-        auth_type: Client
+        Credentials for connecting to the Google Sheets API
       oneOf:
-        - title: Google OAuth
-          x-oauth2-provider: google
+        - title: Authenticate via Google (OAuth)
           type: object
           required:
             - auth_type
@@ -39,7 +36,6 @@ connectionSpecification:
           properties:
             auth_type:
               type: string
-              default: Client
               const: Client
             client_id:
               title: Client ID
@@ -56,28 +52,30 @@ connectionSpecification:
               type: string
               description: "Enter your Google application's refresh token"
               airbyte_secret: true
-        - title: Service Account Key
+        - title: Service Account Key Authentication
+          type: object
           required:
             - auth_type
             - service_account_info
           properties:
             auth_type:
-                type: string
-                default: Service
-                const: Service
+              type: string
+              const: Service
             service_account_info:
-                type: string
-                title: Service Account JSON.
-                description: >-
-                    The JSON key of the service account to use for authorization.
-                    See this setup guide for more details https://go.estuary.dev/RP7TxO
-                airbyte_secret: true
-                multiline: true
-                examples:
-                  - "{ \"type\": \"service_account\" \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
+              type: string
+              title: Service Account Information.
+              description: 'Enter your Google Cloud <a href="https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys">service account key</a> in JSON format'
+              airbyte_secret: true
+              examples:
+                - '{ "type": "service_account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ... }'
 authSpecification:
-  provider: "google"
-  authUrlTemplate: "https://accounts.google.com/o/oauth2/auth?access_type=offline&prompt=consent&client_id={{ client_id }}&redirect_uri={{ redirect_uri }}&response_type=code&scope=https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.readonly&state={{ state }}"
-  accessTokenUrlTemplate: "https://oauth2.googleapis.com/token"
-  accessTokenBody: "{\"grant_type\": \"authorization_code\", \"client_id\": \"{{ client_id }}\", \"client_secret\": \"{{ client_secret }}\", \"redirect_uri\": \"{{ redirect_uri }}\", \"code\": \"{{ code }}\"}"
-  accessTokenResponseMap: "{\"refresh_token\": \"/refresh_token\"}"
+  auth_type: oauth2.0
+  oauth2Specification:
+    rootObject:
+      - credentials
+      - 0
+    oauthFlowInitParameters:
+      - ["client_id"]
+      - ["client_secret"]
+    oauthFlowOutputParameters:
+      - ["refresh_token"]

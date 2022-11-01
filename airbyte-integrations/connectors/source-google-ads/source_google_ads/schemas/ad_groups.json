@@ -1,7 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["ad_group.id", "segments.date"],
   "properties": {
     "ad_group.ad_rotation_mode": {
       "type": ["null", "string"]
@@ -49,7 +48,7 @@
       "type": ["null", "string"]
     },
     "ad_group.id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "ad_group.labels": {
       "type": ["null", "array"],
@@ -97,7 +96,7 @@
       }
     },
     "segments.date": {
-      "type": ["string"],
+      "type": ["null", "string"],
       "format": "date"
     }
   }

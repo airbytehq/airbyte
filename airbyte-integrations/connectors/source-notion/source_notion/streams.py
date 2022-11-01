@@ -28,6 +28,11 @@ class NotionStream(HttpStream, ABC):
         super().__init__(**kwargs)
         self.start_date = config["start_date"]
 
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        retry_after = response.headers.get("retry-after")
+        if retry_after:
+            return float(retry_after)
+
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         params = super().request_headers(**kwargs)
         # Notion API version, see https://developers.notion.com/reference/versioning

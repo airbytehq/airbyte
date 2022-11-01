@@ -1,6 +1,5 @@
 {
-  "type": ["object"],
-  "required": ["id"],
+  "type": ["null", "object"],
   "properties": {
     "runSchedule": {
       "type": ["null", "object"],
@@ -43,7 +42,7 @@
       "type": ["null", "boolean"]
     },
     "id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "account": {
       "type": ["null", "string"]

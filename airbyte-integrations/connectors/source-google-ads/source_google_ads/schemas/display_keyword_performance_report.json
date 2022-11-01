@@ -1,7 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["segments.ad_network_type", "segments.device", "segments.date", "ad_group.id", "customer.id", "campaign.id", "ad_group_criterion.criterion_id"],
   "properties": {
     "customer.currency_code": {
       "type": ["null", "string"]
@@ -34,7 +33,7 @@
       "type": ["null", "number"]
     },
     "ad_group.id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "ad_group.name": {
       "type": ["null", "string"]
@@ -43,7 +42,7 @@
       "type": ["null", "string"]
     },
     "segments.ad_network_type": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "metrics.all_conversions_from_interactions_rate": {
       "type": ["null", "number"]
@@ -82,7 +81,7 @@
       "type": ["null", "string"]
     },
     "campaign.id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "campaign.name": {
       "type": ["null", "string"]
@@ -142,7 +141,7 @@
       "type": ["null", "string"]
     },
     "segments.device": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "metrics.engagement_rate": {
       "type": ["null", "number"]
@@ -151,7 +150,7 @@
       "type": ["null", "integer"]
     },
     "customer.id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "ad_group_criterion.final_mobile_urls": {
       "type": ["null", "string", "array"]
@@ -169,7 +168,7 @@
       "type": ["null", "integer"]
     },
     "ad_group_criterion.criterion_id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "metrics.impressions": {
       "type": ["null", "integer"]
@@ -250,7 +249,7 @@
       "type": ["null", "integer"]
     },
     "segments.date": {
-      "type": ["string"],
+      "type": ["null", "string"],
       "format": "date"
     }
   }

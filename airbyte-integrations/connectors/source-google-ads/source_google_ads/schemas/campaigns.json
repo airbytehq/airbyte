@@ -1,7 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["campaign.id", "segments.date"],
   "properties": {
     "campaign.accessible_bidding_strategy": {
       "type": ["null", "string"]
@@ -88,7 +87,7 @@
       "type": ["null", "integer"]
     },
     "campaign.id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "campaign.labels": {
       "type": ["null", "array"],
@@ -246,6 +245,15 @@
     "metrics.clicks": {
       "type": ["null", "integer"]
     },
+    "metrics.ctr": {
+      "type": ["null", "number"]
+    },
+    "metrics.conversions": {
+      "type": ["null", "integer"]
+    },
+    "metrics.conversions_value": {
+      "type": ["null", "integer"]
+    },
     "metrics.cost_micros": {
       "type": ["null", "integer"]
     },
@@ -259,8 +267,11 @@
       "type": ["null", "number"]
     },
     "segments.date": {
-      "type": ["string"],
+      "type": ["null", "string"],
       "format": "date"
+    },
+    "segments.hour": {
+      "type": ["null", "number"]
     }
   }
 }

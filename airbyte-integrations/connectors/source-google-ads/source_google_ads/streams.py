@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC
@@ -308,7 +308,6 @@ class AccountPerformanceReport(IncrementalGoogleAdsStream):
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance
     """
 
-    primary_key = ["segments.ad_network_type", "segments.device", "segments.date", "customer.id"]
 
 class AdGroupAdReport(IncrementalGoogleAdsStream):
     """
@@ -316,7 +315,6 @@ class AdGroupAdReport(IncrementalGoogleAdsStream):
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance
     """
 
-    primary_key = ["segments.ad_network_type", "segments.date", "ad_group.id", "campaign.id", "customer.id", "ad_group_ad.ad.id"]
 
 class DisplayKeywordPerformanceReport(IncrementalGoogleAdsStream):
     """
@@ -324,7 +322,6 @@ class DisplayKeywordPerformanceReport(IncrementalGoogleAdsStream):
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance
     """
 
-    primary_key = ["segments.ad_network_type", "segments.device", "segments.date", "ad_group.id", "customer.id", "campaign.id", "ad_group_criterion.criterion_id"]
 
 class DisplayTopicsPerformanceReport(IncrementalGoogleAdsStream):
     """
@@ -332,7 +329,6 @@ class DisplayTopicsPerformanceReport(IncrementalGoogleAdsStream):
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance
     """
 
-    primary_key = ["segments.ad_network_type", "segments.device", "segments.date", "ad_group.id", "customer.id", "campaign.id", "ad_group_criterion.criterion_id"]
 
 class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
     """
@@ -340,7 +336,6 @@ class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance
     """
 
-    primary_key = ["segments.ad_network_type", "segments.device", "segments.date", "ad_group.id", "customer.id", "campaign.id", "segments.product_item_id"]
 
 class UserLocationReport(IncrementalGoogleAdsStream):
     """
@@ -348,21 +343,18 @@ class UserLocationReport(IncrementalGoogleAdsStream):
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#geo_performance
     """
 
-    primary_key = ["segments.ad_network_type", "segments.date", "customer.id", "campaign.id", "user_location_view.resource_name"]
 
 class GeographicReport(IncrementalGoogleAdsStream):
     """
     UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v11/geographic_view
     """
 
-    primary_key = ["segments.date", "ad_group.id", "geographic_view.country_criterion_id", "customer.descriptive_name"]
 
 class KeywordReport(IncrementalGoogleAdsStream):
     """
     UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v11/keyword_view
     """
 
-    primary_key = ["segments.date", "ad_group.id", "ad_group_criterion.criterion_id"]
 
 class ClickView(IncrementalGoogleAdsStream):
     """

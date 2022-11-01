@@ -2,7 +2,6 @@
   "type": "object",
   "title": "Subscriber List",
   "description": "Information about a specific list.",
-  "required": ["id"],
   "properties": {
     "id": {
       "type": "string",

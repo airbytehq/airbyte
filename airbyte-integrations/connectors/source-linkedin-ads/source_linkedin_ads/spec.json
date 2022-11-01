@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://go.estuary.dev/TQRAbs",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/linkedin-ads",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Linkedin Ads Spec",
@@ -8,19 +8,17 @@
     "additionalProperties": true,
     "properties": {
       "credentials": {
-        "title": "Authentication *",
+        "title": "Authentication",
         "type": "object",
         "oneOf": [
           {
             "type": "object",
             "title": "OAuth2.0",
-            "x-oauth2-provider": "linkedin",
-            "required": ["auth_method", "client_id", "client_secret", "refresh_token"],
+            "required": ["client_id", "client_secret", "refresh_token"],
             "properties": {
               "auth_method": {
                 "type": "string",
-                "const": "oAuth2.0",
-                "default": "oAuth2.0"
+                "const": "oAuth2.0"
               },
               "client_id": {
                 "type": "string",
@@ -54,7 +52,7 @@
               "access_token": {
                 "type": "string",
                 "title": "Access token",
-                "description": "The token value generated using the authentication code. See the doc on how to obtain yours: https://go.estuary.dev/sLJLUX",
+                "description": "The token value generated using the authentication code. See the <a href=\"https://docs.airbyte.com/integrations/sources/linkedin-ads#authentication\">docs</a> to obtain yours.",
                 "airbyte_secret": true
               }
             }
@@ -69,9 +67,9 @@
         "examples": ["2021-05-17"]
       },
       "account_ids": {
-        "title": "Account IDs (Optional)",
+        "title": "Account IDs",
         "type": "array",
-        "description": "Specify the account IDs separated by a space, to pull the data from. Leave empty, if you want to pull the data from all associated accounts. See the Linkedin Ads docs for more info: https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details?lang=en",
+        "description": "Specify the account IDs separated by a space, to pull the data from. Leave empty, if you want to pull the data from all associated accounts. See the <a href=\"https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details?lang=en\">LinkedIn Ads docs</a> for more info.",
         "items": {
           "type": "integer"
         },
@@ -80,11 +78,11 @@
     }
   },
   "authSpecification": {
-    "provider": "linkedin",
-    "authUrlTemplate": "https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id={{ client_id }}&redirect_uri={{ redirect_uri }}&scope=r_emailaddress%20r_liteprofile%20r_ads%20r_ads_reporting%20r_organization_social&state={{ state }}",
-    "accessTokenUrlTemplate": "https://www.linkedin.com/oauth/v2/accessToken",
-    "accessTokenBody": "grant_type=authorization_code&client_id={{ urlencode client_id }}&client_secret={{ urlencode client_secret }}&redirect_uri={{ urlencode redirect_uri }}&code={{ urlencode code }}",
-    "accessTokenHeaders": "{\"content-type\": \"application/x-www-form-urlencoded\"}",
-    "accessTokenResponseMap": "{\"refresh_token\": \"/refresh_token\"}"
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["credentials", "0"],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["refresh_token"]]
+    }
   }
 }

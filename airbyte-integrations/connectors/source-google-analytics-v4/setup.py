@@ -1,11 +1,11 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["estuary-airbyte-cdk", "PyJWT", "cryptography", "requests"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "PyJWT", "cryptography", "requests"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",

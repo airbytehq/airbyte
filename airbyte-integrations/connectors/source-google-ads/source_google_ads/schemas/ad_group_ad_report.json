@@ -1,13 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["segments.ad_network_type", "segments.date", "ad_group.id", "campaign.id", "customer.id", "ad_group_ad.ad.id"],
   "properties": {
     "ad_group_ad.ad.legacy_responsive_display_ad.accent_color": {
       "type": ["null", "string"]
     },
     "ad_group.id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "customer.currency_code": {
       "type": ["null", "string"]
@@ -49,7 +48,7 @@
       "type": ["null", "string"]
     },
     "segments.ad_network_type": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "ad_group_ad.ad_strength": {
       "type": ["null", "string"]
@@ -109,7 +108,7 @@
       "type": ["null", "string"]
     },
     "campaign.id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "campaign.name": {
       "type": ["null", "string"]
@@ -169,7 +168,7 @@
       "type": ["null", "number"]
     },
     "segments.date": {
-      "type": ["string"],
+      "type": ["null", "string"],
       "format": "datetime"
     },
     "segments.day_of_week": {
@@ -218,7 +217,7 @@
       "type": ["null", "string"]
     },
     "customer.id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.format_setting": {
       "type": ["null", "string"]
@@ -260,7 +259,7 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "ad_group_ad.ad.image_ad.image_url": {
       "type": ["null", "string"]
