@@ -35,10 +35,12 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 
     def reduce_request_record_limit(details):
         _, exc, _ = sys.exc_info()
-        if details.get("kwargs", {}).get("params", {}).get("limit") and \
-                exc.http_status() == http.client.INTERNAL_SERVER_ERROR and \
-                exc.api_error_message() == "Please reduce the amount of data you're asking for, then retry your request":
-            details["kwargs"]["params"]["limit"] = int(int(details["kwargs"]["params"]["limit"])/2)
+        if (
+            details.get("kwargs", {}).get("params", {}).get("limit")
+            and exc.http_status() == http.client.INTERNAL_SERVER_ERROR
+            and exc.api_error_message() == "Please reduce the amount of data you're asking for, then retry your request"
+        ):
+            details["kwargs"]["params"]["limit"] = int(int(details["kwargs"]["params"]["limit"]) / 2)
 
     def should_retry_api_error(exc):
         if isinstance(exc, FacebookRequestError):
