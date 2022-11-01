@@ -7,8 +7,8 @@ import { FormattedMessage } from "react-intl";
 import { NavLink, useLocation } from "react-router-dom";
 
 import { Link } from "components";
+import { Version } from "components/common/Version";
 import { Text } from "components/ui/Text";
-import Version from "components/Version";
 
 import { useConfig } from "config";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";

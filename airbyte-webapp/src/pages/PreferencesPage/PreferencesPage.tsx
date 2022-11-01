@@ -1,8 +1,8 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { PageViewContainer } from "components/CenteredPageComponents";
-import HeadTitle from "components/HeadTitle";
+import { HeadTitle } from "components/common/HeadTitle";
+import { PageViewContainer } from "components/common/PageViewContainer";
 import { Heading } from "components/ui/Heading";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
