@@ -162,6 +162,14 @@
   icon: braintree.svg
   sourceType: api
   releaseStage: alpha
+- name: CallRail
+  sourceDefinitionId: d2625ee5-a405-4ae8-b19c-3d08fece826ad
+  dockerRepository: airbyte/source-callrail
+  dockerImageTag: 0.0.1
+  documentationUrl:
+  icon: callrail.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Cart.com
   sourceDefinitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
   dockerRepository: airbyte/source-cart
