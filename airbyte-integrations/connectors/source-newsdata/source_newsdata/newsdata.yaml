@@ -25,7 +25,7 @@ definitions:
       type: "CursorPagination"
       cursor_value: "{{ response['nextPage'] }}"
       page_size: 10
-      # page_size: !!int "{% if config['is_free_tier'] %}{{ 10 }}{% else %}{{ 50 }}{% endif %}"
+      # TODO: make page_size dynamic, depending on free or paid tier. See https://github.com/airbytehq/airbyte/issues/18783
     page_token_option:
       field_name: "page"
       inject_into: "request_parameter"
