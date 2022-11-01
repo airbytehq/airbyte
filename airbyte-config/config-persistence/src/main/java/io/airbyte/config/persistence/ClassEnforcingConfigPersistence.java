@@ -4,7 +4,6 @@
 
 package io.airbyte.config.persistence;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.api.client.util.Preconditions;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigWithMetadata;
@@ -84,11 +83,6 @@ public class ClassEnforcingConfigPersistence implements ConfigPersistence {
             Entry::getKey,
             entry -> entry.getValue().peek(config -> Preconditions.checkArgument(entry.getKey().getClassName().equals(config.getClass())))));
     decoratedPersistence.replaceAllConfigs(augmentedMap, dryRun);
-  }
-
-  @Override
-  public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
-    return decoratedPersistence.dumpConfigs();
   }
 
 }

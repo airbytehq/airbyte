@@ -110,11 +110,6 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
     decoratedPersistence.replaceAllConfigs(augmentedMap, dryRun);
   }
 
-  @Override
-  public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
-    return decoratedPersistence.dumpConfigs();
-  }
-
   private <T> void validateJson(final T config, final AirbyteConfig configType) throws JsonValidationException {
     final JsonNode schema = JsonSchemaValidator.getSchema(configType.getConfigSchemaFile());
     schemaValidator.ensure(schema, Jsons.jsonNode(config));

@@ -4,7 +4,6 @@
 
 package io.airbyte.config.persistence;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.validation.json.JsonValidationException;
@@ -35,7 +34,5 @@ public interface ConfigPersistence {
   void deleteConfig(AirbyteConfig configType, String configId) throws ConfigNotFoundException, IOException;
 
   void replaceAllConfigs(Map<AirbyteConfig, Stream<?>> configs, boolean dryRun) throws IOException;
-
-  Map<String, Stream<JsonNode>> dumpConfigs() throws IOException;
 
 }

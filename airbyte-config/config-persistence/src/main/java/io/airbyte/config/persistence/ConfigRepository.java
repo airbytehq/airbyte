@@ -19,7 +19,6 @@ import static org.jooq.impl.DSL.groupConcat;
 import static org.jooq.impl.DSL.noCondition;
 import static org.jooq.impl.DSL.select;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
@@ -1148,18 +1147,6 @@ public class ConfigRepository {
    */
   void replaceAllConfigsNoSecrets(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
     persistence.replaceAllConfigs(configs, dryRun);
-  }
-
-  /**
-   * Dumps all configurations in the Config Database. Note: It will not contain secrets as the Config
-   * Database does not contain connector configurations that include secrets. In order to hydrate with
-   * secrets see { @link SecretsRepositoryReader#dumpConfigs() }.
-   *
-   * @return all configurations in the Config Database
-   * @throws IOException - you never know when you IO
-   */
-  public Map<String, Stream<JsonNode>> dumpConfigsNoSecrets() throws IOException {
-    return persistence.dumpConfigs();
   }
 
   /**

@@ -7,7 +7,6 @@ package io.airbyte.config.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardWorkspace;
@@ -15,7 +14,6 @@ import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -64,17 +62,6 @@ public class SecretsRepositoryReader {
         .stream()
         .map(partialDestination -> Exceptions.toRuntime(() -> hydrateDestinationPartialConfig(partialDestination)))
         .collect(Collectors.toList());
-  }
-
-  public Map<String, Stream<JsonNode>> dumpConfigsWithSecrets() throws IOException {
-    final Map<String, Stream<JsonNode>> dump = new HashMap<>(configRepository.dumpConfigsNoSecrets());
-    final String sourceKey = ConfigSchema.SOURCE_CONNECTION.name();
-    final String destinationKey = ConfigSchema.DESTINATION_CONNECTION.name();
-
-    hydrateValuesIfKeyPresent(sourceKey, dump);
-    hydrateValuesIfKeyPresent(destinationKey, dump);
-
-    return dump;
   }
 
   private SourceConnection hydrateSourcePartialConfig(final SourceConnection sourceWithPartialConfig) {
