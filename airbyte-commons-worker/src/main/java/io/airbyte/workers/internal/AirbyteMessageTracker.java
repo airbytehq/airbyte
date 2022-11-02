@@ -266,7 +266,7 @@ public class AirbyteMessageTracker implements MessageTracker {
 
 
   @SuppressWarnings("PMD") // until method is implemented
-  private void handleEmittedEstimateTraceTrace(final AirbyteTraceMessage estimateTraceMessage, final ConnectorType connectorType) {
+  private void handleEmittedEstimateTrace(final AirbyteTraceMessage estimateTraceMessage, final ConnectorType connectorType) {
 
   }
 
