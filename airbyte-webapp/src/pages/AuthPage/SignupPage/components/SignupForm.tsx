@@ -211,7 +211,7 @@ export const SignupButton: React.FC<SignupButtonProps> = ({
   disabled,
   buttonMessageId = "signup.submitButton",
 }) => (
-  <LoadingButton className={styles.signUpButton} type="submit" isLoading={isLoading} disabled={disabled}>
+  <LoadingButton white className={styles.signUpButton} type="submit" isLoading={isLoading} disabled={disabled}>
     <FormattedMessage id={buttonMessageId} />
   </LoadingButton>
 );

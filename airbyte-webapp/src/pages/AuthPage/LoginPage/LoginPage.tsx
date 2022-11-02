@@ -105,7 +105,7 @@ const LoginPage: React.FC = () => {
               </Field>
             </FieldItem>
             <BottomBlock>
-              <LoadingButton className={styles.logInBtn} type="submit" isLoading={isSubmitting}>
+              <LoadingButton white className={styles.logInBtn} type="submit" isLoading={isSubmitting}>
                 <FormattedMessage id="login.button" />
               </LoadingButton>
             </BottomBlock>

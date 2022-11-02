@@ -95,6 +95,7 @@ const ListItem = styled.div`
 
 const FormContent = styled.div`
   width: 60%;
+  background-color: #eff0f5;
 `;
 
 const SigninButtonContent = styled.div`
