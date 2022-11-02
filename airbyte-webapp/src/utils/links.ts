@@ -26,6 +26,8 @@ export const links = {
   demoLink: "https://demo.airbyte.io",
   contactSales: "https://airbyte.com/talk-to-sales",
   webpageLink: "https://airbyte.com",
+  webhookVideoGuideLink: "https://www.youtube.com/watch?v=NjYm8F-KiFc",
+  webhookGuideLink: `${BASE_DOCS_LINK}/operator-guides/configuring-sync-notifications/`,
   cronReferenceLink: "http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html",
 } as const;
 

@@ -11,6 +11,7 @@ IGNORE_LIST = [
     "/integration_tests/", "/unit_tests/",
     # Common
     "acceptance-test-config.yml", "acceptance-test-docker.sh", ".md", ".dockerignore", ".gitignore", "requirements.txt"]
+COMMENT_TEMPLATE_PATH = ".github/comment_templates/connector_dependency_template.md"
 
 
 def main():
@@ -32,7 +33,10 @@ def main():
 
     # Try to find dependency in build.gradle file
     depended_connectors = list(set(get_depended_connectors(changed_modules, all_build_gradle_files)))
-    write_report(depended_connectors)
+
+    # Create comment body to post on pull request
+    if depended_connectors:
+        write_report(depended_connectors)
 
 
 def get_changed_files(path):
@@ -73,19 +77,53 @@ def find_file(name, path):
             return os.path.join(root, name)
 
 
-def get_depended_connectors(changed_connectors, all_build_gradle_files):
+def get_depended_connectors(changed_modules, all_build_gradle_files):
     depended_connectors = []
-    for changed_connector in changed_connectors:
+    for changed_module in changed_modules:
         for connector, gradle_file in all_build_gradle_files.items():
             with open(gradle_file) as file:
-                if changed_connector in file.read():
+                if changed_module in file.read():
                     depended_connectors.append(connector)
     return depended_connectors
 
 
+def as_bulleted_markdown_list(items):
+    text = ""
+    for item in items:
+        text += f"- {item}\n"
+    return text
+
+
 def write_report(depended_connectors):
+    affected_sources = []
+    affected_destinations = []
+    affected_others = []
     for depended_connector in depended_connectors:
-        print("- " + depended_connector)
+        if depended_connector.startswith("source"):
+            affected_sources.append(depended_connector)
+        elif depended_connector.startswith("destination"):
+            affected_destinations.append(depended_connector)
+        else:
+            affected_others.append(depended_connector)
+
+    with open(COMMENT_TEMPLATE_PATH, "r") as f:
+        template = f.read()
+
+    others_md = ""
+    if affected_others:
+        others_md += "The following were also affected:\n"
+        others_md += as_bulleted_markdown_list(affected_others)
+
+    comment = template.format(
+        sources=as_bulleted_markdown_list(affected_sources),
+        destinations=as_bulleted_markdown_list(affected_destinations),
+        others=others_md,
+        num_sources=len(affected_sources),
+        num_destinations=len(affected_destinations)
+    )
+
+    with open("comment_body.md", "w") as f:
+        f.write(comment)
 
 
 if __name__ == "__main__":
