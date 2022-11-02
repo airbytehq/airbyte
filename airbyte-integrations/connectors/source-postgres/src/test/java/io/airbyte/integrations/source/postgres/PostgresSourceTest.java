@@ -555,4 +555,20 @@ class PostgresSourceTest {
 
   }
 
+  @Test
+  void testJdbcUrlWithEscapedDatabaseName() {
+    final JsonNode jdbcConfig = new PostgresSource().toDatabaseConfig(buildConfigEscapingNeeded());
+    assertEquals(EXPECTED_JDBC_ESCAPED_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+  }
+
+  private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:postgresql://localhost:1111/db%2Ffoo?";
+
+  private JsonNode buildConfigEscapingNeeded() {
+    return Jsons.jsonNode(ImmutableMap.of(
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1111,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db/foo"));
+  }
+
 }

@@ -45,6 +45,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [ClickHouse](sources/clickhouse.md)                                                         | Alpha                | Yes                 |
 | [Close.com](sources/close-com.md)                                                           | Alpha                | Yes                 |
 | [CockroachDB](sources/cockroachdb.md)                                                       | Alpha                | No                  |
+| [Coinmarketcap](sources/coinmarketcap.md)                                                   | Alpha                | Yes                 |
 | [Commercetools](sources/commercetools.md)                                                   | Alpha                | No                  |
 | [Confluence](sources/confluence.md)                                                         | Alpha                | No                  |
 | [ConvertKit](sources/convertkit.md)                                                         | Alpha                | No                  |
@@ -125,6 +126,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [NASA](sources/nasa.md)                                                                     | Alpha                | Yes                 |
 | [Notion](sources/notion.md)                                                                 | Generally Available  | Yes                 |
 | [Okta](sources/okta.md)                                                                     | Alpha                | Yes                 |
+| [Omnisend](sources/omnisend.md)                                                             | Alpha                | No                  |
 | [OneSignal](sources/onesignal.md)                                                           | Alpha                | No                  |
 | [OpenWeather](sources/openweather.md)                                                       | Alpha                | No                  |
 | [Oracle DB](sources/oracle.md)                                                              | Alpha                | Yes                 |
@@ -146,6 +148,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Postgres](sources/postgres.md)                                                             | Generally Available  | Yes                 |
 | [PostHog](sources/posthog.md)                                                               | Alpha                | Yes                 |
 | [PrestaShop](sources/presta-shop.md)                                                        | Alpha                | Yes                 |
+| [Public APIs](sources/public-apis.md)                                                       | Alpha                | Yes                 |
 | [Qualaroo](sources/qualaroo.md)                                                             | Alpha                | Yes                 |
 | [QuickBooks](sources/quickbooks.md)                                                         | Alpha                | No                  |
 | [RD Station Marketing](sources/rd-station-marketing.md)                                     | Alpha                | No                  |
@@ -221,6 +224,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Google Cloud Storage (GCS)](destinations/gcs.md)          | Beta                 | Yes                 |
 | [Google Pubsub](destinations/pubsub.md)                    | Alpha                | Yes                 |
 | [Google Sheets](destinations/google-sheets.md)             | Alpha                | Yes                 |
+| [Heap Analytics](destinations/heap-analytics.md)           | Alpha                | No                 |
 | [Kafka](destinations/kafka.md)                             | Alpha                | No                  |
 | [Keen](destinations/keen.md)                               | Alpha                | No                  |
 | [Kinesis](destinations/kinesis.md)                         | Alpha                | No                  |
