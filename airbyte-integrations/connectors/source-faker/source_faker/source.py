@@ -140,7 +140,7 @@ class SourceFaker(Source):
 
                 users_estimate = count - cursor
                 yield generate_estimate(stream.stream.name, users_estimate, 450)
-                yield generate_estimate("Purchases", users_estimate * 2, 230)  # a fuzzy guess, some users have purchases, some don't
+                yield generate_estimate("Purchases", users_estimate * 1.5, 230)  # a fuzzy guess, some users have purchases, some don't
 
                 for i in range(cursor, count):
                     user = generate_user(person, dt, i)
@@ -208,7 +208,7 @@ def generate_estimate(stream_name: str, total: int, bytes_per_row: int):
         "trace": {
             "emitted_at": int(datetime.datetime.now().timestamp() * 1000),
             "type": "ESTIMATE",
-            "estimate": {"type": "STREAM", "name": stream_name, "namespace": "", "row_estimate": total, "byte_estimate": total * bytes_per_row},
+            "estimate": {"type": "STREAM", "name": stream_name, "namespace": "", "row_estimate": round(total), "byte_estimate": round(total * bytes_per_row)},
         },
     }
 
