@@ -1,3 +1,12 @@
 {
-  "fix-me": "TODO"
+  "api_key": "123",
+  "key": "5881028",
+  "type": "recreational",
+  "participants": "1",
+  "price": "0.0",
+  "minprice": "0",
+  "maxprice": "0.1",
+  "accessibility": "1",
+  "minaccessibility": "0",
+  "maxaccessibility": "0.1"
 }

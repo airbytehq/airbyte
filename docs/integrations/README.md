@@ -36,6 +36,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [BigCommerce](sources/bigcommerce.md)                                                       | Alpha                | Yes                 |
 | [BigQuery](sources/bigquery.md)                                                             | Alpha                | Yes                 |
 | [Bing Ads](sources/bing-ads.md)                                                             | Generally Available  | Yes                 |
+| [Bored API](sources/bored-api.md)                                                           | Aplha                | No                  |
 | [Braintree](sources/braintree.md)                                                           | Alpha                | Yes                 |
 | [Cart.com](sources/cart.md)                                                                 | Alpha                | No                  |
 | [Chargebee](sources/chargebee.md)                                                           | Generally Available  | Yes                 |

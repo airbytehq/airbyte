@@ -2,25 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "activity_with_participants",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "activity_with_price",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "activity_with_accessibility",
+        "name": "activity_with_key",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
