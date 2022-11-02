@@ -276,11 +276,13 @@ public class AirbyteMessageTracker implements MessageTracker {
   private void handleEmittedEstimateTrace(final AirbyteTraceMessage estimateTraceMessage) {
     // Assume the estimate is a whole number and not a sum i.e. each estimate replaces the previous
     // estimate.
+
+    log.info("====== saving trace estimates");
     final var estimate = estimateTraceMessage.getEstimate();
     final var index = getStreamIndex(estimate.getName());
 
-    streamToTotalRecordsEmitted.put(index, estimate.getRowEstimate());
-    streamToTotalBytesEmitted.put(index, estimate.getByteEstimate());
+    streamToTotalRecordsEstimated.put(index, estimate.getRowEstimate());
+    streamToTotalBytesEstimated.put(index, estimate.getByteEstimate());
   }
 
   private short getStreamIndex(final String streamName) {
