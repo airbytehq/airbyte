@@ -9,7 +9,7 @@
       "type": "string"
     },
     "related_resource": {
-      "type": "string"
+      "type": ["string","null"]
     },
     "assignee_id": {
       "type": "integer"
@@ -19,16 +19,6 @@
     },
     "details": {
       "type": "string"
-    },
-    "tags": {
-      "type": "array",
-      "items": {},
-      "additionalItems": true
-    },
-    "custom_fields": {
-      "type": "array",
-      "items": {},
-      "additionalItems": true
     },
     "date_created": {
       "type": "integer"

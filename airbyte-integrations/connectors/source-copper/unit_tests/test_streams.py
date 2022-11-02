@@ -45,7 +45,7 @@ def test_request_headers(patch_base_class):
 def test_http_method(patch_base_class):
     stream = CopperStream()
     # TODO: replace this with your expected http request method
-    expected_method = "GET"
+    expected_method = "POST"
     assert stream.http_method == expected_method
 
 

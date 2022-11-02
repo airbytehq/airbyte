@@ -18,13 +18,13 @@
           "type": "string"
         },
         "state": {
-          "type": "string"
+          "type": "null"
         },
         "postal_code": {
           "type": "string"
         },
         "country": {
-          "type": "string"
+          "type": "null"
         }
       }
     },
@@ -40,36 +40,9 @@
     "email_domain": {
       "type": "string"
     },
-    "phone_numbers": {
-      "type": "array",
-      "items": {},
-      "additionalItems": true
-    },
     "socials": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "url": {
-              "type": "string"
-            },
-            "category": {
-              "type": "string"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "properties": {
-            "url": {
-              "type": "string"
-            },
-            "category": {
-              "type": "string"
-            }
-          }
-        },
+      "items":
         {
           "type": "object",
           "properties": {
@@ -81,52 +54,15 @@
             }
           }
         }
-      ],
-      "additionalItems": true
     },
     "tags": {
       "type": "array",
-      "items": {},
-      "additionalItems": true
+      "items": {}
     },
     "websites": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "url": {
-              "type": "string"
-            },
-            "category": {
-              "type": "string"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "properties": {
-            "url": {
-              "type": "string"
-            },
-            "category": {
-              "type": "string"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "properties": {
-            "url": {
-              "type": "string"
-            },
-            "category": {
-              "type": "string"
-            }
-          }
-        },
-        {
-          "type": "object",
+      "items": {
+          "type": ["object", "null"],
           "properties": {
             "url": {
               "type": "string"
@@ -136,13 +72,6 @@
             }
           }
         }
-      ],
-      "additionalItems": true
-    },
-    "custom_fields": {
-      "type": "array",
-      "items": {},
-      "additionalItems": true
     },
     "interaction_count": {
       "type": "integer"
