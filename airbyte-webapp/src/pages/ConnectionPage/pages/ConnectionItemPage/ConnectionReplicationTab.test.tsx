@@ -2,13 +2,16 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { render as tlr, act } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import React, { Suspense } from "react";
+import selectEvent from "react-select-event";
 import mockConnection from "test-utils/mock-data/mockConnection.json";
 import mockDest from "test-utils/mock-data/mockDestinationDefinition.json";
 import { TestWrapper } from "test-utils/testutils";
 
 import { WebBackendConnectionUpdate } from "core/request/AirbyteClient";
 import { ConnectionEditServiceProvider } from "hooks/services/ConnectionEdit/ConnectionEditService";
+import { defaultFeatures, FeatureItem } from "hooks/services/Feature";
 import * as connectionHook from "hooks/services/useConnectionHook";
 
 import { ConnectionReplicationTab } from "./ConnectionReplicationTab";
@@ -81,6 +84,67 @@ describe("ConnectionReplicationTab", () => {
 
     await act(async () => {
       expect(renderResult.findByText("We are fetching the schema of your data source.", { exact: false })).toBeTruthy();
+    });
+  });
+
+  describe("cron expression validation", () => {
+    const INVALID_CRON_EXPRESSION = "invalid cron expression";
+    const CRON_EXPRESSION_EVERY_MINUTE = "* * * * * * ?";
+
+    it("should display an error for an invalid cron expression", async () => {
+      setupSpies();
+      const renderResult = await render();
+
+      await selectEvent.select(renderResult.getByTestId("scheduleData"), /cron/i);
+
+      const cronExpressionInput = renderResult.getByTestId("cronExpression");
+
+      userEvent.clear(cronExpressionInput);
+      await userEvent.type(cronExpressionInput, INVALID_CRON_EXPRESSION, { delay: 1 });
+
+      const errorMessage = renderResult.getByText("Invalid cron expression");
+
+      expect(errorMessage).toBeInTheDocument();
+    });
+
+    it("should allow cron expressions under one hour when feature enabled", async () => {
+      setupSpies();
+
+      const renderResult = await render();
+
+      await selectEvent.select(renderResult.getByTestId("scheduleData"), /cron/i);
+
+      const cronExpressionField = renderResult.getByTestId("cronExpression");
+
+      await userEvent.type(cronExpressionField, `{selectall}${CRON_EXPRESSION_EVERY_MINUTE}`, { delay: 1 });
+
+      const errorMessage = renderResult.queryByTestId("cronExpressionError");
+
+      expect(errorMessage).not.toBeInTheDocument();
+    });
+
+    it("should not allow cron expressions under one hour when feature not enabled", async () => {
+      setupSpies();
+
+      const featuresToInject = defaultFeatures.filter((f) => f !== FeatureItem.AllowSyncSubOneHourCronExpressions);
+
+      const container = tlr(
+        <TestWrapper features={featuresToInject}>
+          <ConnectionEditServiceProvider connectionId={mockConnection.connectionId}>
+            <ConnectionReplicationTab />
+          </ConnectionEditServiceProvider>
+        </TestWrapper>
+      );
+
+      await selectEvent.select(container.getByTestId("scheduleData"), /cron/i);
+
+      const cronExpressionField = container.getByTestId("cronExpression");
+
+      await userEvent.type(cronExpressionField, `{selectall}${CRON_EXPRESSION_EVERY_MINUTE}`, { delay: 1 });
+
+      const errorMessage = container.getByTestId("cronExpressionError");
+
+      expect(errorMessage).toBeInTheDocument();
     });
   });
 });

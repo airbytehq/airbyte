@@ -11,15 +11,12 @@ import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
-import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.helper.FailureHelper.ConnectorCommand;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -147,26 +144,6 @@ public class WorkerUtils {
 
   public static String streamNameWithNamespace(final @Nullable String namespace, final String streamName) {
     return Objects.toString(namespace, "").trim() + streamName.trim();
-  }
-
-  // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to one,
-  // once we are fully on temporal.
-  public static Path getJobRoot(final Path workspaceRoot, final JobRunConfig jobRunConfig) {
-    return getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
-  }
-
-  public static Path getLogPath(final Path jobRoot) {
-    return jobRoot.resolve(LogClientSingleton.LOG_FILENAME);
-  }
-
-  public static Path getJobRoot(final Path workspaceRoot, final String jobId, final long attemptId) {
-    return getJobRoot(workspaceRoot, jobId, Math.toIntExact(attemptId));
-  }
-
-  public static Path getJobRoot(final Path workspaceRoot, final String jobId, final int attemptId) {
-    return workspaceRoot
-        .resolve(String.valueOf(jobId))
-        .resolve(String.valueOf(attemptId));
   }
 
 }

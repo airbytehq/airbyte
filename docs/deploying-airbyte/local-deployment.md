@@ -7,8 +7,8 @@ These instructions have been tested on MacOS, Windows 10 and Ubuntu 20.04.
 
 ## Setup & launch Airbyte
 
-* Install Docker on your workstation \(see [instructions](https://www.docker.com/products/docker-desktop)\). Make sure you're on the latest version of `docker-compose`.
-* After Docker is installed, you can immediately get started locally by running:
+- Install Docker on your workstation \(see [instructions](https://www.docker.com/products/docker-desktop)\). Make sure you're on the latest version of `docker-compose`.
+- After Docker is installed, you can immediately get started locally by running:
 
 ```bash
 git clone https://github.com/airbytehq/airbyte.git
@@ -16,8 +16,17 @@ cd airbyte
 docker-compose up
 ```
 
-* In your browser, just visit [http://localhost:8000](http://localhost:8000)
-* Start moving some data!
+- In your browser, just visit [http://localhost:8000](http://localhost:8000)
+- You will be asked for a username and password. By default, that's username `airbyte` and password `password`. Once you deploy airbyte to your servers, be sure to [change these](/operator-guides/security):
+
+```yaml
+# Proxy Configuration
+# Set to empty values, e.g. "" to disable basic auth
+BASIC_AUTH_USERNAME=your_new_username_here
+BASIC_AUTH_PASSWORD=your_new_password_here
+```
+
+- Start moving some data!
 
 ## Deploy on Windows
 
@@ -34,8 +43,9 @@ Follow the steps on the system requirements, and necessarily, download and insta
 Install [Docker Desktop](https://docs.docker.com/desktop/windows/install/) from here.
 
 Make sure to select the options:
-1. *Enable Hyper-V Windows Features*
-2. *Install required Windows components for WSL 2*\
+
+1. _Enable Hyper-V Windows Features_
+2. _Install required Windows components for WSL 2_\
    when prompted. After installation, it will require to reboot your computer.
 
 **3. You're done!**
@@ -45,10 +55,11 @@ git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
 docker-compose up
 ```
-* In your browser, just visit [http://localhost:8000](http://localhost:8000)
-* Start moving some data!
+
+- In your browser, just visit [http://localhost:8000](http://localhost:8000)
+- You will be asked for a username and password. By default, that's username `airbyte` and password `password`. Once you deploy airbyte to your servers, be sure to [change these](/operator-guides/security).
+- Start moving some data!
 
 ## Troubleshooting
 
 If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [troubleshooting](../troubleshooting/on-deploying.md) section in our docs for common problems.
-
