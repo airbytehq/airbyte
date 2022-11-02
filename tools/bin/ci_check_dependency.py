@@ -131,7 +131,7 @@ def as_markdown_table_row(connectors, definitions):
         elif definition["dockerImageTag"] == version:
             publish_status = "✅"
         else:
-            publish_status = "❌(version mismatch in definition)"
+            publish_status = "❌(version mismatch in seed definition)"
         text += f"| `{connector}` | `{version}` | {changelog_status} | {publish_status} |\n"
     return text
 
