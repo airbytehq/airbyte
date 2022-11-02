@@ -102,7 +102,10 @@ def get_connector_version(connector):
 def get_connector_version_status(connector, version):
     if "strict-encrypt" not in connector:
         return f"`{version}`"
-    base_variant_version = get_connector_version(connector.replace("-strict-encrypt", ""))
+    if connector == "source-mongodb-strict-encrypt":
+        base_variant_version = get_connector_version("source-mongodb-v2")
+    else:
+        base_variant_version = get_connector_version(connector.replace("-strict-encrypt", ""))
     if base_variant_version == version:
         return f"`{version}`"
     else:
