@@ -2,34 +2,30 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import pytest
 from unittest.mock import Mock, MagicMock
 import logging
 
 from source_commcare.source import SourceCommcare
 
 
-def test_check_connection_ok(mocker):
-    source = SourceCommcare()
-    logger_mock, config_mock = MagicMock(), MagicMock()
-    d = {'api-key': 'apikey'}
-    config_mock.__getitem__.side_effect = d.__getitem__
-    config_mock.__iter__.side_effect = d.__iter__
-    config_mock.__contains__.side_effect = d.__contains__
-    assert source.check_connection(logger_mock, config_mock) == (True, None)
-
-def test_check_connection_fail(mocker):
-    source = SourceCommcare()
-    logger_mock, config_mock = MagicMock(), MagicMock()
-    assert source.check_connection(logger_mock, config_mock) == (False, None)
+@pytest.fixture(name='config')
+def config_fixture():
+    return {'api_key': 'apikey', 'app_id': 'appid', 'start_date': '2022-01-01T00:00:00Z'}
 
 
-def test_streams(mocker):
+def test_check_connection_ok(mocker, config):
     source = SourceCommcare()
-    config_mock = MagicMock()
-    d = {'api-key': 'apikey'}
-    config_mock.__getitem__.side_effect = d.__getitem__
-    config_mock.__iter__.side_effect = d.__iter__
-    config_mock.__contains__.side_effect = d.__contains__
-    streams = source.streams(config_mock)
-    expected_streams_number = 2
+    logger_mock=Mock()
+    assert source.check_connection(logger_mock, config=config) == (True, None)
+
+def test_check_connection_fail(mocker, config):
+    source = SourceCommcare()
+    logger_mock =MagicMock()
+    assert source.check_connection(logger_mock, config={}) == (False, None)
+
+def test_streams(mocker, config):
+    source = SourceCommcare()
+    streams = source.streams(config)
+    expected_streams_number = 3
     assert len(streams) == expected_streams_number

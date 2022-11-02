@@ -9,8 +9,9 @@ import pytest
 from requests import Response
 from source_commcare.source import CommcareStream
 from source_commcare.source import (
-    Case,
-    Form
+    Application,
+    Form,
+    FormCase
 )
 
 
@@ -24,15 +25,16 @@ def patch_base_class(mocker):
 
 @pytest.fixture(name="config")
 def config_fixture():
-    config = {"authenticator": "authenticator"}
+    config = {"authenticator": "authenticator", 'api_key': 'apikey', 'app_id': 'appid', 'start_date': '2022-01-01T00:00:00Z'}
     return config
 
 
 @pytest.mark.parametrize(
-    "stream, expected",
+    "stream, expected, config",
     [
-        (Case, "case"),
-        (Form, "form"),
+        (Application, "application/appid/", {'app_id': 'appid'}),
+        (Form, "form", {'app_id': 'appid', 'start_date': '2022-01-01T00:00:00Z'}),
+        (FormCase, "case",{'app_id': 'appid', 'start_date': '2022-01-01T00:00:00Z'}),
     ],
 )
 def test_path(
@@ -45,36 +47,63 @@ def test_path(
 
 
 @pytest.mark.parametrize(
-    "stream, expected",
+    "stream, expected, config",
     [
-        (Case, {"format": 'json', "offset": 0, "limit": 20}),
-        (Form, {"format": 'json', "offset": 0, "limit": 20}),
+        (Application, {'format': 'json', 'extras' : 'true'},{'app_id': 'appid'}),
+        (Form, {"format": 'json', "offset": 0, "limit": 20, 'indexed_on_start': '2022-01-01T00:00:00.000000', 'order_by': 'indexed_on', 'app_id': 'appid'}, {'app_id': 'appid', 'start_date': '2022-01-01T00:00:00Z'}),
+        (FormCase, {"format": 'json', "offset": 0, "limit": 20, 'indexed_on_start': '2022-01-01T00:00:00.000000', 'order_by': 'indexed_on'}, {'app_id': 'appid', 'start_date': '2022-01-01T00:00:00Z'}),
     ],
 )
 def test_request_params(patch_base_class, stream, expected, config):
     assert stream(**config).request_params(stream_state=None,stream_slice=None,next_page_token={"offset": 0, "limit": 20}) == expected
 
-def test_next_page_token(patch_base_class):
-    stream = CommcareStream()
+@pytest.mark.parametrize(
+    "stream, expected, config",
+    [
+        (Application, None, {'app_id': 'appid'}),
+        (Form, {'limit': ['20'], 'offset': ['0']}, {'app_id': 'appid', 'start_date': '2022-01-01T00:00:00Z'}),
+        (FormCase, {'limit': ['20'], 'offset': ['0']},{'app_id': 'appid', 'start_date': '2022-01-01T00:00:00Z'}),
+    ],
+)
+def test_next_page_token(patch_base_class, stream, expected, config):
+    st = stream(**config)
     attr = {'json.return_value': {'meta': {'limit': 20, 'offset': 33, "next": '?limit=20&offset=0'}}}
     r = MagicMock(spec=Response)
     r.configure_mock(**attr)
     inputs = {'response': r}
-    expected_token = {'limit': ['20'], 'offset': ['0']}
-    assert stream.next_page_token(**inputs) == expected_token
+    assert st.next_page_token(**inputs) == expected
 
 
-def test_parse_response(patch_base_class):
-    stream = CommcareStream()
+@pytest.mark.parametrize(
+    "strm, config",
+    [
+        # (Application, {'app_id': 'appid'}),
+        (Form, {'app_id': 'appid', 'start_date': '2022-01-01T00:00:00Z'}),
+        (FormCase, {'app_id': 'appid', 'start_date': '2022-01-01T00:00:00Z'}),
+    ],
+)
+def test_parse_response(patch_base_class, strm, config):
+    stream = strm(**config)
     objects = [{'test': 'test'}, {'test1': 'test1'}]
     attr = {'json.return_value': {'objects': objects}}
     r = MagicMock(spec=Response)
     r.configure_mock(**attr)
     inputs = {'response': r}
-    expected_parsed_object = objects[0]
+    expected_parsed_object = objects
     iter = stream.parse_response(**inputs)
-    assert next(iter) == expected_parsed_object
+    assert next(iter) == objects[0]
     expected_parsed_object = objects[1]
+    assert next(iter) == expected_parsed_object
+
+def test_parse_response_application(patch_base_class):
+    stream = Application(**{'app_id': 'appid'})
+    objects = [{'test': 'test'}, {'test1': 'test1'}]
+    attr = {'json.return_value': {'objects': objects}}
+    r = MagicMock(spec=Response)
+    r.configure_mock(**attr)
+    inputs = {'response': r}
+    expected_parsed_object = {'objects': objects}
+    iter = stream.parse_response(**inputs)
     assert next(iter) == expected_parsed_object
 
 
