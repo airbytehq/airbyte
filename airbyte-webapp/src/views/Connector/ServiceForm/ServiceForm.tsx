@@ -3,7 +3,7 @@ import { JSONSchema7 } from "json-schema";
 import React, { useCallback, useEffect, useMemo } from "react";
 import { useDeepCompareEffect } from "react-use";
 
-import { FormChangeTracker } from "components/FormChangeTracker";
+import { FormChangeTracker } from "components/common/FormChangeTracker";
 
 import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
 import { isDestinationDefinitionSpecification } from "core/domain/connector/destination";
