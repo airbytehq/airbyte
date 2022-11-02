@@ -106,14 +106,14 @@ def get_connector_version_status(connector, version):
     if base_variant_version == version:
         return f"`{version}`"
     else:
-        return f"`{version}` ❌ (mismatch normal: `{base_variant_version}`)"
+        return f"❌ `{version}`<br/>(mismatch: `{base_variant_version}`)"
 
 
 def get_connector_changelog_status(connector, version):
     type, name = connector.replace("-strict-encrypt", "").split("-", 1)
     doc_path = f"{DOC_PATH}{type}s/{name}.md"
     if not os.path.exists(doc_path):
-        return "⚠ (doc file not found)"
+        return "⚠<br/>(doc not found)"
     with open(doc_path) as f:
         after_changelog = False
         for line in f:
@@ -121,7 +121,7 @@ def get_connector_changelog_status(connector, version):
                 after_changelog = True
             if after_changelog and version in line:
                 return "✅"
-    return "❌ (changelog missing)"
+    return "❌<br/>(changelog missing)"
 
 def as_bulleted_markdown_list(items):
     text = ""
@@ -138,11 +138,11 @@ def as_markdown_table_row(connectors, definitions):
         changelog_status = get_connector_changelog_status(connector, version)
         definition = next((x for x in definitions if x["dockerRepository"].endswith(connector)), None)
         if definition is None:
-            publish_status = "⚠ (connector not in definition)"
+            publish_status = "⚠<br/>(not in seed)"
         elif definition["dockerImageTag"] == version:
             publish_status = "✅"
         else:
-            publish_status = "❌ (version mismatch in seed definition)"
+            publish_status = "❌<br/>(diff seed version)"
         text += f"| `{connector}` | {version_status} | {changelog_status} | {publish_status} |\n"
     return text
 

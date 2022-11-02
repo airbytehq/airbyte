@@ -14,7 +14,7 @@ NOTE ⚠️ Changes in this PR affect the following connectors. Make sure to do 
 </summary>
 
 | Connector | Version | Changelog | Publish |
-| --- | --- | --- | --- |
+| --- | :---: | :---: | :---: |
 {source_rows}
 
 </details>
@@ -27,7 +27,7 @@ NOTE ⚠️ Changes in this PR affect the following connectors. Make sure to do 
 </summary>
 
 | Connector | Version | Changelog | Publish |
-| --- | --- | --- | --- |
+| --- | :---: | :---: | :---: |
 {destination_rows}
 
 </details>
