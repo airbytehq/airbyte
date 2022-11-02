@@ -5,6 +5,7 @@
 package io.airbyte.db.jdbc;
 
 import com.google.errorprone.annotations.MustBeClosed;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.jdbc.streaming.JdbcStreamingQueryConfig;
@@ -76,6 +77,11 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
             }
           });
     } catch (final SQLException e) {
+      if (e.getMessage().contains("FATAL: terminating connection due to conflict with recovery")) {
+        final String displayMessage = "Error reading from Postgres replica configured as a hot standby. Please check "
+            + "https://docs.airbyte.com/integrations/sources/postgres/#sync-data-from-postgres-hot-standby-server for more details";
+        throw new ConfigErrorException(displayMessage, e);
+      }
       throw new RuntimeException(e);
     }
   }
