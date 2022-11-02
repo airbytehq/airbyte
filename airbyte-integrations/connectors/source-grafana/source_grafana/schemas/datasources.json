@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "uid": {
+      "type": ["null", "string"]
+    },
+    "orgId": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "typeLogoUrl": {
+      "type": ["null", "string"]
+    },
+    "acess": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "user": {
+      "type": ["null", "string"]
+    },
+    "database": {
+      "type": ["null", "string"]
+    },
+    "basicAuth": {
+      "type": ["null", "boolean"]
+    },
+    "basicAuthUser": {
+      "type": ["null", "string"]
+    },
+    "withCredentials": {
+      "type": ["null", "boolean"]
+    },
+    "isDefault": {
+      "type": ["null", "boolean"]
+    },
+    "jsonData": {
+      "type": ["null", "object"]
+    },
+    "secureJsonFields": {
+      "type": ["null", "object"]
+    },
+    "version": {
+      "type": ["null", "integer"]
+    },
+    "readOnly": {
+      "type": ["null", "boolean"]
+    }
+    
+  }
+}
