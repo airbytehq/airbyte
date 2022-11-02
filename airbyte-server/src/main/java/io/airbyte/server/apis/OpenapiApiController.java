@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server.apis;
 
 import io.airbyte.api.generated.OpenapiApi;
@@ -12,7 +16,9 @@ public class OpenapiApiController implements OpenapiApi {
 
   private final OpenApiConfigHandler openApiConfigHandler;
 
-  @Override public File getOpenApiSpec() {
+  @Override
+  public File getOpenApiSpec() {
     return ConfigurationApi.execute(openApiConfigHandler::getFile);
   }
+
 }

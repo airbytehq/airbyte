@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server.apis.factories;
 
 import io.airbyte.server.apis.OpenapiApiController;
@@ -12,11 +16,14 @@ public class OpenapiApiFactory implements Factory<OpenapiApiController> {
     OpenapiApiFactory.openApiConfigHandler = openApiConfigHandler;
   }
 
-  @Override public OpenapiApiController provide() {
+  @Override
+  public OpenapiApiController provide() {
     return new OpenapiApiController(openApiConfigHandler);
   }
 
-  @Override public void dispose(final OpenapiApiController instance) {
+  @Override
+  public void dispose(final OpenapiApiController instance) {
     /* no op */
   }
+
 }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server.apis.binders;
 
 import io.airbyte.server.apis.OpenapiApiController;
@@ -13,4 +17,5 @@ public class OpenapiApiBinder extends AbstractBinder {
         .to(OpenapiApiController.class)
         .in(RequestScoped.class);
   }
+
 }
