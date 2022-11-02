@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.iceberg.config;
+package io.airbyte.integrations.destination.iceberg.config.catalog;
 
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.DEFAULT_DATABASE_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBERG_CATALOG_CONFIG_KEY;
@@ -8,6 +8,10 @@ import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBE
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBERG_STORAGE_TYPE_CONFIG_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.destination.iceberg.config.format.FormatConfig;
+import io.airbyte.integrations.destination.iceberg.config.storage.S3Config;
+import io.airbyte.integrations.destination.iceberg.config.storage.StorageConfig;
+import io.airbyte.integrations.destination.iceberg.config.storage.StorageType;
 import javax.annotation.Nonnull;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,7 +27,7 @@ public class IcebergCatalogConfigFactory {
 
         // format config
         final JsonNode formatConfigJson = config.get(ICEBERG_FORMAT_CONFIG_KEY);
-        FormatConfig formatConfig = FormatConfig.fromJsonNodeConfig(formatConfigJson);
+        FormatConfig formatConfig = new FormatConfig(formatConfigJson);
 
         // catalog config and make final IcebergCatalogConfig Object
         final JsonNode catalogConfigJson = config.get(ICEBERG_CATALOG_CONFIG_KEY);
@@ -66,7 +70,7 @@ public class IcebergCatalogConfigFactory {
         };
     }
 
-    static String getProperty(@Nonnull final JsonNode config, @Nonnull final String key) {
+    public static String getProperty(@Nonnull final JsonNode config, @Nonnull final String key) {
         final JsonNode node = config.get(key);
         if (node == null) {
             return null;

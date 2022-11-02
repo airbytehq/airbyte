@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.iceberg.config;
+package io.airbyte.integrations.destination.iceberg.config.storage;
 
 import java.util.Map;
 

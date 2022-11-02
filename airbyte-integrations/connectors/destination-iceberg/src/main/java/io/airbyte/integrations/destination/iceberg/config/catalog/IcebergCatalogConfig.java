@@ -1,9 +1,11 @@
-package io.airbyte.integrations.destination.iceberg.config;
+package io.airbyte.integrations.destination.iceberg.config.catalog;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.iceberg.IcebergConstants;
+import io.airbyte.integrations.destination.iceberg.config.format.FormatConfig;
+import io.airbyte.integrations.destination.iceberg.config.storage.StorageConfig;
 import java.util.Map;
 import lombok.Data;
 import lombok.ToString;

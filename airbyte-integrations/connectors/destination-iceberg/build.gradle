@@ -43,10 +43,6 @@ dependencies {
     testImplementation 'org.mockito:mockito-inline:4.7.0'
 }
 
-task prepareKotlinBuildScriptModel {
-}
-
-
 test {
     jvmArgs = ['--add-opens=java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens=java.base/java.nio=ALL-UNNAMED']
 }

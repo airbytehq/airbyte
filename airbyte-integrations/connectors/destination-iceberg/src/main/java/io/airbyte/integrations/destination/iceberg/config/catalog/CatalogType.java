@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.iceberg.config;
+package io.airbyte.integrations.destination.iceberg.config.catalog;
 
 /**
  * @author Leibniz on 2022/10/31.

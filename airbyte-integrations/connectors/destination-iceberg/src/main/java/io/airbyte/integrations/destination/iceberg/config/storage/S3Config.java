@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.iceberg.config;
+package io.airbyte.integrations.destination.iceberg.config.storage;
 
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_ACCESS_KEY_ID_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_BUCKET_REGION_CONFIG_KEY;
@@ -17,10 +17,10 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.iceberg.config.credential.S3AWSDefaultProfileCredentialConfig;
-import io.airbyte.integrations.destination.iceberg.config.credential.S3AccessKeyCredentialConfig;
-import io.airbyte.integrations.destination.iceberg.config.credential.S3CredentialConfig;
-import io.airbyte.integrations.destination.iceberg.config.credential.S3CredentialType;
+import io.airbyte.integrations.destination.iceberg.config.storage.credential.S3AWSDefaultProfileCredentialConfig;
+import io.airbyte.integrations.destination.iceberg.config.storage.credential.S3AccessKeyCredentialConfig;
+import io.airbyte.integrations.destination.iceberg.config.storage.credential.S3CredentialConfig;
+import io.airbyte.integrations.destination.iceberg.config.storage.credential.S3CredentialType;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -244,12 +244,5 @@ public class S3Config implements StorageConfig {
         properties.put("s3.secret-access-key", this.secretKey);
         properties.put("s3.path-style-access", String.valueOf(this.pathStyleAccess));
         return properties;
-    }
-
-    public static class S3ConfigFactory {
-
-        public S3Config parseS3Config(final JsonNode config) {
-            return S3Config.fromDestinationConfig(config);
-        }
     }
 }

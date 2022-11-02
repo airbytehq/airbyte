@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.iceberg.config.credential;
+package io.airbyte.integrations.destination.iceberg.config.storage.credential;
 
 /**
  * @author Leibniz on 2022/10/26.

@@ -39,8 +39,14 @@ public class IcebergConstants {
      * Format Config keys
      */
     public static final String FORMAT_TYPE_CONFIG_KEY = "format";
+    public static final String FLUSH_BATCH_SIZE_CONFIG_KEY = "flush_batch_size";
+    public static final String AUTO_COMPACT_CONFIG_KEY = "auto_compact";
+    public static final String COMPACT_TARGET_FILE_SIZE_IN_MB_CONFIG_KEY = "compact_target_file_size_in_mb";
 
 
+    /**
+     * default values
+     */
     public static final String CATALOG_NAME = "iceberg";
     public static final String DEFAULT_DATABASE = "default";
 }

@@ -12,6 +12,9 @@
     "s3_endpoint" : "your-own-minio-host:9000"
   },
   "format_config" : {
-    "format" : "Parquet"
+    "format" : "Parquet",
+    "flush_batch_size" : 10000,
+    "auto_compact" : true,
+    "compact_target_file_size_in_mb" : 100
   }
 }

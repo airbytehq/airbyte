@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.iceberg.config.credential;
+package io.airbyte.integrations.destination.iceberg.config.storage.credential;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;

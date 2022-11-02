@@ -37,6 +37,7 @@
                 "order" : 0
               },
               "hive_thrift_uri" : {
+                "title" : "Hive Metastore thrift uri",
                 "type" : "string",
                 "description" : "Hive MetaStore thrift server uri of iceberg catalog.",
                 "examples" : [
@@ -288,6 +289,27 @@
               "Avro"
             ],
             "order" : 0
+          },
+          "flush_batch_size" : {
+            "title" : "Data file flushing batch size",
+            "description" : "Iceberg data file flush batch size. Incoming rows write to cache firstly; When cache size reaches this 'batch size', flush into real Iceberg data file.",
+            "type" : "integer",
+            "default" : 10000,
+            "order" : 1
+          },
+          "auto_compact" : {
+            "title" : "Auto compact data files",
+            "description" : "Auto compact data files when stream close",
+            "type" : "boolean",
+            "default" : false,
+            "order" : 2
+          },
+          "compact_target_file_size_in_mb" : {
+            "title" : "Target size of compacted data file",
+            "description" : "Specify the target size of Iceberg data file when performing a compaction action. ",
+            "type" : "integer",
+            "default" : 100,
+            "order" : 3
           }
         },
         "order" : 2

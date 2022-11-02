@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.iceberg.config;
+package io.airbyte.integrations.destination.iceberg.config.catalog;
 
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.CATALOG_NAME;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.HIVE_THRIFT_URI_CONFIG_KEY;
@@ -26,7 +26,11 @@ public class HiveCatalogConfig extends IcebergCatalogConfig {
     private final String thriftUri;
 
     public HiveCatalogConfig(JsonNode catalogConfig) {
-        this.thriftUri = catalogConfig.get(HIVE_THRIFT_URI_CONFIG_KEY).asText();
+        String thriftUri = catalogConfig.get(HIVE_THRIFT_URI_CONFIG_KEY).asText();
+        if (!thriftUri.startsWith("thrift://")) {
+            throw new IllegalArgumentException(HIVE_THRIFT_URI_CONFIG_KEY + " must start with 'thrift://'");
+        }
+        this.thriftUri = thriftUri;
     }
 
     @Override

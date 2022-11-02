@@ -28,12 +28,15 @@ This section should contain a table with the following format:
 
 ### Performance considerations
 
-Every thousand pieces of incoming airbyte data in a stream ————we call it a batch, would produce one data file(
-Parquet/ORC/Avro) in an Iceberg table. Until now, the batch size is still not configurable.  
+Every ten thousand pieces of incoming airbyte data in a stream ————we call it a batch, would produce one data file(
+Parquet/ORC/Avro) in an Iceberg table. This batch size can be configurabled by `Data file flushing batch size`
+property.  
 As the quantity of Iceberg data files grows, it causes an unnecessary amount of metadata and less efficient queries from
 file open costs.  
 Iceberg provides data file compaction action to improve this case, you can read more about
-compaction [HERE](https://iceberg.apache.org/docs/latest/maintenance/#compact-data-files).
+compaction [HERE](https://iceberg.apache.org/docs/latest/maintenance/#compact-data-files).  
+This connector also provides auto compact action when stream closes, by `Auto compact data files` property. Any you can
+specify the target size of compacted Iceberg data file.
 
 ## Getting started
 

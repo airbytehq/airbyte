@@ -1,5 +1,8 @@
 package io.airbyte.integrations.destination.iceberg.config;
 
+import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.destination.iceberg.IcebergConstants;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,23 +10,35 @@ import lombok.Data;
 import org.apache.spark.sql.Row;
 
 /**
+ * Write config for each stream
+ *
  * @author Leibniz on 2022/10/26.
  */
 @Data
 public class WriteConfig implements Serializable {
 
-    public static final int CACHE_SIZE = 1_000;
+    private static final NamingConventionTransformer namingResolver = new StandardNameTransformer();
+    private static final String AIRBYTE_RAW_TABLE_PREFIX = "airbyte_raw_";
+    private static final String AIRBYTE_TMP_TABLE_PREFIX = "_airbyte_tmp_";
 
+    private final String namespace;
     private final String tableName;
-    private final String tmpTableName;
+    private final String fullTableName;
+    private final String fullTempTableName;
     private final boolean isAppendMode;
+    private final Integer flushBatchSize;
     private final List<Row> dataCache;
 
-    public WriteConfig(String tableName, String tmpTableName, boolean isAppendMode) {
-        this.tableName = tableName;
-        this.tmpTableName = tmpTableName;
+    public WriteConfig(String namespace, String streamName, boolean isAppendMode, Integer flushBatchSize) {
+        this.namespace = namespace;
+        this.tableName = namingResolver.convertStreamName(AIRBYTE_RAW_TABLE_PREFIX + streamName);
+        final String tableName = genTableName(namespace, AIRBYTE_RAW_TABLE_PREFIX + streamName);
+        final String tempTableName = genTableName(namespace, AIRBYTE_TMP_TABLE_PREFIX + streamName);
+        this.fullTableName = tableName;
+        this.fullTempTableName = tempTableName;
         this.isAppendMode = isAppendMode;
-        this.dataCache = new ArrayList<>(CACHE_SIZE);
+        this.flushBatchSize = flushBatchSize;
+        this.dataCache = new ArrayList<>(flushBatchSize);
     }
 
     public List<Row> fetchDataCache() {
@@ -34,6 +49,14 @@ public class WriteConfig implements Serializable {
 
     public boolean addData(Row row) {
         this.dataCache.add(row);
-        return this.dataCache.size() >= CACHE_SIZE;
+        return this.dataCache.size() >= flushBatchSize;
+    }
+
+    private String genTableName(String database, String tmpTableName) {
+        return "%s.`%s`.`%s`".formatted(
+            IcebergConstants.CATALOG_NAME,
+            namingResolver.convertStreamName(database),
+            namingResolver.convertStreamName(tmpTableName)
+        );
     }
 }
