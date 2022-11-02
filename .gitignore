@@ -76,16 +76,3 @@ charts/**/charts
 
 # Datadog
 dd-java-agent.jar
-
-# remove java files
-
-*.class
-*.sm
-
-# Ignore `bin` dir
-bin/
-# or
-bin/*
-
-# Unignore all `.jar` in `bin` dir
-!*/bin/*.jar

@@ -1,3 +1,15 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "type": "service_account",
+  "project_id": "xxxxx",
+  "private_key_id": "xxx29228",
+  "private_key": "-----BEGIN PRIVATE KEY-----\\n-----END PRIVATE KEY-----\n",
+  "start_date": "2022-10-30",
+  "timezone": "America/Chica",
+  "customer_name": "xxxx",
+  "client_email": "xx@xxxxx.iam.gserviceaccount.com",
+  "client_id": "xxx1198p98p98fp98f9p8",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/outsider%40xxxxx.iam.gserviceaccount.com"
 }
