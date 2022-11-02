@@ -14,6 +14,10 @@ function isJobsWithJobs(job: JobsWithJobs | SynchronousJobRead): job is JobsWith
   return (job as JobsWithJobs).attempts !== undefined;
 }
 
+const formatBigNumber = (num: number) => {
+  return num.toLocaleString();
+};
+
 const formatBytes = (bytes?: number) => {
   if (!bytes) {
     return <FormattedMessage id="sources.countBytes" values={{ count: bytes || 0 }} />;
@@ -48,6 +52,7 @@ export const ProgressBar = ({
   let denominatorBytes = -1;
   // let totalPercentBytes = -1;
   let elapsedTimeMS = -1;
+  let timeRemaining = -1;
   let timeRemainingString = "";
   const unEstimatedStreams: string[] = [];
   let latestAttempt: AttemptRead | undefined;
@@ -111,14 +116,13 @@ export const ProgressBar = ({
     // TODO... maybe
   }
 
-  totalPercentRecords = Math.floor((numeratorRecords * 100) / denominatorRecords);
-  // totalPercentBytes = Math.floor((numeratorBytes * 100) / denominatorBytes);
+  totalPercentRecords = denominatorRecords > 0 ? Math.floor((numeratorRecords * 100) / denominatorRecords) : 0;
 
   // chose to estimate time remaining based on records rather than bytes
   if (latestAttempt && latestAttempt.status === Status.RUNNING) {
     const now = new Date().getTime();
     elapsedTimeMS = now - latestAttempt.createdAt * 1000;
-    const timeRemaining = Math.floor(elapsedTimeMS / totalPercentRecords) * (100 - totalPercentRecords); // in ms
+    timeRemaining = Math.floor(elapsedTimeMS / totalPercentRecords) * (100 - totalPercentRecords); // in ms
     const minutesRemaining = Math.ceil(timeRemaining / 1000 / 60);
     const hoursRemaining = Math.ceil(minutesRemaining / 60);
     if (minutesRemaining <= 60) {
@@ -137,7 +141,7 @@ export const ProgressBar = ({
         <>
           {unEstimatedStreams.length === 0 && (
             <div>
-              {totalPercentRecords}% | {timeRemainingString.length > 0 ? ` ~ ${timeRemainingString}` : ""}
+              {totalPercentRecords}% {timeRemaining < Infinity && timeRemaining > 0 ? `| ~${timeRemainingString}` : ""}
             </div>
           )}
           {unEstimatedStreams.length > 0 && (
@@ -145,24 +149,30 @@ export const ProgressBar = ({
               {unEstimatedStreams.length} {formatMessage({ id: "estimate.unEstimatedStreams" })}
             </div>
           )}
-          <div>
-            {numeratorRecords} {unEstimatedStreams.length > 0 ? "" : `/ ${denominatorRecords}`}{" "}
-            {formatMessage({ id: "estimate.recordsSynced" })} @ {Math.round((numeratorRecords / elapsedTimeMS) * 1000)}{" "}
-            {formatMessage({ id: "estimate.recordsPerSecond" })}
-          </div>
-          <div>
-            {formatBytes(numeratorBytes)}{" "}
-            {unEstimatedStreams.length > 0 ? (
-              ""
-            ) : (
-              <>
-                <span>/ </span>
-                {formatBytes(denominatorBytes)}
-              </>
-            )}{" "}
-            {formatMessage({ id: "estimate.bytesSynced" })} @ {formatBytes((numeratorBytes * 1000) / elapsedTimeMS)}
-            {formatMessage({ id: "estimate.bytesPerSecond" })}
-          </div>
+          {denominatorRecords > 0 && (
+            <>
+              <div>
+                {formatBigNumber(numeratorRecords)}{" "}
+                {unEstimatedStreams.length > 0 ? "" : `/ ${formatBigNumber(denominatorRecords)}`}{" "}
+                {formatMessage({ id: "estimate.recordsSynced" })} @{" "}
+                {Math.round((numeratorRecords / elapsedTimeMS) * 1000)}{" "}
+                {formatMessage({ id: "estimate.recordsPerSecond" })}
+              </div>
+              <div>
+                {formatBytes(numeratorBytes)}{" "}
+                {unEstimatedStreams.length > 0 ? (
+                  ""
+                ) : (
+                  <>
+                    <span>/ </span>
+                    {formatBytes(denominatorBytes)}
+                  </>
+                )}{" "}
+                {formatMessage({ id: "estimate.bytesSynced" })} @ {formatBytes((numeratorBytes * 1000) / elapsedTimeMS)}
+                {formatMessage({ id: "estimate.bytesPerSecond" })}
+              </div>
+            </>
+          )}
 
           {latestAttempt.streamStats && (
             <div>
@@ -178,7 +188,7 @@ export const ProgressBar = ({
                     {localNumerator && localDenominator
                       ? `${Math.round((localNumerator * 100) / localDenominator)}${formatMessage({
                           id: "estimate.percentComplete",
-                        })} (${localNumerator} / ${localDenominator} ${formatMessage({
+                        })} (${formatBigNumber(localNumerator)} / ${formatBigNumber(localDenominator)} ${formatMessage({
                           id: "estimate.recordsSynced",
                         })})`
                       : `${localNumerator} ${formatMessage({ id: "estimate.recordsSyncedThusFar" })} (no estimate)`}
