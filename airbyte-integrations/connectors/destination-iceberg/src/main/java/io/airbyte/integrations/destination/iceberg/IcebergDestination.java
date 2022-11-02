@@ -78,8 +78,6 @@ public class IcebergDestination extends BaseConnector implements Destination {
         final IcebergCatalogConfig icebergCatalogConfig = this.icebergCatalogConfigFactory.fromJsonNodeConfig(config);
         Map<String, String> sparkConfMap = icebergCatalogConfig.sparkConfigMap();
 
-        log.debug("icebergCatalogConfig:{}, sparkConfMap:{}", icebergCatalogConfig, sparkConfMap);
-
         Builder sparkBuilder = SparkSession.builder()
             .master("local")
             .appName("Airbyte->Iceberg-" + System.currentTimeMillis());

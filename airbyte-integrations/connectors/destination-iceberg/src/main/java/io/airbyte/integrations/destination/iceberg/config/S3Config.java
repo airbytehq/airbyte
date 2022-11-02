@@ -147,7 +147,6 @@ public class S3Config implements StorageConfig {
 
     private AmazonS3 createS3Client() {
         log.info("Creating S3 client...");
-        log.info("S3 client config:{}", this);
 
         final AWSCredentialsProvider credentialsProvider = credentialConfig.getS3CredentialsProvider();
         final S3CredentialType credentialType = credentialConfig.getCredentialType();
