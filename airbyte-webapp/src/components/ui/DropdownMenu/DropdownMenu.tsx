@@ -1,4 +1,4 @@
-import { autoUpdate, Placement, useFloating, offset } from "@floating-ui/react-dom";
+import { autoUpdate, useFloating, offset } from "@floating-ui/react-dom";
 import { Menu } from "@headlessui/react";
 import classNames from "classnames";
 import React from "react";
@@ -6,41 +6,9 @@ import React from "react";
 import { Text } from "components/ui/Text";
 
 import styles from "./DropdownMenu.module.scss";
+import { DropdownMenuProps, DropdownMenuItemType, IconPositionType, MenuItemContentProps } from "./types";
 
-export enum DropdownMenuItemType {
-  LINK = "link",
-  BUTTON = "button",
-}
-
-export enum IconPositionType {
-  LEFT = "left",
-  RIGHT = "right",
-}
-
-interface MenuItemLink {
-  type: DropdownMenuItemType.LINK;
-  href: string;
-  icon?: React.ReactNode;
-  value?: any;
-  displayName: string;
-  iconPosition?: IconPositionType;
-}
-
-interface MenuItemButton {
-  type: DropdownMenuItemType.BUTTON;
-  value?: any;
-  icon?: React.ReactNode;
-  displayName: string;
-  iconPosition?: IconPositionType;
-  primary?: boolean;
-}
-
-interface MenuItemContent {
-  data: MenuItemLink | MenuItemButton;
-  active?: boolean;
-}
-
-const MenuItemContent: React.FC<React.PropsWithChildren<MenuItemContent>> = ({ data }) => {
+const MenuItemContent: React.FC<React.PropsWithChildren<MenuItemContentProps>> = ({ data }) => {
   return (
     <>
       {((data?.icon && data?.iconPosition === IconPositionType.LEFT) || !data?.iconPosition) && (
@@ -56,15 +24,7 @@ const MenuItemContent: React.FC<React.PropsWithChildren<MenuItemContent>> = ({ d
   );
 };
 
-interface DropdownMenu {
-  options: Array<MenuItemLink | MenuItemButton>;
-  children: ({ open }: { open: boolean }) => React.ReactNode;
-  onChange?: (data: MenuItemLink | MenuItemButton) => void;
-  placement?: Placement;
-  displacement?: number;
-}
-
-export const DropdownMenu: React.FC<React.PropsWithChildren<DropdownMenu>> = ({
+export const DropdownMenu: React.FC<React.PropsWithChildren<DropdownMenuProps>> = ({
   options,
   children,
   onChange,
@@ -96,7 +56,7 @@ export const DropdownMenu: React.FC<React.PropsWithChildren<DropdownMenu>> = ({
                 {({ active }) =>
                   item.type === DropdownMenuItemType.LINK ? (
                     <a
-                      className={classNames(styles.item, {
+                      className={classNames(styles.item, item?.className, {
                         [styles.active]: active,
                       })}
                       target="_blank"
@@ -109,9 +69,8 @@ export const DropdownMenu: React.FC<React.PropsWithChildren<DropdownMenu>> = ({
                     </a>
                   ) : (
                     <button
-                      className={classNames(styles.item, {
+                      className={classNames(styles.item, item?.className, {
                         [styles.active]: active,
-                        [styles.primary]: item?.primary,
                       })}
                       data-id={item.displayName}
                       title={item.displayName}

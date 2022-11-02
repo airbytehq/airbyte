@@ -2,20 +2,19 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
-import { DropdownMenu } from "components/ui/DropdownMenu";
+import { DropdownMenu, DropdownMenuItemType, DropdownMenuOptionType } from "components/ui/DropdownMenu";
 import { Heading } from "components/ui/Heading";
 import { Text } from "components/ui/Text";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
 
 import { Button } from "../ui/Button";
-import { DropdownMenuItemType, IconPositionType } from "../ui/DropdownMenu/DropdownMenu";
 import styles from "./TableItemTitle.module.scss";
 
 interface TableItemTitleProps {
   type: "source" | "destination";
-  dropDownData: any[];
-  onSelect: (item: any) => void;
+  dropdownOptions: DropdownMenuOptionType[];
+  onSelect: (data: DropdownMenuOptionType) => void;
   entity: string;
   entityName: string;
   entityIcon?: React.ReactNode;
@@ -24,7 +23,7 @@ interface TableItemTitleProps {
 
 const TableItemTitle: React.FC<TableItemTitleProps> = ({
   type,
-  dropDownData,
+  dropdownOptions,
   onSelect,
   entity,
   entityName,
@@ -32,37 +31,7 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
   releaseStage,
 }) => {
   const { formatMessage } = useIntl();
-  // const options = [
-  //   {
-  //     label: formatMessage({
-  //       id: `tables.${type}AddNew`,
-  //     }),
-  //     value: "create-new-item",
-  //     primary: true,
-  //   },
-  //   ...dropDownData,
-  // ];
-  // onChange={onSelect}
 
-  // type: DropdownMenuItemType.BUTTON;
-  // icon: React.ReactNode;
-  // displayName: React.ReactNode;
-  // iconPosition?: IconPositionType;
-  // primary?: boolean;
-  // onClick?: () => void;
-  console.log(onSelect);
-  console.log(dropDownData);
-  // const options = [
-  //   {
-  //     type: DropdownMenuItemType.BUTTON,
-  //     icon: <span>Hi</span>,
-  //     iconPosition: IconPositionType.RIGHT,
-  //     primary: true,
-  //     displayName: formatMessage({
-  //       id: `tables.${type}AddNew`,
-  //     }),
-  //   },
-  // ];
   return (
     <>
       <div className={styles.entityInfo}>
@@ -84,21 +53,12 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
           options={[
             {
               type: DropdownMenuItemType.BUTTON,
-              primary: true,
+              className: styles.primary,
               displayName: formatMessage({
                 id: `tables.${type}AddNew`,
               }),
             },
-            ...dropDownData.map(
-              (item) =>
-                ({
-                  type: DropdownMenuItemType.BUTTON,
-                  icon: item.img,
-                  iconPosition: IconPositionType.RIGHT,
-                  displayName: item.label,
-                  value: item.value,
-                } as any)
-            ),
+            ...dropdownOptions,
           ]}
           onChange={onSelect}
         >
