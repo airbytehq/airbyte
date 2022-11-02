@@ -117,7 +117,6 @@ import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
-import io.airbyte.server.handlers.LogsHandler;
 import io.airbyte.server.handlers.OAuthHandler;
 import io.airbyte.server.handlers.OpenApiConfigHandler;
 import io.airbyte.server.handlers.OperationsHandler;
@@ -135,7 +134,6 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
 import java.net.http.HttpClient;
-import java.nio.file.Path;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
@@ -156,12 +154,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   private final JobHistoryHandler jobHistoryHandler;
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
   private final WebBackendGeographiesHandler webBackendGeographiesHandler;
-  private final LogsHandler logsHandler;
   private final OpenApiConfigHandler openApiConfigHandler;
   private final OAuthHandler oAuthHandler;
-  private final WorkerEnvironment workerEnvironment;
-  private final LogConfigs logConfigs;
-  private final Path workspaceRoot;
 
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
@@ -173,12 +167,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
                           final AirbyteVersion airbyteVersion,
-                          final Path workspaceRoot,
                           final HttpClient httpClient,
                           final EventRunner eventRunner) {
-    this.workerEnvironment = workerEnvironment;
-    this.logConfigs = logConfigs;
-    this.workspaceRoot = workspaceRoot;
 
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
 
@@ -235,7 +225,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         eventRunner,
         configRepository);
     webBackendGeographiesHandler = new WebBackendGeographiesHandler();
-    logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
   }
 
@@ -945,9 +934,13 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     return execute(() -> jobHistoryHandler.getAttemptNormalizationStatuses(jobIdRequestBody));
   }
 
+  /**
+   * This implementation has been moved to {@link LogsApiController}. Since the path of
+   * {@link LogsApiController} is more granular, it will override this implementation
+   */
   @Override
   public File getLogs(final LogsRequestBody logsRequestBody) {
-    return execute(() -> logsHandler.getLogs(workspaceRoot, workerEnvironment, logConfigs, logsRequestBody));
+    throw new NotImplementedException();
   }
 
   @Override

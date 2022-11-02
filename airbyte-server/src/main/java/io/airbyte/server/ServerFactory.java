@@ -23,6 +23,7 @@ import io.airbyte.server.apis.DestinationDefinitionApiController;
 import io.airbyte.server.apis.DestinationDefinitionSpecificationApiController;
 import io.airbyte.server.apis.HealthApiController;
 import io.airbyte.server.apis.JobsApiController;
+import io.airbyte.server.apis.LogsApiController;
 import io.airbyte.server.apis.binders.AttemptApiBinder;
 import io.airbyte.server.apis.binders.ConnectionApiBinder;
 import io.airbyte.server.apis.binders.DbMigrationBinder;
@@ -31,6 +32,7 @@ import io.airbyte.server.apis.binders.DestinationDefinitionApiBinder;
 import io.airbyte.server.apis.binders.DestinationDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.HealthApiBinder;
 import io.airbyte.server.apis.binders.JobsApiBinder;
+import io.airbyte.server.apis.binders.LogsApiBinder;
 import io.airbyte.server.apis.factories.AttemptApiFactory;
 import io.airbyte.server.apis.factories.ConnectionApiFactory;
 import io.airbyte.server.apis.factories.DbMigrationApiFactory;
@@ -39,6 +41,7 @@ import io.airbyte.server.apis.factories.DestinationDefinitionApiFactory;
 import io.airbyte.server.apis.factories.DestinationDefinitionSpecificationApiFactory;
 import io.airbyte.server.apis.factories.HealthApiFactory;
 import io.airbyte.server.apis.factories.JobsApiFactory;
+import io.airbyte.server.apis.factories.LogsApiFactory;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DbMigrationHandler;
@@ -46,6 +49,7 @@ import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
+import io.airbyte.server.handlers.LogsHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.scheduler.EventRunner;
@@ -82,6 +86,7 @@ public interface ServerFactory {
                         final DestinationHandler destinationApiHandler,
                         final HealthCheckHandler healthCheckHandler,
                         final JobHistoryHandler jobHistoryHandler,
+                        final LogsHandler logsHandler,
                         final OperationsHandler operationsHandler,
                         final SchedulerHandler schedulerHandler);
 
@@ -111,6 +116,7 @@ public interface ServerFactory {
                                  final DestinationHandler destinationApiHandler,
                                  final HealthCheckHandler healthCheckHandler,
                                  final JobHistoryHandler jobHistoryHandler,
+                                 final LogsHandler logsHandler,
                                  final OperationsHandler operationsHandler,
                                  final SchedulerHandler schedulerHandler) {
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -156,6 +162,8 @@ public interface ServerFactory {
 
       JobsApiFactory.setValues(jobHistoryHandler, schedulerHandler);
 
+      LogsApiFactory.setValues(logsHandler);
+
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(
           ConfigurationApi.class,
@@ -166,7 +174,8 @@ public interface ServerFactory {
           DestinationDefinitionApiController.class,
           DestinationDefinitionSpecificationApiController.class,
           HealthApiController.class,
-          JobsApiController.class);
+          JobsApiController.class,
+          LogsApiController.class);
 
       final Set<Object> components = Set.of(
           new CorsFilter(),
@@ -178,7 +187,8 @@ public interface ServerFactory {
           new DestinationDefinitionApiBinder(),
           new DestinationDefinitionSpecificationApiBinder(),
           new HealthApiBinder(),
-          new JobsApiBinder());
+          new JobsApiBinder(),
+          new LogsApiBinder());
 
       // construct server
       return new ServerApp(airbyteVersion, componentClasses, components);
