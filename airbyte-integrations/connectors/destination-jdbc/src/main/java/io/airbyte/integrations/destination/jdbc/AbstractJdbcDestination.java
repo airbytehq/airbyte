@@ -8,6 +8,7 @@ import static io.airbyte.commons.exceptions.DisplayErrorMessage.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.exceptions.DisplayErrorMessage;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
@@ -65,7 +66,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConfigErrorException ex) {
-      final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
+      final String message = ex.getDisplayMessage();
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, message);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
@@ -103,10 +104,10 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       sqlOps.dropTableIfExists(database, outputSchema, outputTableName);
     } catch (final SQLException e) {
       if (Objects.isNull(e.getCause()) || !(e.getCause() instanceof SQLException)) {
-        throw new ConfigErrorException(e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
+        throw new ConfigErrorException(DisplayErrorMessage.getErrorMessage(e.getSQLState(), e.getErrorCode(), e.getMessage(), e), e);
       } else {
         final SQLException cause = (SQLException) e.getCause();
-        throw new ConfigErrorException(e.getSQLState(), cause.getErrorCode(), cause.getMessage(), e);
+        throw new ConfigErrorException(DisplayErrorMessage.getErrorMessage(e.getSQLState(), cause.getErrorCode(), cause.getMessage(), e), e);
       }
     } catch (final Exception e) {
       throw new Exception(e);
