@@ -2286,7 +2286,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-coinmarketcap:0.1.0"
+- dockerImage: "airbyte/source-coinmarketcap:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/coinmarketcap"
     connectionSpecification:
@@ -2324,9 +2324,6 @@
           examples:
           - "AVAX"
           - "BTC"
-        supportsNormalization: false
-        supportsDBT: false
-        supported_destination_sync_modes: []
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -2838,7 +2835,7 @@
     supportsDBT: false
     supported_destination_sync_modes: []
     protocol_version: "0.2.1"
-- dockerImage: "airbyte/source-exchange-rates:1.2.6"
+- dockerImage: "airbyte/source-exchange-rates:1.2.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/exchangeratesapi"
     connectionSpecification:
@@ -2876,7 +2873,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.70"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.71"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
