@@ -32,6 +32,7 @@ import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.NormalizationSummary;
+import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
@@ -404,7 +405,13 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void writeSyncStats(long jobId, int attemptNumber, long estimatedRecords, long estimatedBytes, long recordsEmitted, long bytesEmitted)
+  public void writeSyncStats(long jobId,
+                             int attemptNumber,
+                             long estimatedRecords,
+                             long estimatedBytes,
+                             long recordsEmitted,
+                             long bytesEmitted,
+                             List<StreamSyncStats> streamStats)
       throws IOException {
     // Although the attempt table's output has a copy of the sync summary, we do not update it for
     // running sync stat updates.
@@ -423,13 +430,13 @@ public class DefaultJobPersistence implements JobPersistence {
             .set(SYNC_STATS.RECORDS_EMITTED, recordsEmitted)
             .set(SYNC_STATS.ESTIMATED_BYTES, estimatedBytes)
             .set(SYNC_STATS.ESTIMATED_RECORDS, estimatedRecords)
+            .set(SYNC_STATS.STREAM_STATS, JSONB.valueOf(Jsons.serialize(streamStats)))
             .set(SYNC_STATS.UPDATED_AT, now)
             .where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
             .execute();
         return null;
       }
 
-      // does this upsert work?
       ctx.insertInto(SYNC_STATS)
           .set(SYNC_STATS.ID, UUID.randomUUID())
           .set(SYNC_STATS.UPDATED_AT, now)
@@ -439,6 +446,7 @@ public class DefaultJobPersistence implements JobPersistence {
           .set(SYNC_STATS.RECORDS_EMITTED, recordsEmitted)
           .set(SYNC_STATS.ESTIMATED_BYTES, estimatedBytes)
           .set(SYNC_STATS.ESTIMATED_RECORDS, estimatedRecords)
+          .set(SYNC_STATS.STREAM_STATS, JSONB.valueOf(Jsons.serialize(streamStats)))
           .execute();
 
       // write per stream stat info

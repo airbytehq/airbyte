@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.db.instance.jobs.migrations;
 
 import org.flywaydb.core.api.migration.BaseJavaMigration;

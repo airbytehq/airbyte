@@ -7,8 +7,11 @@ package io.airbyte.server.handlers;
 import io.airbyte.api.model.generated.InternalOperationResult;
 import io.airbyte.api.model.generated.SaveStatsRequestBody;
 import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
+import io.airbyte.config.StreamSyncStats;
+import io.airbyte.config.SyncStats;
 import io.airbyte.persistence.job.JobPersistence;
 import java.io.IOException;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,8 +41,19 @@ public class AttemptHandler {
     try {
       // This is for the entire sync for now.
       final var stats = requestBody.getStats();
+      final var streamStats = requestBody.getStreamStats().stream()
+          .map(s -> new StreamSyncStats()
+              .withStreamName(s.getStreamName())
+              .withStats(new SyncStats()
+                  .withBytesEmitted(s.getStats().getBytesEmitted())
+                  .withRecordsEmitted(s.getStats().getRecordsEmitted())
+                  .withEstimatedBytes(s.getStats().getEstimatedBytes())
+                  .withEstimatedRecords(s.getStats().getEstimatedRecords())))
+          .collect(Collectors.toList());
+
       jobPersistence.writeSyncStats(requestBody.getJobId(), requestBody.getAttemptNumber(),
-          stats.getEstimatedRecords(), stats.getEstimatedBytes(), stats.getRecordsEmitted(), stats.getBytesEmitted());
+          stats.getEstimatedRecords(), stats.getEstimatedBytes(), stats.getRecordsEmitted(), stats.getBytesEmitted(), streamStats);
+
     } catch (IOException ioe) {
       LOGGER.error("IOException when setting temporal workflow in attempt;", ioe);
       return new InternalOperationResult().succeeded(false);

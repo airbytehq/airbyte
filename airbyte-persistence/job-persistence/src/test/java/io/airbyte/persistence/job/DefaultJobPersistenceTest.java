@@ -316,7 +316,7 @@ class DefaultJobPersistenceTest {
     void testWriteSyncStatsFirst() throws IOException, SQLException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
-      jobPersistence.writeSyncStats(jobId, attemptNumber, 1000, 1000, 1000, 1000);
+      jobPersistence.writeSyncStats(jobId, attemptNumber, 1000, 1000, 1000, 1000, null);
 
       final Optional<Record> record =
           jobDatabase.query(ctx -> ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
@@ -339,7 +339,7 @@ class DefaultJobPersistenceTest {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
 
-      jobPersistence.writeSyncStats(jobId, attemptNumber, 1000, 1000, 1000, 1000);
+      jobPersistence.writeSyncStats(jobId, attemptNumber, 1000, 1000, 1000, 1000, null);
 
       final Optional<Record> record =
           jobDatabase.query(ctx -> ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
@@ -352,7 +352,7 @@ class DefaultJobPersistenceTest {
       assertEquals(1000, stat.getEstimatedBytes());
       assertEquals(1000, stat.getEstimatedRecords());
 
-      jobPersistence.writeSyncStats(jobId, attemptNumber, 2000, 2000, 2000, 2000);
+      jobPersistence.writeSyncStats(jobId, attemptNumber, 2000, 2000, 2000, 2000, null);
       var stats = jobPersistence.getSyncStats(attemptId);
       assertEquals(1, stats.size());
 

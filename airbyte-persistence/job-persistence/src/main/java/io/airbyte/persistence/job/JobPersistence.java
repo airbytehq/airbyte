@@ -11,6 +11,7 @@ import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.NormalizationSummary;
+import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.persistence.job.models.AttemptNormalizationStatus;
@@ -147,7 +148,13 @@ public interface JobPersistence {
    */
   void writeOutput(long jobId, int attemptNumber, JobOutput output) throws IOException;
 
-  void writeSyncStats(long jobId, int attemptNumber, long estimatedRecords, long estimatedBytes, long recordsEmitted, long bytesEmitted)
+  void writeSyncStats(long jobId,
+                      int attemptNumber,
+                      long estimatedRecords,
+                      long estimatedBytes,
+                      long recordsEmitted,
+                      long bytesEmitted,
+                      List<StreamSyncStats> streamStats)
       throws IOException;
 
   /**
