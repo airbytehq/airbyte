@@ -1,0 +1,1042 @@
+{
+  "source-monday": {
+    "date": "2021-11-07",
+    "type": "source"
+  },
+  "source-mailjet-sms": {
+    "date": "2022-10-29",
+    "type": "source"
+  },
+  "source-linkedin-pages": {
+    "date": "2022-08-11",
+    "type": "source"
+  },
+  "source-linkedin-ads": {
+    "date": "2021-09-25",
+    "type": "source"
+  },
+  "source-lever-hiring": {
+    "date": "2021-09-10",
+    "type": "source"
+  },
+  "source-lemlist": {
+    "date": "2021-10-27",
+    "type": "source"
+  },
+  "source-kustomer-singer": {
+    "date": "2021-08-05",
+    "type": "source"
+  },
+  "source-klaviyo": {
+    "date": "2021-05-20",
+    "type": "source"
+  },
+  "source-kafka": {
+    "date": "2021-09-23",
+    "type": "source"
+  },
+  "source-jira": {
+    "date": "2020-12-10",
+    "type": "source"
+  },
+  "source-jdbc": {
+    "date": "2020-10-30",
+    "type": "source"
+  },
+  "source-iterable": {
+    "date": "2021-04-20",
+    "type": "source"
+  },
+  "source-intercom": {
+    "date": "2021-07-19",
+    "type": "source"
+  },
+  "source-instagram": {
+    "date": "2021-03-13",
+    "type": "source"
+  },
+  "source-insightly": {
+    "date": "2022-10-20",
+    "type": "source"
+  },
+  "source-hubspot": {
+    "date": "2021-03-20",
+    "type": "source"
+  },
+  "source-hubplanner": {
+    "date": "2022-08-10",
+    "type": "source"
+  },
+  "source-hellobaton": {
+    "date": "2022-01-14",
+    "type": "source"
+  },
+  "source-harvest": {
+    "date": "2021-06-07",
+    "type": "source"
+  },
+  "source-gutendex": {
+    "date": "2022-10-21",
+    "type": "source"
+  },
+  "source-greenhouse": {
+    "date": "2020-12-05",
+    "type": "source"
+  },
+  "source-google-workspace-admin-reports": {
+    "date": "2021-04-01",
+    "type": "source"
+  },
+  "source-google-webfonts": {
+    "date": "2022-10-29",
+    "type": "source"
+  },
+  "source-google-sheets": {
+    "date": "2020-10-29",
+    "type": "source"
+  },
+  "source-google-search-console": {
+    "date": "2021-09-10",
+    "type": "source"
+  },
+  "source-google-directory": {
+    "date": "2021-03-12",
+    "type": "source"
+  },
+  "source-google-analytics-v4": {
+    "date": "2021-08-26",
+    "type": "source"
+  },
+  "source-google-analytics-data-api": {
+    "date": "2022-06-28",
+    "type": "source"
+  },
+  "source-google-ads": {
+    "date": "2021-06-14",
+    "type": "source"
+  },
+  "source-gocardless": {
+    "date": "2022-10-20",
+    "type": "source"
+  },
+  "source-glassfrog": {
+    "date": "2022-07-27",
+    "type": "source"
+  },
+  "source-gitlab": {
+    "date": "2021-07-06",
+    "type": "source"
+  },
+  "source-github": {
+    "date": "2021-07-07",
+    "type": "source"
+  },
+  "source-freshservice": {
+    "date": "2021-10-29",
+    "type": "source"
+  },
+  "source-freshsales": {
+    "date": "2021-11-03",
+    "type": "source"
+  },
+  "source-freshdesk": {
+    "date": "2020-12-01",
+    "type": "source"
+  },
+  "source-freshcaller": {
+    "date": "2022-08-11",
+    "type": "source"
+  },
+  "source-flexport": {
+    "date": "2022-01-21",
+    "type": "source"
+  },
+  "source-firebolt": {
+    "date": "2022-06-18",
+    "type": "source"
+  },
+  "source-file-secure": {
+    "date": "2021-10-20",
+    "type": "source"
+  },
+  "source-file": {
+    "date": "2020-11-03",
+    "type": "source"
+  },
+  "source-fauna": {
+    "date": "2022-09-29",
+    "type": "source"
+  },
+  "source-faker": {
+    "date": "2022-04-14",
+    "type": "source"
+  },
+  "source-facebook-pages": {
+    "date": "2021-09-02",
+    "type": "source"
+  },
+  "source-facebook-marketing": {
+    "date": "2021-01-15",
+    "type": "source"
+  },
+  "source-exchange-rates": {
+    "date": "2021-04-22",
+    "type": "source"
+  },
+  "source-elasticsearch": {
+    "date": "2022-07-13",
+    "type": "source"
+  },
+  "source-e2e-test-cloud": {
+    "date": "2022-01-24",
+    "type": "source"
+  },
+  "source-e2e-test": {
+    "date": "2021-05-25",
+    "type": "source"
+  },
+  "source-dv-360": {
+    "date": "2022-09-28",
+    "type": "source"
+  },
+  "source-drift": {
+    "date": "2020-12-18",
+    "type": "source"
+  },
+  "source-dockerhub": {
+    "date": "2022-06-20",
+    "type": "source"
+  },
+  "source-dixa": {
+    "date": "2021-07-10",
+    "type": "source"
+  },
+  "source-delighted": {
+    "date": "2021-11-02",
+    "type": "source"
+  },
+  "source-db2-strict-encrypt": {
+    "date": "2021-11-11",
+    "type": "source"
+  },
+  "source-db2": {
+    "date": "2021-06-24",
+    "type": "source"
+  },
+  "source-courier": {
+    "date": "2022-10-19",
+    "type": "source"
+  },
+  "source-convertkit": {
+    "date": "2022-10-29",
+    "type": "source"
+  },
+  "source-confluence": {
+    "date": "2021-11-05",
+    "type": "source"
+  },
+  "source-commercetools": {
+    "date": "2021-11-09",
+    "type": "source"
+  },
+  "source-coin-api": {
+    "date": "2022-10-28",
+    "type": "source"
+  },
+  "source-cockroachdb-strict-encrypt": {
+    "date": "2021-11-24",
+    "type": "source"
+  },
+  "source-cockroachdb": {
+    "date": "2021-07-02",
+    "type": "source"
+  },
+  "source-close-com": {
+    "date": "2021-09-14",
+    "type": "source"
+  },
+  "source-clockify": {
+    "date": "2022-10-26",
+    "type": "source"
+  },
+  "source-clickhouse-strict-encrypt": {
+    "date": "2021-10-25",
+    "type": "source"
+  },
+  "source-clickhouse": {
+    "date": "2021-05-12",
+    "type": "source"
+  },
+  "source-chartmogul": {
+    "date": "2022-01-19",
+    "type": "source"
+  },
+  "source-chargify": {
+    "date": "2022-03-17",
+    "type": "source"
+  },
+  "source-chargebee": {
+    "date": "2021-07-01",
+    "type": "source"
+  },
+  "source-cart": {
+    "date": "2021-07-23",
+    "type": "source"
+  },
+  "source-braintree": {
+    "date": "2021-08-19",
+    "type": "source"
+  },
+  "source-bing-ads": {
+    "date": "2021-08-14",
+    "type": "source"
+  },
+  "source-bigquery": {
+    "date": "2021-07-22",
+    "type": "source"
+  },
+  "source-bigcommerce": {
+    "date": "2021-08-29",
+    "type": "source"
+  },
+  "source-bamboo-hr": {
+    "date": "2021-08-27",
+    "type": "source"
+  },
+  "source-azure-table": {
+    "date": "2021-11-15",
+    "type": "source"
+  },
+  "source-aws-cloudtrail": {
+    "date": "2021-06-25",
+    "type": "source"
+  },
+  "source-auth0": {
+    "date": "2022-10-26",
+    "type": "source"
+  },
+  "source-ashby": {
+    "date": "2022-10-28",
+    "type": "source"
+  },
+  "source-asana": {
+    "date": "2021-05-26",
+    "type": "source"
+  },
+  "source-appstore-singer": {
+    "date": "2021-01-14",
+    "type": "source"
+  },
+  "source-appsflyer": {
+    "date": "2021-10-19",
+    "type": "source"
+  },
+  "source-appfollow": {
+    "date": "2022-08-17",
+    "type": "source"
+  },
+  "source-apify-dataset": {
+    "date": "2021-08-03",
+    "type": "source"
+  },
+  "source-amplitude": {
+    "date": "2021-06-08",
+    "type": "source"
+  },
+  "source-amazon-sqs": {
+    "date": "2021-10-27",
+    "type": "source"
+  },
+  "source-amazon-seller-partner": {
+    "date": "2021-06-01",
+    "type": "source"
+  },
+  "source-amazon-ads": {
+    "date": "2021-08-26",
+    "type": "source"
+  },
+  "source-alloydb-strict-encrypt": {
+    "date": "2022-09-20",
+    "type": "source"
+  },
+  "source-alloydb": {
+    "date": "2022-09-07",
+    "type": "source"
+  },
+  "source-airtable": {
+    "date": "2021-11-20",
+    "type": "source"
+  },
+  "source-adjust": {
+    "date": "2022-09-27",
+    "type": "source"
+  },
+  "source-activecampaign": {
+    "date": "2022-10-28",
+    "type": "source"
+  },
+  "destination-yugabytedb": {
+    "date": "2022-10-28",
+    "type": "destination"
+  },
+  "destination-typesense": {
+    "date": "2022-10-28",
+    "type": "destination"
+  },
+  "destination-tidb": {
+    "date": "2022-09-01",
+    "type": "destination"
+  },
+  "destination-sqlite": {
+    "date": "2022-08-09",
+    "type": "destination"
+  },
+  "destination-snowflake": {
+    "date": "2020-11-02",
+    "type": "destination"
+  },
+  "destination-sftp-json": {
+    "date": "2021-11-24",
+    "type": "destination"
+  },
+  "destination-scylla": {
+    "date": "2021-11-17",
+    "type": "destination"
+  },
+  "destination-scaffold-destination-python": {
+    "date": "2021-07-19",
+    "type": "destination"
+  },
+  "destination-s3": {
+    "date": "2021-06-03",
+    "type": "destination"
+  },
+  "destination-rockset": {
+    "date": "2021-12-15",
+    "type": "destination"
+  },
+  "destination-redshift": {
+    "date": "2020-12-04",
+    "type": "destination"
+  },
+  "destination-redis": {
+    "date": "2021-11-20",
+    "type": "destination"
+  },
+  "destination-rabbitmq": {
+    "date": "2021-12-14",
+    "type": "destination"
+  },
+  "destination-r2": {
+    "date": "2022-09-26",
+    "type": "destination"
+  },
+  "destination-pulsar": {
+    "date": "2021-11-06",
+    "type": "destination"
+  },
+  "destination-pubsub": {
+    "date": "2021-06-25",
+    "type": "destination"
+  },
+  "destination-postgres-strict-encrypt": {
+    "date": "2021-09-30",
+    "type": "destination"
+  },
+  "destination-postgres": {
+    "date": "2020-10-21",
+    "type": "destination"
+  },
+  "destination-oracle-strict-encrypt": {
+    "date": "2021-11-02",
+    "type": "destination"
+  },
+  "destination-oracle": {
+    "date": "2021-06-03",
+    "type": "destination"
+  },
+  "destination-mysql-strict-encrypt": {
+    "date": "2021-10-14",
+    "type": "destination"
+  },
+  "destination-mysql": {
+    "date": "2021-05-07",
+    "type": "destination"
+  },
+  "destination-mssql-strict-encrypt": {
+    "date": "2021-10-12",
+    "type": "destination"
+  },
+  "destination-mssql": {
+    "date": "2021-05-17",
+    "type": "destination"
+  },
+  "destination-mqtt": {
+    "date": "2021-11-21",
+    "type": "destination"
+  },
+  "destination-mongodb-strict-encrypt": {
+    "date": "2021-10-20",
+    "type": "destination"
+  },
+  "destination-mongodb": {
+    "date": "2021-09-07",
+    "type": "destination"
+  },
+  "destination-meilisearch": {
+    "date": "2021-02-09",
+    "type": "destination"
+  },
+  "destination-mariadb-columnstore": {
+    "date": "2021-11-24",
+    "type": "destination"
+  },
+  "destination-local-json": {
+    "date": "2020-12-22",
+    "type": "destination"
+  },
+  "destination-kvdb": {
+    "date": "2021-07-19",
+    "type": "destination"
+  },
+  "destination-kinesis": {
+    "date": "2021-11-22",
+    "type": "destination"
+  },
+  "destination-keen": {
+    "date": "2021-08-18",
+    "type": "destination"
+  },
+  "destination-kafka": {
+    "date": "2021-07-22",
+    "type": "destination"
+  },
+  "destination-jdbc": {
+    "date": "2020-12-04",
+    "type": "destination"
+  },
+  "destination-google-sheets": {
+    "date": "2022-05-12",
+    "type": "destination"
+  },
+  "destination-gcs": {
+    "date": "2021-07-17",
+    "type": "destination"
+  },
+  "destination-firestore": {
+    "date": "2021-11-22",
+    "type": "destination"
+  },
+  "destination-firebolt": {
+    "date": "2022-06-28",
+    "type": "destination"
+  },
+  "destination-elasticsearch-strict-encrypt": {
+    "date": "2022-09-22",
+    "type": "destination"
+  },
+  "destination-elasticsearch": {
+    "date": "2021-11-02",
+    "type": "destination"
+  },
+  "destination-e2e-test": {
+    "date": "2021-05-25",
+    "type": "destination"
+  },
+  "destination-dynamodb": {
+    "date": "2021-09-02",
+    "type": "destination"
+  },
+  "destination-dev-null": {
+    "date": "2021-12-19",
+    "type": "destination"
+  },
+  "destination-databricks": {
+    "date": "2021-09-15",
+    "type": "destination"
+  },
+  "destination-csv": {
+    "date": "2020-10-21",
+    "type": "destination"
+  },
+  "destination-clickhouse-strict-encrypt": {
+    "date": "2021-12-14",
+    "type": "destination"
+  },
+  "destination-clickhouse": {
+    "date": "2021-12-14",
+    "type": "destination"
+  },
+  "destination-cassandra": {
+    "date": "2021-11-06",
+    "type": "destination"
+  },
+  "destination-bigquery-denormalized": {
+    "date": "2021-06-23",
+    "type": "destination"
+  },
+  "destination-bigquery": {
+    "date": "2020-10-21",
+    "type": "destination"
+  },
+  "destination-azure-blob-storage": {
+    "date": "2021-08-29",
+    "type": "destination"
+  },
+  "destination-aws-datalake": {
+    "date": "2022-04-05",
+    "type": "destination"
+  },
+  "destination-amazon-sqs": {
+    "date": "2021-12-10",
+    "type": "destination"
+  },
+  "source-looker": {
+    "date": "2020-12-25",
+    "type": "source"
+  },
+  "source-mysql": {
+    "date": "2020-10-30",
+    "type": "source"
+  },
+  "source-mailgun": {
+    "date": "2021-12-08",
+    "type": "source"
+  },
+  "source-oura": {
+    "date": "2022-10-28",
+    "type": "source"
+  },
+  "source-oracle": {
+    "date": "2021-04-01",
+    "type": "source"
+  },
+  "source-mongodb": {
+    "date": "2021-03-09",
+    "type": "source"
+  },
+  "source-outreach": {
+    "date": "2021-11-23",
+    "type": "source"
+  },
+  "source-onesignal": {
+    "date": "2021-10-22",
+    "type": "source"
+  },
+  "source-mysql-strict-encrypt": {
+    "date": "2021-10-05",
+    "type": "source"
+  },
+  "source-okta": {
+    "date": "2021-06-02",
+    "type": "source"
+  },
+  "source-orb": {
+    "date": "2022-02-21",
+    "type": "source"
+  },
+  "source-notion": {
+    "date": "2021-11-19",
+    "type": "source"
+  },
+  "source-mongodb-strict-encrypt": {
+    "date": "2021-10-11",
+    "type": "source"
+  },
+  "source-paystack": {
+    "date": "2021-11-02",
+    "type": "source"
+  },
+  "source-mssql": {
+    "date": "2020-11-14",
+    "type": "source"
+  },
+  "source-mssql-strict-encrypt": {
+    "date": "2021-10-08",
+    "type": "source"
+  },
+  "source-oracle-strict-encrypt": {
+    "date": "2021-10-14",
+    "type": "source"
+  },
+  "source-microsoft-teams": {
+    "date": "2020-12-22",
+    "type": "source"
+  },
+  "source-metabase": {
+    "date": "2022-06-23",
+    "type": "source"
+  },
+  "source-lokalise": {
+    "date": "2022-10-28",
+    "type": "source"
+  },
+  "source-nasa": {
+    "date": "2022-10-28",
+    "type": "source"
+  },
+  "source-netsuite": {
+    "date": "2022-09-22",
+    "type": "source"
+  },
+  "source-linnworks": {
+    "date": "2021-11-16",
+    "type": "source"
+  },
+  "source-mailerlite": {
+    "date": "2022-10-28",
+    "type": "source"
+  },
+  "source-kyriba": {
+    "date": "2022-07-13",
+    "type": "source"
+  },
+  "source-marketo": {
+    "date": "2021-09-24",
+    "type": "source"
+  },
+  "source-mailjet-mail": {
+    "date": "2022-10-28",
+    "type": "source"
+  },
+  "source-mixpanel": {
+    "date": "2021-07-20",
+    "type": "source"
+  },
+  "source-mailchimp": {
+    "date": "2020-11-13",
+    "type": "source"
+  },
+  "source-openweather": {
+    "date": "2021-12-16",
+    "type": "source"
+  },
+  "source-pinterest": {
+    "date": "2021-11-09",
+    "type": "source"
+  },
+  "source-omnisend": {
+    "date": "2022-10-31",
+    "type": "source"
+  },
+  "source-qualaroo": {
+    "date": "2021-12-22",
+    "type": "source"
+  },
+  "source-orbit": {
+    "date": "2022-06-27",
+    "type": "source"
+  },
+  "source-plaid": {
+    "date": "2020-12-31",
+    "type": "source"
+  },
+  "source-quickbooks-singer": {
+    "date": "2021-04-17",
+    "type": "source"
+  },
+  "source-pivotal-tracker": {
+    "date": "2022-04-05",
+    "type": "source"
+  },
+  "source-posthog": {
+    "date": "2021-06-09",
+    "type": "source"
+  },
+  "source-my-hours": {
+    "date": "2021-12-21",
+    "type": "source"
+  },
+  "source-paypal-transaction": {
+    "date": "2021-07-09",
+    "type": "source"
+  },
+  "source-postgres": {
+    "date": "2020-11-03",
+    "type": "source"
+  },
+  "source-mongodb-v2": {
+    "date": "2021-09-09",
+    "type": "source"
+  },
+  "source-pardot": {
+    "date": "2021-11-19",
+    "type": "source"
+  },
+  "source-python-http-tutorial": {
+    "date": "2021-04-27",
+    "type": "source"
+  },
+  "source-recurly": {
+    "date": "2020-11-25",
+    "type": "source"
+  },
+  "source-primetric": {
+    "date": "2022-09-22",
+    "type": "source"
+  },
+  "source-pokeapi": {
+    "date": "2021-05-05",
+    "type": "source"
+  },
+  "source-redshift": {
+    "date": "2020-12-01",
+    "type": "source"
+  },
+  "source-rd-station-marketing": {
+    "date": "2022-10-28",
+    "type": "source"
+  },
+  "source-news-api": {
+    "date": "2022-10-27",
+    "type": "source"
+  },
+  "source-scaffold-source-http": {
+    "date": "2021-04-26",
+    "type": "source"
+  },
+  "source-postgres-strict-encrypt": {
+    "date": "2021-09-27",
+    "type": "source"
+  },
+  "source-prestashop": {
+    "date": "2021-07-27",
+    "type": "source"
+  },
+  "source-sentry": {
+    "date": "2021-11-03",
+    "type": "source"
+  },
+  "source-pipedrive": {
+    "date": "2021-07-19",
+    "type": "source"
+  },
+  "source-persistiq": {
+    "date": "2022-01-22",
+    "type": "source"
+  },
+  "source-sendgrid": {
+    "date": "2020-11-24",
+    "type": "source"
+  },
+  "source-shortio": {
+    "date": "2021-08-16",
+    "type": "source"
+  },
+  "source-sonar-cloud": {
+    "date": "2022-10-28",
+    "type": "source"
+  },
+  "source-shopify": {
+    "date": "2021-06-08",
+    "type": "source"
+  },
+  "source-scaffold-java-jdbc": {
+    "date": "2021-06-09",
+    "type": "source"
+  },
+  "source-recharge": {
+    "date": "2021-05-20",
+    "type": "source"
+  },
+  "source-strava": {
+    "date": "2021-10-26",
+    "type": "source"
+  },
+  "source-salesloft": {
+    "date": "2021-10-22",
+    "type": "source"
+  },
+  "source-salesforce": {
+    "date": "2021-09-08",
+    "type": "source"
+  },
+  "source-relational-db": {
+    "date": "2021-07-06",
+    "type": "source"
+  },
+  "source-retently": {
+    "date": "2021-11-02",
+    "type": "source"
+  },
+  "source-snowflake": {
+    "date": "2021-06-11",
+    "type": "source"
+  },
+  "source-stock-ticker-api-tutorial": {
+    "date": "2021-01-07",
+    "type": "source"
+  },
+  "source-s3": {
+    "date": "2021-07-30",
+    "type": "source"
+  },
+  "source-rki-covid": {
+    "date": "2022-05-30",
+    "type": "source"
+  },
+  "source-scaffold-source-python": {
+    "date": "2021-02-17",
+    "type": "source"
+  },
+  "source-tidb": {
+    "date": "2022-04-21",
+    "type": "source"
+  },
+  "source-sftp": {
+    "date": "2022-05-30",
+    "type": "source"
+  },
+  "source-tempo": {
+    "date": "2021-01-12",
+    "type": "source"
+  },
+  "source-talkdesk-explore": {
+    "date": "2022-05-27",
+    "type": "source"
+  },
+  "source-stripe": {
+    "date": "2021-04-07",
+    "type": "source"
+  },
+  "source-search-metrics": {
+    "date": "2021-12-23",
+    "type": "source"
+  },
+  "source-us-census": {
+    "date": "2021-07-20",
+    "type": "source"
+  },
+  "source-sftp-bulk": {
+    "date": "2022-10-28",
+    "type": "source"
+  },
+  "source-typeform": {
+    "date": "2021-07-13",
+    "type": "source"
+  },
+  "source-snapchat-marketing": {
+    "date": "2021-07-29",
+    "type": "source"
+  },
+  "source-xkcd": {
+    "date": "2022-10-22",
+    "type": "source"
+  },
+  "source-youtube-analytics": {
+    "date": "2021-11-19",
+    "type": "source"
+  },
+  "source-tvmaze-schedule": {
+    "date": "2022-10-28",
+    "type": "source"
+  },
+  "source-surveymonkey": {
+    "date": "2021-07-06",
+    "type": "source"
+  },
+  "source-timely": {
+    "date": "2022-07-15",
+    "type": "source"
+  },
+  "source-smartsheets": {
+    "date": "2021-04-15",
+    "type": "source"
+  },
+  "source-webflow": {
+    "date": "2022-06-22",
+    "type": "source"
+  },
+  "source-zendesk-sunshine": {
+    "date": "2021-07-09",
+    "type": "source"
+  },
+  "source-waiteraid": {
+    "date": "2022-10-29",
+    "type": "source"
+  },
+  "source-slack": {
+    "date": "2021-04-20",
+    "type": "source"
+  },
+  "source-tiktok-marketing": {
+    "date": "2021-10-16",
+    "type": "source"
+  },
+  "source-whisky-hunter": {
+    "date": "2022-10-21",
+    "type": "source"
+  },
+  "source-woocommerce": {
+    "date": "2021-10-07",
+    "type": "source"
+  },
+  "source-yandex-metrica": {
+    "date": "2022-09-20",
+    "type": "source"
+  },
+  "source-tplcentral": {
+    "date": "2021-12-28",
+    "type": "source"
+  },
+  "source-wrike": {
+    "date": "2022-09-16",
+    "type": "source"
+  },
+  "source-zoom": {
+    "date": "2022-10-26",
+    "type": "source"
+  },
+  "source-twilio": {
+    "date": "2021-07-04",
+    "type": "source"
+  },
+  "source-zenefits": {
+    "date": "2022-09-22",
+    "type": "source"
+  },
+  "source-trello": {
+    "date": "2021-08-25",
+    "type": "source"
+  },
+  "source-yahoo-finance-price": {
+    "date": "2022-03-24",
+    "type": "source"
+  },
+  "source-workable": {
+    "date": "2022-10-27",
+    "type": "source"
+  },
+  "source-zoho-crm": {
+    "date": "2022-04-06",
+    "type": "source"
+  },
+  "source-zendesk-sell": {
+    "date": "2022-10-29",
+    "type": "source"
+  },
+  "source-square": {
+    "date": "2021-07-08",
+    "type": "source"
+  },
+  "source-zuora": {
+    "date": "2021-08-05",
+    "type": "source"
+  },
+  "source-zendesk-chat": {
+    "date": "2021-05-04",
+    "type": "source"
+  },
+  "source-zendesk-talk": {
+    "date": "2021-04-14",
+    "type": "source"
+  },
+  "source-zenloop": {
+    "date": "2021-11-23",
+    "type": "source"
+  },
+  "source-zendesk-support": {
+    "date": "2021-08-03",
+    "type": "source"
+  }
+}

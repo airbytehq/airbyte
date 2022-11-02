@@ -1,26 +1,6 @@
 
 const { exec } = require('child_process');
 
-
-// exec(`
-// git log --reverse -- /Users/swyx/Desktop/Work/airbyte/airbyte-integrations/connectors/destination-amazon-sqs | awk 'NR>1 {print last} {last=$0}; /^commit/ && ++c==2{exit}'
-// `, (err, stdout, stderr) => {
-//   if (err) {
-//     // node couldn't execute the command
-//     return;
-//   }
-//   // the *entire* stdout and stderr (buffered)
-//   console.log(`stdout: ${stdout}`);
-//   console.log(`stderr: ${stderr}`);
-// })
-// stdout: commit 84b3bf55acff30ee0f571e4b1709b90f0278fdc5
-// Author: Alasdair Brown <sdairs@users.noreply.github.com>
-// Date:   Thu Dec 9 22:21:51 2021 +0000
-
-//     :tada: Destination Amazon SQS: New connector (#7503)
-
-//     * initial commit, working sending single messages
-
 const fs = require('fs');
 const path = require('path');
 // read names of all directories in the current directory
