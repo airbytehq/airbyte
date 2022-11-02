@@ -101,12 +101,12 @@ def get_connector_version(connector):
 
 def get_connector_version_status(connector, version):
     if "strict-encrypt" not in connector:
-        return version
+        return f"`{version}`"
     base_variant_version = get_connector_version(connector.replace("-strict-encrypt", ""))
     if base_variant_version == version:
-        return version
+        return f"`{version}`"
     else:
-        return f"{version} ❌ (mismatch normal: `{base_variant_version}`)"
+        return f"`{version}` ❌ (mismatch normal: `{base_variant_version}`)"
 
 
 def get_connector_changelog_status(connector, version):
