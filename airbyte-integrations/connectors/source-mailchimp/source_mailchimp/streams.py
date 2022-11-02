@@ -95,7 +95,6 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
 class Lists(IncrementalMailChimpStream):
     cursor_field = "date_created"
     data_field = "lists"
-    primary_key = "id"
 
     def path(self, **kwargs) -> str:
         return "lists"
@@ -104,7 +103,6 @@ class Lists(IncrementalMailChimpStream):
 class Campaigns(IncrementalMailChimpStream):
     cursor_field = "create_time"
     data_field = "campaigns"
-    primary_key = "id"
 
     def path(self, **kwargs) -> str:
         return "campaigns"

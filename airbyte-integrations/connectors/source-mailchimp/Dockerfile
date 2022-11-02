@@ -8,6 +8,9 @@ COPY source_mailchimp ./source_mailchimp
 COPY main.py ./
 COPY setup.py ./
 RUN pip install .
+COPY documentation_url.patch.json ./
+COPY spec.patch.json ./
+COPY oauth2.patch.json ./
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./

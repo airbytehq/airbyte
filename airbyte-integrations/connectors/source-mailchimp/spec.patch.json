@@ -1,0 +1,62 @@
+{
+  "required": ["credentials"],
+  "properties": {
+    "credentials": {
+      "type": "object",
+      "title": "Authentication",
+      "oneOf": [
+        {
+          "title": "OAuth2.0",
+          "type": "object",
+          "x-oauth2-provider": "mailchimp",
+          "required": ["auth_type", "access_token"],
+          "properties": {
+            "auth_type": {
+              "type": "string",
+              "const": "oauth2.0",
+              "default": "oauth2.0",
+              "order": 0
+            },
+            "client_id": {
+              "title": "Client ID",
+              "type": "string",
+              "description": "The Client ID of your OAuth application.",
+              "airbyte_secret": true
+            },
+            "client_secret": {
+              "title": "Client Secret",
+              "type": "string",
+              "description": "The Client Secret of your OAuth application.",
+              "airbyte_secret": true
+            },
+            "access_token": {
+              "title": "Access Token",
+              "type": "string",
+              "description": "An access token generated using the above client ID and secret.",
+              "airbyte_secret": true
+            }
+          }
+        },
+        {
+          "type": "object",
+          "title": "API Key",
+          "required": ["auth_type", "apikey"],
+          "properties": {
+            "auth_type": {
+              "type": "string",
+              "const": "apikey",
+              "default": "apikey",
+              "order": 1
+            },
+            "apikey": {
+              "type": "string",
+              "title": "API Key",
+              "description": "Mailchimp API Key. See the docs for more information on how to generate this key: https://go.estuary.dev/tmiNoF",
+              "airbyte_secret": true
+            }
+          }
+        }
+      ]
+    }
+  }
+}

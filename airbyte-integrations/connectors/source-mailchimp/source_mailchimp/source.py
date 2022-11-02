@@ -41,7 +41,7 @@ class MailChimpAuthenticator:
             auth = TokenAuthenticator(token=b64_encoded, auth_method="Basic")
             auth.data_center = apikey.split("-").pop()
 
-        elif auth_type == "OAuth2.0":
+        elif auth_type == "oauth2.0":
             access_token = authorization["access_token"]
             auth = TokenAuthenticator(token=access_token, auth_method="Bearer")
             auth.data_center = self.get_server_prefix(access_token)
