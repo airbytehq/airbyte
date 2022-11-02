@@ -38,7 +38,7 @@ definitions:
             key: "{{ config['api_key'] }}"
             lat: "{{ config['latitude'] }}"
             lon: "{{ config['longitude'] }}"
-            hours: "{{ config['number_of_days'] }}"
+            hours: "{{ config['hours_to_forecast'] }}"
     $options:
       name: "air_quality_forecast"
       primary_key: "datetime"
@@ -58,7 +58,7 @@ definitions:
             key: "{{ config['api_key'] }}"
             lat: "{{ config['latitude'] }}"
             lon: "{{ config['longitude'] }}"
-            hours: "{{ config['number_of_days'] }}"
+            hours: "{{ config['historic_hours'] }}"
     $options:
       name: "air_quality_historical"
       primary_key: "datetime"
@@ -78,7 +78,7 @@ definitions:
             key: "{{ config['api_key'] }}"
             lat: "{{ config['latitude'] }}"
             lon: "{{ config['longitude'] }}"
-            days: "{{ config['number_of_days'] }}"
+            days: "{{ config['days_to_forecast'] }}"
     $options:
       name: "pollen_forecast"
       primary_key: "index_id"
@@ -117,10 +117,9 @@ definitions:
             key: "{{ config['api_key'] }}"
             lat: "{{ config['latitude'] }}"
             lon: "{{ config['longitude'] }}"
-            days: "{{ config['number_of_days'] }}"
+            days: "{{ config['days_to_forecast'] }}"
     $options:
       name: "weather_forecast"
-      primary_key: "datetime"
       path: "/weather/v1/forecast/daily"
 
   wildfire_burnt_area_stream:
@@ -140,7 +139,6 @@ definitions:
             radius: "{{ config['radius'] }}"
     $options:
       name: "wildfire_burnt_area"
-      primary_key: "datetime"
       path: "/fires/v1/burnt-area"
 
   wildfire_locate_stream:
@@ -160,7 +158,6 @@ definitions:
             radius: "{{ config['radius'] }}"
     $options:
       name: "wildfire_locate"
-      primary_key: "datetime"
       path: "/fires/v1/locate-and-track"
 
 
