@@ -3,6 +3,7 @@ import os
 import os.path
 
 CONNECTOR_PATH = "./airbyte-integrations/connectors/"
+DOC_PATH = "docs/integrations/"
 IGNORE_LIST = [
     # Java
     "/src/test/","/src/test-integration/", "/src/testFixtures/",
@@ -97,9 +98,9 @@ def get_connector_version(connector):
 
 def get_connector_changelog_status(connector, version):
     type, name = connector.replace("-strict-encrypt", "").split("-", 1)
-    doc_path = f"docs/integrations/{type}s/{name}.md"
+    doc_path = f"{DOC_PATH}{type}s/{name}.md"
     if not os.path.exists(doc_path):
-        return "⚠"
+        return "⚠ (doc file not found)"
     with open(doc_path) as f:
         after_changelog = False
         for line in f:
@@ -107,7 +108,7 @@ def get_connector_changelog_status(connector, version):
                 after_changelog = True
             if after_changelog and version in line:
                 return "✅"
-    return "⚠"
+    return "⚠ (changelog missing)"
 
 def as_bulleted_markdown_list(items):
     text = ""
