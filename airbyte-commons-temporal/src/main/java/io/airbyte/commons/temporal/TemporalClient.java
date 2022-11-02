@@ -370,12 +370,14 @@ public class TemporalClient {
     final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig()
         .withJobId(String.valueOf(jobId))
         .withAttemptId((long) attempt)
-        .withDockerImage(config.getSourceDockerImage());
+        .withDockerImage(config.getSourceDockerImage())
+        .withProtocolVersion(config.getSourceProtocolVersion());
 
     final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
         .withJobId(String.valueOf(jobId))
         .withAttemptId((long) attempt)
-        .withDockerImage(config.getDestinationDockerImage());
+        .withDockerImage(config.getDestinationDockerImage())
+        .withProtocolVersion(config.getDestinationProtocolVersion());
 
     final StandardSyncInput input = new StandardSyncInput()
         .withNamespaceDefinition(config.getNamespaceDefinition())

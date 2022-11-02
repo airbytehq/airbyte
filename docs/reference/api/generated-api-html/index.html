@@ -494,6 +494,7 @@ font-style: italic;
     "timeUnit" : "minutes"
   },
   "breakingChange" : true,
+  "notifySchemaChanges" : true,
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -658,6 +659,7 @@ font-style: italic;
     "timeUnit" : "minutes"
   },
   "breakingChange" : true,
+  "notifySchemaChanges" : true,
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -778,6 +780,7 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "breakingChange" : true,
+    "notifySchemaChanges" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -841,6 +844,7 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "breakingChange" : true,
+    "notifySchemaChanges" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -962,6 +966,7 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "breakingChange" : true,
+    "notifySchemaChanges" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1025,6 +1030,7 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "breakingChange" : true,
+    "notifySchemaChanges" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1321,6 +1327,7 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "breakingChange" : true,
+    "notifySchemaChanges" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1384,6 +1391,7 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "breakingChange" : true,
+    "notifySchemaChanges" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1679,6 +1687,7 @@ containing the updated stream needs to be sent.</div>
     "timeUnit" : "minutes"
   },
   "breakingChange" : true,
+  "notifySchemaChanges" : true,
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -6082,6 +6091,7 @@ containing the updated stream needs to be sent.</div>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "breakingChange" : true,
   "catalog" : {
     "streams" : [ {
       "stream" : {
@@ -6124,6 +6134,51 @@ containing the updated stream needs to be sent.</div>
       "logLines" : [ "logLines", "logLines" ]
     },
     "succeeded" : true
+  },
+  "catalogDiff" : {
+    "transforms" : [ {
+      "streamDescriptor" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "transformType" : "add_stream",
+      "updateStream" : [ {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { },
+        "breaking" : true
+      }, {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { },
+        "breaking" : true
+      } ]
+    }, {
+      "streamDescriptor" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "transformType" : "add_stream",
+      "updateStream" : [ {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { },
+        "breaking" : true
+      }, {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { },
+        "breaking" : true
+      } ]
+    } ]
   }
 }</code></pre>
 
@@ -6496,6 +6551,7 @@ containing the updated stream needs to be sent.</div>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "breakingChange" : true,
   "catalog" : {
     "streams" : [ {
       "stream" : {
@@ -6538,6 +6594,51 @@ containing the updated stream needs to be sent.</div>
       "logLines" : [ "logLines", "logLines" ]
     },
     "succeeded" : true
+  },
+  "catalogDiff" : {
+    "transforms" : [ {
+      "streamDescriptor" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "transformType" : "add_stream",
+      "updateStream" : [ {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { },
+        "breaking" : true
+      }, {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { },
+        "breaking" : true
+      } ]
+    }, {
+      "streamDescriptor" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "transformType" : "add_stream",
+      "updateStream" : [ {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { },
+        "breaking" : true
+      }, {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { },
+        "breaking" : true
+      } ]
+    } ]
   }
 }</code></pre>
 
@@ -8483,16 +8584,6 @@ containing the updated stream needs to be sent.</div>
       } ]
     } ]
   },
-  "resourceRequirements" : {
-    "cpu_limit" : "cpu_limit",
-    "memory_request" : "memory_request",
-    "memory_limit" : "memory_limit",
-    "cpu_request" : "cpu_request"
-  },
-  "schedule" : {
-    "units" : 0,
-    "timeUnit" : "minutes"
-  },
   "operations" : [ {
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -8535,6 +8626,28 @@ containing the updated stream needs to be sent.</div>
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ],
   "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "notifySchemaChanges" : true,
+  "namespaceFormat" : "${SOURCE_NAMESPACE}",
+  "scheduleData" : {
+    "cron" : {
+      "cronExpression" : "cronExpression",
+      "cronTimeZone" : "cronTimeZone"
+    },
+    "basicSchedule" : {
+      "units" : 6,
+      "timeUnit" : "minutes"
+    }
+  },
+  "resourceRequirements" : {
+    "cpu_limit" : "cpu_limit",
+    "memory_request" : "memory_request",
+    "memory_limit" : "memory_limit",
+    "cpu_request" : "cpu_request"
+  },
+  "schedule" : {
+    "units" : 0,
+    "timeUnit" : "minutes"
+  },
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -8570,18 +8683,7 @@ containing the updated stream needs to be sent.</div>
     } ]
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "namespaceFormat" : "${SOURCE_NAMESPACE}",
-  "operationIds" : [ null, null ],
-  "scheduleData" : {
-    "cron" : {
-      "cronExpression" : "cronExpression",
-      "cronTimeZone" : "cronTimeZone"
-    },
-    "basicSchedule" : {
-      "units" : 6,
-      "timeUnit" : "minutes"
-    }
-  }
+  "operationIds" : [ null, null ]
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -8708,16 +8810,6 @@ containing the updated stream needs to be sent.</div>
       } ]
     } ]
   },
-  "resourceRequirements" : {
-    "cpu_limit" : "cpu_limit",
-    "memory_request" : "memory_request",
-    "memory_limit" : "memory_limit",
-    "cpu_request" : "cpu_request"
-  },
-  "schedule" : {
-    "units" : 0,
-    "timeUnit" : "minutes"
-  },
   "operations" : [ {
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -8760,6 +8852,28 @@ containing the updated stream needs to be sent.</div>
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ],
   "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "notifySchemaChanges" : true,
+  "namespaceFormat" : "${SOURCE_NAMESPACE}",
+  "scheduleData" : {
+    "cron" : {
+      "cronExpression" : "cronExpression",
+      "cronTimeZone" : "cronTimeZone"
+    },
+    "basicSchedule" : {
+      "units" : 6,
+      "timeUnit" : "minutes"
+    }
+  },
+  "resourceRequirements" : {
+    "cpu_limit" : "cpu_limit",
+    "memory_request" : "memory_request",
+    "memory_limit" : "memory_limit",
+    "cpu_request" : "cpu_request"
+  },
+  "schedule" : {
+    "units" : 0,
+    "timeUnit" : "minutes"
+  },
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -8795,18 +8909,7 @@ containing the updated stream needs to be sent.</div>
     } ]
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "namespaceFormat" : "${SOURCE_NAMESPACE}",
-  "operationIds" : [ null, null ],
-  "scheduleData" : {
-    "cron" : {
-      "cronExpression" : "cronExpression",
-      "cronTimeZone" : "cronTimeZone"
-    },
-    "basicSchedule" : {
-      "units" : 6,
-      "timeUnit" : "minutes"
-    }
-  }
+  "operationIds" : [ null, null ]
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -9181,16 +9284,6 @@ containing the updated stream needs to be sent.</div>
       } ]
     } ]
   },
-  "resourceRequirements" : {
-    "cpu_limit" : "cpu_limit",
-    "memory_request" : "memory_request",
-    "memory_limit" : "memory_limit",
-    "cpu_request" : "cpu_request"
-  },
-  "schedule" : {
-    "units" : 0,
-    "timeUnit" : "minutes"
-  },
   "operations" : [ {
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -9233,6 +9326,28 @@ containing the updated stream needs to be sent.</div>
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ],
   "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "notifySchemaChanges" : true,
+  "namespaceFormat" : "${SOURCE_NAMESPACE}",
+  "scheduleData" : {
+    "cron" : {
+      "cronExpression" : "cronExpression",
+      "cronTimeZone" : "cronTimeZone"
+    },
+    "basicSchedule" : {
+      "units" : 6,
+      "timeUnit" : "minutes"
+    }
+  },
+  "resourceRequirements" : {
+    "cpu_limit" : "cpu_limit",
+    "memory_request" : "memory_request",
+    "memory_limit" : "memory_limit",
+    "cpu_request" : "cpu_request"
+  },
+  "schedule" : {
+    "units" : 0,
+    "timeUnit" : "minutes"
+  },
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -9268,18 +9383,7 @@ containing the updated stream needs to be sent.</div>
     } ]
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "namespaceFormat" : "${SOURCE_NAMESPACE}",
-  "operationIds" : [ null, null ],
-  "scheduleData" : {
-    "cron" : {
-      "cronExpression" : "cronExpression",
-      "cronTimeZone" : "cronTimeZone"
-    },
-    "basicSchedule" : {
-      "units" : 6,
-      "timeUnit" : "minutes"
-    }
-  }
+  "operationIds" : [ null, null ]
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -10056,6 +10160,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#LogType"><code>LogType</code> - </a></li>
     <li><a href="#LogsRequestBody"><code>LogsRequestBody</code> - </a></li>
     <li><a href="#NamespaceDefinitionType"><code>NamespaceDefinitionType</code> - </a></li>
+    <li><a href="#NonBreakingChangesPreference"><code>NonBreakingChangesPreference</code> - </a></li>
     <li><a href="#NotFoundKnownExceptionInfo"><code>NotFoundKnownExceptionInfo</code> - </a></li>
     <li><a href="#Notification"><code>Notification</code> - </a></li>
     <li><a href="#NotificationRead"><code>NotificationRead</code> - </a></li>
@@ -10370,6 +10475,8 @@ containing the updated stream needs to be sent.</div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
+<div class="param">notifySchemaChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">nonBreakingChangesPreference (optional)</div><div class="param-desc"><span class="param-type"><a href="#NonBreakingChangesPreference">NonBreakingChangesPreference</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10400,6 +10507,8 @@ containing the updated stream needs to be sent.</div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
 <div class="param">breakingChange </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">notifySchemaChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">nonBreakingChangesPreference (optional)</div><div class="param-desc"><span class="param-type"><a href="#NonBreakingChangesPreference">NonBreakingChangesPreference</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10519,6 +10628,9 @@ containing the updated stream needs to be sent.</div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
+<div class="param">notifySchemaChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">nonBreakingChangesPreference (optional)</div><div class="param-desc"><span class="param-type"><a href="#NonBreakingChangesPreference">NonBreakingChangesPreference</a></span>  </div>
+<div class="param">breakingChange (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11021,6 +11133,12 @@ containing the updated stream needs to be sent.</div>
           </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="NonBreakingChangesPreference"><code>NonBreakingChangesPreference</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="NotFoundKnownExceptionInfo"><code>NotFoundKnownExceptionInfo</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -11396,6 +11514,8 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
       <div class="param">catalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#SynchronousJobRead">SynchronousJobRead</a></span>  </div>
 <div class="param">catalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">catalogDiff (optional)</div><div class="param-desc"><span class="param-type"><a href="#CatalogDiff">CatalogDiff</a></span>  </div>
+<div class="param">breakingChange (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11403,6 +11523,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">connectionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">disable_cache (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -11589,6 +11710,8 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">catalogDiff (optional)</div><div class="param-desc"><span class="param-type"><a href="#CatalogDiff">CatalogDiff</a></span>  </div>
 <div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
 <div class="param">schemaChange </div><div class="param-desc"><span class="param-type"><a href="#SchemaChange">SchemaChange</a></span>  </div>
+<div class="param">notifySchemaChanges </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">nonBreakingChangesPreference </div><div class="param-desc"><span class="param-type"><a href="#NonBreakingChangesPreference">NonBreakingChangesPreference</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11625,6 +11748,8 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#WebBackendOperationCreateOrUpdate">array[WebBackendOperationCreateOrUpdate]</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
+<div class="param">notifySchemaChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">nonBreakingChangesPreference (optional)</div><div class="param-desc"><span class="param-type"><a href="#NonBreakingChangesPreference">NonBreakingChangesPreference</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

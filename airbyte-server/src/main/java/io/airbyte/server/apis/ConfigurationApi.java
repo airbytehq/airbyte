@@ -116,9 +116,7 @@ import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
-import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
-import io.airbyte.server.handlers.LogsHandler;
 import io.airbyte.server.handlers.OAuthHandler;
 import io.airbyte.server.handlers.OpenApiConfigHandler;
 import io.airbyte.server.handlers.OperationsHandler;
@@ -136,7 +134,6 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
 import java.net.http.HttpClient;
-import java.nio.file.Path;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
@@ -157,35 +154,31 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   private final JobHistoryHandler jobHistoryHandler;
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
   private final WebBackendGeographiesHandler webBackendGeographiesHandler;
-  private final HealthCheckHandler healthCheckHandler;
-  private final LogsHandler logsHandler;
   private final OpenApiConfigHandler openApiConfigHandler;
   private final OAuthHandler oAuthHandler;
-  private final WorkerEnvironment workerEnvironment;
-  private final LogConfigs logConfigs;
-  private final Path workspaceRoot;
 
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
                           final SecretsRepositoryReader secretsRepositoryReader,
                           final SecretsRepositoryWriter secretsRepositoryWriter,
-
                           final SynchronousSchedulerClient synchronousSchedulerClient,
                           final StatePersistence statePersistence,
                           final TrackingClient trackingClient,
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
                           final AirbyteVersion airbyteVersion,
-                          final Path workspaceRoot,
                           final HttpClient httpClient,
                           final EventRunner eventRunner) {
-    this.workerEnvironment = workerEnvironment;
-    this.logConfigs = logConfigs;
-    this.workspaceRoot = workspaceRoot;
 
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
 
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
+
+    connectionsHandler = new ConnectionsHandler(
+        configRepository,
+        workspaceHelper,
+        trackingClient,
+        eventRunner);
 
     schedulerHandler = new SchedulerHandler(
         configRepository,
@@ -195,14 +188,10 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         jobPersistence,
         workerEnvironment,
         logConfigs,
-        eventRunner);
+        eventRunner,
+        connectionsHandler);
 
     stateHandler = new StateHandler(statePersistence);
-    connectionsHandler = new ConnectionsHandler(
-        configRepository,
-        workspaceHelper,
-        trackingClient,
-        eventRunner);
     sourceHandler = new SourceHandler(
         configRepository,
         secretsRepositoryReader,
@@ -238,8 +227,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         eventRunner,
         configRepository);
     webBackendGeographiesHandler = new WebBackendGeographiesHandler();
-    healthCheckHandler = new HealthCheckHandler(configRepository);
-    logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
   }
 
@@ -291,9 +278,13 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     });
   }
 
+  /**
+   * This implementation has been moved to {@link AttemptApiController}. Since the path of
+   * {@link AttemptApiController} is more granular, it will override this implementation
+   */
   @Override
   public NotificationRead tryNotificationConfig(final Notification notification) {
-    return execute(() -> workspacesHandler.tryNotification(notification));
+    throw new NotImplementedException();
   }
 
   // SOURCE
@@ -893,41 +884,69 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCreate));
   }
 
+  /**
+   * This implementation has been moved to {@link JobsApiController}. Since the path of
+   * {@link JobsApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) {
-    return execute(() -> schedulerHandler.cancelJob(jobIdRequestBody));
+    throw new NotImplementedException();
   }
 
   // JOB HISTORY
 
+  /**
+   * This implementation has been moved to {@link JobsApiController}. Since the path of
+   * {@link JobsApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobReadList listJobsFor(final JobListRequestBody jobListRequestBody) {
-    return execute(() -> jobHistoryHandler.listJobsFor(jobListRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link JobsApiController}. Since the path of
+   * {@link JobsApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) {
-    return execute(() -> jobHistoryHandler.getJobInfo(jobIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link JobsApiController}. Since the path of
+   * {@link JobsApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobInfoLightRead getJobInfoLight(final JobIdRequestBody jobIdRequestBody) {
-    return execute(() -> jobHistoryHandler.getJobInfoLight(jobIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link JobsApiController}. Since the path of
+   * {@link JobsApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobDebugInfoRead getJobDebugInfo(final JobIdRequestBody jobIdRequestBody) {
-    return execute(() -> jobHistoryHandler.getJobDebugInfo(jobIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link JobsApiController}. Since the path of
+   * {@link JobsApiController} is more granular, it will override this implementation
+   */
   @Override
   public AttemptNormalizationStatusReadList getAttemptNormalizationStatusesForJob(final JobIdRequestBody jobIdRequestBody) {
     return execute(() -> jobHistoryHandler.getAttemptNormalizationStatuses(jobIdRequestBody));
   }
 
+  /**
+   * This implementation has been moved to {@link LogsApiController}. Since the path of
+   * {@link LogsApiController} is more granular, it will override this implementation
+   */
   @Override
   public File getLogs(final LogsRequestBody logsRequestBody) {
-    return execute(() -> logsHandler.getLogs(workspaceRoot, workerEnvironment, logConfigs, logsRequestBody));
+    throw new NotImplementedException();
   }
 
   @Override
@@ -936,9 +955,13 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   // HEALTH
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
   public HealthCheckRead getHealthCheck() {
-    return healthCheckHandler.health();
+    throw new NotImplementedException();
   }
 
   // WEB BACKEND
