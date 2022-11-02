@@ -57,7 +57,7 @@
 
   &:hover,
   &:focus-visible {
-    background: colors.$blue-50;
+    background: colors.$grey-100;
     transition: variables.$transition-out;
   }
 
@@ -73,11 +73,11 @@
   }
 
   &.activeChild {
-    background: colors.$blue-50;
+    background: colors.$blue-30;
 
     &:hover,
     &:focus-visible {
-      background: colors.$dark-blue-400;
+      background: colors.$blue-100;
     }
   }
 }
