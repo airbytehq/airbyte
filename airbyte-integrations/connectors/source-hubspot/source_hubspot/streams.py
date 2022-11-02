@@ -1157,7 +1157,7 @@ class Deals(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "companies", "line_items"]
     primary_key = "id"
-    scopes = {"crm.objects.deals.read"}
+    scopes = {"contacts", "crm.objects.deals.read"}
 
 
 class DealPipelines(Stream):
@@ -1475,7 +1475,7 @@ class Companies(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts"]
     primary_key = "id"
-    scopes = {"crm.objects.companies.read"}
+    scopes = {"crm.objects.contacts.read", "crm.objects.companies.read"}
 
 
 class Contacts(CRMSearchStream):
@@ -1483,7 +1483,7 @@ class Contacts(CRMSearchStream):
     last_modified_field = "lastmodifieddate"
     associations = ["contacts", "companies"]
     primary_key = "id"
-    scopes = {"crm.objects.contacts.read"}
+    scopes = {"crm.objects.contacts.read", "crm.objects.contacts.read"}
 
 
 class EngagementsCalls(CRMSearchStream):
@@ -1558,4 +1558,4 @@ class Quotes(CRMObjectIncrementalStream):
     entity = "quote"
     associations = ["deals"]
     primary_key = "id"
-    scopes = {"crm.objects.quotes.read"}
+    scopes = {"crm.objects.quotes.read", "crm.objects.deals.read"}
