@@ -11,6 +11,7 @@ import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.NormalizationSummary;
+import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.persistence.job.models.AttemptNormalizationStatus;
@@ -37,8 +38,9 @@ public interface JobPersistence {
   List<SyncStats> getSyncStats(Long attemptId) throws IOException;
 
   /**
-   * Return the id of the record in the attempt table corresponding to that job and attempt combination. This is useful to index into other attempt-scoped
-   * metadata.
+   * Return the id of the record in the attempt table corresponding to that job and attempt
+   * combination. This is useful to index into other attempt-scoped metadata.
+   *
    * @param jobId
    * @param attemptNumber
    * @return
@@ -146,7 +148,13 @@ public interface JobPersistence {
    */
   void writeOutput(long jobId, int attemptNumber, JobOutput output) throws IOException;
 
-  void writeSyncStats(long jobId, int attemptNumber, long estimatedRecords, long estimatedBytes, long recordsEmitted, long bytesEmitted)
+  void writeSyncStats(long jobId,
+                      int attemptNumber,
+                      long estimatedRecords,
+                      long estimatedBytes,
+                      long recordsEmitted,
+                      long bytesEmitted,
+                      List<StreamSyncStats> streamStats)
       throws IOException;
 
   /**
