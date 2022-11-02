@@ -28,6 +28,7 @@ The Airbyte Protocol is versioned independently of the Airbyte Platform, and the
 
 | Version  | Date of Change | Pull Request(s)                                                                                                     | Subject                                                                          |
 | :------- | :------------- | :------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------- |
+| `v0.3.2` | 2022-10-128    | [xxx](https://github.com/airbytehq/airbyte/pull/xxx)                                                                | `AirbyteEstimateTraceMessage` added                                              |
 | `v0.3.1` | 2022-10-12     | [17907](https://github.com/airbytehq/airbyte/pull/17907)                                                            | `AirbyteControlMessage.ConnectorConfig` added                                    |
 | `v0.3.0` | 2022-09-09     | [16479](https://github.com/airbytehq/airbyte/pull/16479)                                                            | `AirbyteLogMessage.stack_trace` added                                            |
 | `v0.2.0` | 2022-06-10     | [13573](https://github.com/airbytehq/airbyte/pull/13573) & [12586](https://github.com/airbytehq/airbyte/pull/12586) | `STREAM` and `GLOBAL` STATE messages                                             |
@@ -759,7 +760,7 @@ AirbyteLogMessage:
 
 ## AirbyteTraceMessage
 
-The trace message allows an Actor to emit metadata about the runtime of the Actor. As currently implemented, it allows an Actor to surface information about errors. This message is designed to grow to handle other use cases, including progress and performance metrics.
+The trace message allows an Actor to emit metadata about the runtime of the Actor, such as errors or estimates. This message is designed to grow to handle other use cases, including additonal performance metrics.
 
 ```yaml
 AirbyteTraceMessage:
@@ -775,12 +776,16 @@ AirbyteTraceMessage:
       type: string
       enum:
         - ERROR
+        - ESTIMATE
     emitted_at:
       description: "the time in ms that the message was emitted"
       type: number
     error:
       description: "error trace message: the error object"
       "$ref": "#/definitions/AirbyteErrorTraceMessage"
+    estimate:
+      description: "Estimate trace message: a guess at how much data will be produced in this sync"
+      "$ref": "#/definitions/AirbyteEstimateTraceMessage"
 AirbyteErrorTraceMessage:
   type: object
   additionalProperties: true
@@ -802,7 +807,46 @@ AirbyteErrorTraceMessage:
       enum:
         - system_error
         - config_error
+AirbyteEstimateTraceMessage:
+  type: object
+  additionalProperties: true
+  required:
+    - name
+    - type
+  properties:
+    name:
+      description: The name of the stream
+      type: string
+    type:
+      description: The type of estimate
+      type: string
+      enum:
+        - STREAM
+        - SYNC
+    namespace:
+      description: The namespace of the stream
+      type: string
+    row_estimate:
+      description: The estimated number of rows to be emitted by this sync for this stream
+      type: integer
+    byte_estimate:
+      description: The estimated number of bytes to be emitted by this sync for this stream
+      type: integer
 ```
+
+### AirbyteErrorTraceMessage
+
+Error Trace Messages are used when a sync is about to fail and the connector can provide meaningful information to the orhcestrator or user about what to do next.
+
+Of note, an `internal_message` might be an exception code, but an `external_message` is meant to be user-facing, e.g. "Your API Key is invalid".
+
+Syncs can fail for multiple reasons, and therefore multiple `AirbyteErrorTraceMessage` can be sent from a connector.
+
+### AirbyteEstimateTraceMessage
+
+Estimate Trace Messages are used by connectors to inform the orchestrator about how much data they expect to move within the sync. This ise useful to present the user with estimates of the time remaining in the sync, or percentage complete. An example of this would be for every stream about to be synced from a databse to provde a `COUNT (*) from {table_name} where updated_at > {state}` to provide an estimate of the rows to be sent in this sync.
+
+`AirbyteEstimateTraceMessage` should be emitted early in th sync to provide an early estimate of the sync's duration. Multiple `AirbyteEstimateTraceMessage`s can be sent for the same stream, and an updated estimate will replace the previous value.
 
 ## AirbyteControlMessage
 

@@ -81,6 +81,7 @@ class AirbyteLogMessage(BaseModel):
 
 class TraceType(Enum):
     ERROR = "ERROR"
+    ESTIMATE = "ESTIMATE"
 
 
 class FailureType(Enum):
@@ -96,6 +97,28 @@ class AirbyteErrorTraceMessage(BaseModel):
     internal_message: Optional[str] = Field(None, description="The internal error that caused the failure")
     stack_trace: Optional[str] = Field(None, description="The full stack trace of the error")
     failure_type: Optional[FailureType] = Field(None, description="The type of error")
+
+
+class Type1(Enum):
+    STREAM = "STREAM"
+    SYNC = "SYNC"
+
+
+class AirbyteEstimateTraceMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    name: str = Field(..., description="The name of the stream")
+    type: Type1 = Field(..., description="The type of estimate")
+    namespace: Optional[str] = Field(None, description="The namespace of the stream")
+    row_estimate: Optional[int] = Field(
+        None,
+        description="The estimated number of rows to be emitted by this sync for this stream",
+    )
+    byte_estimate: Optional[int] = Field(
+        None,
+        description="The estimated number of bytes to be emitted by this sync for this stream",
+    )
 
 
 class OrchestratorType(Enum):
@@ -186,7 +209,7 @@ class OAuthConfigSpecification(BaseModel):
     )
     complete_oauth_server_output_specification: Optional[Dict[str, Any]] = Field(
         None,
-        description="OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations that\nalso need to be merged back into the connector configuration at runtime.\nThis is a subset configuration of `complete_oauth_server_input_specification` that filters fields out to retain only the ones that\nare necessary for the connector to function with OAuth. (some fields could be used during oauth flows but not needed afterwards, therefore\nthey would be listed in the `complete_oauth_server_input_specification` but not `complete_oauth_server_output_specification`)\nMust be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the\nconnector when using OAuth flow APIs.\nThese fields are to be merged back to `ConnectorSpecification.connectionSpecification`.\nFor each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,\n\nExamples:\n\n      complete_oauth_server_output_specification={\n        client_id: {\n          type: string,\n          path_in_connector_config: ['credentials', 'client_id']\n        },\n        client_secret: {\n          type: string,\n          path_in_connector_config: ['credentials', 'client_secret']\n        }\n      }",
+        description="OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations that\nalso need to be merged back into the connector configuration at runtime.\nThis is a subset configuration of `complete_oauth_server_input_specification` that filters fields out to retain only the ones that\nare necessary for the connector to function with OAuth. (some fields could be used during oauth flows but not needed afterwards, therefore\nthey would be listed in the `complete_oauth_server_input_specification` but not `complete_oauth_server_output_specification`)\nMust be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Worksdefaultrepace Admins to be used by the\nconnector when using OAuth flow APIs.\nThese fields are to be merged back to `ConnectorSpecification.connectionSpecification`.\nFor each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,\n\nExamples:\n\n      complete_oauth_server_output_specification={\n        client_id: {\n          type: string,\n          path_in_connector_config: ['credentials', 'client_id']\n        },\n        client_secret: {\n          type: string,\n          path_in_connector_config: ['credentials', 'client_secret']\n        }\n      }",
     )
 
 
@@ -213,6 +236,10 @@ class AirbyteTraceMessage(BaseModel):
     type: TraceType = Field(..., description="the type of trace message", title="trace type")
     emitted_at: float = Field(..., description="the time in ms that the message was emitted")
     error: Optional[AirbyteErrorTraceMessage] = Field(None, description="error trace message: the error object")
+    estimate: Optional[AirbyteEstimateTraceMessage] = Field(
+        None,
+        description="Estimate trace message: a guess at how much data will be produced in this sync",
+    )
 
 
 class AirbyteControlMessage(BaseModel):
