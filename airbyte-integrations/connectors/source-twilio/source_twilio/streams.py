@@ -201,15 +201,10 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        unsorted_records = []
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
             record[self.cursor_field] = pendulum.parse(record[self.cursor_field], strict=False).to_iso8601_string()
-            unsorted_records.append(record)
-        sorted_records = sorted(unsorted_records, key=lambda x: x[self.cursor_field])
-        for record in sorted_records:
-            if record[self.cursor_field] >= self.state.get(self.cursor_field, self._start_date):
-                self._cursor_value = record[self.cursor_field]
-                yield record
+            self._cursor_value = max(self.state.get(self.cursor_field, self._start_date), record[self.cursor_field])
+            yield record
 
 
 class TwilioNestedStream(TwilioStream):
