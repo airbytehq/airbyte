@@ -38,4 +38,4 @@ This Source is capable of syncing the following core Streams:
 
 | Version | Date       | Pull Request                                             | Subject                       |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
-| 0.1.0   | 2022-10-22 | [18334](https://github.com/airbytehq/airbyte/pull/18334) | Add Reply.io Source Connector |
+| 0.1.0   | 2022-10-22 | [18844](https://github.com/airbytehq/airbyte/pull/18844) | Add Reply.io Source Connector |
