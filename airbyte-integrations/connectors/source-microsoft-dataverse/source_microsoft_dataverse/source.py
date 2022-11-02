@@ -22,7 +22,7 @@ class SourceMicrosoftDataverse(AbstractSource):
         response_json = response.json()
         streams = []
         for entity in response_json["value"]:
-            schema = {"properties": {"_ab_cdc_updated_at": {"type": "string"}, "_ab_cdc_deleted_at": {"type": ["null", "string"]}}}
+            schema = {"properties":{}}
             for attribute in entity["Attributes"]:
                 attribute_type = convert_dataverse_type(attribute["AttributeType"])
 
@@ -31,13 +31,15 @@ class SourceMicrosoftDataverse(AbstractSource):
 
                 schema["properties"][attribute["LogicalName"]] = attribute_type
 
-            sync_modes = [SyncMode.full_refresh]
             if entity["ChangeTrackingEnabled"]:
-                sync_modes.append(SyncMode.incremental)
-
-            stream = AirbyteStream(name=entity["LogicalName"], json_schema=schema, supported_sync_modes=sync_modes)
-            stream.source_defined_cursor = True
-            stream.default_cursor_field = ["modifiedon"]
+                schema["properties"].update({"_ab_cdc_updated_at": {"type": "string"}, "_ab_cdc_deleted_at": {"type": ["null", "string"]}})
+                stream = AirbyteStream(name=entity["LogicalName"], json_schema=schema, supported_sync_modes=[SyncMode.full_refresh,SyncMode.incremental])
+                stream.source_defined_cursor = True
+                stream.default_cursor_field = ["modifiedon"]
+            else:
+                stream = AirbyteStream(name=entity["LogicalName"], json_schema=schema, supported_sync_modes=[SyncMode.full_refresh])
+                stream.source_defined_cursor = None
+                stream.default_cursor_field = None
             stream.source_defined_primary_key = [[entity["PrimaryIdAttribute"]]]
             streams.append(stream)
         return AirbyteCatalog(streams=streams)
