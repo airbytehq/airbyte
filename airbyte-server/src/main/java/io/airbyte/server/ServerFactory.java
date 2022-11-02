@@ -195,10 +195,10 @@ public interface ServerFactory {
           DestinationDefinitionSpecificationApiController.class,
           DestinationOauthApiController.class,
           HealthApiController.class,
-          SourceOauthApiFactory.class,
           JobsApiController.class,
           LogsApiController.class,
-          NotificationsApiController.class);
+          NotificationsApiController.class,
+          SourceOauthApiFactory.class);
 
       final Set<Object> components = Set.of(
           new CorsFilter(),
@@ -211,10 +211,10 @@ public interface ServerFactory {
           new DestinationDefinitionSpecificationApiBinder(),
           new DestinationOauthApiBinder(),
           new HealthApiBinder(),
-          new SourceOauthApiBinder(),
           new JobsApiBinder(),
           new LogsApiBinder(),
-          new NotificationApiBinder());
+          new NotificationApiBinder(),
+          new SourceOauthApiBinder());
 
       // construct server
       return new ServerApp(airbyteVersion, componentClasses, components);
