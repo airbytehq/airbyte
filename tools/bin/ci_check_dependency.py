@@ -93,23 +93,24 @@ def get_depended_connectors(changed_modules, all_build_gradle_files):
 
 
 def get_connector_version(connector):
-    with open(f"{CONNECTOR_PATH}/{connector}/Dockerfile") as f:
+    dockerfile_path = f"{CONNECTOR_PATH}/{connector}/Dockerfile"
+    with open(dockerfile_path) as f:
         for line in f:
             if "io.airbyte.version" in line:
-                return line.split("=")[1].strip()
+                return line.split("=")[1].strip(), dockerfile_path
 
 
-def get_connector_version_status(connector, version):
+def get_connector_version_status(connector, version, dockerfile_path):
     if "strict-encrypt" not in connector:
-        return f"`{version}`"
+        return f"[`{version}`]({dockerfile_path})"
     if connector == "source-mongodb-strict-encrypt":
-        base_variant_version = get_connector_version("source-mongodb-v2")
+        base_variant_version, _ = get_connector_version("source-mongodb-v2")
     else:
-        base_variant_version = get_connector_version(connector.replace("-strict-encrypt", ""))
+        base_variant_version, _ = get_connector_version(connector.replace("-strict-encrypt", ""))
     if base_variant_version == version:
-        return f"`{version}`"
+        return f"[`{version}`]({dockerfile_path})"
     else:
-        return f"❌ `{version}`<br/>(mismatch: `{base_variant_version}`)"
+        return f"❌ [`{version}`]({dockerfile_path})<br/>(mismatch: `{base_variant_version}`)"
 
 
 def get_connector_changelog_status(connector, version):
@@ -136,8 +137,8 @@ def as_bulleted_markdown_list(items):
 def as_markdown_table_rows(connectors, definitions):
     text = ""
     for connector in connectors:
-        version = get_connector_version(connector)
-        version_status = get_connector_version_status(connector, version)
+        version, dockerfile_path = get_connector_version(connector)
+        version_status = get_connector_version_status(connector, version, dockerfile_path)
         changelog_status = get_connector_changelog_status(connector, version)
         definition = next((x for x in definitions if x["dockerRepository"].endswith(connector)), None)
         if definition is None:
