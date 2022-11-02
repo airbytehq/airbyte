@@ -28,34 +28,48 @@ def test_request_params(patch_base_class):
 
 def test_next_page_token(patch_base_class):
     stream = RssStream()
-    # TODO: replace this with your input parameters
     inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
     expected_token = None
     assert stream.next_page_token(**inputs) == expected_token
 
 
 def test_parse_response(patch_base_class):
     stream = RssStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected parced object
-    expected_parsed_object = {}
-    assert next(stream.parse_response(**inputs)) == expected_parsed_object
+
+    class SampleResponse:
+        text = """""
+                <?xml version="1.0" encoding="utf-8" ?>
+                <rss version="2.0">
+                    <channel>
+                        <item>
+                            <title>Test Title</title>
+                            <link>http://testlink</link>
+                            <description>Test Description</description>
+                            <pubDate>Fri, 28 Oct 2022 11:16 EDT</pubDate>
+                        </item>
+                    </channel>
+                </rss>
+                """
+
+    expected_parsed_object = {
+        "title": "Test Title",
+        "link": "http://testlink",
+        "description": "Test Description",
+        "published": "2022-10-28T16:16:00+00:00"
+    }
+
+    assert next(stream.parse_response(response=SampleResponse(), stream_state={})) == expected_parsed_object
 
 
 def test_request_headers(patch_base_class):
     stream = RssStream()
-    # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
     expected_headers = {}
     assert stream.request_headers(**inputs) == expected_headers
 
 
 def test_http_method(patch_base_class):
     stream = RssStream()
-    # TODO: replace this with your expected http request method
     expected_method = "GET"
     assert stream.http_method == expected_method
 

@@ -18,24 +18,32 @@ def patch_incremental_base_class(mocker):
 
 def test_cursor_field(patch_incremental_base_class):
     stream = IncrementalRssStream()
-    # TODO: replace this with your expected cursor field
-    expected_cursor_field = []
+    expected_cursor_field = "published"
     assert stream.cursor_field == expected_cursor_field
 
 
 def test_get_updated_state(patch_incremental_base_class):
     stream = IncrementalRssStream()
-    # TODO: replace this with your input parameters
-    inputs = {"current_stream_state": None, "latest_record": None}
-    # TODO: replace this with your expected updated stream state
-    expected_state = {}
+
+    inputs = {
+        "current_stream_state": {
+            "published": "2022-10-24T16:16:00+00:00"
+        },
+        "latest_record": {
+            "published": "2022-10-30T16:16:00+00:00"
+        }
+    }
+
+    expected_state = {
+        "published": "2022-10-30T16:16:00+00:00"
+    }
     assert stream.get_updated_state(**inputs) == expected_state
 
 
 def test_stream_slices(patch_incremental_base_class):
     stream = IncrementalRssStream()
     # TODO: replace this with your input parameters
-    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
+    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": ["published"], "stream_state": {}}
     # TODO: replace this with your expected stream slices list
     expected_stream_slice = [None]
     assert stream.stream_slices(**inputs) == expected_stream_slice
@@ -54,6 +62,5 @@ def test_source_defined_cursor(patch_incremental_base_class):
 
 def test_stream_checkpoint_interval(patch_incremental_base_class):
     stream = IncrementalRssStream()
-    # TODO: replace this with your expected checkpoint interval
     expected_checkpoint_interval = None
     assert stream.state_checkpoint_interval == expected_checkpoint_interval
