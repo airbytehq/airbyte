@@ -44,8 +44,10 @@ For more information about the grading system, see [Product Release Stages](http
 | [ClickHouse](sources/clickhouse.md)                                                         | Alpha                | Yes                 |
 | [Close.com](sources/close-com.md)                                                           | Alpha                | Yes                 |
 | [CockroachDB](sources/cockroachdb.md)                                                       | Alpha                | No                  |
+| [Coinmarketcap](sources/coinmarketcap.md)                                                   | Alpha                | Yes                 |
 | [Commercetools](sources/commercetools.md)                                                   | Alpha                | No                  |
 | [Confluence](sources/confluence.md)                                                         | Alpha                | No                  |
+| [ConvertKit](sources/convertkit.md)                                                         | Alpha                | No                  |
 | [Courier](sources/courier.md)                                                               | Alpha                | No                  |
 | [Customer.io](sources/customer-io.md)                                                       | Alpha                | No                  |
 | [Db2](sources/db2.md)                                                                       | Alpha                | No                  |
@@ -76,6 +78,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Google Directory](sources/google-directory.md)                                             | Alpha                | Yes                 |
 | [Google Search Console](sources/google-search-console.md)                                   | Generally Available  | Yes                 |
 | [Google Sheets](sources/google-sheets.md)                                                   | Generally Available  | Yes                 |
+| [Google Webfonts](sources/google-webfonts.md)                                               | Alpha                | Yes                 |
 | [Google Workspace Admin Reports](sources/google-workspace-admin-reports.md)                 | Alpha                | Yes                 |
 | [Greenhouse](sources/greenhouse.md)                                                         | Beta                 | Yes                 |
 | [Gutendex](sources/gutendex.md)                                                             | Alpha                | No                  |
@@ -102,6 +105,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Looker](sources/looker.md)                                                                 | Alpha                | Yes                 |
 | [Magento](sources/magento.md)                                                               | Alpha                | No                  |
 | [Mailchimp](sources/mailchimp.md)                                                           | Generally Available  | Yes                 |
+| [Mailjet SMS](sources/mailjet-sms.md)                                                       | Alpha                | No                  |
 | [Mailjet Mail](sources/mailjet-mail.md)                                                     | Alpha                | No                  |
 | [Mailerlite](sources/mailerlite.md)                                                         | Alpha                | No                  |
 | [Mailjet Mail](sources/mailjet-mail.md)                                                     | Alpha                | No                  |
@@ -121,6 +125,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [NASA](sources/nasa.md)                                                                     | Alpha                | Yes                 |
 | [Notion](sources/notion.md)                                                                 | Generally Available  | Yes                 |
 | [Okta](sources/okta.md)                                                                     | Alpha                | Yes                 |
+| [Omnisend](sources/omnisend.md)                                                             | Alpha                | No                  |
 | [OneSignal](sources/onesignal.md)                                                           | Alpha                | No                  |
 | [OpenWeather](sources/openweather.md)                                                       | Alpha                | No                  |
 | [Oracle DB](sources/oracle.md)                                                              | Alpha                | Yes                 |
@@ -142,6 +147,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Postgres](sources/postgres.md)                                                             | Generally Available  | Yes                 |
 | [PostHog](sources/posthog.md)                                                               | Alpha                | Yes                 |
 | [PrestaShop](sources/presta-shop.md)                                                        | Alpha                | Yes                 |
+| [Public APIs](sources/public-apis.md)                                                       | Alpha                | Yes                 |
 | [Qualaroo](sources/qualaroo.md)                                                             | Alpha                | Yes                 |
 | [QuickBooks](sources/quickbooks.md)                                                         | Alpha                | No                  |
 | [RD Station Marketing](sources/rd-station-marketing.md)                                     | Alpha                | No                  |
@@ -179,6 +185,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Typeform](sources/typeform.md)                                                             | Alpha                | Yes                 |
 | [US Census](sources/us-census.md)                                                           | Alpha                | Yes                 |
 | [VictorOps](sources/victorops.md)                                                           | Alpha                | No                  |
+| [Waiteraid](sources/waiteraid.md)                                                           | Alpha                | Yes                 |
 | [Webflow](sources/webflow.md        )                                                       | Alpha                | Yes                 |
 | [Whisky Hunter](sources/whisky-hunter.md        )                                           | Alpha                | No                  |
 | [WooCommerce](sources/woocommerce.md)                                                       | Alpha                | No                  |
@@ -216,6 +223,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Google Cloud Storage (GCS)](destinations/gcs.md)          | Beta                 | Yes                 |
 | [Google Pubsub](destinations/pubsub.md)                    | Alpha                | Yes                 |
 | [Google Sheets](destinations/google-sheets.md)             | Alpha                | Yes                 |
+| [Heap Analytics](destinations/heap-analytics.md)           | Alpha                | No                 |
 | [Kafka](destinations/kafka.md)                             | Alpha                | No                  |
 | [Keen](destinations/keen.md)                               | Alpha                | No                  |
 | [Kinesis](destinations/kinesis.md)                         | Alpha                | No                  |
@@ -242,4 +250,5 @@ For more information about the grading system, see [Product Release Stages](http
 | [SQLite](destinations/sqlite.md)                           | Alpha                | No                  |
 | [Streamr](destinations/streamr.md)                         | Alpha                | No                  |
 | [TiDB](destinations/tidb.md)                               | Alpha                | No                  |
+| [Typesense](destinations/typesense.md)                     | Alpha                | No                  |
 | [Yugabytedb](destinations/yugabytedb.md)                   | Alpha                | No                  |

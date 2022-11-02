@@ -1,6 +1,6 @@
 import React from "react";
 
-import DeleteBlock from "components/DeleteBlock";
+import { DeleteBlock } from "components/common/DeleteBlock";
 import { UpdateConnectionGeography } from "components/UpdateConnectionGeography";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";

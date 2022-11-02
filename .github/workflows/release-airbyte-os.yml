@@ -136,7 +136,7 @@ jobs:
           chmod +x tools/bin/pr_body.sh
           body=$(./tools/bin/pr_body.sh)
           body="${body//$'\n'/'%0A'}"
-          echo ::set-output name=PR_BODY::$body
+          echo PR_BODY=$body >> $GITHUB_OUTPUT
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v3
