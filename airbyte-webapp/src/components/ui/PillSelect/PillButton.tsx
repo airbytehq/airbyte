@@ -5,7 +5,7 @@ import classNames from "classnames";
 import { Text } from "../Text";
 import styles from "./PillButton.module.scss";
 
-export type PillButtonVariant = "grey" | "blue" | "green" | "red" | "strong-red";
+export type PillButtonVariant = "grey" | "blue" | "green" | "red" | "strong-red" | "strong-blue";
 
 const STYLES_BY_VARIANT: Readonly<Record<PillButtonVariant, string>> = {
   grey: styles.grey,
@@ -13,6 +13,7 @@ const STYLES_BY_VARIANT: Readonly<Record<PillButtonVariant, string>> = {
   green: styles.green,
   red: styles.red,
   "strong-red": styles.strongRed,
+  "strong-blue": styles.strongBlue,
 };
 
 interface PillButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
