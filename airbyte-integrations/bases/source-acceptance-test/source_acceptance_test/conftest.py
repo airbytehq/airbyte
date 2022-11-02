@@ -24,7 +24,7 @@ from airbyte_cdk.models import (
 )
 from docker import errors
 from source_acceptance_test.base import BaseTest
-from source_acceptance_test.config import Config, EmptyStreamConfiguration
+from source_acceptance_test.config import Config, EmptyStreamConfiguration, ExpectedRecordsConfig
 from source_acceptance_test.tests import TestBasicRead
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, load_config, load_yaml_or_json_path
 
@@ -239,12 +239,17 @@ def empty_streams_fixture(inputs, test_strictness_level) -> Set[EmptyStreamConfi
     return empty_streams
 
 
+@pytest.fixture(name="expect_records_config")
+def expect_records_config_fixture(inputs):
+    return inputs.expect_records
+
+
 @pytest.fixture(name="expected_records_by_stream")
 def expected_records_by_stream_fixture(
     test_strictness_level: Config.TestStrictnessLevel,
     configured_catalog: ConfiguredAirbyteCatalog,
     empty_streams: Set[EmptyStreamConfiguration],
-    inputs,
+    expect_records_config: ExpectedRecordsConfig,
     base_path,
 ) -> MutableMapping[str, List[MutableMapping]]:
     def enforce_high_strictness_level_rules(expect_records_config, configured_catalog, empty_streams, records_by_stream) -> Optional[str]:
@@ -261,8 +266,6 @@ def expected_records_by_stream_fixture(
         else:
             if not getattr(expect_records_config, "bypass_reason", None):
                 pytest.fail(error_prefix / "A bypass reason must be filled if no path to expected records is provided.")
-
-    expect_records_config = inputs.expect_records
 
     expected_records_by_stream = {}
     if expect_records_config:

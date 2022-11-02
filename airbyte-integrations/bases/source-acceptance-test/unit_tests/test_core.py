@@ -20,7 +20,7 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
-from source_acceptance_test.config import BasicReadTestConfig
+from source_acceptance_test.config import BasicReadTestConfig, ExpectedRecordsConfig
 from source_acceptance_test.tests.test_core import TestBasicRead as _TestBasicRead
 from source_acceptance_test.tests.test_core import TestDiscovery as _TestDiscovery
 
@@ -260,7 +260,7 @@ def test_additional_properties_is_true(discovered_catalog, expectation):
     ],
 )
 def test_read(schema, record, expectation):
-    catalog = ConfiguredAirbyteCatalog(
+    configured_catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
                 stream=AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema, "supported_sync_modes": ["full_refresh"]}),
@@ -269,14 +269,23 @@ def test_read(schema, record, expectation):
             )
         ]
     )
-    input_config = BasicReadTestConfig()
     docker_runner_mock = MagicMock()
     docker_runner_mock.call_read.return_value = [
         AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111))
     ]
     t = _TestBasicRead()
     with expectation:
-        t.test_read(None, catalog, input_config, [], docker_runner_mock, MagicMock())
+        t.test_read(
+            connector_config=None,
+            configured_catalog=configured_catalog,
+            expect_records_config=ExpectedRecordsConfig(path="foobar"),
+            should_validate_schema=True,
+            should_validate_data_points=False,
+            empty_streams=set(),
+            expected_records_by_stream={},
+            docker_runner=docker_runner_mock,
+            detailed_logger=MagicMock(),
+        )
 
 
 @pytest.mark.parametrize(

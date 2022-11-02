@@ -34,6 +34,7 @@ from source_acceptance_test.config import (
     ConnectionTestConfig,
     DiscoveryTestConfig,
     EmptyStreamConfiguration,
+    ExpectedRecordsConfig,
     SpecTestConfig,
 )
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
@@ -486,7 +487,7 @@ class TestBasicRead(BaseTest):
         self,
         connector_config,
         configured_catalog,
-        inputs: BasicReadTestConfig,
+        expect_records_config: ExpectedRecordsConfig,
         should_validate_schema: Boolean,
         should_validate_data_points: Boolean,
         empty_streams: Set[EmptyStreamConfiguration],
@@ -517,7 +518,7 @@ class TestBasicRead(BaseTest):
             self._validate_expected_records(
                 records=records,
                 expected_records_by_stream=expected_records_by_stream,
-                flags=inputs.expect_records,
+                flags=expect_records_config,
                 detailed_logger=detailed_logger,
             )
 
