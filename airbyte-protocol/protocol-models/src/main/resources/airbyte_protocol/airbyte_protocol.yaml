@@ -217,7 +217,7 @@ definitions:
       producer_application:
         description: The application that produced the message
         type: string
-      production_application_version:
+      producer_application_version:
         description: The version of the application that produced the message
         type: string
       payload:
