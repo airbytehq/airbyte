@@ -1,7 +1,8 @@
 import React from "react";
-import styled from "styled-components";
 
 import { getIcon } from "utils/imageUtils";
+
+import styles from "./ConnectorIcon.module.scss";
 
 interface Props {
   icon?: string;
@@ -9,14 +10,8 @@ interface Props {
   small?: boolean;
 }
 
-export const Content = styled.div`
-  height: 25px;
-  width: 25px;
-  overflow: hidden;
-`;
-
-export const ConnectorIcon: React.FC<Props> = ({ icon, className }) => (
-  <Content className={className} aria-hidden="true">
+export const ConnectorIcon: React.FC<Props> = ({ icon }) => (
+  <div className={styles.content} aria-hidden="true">
     {getIcon(icon)}
-  </Content>
+  </div>
 );

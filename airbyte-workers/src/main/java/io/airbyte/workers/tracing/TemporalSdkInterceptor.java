@@ -75,8 +75,8 @@ public class TemporalSdkInterceptor implements TraceInterceptor {
       return false;
 
     return trace.isError() &&
-        EXIT_ERROR_MESSAGE.equals(trace.getTags().getOrDefault(ERROR_MESSAGE_TAG_KEY, "")) &&
-        CONNECTION_MANAGER_WORKFLOW_IMPL_RESOURCE_NAME.equals(trace.getResourceName());
+        EXIT_ERROR_MESSAGE.equalsIgnoreCase(trace.getTags().getOrDefault(ERROR_MESSAGE_TAG_KEY, "").toString()) &&
+        CONNECTION_MANAGER_WORKFLOW_IMPL_RESOURCE_NAME.equalsIgnoreCase(trace.getResourceName().toString());
   }
 
 }
