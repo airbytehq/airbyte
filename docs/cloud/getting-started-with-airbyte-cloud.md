@@ -191,7 +191,7 @@ Depending on your data residency location, you may need to allowlist the followi
 * 34.106.196.165
 * 34.106.60.246
 
-### Europe
+### European Union
 * 34.106.109.131
 * 34.106.196.165
 * 34.106.60.246
