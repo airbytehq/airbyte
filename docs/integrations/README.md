@@ -145,6 +145,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Postgres](sources/postgres.md)                                                             | Generally Available  | Yes                 |
 | [PostHog](sources/posthog.md)                                                               | Alpha                | Yes                 |
 | [PrestaShop](sources/presta-shop.md)                                                        | Alpha                | Yes                 |
+| [PyPI](sources/pypi.md)                                                                     | Alpha                | Yes                 |
 | [Qualaroo](sources/qualaroo.md)                                                             | Alpha                | Yes                 |
 | [QuickBooks](sources/quickbooks.md)                                                         | Alpha                | No                  |
 | [RD Station Marketing](sources/rd-station-marketing.md)                                     | Alpha                | No                  |
@@ -187,7 +188,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Whisky Hunter](sources/whisky-hunter.md        )                                           | Alpha                | No                  |
 | [WooCommerce](sources/woocommerce.md)                                                       | Alpha                | No                  |
 | [Wordpress](sources/wordpress.md)                                                           | Alpha                | No                  |
-| [Workable](sources/workable.md)                                                           | Alpha                | No                  |
+| [Workable](sources/workable.md)                                                             | Alpha                | No                  |
 | [Wrike](sources/wrike.md)                                                                   | Alpha                | No                  |
 | [YouTube Analytics](sources/youtube-analytics.md)                                           | Beta                 | Yes                 |
 | [Xkcd](sources/xkcd.md)                                                                     | Alpha                | No                  |
