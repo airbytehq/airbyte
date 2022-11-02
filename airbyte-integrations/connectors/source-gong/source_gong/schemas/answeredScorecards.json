@@ -9,11 +9,10 @@
       "type": ["null", "string"]
     },
     "scorecardName": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "callId": {
-      "type": ["null", "boolean"]
+      "type": ["null", "string"]
     },
     "callStartTime": {
       "type": ["null", "string"],
