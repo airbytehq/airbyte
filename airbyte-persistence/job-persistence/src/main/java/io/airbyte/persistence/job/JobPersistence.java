@@ -37,8 +37,9 @@ public interface JobPersistence {
   List<SyncStats> getSyncStats(Long attemptId) throws IOException;
 
   /**
-   * Return the id of the record in the attempt table corresponding to that job and attempt combination. This is useful to index into other attempt-scoped
-   * metadata.
+   * Return the id of the record in the attempt table corresponding to that job and attempt
+   * combination. This is useful to index into other attempt-scoped metadata.
+   *
    * @param jobId
    * @param attemptNumber
    * @return

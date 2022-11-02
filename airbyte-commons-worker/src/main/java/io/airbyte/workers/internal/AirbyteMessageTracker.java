@@ -385,12 +385,26 @@ public class AirbyteMessageTracker implements MessageTracker {
         Map.Entry::getValue));
   }
 
+  @Override
+  public Map<String, Long> getStreamToEstimatedRecords() {
+    return streamToTotalRecordsEstimated.entrySet().stream().collect(Collectors.toMap(
+        entry -> streamNameToIndex.inverse().get(entry.getKey()),
+        Map.Entry::getValue));
+  }
+
   /**
    * Swap out stream indices for stream names and return total bytes emitted by stream.
    */
   @Override
   public Map<String, Long> getStreamToEmittedBytes() {
     return streamToTotalBytesEmitted.entrySet().stream().collect(Collectors.toMap(
+        entry -> streamNameToIndex.inverse().get(entry.getKey()),
+        Map.Entry::getValue));
+  }
+
+  @Override
+  public Map<String, Long> getStreamToEstimatedBytes() {
+    return streamToTotalBytesEstimated.entrySet().stream().collect(Collectors.toMap(
         entry -> streamNameToIndex.inverse().get(entry.getKey()),
         Map.Entry::getValue));
   }

@@ -4920,6 +4920,10 @@ components:
           $ref: "#/components/schemas/AttemptNumber"
         stats:
           $ref: "#/components/schemas/AttemptStats"
+        streamStats:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptStreamStats"
     InternalOperationResult:
       type: object
       required:

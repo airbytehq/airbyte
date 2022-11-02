@@ -9,7 +9,6 @@ import io.airbyte.api.model.generated.AttemptInfoRead;
 import io.airbyte.api.model.generated.AttemptNormalizationStatusReadList;
 import io.airbyte.api.model.generated.AttemptRead;
 import io.airbyte.api.model.generated.AttemptStats;
-import io.airbyte.api.model.generated.AttemptStreamStats;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.generated.DestinationDefinitionRead;
@@ -36,7 +35,6 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.persistence.job.models.Attempt;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobStatus;
 import io.airbyte.server.converters.JobConverter;
@@ -134,20 +132,20 @@ public class JobHistoryHandler {
             .bytesEmitted(syncStat.getBytesEmitted())
             .recordsEmitted(syncStat.getRecordsEmitted());
 
-//        final var streamStats = attempt.getStreamStats();
-//        // if this doesn't exist, mock something.
-//
-//        if (streamStats != null) {
-//          for (final AttemptStreamStats stats : attempt.getStreamStats()) {
-//            if (stats.getStats() == null) {
-//              stats.stats(new AttemptStats());
-//            }
-//
-//            final var s = stats.getStats();
-//            s.estimatedBytes(s.getBytesEmitted());
-//            s.estimatedRecords(s.getRecordsEmitted());
-//          }
-//        }
+        // final var streamStats = attempt.getStreamStats();
+        // // if this doesn't exist, mock something.
+        //
+        // if (streamStats != null) {
+        // for (final AttemptStreamStats stats : attempt.getStreamStats()) {
+        // if (stats.getStats() == null) {
+        // stats.stats(new AttemptStats());
+        // }
+        //
+        // final var s = stats.getStats();
+        // s.estimatedBytes(s.getBytesEmitted());
+        // s.estimatedRecords(s.getRecordsEmitted());
+        // }
+        // }
 
       }
     }
@@ -170,7 +168,8 @@ public class JobHistoryHandler {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
     final JobInfoRead jobinfoRead = jobConverter.getJobInfoRead(job);
 
-    // jobConverter is pulling from the sync summary, so either we write to the sync summary, or we pull the information directly from
+    // jobConverter is pulling from the sync summary, so either we write to the sync summary, or we pull
+    // the information directly from
     // the table while the job is running.
     // if it's not running, we no longer need to do this.
     if (job.getStatus() == JobStatus.RUNNING) {
@@ -196,16 +195,16 @@ public class JobHistoryHandler {
             .recordsEmitted(syncStat.getRecordsEmitted());
 
         // stream stats
-//        for (final AttemptStreamStats stats : a.getAttempt().getStreamStats()) {
-//          if (stats.getStats() == null) {
-//            stats.stats(new AttemptStats());
-//          }
-//
-//          final var s = stats.getStats();
-//          s.estimatedBytes(s.getBytesEmitted());
-//          s.estimatedRecords(s.getRecordsEmitted());
-//
-//        }
+        // for (final AttemptStreamStats stats : a.getAttempt().getStreamStats()) {
+        // if (stats.getStats() == null) {
+        // stats.stats(new AttemptStats());
+        // }
+        //
+        // final var s = stats.getStats();
+        // s.estimatedBytes(s.getBytesEmitted());
+        // s.estimatedRecords(s.getRecordsEmitted());
+        //
+        // }
       }
     }
 
