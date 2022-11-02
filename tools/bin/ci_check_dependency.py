@@ -95,6 +95,20 @@ def get_connector_version(connector):
                 return line.split("=")[1].strip()
 
 
+def get_connector_changelog_status(connector, version):
+    type, name = connector.replace("-strict-encrypt", "").split("-", 1)
+    doc_path = f"docs/integrations/{type}s/{name}.md"
+    if not os.path.exists(doc_path):
+        return "⚠"
+    with open(doc_path) as f:
+        after_changelog = False
+        for line in f:
+            if "# changelog" in line.lower():
+                after_changelog = True
+            if after_changelog and version in line:
+                return "✅"
+    return "⚠"
+
 def as_bulleted_markdown_list(items):
     text = ""
     for item in items:
@@ -106,7 +120,8 @@ def as_markdown_table_row(items):
     text = ""
     for item in items:
         version = get_connector_version(item)
-        text += f"| `{item}` | `{version}` | | |\n"
+        changelog_status = get_connector_changelog_status(item, version)
+        text += f"| `{item}` | `{version}` | {changelog_status} | |\n"
     return text
 
 
@@ -129,6 +144,10 @@ def write_report(depended_connectors):
     if affected_others:
         others_md += "The following were also affected:\n"
         others_md += as_bulleted_markdown_list(affected_others)
+
+    affected_sources.sort()
+    affected_destinations.sort()
+    affected_others.sort()
 
     comment = template.format(
         source_open="open" if len(affected_sources) > 0 else "closed",
