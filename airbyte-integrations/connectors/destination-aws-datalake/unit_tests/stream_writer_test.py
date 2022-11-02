@@ -161,18 +161,14 @@ def get_big_schema_configured_stream():
                     "type": "object",
                     "properties": {
                         "id": {"type": ["string", "integer"]},
-                    }
+                    },
                 },
             },
-            "phone_number_ids": {
-                "type": ["null", "array"],
-                "items": {
-                    "type": ["string", "integer"]
-                }
-            },
+            "phone_number_ids": {"type": ["null", "array"], "items": {"type": ["string", "integer"]}},
             "mixed_type_simple": {
                 "type": ["integer", "number"],
             },
+            "empty_array": {"type": ["null", "array"]},
         },
     }
 
@@ -251,22 +247,24 @@ def test_add_partition_column():
 
 def test_get_glue_dtypes_from_json_schema():
     writer = get_big_schema_writer(get_config())
-    assert writer._get_glue_dtypes_from_json_schema(writer._schema) == {
+    result, json_casts = writer._get_glue_dtypes_from_json_schema(writer._schema)
+    assert result == {
         "answers": "array<string>",
-        'answers_nested_bad': 'string',
+        "answers_nested_bad": "string",
         "appId": "bigint",
         "appName": "string",
         "bounced": "boolean",
         "browser": "struct<family:string,name:string,producer:string,producerUrl:string,type:string,url:string,version:array<string>>",
         "causedBy": "struct<created:bigint,id:string>",
+        "empty_array": "string",
         "location": "struct<city:string,country:string,latitude:double,longitude:double,state:string,zipcode:string>",
-        'mixed_type_simple': 'string',
+        "mixed_type_simple": "string",
         "nestedJson": "struct<city:struct<name:string>>",
         "nested_bad_object": "string",
-        'nested_mixed_types': 'string',
+        "nested_mixed_types": "string",
         "nested_nested_bad_object": "string",
         "percentage": "double",
-        'phone_number_ids': 'string',
+        "phone_number_ids": "string",
         "questions": "array<struct<id:bigint,question:string,answer:string>>",
         "questions_nested": "array<struct<id:bigint,questions:struct<title:string,option:bigint>,answer:string>>",
         "read": "boolean",
@@ -275,6 +273,15 @@ def test_get_glue_dtypes_from_json_schema():
         "sentBy": "struct<created:bigint,id:string>",
         "sourceId": "string",
         "status": "bigint",
+    }
+
+    assert json_casts == {
+        "answers_nested_bad",
+        "empty_array",
+        "nested_bad_object",
+        "nested_mixed_types",
+        "nested_nested_bad_object",
+        "phone_number_ids",
     }
 
 
