@@ -32,19 +32,28 @@ import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.data.IcebergGenerics;
 import org.apache.iceberg.data.IcebergGenerics.ScanBuilder;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 @Slf4j
 class IcebergHiveCatalogConfigTest {
+
+    private static MockedStatic<IcebergGenerics> mockedIcebergGenerics;
 
     private AmazonS3 s3;
     private IcebergCatalogConfigFactory factory;
 
     @BeforeAll
     static void staticSetup() {
-        mockStatic(IcebergGenerics.class);
+        IcebergHiveCatalogConfigTest.mockedIcebergGenerics = mockStatic(IcebergGenerics.class);
+    }
+
+    @AfterAll
+    static void staticStop() {
+        IcebergHiveCatalogConfigTest.mockedIcebergGenerics.close();
     }
 
     @BeforeEach
@@ -84,7 +93,7 @@ class IcebergHiveCatalogConfigTest {
             .s3Client(s3)
             .build());
         config.setFormatConfig(new FormatConfig("Parquet"));
-        config.setDefaultDatabase("default");
+        config.setDefaultOutputDatabase("default");
 
         factory = new IcebergCatalogConfigFactory() {
             @Override

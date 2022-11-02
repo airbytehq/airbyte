@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.catalog.Catalog;
@@ -23,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
  */
 @Data
 @ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class JdbcCatalogConfig extends IcebergCatalogConfig {
 
     private final String jdbcUrl;

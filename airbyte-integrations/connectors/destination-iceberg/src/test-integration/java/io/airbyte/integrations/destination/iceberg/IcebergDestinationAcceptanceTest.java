@@ -39,8 +39,10 @@ public class IcebergDestinationAcceptanceTest extends DestinationAcceptanceTest 
 
     private static final String SECRET_FILE_PATH = "secrets/config.json";
     private final NamingConventionTransformer namingResolver = new StandardNameTransformer();
-    private JsonNode config = Jsons.deserialize(IOs.readFile(Path.of(SECRET_FILE_PATH)));
-    ;
+    private final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of(SECRET_FILE_PATH)));
+    private final IcebergCatalogConfig catalogConfig = new IcebergCatalogConfigFactory().fromJsonNodeConfig(config);
+    private final Catalog catalog = catalogConfig.genCatalog();
+
 
     @Override
     protected String getImageName() {
@@ -65,28 +67,20 @@ public class IcebergDestinationAcceptanceTest extends DestinationAcceptanceTest 
     protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
         String streamName,
         String namespace,
-        JsonNode streamSchema)
-        throws IOException {
+        JsonNode streamSchema) throws IOException {
         // Records returned from this method will be compared against records provided to the connector
         // to verify they were written correctly
-        JsonNode config = getConfig();
-        final IcebergCatalogConfig catalogConfig = new IcebergCatalogConfigFactory().fromJsonNodeConfig(config);
-        Catalog catalog = catalogConfig.genCatalog();
-
         String dbName = namingResolver.getNamespace(
-            isNotBlank(namespace) ? namespace :
-                catalogConfig.getDefaultDatabase()
-        ).toLowerCase();
+            isNotBlank(namespace) ? namespace : catalogConfig.defaultOutputDatabase()).toLowerCase();
         String tableName = namingResolver.getIdentifier("airbyte_raw_" + streamName).toLowerCase();
         LOGGER.info("Select data from:{}", tableName);
         Table table = catalog.loadTable(TableIdentifier.of(dbName, tableName));
         try (CloseableIterable<Record> records = IcebergGenerics.read(table).build()) {
             return Lists.newArrayList(records)
                 .stream()
-                .sorted((r1, r2) -> Comparator.<OffsetDateTime>naturalOrder().compare(
-                    (OffsetDateTime) r1.getField(JavaBaseConstants.COLUMN_NAME_EMITTED_AT),
-                    (OffsetDateTime) r2.getField(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
-                ))
+                .sorted((r1, r2) -> Comparator.<OffsetDateTime>naturalOrder()
+                    .compare((OffsetDateTime) r1.getField(JavaBaseConstants.COLUMN_NAME_EMITTED_AT),
+                        (OffsetDateTime) r2.getField(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)))
                 .map(r -> Jsons.deserialize((String) r.getField(JavaBaseConstants.COLUMN_NAME_DATA)))
                 .collect(Collectors.toList());
         }

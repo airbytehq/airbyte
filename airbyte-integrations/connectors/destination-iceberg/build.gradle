@@ -14,13 +14,13 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
-    implementation('org.apache.spark:spark-sql_2.12:3.1.3') {
+    implementation('org.apache.spark:spark-sql_2.13:3.3.0') {
         exclude(group: 'org.apache.hadoop', module: 'hadoop-common')
     }
-    implementation('org.apache.spark:spark-hive_2.12:3.1.3') {
+    implementation('org.apache.spark:spark-hive_2.13:3.3.0') {
         exclude(group: 'org.apache.hadoop', module: 'hadoop-common')
     }
-    implementation 'org.apache.iceberg:iceberg-spark-runtime-3.1_2.12:1.0.0'
+    implementation 'org.apache.iceberg:iceberg-spark-runtime-3.3_2.13:1.0.0'
     implementation "software.amazon.awssdk:bundle:2.17.131"
     implementation "software.amazon.awssdk:url-connection-client:2.17.131"
     implementation "org.apache.hadoop:hadoop-aws:3.3.2"
@@ -44,4 +44,9 @@ dependencies {
 }
 
 task prepareKotlinBuildScriptModel {
+}
+
+
+test {
+    jvmArgs = ['--add-opens=java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens=java.base/java.nio=ALL-UNNAMED']
 }

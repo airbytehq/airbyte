@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.CatalogProperties;
@@ -19,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
  */
 @Data
 @ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class HadoopCatalogConfig extends IcebergCatalogConfig {
 
     public static final String SPARK_HADOOP_CONFIG_PREFIX = "spark.hadoop.";

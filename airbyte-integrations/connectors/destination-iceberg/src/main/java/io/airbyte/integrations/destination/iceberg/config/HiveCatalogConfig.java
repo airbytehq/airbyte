@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.catalog.Catalog;
@@ -17,8 +18,9 @@ import org.apache.iceberg.hive.HiveCatalog;
  * @author Leibniz on 2022/10/26.
  */
 @Data
-@ToString(callSuper = true)
 @AllArgsConstructor
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class HiveCatalogConfig extends IcebergCatalogConfig {
 
     private final String thriftUri;
@@ -26,14 +28,6 @@ public class HiveCatalogConfig extends IcebergCatalogConfig {
     public HiveCatalogConfig(JsonNode catalogConfig) {
         this.thriftUri = catalogConfig.get(HIVE_THRIFT_URI_CONFIG_KEY).asText();
     }
-
-  /*  @Override
-    public void check() {
-        if (!thriftUri.startsWith("thrift://")) {
-            throw new IllegalArgumentException(HIVE_THRIFT_URI_CONFIG_KEY + " must start with 'thrift://'");
-        }
-        //TODO check hive metastore thrift uri is available
-    }*/
 
     @Override
     public Map<String, String> sparkConfigMap() {

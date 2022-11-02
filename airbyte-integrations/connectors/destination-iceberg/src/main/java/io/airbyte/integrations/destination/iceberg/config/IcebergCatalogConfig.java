@@ -30,13 +30,13 @@ public abstract class IcebergCatalogConfig {
     protected StorageConfig storageConfig;
     protected FormatConfig formatConfig;
 
-    private String defaultDatabase;
+    private String defaultOutputDatabase;
 
     public void check() throws Exception {
         // Catalog check, only checks catalog metadata
         Catalog catalog = genCatalog();
         String tempTableName = "temp_" + System.currentTimeMillis();
-        TableIdentifier tempTableId = TableIdentifier.of(getDefaultDatabase(), tempTableName);
+        TableIdentifier tempTableId = TableIdentifier.of(defaultOutputDatabase(), tempTableName);
         Schema schema = new Schema(
             NestedField.required(0, JavaBaseConstants.COLUMN_NAME_AB_ID, Types.StringType.get()),
             NestedField.optional(1, JavaBaseConstants.COLUMN_NAME_EMITTED_AT, Types.TimestampType.withZone()),
@@ -65,8 +65,8 @@ public abstract class IcebergCatalogConfig {
 
     public abstract Catalog genCatalog();
 
-    public String getDefaultDatabase() {
-        return isBlank(defaultDatabase) ? IcebergConstants.DEFAULT_DATABASE : defaultDatabase;
+    public String defaultOutputDatabase() {
+        return isBlank(defaultOutputDatabase) ? IcebergConstants.DEFAULT_DATABASE : defaultOutputDatabase;
     }
 
 }

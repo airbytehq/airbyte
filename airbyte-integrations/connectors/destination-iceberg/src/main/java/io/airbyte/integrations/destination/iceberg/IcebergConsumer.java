@@ -73,7 +73,7 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
             final String streamName = stream.getStream().getName().toLowerCase();
             String namespace = (isNotBlank(stream.getStream().getNamespace()) ?
                 stream.getStream().getNamespace() :
-                catalogConfig.getDefaultDatabase()
+                catalogConfig.defaultOutputDatabase()
             ).toLowerCase();
             final String tableName = genTableName(namespace, "airbyte_raw_" + streamName);
             final String tmpTableName = genTableName(namespace, "_airbyte_tmp_" + streamName);

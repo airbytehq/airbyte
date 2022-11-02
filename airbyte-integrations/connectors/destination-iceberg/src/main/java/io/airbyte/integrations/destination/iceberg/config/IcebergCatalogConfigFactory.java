@@ -30,7 +30,7 @@ public class IcebergCatalogConfigFactory {
         IcebergCatalogConfig icebergCatalogConfig = genIcebergCatalogConfig(catalogConfigJson);
         icebergCatalogConfig.formatConfig = formatConfig;
         icebergCatalogConfig.storageConfig = storageConfig;
-        icebergCatalogConfig.setDefaultDatabase(catalogConfigJson.get(DEFAULT_DATABASE_CONFIG_KEY).asText());
+        icebergCatalogConfig.setDefaultOutputDatabase(catalogConfigJson.get(DEFAULT_DATABASE_CONFIG_KEY).asText());
 
         return icebergCatalogConfig;
     }
