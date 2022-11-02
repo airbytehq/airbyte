@@ -99,6 +99,16 @@ def get_connector_version(connector):
                 return line.split("=")[1].strip()
 
 
+def get_connector_version_status(connector, version):
+    if "strict-encrypt" not in connector:
+        return version
+    base_variant_version = get_connector_version(connector.replace("-strict-encrypt", ""))
+    if base_variant_version == version:
+        return version
+    else:
+        return f"{version} ❌ (mismatch normal: `{base_variant_version}`)"
+
+
 def get_connector_changelog_status(connector, version):
     type, name = connector.replace("-strict-encrypt", "").split("-", 1)
     doc_path = f"{DOC_PATH}{type}s/{name}.md"
@@ -124,6 +134,7 @@ def as_markdown_table_row(connectors, definitions):
     text = ""
     for connector in connectors:
         version = get_connector_version(connector)
+        version_status = get_connector_version_status(connector, version)
         changelog_status = get_connector_changelog_status(connector, version)
         definition = next((x for x in definitions if x["dockerRepository"].endswith(connector)), None)
         if definition is None:
@@ -132,7 +143,7 @@ def as_markdown_table_row(connectors, definitions):
             publish_status = "✅"
         else:
             publish_status = "❌ (version mismatch in seed definition)"
-        text += f"| `{connector}` | `{version}` | {changelog_status} | {publish_status} |\n"
+        text += f"| `{connector}` | `{version_status}` | {changelog_status} | {publish_status} |\n"
     return text
 
 
