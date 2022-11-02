@@ -7,6 +7,8 @@ package io.airbyte.config.persistence;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.json.Jsons;
@@ -23,9 +25,14 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.NonBreakingChangesPreference;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -40,34 +47,85 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class StandardSyncPersistenceE2ETest extends BaseConfigDatabaseTest {
+class StandardSyncPersistenceTest extends BaseConfigDatabaseTest {
 
   record StandardSyncProtocolVersionFlag(UUID standardSyncId, boolean unsupportedProtocolVersion) {}
+
+  private static final AirbyteProtocolVersionRange protocolRange_0_0 = new AirbyteProtocolVersionRange(new Version("0.0.0"), new Version("0.1.0"));
+  private static final AirbyteProtocolVersionRange protocolRange_0_1 = new AirbyteProtocolVersionRange(new Version("0.0.1"), new Version("1.0.0"));
+  private static final AirbyteProtocolVersionRange protocolRange_1_1 = new AirbyteProtocolVersionRange(new Version("1.0.0"), new Version("1.10.0"));
 
   private ConfigRepository configRepository;
   private StandardSyncPersistence standardSyncPersistence;
 
-  UUID workspaceId;
-  StandardWorkspace workspace;
-  StandardSourceDefinition sourceDef1;
-  StandardSourceDefinition sourceDef2;
-  SourceConnection source1;
-  SourceConnection source2;
-  StandardDestinationDefinition destDef1;
-  StandardDestinationDefinition destDef2;
-  DestinationConnection destination1;
-  DestinationConnection destination2;
-
-  final AirbyteProtocolVersionRange protocolRange_0_0 = new AirbyteProtocolVersionRange(new Version("0.0.0"), new Version("0.1.0"));
-  final AirbyteProtocolVersionRange protocolRange_0_1 = new AirbyteProtocolVersionRange(new Version("0.0.1"), new Version("1.0.0"));
-  final AirbyteProtocolVersionRange protocolRange_1_1 = new AirbyteProtocolVersionRange(new Version("1.0.0"), new Version("1.10.0"));
+  private StandardSourceDefinition sourceDef1;
+  private SourceConnection source1;
+  private SourceConnection source2;
+  private StandardDestinationDefinition destDef1;
+  private StandardDestinationDefinition destDef2;
+  private DestinationConnection destination1;
+  private DestinationConnection destination2;
 
   @BeforeEach
   void beforeEach() throws Exception {
     truncateAllTables();
 
     standardSyncPersistence = new StandardSyncPersistence(database);
+
+    // only used for creating records that sync depends on.
     configRepository = new ConfigRepository(database);
+  }
+
+  @Test
+  void testReadWrite() throws IOException, ConfigNotFoundException, JsonValidationException {
+    createBaseObjects();
+    final StandardSync sync = createStandardSync(source1, destination1);
+    standardSyncPersistence.writeStandardSync(sync);
+
+    final StandardSync expectedSync = Jsons.clone(sync)
+        .withNotifySchemaChanges(true)
+        .withNonBreakingChangesPreference(NonBreakingChangesPreference.IGNORE);
+    assertEquals(expectedSync, standardSyncPersistence.getStandardSync(sync.getConnectionId()));
+  }
+
+  @Test
+  void testReadNotExists() {
+    assertThrows(ConfigNotFoundException.class, () -> standardSyncPersistence.getStandardSync(UUID.randomUUID()));
+  }
+
+  @Test
+  void testList() throws IOException, JsonValidationException {
+    createBaseObjects();
+    final StandardSync sync1 = createStandardSync(source1, destination1);
+    final StandardSync sync2 = createStandardSync(source1, destination2);
+    standardSyncPersistence.writeStandardSync(sync1);
+    standardSyncPersistence.writeStandardSync(sync2);
+
+    final List<StandardSync> expected = List.of(
+        Jsons.clone(sync1)
+            .withNotifySchemaChanges(true)
+            .withNonBreakingChangesPreference(NonBreakingChangesPreference.IGNORE),
+        Jsons.clone(sync2)
+            .withNotifySchemaChanges(true)
+            .withNonBreakingChangesPreference(NonBreakingChangesPreference.IGNORE));
+
+    assertEquals(expected, standardSyncPersistence.listStandardSync());
+  }
+
+  @Test
+  void testDelete() throws IOException, ConfigNotFoundException, JsonValidationException {
+    createBaseObjects();
+
+    final StandardSync sync1 = createStandardSync(source1, destination1);
+    final StandardSync sync2 = createStandardSync(source1, destination2);
+
+    assertNotNull(standardSyncPersistence.getStandardSync(sync1.getConnectionId()));
+    assertNotNull(standardSyncPersistence.getStandardSync(sync2.getConnectionId()));
+
+    standardSyncPersistence.deleteStandardSync(sync1.getConnectionId());
+
+    assertThrows(ConfigNotFoundException.class, () -> standardSyncPersistence.getStandardSync(sync1.getConnectionId()));
+    assertNotNull(standardSyncPersistence.getStandardSync(sync2.getConnectionId()));
   }
 
   @Test
@@ -151,7 +209,30 @@ class StandardSyncPersistenceE2ETest extends BaseConfigDatabaseTest {
         new StandardSyncProtocolVersionFlag(sync2.getConnectionId(), false)), getProtocolVersionFlagForSyncs(syncs));
   }
 
-  Set<StandardSyncProtocolVersionFlag> getProtocolVersionFlagForSyncs(final List<StandardSync> standardSync) throws SQLException {
+  @Test
+  void testGetAllStreamsForConnection() throws Exception {
+    createBaseObjects();
+    final AirbyteStream airbyteStream = new AirbyteStream().withName("stream1").withNamespace("namespace1");
+    final ConfiguredAirbyteStream configuredStream = new ConfiguredAirbyteStream().withStream(airbyteStream);
+    final AirbyteStream airbyteStream2 = new AirbyteStream().withName("stream2");
+    final ConfiguredAirbyteStream configuredStream2 = new ConfiguredAirbyteStream().withStream(airbyteStream2);
+    final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(configuredStream, configuredStream2));
+    final StandardSync sync = createStandardSync(source1, destination1).withCatalog(configuredCatalog);
+
+    standardSyncPersistence.writeStandardSync(sync);
+
+    final List<StreamDescriptor> result = standardSyncPersistence.getAllStreamsForConnection(sync.getConnectionId());
+    assertEquals(2, result.size());
+
+    assertTrue(
+        result.stream().anyMatch(
+            streamDescriptor -> "stream1".equals(streamDescriptor.getName()) && "namespace1".equals(streamDescriptor.getNamespace())));
+    assertTrue(
+        result.stream().anyMatch(
+            streamDescriptor -> "stream2".equals(streamDescriptor.getName()) && streamDescriptor.getNamespace() == null));
+  }
+
+  private Set<StandardSyncProtocolVersionFlag> getProtocolVersionFlagForSyncs(final List<StandardSync> standardSync) throws SQLException {
     return database.query(ctx -> ctx
         .select(CONNECTION.ID, CONNECTION.UNSUPPORTED_PROTOCOL_VERSION)
         .from(CONNECTION)
@@ -161,7 +242,7 @@ class StandardSyncPersistenceE2ETest extends BaseConfigDatabaseTest {
         .collect(Collectors.toSet());
   }
 
-  void setProtocolVersionFlagForSyncs(final List<StandardSyncProtocolVersionFlag> updates) throws SQLException {
+  private void setProtocolVersionFlagForSyncs(final List<StandardSyncProtocolVersionFlag> updates) throws SQLException {
     final List<UUID> setToTrue =
         updates.stream().filter(s -> s.unsupportedProtocolVersion).map(StandardSyncProtocolVersionFlag::standardSyncId).toList();
     final List<UUID> setToFalse =
@@ -184,8 +265,8 @@ class StandardSyncPersistenceE2ETest extends BaseConfigDatabaseTest {
   }
 
   private void createBaseObjects() throws IOException, JsonValidationException {
-    workspaceId = UUID.randomUUID();
-    workspace = new StandardWorkspace()
+    final UUID workspaceId = UUID.randomUUID();
+    final StandardWorkspace workspace = new StandardWorkspace()
         .withWorkspaceId(workspaceId)
         .withName("Another Workspace")
         .withSlug("another-workspace")
@@ -197,7 +278,7 @@ class StandardSyncPersistenceE2ETest extends BaseConfigDatabaseTest {
     sourceDef1 = createStandardSourceDefinition("0.2.2");
     source1 = createSourceConnection(workspaceId, sourceDef1);
 
-    sourceDef2 = createStandardSourceDefinition("1.1.0");
+    final StandardSourceDefinition sourceDef2 = createStandardSourceDefinition("1.1.0");
     source2 = createSourceConnection(workspaceId, sourceDef2);
 
     destDef1 = createStandardDestDefinition("0.2.3");
@@ -246,8 +327,7 @@ class StandardSyncPersistenceE2ETest extends BaseConfigDatabaseTest {
     return destDef;
   }
 
-  private SourceConnection createSourceConnection(final UUID workspaceId, final StandardSourceDefinition sourceDef)
-      throws JsonValidationException, IOException {
+  private SourceConnection createSourceConnection(final UUID workspaceId, final StandardSourceDefinition sourceDef) throws IOException {
     final UUID sourceId = UUID.randomUUID();
     final SourceConnection source = new SourceConnection()
         .withName("source-" + sourceId)
