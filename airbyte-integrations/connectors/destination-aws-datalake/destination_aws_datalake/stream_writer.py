@@ -74,6 +74,20 @@ class StreamWriter:
 
         return fields
 
+    def _get_non_null_json_schema_types(self, typ: Union[str, List[str]]) -> Union[str, List[str]]:
+        if isinstance(typ, list):
+            return list(filter(lambda x: x != "null", typ))
+
+        return typ
+
+    def _json_schema_type_has_mixed_types(self, typ: Union[str, List[str]]) -> bool:
+        if isinstance(typ, list):
+            typ = self._get_non_null_json_schema_types(typ)
+            if len(typ) > 1:
+                return True
+
+        return False
+
     def _get_json_schema_type(self, types: Union[List[str], str] ) -> str:
         if isinstance(types, str):
             return types
@@ -81,14 +95,12 @@ class StreamWriter:
         if not isinstance(types, list):
             return "string"
 
-        if "null" in types:
-            types.remove("null")
-
-        if len(types) == 1:
-            return types[0]
-
+        types = self._get_non_null_json_schema_types(types)
         # when multiple types, cast to string
-        return "string"
+        if self._json_schema_type_has_mixed_types(types):
+            return "string"
+
+        return types[0]
 
     def _get_pandas_dtypes_from_json_schema(self, df: pd.DataFrame) -> Dict[str, str]:
         type_mapper = {
@@ -130,24 +142,43 @@ class StreamWriter:
             nonlocal result
             for val in schema.values():
                 # Complex types can't be casted to an athena/glue type
-                oneOf = val.get("oneOf")
-                if oneOf:
+                if val.get("oneOf"):
                     result = False
                     continue
 
-                typ = val.get("type")
-                typ = self._get_json_schema_type(typ)
+                raw_typ = val.get("type")
 
-                if typ != "object":
+                # If the type is a list, check for mixed types
+                # complex objects with mixed types can't be reliably casted
+                if isinstance(raw_typ, list) and self._json_schema_type_has_mixed_types(raw_typ):
+                    result = False
                     continue
 
-                else:
+                typ = self._get_json_schema_type(raw_typ)
+
+                # If object check nested properties
+                if typ == "object":
                     properties = val.get("properties")
                     if not properties:
                         result = False
-
-                    if properties:
+                    else:
                         check_properties(properties)
+
+                # If array check nested properties
+                if typ == "array":
+                    items = val.get("items")
+
+                    if not items:
+                        result = False
+                        continue
+
+                    if isinstance(items, list):
+                        items = items[0]
+
+                    item_properties = items.get("properties")
+                    if item_properties:
+                        check_properties(item_properties)
+
 
         check_properties(schema)
         return result
@@ -193,7 +224,8 @@ class StreamWriter:
                 if isinstance(items, list):
                     items = items[0]
 
-                item_type = self._get_json_schema_type(items.get("type"))
+                raw_item_type = items.get("type")
+                item_type = self._get_json_schema_type(raw_item_type)
                 item_properties = items.get("properties")
 
                 if isinstance(items, dict) and item_properties:
@@ -205,7 +237,10 @@ class StreamWriter:
                     else:
                         result_typ = "string"
 
-                elif item_type:
+                elif item_type and self._json_schema_type_has_mixed_types(raw_item_type):
+                    result_typ = "string"
+
+                elif item_type and not self._json_schema_type_has_mixed_types(raw_item_type):
                     result_typ = f"array<{type_mapper[item_type]}>"
 
             if result_typ is None:
