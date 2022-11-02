@@ -12,12 +12,14 @@ interface EmptyResourceListViewProps {
   buttonLabel: string;
   resourceType: "connections" | "destinations" | "sources";
   onCreateClick: () => void;
+  footer?: React.ReactNode;
 }
 
 export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({
   resourceType,
   onCreateClick,
   buttonLabel,
+  footer,
 }) => {
   const { headingMessageId, singularResourceType } = useMemo(() => {
     const singularResourceType = resourceType.substring(0, resourceType.length - 1);
@@ -50,6 +52,7 @@ export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({
       <Button onClick={onCreateClick} size="lg" data-id={`new-${singularResourceType}`}>
         {buttonLabel}
       </Button>
+      {footer && <div className={styles.footer}>{footer}</div>}
     </div>
   );
 };
