@@ -889,33 +889,57 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCreate));
   }
 
+  /**
+   * This implementation has been moved to {@link JobsApiController}. Since the path of
+   * {@link JobsApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) {
-    return execute(() -> schedulerHandler.cancelJob(jobIdRequestBody));
+    throw new NotImplementedException();
   }
 
   // JOB HISTORY
 
+  /**
+   * This implementation has been moved to {@link JobsApiController}. Since the path of
+   * {@link JobsApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobReadList listJobsFor(final JobListRequestBody jobListRequestBody) {
-    return execute(() -> jobHistoryHandler.listJobsFor(jobListRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link JobsApiController}. Since the path of
+   * {@link JobsApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) {
-    return execute(() -> jobHistoryHandler.getJobInfo(jobIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link JobsApiController}. Since the path of
+   * {@link JobsApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobInfoLightRead getJobInfoLight(final JobIdRequestBody jobIdRequestBody) {
-    return execute(() -> jobHistoryHandler.getJobInfoLight(jobIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link JobsApiController}. Since the path of
+   * {@link JobsApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobDebugInfoRead getJobDebugInfo(final JobIdRequestBody jobIdRequestBody) {
-    return execute(() -> jobHistoryHandler.getJobDebugInfo(jobIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link JobsApiController}. Since the path of
+   * {@link JobsApiController} is more granular, it will override this implementation
+   */
   @Override
   public AttemptNormalizationStatusReadList getAttemptNormalizationStatusesForJob(final JobIdRequestBody jobIdRequestBody) {
     return execute(() -> jobHistoryHandler.getAttemptNormalizationStatuses(jobIdRequestBody));
