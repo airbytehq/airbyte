@@ -30,12 +30,15 @@ RUN apk --no-cache add bash
 # copy payload code only
 COPY main.py ./
 COPY source_hubspot ./source_hubspot
+COPY documentation_url.patch.json ./
+COPY spec.patch.json ./
+COPY oauth2.patch.json ./
 
-ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./
+ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["/airbyte/integration_code/airbyte-to-flow", "--connector-entrypoint", "python /airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=v2
+LABEL io.airbyte.version=v3
 LABEL io.airbyte.name=airbyte/source-hubspot
 LABEL FLOW_RUNTIME_PROTOCOL=capture
 LABEL CONNECTOR_PROTOCOL=flow-capture

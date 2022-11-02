@@ -1,7 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
-  "type": ["object"],
-  "required": ["timestamp"],
+  "type": ["null", "object"],
   "properties": {
     "value": {
       "type": ["null", "string"]
@@ -19,8 +18,7 @@
       "type": ["null", "integer"]
     },
     "timestamp": {
-      "type": ["string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "selected": {
       "type": ["null", "boolean"]

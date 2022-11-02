@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "estuary-airbyte-cdk~=0.1",
+    "airbyte-cdk~=0.2",
     "backoff==1.11.1",
     "pendulum==2.1.2",
     "requests==2.26.0",
@@ -14,7 +14,8 @@ MAIN_REQUIREMENTS = [
 
 TEST_REQUIREMENTS = [
     "pytest==6.1.2",
-    "requests_mock==1.8.0",
+    "pytest-mock~=3.6",
+    "requests-mock~=1.9.3",
     "source-acceptance-test",
 ]
 

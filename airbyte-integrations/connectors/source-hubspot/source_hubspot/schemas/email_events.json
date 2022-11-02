@@ -1,7 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": ["object"],
-  "required": ["id"],
+  "type": ["null", "object"],
   "properties": {
     "appId": {
       "type": ["null", "integer"]
@@ -89,7 +88,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "ipAddress": {
       "type": ["null", "string"]
