@@ -33,7 +33,7 @@ export const DataResidency: React.FC<DataResidencyProps> = ({ name = "geography"
                     id="connection.geographyDescription"
                     values={{
                       a: (node: React.ReactNode) => (
-                        <a href={links.docsLink} target="_blank" rel="noreferrer">
+                        <a href={links.cloudAllowlistIPsLink} target="_blank" rel="noreferrer">
                           {node}
                         </a>
                       ),

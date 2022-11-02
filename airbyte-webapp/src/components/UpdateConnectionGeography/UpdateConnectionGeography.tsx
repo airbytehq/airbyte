@@ -51,7 +51,7 @@ export const UpdateConnectionGeography: React.FC = () => {
                 id="connection.geographyDescription"
                 values={{
                   a: (node: React.ReactNode) => (
-                    <a href={links.docsLink} target="_blank" rel="noreferrer">
+                    <a href={links.cloudAllowlistIPsLink} target="_blank" rel="noreferrer">
                       {node}
                     </a>
                   ),

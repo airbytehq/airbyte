@@ -67,7 +67,7 @@ export const DefaultDataResidencyView: React.FC = () => {
             id="settings.defaultDataResidencyDescription"
             values={{
               a: (node: React.ReactNode) => (
-                <a href={links.docsLink} target="_blank" rel="noreferrer">
+                <a href={links.cloudAllowlistIPsLink} target="_blank" rel="noreferrer">
                   {node}
                 </a>
               ),
