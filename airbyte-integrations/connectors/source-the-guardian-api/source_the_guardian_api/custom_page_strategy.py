@@ -1,8 +1,13 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional
-import requests
 
+import requests
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
+
 
 @dataclass
 class CustomPageIncrement(PageIncrement):
