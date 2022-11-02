@@ -1,10 +1,14 @@
-@use "../../../../scss/colors";
-@use "../../../../scss/variables";
-@use "../components/StreamRow.module.scss";
+@use "scss/colors";
+@use "scss/variables";
+@use "./StreamRow.module.scss";
 
 .sectionContainer {
   display: flex;
   flex-direction: column;
+}
+
+.table {
+  border-spacing: 0;
 }
 
 .sectionSubHeader,

@@ -1,5 +1,5 @@
-@use "../../../../scss/colors";
-@use "../../../../scss/variables";
+@use "scss/colors";
+@use "scss/variables";
 @use "./DiffSection.module.scss";
 
 .fieldHeader {
@@ -30,7 +30,7 @@
 }
 
 .fieldRowsContainer {
-  padding-left: variables.$spacing-lg;
+  padding: 0 variables.$spacing-lg;
 
   ul,
   li {
