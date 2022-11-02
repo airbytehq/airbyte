@@ -1,4 +1,4 @@
-documentationUrl: https://apidocs.callrail.com/
+documentationUrl: https://docs.airbyte.com/integrations/sources/callrail
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Call Rail Spec
@@ -13,12 +13,10 @@ connectionSpecification:
       type: string
       description: API access key
       airbyte_secret: true
-      examples: [""]
     Account ID:
       type: string
       description: Account ID
       airbyte_secret: true
-      examples: [""]
     Start Date:
       type: string
       description: Start getting data from that date.
