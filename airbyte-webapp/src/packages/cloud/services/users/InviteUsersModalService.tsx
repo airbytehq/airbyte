@@ -19,7 +19,9 @@ export const useInviteUsersModalService = () => {
   return ctx;
 };
 
-export const InviteUsersModalServiceProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+export const InviteUsersModalServiceProvider: React.FC<
+  React.PropsWithChildren<unknown> & { invitedFrom: "source" | "destination" | "user.settings" }
+> = ({ children, invitedFrom }) => {
   const [isOpen, toggleIsOpen] = useToggle(false);
 
   const contextValue = useMemo<InviteUsersModalServiceContext>(
@@ -33,7 +35,7 @@ export const InviteUsersModalServiceProvider: React.FC<React.PropsWithChildren<u
   return (
     <Provider value={contextValue}>
       {children}
-      {isOpen && <InviteUsersModal onClose={toggleIsOpen} />}
+      {isOpen && <InviteUsersModal onClose={toggleIsOpen} invitedFrom={invitedFrom} />}
     </Provider>
   );
 };
