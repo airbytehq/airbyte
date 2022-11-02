@@ -104,8 +104,15 @@ class SurveyctoStream(HttpStream,  IncrementalMixin, ABC):
     ) -> Iterable[Mapping]:
         response_json = response.json()
 
+        form_id = self.form_id
+
         for data in response_json:
             try:
+                data["form_id"] = form_id
+                key = data["KEY"]
+                o = key.replace('uuid:', '')
+                data["KEY"] = o
+               
                 yield data
             except Exception as e:
                 msg = f"""Encountered an exception parsing schema"""
@@ -115,7 +122,6 @@ class SurveyctoStream(HttpStream,  IncrementalMixin, ABC):
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
             self._cursor_value = datetime.strptime(record[self.cursor_field], self.date_format)
-            print(f'=========>>>>{record}')
             yield record
 
 # Source
