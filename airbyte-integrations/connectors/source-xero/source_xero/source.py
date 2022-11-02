@@ -9,7 +9,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
-from .oauth import XeroCustomCuonnectionsOauth2Authenticator
+from .oauth import XeroCustomConnectionsOauth2Authenticator
 from .streams import (
     Accounts,
     BankTransactions,
@@ -83,7 +83,7 @@ class SourceXero(AbstractSource):
         authentication = config.get("authentication")
         stream_kwargs = dict()
         if authentication.get("auth_type") == "custom_connection":
-            stream_kwargs["authenticator"] = XeroCustomCuonnectionsOauth2Authenticator(
+            stream_kwargs["authenticator"] = XeroCustomConnectionsOauth2Authenticator(
                 token_refresh_endpoint="https://identity.xero.com/connect/token",
                 client_secret=config.get("client_secret"),
                 client_id=config.get("client_id"),

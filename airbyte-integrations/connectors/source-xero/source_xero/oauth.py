@@ -13,7 +13,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenti
 logger = logging.getLogger("airbyte")
 
 
-class XeroCustomCuonnectionsOauth2Authenticator(Oauth2Authenticator):
+class XeroCustomConnectionsOauth2Authenticator(Oauth2Authenticator):
     """
     Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials.
     The generated access token is attached to each request via the Authorization header.
