@@ -64,18 +64,13 @@ function docker_tag_exists() {
 
 checkPlatformImages() {
   echo -e "$blue_text""Checking platform images exist...""$default_text"
-  #Pull without printing progress information and send error stream because that where image names are
-  docker-compose pull --quiet 2> compose_output
+  # Check dockerhub to see if the images exist
+  grep "image:" docker-compose.yaml | tr -d ' ' | cut -d ':' -f2 | xargs -L1 -I{} curl  "https://hub.docker.com/v2/repositories/{}/tags/${VERSION}" 2> compose_output
   docker_compose_success=$?
-  # quiet output is just SHAs ie: f8a3d002a8a6
-  images_pulled_count=$(docker images --quiet | wc -l)
-  if test $images_pulled_count -eq 0; then
-    echo -e "$red_text""Nothing was pulled!  This script may be broken! We expect to pull something""$default_text"
-    exit 1
-  elif test $docker_compose_success -eq 0; then
-    echo -e "$blue_text""Docker successfully pulled all images""$default_text"
+  if test $docker_compose_success -eq 0; then
+    echo -e "$blue_text""All platform images exist""$default_text"
   else
-    echo -e "$red_text""docker-compose failed to pull all images""$default_text"
+    echo -e "$red_text""Some platform images appear to be missing""$default_text"
     cat compose_output
     exit 1
   fi
@@ -92,12 +87,15 @@ checkNormalizationImages() {
   fi
   image_version=$(cat $factory_path | grep 'NORMALIZATION_VERSION =' | cut -d"=" -f2 | sed 's:;::' | sed -e 's:"::g' | sed -e 's:[[:space:]]::g')
   echo -e "$blue_text""Checking normalization images with version $image_version exist...""$default_text"
-  VERSION=$image_version docker-compose --file airbyte-integrations/bases/base-normalization/docker-compose.yaml pull --quiet
+  VERSION=$image_version 
+
+  # Check dockerhub to see if the images exist
+  grep "image:" airbyte-integrations/bases/base-normalization/docker-compose.yaml | tr -d ' ' | cut -d ':' -f2 | xargs -L1 -I{} curl  "https://hub.docker.com/v2/repositories/{}/tags/${VERSION}" 2> compose_output
   docker_compose_success=$?
   if test $docker_compose_success -eq 0; then
-    echo -e "$blue_text""Docker successfully pulled all images for normalization""$default_text"
+    echo -e "$blue_text""All normalization exists""$default_text"
   else
-    echo -e "$red_text""docker-compose failed to pull all images for normalization""$default_text"
+    echo -e "$red_text""Some normalization images were missing""$default_text"
     exit 1
   fi
 }
