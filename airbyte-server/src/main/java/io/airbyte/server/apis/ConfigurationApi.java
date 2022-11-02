@@ -962,9 +962,13 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
   public File getOpenApiSpec() {
-    return execute(openApiConfigHandler::getFile);
+    throw new NotImplementedException();
   }
 
   // HEALTH
