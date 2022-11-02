@@ -3,16 +3,27 @@
 This pages guide you to the process of creating the source connector to the google ad manager api.
 The connector is built using the [python google-ad-manager-api](https://github.com/googleads/googleads-python-lib/tree/master)
 
+
+## How is google ad manager connector different from google ads connector?
+
+There is actual little overlap between the two, google ads and ad manager are remnants of 2 different google products. Google Ads is a remnant of Google AdWords, which focuses on the ADVERTISERS and is a platform for managing advertising campaigns, so this can generate reports for someone who has created an advertisement - to show the reach of the ad, who saw it, etc.
+
+On the flip side Google Ad Manager contains the remnants of google Doubleclick, and focuses on the PUBLISHERS, likewise, the generated reports focus on an individual who is running ads on their own site, and can be broken down by what platform they were shown on, the generated revenue, how often people on the site viewed an ad, etc.
+
+They are two sides of the same coin but have very different applications and uses.
+I hope this clears up the confusion between the two, Google has done a poor job on its end differentiating some of its products.
+
+
 ## Prerequisites
 
-* JSON credentials for the service account that has access to Google Analytics. For more details check [instructions](https://support.google.com/analytics/answer/1009702#zippy=%2Cin-this-article)
+* JSON credentials for the service account that has access to Google Ad manager. For more details check [instructions](https://support.google.com/analytics/answer/1009702#zippy=%2Cin-this-article)
 * OAuth 2.0 credentials for the service account that has access to Google Analytics
 * Property ID
 * customer name
 
 ## Custom reports
 
-- For now the connector support only two custom reports: Ad Unit Per Hour Report, and Ad Unit per Referrer Report. You can create stream for your report by following the structure of the generate report.
+- For now the connector support only two custom reports: Ad Unit Per Hour Report, and Ad Unit per Referrer Report. You can create stream for your report by following the structure of the generated report.
 
 ## Step 1: Set up Source
 
