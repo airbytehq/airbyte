@@ -95,9 +95,14 @@ def test_update_cursor(test_name, stream_slice, expected_state):
         ),
     ]
     slicer = CartesianProductStreamSlicer(stream_slicers=stream_slicers, options={})
-    slicer.update_cursor(stream_slice, None)
-    updated_state = slicer.get_stream_state()
-    assert expected_state == updated_state
+
+    if expected_state:
+        slicer.update_cursor(stream_slice, None)
+        updated_state = slicer.get_stream_state()
+        assert expected_state == updated_state
+    else:
+        with pytest.raises(ValueError):
+            slicer.update_cursor(stream_slice, None)
 
 
 @pytest.mark.parametrize(
@@ -169,12 +174,12 @@ def test_request_option(
         ],
         options={},
     )
-    slicer.update_cursor({"owner_resource": "customer", "repository": "airbyte"}, None)
+    stream_slice = {"owner_resource": "customer", "repository": "airbyte"}
 
-    assert expected_req_params == slicer.get_request_params()
-    assert expected_headers == slicer.get_request_headers()
-    assert expected_body_json == slicer.get_request_body_json()
-    assert expected_body_data == slicer.get_request_body_data()
+    assert expected_req_params == slicer.get_request_params(stream_slice=stream_slice)
+    assert expected_headers == slicer.get_request_headers(stream_slice=stream_slice)
+    assert expected_body_json == slicer.get_request_body_json(stream_slice=stream_slice)
+    assert expected_body_data == slicer.get_request_body_data(stream_slice=stream_slice)
 
 
 def test_request_option_before_updating_cursor():
