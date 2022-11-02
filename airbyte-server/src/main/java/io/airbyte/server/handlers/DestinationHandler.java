@@ -196,12 +196,11 @@ public class DestinationHandler {
 
   public DestinationReadList listDestinationsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final List<DestinationRead> reads = Lists.newArrayList();
 
+    final List<DestinationRead> reads = Lists.newArrayList();
     for (final DestinationConnection dci : configRepository.listWorkspaceDestinationConnection(workspaceIdRequestBody.getWorkspaceId())) {
       reads.add(buildDestinationRead(dci));
     }
-
     return new DestinationReadList().destinations(reads);
   }
 
@@ -209,14 +208,8 @@ public class DestinationHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final List<DestinationRead> reads = Lists.newArrayList();
 
-    for (final DestinationConnection destinationConnection : configRepository.listDestinationConnection()) {
-      if (!destinationConnection.getDestinationDefinitionId().equals(destinationDefinitionIdRequestBody.getDestinationDefinitionId())) {
-        continue;
-      }
-      if (destinationConnection.getTombstone() != null && destinationConnection.getTombstone()) {
-        continue;
-      }
-
+    for (final DestinationConnection destinationConnection : configRepository
+        .listDestinationsForDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId())) {
       reads.add(buildDestinationRead(destinationConnection));
     }
 
