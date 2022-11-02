@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { Link, useLocation } from "react-router-dom";
 
-import EmptyResource from "components/EmptyResourceBlock";
+import { EmptyResourceBlock } from "components/common/EmptyResourceBlock";
 import { RotateIcon } from "components/icons/RotateIcon";
 import { useAttemptLink } from "components/JobItem/attemptLinkUtils";
 import { Button } from "components/ui/Button";
@@ -199,7 +199,7 @@ export const ConnectionStatusTab: React.FC = () => {
         {jobs.length ? (
           <JobsList jobs={jobs} />
         ) : linkedJobNotFound ? (
-          <EmptyResource
+          <EmptyResourceBlock
             text={<FormattedMessage id="connection.linkedJobNotFound" />}
             description={
               <Link to={pathname}>
@@ -208,7 +208,7 @@ export const ConnectionStatusTab: React.FC = () => {
             }
           />
         ) : (
-          <EmptyResource text={<FormattedMessage id="sources.noSync" />} />
+          <EmptyResourceBlock text={<FormattedMessage id="sources.noSync" />} />
         )}
       </Card>
       {(moreJobPagesAvailable || isJobPageLoading) && (
