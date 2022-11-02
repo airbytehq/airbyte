@@ -1,7 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["id"],
   "additionalProperties": true,
   "properties": {
     "object": {
@@ -43,12 +42,7 @@
         "pdf",
         "bookmark",
         "equation",
-        "unsupported",
-        "synced_block",
-        "divider",
-        "template",
-        "column",
-        "column_list"
+        "unsupported"
       ]
     },
     "paragraph": { "$ref": "text_element.json" },

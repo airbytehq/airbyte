@@ -1,0 +1,67 @@
+{
+  "required": ["start_date", "credentials"],
+  "properties": {
+    "credentials": {
+      "title": "Authenticate using",
+      "description": "Pick an authentication method.",
+      "type": "object",
+      "order": 1,
+      "oneOf": [
+        {
+          "type": "object",
+          "title": "OAuth2.0",
+          "required": [
+            "auth_type",
+            "client_id",
+            "client_secret",
+            "access_token"
+          ],
+          "x-oauth2-provider": "notion",
+          "properties": {
+            "auth_type": {
+              "type": "string",
+              "const": "OAuth2.0",
+              "default": "OAuth2.0"
+            },
+            "client_id": {
+              "title": "Client ID",
+              "type": "string",
+              "description": "The ClientID of your Notion integration.",
+              "airbyte_secret": true
+            },
+            "client_secret": {
+              "title": "Client Secret",
+              "type": "string",
+              "description": "The ClientSecret of your Notion integration.",
+              "airbyte_secret": true
+            },
+            "access_token": {
+              "title": "Access Token",
+              "type": "string",
+              "description": "Access Token is a token you received by complete the OauthWebFlow of Notion.",
+              "airbyte_secret": true
+            }
+          }
+        },
+        {
+          "type": "object",
+          "title": "Access Token",
+          "required": ["auth_type", "token"],
+          "properties": {
+            "auth_type": {
+              "type": "string",
+              "const": "token",
+              "default": "token"
+            },
+            "token": {
+              "title": "Access Token",
+              "description": "Notion API access token, see the docs for more information https://developers.notion.com/docs/authorization",
+              "type": "string",
+              "airbyte_secret": true
+            }
+          }
+        }
+      ]
+    }
+  }
+}
