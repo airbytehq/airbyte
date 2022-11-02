@@ -12,7 +12,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import io.airbyte.commons.json.Jsons;
@@ -32,8 +31,8 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
 import io.airbyte.config.persistence.ConfigRepository.SourceAndDefinition;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
+import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.init.DatabaseInitializationException;
@@ -78,7 +77,6 @@ class ConfigRepositoryE2EReadWriteTest {
   private Database database;
   private ConfigRepository configRepository;
   private DatabaseConfigPersistence configPersistence;
-  private JsonSecretsProcessor jsonSecretsProcessor;
   private Flyway flyway;
   private final static String DOCKER_IMAGE_TAG = "1.2.0";
   private final static String CONFIG_HASH = "ConfigHash";
@@ -96,12 +94,11 @@ class ConfigRepositoryE2EReadWriteTest {
   void setup() throws IOException, JsonValidationException, SQLException, DatabaseInitializationException, InterruptedException {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
+    flyway = FlywayFactory.create(dataSource, ConfigRepositoryE2EReadWriteTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
         ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
     database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(false);
-    jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
-    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
-    configRepository = spy(new ConfigRepository(configPersistence, database));
+    configPersistence = spy(new DatabaseConfigPersistence(database));
+    configRepository = spy(new ConfigRepository(configPersistence, database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database))));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, flyway);
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
@@ -160,8 +157,8 @@ class ConfigRepositoryE2EReadWriteTest {
 
   @Test
   void testFetchActorsUsingDefinition() throws IOException {
-    UUID destinationDefinitionId = MockData.publicDestinationDefinition().getDestinationDefinitionId();
-    UUID sourceDefinitionId = MockData.publicSourceDefinition().getSourceDefinitionId();
+    final UUID destinationDefinitionId = MockData.publicDestinationDefinition().getDestinationDefinitionId();
+    final UUID sourceDefinitionId = MockData.publicSourceDefinition().getSourceDefinitionId();
     final List<DestinationConnection> destinationConnections = configRepository.listDestinationsForDefinition(
         destinationDefinitionId);
     final List<SourceConnection> sourceConnections = configRepository.listSourcesForDefinition(
@@ -315,7 +312,7 @@ class ConfigRepositoryE2EReadWriteTest {
 
   @Test
   void testListWorkspaceSources() throws IOException {
-    UUID workspaceId = MockData.standardWorkspaces().get(1).getWorkspaceId();
+    final UUID workspaceId = MockData.standardWorkspaces().get(1).getWorkspaceId();
     final List<SourceConnection> expectedSources = MockData.sourceConnections().stream()
         .filter(source -> source.getWorkspaceId().equals(workspaceId)).collect(Collectors.toList());
     final List<SourceConnection> sources = configRepository.listWorkspaceSourceConnection(workspaceId);
@@ -324,7 +321,7 @@ class ConfigRepositoryE2EReadWriteTest {
 
   @Test
   void testListWorkspaceDestinations() throws IOException {
-    UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
     final List<DestinationConnection> expectedDestinations = MockData.destinationConnections().stream()
         .filter(destination -> destination.getWorkspaceId().equals(workspaceId)).collect(Collectors.toList());
     final List<DestinationConnection> destinations = configRepository.listWorkspaceDestinationConnection(workspaceId);
