@@ -9,7 +9,7 @@ import { NavLink } from "react-router-dom";
 
 import { Link } from "components";
 import { CreditsIcon } from "components/icons/CreditsIcon";
-import { DropdownMenu, DropdownMenuItemType } from "components/ui/DropdownMenu";
+import { DropdownMenu } from "components/ui/DropdownMenu";
 import { Text } from "components/ui/Text";
 
 import { useExperiment } from "hooks/services/Experiment";
@@ -41,8 +41,8 @@ const SideBar: React.FC = () => {
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
   const { show } = useIntercom();
   const { formatMessage } = useIntl();
-  const handleChatUs = () => show();
   const hideOnboardingExperiment = useExperiment("onboarding.hideOnboarding", false);
+  const handleChatUs = () => show();
 
   return (
     <nav className={styles.nav}>
@@ -113,25 +113,25 @@ const SideBar: React.FC = () => {
             displacement={10}
             options={[
               {
-                type: DropdownMenuItemType.LINK,
+                as: "a",
                 href: links.docsLink,
                 icon: <DocsIcon />,
                 displayName: formatMessage({ id: "sidebar.documentation" }),
               },
               {
-                type: DropdownMenuItemType.LINK,
+                as: "a",
                 href: links.slackLink,
                 icon: <FontAwesomeIcon icon={faSlack} />,
                 displayName: formatMessage({ id: "sidebar.joinSlack" }),
               },
               {
-                type: DropdownMenuItemType.LINK,
+                as: "a",
                 href: links.statusLink,
                 icon: <StatusIcon />,
                 displayName: formatMessage({ id: "sidebar.status" }),
               },
               {
-                type: DropdownMenuItemType.LINK,
+                as: "a",
                 href: links.tutorialLink,
                 icon: <RecipesIcon />,
                 displayName: formatMessage({ id: "sidebar.recipes" }),
@@ -154,13 +154,13 @@ const SideBar: React.FC = () => {
             displacement={10}
             options={[
               {
-                type: DropdownMenuItemType.LINK,
+                as: "a",
                 href: links.supportTicketLink,
                 icon: <FontAwesomeIcon icon={faEnvelope} />,
                 displayName: formatMessage({ id: "sidebar.supportTicket" }),
               },
               {
-                type: DropdownMenuItemType.BUTTON,
+                as: "button",
                 icon: <ChatIcon />,
                 value: "chatUs",
                 displayName: formatMessage({ id: "sidebar.chat" }),

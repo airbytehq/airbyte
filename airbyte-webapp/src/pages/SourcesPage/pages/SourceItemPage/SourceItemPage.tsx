@@ -19,7 +19,11 @@ import { useSourceDefinition } from "services/connector/SourceDefinitionService"
 import { getIcon } from "utils/imageUtils";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
-import { DropdownMenuItemType, DropdownMenuOptionType, IconPositionType } from "../../../../components/ui/DropdownMenu";
+import {
+  DropdownMenuItemElementType,
+  DropdownMenuOptionType,
+  IconPositionType,
+} from "../../../../components/ui/DropdownMenu";
 import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
 import { RoutePaths } from "../../../routePaths";
 import SourceConnectionTable from "./components/SourceConnectionTable";
@@ -60,7 +64,7 @@ const SourceItemPage: React.FC = () => {
           (dd) => dd.destinationDefinitionId === item.destinationDefinitionId
         );
         return {
-          type: DropdownMenuItemType.BUTTON,
+          as: "button" as DropdownMenuItemElementType,
           icon: <ConnectorIcon icon={destinationDef?.icon} />,
           iconPosition: IconPositionType.RIGHT,
           displayName: item.name,

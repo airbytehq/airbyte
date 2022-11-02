@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
-import { DropdownMenu, DropdownMenuItemType, DropdownMenuOptionType } from "components/ui/DropdownMenu";
+import { DropdownMenu, DropdownMenuOptionType } from "components/ui/DropdownMenu";
 import { Heading } from "components/ui/Heading";
 import { Text } from "components/ui/Text";
 
@@ -52,7 +52,7 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
           placement="bottom-end"
           options={[
             {
-              type: DropdownMenuItemType.BUTTON,
+              as: "button",
               className: styles.primary,
               displayName: formatMessage({
                 id: `tables.${type}AddNew`,

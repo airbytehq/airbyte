@@ -3,10 +3,7 @@ import React from "react";
 
 export type DisplacementType = 5 | 10; // $spacing-sm, $spacing-md
 
-export enum DropdownMenuItemType {
-  LINK = "link",
-  BUTTON = "button",
-}
+export type DropdownMenuItemElementType = "a" | "button";
 
 export enum IconPositionType {
   LEFT = "left",
@@ -14,7 +11,7 @@ export enum IconPositionType {
 }
 
 export interface DropdownMenuOptionType {
-  type: DropdownMenuItemType;
+  as?: DropdownMenuItemElementType;
   icon?: React.ReactNode;
   iconPosition?: IconPositionType;
   displayName: string;

@@ -9,7 +9,7 @@ import { ConnectorIcon } from "components/ConnectorIcon";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import { Breadcrumbs } from "components/ui/Breadcrumbs";
-import { DropdownMenuItemType, DropdownMenuOptionType, IconPositionType } from "components/ui/DropdownMenu";
+import { DropdownMenuItemElementType, DropdownMenuOptionType, IconPositionType } from "components/ui/DropdownMenu";
 import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -65,7 +65,7 @@ const DestinationItemPage: React.FC = () => {
       sources.map((item) => {
         const sourceDef = sourceDefinitions.find((sd) => sd.sourceDefinitionId === item.sourceDefinitionId);
         return {
-          type: DropdownMenuItemType.BUTTON,
+          as: "button" as DropdownMenuItemElementType,
           icon: <ConnectorIcon icon={sourceDef?.icon} />,
           iconPosition: IconPositionType.RIGHT,
           displayName: item.name,

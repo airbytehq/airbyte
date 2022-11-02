@@ -20,43 +20,51 @@
   &:focus-within {
     outline: none;
   }
+}
 
-  .item {
-    cursor: pointer;
+.item {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  height: 42px;
+  width: 100%;
+  padding: 0 variables.$spacing-lg;
+  border: 0;
+  background-color: transparent;
+  text-decoration: none;
+
+  .icon {
     display: flex;
     align-items: center;
-    height: 42px;
+    font-size: 22px;
+    color: colors.$dark-blue;
+  }
+
+  .text {
     width: 100%;
-    padding: 0 variables.$spacing-lg;
-    border: 0;
-    background-color: transparent;
-    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+  }
+
+  &.active {
+    background-color: colors.$grey-100;
+  }
+
+  &.iconPositionRight {
+    flex-direction: row-reverse;
 
     .icon {
-      display: flex;
-      align-items: center;
-      font-size: 22px;
-      color: colors.$dark-blue;
-
-      &.positionLeft {
-        margin-right: variables.$spacing-md;
-      }
-
-      &.positionRight {
-        margin-left: variables.$spacing-md;
-      }
+      margin-left: variables.$spacing-md;
     }
+  }
 
-    .text {
-      width: 100%;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      text-align: left;
-    }
+  &.iconPositionLeft {
+    flex-direction: row;
 
-    &.active {
-      background-color: colors.$grey-100;
+    .icon {
+      margin-right: variables.$spacing-md;
     }
   }
 }

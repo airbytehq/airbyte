@@ -6,20 +6,15 @@ import React from "react";
 import { Text } from "components/ui/Text";
 
 import styles from "./DropdownMenu.module.scss";
-import { DropdownMenuProps, DropdownMenuItemType, IconPositionType, MenuItemContentProps } from "./types";
+import { DropdownMenuProps, IconPositionType, MenuItemContentProps, DropdownMenuOptionType } from "./types";
 
 const MenuItemContent: React.FC<React.PropsWithChildren<MenuItemContentProps>> = ({ data }) => {
   return (
     <>
-      {((data?.icon && data?.iconPosition === IconPositionType.LEFT) || !data?.iconPosition) && (
-        <span className={classNames(styles.icon, styles.positionLeft)}>{data.icon}</span>
-      )}
+      {data?.icon && <span className={styles.icon}>{data.icon}</span>}
       <Text className={styles.text} size="lg">
         {data.displayName}
       </Text>
-      {data?.icon && data?.iconPosition === IconPositionType.RIGHT && (
-        <span className={classNames(styles.icon, styles.positionRight)}>{data.icon}</span>
-      )}
     </>
   );
 };
@@ -36,6 +31,29 @@ export const DropdownMenu: React.FC<React.PropsWithChildren<DropdownMenuProps>> 
     whileElementsMounted: autoUpdate,
     placement,
   });
+
+  const elementProps = (item: DropdownMenuOptionType, active: boolean) => {
+    const anchorProps =
+      item.as === "a"
+        ? {
+            target: "_blank",
+            rel: "noreferrer",
+            href: item?.href,
+          }
+        : {};
+
+    return {
+      ...anchorProps,
+      "data-id": item.displayName,
+      className: classNames(styles.item, item?.className, {
+        [styles.iconPositionLeft]: (item?.iconPosition === IconPositionType.LEFT && item.icon) || !item?.iconPosition,
+        [styles.iconPositionRight]: item?.iconPosition === IconPositionType.RIGHT,
+        [styles.active]: active,
+      }),
+      title: item.displayName,
+      onClick: () => onChange && onChange(item),
+    };
+  };
 
   return (
     <Menu ref={reference} className={styles.dropdownMenu} as="div">
@@ -54,30 +72,10 @@ export const DropdownMenu: React.FC<React.PropsWithChildren<DropdownMenuProps>> 
             {options.map((item, index) => (
               <Menu.Item key={index}>
                 {({ active }) =>
-                  item.type === DropdownMenuItemType.LINK ? (
-                    <a
-                      className={classNames(styles.item, item?.className, {
-                        [styles.active]: active,
-                      })}
-                      target="_blank"
-                      rel="noreferrer"
-                      href={item?.href}
-                      title={item.displayName}
-                      data-id={item.displayName}
-                    >
-                      <MenuItemContent data={item} />
-                    </a>
-                  ) : (
-                    <button
-                      className={classNames(styles.item, item?.className, {
-                        [styles.active]: active,
-                      })}
-                      data-id={item.displayName}
-                      title={item.displayName}
-                      onClick={() => onChange && onChange(item)}
-                    >
-                      <MenuItemContent data={item} />
-                    </button>
+                  React.createElement(
+                    item.as ?? "button",
+                    { ...elementProps(item, active) },
+                    <MenuItemContent data={item} />
                   )
                 }
               </Menu.Item>
