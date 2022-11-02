@@ -41,11 +41,11 @@ export const ProgressBar = ({
     return null;
   }
 
-  let numeratorRecords = 0;
-  let denominatorRecords = 0;
+  let numeratorRecords = -1;
+  let denominatorRecords = -1;
   let totalPercentRecords = -1;
-  let numeratorBytes = 0;
-  let denominatorBytes = 0;
+  let numeratorBytes = -1;
+  let denominatorBytes = -1;
   // let totalPercentBytes = -1;
   let elapsedTimeMS = -1;
   let timeRemainingString = "";
@@ -79,15 +79,31 @@ export const ProgressBar = ({
   if (isJobsWithJobs(job)) {
     if (job.attempts) {
       latestAttempt = job.attempts[job.attempts?.length - 1];
+      let countTotalsFromStreams = true;
+      if (
+        latestAttempt.totalStats?.recordsEmitted &&
+        latestAttempt.totalStats?.estimatedRecords &&
+        latestAttempt.totalStats?.bytesEmitted &&
+        latestAttempt.totalStats?.estimatedBytes
+      ) {
+        countTotalsFromStreams = false;
+        numeratorRecords = latestAttempt.totalStats.recordsEmitted;
+        denominatorRecords = latestAttempt.totalStats.estimatedRecords;
+        numeratorBytes = latestAttempt.totalStats.bytesEmitted;
+        denominatorBytes = latestAttempt.totalStats.estimatedBytes;
+      }
+
       if (latestAttempt && !latestAttempt.totalStats && latestAttempt.streamStats) {
         for (const stream of latestAttempt.streamStats) {
           if (!stream.stats.recordsEmitted) {
             unEstimatedStreams.push(`${stream.streamName}`);
           }
-          numeratorRecords += stream.stats.recordsEmitted ?? 0;
-          denominatorRecords += stream.stats.estimatedRecords ?? 0;
-          numeratorBytes += stream.stats.bytesEmitted ?? 0;
-          denominatorBytes += stream.stats.estimatedBytes ?? 0;
+          if (countTotalsFromStreams) {
+            numeratorRecords += stream.stats.recordsEmitted ?? 0;
+            denominatorRecords += stream.stats.estimatedRecords ?? 0;
+            numeratorBytes += stream.stats.bytesEmitted ?? 0;
+            denominatorBytes += stream.stats.estimatedBytes ?? 0;
+          }
         }
       }
     }
@@ -112,10 +128,12 @@ export const ProgressBar = ({
     }
   }
 
+  console.log({ unEstimatedStreams, numeratorRecords, denominatorRecords, totalPercentRecords, timeRemainingString });
+
   return (
     <div className={classNames(styles.container)}>
       {unEstimatedStreams.length === 0 && <Line percent={totalPercentRecords} strokeColor={[color]} />}
-      {latestAttempt?.status === Status.RUNNING && latestAttempt.streamStats && (
+      {latestAttempt?.status === Status.RUNNING && (
         <>
           {unEstimatedStreams.length === 0 && (
             <div>
@@ -146,27 +164,29 @@ export const ProgressBar = ({
             {formatMessage({ id: "estimate.bytesPerSecond" })}
           </div>
 
-          <div>
-            <br />
-            <div className={classNames(styles.container)}>Stream Stats:</div>
-            {latestAttempt.streamStats?.map((stream, idx) => {
-              const localNumerator = stream.stats.recordsEmitted;
-              const localDenominator = stream.stats.estimatedRecords;
+          {latestAttempt.streamStats && (
+            <div>
+              <br />
+              <div className={classNames(styles.container)}>Stream Stats:</div>
+              {latestAttempt.streamStats?.map((stream, idx) => {
+                const localNumerator = stream.stats.recordsEmitted;
+                const localDenominator = stream.stats.estimatedRecords;
 
-              return (
-                <div className={classNames(styles.container)} key={`stream-progress-${idx}`}>
-                  <strong>{stream.streamName}</strong> -{" "}
-                  {localNumerator && localDenominator
-                    ? `${Math.round((localNumerator * 100) / localDenominator)}${formatMessage({
-                        id: "estimate.percentComplete",
-                      })} (${localNumerator} / ${localDenominator} ${formatMessage({
-                        id: "estimate.recordsSynced",
-                      })})`
-                    : `${localNumerator} ${formatMessage({ id: "estimate.recordsSyncedThusFar" })} (no estimate)`}
-                </div>
-              );
-            })}
-          </div>
+                return (
+                  <div className={classNames(styles.container)} key={`stream-progress-${idx}`}>
+                    <strong>{stream.streamName}</strong> -{" "}
+                    {localNumerator && localDenominator
+                      ? `${Math.round((localNumerator * 100) / localDenominator)}${formatMessage({
+                          id: "estimate.percentComplete",
+                        })} (${localNumerator} / ${localDenominator} ${formatMessage({
+                          id: "estimate.recordsSynced",
+                        })})`
+                      : `${localNumerator} ${formatMessage({ id: "estimate.recordsSyncedThusFar" })} (no estimate)`}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </>
       )}
     </div>
