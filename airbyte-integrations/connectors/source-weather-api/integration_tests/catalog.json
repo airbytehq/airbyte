@@ -1,0 +1,167 @@
+{
+  "streams": [
+    {
+      "name": "weather_api",
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "column1",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "type": "object",
+          "properties": {
+            "coord": {
+              "type": "object",
+              "properties": {
+                "lon": {
+                  "type": ["null", "number"]
+                },
+                "lat": {
+                  "type": ["null", "number"]
+                }
+              }
+            },
+            "weather": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": ["null", "integer"]
+                  },
+                  "main": {
+                    "type": ["null", "string"]
+                  },
+                  "description": {
+                    "type": ["null", "string"]
+                  },
+                  "icon": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            ],
+            "base": {
+              "type": ["null", "string"]
+            },
+            "main": {
+              "type": "object",
+              "properties": {
+                "temp": {
+                  "type": ["null", "number"]
+                },
+                "feels_like": {
+                  "type": ["null", "number"]
+                },
+                "temp_min": {
+                  "type": ["null", "number"]
+                },
+                "temp_max": {
+                  "type": ["null", "number"]
+                },
+                "pressure": {
+                  "type": ["null", "integer"]
+                },
+                "humidity": {
+                  "type": ["null", "integer"]
+                },
+                "sea_level": {
+                  "type": ["null", "integer"]
+                },
+                "grnd_level": {
+                  "type": ["null", "integer"]
+                }
+              }
+            },
+            "visibility": {
+              "type": ["null", "integer"]
+            },
+            "wind": {
+              "type": "object",
+              "properties": {
+                "speed": {
+                  "type": ["null", "number"]
+                },
+                "deg": {
+                  "type": ["null", "number"]
+                },
+                "gust": {
+                  "type": ["null", "number"]
+                }
+              }
+            },
+            "rain": {
+              "type": "object",
+              "properties": {
+                "1h": {
+                  "type": ["null", "number"]
+                }
+              }
+            },
+            "clouds": {
+              "type": "object",
+              "properties": {
+                "all": {
+                  "type": ["null", "number"]
+                }
+              }
+            },
+            "dt": {
+              "type": ["null", "integer"]
+            },
+            "sys": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": ["null", "integer"]
+                },
+                "id": {
+                  "type": ["null", "integer"]
+                },
+                "country": {
+                  "type": ["null", "string"]
+                },
+                "sunrise": {
+                  "type": ["null", "integer"]
+                },
+                "sunset": {
+                  "type": ["null", "integer"]
+                }
+              }
+            },
+            "timezone": {
+              "type": ["null", "integer"]
+            },
+            "id": {
+              "type": ["null", "integer"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "cod": {
+              "type": ["null", "integer"]
+            }
+        
+          }
+        }
+        
+      }
+    },
+    {
+      "name": "table1",
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": false,
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "column1": {
+            "type": "string"
+          },
+          "column2": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  ]
+}
