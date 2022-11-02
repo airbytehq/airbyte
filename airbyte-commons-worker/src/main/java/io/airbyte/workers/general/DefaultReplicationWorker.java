@@ -4,7 +4,13 @@
 
 package io.airbyte.workers.general;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
@@ -16,6 +22,7 @@ import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -25,6 +32,7 @@ import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.RecordSchemaValidationException;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
+import io.airbyte.workers.helper.ThreadedTimeTracker;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteMapper;
 import io.airbyte.workers.internal.AirbyteSource;
@@ -119,6 +127,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
    * @return output of the replication attempt (including state)
    * @throws WorkerException
    */
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public final ReplicationOutput run(final StandardSyncInput syncInput, final Path jobRoot) throws WorkerException {
     LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
@@ -129,7 +138,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     final WorkerDestinationConfig destinationConfig = WorkerUtils.syncToWorkerDestinationConfig(syncInput);
     destinationConfig.setCatalog(mapper.mapCatalog(destinationConfig.getCatalog()));
 
+    final ThreadedTimeTracker timeTracker = new ThreadedTimeTracker();
     final long startTime = System.currentTimeMillis();
+    timeTracker.trackReplicationStartTime();
+
     final AtomicReference<FailureReason> replicationRunnableFailureRef = new AtomicReference<>();
     final AtomicReference<FailureReason> destinationRunnableFailureRef = new AtomicReference<>();
 
@@ -142,17 +154,22 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
+      ApmTraceUtils.addTagsToTrace(generateTraceTags(destinationConfig, jobRoot));
+
       // note: resources are closed in the opposite order in which they are declared. thus source will be
       // closed first (which is what we want).
       try (destination; source) {
         destination.start(destinationConfig, jobRoot);
+        timeTracker.trackSourceReadStartTime();
         source.start(sourceConfig, jobRoot);
+        timeTracker.trackDestinationWriteStartTime();
 
         // note: `whenComplete` is used instead of `exceptionally` so that the original exception is still
         // thrown
         final CompletableFuture<?> destinationOutputThreadFuture = CompletableFuture.runAsync(
-            getDestinationOutputRunnable(destination, cancelled, messageTracker, mdc),
-            executors).whenComplete((msg, ex) -> {
+            getDestinationOutputRunnable(destination, cancelled, messageTracker, mdc, timeTracker),
+            executors)
+            .whenComplete((msg, ex) -> {
               if (ex != null) {
                 if (ex.getCause() instanceof DestinationException) {
                   destinationRunnableFailureRef.set(FailureHelper.destinationFailure(ex, Long.valueOf(jobId), attempt));
@@ -163,8 +180,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             });
 
         final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
-            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, metricReporter),
-            executors).whenComplete((msg, ex) -> {
+            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, metricReporter, timeTracker),
+            executors)
+            .whenComplete((msg, ex) -> {
               if (ex != null) {
                 if (ex.getCause() instanceof SourceException) {
                   replicationRunnableFailureRef.set(FailureHelper.sourceFailure(ex, Long.valueOf(jobId), attempt));
@@ -187,6 +205,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
       } catch (final Exception e) {
         hasFailed.set(true);
+        ApmTraceUtils.addExceptionToTrace(e);
         LOGGER.error("Sync worker failed.", e);
       } finally {
         executors.shutdownNow();
@@ -204,6 +223,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         outputStatus = ReplicationStatus.COMPLETED;
       }
 
+      timeTracker.trackReplicationEndTime();
+
       final SyncStats totalSyncStats = new SyncStats()
           .withRecordsEmitted(messageTracker.getTotalRecordsEmitted())
           .withBytesEmitted(messageTracker.getTotalBytesEmitted())
@@ -212,7 +233,13 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .withMaxSecondsBeforeSourceStateMessageEmitted(messageTracker.getMaxSecondsToReceiveSourceStateMessage())
           .withMeanSecondsBeforeSourceStateMessageEmitted(messageTracker.getMeanSecondsToReceiveSourceStateMessage())
           .withMaxSecondsBetweenStateMessageEmittedandCommitted(messageTracker.getMaxSecondsBetweenStateMessageEmittedAndCommitted().orElse(null))
-          .withMeanSecondsBetweenStateMessageEmittedandCommitted(messageTracker.getMeanSecondsBetweenStateMessageEmittedAndCommitted().orElse(null));
+          .withMeanSecondsBetweenStateMessageEmittedandCommitted(messageTracker.getMeanSecondsBetweenStateMessageEmittedAndCommitted().orElse(null))
+          .withReplicationStartTime(timeTracker.getReplicationStartTime())
+          .withReplicationEndTime(timeTracker.getReplicationEndTime())
+          .withSourceReadStartTime(timeTracker.getSourceReadStartTime())
+          .withSourceReadEndTime(timeTracker.getSourceReadEndTime())
+          .withDestinationWriteStartTime(timeTracker.getDestinationWriteStartTime())
+          .withDestinationWriteEndTime(timeTracker.getDestinationWriteEndTime());
 
       if (outputStatus == ReplicationStatus.COMPLETED) {
         totalSyncStats.setRecordsCommitted(totalSyncStats.getRecordsEmitted());
@@ -305,6 +332,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       LineGobbler.endSection("REPLICATION");
       return output;
     } catch (final Exception e) {
+      ApmTraceUtils.addExceptionToTrace(e);
       throw new WorkerException("Sync failed", e);
     }
 
@@ -318,11 +346,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                  final MessageTracker messageTracker,
                                                  final Map<String, String> mdc,
                                                  final RecordSchemaValidator recordSchemaValidator,
-                                                 final WorkerMetricReporter metricReporter) {
+                                                 final WorkerMetricReporter metricReporter,
+                                                 final ThreadedTimeTracker timeHolder) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
-      var recordsRead = 0;
+      Long recordsRead = 0L;
       final Map<String, ImmutablePair<Set<String>, Integer>> validationErrors = new HashMap<>();
       try {
         while (!cancelled.get() && !source.isFinished()) {
@@ -362,6 +391,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             }
           }
         }
+        timeHolder.trackSourceReadEndTime();
         LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
         if (!validationErrors.isEmpty()) {
           validationErrors.forEach((stream, errorPair) -> {
@@ -431,7 +461,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private static Runnable getDestinationOutputRunnable(final AirbyteDestination destination,
                                                        final AtomicBoolean cancelled,
                                                        final MessageTracker messageTracker,
-                                                       final Map<String, String> mdc) {
+                                                       final Map<String, String> mdc,
+                                                       final ThreadedTimeTracker timeHolder) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Destination output thread started.");
@@ -448,6 +479,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             messageTracker.acceptFromDestination(messageOptional.get());
           }
         }
+        timeHolder.trackDestinationWriteEndTime();
         if (!cancelled.get() && destination.getExitValue() != 0) {
           throw new DestinationException("Destination process exited with non-zero exit code " + destination.getExitValue());
         }
@@ -469,6 +501,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void cancel() {
     // Resources are closed in the opposite order they are declared.
@@ -476,7 +509,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     try {
       executors.awaitTermination(10, TimeUnit.SECONDS);
     } catch (final InterruptedException e) {
-      e.printStackTrace();
+      ApmTraceUtils.addExceptionToTrace(e);
+      LOGGER.error("Unable to cancel due to interruption.", e);
     }
     cancelled.set(true);
 
@@ -484,6 +518,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     try {
       destination.cancel();
     } catch (final Exception e) {
+      ApmTraceUtils.addExceptionToTrace(e);
       LOGGER.info("Error cancelling destination: ", e);
     }
 
@@ -491,9 +526,25 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     try {
       source.cancel();
     } catch (final Exception e) {
+      ApmTraceUtils.addExceptionToTrace(e);
       LOGGER.info("Error cancelling source: ", e);
     }
 
+  }
+
+  private Map<String, Object> generateTraceTags(final WorkerDestinationConfig destinationConfig, final Path jobRoot) {
+    final Map<String, Object> tags = new HashMap<>();
+
+    tags.put(JOB_ID_KEY, jobId);
+    tags.put(JOB_ROOT_KEY, jobRoot);
+
+    if (destinationConfig != null) {
+      if (destinationConfig.getConnectionId() != null) {
+        tags.put(CONNECTION_ID_KEY, destinationConfig.getConnectionId());
+      }
+    }
+
+    return tags;
   }
 
   private static class SourceException extends RuntimeException {

@@ -30,11 +30,19 @@ properties:
   destinationDockerImage:
     description: Image name of the destination with tag.
     type: string
+  destinationProtocolVersion:
+    description: Airbyte Protocol Version of the destination
+    type: object
+    existingJavaType: io.airbyte.commons.version.Version
   operationSequence:
     description: Sequence of configurations of operations to apply as part of the sync
     type: array
     items:
       "$ref": StandardSyncOperation.yaml
+  webhookOperationConfigs:
+    description: The webhook operation configs belonging to this workspace. Must conform to WebhookOperationConfigs.yaml.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
   resourceRequirements:
     type: object
     description: optional resource requirements to run sync workers

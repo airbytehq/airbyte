@@ -141,7 +141,8 @@ public class ConnectionsHandler {
         .withOperationIds(operationIds)
         .withStatus(ApiPojoConverters.toPersistenceStatus(connectionCreate.getStatus()))
         .withSourceCatalogId(connectionCreate.getSourceCatalogId())
-        .withGeography(getGeographyFromConnectionCreateOrWorkspace(connectionCreate));
+        .withGeography(getGeographyFromConnectionCreateOrWorkspace(connectionCreate))
+        .withBreakingChange(false);
     if (connectionCreate.getResourceRequirements() != null) {
       standardSync.withResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(connectionCreate.getResourceRequirements()));
     }
@@ -189,7 +190,7 @@ public class ConnectionsHandler {
 
     // connectionCreate didn't specify a geography, so use the workspace default geography if one exists
     final UUID workspaceId = workspaceHelper.getWorkspaceForSourceId(connectionCreate.getSourceId());
-    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+    final StandardWorkspace workspace = configRepository.getStandardWorkspaceNoSecrets(workspaceId, true);
 
     if (workspace.getDefaultGeography() != null) {
       return workspace.getDefaultGeography();
@@ -337,6 +338,10 @@ public class ConnectionsHandler {
 
     if (patch.getResourceRequirements() != null) {
       sync.setResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(patch.getResourceRequirements()));
+    }
+
+    if (patch.getGeography() != null) {
+      sync.setGeography(ApiPojoConverters.toPersistenceGeography(patch.getGeography()));
     }
   }
 
