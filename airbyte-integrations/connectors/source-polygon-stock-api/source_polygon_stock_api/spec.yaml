@@ -1,0 +1,46 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Weather API Spec
+  type: object
+  required:
+    - apiKey
+    - stocksTicker
+    - multiplier
+    - timespan
+    - from
+    - to
+  additionalProperties: true
+  properties:
+    apiKey:
+      type: string
+      description: Your API ACCESS Key
+      airbyte_secret: true
+    stocksTicker:
+      type: string
+      description: The exchange symbol that this item is traded under.
+      examples:
+        - IBM
+        - MSFT
+    multiplier:
+      type: integer
+      description: The size of the timespan multiplier.
+      examples:
+        - 1
+        - 2
+    timespan:
+      type: string
+      description: The size of the time window.
+      examples:
+        - day
+    from:
+      type: string
+      description: The beginning date for the aggregate window.
+      examples:
+        - "2020-10-14"
+    to:
+      type: string
+      description: The target date for the aggregate window.
+      examples:
+        - "2020-10-14"
+    

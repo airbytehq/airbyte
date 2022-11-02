@@ -1,0 +1,84 @@
+{
+  "streams": [
+    {
+      "name": "stock_api",
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": ["null", "string"]
+          },
+          "queryCount": {
+            "type": ["null", "integer"]
+          },
+          "resultsCount": {
+            "type": ["null", "integer"]
+          },
+          "adjusted": {
+            "type": ["null", "boolean"]
+          },
+          "results":[ {
+            "type": "object",
+            "properties": {
+              "v": {
+                "type": ["null", "number"]
+              },
+              "vw": {
+                "type": ["null", "number"]
+              },
+              "otc": {
+                "type": ["null", "boolean"]
+              },
+              "o": {
+                "type": ["null", "number"]
+              },
+              "c": {
+                "type": ["null", "number"]
+              },
+              "h": {
+                "type": ["null", "number"]
+              },
+              "l": {
+                "type": ["null", "number"]
+              },
+              "t": {
+                "type": ["null", "integer"]
+              },
+              "n": {
+                "type": ["null", "number"]
+              }
+            }
+          }],
+          "status": {
+            "type": ["null", "string"]
+          },
+          "request_id": {
+            "type": ["null", "string"]
+          },
+          "count": {
+            "type": ["null", "number"]
+          }
+        }
+      }
+    },
+    {
+      "name": "table1",
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": false,
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "column1": {
+            "type": "string"
+          },
+          "column2": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  ]
+}

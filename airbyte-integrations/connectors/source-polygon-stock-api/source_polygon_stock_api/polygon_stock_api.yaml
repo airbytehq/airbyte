@@ -1,0 +1,35 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://api.polygon.io"
+    http_method: "GET"
+  authenticator:
+      type: ApiKeyAuthenticator
+      header: "X-CoinAPI-Key"
+      api_token: "{{ config['access_key'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  stock_api_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "stock_api"
+      primary_key: "id"
+      path: "/v2/aggs/ticker/{{ config['stocksTicker'] }}/range/{{ config['multiplier'] }}/{{ config['timespan'] }}/{{ config['from'] }}/{{ config['to'] }}?adjusted={{ config['adjusted'] }}&sort={{ config['sort'] }}&limit=120&apiKey={{ config['apiKey'] }}"
+streams:
+  - "*ref(definitions.stock_api_stream)"
+
+check:
+  stream_names:
+    - "stock_api"

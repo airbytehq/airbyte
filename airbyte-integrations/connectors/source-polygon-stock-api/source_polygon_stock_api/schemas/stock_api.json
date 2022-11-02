@@ -1,0 +1,58 @@
+{
+  "type": "object",
+  "properties": {
+    "ticker": {
+      "type": ["null", "string"]
+    },
+    "queryCount": {
+      "type": ["null", "integer"]
+    },
+    "resultsCount": {
+      "type": ["null", "integer"]
+    },
+    "adjusted": {
+      "type": ["null", "boolean"]
+    },
+    "results":[ {
+      "type": "object",
+      "properties": {
+        "v": {
+          "type": ["null", "number"]
+        },
+        "vw": {
+          "type": ["null", "number"]
+        },
+        "otc": {
+          "type": ["null", "boolean"]
+        },
+        "o": {
+          "type": ["null", "number"]
+        },
+        "c": {
+          "type": ["null", "number"]
+        },
+        "h": {
+          "type": ["null", "number"]
+        },
+        "l": {
+          "type": ["null", "number"]
+        },
+        "t": {
+          "type": ["null", "integer"]
+        },
+        "n": {
+          "type": ["null", "number"]
+        }
+      }
+    }],
+    "status": {
+      "type": ["null", "string"]
+    },
+    "request_id": {
+      "type": ["null", "string"]
+    },
+    "count": {
+      "type": ["null", "number"]
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "apiKey": "YOUR API KEY",
+  "limit": "120",
+  "sort": "asc",
+  "adjusted": "true",
+  "stocksTicker": "AAPL",
+  "multiplier": "1",
+  "timespan": "day",
+  "from": "2021-07-22",
+  "to": "2021-07-22" 
+}
