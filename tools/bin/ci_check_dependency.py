@@ -1,9 +1,12 @@
 import sys
 import os
 import os.path
+import yaml
 
 CONNECTOR_PATH = "./airbyte-integrations/connectors/"
 DOC_PATH = "docs/integrations/"
+SOURCE_DEFINITIONS_PATH = "./airbyte-config/init/src/main/resources/seed/source_definitions.yaml"
+DESTINATION_DEFINITIONS_PATH = "./airbyte-config/init/src/main/resources/seed/destination_definitions.yaml"
 IGNORE_LIST = [
     # Java
     "/src/test/","/src/test-integration/", "/src/testFixtures/",
@@ -117,12 +120,19 @@ def as_bulleted_markdown_list(items):
     return text
 
 
-def as_markdown_table_row(items):
+def as_markdown_table_row(connectors, definitions):
     text = ""
-    for item in items:
-        version = get_connector_version(item)
-        changelog_status = get_connector_changelog_status(item, version)
-        text += f"| `{item}` | `{version}` | {changelog_status} | |\n"
+    for connector in connectors:
+        version = get_connector_version(connector)
+        changelog_status = get_connector_changelog_status(connector, version)
+        definition = next((x for x in definitions if x["dockerRepository"].endswith(connector)), None)
+        if definition is None:
+            publish_status = "⚠ (connector not in definition)"
+        elif definition["dockerImageTag"] == version:
+            publish_status = "✅"
+        else:
+            publish_status = "❌(version mismatch in definition)"
+        text += f"| `{connector}` | `{version}` | {changelog_status} | {publish_status} |\n"
     return text
 
 
@@ -141,6 +151,13 @@ def write_report(depended_connectors):
     with open(COMMENT_TEMPLATE_PATH, "r") as f:
         template = f.read()
 
+    source_definitions = []
+    destination_definitions = []
+    with open(SOURCE_DEFINITIONS_PATH, 'r') as stream:
+        source_definitions = yaml.safe_load(stream)
+    with open(DESTINATION_DEFINITIONS_PATH, 'r') as stream:
+        destination_definitions = yaml.safe_load(stream)
+
     others_md = ""
     if affected_others:
         others_md += "The following were also affected:\n"
@@ -155,8 +172,8 @@ def write_report(depended_connectors):
         destination_open="open" if len(affected_destinations) > 0 else "closed",
         source_status_summary="⚠",
         destination_status_summary="⚠",
-        source_rows=as_markdown_table_row(affected_sources),
-        destination_rows=as_markdown_table_row(affected_destinations),
+        source_rows=as_markdown_table_row(affected_sources, source_definitions),
+        destination_rows=as_markdown_table_row(affected_destinations, destination_definitions),
         others=others_md,
         num_sources=len(affected_sources),
         num_destinations=len(affected_destinations)
