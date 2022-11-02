@@ -1,0 +1,10 @@
+{
+  "api_key": "<API_key>",
+  "query":"<param>",
+  "orientation": "<param>",
+  "size": "<param>",
+  "color": "<param>",
+  "locale": "<param>",
+  "page": "<param>",
+  "per_page":"<param>"
+}

@@ -1,0 +1,10 @@
+{
+  "api_key": "<invalid_key>",
+  "query":"<unsupported_param>",
+  "orientation": "<unsupported_param>",
+  "size": "<unsupported_param>",
+  "color": "<unsupported_param>",
+  "locale": "<unsupported_param>",
+  "page": "<unsupported_param>",
+  "per_page":"<unsupported_param>"
+}

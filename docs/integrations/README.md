@@ -139,6 +139,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [PayPal Transaction](sources/paypal-transaction.md)                                         | Generally Available  | Yes                 |
 | [Paystack](sources/paystack.md)                                                             | Alpha                | No                  |
 | [PersistIq](sources/persistiq.md)                                                           | Alpha                | Yes                 |
+| [Pexels-API](sources/pexels-api.md)                                                         | Alpha                | No                  |
 | [Pinterest](sources/pinterest.md)                                                           | Generally Available  | Yes                 |
 | [Pipedrive](sources/pipedrive.md)                                                           | Alpha                | No                  |
 | [Pivotal Tracker](sources/pivotal-tracker.md)                                               | Alpha                | No                  |
