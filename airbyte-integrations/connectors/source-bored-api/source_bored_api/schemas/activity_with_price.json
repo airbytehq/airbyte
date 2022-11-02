@@ -1,0 +1,41 @@
+{
+	"definitions": {},
+	"$schema": "http://json-schema.org/draft-07/schema#", 
+	"$id": "https://example.com/object1667312885.json", 
+	"title": "Root", 
+	"type": "object",
+	"properties": {
+		"activity": {
+			"$id": "#root/activity", 
+			"title": "Activity", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"accessibility": {
+			"$id": "#root/accessibility", 
+			"title": "Accessibility", 
+			"type": "number",
+			"default": 0.0
+		},
+		"type": {
+			"$id": "#root/type", 
+			"title": "Type", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"participants": {
+			"$id": "#root/participants", 
+			"title": "Participants", 
+			"type": ["number","string","null"],
+			"default": 0
+		},
+		"price": {
+			"$id": "#root/price", 
+			"title": "Price", 
+			"type": ["number","string","null"],
+			"default": 0
+		}
+	}
+}

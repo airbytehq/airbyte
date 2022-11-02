@@ -1,0 +1,86 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "http://www.boredapi.com/api/"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "apikey"
+      api_token: "{{ config['api_key'] }}"
+
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+
+  activity_with_key_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "activity_with_key"
+      path: "/activity?key={{ config['key'] or '5881028'}}"
+
+  activity_with_type_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "activity_with_type"
+      path: "/activity?type={{ config['type'] or 'recreational'}}"
+
+  activity_with_participants_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "activity_with_participants"
+      path: "/activity?participants={{ config['participants'] or '1'}}"
+
+  activity_with_price_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "activity_with_price"
+      path: "/activity?price={{ config['price'] or '0.0'}}"
+
+  activity_with_price_range_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "activity_with_price_range"
+      path: "/activity?minprice={{ config['minprice'] or '0'}}&maxprice={{ config['maxprice'] or '0.1'}}"
+
+  activity_with_accessibility_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "activity_with_accessibility"
+      path: "/activity?accessibility={{ config['accessibility'] or '1'}}"
+
+  activity_with_accessibility_range_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "activity_with_accessibility_range"
+      path: "/activity?minaccessibility={{ config['minaccessibility'] or '0'}}&maxaccessibility={{ config['maxaccessibility'] or '0.1'}}"
+
+streams:
+  - "*ref(definitions.activity_with_key_stream)"
+  - "*ref(definitions.activity_with_type_stream)"
+  - "*ref(definitions.activity_with_participants_stream)"
+  - "*ref(definitions.activity_with_price_stream)"
+  - "*ref(definitions.activity_with_price_range_stream)"
+  - "*ref(definitions.activity_with_accessibility_stream)"
+  - "*ref(definitions.activity_with_accessibility_range_stream)"
+
+check:
+  stream_names:
+    - "activity_with_key"
+    - "activity_with_type"
+    - "activity_with_participants"
+    - "activity_with_price"
+    - "activity_with_price_range"
+    - "activity_with_accessibility"
+    - "activity_with_accessibility_range"

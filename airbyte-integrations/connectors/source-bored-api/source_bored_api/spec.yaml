@@ -1,0 +1,39 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Bored Api Spec
+  type: object
+  required:
+    - api_key
+  additionalProperties: true
+  properties:
+    api_key:
+      type: string
+      description: Dummy API Key just for enhancements at future stages
+    key:
+      type: string
+      description: Optional Parameter to the API request for specific targeted key
+    type:
+      type: string
+      descption: Optional Parameter to the API request for specific type
+    participants:
+      type: string
+      descption: Optional Parameter to the API request for specific participants
+    price:
+      type: string
+      descption: Optional Parameter to the API request for specific price
+    minprice:
+      type: string
+      descption: Optional Parameter to the API request for specific price range (If this is given, the maxprice is a mandatory parameter)
+    maxprice:
+      type: string
+      descption: Optional Parameter to the API request for specific price range (If this is given, the minprice is a mandatory parameter)
+    accesibility:
+      type: string
+      descption: Optional Parameter to the API request for specific accesibility
+    minaccessibility:
+      type: string
+      descption: Optional Parameter to the API request for specific accesibility range (If this is given, the maxaccessibility is a mandatory parameter)
+    maxaccessibility:
+      type: string
+      descption: Optional Parameter to the API request for specific accesibility range (If this is given, the minaccessibility is a mandatory parameter)
