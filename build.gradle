@@ -156,7 +156,7 @@ spotless {
     format 'styling', {
         target createSpotlessTarget(['**/*.yaml', '**/*.json'])
 
-        prettier()
+//        prettier()
     }
 }
 check.dependsOn 'spotlessApply'

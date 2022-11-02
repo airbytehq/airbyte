@@ -4,27 +4,50 @@
 
 package io.airbyte.integrations.destination.dynamodb;
 
+import static io.airbyte.integrations.destination.dynamodb.DynamodbDestinationStrictEncrypt.NON_SECURE_URL_ERR_MSG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
 public class DynamodbDestinationStrictEncryptTest {
 
-  private static final String NON_SECURE_URL_ERR_MSG = "Server Endpoint requires HTTPS";
+  protected static final Path secretFilePath = Path.of("secrets/config.json");
 
   /**
-   * Test that checks if user is using a connection that is HTTPS only
+   * Test that check passes if user is using HTTPS connection
    */
   @Test
-  public void checksCustomEndpointIsHttpsOnly() {
+  public void checkPassCustomEndpointIsHttpsOnly() {
+    final DynamodbDestination destinationWithHttpsOnlyEndpoint = new DynamodbDestinationStrictEncrypt();
+    final AirbyteConnectionStatus status = destinationWithHttpsOnlyEndpoint.check(getBaseConfigJson());
+    assertEquals(Status.SUCCEEDED, status.getStatus());
+  }
+
+  /**
+   * Test that check failes if user is using a non-secure (http) connection
+   */
+  @Test
+  public void checkFailCustomEndpointIsHttpsOnly() {
     final DynamodbDestination destinationWithHttpsOnlyEndpoint = new DynamodbDestinationStrictEncrypt();
     final AirbyteConnectionStatus status = destinationWithHttpsOnlyEndpoint.check(getUnsecureConfig());
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertEquals(NON_SECURE_URL_ERR_MSG, status.getMessage());
+  }
+
+  protected JsonNode getBaseConfigJson() {
+    if (!Files.exists(secretFilePath)) {
+      throw new IllegalStateException("Secret config file doesn't exist. Get a valid secret (for airbyter: "
+          + "get secret from GSM) and put to ../destination-dynamodb/secrets/secret.json file");
+    }
+    return Jsons.deserialize(IOs.readFile(secretFilePath));
   }
 
   protected JsonNode getUnsecureConfig() {
