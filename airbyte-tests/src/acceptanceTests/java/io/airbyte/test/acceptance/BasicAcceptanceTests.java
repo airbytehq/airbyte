@@ -689,7 +689,7 @@ class BasicAcceptanceTests {
     testHarness.removeConnection(connectionId);
 
     LOGGER.info("Waiting for connection to be deleted...");
-    Thread.sleep(5000);
+    Thread.sleep(50000);
 
     ConnectionStatus connectionStatus =
         apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getStatus();
