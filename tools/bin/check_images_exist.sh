@@ -124,7 +124,6 @@ main() {
   [[ "$SUBSET" =~ ^(all|connectors)$ ]] && checkConnectorImages
   echo -e "$blue_text""Image check complete.""$default_text"
   test -f header.txt     && rm header.txt
-  test -f compose_output && rm compose_output
 }
 
 main "$@"
