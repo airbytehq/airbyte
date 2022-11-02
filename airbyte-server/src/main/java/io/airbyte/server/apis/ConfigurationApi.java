@@ -134,7 +134,6 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
 import java.net.http.HttpClient;
-import java.nio.file.Path;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
@@ -157,9 +156,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   private final WebBackendGeographiesHandler webBackendGeographiesHandler;
   private final OpenApiConfigHandler openApiConfigHandler;
   private final OAuthHandler oAuthHandler;
-  private final WorkerEnvironment workerEnvironment;
-  private final LogConfigs logConfigs;
-  private final Path workspaceRoot;
 
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
@@ -171,12 +167,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
                           final AirbyteVersion airbyteVersion,
-                          final Path workspaceRoot,
                           final HttpClient httpClient,
                           final EventRunner eventRunner) {
-    this.workerEnvironment = workerEnvironment;
-    this.logConfigs = logConfigs;
-    this.workspaceRoot = workspaceRoot;
 
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
 
