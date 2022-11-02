@@ -1,6 +1,5 @@
 {
-  "type": ["object"],
-  "required": ["id"],
+  "type": ["null", "object"],
   "properties": {
     "test": {
       "type": ["null", "boolean"]
@@ -52,7 +51,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "status": {
       "type": ["null", "string"]

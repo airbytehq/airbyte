@@ -1,6 +1,5 @@
 {
-  "type": ["object"],
-  "required": ["pivotValue", "end_date"],
+  "type": ["null", "object"],
   "properties": {
     "actionClicks": {
       "type": ["null", "number"]
@@ -31,7 +30,7 @@
       "format": "date"
     },
     "end_date": {
-      "type": ["string"],
+      "type": ["null", "string"],
       "format": "date"
     },
     "externalWebsiteConversions": {
@@ -80,7 +79,7 @@
       "type": ["null", "string"]
     },
     "pivotValue": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "pivotValues": {
       "type": ["null", "array"],
