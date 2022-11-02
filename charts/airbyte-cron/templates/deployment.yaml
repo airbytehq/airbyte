@@ -45,21 +45,11 @@ spec:
           imagePullPolicy: "{{ .Values.image.pullPolicy }}"
           env:
           {{- if eq .Values.global.deploymentMode "oss"  }}
-          - name: AIRBYTE_ROLE
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Release.Name }}-airbyte-env
-                key: AIRBYTE_ROLE
           - name: AIRBYTE_VERSION
             valueFrom:
               configMapKeyRef:
                 name: {{ .Release.Name }}-airbyte-env
                 key: AIRBYTE_VERSION
-          - name: CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Release.Name }}-airbyte-env
-                key: CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS
           - name: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
             valueFrom:
               configMapKeyRef:
@@ -85,21 +75,11 @@ spec:
               configMapKeyRef:
                 name: {{ .Release.Name }}-airbyte-env
                 key: CRON_MICRONAUT_ENVIRONMENTS
-          - name: REMOTE_CONNECTOR_CATALOG_URL
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Release.Name }}-airbyte-env
-                key: REMOTE_CONNECTOR_CATALOG_URL
           - name: TRACKING_STRATEGY
             valueFrom:
               configMapKeyRef:
                 name: {{ .Release.Name }}-airbyte-env
                 key: TRACKING_STRATEGY
-          - name: UPDATE_DEFINITIONS_CRON_ENABLED
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Release.Name }}-airbyte-env
-                key: UPDATE_DEFINITIONS_CRON_ENABLED
           - name: WORKFLOW_FAILURE_RESTART_DELAY_SECONDS
             valueFrom:
               configMapKeyRef:
