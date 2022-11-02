@@ -19,7 +19,6 @@ import static org.jooq.impl.DSL.groupConcat;
 import static org.jooq.impl.DSL.noCondition;
 import static org.jooq.impl.DSL.select;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
@@ -30,7 +29,6 @@ import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
-import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
@@ -70,7 +68,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -94,14 +91,17 @@ public class ConfigRepository {
 
   private final ConfigPersistence persistence;
   private final ExceptionWrappingDatabase database;
+  private final ActorDefinitionMigrator actorDefinitionMigrator;
 
-  public ConfigRepository(final ConfigPersistence persistence, final Database database) {
-    this.persistence = persistence;
-    this.database = new ExceptionWrappingDatabase(database);
+  public ConfigRepository(final Database database) {
+    this(DatabaseConfigPersistence.createWithValidation(database), database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)));
   }
 
-  public ConfigPersistence getConfigPersistence() {
-    return persistence;
+  @VisibleForTesting
+  ConfigRepository(final ConfigPersistence persistence, final Database database, final ActorDefinitionMigrator actorDefinitionMigrator) {
+    this.persistence = persistence;
+    this.database = new ExceptionWrappingDatabase(database);
+    this.actorDefinitionMigrator = actorDefinitionMigrator;
   }
 
   /**
@@ -579,6 +579,16 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, partialSource.getSourceId().toString(), partialSource);
   }
 
+  public boolean deleteSource(final UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    try {
+      getSourceConnection(sourceId);
+      persistence.deleteConfig(ConfigSchema.SOURCE_CONNECTION, sourceId.toString());
+      return true;
+    } catch (final ConfigNotFoundException e) {
+      return false;
+    }
+  }
+
   /**
    * Returns all sources in the database. Does not contain secrets. To hydrate with secrets see
    * { @link SecretsRepositoryReader#listSourceConnectionWithSecrets() }.
@@ -638,6 +648,16 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, partialDestination.getDestinationId().toString(), partialDestination);
   }
 
+  public boolean deleteDestination(final UUID destId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    try {
+      getDestinationConnection(destId);
+      persistence.deleteConfig(ConfigSchema.DESTINATION_CONNECTION, destId.toString());
+      return true;
+    } catch (final ConfigNotFoundException e) {
+      return false;
+    }
+  }
+
   /**
    * Returns all destinations in the database. Does not contain secrets. To hydrate with secrets see
    * { @link SecretsRepositoryReader#listDestinationConnectionWithSecrets() }.
@@ -657,7 +677,7 @@ public class ConfigRepository {
    * @return destinations
    * @throws IOException - you never know when you IO
    */
-  public List<DestinationConnection> listWorkspaceDestinationConnection(UUID workspaceId) throws IOException {
+  public List<DestinationConnection> listWorkspaceDestinationConnection(final UUID workspaceId) throws IOException {
     final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
         .from(ACTOR)
         .where(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
@@ -673,7 +693,7 @@ public class ConfigRepository {
    * @return sources
    * @throws IOException
    */
-  public List<SourceConnection> listSourcesForDefinition(UUID definitionId) throws IOException {
+  public List<SourceConnection> listSourcesForDefinition(final UUID definitionId) throws IOException {
     final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
         .from(ACTOR)
         .where(ACTOR.ACTOR_TYPE.eq(ActorType.source))
@@ -689,7 +709,7 @@ public class ConfigRepository {
    * @return destinations
    * @throws IOException
    */
-  public List<DestinationConnection> listDestinationsForDefinition(UUID definitionId) throws IOException {
+  public List<DestinationConnection> listDestinationsForDefinition(final UUID definitionId) throws IOException {
     final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
         .from(ACTOR)
         .where(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
@@ -915,6 +935,19 @@ public class ConfigRepository {
     return result;
   }
 
+  /**
+   * Updates the database with the most up-to-date source and destination definitions in the connector
+   * catalog.
+   *
+   * @param seedSourceDefs - most up-to-date source definitions
+   * @param seedDestDefs - most up-to-date destination definitions
+   * @throws IOException - throws if exception when interacting with db
+   */
+  public void seedActorDefinitions(final List<StandardSourceDefinition> seedSourceDefs, final List<StandardDestinationDefinition> seedDestDefs)
+      throws IOException {
+    actorDefinitionMigrator.migrate(seedSourceDefs, seedDestDefs);
+  }
+
   // Data-carrier records to hold combined result of query for a Source or Destination and its
   // corresponding Definition. This enables the API layer to
   // process combined information about a Source/Destination/Definition pair without requiring two
@@ -1117,46 +1150,6 @@ public class ConfigRepository {
         .where(ACTOR.WORKSPACE_ID.equal(workspaceId))
         .and(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
         .andNot(ACTOR.TOMBSTONE)).fetchOne().into(int.class);
-  }
-
-  /**
-   * MUST NOT ACCEPT SECRETS - Package private so that secrets are not accidentally passed in. Should
-   * only be called from { @link SecretsRepositoryWriter }
-   *
-   * Takes as inputs configurations that it then uses to overwrite the contents of the existing Config
-   * Database.
-   *
-   * @param configs - configurations to load.
-   * @param dryRun - whether to test run of the load
-   * @throws IOException - you never know when you IO.
-   */
-  void replaceAllConfigsNoSecrets(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
-    persistence.replaceAllConfigs(configs, dryRun);
-  }
-
-  /**
-   * Dumps all configurations in the Config Database. Note: It will not contain secrets as the Config
-   * Database does not contain connector configurations that include secrets. In order to hydrate with
-   * secrets see { @link SecretsRepositoryReader#dumpConfigs() }.
-   *
-   * @return all configurations in the Config Database
-   * @throws IOException - you never know when you IO
-   */
-  public Map<String, Stream<JsonNode>> dumpConfigsNoSecrets() throws IOException {
-    return persistence.dumpConfigs();
-  }
-
-  /**
-   * MUST NOT ACCEPT SECRETS - Package private so that secrets are not accidentally passed in. Should
-   * only be called from { @link SecretsRepositoryWriter }
-   *
-   * Loads all Data from a ConfigPersistence into the database.
-   *
-   * @param seedPersistenceWithoutSecrets - seed persistence WITHOUT secrets
-   * @throws IOException - you never know when you IO
-   */
-  public void loadDataNoSecrets(final ConfigPersistence seedPersistenceWithoutSecrets) throws IOException {
-    persistence.loadData(seedPersistenceWithoutSecrets);
   }
 
   /**
