@@ -68,13 +68,13 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
 
     const testConnectorWithTracking = async () => {
       trackTestConnectorStarted(connector);
-      const connectorFailureCount = Number(localStorage.getItem("connector_failure_count"));
-      localStorage.setItem("connector_failure_count", (connectorFailureCount + 1).toString());
       try {
         await testConnector(values);
         trackTestConnectorSuccess(connector);
       } catch (e) {
         trackTestConnectorFailure(connector);
+        const connectorFailureCount = Number(localStorage.getItem("connector_failure_count"));
+        localStorage.setItem("connector_failure_count", (connectorFailureCount + 1).toString());
         throw e;
       }
     };
