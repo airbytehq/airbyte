@@ -2,7 +2,6 @@ import sys
 import os
 import os.path
 
-CONNECTOR_FOLDER = "airbyte-integrations/connectors/"
 CONNECTOR_PATH = "./airbyte-integrations/connectors/"
 IGNORE_LIST = [
     # Java
@@ -81,16 +80,33 @@ def get_depended_connectors(changed_modules, all_build_gradle_files):
     depended_connectors = []
     for changed_module in changed_modules:
         for connector, gradle_file in all_build_gradle_files.items():
+            if gradle_file is None:
+                continue
             with open(gradle_file) as file:
                 if changed_module in file.read():
                     depended_connectors.append(connector)
     return depended_connectors
 
 
+def get_connector_version(connector):
+    with open(f"{CONNECTOR_PATH}/{connector}/Dockerfile") as f:
+        for line in f:
+            if "io.airbyte.version" in line:
+                return line.split("=")[1].strip()
+
+
 def as_bulleted_markdown_list(items):
     text = ""
     for item in items:
         text += f"- {item}\n"
+    return text
+
+
+def as_markdown_table_row(items):
+    text = ""
+    for item in items:
+        version = get_connector_version(item)
+        text += f"| `{item}` | `{version}` | | |\n"
     return text
 
 
@@ -115,8 +131,12 @@ def write_report(depended_connectors):
         others_md += as_bulleted_markdown_list(affected_others)
 
     comment = template.format(
-        sources=as_bulleted_markdown_list(affected_sources),
-        destinations=as_bulleted_markdown_list(affected_destinations),
+        source_open="open" if len(affected_sources) > 0 else "closed",
+        destination_open="open" if len(affected_destinations) > 0 else "closed",
+        source_status_summary="⚠",
+        destination_status_summary="⚠",
+        source_rows=as_markdown_table_row(affected_sources),
+        destination_rows=as_markdown_table_row(affected_destinations),
         others=others_md,
         num_sources=len(affected_sources),
         num_destinations=len(affected_destinations)

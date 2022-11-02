@@ -1,24 +1,34 @@
 <!--- this comment is for `report-connectors-dependency.yml` identification, do not remove -->
 
-NOTE ⚠️ Changes in this PR affect the following connectors. Make sure to run corresponding integration tests:
+NOTE ⚠️ Changes in this PR affect the following connectors. Make sure to do the following as needed:
+- Run integration tests
+- Bump connector version
+- Add changelog
+- Publish the new version
 
-<details>
+<details {source_open}>
 <summary>
-Sources ({num_sources})
+
+### {source_status_summary} Sources ({num_sources})
 
 </summary>
 
-{sources}
+| Connector | Version | Changelog | Publish |
+| --- | --- | --- | --- |
+{source_rows}
 
 </details>
 
-<details>
+<details {destination_open}>
 <summary>
-Destinations ({num_destinations})
+
+### {destination_status_summary} Destinations ({num_destinations})
 
 </summary>
 
-{destinations}
+| Connector | Version | Changelog | Publish |
+| --- | --- | --- | --- |
+{destination_rows}
 
 </details>
 
