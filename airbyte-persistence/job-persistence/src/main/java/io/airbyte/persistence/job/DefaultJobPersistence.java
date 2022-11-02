@@ -440,6 +440,8 @@ public class DefaultJobPersistence implements JobPersistence {
           .set(SYNC_STATS.ESTIMATED_BYTES, estimatedBytes)
           .set(SYNC_STATS.ESTIMATED_RECORDS, estimatedRecords)
           .execute();
+
+      // write per stream stat info
       return null;
     });
   }
