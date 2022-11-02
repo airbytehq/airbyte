@@ -53,3 +53,7 @@ properties:
   estimatedRecords:
     type: integer
     description: The total estimated number of records for the sync
+  streamStats:
+    type: array
+    items:
+      "$ref": StreamSyncStats.yaml

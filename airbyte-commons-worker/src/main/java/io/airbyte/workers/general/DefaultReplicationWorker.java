@@ -15,6 +15,7 @@ import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.generated.ApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.AttemptStats;
+import io.airbyte.api.client.model.generated.AttemptStreamStats;
 import io.airbyte.api.client.model.generated.SaveStatsRequestBody;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.Configs;
@@ -467,16 +468,28 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   }
 
   private static void saveStats(MessageTracker messageTracker, Long jobId, Integer attemptNumber) {
-    final AttemptStats attemptStats = new AttemptStats()
+    final AttemptStats totalStats = new AttemptStats()
         .bytesEmitted(messageTracker.getTotalBytesEmitted())
         .recordsEmitted(messageTracker.getTotalRecordsEmitted())
         .estimatedBytes(messageTracker.getTotalBytesEstimated())
         .estimatedRecords(messageTracker.getTotalRecordsEstimated());
 
+    // calculate per stream stats
+    List<AttemptStreamStats> streamStats = messageTracker.getStreamToEstimatedBytes().keySet().stream().map(stream -> {
+      final var syncStats = new AttemptStats()
+          .recordsEmitted(messageTracker.getStreamToEmittedRecords().get(stream))
+          .bytesEmitted(messageTracker.getStreamToEmittedBytes().get(stream))
+          .estimatedBytes(messageTracker.getStreamToEstimatedBytes().get(stream))
+          .estimatedRecords(messageTracker.getStreamToEstimatedRecords().get(stream));
+
+      return new AttemptStreamStats().streamName(stream).stats(syncStats);
+    }).collect(Collectors.toList());;
+
     final SaveStatsRequestBody saveStatsRequestBody = new SaveStatsRequestBody()
         .jobId(jobId)
         .attemptNumber(attemptNumber)
-        .stats(attemptStats);
+        .stats(totalStats)
+        .streamStats(streamStats);
     LOGGER.info("saving stats");
     try {
       CLIENT.getAttemptApi().saveStats(saveStatsRequestBody);
