@@ -22,6 +22,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
@@ -150,20 +151,37 @@ public class IntegrationRunner {
         }
         default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
       }
-    } catch (final ConfigErrorException e) {
+    } catch (final Exception e) {
       // If the source connector throws a config error, a trace message with the relevant message should
       // be surfaced.
-      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, e.getDisplayMessage());
-      switch (parsed.getCommand()) {
-        // Currently, special handling is required for the SPEC case since the user display information in the trace message is
-        // not properly surfaced to the FE. In the future, we can remove this and just throw an exception.
-        case CHECK -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
-            new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getDisplayMessage())));
-        default -> throw e;
+      if (isConfigError(e)) {
+        final String displayMessage = getDisplayMessage(e);
+        AirbyteTraceMessageUtility.emitConfigErrorTrace(e, getDisplayMessage(e));
+        switch (parsed.getCommand()) {
+          // Currently, special handling is required for the SPEC case since the user display information in the trace message is
+          // not properly surfaced to the FE. In the future, we can remove this and just throw an exception.
+          case CHECK -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
+              new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(displayMessage)));
+          default -> throw e;
+        }
+      } else {
+        throw e;
       }
     }
 
     LOGGER.info("Completed integration: {}", integration.getClass().getName());
+  }
+  
+  private boolean isConfigError(final Exception e) {
+    return e instanceof ConfigErrorException;
+  }
+
+  private String getDisplayMessage(final Exception e) {
+    if (e instanceof ConfigErrorException) {
+      return ((ConfigErrorException) e).getDisplayMessage();
+    } else {
+      return e.getMessage();
+    }
   }
 
   private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator) throws Exception {
