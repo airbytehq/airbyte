@@ -33,3 +33,22 @@ NOTE ⚠️ Changes in this PR affect the following connectors. Make sure to do 
 </details>
 
 {others}
+
+<details>
+
+<summary>
+
+### Notes
+
+</summary>
+
+| Category | Status | Actionable Item |
+| --- | :---: | --- |
+| Version | ❌<br/>mismatch | The version of the connector is different from its normal variant. Please bump the version of the connector. |
+| | ⚠<br/>doc not found | The connector does not seem to have a documentation file. This can be normal (e.g. basic connector like `source-jdbc` is not published or documented). Please double-check to make sure that it is not a bug. |
+| Changelog | ⚠<br/>doc not found | The connector does not seem to have a documentation file. This can be normal (e.g. basic connector like `source-jdbc` is not published or documented). Please double-check to make sure that it is not a bug. |
+| | ❌<br/>changelog missing | There is no chnagelog for the current version of the connector. If you are the author of the current version, please add a changelog. |
+| Publish | ⚠<br/>not in seed | The connector is not in the seed file (e.g. `source_definitions.yaml`), so its publication status cannot be checked. This can be normal (e.g. some connectors are cloud-specific, and only listed in the cloud seed file). Please double-check to make sure that it is not a bug. |
+| | ❌<br/>diff seed version | The connector exists in the seed file, but the latest version is not listed there. This usually means that the latest version is not published. Please use the `/publish` command to publish the latest version. |
+
+</details>

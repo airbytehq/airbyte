@@ -130,7 +130,7 @@ def as_bulleted_markdown_list(items):
     return text
 
 
-def as_markdown_table_row(connectors, definitions):
+def as_markdown_table_rows(connectors, definitions):
     text = ""
     for connector in connectors:
         version = get_connector_version(connector)
@@ -187,8 +187,8 @@ def write_report(depended_connectors):
     affected_destinations.sort()
     affected_others.sort()
 
-    source_rows = as_markdown_table_row(affected_sources, source_definitions)
-    destination_rows = as_markdown_table_row(affected_destinations, destination_definitions)
+    source_rows = as_markdown_table_rows(affected_sources, source_definitions)
+    destination_rows = as_markdown_table_rows(affected_destinations, destination_definitions)
 
     comment = template.format(
         source_open="open" if len(affected_sources) > 0 else "closed",
