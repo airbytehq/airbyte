@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.dynamodb;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -16,25 +14,20 @@ import com.amazonaws.services.dynamodbv2.document.*;
 import com.amazonaws.services.dynamodbv2.document.spec.ScanSpec;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.util.*;
-import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DynamodbDestinationAcceptanceTest.class);
-  private static final String NON_SECURE_URL_ERR_MSG = "Server Endpoint requires HTTPS";
 
   protected final String secretFilePath = "secrets/config.json";
   protected JsonNode configJson;
@@ -164,23 +157,6 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
     } catch (final Exception e) {
       LOGGER.error(e.getMessage(), e);
     }
-  }
-
-  @Test
-  public void testCheckConnectionInvalidHttpProtocol() throws Exception {
-    final StandardCheckConnectionOutput checkResult = runCheck(getUnsecureConfig());
-    assertEquals(Status.FAILED, checkResult.getStatus());
-    assertEquals(NON_SECURE_URL_ERR_MSG, checkResult.getMessage());
-  }
-
-  protected JsonNode getUnsecureConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("dynamodb_endpoint", "http://testurl.com:9000")
-        .put("dynamodb_table_name_prefix", "integration-test")
-        .put("dynamodb_region", "us-east-2")
-        .put("access_key_id", "dummy_access_key_id")
-        .put("secret_access_key", "dummy_secret_access_key")
-        .build());
   }
 
 }
