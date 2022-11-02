@@ -193,11 +193,14 @@ def write_report(depended_connectors):
     source_rows = as_markdown_table_rows(affected_sources, source_definitions)
     destination_rows = as_markdown_table_rows(affected_destinations, destination_definitions)
 
+    source_status_summary = get_status_summary(source_rows)
+    destination_status_summary = get_status_summary(destination_rows)
+
     comment = template.format(
-        source_open="open" if len(affected_sources) > 0 else "closed",
-        destination_open="open" if len(affected_destinations) > 0 else "closed",
-        source_status_summary=get_status_summary(source_rows),
-        destination_status_summary=get_status_summary(destination_rows),
+        source_open="open" if source_status_summary == "❌" else "closed",
+        destination_open="open" if destination_status_summary == "❌" else "closed",
+        source_status_summary=source_status_summary,
+        destination_status_summary=destination_status_summary,
         source_rows=source_rows,
         destination_rows=destination_rows,
         others=others_md,
