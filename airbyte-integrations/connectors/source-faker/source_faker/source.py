@@ -139,8 +139,8 @@ class SourceFaker(Source):
                 records_in_page = 0
 
                 users_estimate = count - cursor
-                yield generate_estimate(stream.stream.name, users_estimate)
-                yield generate_estimate("Purchases", users_estimate * 2)  # a fuzzy guess, some users have purchases, some don't
+                yield generate_estimate(stream.stream.name, users_estimate, 450)
+                yield generate_estimate("Purchases", users_estimate * 2, 230)  # a fuzzy guess, some users have purchases, some don't
 
                 for i in range(cursor, count):
                     user = generate_user(person, dt, i)
@@ -168,7 +168,7 @@ class SourceFaker(Source):
 
             elif stream.stream.name == "Products":
                 products = generate_products()
-                yield generate_estimate(stream.stream.name, len(products))
+                yield generate_estimate(stream.stream.name, len(products), 180)
                 for p in products:
                     yield generate_record(stream, p)
                 yield generate_state(state, stream, {"product_count": len(products)})
@@ -200,7 +200,7 @@ def generate_record(stream: any, data: any):
     )
 
 
-def generate_estimate(stream_name: str, total: int):
+def generate_estimate(stream_name: str, total: int, bytes_per_row: int):
     # TODO: Use the updated CDK classes when published, e.g. `return AirbyteMessage``
 
     data = {
@@ -208,7 +208,7 @@ def generate_estimate(stream_name: str, total: int):
         "trace": {
             "emitted_at": int(datetime.datetime.now().timestamp() * 1000),
             "type": "ESTIMATE",
-            "estimate": {"type": "STREAM", "name": stream_name, "namespace": "", "row_estimate": total},
+            "estimate": {"type": "STREAM", "name": stream_name, "namespace": "", "row_estimate": total, "byte_estimate": total * bytes_per_row},
         },
     }
 

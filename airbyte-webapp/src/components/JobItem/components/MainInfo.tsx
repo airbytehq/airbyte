@@ -4,9 +4,9 @@ import classNames from "classnames";
 import React, { useMemo } from "react";
 import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 
-import { StatusIcon } from "components";
 import { ProgressBar } from "components/ProgressBar";
 import { Cell, Row } from "components/SimpleTableComponents";
+import { StatusIcon } from "components/ui/StatusIcon";
 
 import { AttemptRead, JobStatus, SynchronousJobRead } from "core/request/AirbyteClient";
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
@@ -89,7 +89,7 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
         <div className={styles.justification}>
           {label}
           <div>
-            <ProgressBar job={job} />
+            <ProgressBar job={job} jobConfigType={jobConfigType} />
           </div>
           {attempts.length > 0 && (
             <>

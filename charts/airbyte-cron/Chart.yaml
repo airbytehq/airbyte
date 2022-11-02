@@ -1,5 +1,5 @@
 apiVersion: v2
-name: airbyte-cron
+name: cron
 description: Helm chart to deploy airbyte-cron
 
 # A chart can be either an 'application' or a 'library' chart.
