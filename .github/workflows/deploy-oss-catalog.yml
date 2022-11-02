@@ -21,7 +21,7 @@ jobs:
       - name: Setup Cloud SDK
         uses: google-github-actions/setup-gcloud@v0
         with:
-          service_account_key: ${{ secrets.SOME_SECRET_WITH_KEY }} # TODO
+          service_account_key: ${{ secrets.PROD_SPEC_CACHE_SA_KEY }}
           export_default_credentials: true
       - name: Generate catalog
         run: SUB_BUILD=PLATFORM ./gradlew :airbyte-config:init:processResources
