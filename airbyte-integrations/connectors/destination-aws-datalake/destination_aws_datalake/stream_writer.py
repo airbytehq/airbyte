@@ -189,7 +189,7 @@ class StreamWriter:
                     result_typ = "string"
 
             if col_typ == "array":
-                items = definition.get("items")
+                items = definition.get("items", {})
                 if isinstance(items, list):
                     items = items[0]
 
