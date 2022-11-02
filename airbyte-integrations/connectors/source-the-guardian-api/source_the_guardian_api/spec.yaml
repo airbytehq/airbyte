@@ -45,15 +45,6 @@ connectionSpecification:
         - media
         - technology
         - housing-network
-    order-by:
-      title: Order By
-      type: string
-      description: (Optional) Use this to sort the results. The three available sorting options are - newest, oldest, relevance. Set this to oldest for enabling incremental syncs (set by default).
-      pattern: ^(newest|oldest|relevance)$
-      examples:
-        - newest
-        - oldest
-        - relevance
     end_date:
       title: End Date
       type: string
