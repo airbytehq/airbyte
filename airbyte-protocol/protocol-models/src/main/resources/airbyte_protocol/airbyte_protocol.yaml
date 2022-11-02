@@ -570,7 +570,7 @@ definitions:
           This is a subset configuration of `complete_oauth_server_input_specification` that filters fields out to retain only the ones that
           are necessary for the connector to function with OAuth. (some fields could be used during oauth flows but not needed afterwards, therefore
           they would be listed in the `complete_oauth_server_input_specification` but not `complete_oauth_server_output_specification`)
-          Must be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Worksdefaultrepace Admins to be used by the
+          Must be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the
           connector when using OAuth flow APIs.
           These fields are to be merged back to `ConnectorSpecification.connectionSpecification`.
           For each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,
