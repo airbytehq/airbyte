@@ -14,10 +14,6 @@ function isJobsWithJobs(job: JobsWithJobs | SynchronousJobRead): job is JobsWith
   return (job as JobsWithJobs).attempts !== undefined;
 }
 
-const formatBigNumber = (num: number) => {
-  return num.toLocaleString();
-};
-
 const formatBytes = (bytes?: number) => {
   if (!bytes) {
     return <FormattedMessage id="sources.countBytes" values={{ count: bytes || 0 }} />;
@@ -39,7 +35,7 @@ export const ProgressBar = ({
   job: JobsWithJobs | SynchronousJobRead;
   jobConfigType: JobConfigType;
 }) => {
-  const { formatMessage } = useIntl();
+  const { formatMessage, formatNumber } = useIntl();
 
   if (jobConfigType !== "sync") {
     return null;
@@ -120,8 +116,7 @@ export const ProgressBar = ({
 
   // chose to estimate time remaining based on records rather than bytes
   if (latestAttempt && latestAttempt.status === Status.RUNNING) {
-    const now = new Date().getTime();
-    elapsedTimeMS = now - latestAttempt.createdAt * 1000;
+    elapsedTimeMS = new Date().getTime() - latestAttempt.createdAt * 1000;
     timeRemaining = Math.floor(elapsedTimeMS / totalPercentRecords) * (100 - totalPercentRecords); // in ms
     const minutesRemaining = Math.ceil(timeRemaining / 1000 / 60);
     const hoursRemaining = Math.ceil(minutesRemaining / 60);
@@ -131,8 +126,6 @@ export const ProgressBar = ({
       timeRemainingString = `${hoursRemaining} ${formatMessage({ id: "estimate.hoursRemaining" })}`;
     }
   }
-
-  console.log({ unEstimatedStreams, numeratorRecords, denominatorRecords, totalPercentRecords, timeRemainingString });
 
   return (
     <div className={classNames(styles.container)}>
@@ -152,8 +145,8 @@ export const ProgressBar = ({
           {denominatorRecords > 0 && (
             <>
               <div>
-                {formatBigNumber(numeratorRecords)}{" "}
-                {unEstimatedStreams.length > 0 ? "" : `/ ${formatBigNumber(denominatorRecords)}`}{" "}
+                {formatNumber(numeratorRecords)}{" "}
+                {unEstimatedStreams.length > 0 ? "" : `/ ${formatNumber(denominatorRecords)}`}{" "}
                 {formatMessage({ id: "estimate.recordsSynced" })} @{" "}
                 {Math.round((numeratorRecords / elapsedTimeMS) * 1000)}{" "}
                 {formatMessage({ id: "estimate.recordsPerSecond" })}
@@ -188,7 +181,7 @@ export const ProgressBar = ({
                     {localNumerator && localDenominator
                       ? `${Math.round((localNumerator * 100) / localDenominator)}${formatMessage({
                           id: "estimate.percentComplete",
-                        })} (${formatBigNumber(localNumerator)} / ${formatBigNumber(localDenominator)} ${formatMessage({
+                        })} (${formatNumber(localNumerator)} / ${formatNumber(localDenominator)} ${formatMessage({
                           id: "estimate.recordsSynced",
                         })})`
                       : `${localNumerator} ${formatMessage({ id: "estimate.recordsSyncedThusFar" })} (no estimate)`}
