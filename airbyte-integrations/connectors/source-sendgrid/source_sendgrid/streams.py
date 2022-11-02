@@ -94,8 +94,6 @@ class SendgridStreamIncrementalMixin(HttpStream, ABC):
     def __init__(self, start_time: Optional[Union[int, str]], **kwargs):
         super().__init__(**kwargs)
         self._start_time = start_time or 0
-        # for backward compatibility
-        self._start_time = start_time or 0
         if isinstance(self._start_time, str):
             self._start_time = int(pendulum.parse(self._start_time).timestamp())
 
