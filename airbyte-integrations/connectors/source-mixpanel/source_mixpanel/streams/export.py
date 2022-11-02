@@ -86,6 +86,11 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         return "export"
 
     def iter_dicts(self, lines):
+        """
+        The incoming stream has to be JSON lines format.
+        From time to time for some reason, the record can be split into multiple lines.
+        We try to combine such split parts into one record only if parts go nearby.
+        """
         parts = []
         for record_line in lines:
             if record_line == "terminated early":
