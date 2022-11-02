@@ -38,11 +38,13 @@ class DataverseType(Enum):
     Uniqueidentifier = AirbyteType.String
     DateTime = AirbyteType.Timestamp
     Integer = AirbyteType.Integer
-    Bigint = AirbyteType.Integer
+    BigInt = AirbyteType.Integer
     Money = AirbyteType.Number
     Boolean = AirbyteType.Boolean
     Double = AirbyteType.Number
     Decimal = AirbyteType.Number
+    Status = AirbyteType.Integer
+    State = AirbyteType.Integer
     Virtual = None
 
 

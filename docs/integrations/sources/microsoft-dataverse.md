@@ -24,6 +24,8 @@ https://<url>/api/data/v9.2/EntityDefinitions?$expand=Attributes
 | `Boolean`          | `boolean`                 |                       |
 | `Double`           | `number`                  |                       |
 | `Decimal`          | `number`                  |                       |
+| `Status`           | `integer`                 |                       |
+| `State`            | `integer`                 |                       |
 | `Virtual`          | None                      | We skip virtual types |
 
 Other types are defined as `string`.
