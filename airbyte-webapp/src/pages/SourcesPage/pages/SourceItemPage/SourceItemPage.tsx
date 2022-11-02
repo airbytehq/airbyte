@@ -1,5 +1,5 @@
 import React, { Suspense, useMemo } from "react";
-import { FormattedMessage } from "react-intl";
+import { useIntl } from "react-intl";
 import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 
 import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
@@ -29,6 +29,7 @@ const SourceItemPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.SOURCE_ITEM);
   const params = useParams<{ "*": StepsTypes | "" | undefined; id: string }>();
   const navigate = useNavigate();
+  const { formatMessage } = useIntl();
   const currentStep = useMemo<StepsTypes | "" | undefined>(
     () => (params["*"] === "" ? StepsTypes.OVERVIEW : params["*"]),
     [params]
@@ -45,10 +46,10 @@ const SourceItemPage: React.FC = () => {
 
   const breadcrumbsData = [
     {
-      name: <FormattedMessage id="sidebar.sources" />,
-      onClick: () => navigate(".."),
+      label: formatMessage({ id: "sidebar.sources" }),
+      to: "..",
     },
-    { name: source.name },
+    { label: source.name },
   ];
 
   const connectionsWithSource = connections.filter((connectionItem) => connectionItem.sourceId === source.sourceId);

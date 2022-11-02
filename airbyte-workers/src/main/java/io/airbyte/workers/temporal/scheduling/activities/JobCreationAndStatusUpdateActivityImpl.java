@@ -259,8 +259,6 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public void jobFailure(final JobFailureInput input) {
     try {
-      ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, input.getJobId()));
-
       final long jobId = input.getJobId();
       jobPersistence.failJob(jobId);
       final Job job = jobPersistence.getJob(jobId);
@@ -269,6 +267,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_FAILED_BY_RELEASE_STAGE, jobId);
 
       final UUID connectionId = UUID.fromString(job.getScope());
+      ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionId, JOB_ID_KEY, jobId));
       final JobSyncConfig jobSyncConfig = job.getConfig().getSync();
       final SyncJobReportingContext jobContext =
           new SyncJobReportingContext(jobId, jobSyncConfig.getSourceDockerImage(), jobSyncConfig.getDestinationDockerImage());
