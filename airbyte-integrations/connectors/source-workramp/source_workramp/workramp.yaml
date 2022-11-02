@@ -32,22 +32,51 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
-  users_stream:
+
+  awarded_certifications_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
-      name: "users"
+      name: "awarded_certifications"
       primary_key: "id"
-      path: "/users"
+      path: "/awarded_certifications"
+  certifications_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "certifications"
+      primary_key: "id"
+      path: "/certifications"
+  paths_users_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "paths_users"
+      primary_key: "id"
+      path: "/paths_users"
   registrations_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "registrations"
       primary_key: "id"
       path: "/registrations"
+  trainings_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "trainings"
+      primary_key: "id"
+      path: "/trainings"
+  users_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "users"
+      primary_key: "id"
+      path: "/users"
 
 streams:
-  - "*ref(definitions.users_stream)"
+  - "*ref(definitions.awarded_certifications_stream)"
+  - "*ref(definitions.certifications_stream)"
+  - "*ref(definitions.paths_users_stream)"
   - "*ref(definitions.registrations_stream)"
+  - "*ref(definitions.trainings_stream)"
+  - "*ref(definitions.users_stream)"
 
 check:
   stream_names:
