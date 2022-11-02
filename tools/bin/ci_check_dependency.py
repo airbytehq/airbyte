@@ -147,6 +147,15 @@ def as_markdown_table_row(connectors, definitions):
     return text
 
 
+def get_status_summary(rows):
+    if "❌" in rows:
+        return "❌"
+    elif "⚠" in rows:
+        return "⚠"
+    else:
+        return "✅"
+
+
 def write_report(depended_connectors):
     affected_sources = []
     affected_destinations = []
@@ -178,13 +187,16 @@ def write_report(depended_connectors):
     affected_destinations.sort()
     affected_others.sort()
 
+    source_rows = as_markdown_table_row(affected_sources, source_definitions)
+    destination_rows = as_markdown_table_row(affected_destinations, destination_definitions)
+
     comment = template.format(
         source_open="open" if len(affected_sources) > 0 else "closed",
         destination_open="open" if len(affected_destinations) > 0 else "closed",
-        source_status_summary="⚠",
-        destination_status_summary="⚠",
-        source_rows=as_markdown_table_row(affected_sources, source_definitions),
-        destination_rows=as_markdown_table_row(affected_destinations, destination_definitions),
+        source_status_summary=get_status_summary(source_rows),
+        destination_status_summary=get_status_summary(destination_rows),
+        source_rows=source_rows,
+        destination_rows=destination_rows,
         others=others_md,
         num_sources=len(affected_sources),
         num_destinations=len(affected_destinations)
