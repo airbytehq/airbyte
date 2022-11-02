@@ -49,7 +49,7 @@ class FastbillStream(HttpStream, ABC):
 
 class Invoices(FastbillStream):
     primary_key = "INVOICE_ID"
-
+    data = "INVOICES"
     def request_body_json(
             self,
             stream_state: Mapping[str, Any],
@@ -59,17 +59,17 @@ class Invoices(FastbillStream):
         return get_request_body_json(next_page_token, endpoint="invoice")
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return get_next_page_token(response=response, response_key="INVOICES",
+        return get_next_page_token(response=response, response_key=self.data,
                                    API_OFFSET_LIMIT=self.API_OFFSET_LIMIT,
                                    endpoint="invoice")
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json().get("RESPONSE", {}).get("INVOICES", [])
+        yield from response.json().get("RESPONSE", {}).get(self.data, [])
 
 
 class RecurringInvoices(FastbillStream):
     primary_key = "INVOICE_ID"
-
+    data = "INVOICES"
     def request_body_json(
             self,
             stream_state: Mapping[str, Any],
@@ -79,17 +79,17 @@ class RecurringInvoices(FastbillStream):
         return get_request_body_json(next_page_token, endpoint="recurring")
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return get_next_page_token(response=response, response_key="INVOICES",
+        return get_next_page_token(response=response, response_key=self.data,
                                    API_OFFSET_LIMIT=self.API_OFFSET_LIMIT,
                                    endpoint="recurring")
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json().get("RESPONSE", {}).get("INVOICES", [])
+        yield from response.json().get("RESPONSE", {}).get(self.data, [])
 
 
 class Products(FastbillStream):
     primary_key = "ARTICLE_ID"
-
+    data = "ARTICLES"
     def request_body_json(
             self,
             stream_state: Mapping[str, Any],
@@ -99,17 +99,17 @@ class Products(FastbillStream):
         return get_request_body_json(next_page_token, endpoint="article")
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return get_next_page_token(response=response, response_key="ARTICLES",
+        return get_next_page_token(response=response, response_key=self.data,
                                    API_OFFSET_LIMIT=self.API_OFFSET_LIMIT,
                                    endpoint="article")
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json().get("RESPONSE", {}).get("ARTICLES", [])
+        yield from response.json().get("RESPONSE", {}).get(self.data, [])
 
 
 class Revenues(FastbillStream):
     primary_key = "INVOICE_ID"
-
+    data = "REVENUES"
     def request_body_json(
             self,
             stream_state: Mapping[str, Any],
@@ -119,17 +119,17 @@ class Revenues(FastbillStream):
         return get_request_body_json(next_page_token, endpoint="revenue")
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return get_next_page_token(response=response, response_key="REVENUES",
+        return get_next_page_token(response=response, response_key=self.data,
                                    API_OFFSET_LIMIT=self.API_OFFSET_LIMIT,
                                    endpoint="revenue")
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json().get("RESPONSE", {}).get("REVENUES", [])
+        yield from response.json().get("RESPONSE", {}).get(self.data, [])
 
 
 class Customers(FastbillStream):
     primary_key = "CUSTOMER_ID"
-
+    data = "CUSTOMERS"
     def request_body_json(
             self,
             stream_state: Mapping[str, Any],
@@ -139,12 +139,12 @@ class Customers(FastbillStream):
         return get_request_body_json(next_page_token, endpoint="customer")
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return get_next_page_token(response=response, response_key="CUSTOMERS",
+        return get_next_page_token(response=response, response_key=self.data,
                                    API_OFFSET_LIMIT=self.API_OFFSET_LIMIT,
                                    endpoint="customer")
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json().get("RESPONSE", {}).get("CUSTOMERS", [])
+        yield from response.json().get("RESPONSE", {}).get(self.data, [])
 
 
 # Source
