@@ -37,7 +37,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [BigQuery](sources/bigquery.md)                                                             | Alpha                | Yes                 |
 | [Bing Ads](sources/bing-ads.md)                                                             | Generally Available  | Yes                 |
 | [Braintree](sources/braintree.md)                                                           | Alpha                | Yes                 |
-| [Breezometer Pollen](sources/breezometer-pollen.md)                                         | Alpha                | No                  |
+| [Breezometer](sources/breezometer.md)                                         | Alpha                | No                  |
 | [Cart.com](sources/cart.md)                                                                 | Alpha                | No                  |
 | [Chargebee](sources/chargebee.md)                                                           | Generally Available  | Yes                 |
 | [Chargify](sources/chargify.md)                                                             | Alpha                | No                  |

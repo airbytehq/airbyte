@@ -1,6 +1,6 @@
-# Breezometer Pollen 
+# Breezometer
 
-Breezometer Pollen connector lets you request pollen information including types, plants, and indexes for a specific location.
+Breezometer connector lets you request pollen information including types, plants, and indexes for a specific location.
 
 ## Prerequisites
 * A Breezometer
@@ -8,7 +8,7 @@ Breezometer Pollen connector lets you request pollen information including types
 
 ## Supported sync modes
 
-The Breezometer Pollen connector supports full sync refresh.
+The Breezometer connector supports full sync refresh.
 
 ## Airbyte Open Source
 
