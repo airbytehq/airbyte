@@ -37,7 +37,7 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 * [Job Posts](https://developers.greenhouse.io/harvest.html#get-list-job-posts)
 * [Job Stages](https://developers.greenhouse.io/harvest.html#get-list-job-stages)
 * [Jobs](https://developers.greenhouse.io/harvest.html#get-list-jobs)
-* [Jobs Openings](https://developers.greenhouse.io/harvest.html#get-list-job-openings)
+* [Job Openings](https://developers.greenhouse.io/harvest.html#get-list-job-openings)
 * [Jobs Stages](https://developers.greenhouse.io/harvest.html#get-list-job-stages-for-job)
 * [Offers](https://developers.greenhouse.io/harvest.html#get-list-offers)
 * [Rejection Reasons](https://developers.greenhouse.io/harvest.html#get-list-rejection-reasons)

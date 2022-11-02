@@ -1,8 +1,8 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { StatusIcon } from "components/StatusIcon";
 import { Button } from "components/ui/Button";
+import { StatusIcon } from "components/ui/StatusIcon";
 import { Text } from "components/ui/Text";
 
 import styles from "./TryAfterErrorBlock.module.scss";
