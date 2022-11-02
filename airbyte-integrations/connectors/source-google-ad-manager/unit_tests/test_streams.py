@@ -25,6 +25,7 @@ def test_ad_unit_per_hour_read_report(ad_unit_per_hour_stream):
     for record in records:
         assert isinstance(record, dict)
         assert list(record.keys()) == ['cpm_cpc_revenue', 'impressions', 'eCpm', 'unfilled_impressions', 'ad_unit', 'hour', 'date', 'customer_name']
+        assert record.get("customer_name") is not None
 
 
 def test_ad_unit_per_hour_generate_report_query(ad_unit_per_hour_stream, test_date):
@@ -78,7 +79,8 @@ def test_ad_unit_per_referrer_read_record(ad_unit_per_referrer_stream):
     records = ad_unit_per_referrer_stream.read_records()
     for record in records:
         assert isinstance(record, dict)
-        assert list(record.keys()) == ['ad_unit', 'referrer', 'impressions', 'cpm_cpc_revenue', 'eCpm', 'click', 'date']
+        assert list(record.keys()) == ['ad_unit', 'referrer', 'impressions', 'cpm_cpc_revenue', 'customer_name', 'eCpm', 'click', 'date']
+        assert record.get("customer_name") is not None
 
 
 def test_value_error_raised_when_wrong_timezone():

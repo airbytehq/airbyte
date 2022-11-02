@@ -58,6 +58,7 @@ class AdUnitPerReferrerItem(CustomBaseModel):
     referrer: str  # should be part of the index
     impressions: int
     cpm_cpc_revenue: int
+    customer_name: str
     eCpm: int
     click: int
     date: datetime  # need to specify the best date with the format # should be part of the index
