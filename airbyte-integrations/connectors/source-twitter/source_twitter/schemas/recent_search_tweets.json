@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "object",
+        "properties": {
+            "end": {
+              "type": ["string","null"]
+            },
+            "start": {
+              "type": ["string", "null"]
+            },
+            "tweet_count": {
+              "type": ["number","null"]
+            }
+        }
+         
+    },
+    "meta": {
+        "type": "object",
+        "properties": {
+            "tweet_count": {
+              "type": ["number","null"]
+            }
+
+        }
+    }
+}
+}
