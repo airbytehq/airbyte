@@ -63,6 +63,7 @@ import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
+import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
@@ -321,6 +322,13 @@ public class ServerApp implements ServerRunnable {
 
     final LogsHandler logsHandler = new LogsHandler(configs);
 
+    final WorkspacesHandler workspacesHandler = new WorkspacesHandler(
+        configRepository,
+        secretsRepositoryWriter,
+        connectionsHandler,
+        destinationHandler,
+        sourceHandler);
+
     LOGGER.info("Starting server...");
 
     return apiFactory.create(
@@ -349,7 +357,8 @@ public class ServerApp implements ServerRunnable {
         jobHistoryHandler,
         logsHandler,
         operationsHandler,
-        schedulerHandler);
+        schedulerHandler,
+        workspacesHandler);
   }
 
   @VisibleForTesting
