@@ -54,15 +54,13 @@ class IncrementalPagarmeStream(PagarmeStream, ABC):
 
     def request_body_json(self, stream_state: Mapping[str, Any], **kwargs) -> Optional[Mapping]:
         start_date = self._string_to_timestampmillis(self._start_date)
-        if start_date:
-            if stream_state.get(self.cursor_field):
-                start_date = max(self._string_to_timestampmillis(stream_state[self.cursor_field]), start_date)
-            if self.filter_field == "start_date":
-                body = {"api_key": self.api_key, self.filter_field: f"{start_date}"}
-            else:
-                body = {"api_key": self.api_key, self.filter_field: f">{start_date}"}
+        if stream_state.get(self.cursor_field):
+            start_date = max(self._string_to_timestampmillis(stream_state[self.cursor_field]), start_date)
+            
+        if self.filter_field == "start_date":
+            body = {"api_key": self.api_key, self.filter_field: f"{start_date}"}
         else:
-            body = {"api_key": self.api_key}
+            body = {"api_key": self.api_key, self.filter_field: f">{start_date}"}
         return body
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
