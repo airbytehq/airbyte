@@ -84,7 +84,6 @@ class IncrementalStream(CommcareStream, IncrementalMixin):
             # Server returns status 500 when there are no more rows.
             # raise an error if server returns an error
             response.raise_for_status()
-            # print(response.json()['meta'])
             meta = response.json()['meta']
             return parse_qs(meta['next'][1:])
         except:
@@ -138,18 +137,6 @@ class FormCase(IncrementalStream):
             params.update(next_page_token)
         return params
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        # for o in iter(response.json()['objects']):
-        #     found = False
-        #     for f in o['xform_ids']:
-        #         if f in super().forms:
-        #             found = True
-        #             break
-        #     if found:
-        #         yield o
-        # return None
-        return response.json()['objects']
-
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
             found = False
@@ -196,12 +183,6 @@ class Form(IncrementalStream):
             params.update(next_page_token)
         return params
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        # for o in iter(response.json()['objects']):
-        #     CommcareStream.forms[o['id']] = 1
-        #     yield o
-        # return None
-        return response.json()['objects']
     
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
