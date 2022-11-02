@@ -143,7 +143,7 @@ def as_markdown_table_row(connectors, definitions):
             publish_status = "✅"
         else:
             publish_status = "❌ (version mismatch in seed definition)"
-        text += f"| `{connector}` | `{version_status}` | {changelog_status} | {publish_status} |\n"
+        text += f"| `{connector}` | {version_status} | {changelog_status} | {publish_status} |\n"
     return text
 
 
