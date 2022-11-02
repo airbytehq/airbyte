@@ -1,10 +1,10 @@
+#
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import os
 import json
+import os
 import random
-import duckdb
 import string
 import tempfile
 from datetime import datetime
@@ -24,6 +24,8 @@ from airbyte_cdk.models import (
     Type,
 )
 from destination_duckdb import DestinationDuckdb
+
+import duckdb
 
 
 @pytest.fixture(autouse=True)

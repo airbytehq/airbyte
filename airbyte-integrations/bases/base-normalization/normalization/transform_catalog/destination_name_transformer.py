@@ -29,6 +29,8 @@ DESTINATION_SIZE_LIMITS = {
     DestinationType.CLICKHOUSE.value: 63,
     # https://docs.pingcap.com/tidb/stable/tidb-limitations
     DestinationType.TIDB.value: 64,
+    # there is no limit (?), I tested 100'000 lenght, still worked
+    DestinationType.DUCKDB.value: 1024,
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
@@ -239,6 +241,9 @@ class DestinationNameTransformer:
         elif self.destination_type.value == DestinationType.TIDB.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
+        elif self.destination_type.value == DestinationType.DUCKDB.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result
@@ -278,6 +283,8 @@ class DestinationNameTransformer:
         elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
             pass
         elif self.destination_type.value == DestinationType.TIDB.value:
+            result = input_name.lower()
+        elif self.destination_type.value == DestinationType.DUCKDB.value:
             result = input_name.lower()
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")

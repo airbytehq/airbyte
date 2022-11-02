@@ -1,8 +1,9 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-from destination_duckdb import DestinationDuckdb
+
 import pytest
+from destination_duckdb import DestinationDuckdb
 
 
 def test_example_method():

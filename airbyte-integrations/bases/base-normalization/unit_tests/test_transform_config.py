@@ -11,7 +11,7 @@ import time
 
 import pytest
 from normalization.destination_type import DestinationType
-from normalization.transform_catalog.transform import extract_schema
+from normalization.transform_catalog.transform import extract_destination_path, extract_schema
 from normalization.transform_config.transform import TransformConfig
 
 
@@ -503,6 +503,21 @@ class TestTransformConfig:
 
         assert expected == actual
         assert extract_schema(actual) == "ti_db"
+
+    def test_transform_duckdb(self):
+        input = {
+            "type": "duckdb",
+            "destination_path": "/local/testing.duckdb",
+        }
+
+        actual = TransformConfig().transform_duckdb(input)
+        expected = {
+            "type": "duckdb",
+            "destination_path": "/local/testing.duckdb",
+        }
+
+        assert expected == actual
+        assert extract_destination_path(actual) == "/local/testing.duckdb"
 
     def get_base_config(self):
         return {

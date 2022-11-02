@@ -66,7 +66,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     REDSHIFT,
     SNOWFLAKE,
     CLICKHOUSE,
-    TIDB
+    TIDB,
+    DUCKDB
   }
 
   public DefaultNormalizationRunner(final WorkerConfigs workerConfigs,

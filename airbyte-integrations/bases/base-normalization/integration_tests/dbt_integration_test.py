@@ -29,6 +29,7 @@ NORMALIZATION_TEST_POSTGRES_DB_PORT = "NORMALIZATION_TEST_POSTGRES_DB_PORT"
 NORMALIZATION_TEST_CLICKHOUSE_DB_PORT = "NORMALIZATION_TEST_CLICKHOUSE_DB_PORT"
 NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT = "NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT"
 NORMALIZATION_TEST_TIDB_DB_PORT = "NORMALIZATION_TEST_TIDB_DB_PORT"
+NORMALIZATION_TEST_DUCKDB_DESTINATION_PATH = "NORMALIZATION_TEST_DUCKDB_DESTINATION_PATH"
 
 
 class DbtIntegrationTest(object):
@@ -59,6 +60,8 @@ class DbtIntegrationTest(object):
             self.setup_clickhouse_db()
         if DestinationType.TIDB.value in destinations_to_test:
             self.setup_tidb_db()
+        if DestinationType.DUCKDB.value in destinations_to_test:
+            self.setup_duckdb_db()
 
     def setup_postgres_db(self):
         start_db = True
@@ -347,6 +350,37 @@ class DbtIntegrationTest(object):
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
         with open("../secrets/tidb.json", "w") as fh:
+            fh.write(json.dumps(config))
+
+    def setup_duckdb_db(self):
+        start_db = True
+        if os.getenv(NORMALIZATION_TEST_DUCKDB_DESTINATION_PATH):
+            path = os.getenv(NORMALIZATION_TEST_DUCKDB_DESTINATION_PATH)
+            start_db = False
+        else:
+            path = "/local/test.duckdb"
+        config = {
+            "destination_path": path,
+        }
+        if start_db:
+            self.db_names.append("duckdb")
+            print("Starting duckdb container for tests")
+            commands = [
+                "docker",
+                "run",
+                "--rm",
+                "--name",
+                f"{self.container_prefix}_duckdb",
+                "-d",
+                "airbyte/destination_duckdb:dev",
+            ]
+            print("Executing: ", " ".join(commands))
+            subprocess.call(commands)
+            print("....Waiting for DuckDB to start...15 sec")
+            time.sleep(15)
+        if not os.path.exists("../secrets"):
+            os.makedirs("../secrets")
+        with open("../secrets/duckdb.json", "w") as fh:
             fh.write(json.dumps(config))
 
     @staticmethod

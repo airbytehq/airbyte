@@ -2,21 +2,19 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import os
 import datetime
-import duckdb
-import uuid
 import json
+import os
+import uuid
 from collections import defaultdict
-from asyncio.log import logger
 from logging import getLogger
-
 from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 
+import duckdb
 
 logger = getLogger("airbyte")
 
