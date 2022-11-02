@@ -557,8 +557,11 @@
   "estimate.bytesSynced": "synced",
   "estimate.bytesPerSecond": "/sec",
   "estimate.unEstimatedStreams": "un-estimated streams",
-  "estimate.recordsSyncedThusFar": "records synced thus far",
+  "estimate.recordsSyncedThusFar": "records synced",
+  "estimate.viewStreamStats": "view stream stats",
   "estimate.percentComplete": "% complete",
+  "estimate.streamStats": "Stream Stats",
+  "estimate.hide": "hide",
 
   "frequency.manual": "Manual",
   "frequency.cron": "Cron",

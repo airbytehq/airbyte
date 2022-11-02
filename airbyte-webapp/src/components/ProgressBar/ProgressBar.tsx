@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import { Line } from "rc-progress";
+import { useState } from "react";
 import { useIntl, FormattedMessage } from "react-intl";
 
 import { getJobStatus } from "components/JobItem/JobItem";
@@ -28,6 +29,17 @@ const formatBytes = (bytes?: number) => {
   return <FormattedMessage id={`sources.count${sizes[i]}`} values={{ count: result }} />;
 };
 
+const buttonUnStyle = {
+  background: "none",
+  color: "inherit",
+  border: "none",
+  padding: 0,
+  font: "inherit",
+  cursor: "pointer",
+  outline: "inherit",
+  textDecoration: "underline",
+};
+
 export const ProgressBar = ({
   job,
   jobConfigType,
@@ -36,6 +48,7 @@ export const ProgressBar = ({
   jobConfigType: JobConfigType;
 }) => {
   const { formatMessage, formatNumber } = useIntl();
+  const [showStreams, setShowStreams] = useState(false);
 
   if (jobConfigType !== "sync") {
     return null;
@@ -167,16 +180,56 @@ export const ProgressBar = ({
             </>
           )}
 
-          {latestAttempt.streamStats && (
+          {latestAttempt.streamStats && !showStreams && (
             <div>
               <br />
-              <div className={classNames(styles.container)}>Stream Stats:</div>
+              <button
+                style={buttonUnStyle}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowStreams(true);
+                }}
+              >
+                <i>
+                  {formatMessage({
+                    id: "estimate.viewStreamStats",
+                  })}
+                </i>
+              </button>
+              <br />
+            </div>
+          )}
+
+          {latestAttempt.streamStats && showStreams && (
+            <div>
+              <br />
+              <div className={classNames(styles.container)}>
+                {formatMessage({
+                  id: "estimate.streamStats",
+                })}{" "}
+                (
+                <button
+                  style={buttonUnStyle}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowStreams(false);
+                  }}
+                >
+                  <i>
+                    {formatMessage({
+                      id: "estimate.hide",
+                    })}
+                  </i>
+                </button>
+                ):
+              </div>
               {latestAttempt.streamStats?.map((stream, idx) => {
                 const localNumerator = stream.stats.recordsEmitted;
                 const localDenominator = stream.stats.estimatedRecords;
 
                 return (
                   <div className={classNames(styles.container)} key={`stream-progress-${idx}`}>
+                    {" - "}
                     <strong>{stream.streamName}</strong> -{" "}
                     {localNumerator && localDenominator
                       ? `${Math.round((localNumerator * 100) / localDenominator)}${formatMessage({
