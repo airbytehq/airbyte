@@ -291,7 +291,8 @@ public class ServerApp implements ServerRunnable {
         jobPersistence,
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
-        eventRunner);
+        eventRunner,
+        connectionsHandler);
 
     final DbMigrationHandler dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
 
