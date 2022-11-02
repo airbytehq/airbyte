@@ -20,8 +20,8 @@ import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumenta
 
 import styles from "./DocumentationPanel.module.scss";
 
-const OSS_ENV_MARKERS = /<!-- ENV:OSS -->([\s\S]*?)<!-- \/ENV:OSS -->/gm;
-const CLOUD_ENV_MARKERS = /<!-- ENV:CLOUD -->([\s\S]*?)<!-- \/ENV:CLOUD -->/gm;
+const OSS_ENV_MARKERS = /<!-- env:oss -->([\s\S]*?)<!-- \/env:oss -->/gm;
+const CLOUD_ENV_MARKERS = /<!-- env:cloud -->([\s\S]*?)<!-- \/env:cloud -->/gm;
 
 export const prepareMarkdown = (markdown: string, env: "oss" | "cloud"): string => {
   return env === "oss" ? markdown.replaceAll(CLOUD_ENV_MARKERS, "") : markdown.replaceAll(OSS_ENV_MARKERS, "");

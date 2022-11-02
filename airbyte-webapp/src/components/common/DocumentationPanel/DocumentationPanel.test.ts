@@ -2,27 +2,27 @@ import { prepareMarkdown } from "./DocumentationPanel";
 
 const testMarkdown = `## Some documentation
 
-<!-- ENV:CLOUD -->
+<!-- env:cloud -->
 ### Only relevant for Cloud
 
 some specific documentation that only applies for cloud.
-<!-- /ENV:CLOUD -->
+<!-- /env:cloud -->
 
-<!-- ENV:OSS -->
+<!-- env:oss -->
 ### Only relevant for OSS users
 
 some specific documentation that only applies for OSS users
-<!-- /ENV:OSS -->`;
+<!-- /env:oss -->`;
 
 describe("prepareMarkdown", () => {
   it("should prepare markdown for cloud", () => {
     expect(prepareMarkdown(testMarkdown, "cloud")).toBe(`## Some documentation
 
-<!-- ENV:CLOUD -->
+<!-- env:cloud -->
 ### Only relevant for Cloud
 
 some specific documentation that only applies for cloud.
-<!-- /ENV:CLOUD -->
+<!-- /env:cloud -->
 
 `);
   });
@@ -31,10 +31,10 @@ some specific documentation that only applies for cloud.
 
 
 
-<!-- ENV:OSS -->
+<!-- env:oss -->
 ### Only relevant for OSS users
 
 some specific documentation that only applies for OSS users
-<!-- /ENV:OSS -->`);
+<!-- /env:oss -->`);
   });
 });

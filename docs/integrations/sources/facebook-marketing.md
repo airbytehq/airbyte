@@ -11,13 +11,13 @@ This page guides you through the process of setting up the Facebook Marketing so
 ## Prerequisites
 
 * A [Facebook Ad Account ID](https://www.facebook.com/business/help/1492627900875762)
-<!-- ENV:OSS -->
+<!-- env:oss -->
 * (For Open Source) A [Facebook App](https://developers.facebook.com/apps/) with the Marketing API enabled
-<!-- /ENV:OSS -->
+<!-- /env:oss -->
 
 ## Set up Facebook Marketing as a source in Airbyte 
 
-<!-- ENV:CLOUD -->
+<!-- env:cloud -->
 ### For Airbyte Cloud
 
 To set up Facebook Marketing as a source in Airbyte Cloud:
@@ -63,9 +63,9 @@ To set up Facebook Marketing as a source in Airbyte Cloud:
 12. For **Page Size of Requests**, fill in the size of the page in case pagintion kicks in. Feel free to ignore it, the default value should work in most cases.
 13. For **Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
 14. Click **Set up source**.
-<!-- /ENV:CLOUD -->
+<!-- /env:cloud -->
 
-<!-- ENV:OSS -->
+<!-- env:oss -->
 ### For Airbyte Open Source
 
 To set up Facebook Marketing as a source in Airbyte Open Source:
@@ -81,7 +81,7 @@ To set up Facebook Marketing as a source in Airbyte Open Source:
 
     See the Facebook [documentation on Authorization](https://developers.facebook.com/docs/marketing-api/overview/authorization/#access-levels) to request Advanced Access to the relevant permissions.
 5. Navigate to the Airbyte Open Source Dashboard. Add the access token when prompted to do so and follow the same instructions as for [setting up the Facebook Connector on Airbyte Cloud](#for-airbyte-cloud).
-<!-- /ENV:OSS -->
+<!-- /env:oss -->
 
 ## Supported sync modes
 
