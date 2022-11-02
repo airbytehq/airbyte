@@ -71,6 +71,4 @@ def convert_dataverse_type(dataverse_type: str) -> Optional[dict]:
         enum_type = DataverseType[dataverse_type].value
         if enum_type:
             return enum_type.value
-        return AirbyteType.String.value
-    else:
-        return AirbyteType.String.value
+    return AirbyteType.String.value
