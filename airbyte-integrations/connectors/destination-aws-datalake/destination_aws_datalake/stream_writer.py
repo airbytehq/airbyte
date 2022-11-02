@@ -75,6 +75,22 @@ class StreamWriter:
 
         return fields
 
+    def _drop_additional_top_level_properties(self, record: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Helper that removes any unexpected top-level properties from the record.
+        Since the json schema is used to build the table and cast types correctly,
+        we need to remove any unexpected properties that can't be casted accurately.
+        """
+        schema_keys = self._schema.keys()
+        records_keys = record.keys()
+        difference = list(set(records_keys).difference(set(schema_keys)))
+
+        for key in difference:
+            del record[key]
+
+        return record
+
+
     def _get_non_null_json_schema_types(self, typ: Union[str, List[str]]) -> Union[str, List[str]]:
         if isinstance(typ, list):
             return list(filter(lambda x: x != "null", typ))
@@ -267,8 +283,9 @@ class StreamWriter:
     def _cursor_fields(self) -> Optional[List[str]]:
         return self._configured_stream.cursor_field
 
-    def append_message(self, message):
-        self._messages.append(message)
+    def append_message(self, message: Dict[str, Any]):
+        clean_message = self._drop_additional_top_level_properties(message)
+        self._messages.append(clean_message)
 
     def reset(self):
         logger.info(f"Deleting table {self._database}:{self._table}")
