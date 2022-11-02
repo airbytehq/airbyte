@@ -18,10 +18,22 @@ definitions:
       record_selector:
         extractor:
           field_pointer: ["response", "docs"]
+      stream_slicer:
+        type: "DatetimeStreamSlicer"
+        start_datetime:
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m"
+        end_datetime:
+          datetime: "{{ config['end_date'] or today_utc().strftime('%Y-%m') }}"
+          datetime_format: "%Y-%m"
+        step: "1m"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        cursor_field: "{{ options['stream_cursor_field'] }}"
     $options:
       name: "archive"
       primary_key: "_id"
-      path: "/archive/v1/{{ config['year'] }}/{{ config['month'] }}.json"
+      path: "/archive/v1/{{ stream_slice['start_time'].split('-')[0] | int }}/{{ stream_slice['start_time'].split('-')[1] | int }}.json"
+      stream_cursor_field: "pub_date"
   most_popular_emailed_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
