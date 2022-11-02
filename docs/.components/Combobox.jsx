@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { Combobox } from "@headlessui/react";
 
-import connectorData from "./test.json";
+
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
@@ -10,11 +10,19 @@ export default function MyCombobox() {
   const [query, setQuery] = useState("");
   const [selectedConnector, setselectedConnector] = useState(null);
 
+  const [connectors, setConnectors] = useState(null);
+  React.useEffect(() => {
+    fetch("https://airbyte-metadata.netlify.app/connectors")
+      .then((res) => res.json())
+      .then((data) => setConnectors(data));
+  }, []);
   const filteredConnectors =
     query === ""
-      ? connectorData
-      : connectorData.filter((connector) => {
-          return connector.name.toLowerCase().includes(query.toLowerCase());
+      ? connectors || []
+      : connectors.filter((connector) => {
+          return JSON.stringify(connector)
+            .toLowerCase()
+            .includes(query.toLowerCase());
         });
 
   return (
@@ -53,36 +61,41 @@ export default function MyCombobox() {
           <Combobox.Options className="absolute z-10 w-full py-1 pl-0 mt-1 overflow-auto text-base list-none bg-white rounded-md shadow-lg max-h-56 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
             {filteredConnectors.map((connector) => (
               <Combobox.Option
-                key={connector.sourceDefinitionId}
+                key={connector.name}
                 value={connector}
                 className={({ active }) =>
                   classNames(
                     "relative cursor-default select-none py-2 pl-3 pr-9",
-                    active ? "bg-indigo-600 text-white" : "text-gray-900"
+                    active ? "bg-indigo-200 text-black" : "text-gray-900"
                   )
                 }
               >
                 {({ active, selected }) => (
                   <>
                     <div className="flex items-center">
-                      {connector.icon && (
+                      {connector.iconUrl && (
                         <img
                           src={
-                            "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-config/init/src/main/resources/icons/" +
-                            connector.icon
+                            // "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-config/init/src/main/resources/icons/" +
+                            connector.iconUrl
                           }
                           alt=""
                           className="flex-shrink-0 w-12 h-12 bg-gray-200 rounded-full"
                         />
                       )}
-                      <span
-                        className={classNames(
-                          "ml-3 truncate",
-                          selected && "font-semibold"
-                        )}
-                      >
-                        {connector.name}
-                      </span>
+                      <div className="flex flex-col ml-3">
+                        <span
+                          className={classNames(
+                            "truncate",
+                            selected && "font-semibold"
+                          )}
+                        >
+                          {connector.displayName}
+                        </span>
+                        <span className="font-mono text-xs text-gray-600 truncate">
+                          {connector.name}
+                        </span>
+                      </div>
                     </div>
 
                     {selected && (
@@ -105,7 +118,7 @@ export default function MyCombobox() {
               className={({ active }) =>
                 classNames(
                   "relative cursor-default select-none py-2 pl-3 pr-9",
-                  active ? "bg-indigo-600 text-white" : "text-gray-900"
+                  active ? "bg-indigo-200 text-white" : "text-gray-900"
                 )
               }
             >

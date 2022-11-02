@@ -175,8 +175,9 @@ export function Tutorial({
             textDecoration: "none",
           }}
         >
-          {sources.map((source) => (
+          {sources.map((source, i) => (
             <div
+              key={i}
               role="listitem"
               className="w-dyn-item"
               style={{
