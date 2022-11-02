@@ -14,7 +14,6 @@
   width: 100%;
   background: transparent;
   border: 0;
-  outline: none;
   cursor: pointer;
   border-radius: variables.$border-radius-md;
   color: inherit;
@@ -29,13 +28,9 @@
     background-color: colors.$blue-100;
   }
 
-  &:focus-visible {
-    outline: 1px solid colors.$white;
-  }
-
   &:hover:not(.open),
   &:focus-visible:not(.open) {
-    background-color: colors.$blue-50;
+    background-color: colors.$grey-50;
   }
 }
 
@@ -75,7 +70,7 @@
     }
 
     &.active, &:hover {
-      background-color: colors.$grey-100;
+      background-color: colors.$grey-50;
     }
   }
 }
