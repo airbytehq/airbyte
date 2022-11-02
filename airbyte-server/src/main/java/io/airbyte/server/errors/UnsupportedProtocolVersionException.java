@@ -6,13 +6,13 @@ package io.airbyte.server.errors;
 
 import io.airbyte.commons.version.Version;
 
-public class UnsupportedProtocolVersion extends KnownException {
+public class UnsupportedProtocolVersionException extends KnownException {
 
-  public UnsupportedProtocolVersion(final Version current, final Version minSupported, final Version maxSupported) {
+  public UnsupportedProtocolVersionException(final Version current, final Version minSupported, final Version maxSupported) {
     this(current.serialize(), minSupported, maxSupported);
   }
 
-  public UnsupportedProtocolVersion(final String current, final Version minSupported, final Version maxSupported) {
+  public UnsupportedProtocolVersionException(final String current, final Version minSupported, final Version maxSupported) {
     super(String.format("Airbyte Protocol Version %s is not supported. (Must be within [%s:%s])",
         current, minSupported.serialize(), maxSupported.serialize()));
   }

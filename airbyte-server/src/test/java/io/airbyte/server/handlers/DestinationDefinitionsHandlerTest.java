@@ -39,7 +39,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.errors.IdNotFoundKnownException;
-import io.airbyte.server.errors.UnsupportedProtocolVersion;
+import io.airbyte.server.errors.UnsupportedProtocolVersionException;
 import io.airbyte.server.scheduler.SynchronousJobMetadata;
 import io.airbyte.server.scheduler.SynchronousResponse;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
@@ -402,7 +402,7 @@ class DestinationDefinitionsHandlerTest {
                 .cpuRequest(destination.getResourceRequirements().getDefault().getCpuRequest()))
             .jobSpecific(Collections.emptyList()));
 
-    assertThrows(UnsupportedProtocolVersion.class, () -> destinationDefinitionsHandler.createPrivateDestinationDefinition(create));
+    assertThrows(UnsupportedProtocolVersionException.class, () -> destinationDefinitionsHandler.createPrivateDestinationDefinition(create));
 
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
     verify(configRepository, never()).writeStandardDestinationDefinition(destination
@@ -492,7 +492,7 @@ class DestinationDefinitionsHandlerTest {
         .destinationDefinition(create)
         .workspaceId(workspaceId);
 
-    assertThrows(UnsupportedProtocolVersion.class, () -> destinationDefinitionsHandler.createCustomDestinationDefinition(customCreate));
+    assertThrows(UnsupportedProtocolVersionException.class, () -> destinationDefinitionsHandler.createCustomDestinationDefinition(customCreate));
 
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
     verify(configRepository, never()).writeCustomDestinationDefinition(
@@ -561,7 +561,7 @@ class DestinationDefinitionsHandlerTest {
     final StandardDestinationDefinition updatedDestination =
         Jsons.clone(destinationDefinition).withDockerImageTag(newDockerImageTag).withSpec(newSpec).withProtocolVersion(newProtocolVersion);
 
-    assertThrows(UnsupportedProtocolVersion.class, () -> destinationDefinitionsHandler.updateDestinationDefinition(
+    assertThrows(UnsupportedProtocolVersionException.class, () -> destinationDefinitionsHandler.updateDestinationDefinition(
         new DestinationDefinitionUpdate().destinationDefinitionId(this.destinationDefinition.getDestinationDefinitionId())
             .dockerImageTag(newDockerImageTag)));
 

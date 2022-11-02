@@ -38,7 +38,7 @@ import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.errors.InternalServerKnownException;
-import io.airbyte.server.errors.UnsupportedProtocolVersion;
+import io.airbyte.server.errors.UnsupportedProtocolVersionException;
 import io.airbyte.server.scheduler.SynchronousResponse;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.server.services.AirbyteGithubStore;
@@ -195,7 +195,7 @@ public class SourceDefinitionsHandler {
         .withPublic(false)
         .withCustom(false);
     if (!protocolVersionRange.isSupported(new Version(sourceDefinition.getProtocolVersion()))) {
-      throw new UnsupportedProtocolVersion(sourceDefinition.getProtocolVersion(), protocolVersionRange.min(), protocolVersionRange.max());
+      throw new UnsupportedProtocolVersionException(sourceDefinition.getProtocolVersion(), protocolVersionRange.min(), protocolVersionRange.max());
     }
     configRepository.writeStandardSourceDefinition(sourceDefinition);
 
@@ -208,7 +208,7 @@ public class SourceDefinitionsHandler {
         .withPublic(false)
         .withCustom(true);
     if (!protocolVersionRange.isSupported(new Version(sourceDefinition.getProtocolVersion()))) {
-      throw new UnsupportedProtocolVersion(sourceDefinition.getProtocolVersion(), protocolVersionRange.min(), protocolVersionRange.max());
+      throw new UnsupportedProtocolVersionException(sourceDefinition.getProtocolVersion(), protocolVersionRange.min(), protocolVersionRange.max());
     }
     configRepository.writeCustomSourceDefinition(sourceDefinition, customSourceDefinitionCreate.getWorkspaceId());
 
@@ -254,7 +254,7 @@ public class SourceDefinitionsHandler {
 
     final Version airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(spec.getProtocolVersion());
     if (!protocolVersionRange.isSupported(airbyteProtocolVersion)) {
-      throw new UnsupportedProtocolVersion(airbyteProtocolVersion, protocolVersionRange.min(), protocolVersionRange.max());
+      throw new UnsupportedProtocolVersionException(airbyteProtocolVersion, protocolVersionRange.min(), protocolVersionRange.max());
     }
 
     final StandardSourceDefinition newSource = new StandardSourceDefinition()
