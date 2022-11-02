@@ -4,11 +4,12 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { LabeledInput, Link, StatusIcon } from "components";
+import { LabeledInput, Link } from "components";
 import { Button } from "components/ui/Button";
 import { Modal } from "components/ui/Modal";
+import { StatusIcon } from "components/ui/StatusIcon";
 
-import { useConfig } from "config";
+import { links } from "utils/links";
 
 import styles from "./CreateConnectorModal.module.scss";
 
@@ -90,7 +91,6 @@ const validationSchema = yup.object().shape({
 });
 
 const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessage }) => {
-  const config = useConfig();
   const { formatMessage } = useIntl();
 
   return (
@@ -101,7 +101,7 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
             id="admin.learnMore"
             values={{
               lnk: (lnk: React.ReactNode) => (
-                <DocLink target="_blank" href={config.links.docsLink} as="a">
+                <DocLink target="_blank" href={links.docsLink} as="a">
                   {lnk}
                 </DocLink>
               ),

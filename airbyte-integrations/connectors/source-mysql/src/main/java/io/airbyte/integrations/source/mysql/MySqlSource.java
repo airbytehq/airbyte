@@ -23,7 +23,6 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -34,6 +33,7 @@ import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -49,7 +49,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -72,8 +71,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       "useSSL=true",
       "requireSSL=true");
 
-  public static final String SSL_PARAMETERS_WITH_CERTIFICATE_VALIDATION = "verifyServerCertificate=true";
-  public static final String SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION = "verifyServerCertificate=false";
   private final FeatureFlags featureFlags;
 
   public static Source sshWrappedSource() {
@@ -81,7 +78,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   public MySqlSource() {
-    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MySqlSourceOperations());
+    super(DRIVER_CLASS, MySqlStreamingQueryConfig::new, new MySqlSourceOperations());
     this.featureFlags = new EnvVariableFeatureFlags();
   }
 
@@ -129,6 +126,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
       checkOperations.add(database -> {
         CdcConfigurationHelper.checkFirstRecordWaitTime(config);
+        CdcConfigurationHelper.checkServerTimeZoneConfig(config);
       });
     }
     return checkOperations;
@@ -154,10 +152,11 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
+    final String encodedDatabaseName = HostPortResolver.encodeValue(config.get(JdbcUtils.DATABASE_KEY).asText());
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
         config.get(JdbcUtils.HOST_KEY).asText(),
         config.get(JdbcUtils.PORT_KEY).asText(),
-        config.get(JdbcUtils.DATABASE_KEY).asText()));
+        encodedDatabaseName));
 
     // To fetch the result in batches, the "useCursorFetch=true" must be set.
     // https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-implementation-notes.html.
@@ -232,10 +231,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
-      final ConfiguredAirbyteCatalog catalog,
-      final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
-      final StateManager stateManager,
-      final Instant emittedAt) {
+                                                                             final ConfiguredAirbyteCatalog catalog,
+                                                                             final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
+                                                                             final StateManager stateManager,
+                                                                             final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final Duration firstRecordWaitTime = CdcConfigurationHelper.getFirstRecordWaitTime(sourceConfig);

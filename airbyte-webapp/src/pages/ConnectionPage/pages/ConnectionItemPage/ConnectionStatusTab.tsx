@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { Link, useLocation } from "react-router-dom";
 
-import EmptyResource from "components/EmptyResourceBlock";
+import { EmptyResourceBlock } from "components/common/EmptyResourceBlock";
 import { RotateIcon } from "components/icons/RotateIcon";
 import { useAttemptLink } from "components/JobItem/attemptLinkUtils";
 import { Button } from "components/ui/Button";
@@ -13,10 +13,11 @@ import { Tooltip } from "components/ui/Tooltip";
 
 import { Action, Namespace } from "core/analytics";
 import { getFrequencyFromScheduleData } from "core/analytics/utils";
-import { ConnectionStatus, JobWithAttemptsRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { ConnectionStatus, JobWithAttemptsRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
 import { useTrackPage, PageTrackingCodes, useAnalyticsService } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
+import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import { useCancelJob, useListJobs } from "services/job/JobService";
@@ -37,11 +38,6 @@ interface ActiveJob {
   isCanceling: boolean;
 }
 
-interface ConnectionStatusTabProps {
-  connection: WebBackendConnectionRead;
-  isStatusUpdating?: boolean;
-}
-
 const getJobRunningOrPending = (jobs: JobWithAttemptsRead[]) => {
   return jobs.find((jobWithAttempts) => {
     const jobStatus = jobWithAttempts?.job?.status;
@@ -49,7 +45,8 @@ const getJobRunningOrPending = (jobs: JobWithAttemptsRead[]) => {
   });
 };
 
-export const ConnectionStatusTab: React.FC<ConnectionStatusTabProps> = ({ connection }) => {
+export const ConnectionStatusTab: React.FC = () => {
+  const { connection } = useConnectionEditService();
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_STATUS);
   const [activeJob, setActiveJob] = useState<ActiveJob>();
   const [jobPageSize, setJobPageSize] = useState(JOB_PAGE_SIZE_INCREMENT);
@@ -180,7 +177,7 @@ export const ConnectionStatusTab: React.FC<ConnectionStatusTabProps> = ({ connec
                       onClick={onSyncNowButtonClick}
                       icon={
                         <div className={styles.iconRotate}>
-                          <RotateIcon />
+                          <RotateIcon height={styles.syncIconHeight} width={styles.syncIconHeight} />
                         </div>
                       }
                     >
@@ -202,7 +199,7 @@ export const ConnectionStatusTab: React.FC<ConnectionStatusTabProps> = ({ connec
         {jobs.length ? (
           <JobsList jobs={jobs} />
         ) : linkedJobNotFound ? (
-          <EmptyResource
+          <EmptyResourceBlock
             text={<FormattedMessage id="connection.linkedJobNotFound" />}
             description={
               <Link to={pathname}>
@@ -211,7 +208,7 @@ export const ConnectionStatusTab: React.FC<ConnectionStatusTabProps> = ({ connec
             }
           />
         ) : (
-          <EmptyResource text={<FormattedMessage id="sources.noSync" />} />
+          <EmptyResourceBlock text={<FormattedMessage id="sources.noSync" />} />
         )}
       </Card>
       {(moreJobPagesAvailable || isJobPageLoading) && (

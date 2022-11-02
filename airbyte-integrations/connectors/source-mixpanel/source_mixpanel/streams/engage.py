@@ -67,7 +67,7 @@ class Engage(IncrementalMixpanelStream):
     primary_key: str = "distinct_id"
     page_size: int = 1000  # min 100
     _total: Any = None
-    cursor_field = None
+    cursor_field = "last_seen"
 
     @property
     def source_defined_cursor(self) -> bool:

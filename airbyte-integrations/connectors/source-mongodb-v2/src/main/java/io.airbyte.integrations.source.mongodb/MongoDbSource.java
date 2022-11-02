@@ -12,11 +12,11 @@ import com.mongodb.MongoCommandException;
 import com.mongodb.MongoException;
 import com.mongodb.MongoSecurityException;
 import com.mongodb.client.MongoCollection;
+import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.db.exception.ConnectionErrorException;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.db.mongodb.MongoUtils;
@@ -24,6 +24,7 @@ import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
+import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -100,7 +101,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
       throws Exception {
     final List<TableInfo<CommonField<BsonType>>> tableInfos = new ArrayList<>();
 
-    for (final String collectionName : getAuthorizedCollections(database)) {
+    final Set<String> authorizedCollections = getAuthorizedCollections(database);
+    authorizedCollections.parallelStream().forEach(collectionName -> {
       final MongoCollection<Document> collection = database.getCollection(collectionName);
       final List<CommonField<BsonType>> fields = MongoUtils.getUniqueFields(collection).stream().map(MongoUtils::nodeToCommonField).toList();
 
@@ -113,7 +115,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
           .build();
 
       tableInfos.add(tableInfo);
-    }
+    });
     return tableInfos;
   }
 
@@ -127,8 +129,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
      */
     try {
       final Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
-              .append("authorizedCollections", true)
-              .append("nameOnly", true))
+          .append("authorizedCollections", true)
+          .append("nameOnly", true))
           .append("filter", "{ 'type': 'collection' }");
       return document.toBsonDocument()
           .get("cursor").asDocument()
@@ -178,10 +180,9 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
                                                                final List<String> columnNames,
                                                                final String schemaName,
                                                                final String tableName,
-                                                               final String cursorField,
-                                                               final BsonType cursorFieldType,
-                                                               final String cursorValue) {
-    final Bson greaterComparison = gt(cursorField, MongoUtils.getBsonValue(cursorFieldType, cursorValue));
+                                                               final CursorInfo cursorInfo,
+                                                               final BsonType cursorFieldType) {
+    final Bson greaterComparison = gt(cursorInfo.getCursorField(), MongoUtils.getBsonValue(cursorFieldType, cursorInfo.getCursor()));
     return queryTable(database, columnNames, tableName, greaterComparison);
   }
 

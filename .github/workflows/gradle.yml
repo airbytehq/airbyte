@@ -47,6 +47,8 @@ jobs:
           filters: |
             backend:
               - 'airbyte-!(cdk|integrations|webapp|webapp-e2e-tests)/**'
+              - 'airbyte-integrations/connectors/(destination-jdbc|destination-postgres|source-jdbc|source-postgres)/**'
+              - 'airbyte-config/init/src/main/resources/seed/(source|destination)_definitions.yaml'
             build:
               - '.github/**'
               - 'buildSrc/**'
@@ -59,6 +61,7 @@ jobs:
               - 'airbyte-cdk/**'
               - 'airbyte-protocol/**'
               - 'airbyte-integrations/**'
+              - 'airbyte-commons-worker/**'
             db:
               - 'airbyte-db/**'
             frontend:
@@ -82,6 +85,7 @@ jobs:
             ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
             ${{ secrets.SUPERTOPHER_PAT }} \
             ${{ secrets.DAVINCHIA_PAT }}
+
 
   # Uncomment to debug.
   #  changes-output:
@@ -229,11 +233,42 @@ jobs:
         run: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
 
       - name: Build
-        run: SUB_BUILD=CONNECTORS_BASE ./gradlew build -x :airbyte-workers:test --scan
+        run: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
 
       - name: Ensure no file change
         run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
+      - name: Publish Connectors Base Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        id: connectors-test-results
+        if: always()
+        with:
+          junit_files: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
+          comment_mode: off
+          json_file: connectors_base_results.json
+          json_test_case_results: true
+          check_name: "Connectors Base Test Results"
+          
+      - name: Setup Google Cloud SDK
+        if: always()
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          service_account_key: ${{ secrets.GKE_TEST_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Prep Test Results For GCS
+        if: always()
+        run: |
+          python tools/bin/prep_test_results_for_gcs.py --json connectors_base_results.json
+        
+      - name: Upload Test Results to GCS
+        if: always()
+        run: | 
+          gcs_bucket_name="dev-ab-ci-run-results"
+          filename=$(echo "${{ fromJSON( steps.connectors-test-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
+          echo "$filename"
+          gsutil -h "Cache-Control:public" cp connectors_base_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
+        
       - name: Generate Test Report
         uses: dorny/test-reporter@v1
         if: always()
@@ -521,6 +556,42 @@ jobs:
       - name: Automatic Migration Acceptance Test
         run: SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
 
+      - uses: actions/setup-python@v2
+        if: always()
+        with:
+          python-version: "3.9"
+
+      - name: Publish Platform Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        id: platform-results
+        if: always()
+        with:
+          junit_files: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
+          comment_mode: off
+          json_file: platform_results.json
+          json_test_case_results: true
+          check_name: "Platform Test Results"
+
+      - name: Setup Google Cloud SDK
+        if: always()
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          service_account_key: ${{ secrets.GKE_TEST_SA_KEY }}
+          export_default_credentials: true
+      
+      - name: Prep Test Results For GCS
+        if: always()
+        run: |
+          python tools/bin/prep_test_results_for_gcs.py --json platform_results.json
+        
+      - name: Upload Test Results to GCS
+        if: always()
+        run: | 
+          gcs_bucket_name="dev-ab-ci-run-results"
+          filename=$(echo "${{ fromJSON( steps.platform-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
+          echo "$filename"
+          gsutil -h "Cache-Control:public" cp platform_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
+        
       - name: Generate Test Report
         uses: dorny/test-reporter@v1
         if: always()    # run this step even if previous step failed
@@ -530,6 +601,16 @@ jobs:
           path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml'
           reporter: java-junit
 
+      - name: Upload test results to BuildPulse for flaky test detection
+        if: '!cancelled()' # Run this step even when the tests fail. Skip if the workflow is cancelled.
+        uses: Workshop64/buildpulse-action@main
+        with:
+          account: 59758427
+          repository: 283046497
+          path: '/actions-runner/_work/airbyte/airbyte/*'
+          key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
+          secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
+          
   # In case of self-hosted EC2 errors, remove this block.
   stop-platform-build-runner:
     name: "Platform: Stop Build EC2 Runner"
@@ -661,6 +742,42 @@ jobs:
         run: |
           CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
 
+      - uses: actions/setup-python@v2
+        if: always()
+        with:
+          python-version: "3.9"
+
+      - name: Publish Kube Test Results
+        id: kube-results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          junit_files: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
+          comment_mode: off
+          json_file: kube_results.json
+          json_test_case_results: true
+          check_name: "Kube Test Results"
+      
+      - name: Setup Google Cloud SDK
+        if: always()
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          service_account_key: ${{ secrets.GKE_TEST_SA_KEY }}
+          export_default_credentials: true
+      
+      - name: Prep Test Results For GCS
+        if: always()
+        run: |
+          python tools/bin/prep_test_results_for_gcs.py --json kube_results.json
+        
+      - name: Upload Test Results to GCS
+        if: always()
+        run: | 
+          gcs_bucket_name="dev-ab-ci-run-results"
+          filename=$(echo "${{ fromJSON( steps.kube-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
+          echo "$filename"
+          gsutil -h "Cache-Control:public" cp kube_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
+      
       - name: Generate Test Report
         uses: dorny/test-reporter@v1
         if: always()    # run this step even if previous step failed
@@ -669,11 +786,23 @@ jobs:
           path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml'
           reporter: java-junit
 
+      - name: Upload test results to BuildPulse for flaky test detection
+        if: '!cancelled()' # Run this step even when the tests fail. Skip if the workflow is cancelled.
+        uses: Workshop64/buildpulse-action@main
+        with:
+          account: 59758427
+          repository: 283046497
+          path: '/actions-runner/_work/airbyte/airbyte/*'
+          key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
+          secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
+          
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
           name: Kubernetes Logs
           path: /tmp/kubernetes_logs/*
+
+
   # In case of self-hosted EC2 errors, remove this block.
   stop-kube-acceptance-test-runner:
     name: "Platform: Stop Kube Acceptance Test EC2 Runner"
@@ -820,13 +949,6 @@ jobs:
 #          SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
 #        run: |
 #          CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube_helm.sh
-#      - name: Generate Test Report
-#        uses: dorny/test-reporter@v1
-#        if: always()    # run this step even if previous step failed
-#        with:
-#          name: Platform Helm E2E Test Report
-#          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml'
-#          reporter: java-junit
 #
 #      - uses: actions/upload-artifact@v2
 #        if: failure()

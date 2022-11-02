@@ -24,7 +24,6 @@ import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;

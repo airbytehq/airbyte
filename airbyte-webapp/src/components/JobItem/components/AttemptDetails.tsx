@@ -5,20 +5,20 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import Status from "core/statuses";
 
-import { AttemptRead, JobConfigType } from "../../../core/request/AirbyteClient";
+import { AttemptRead } from "../../../core/request/AirbyteClient";
 import styles from "./AttemptDetails.module.scss";
 
-interface IProps {
+interface AttemptDetailsProps {
   className?: string;
   attempt: AttemptRead;
-  configType?: JobConfigType;
+  hasMultipleAttempts?: boolean;
 }
 
 const getFailureFromAttempt = (attempt: AttemptRead) => {
   return attempt.failureSummary && attempt.failureSummary.failures[0];
 };
 
-const AttemptDetails: React.FC<IProps> = ({ attempt, className }) => {
+const AttemptDetails: React.FC<AttemptDetailsProps> = ({ attempt, className, hasMultipleAttempts }) => {
   const { formatMessage } = useIntl();
 
   if (attempt.status !== Status.SUCCEEDED && attempt.status !== Status.FAILED) {
@@ -67,6 +67,11 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className }) => {
   return (
     <div className={classNames(styles.container, className)}>
       <div className={styles.details}>
+        {hasMultipleAttempts && (
+          <strong className={classNames(styles.lastAttempt, { [styles.failed]: isFailed })}>
+            <FormattedMessage id="sources.lastAttempt" />
+          </strong>
+        )}
         <span>{formatBytes(attempt?.totalStats?.bytesEmitted)}</span>
         <span>
           <FormattedMessage

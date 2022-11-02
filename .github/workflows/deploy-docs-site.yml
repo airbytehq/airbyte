@@ -1,0 +1,50 @@
+name: Deploy docs.airbyte.com
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'docs/**'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  dummy-job:
+    name: Deploy Docs Assets
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # Node.js is needed for Yarn
+      - name: Setup Yarn
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16.14.0'
+          cache: 'yarn'
+          cache-dependency-path: docusaurus
+
+      - name: Run Docusaurus
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./tools/bin/deploy_docusaurus
+
+      - name: Notify Slack channel on failure
+        uses: abinoda/slack-action@master
+        if: failure()
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+        with:
+          # 'C032Y32T065' channel => '#docs'
+          args: >-
+            {\"channel\":\"C03BEADRPNY\", \"blocks\":[
+            {\"type\":\"divider\"},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"OSS Docs build fails on the latest master :bangbang: \n\n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n\"}},
+            {\"type\":\"divider\"}]}

@@ -13,7 +13,7 @@ from source_s3.source_files_abstract.file_info import FileInfo
 class AbstractFileParser(ABC):
     logger = AirbyteLogger()
 
-    NON_SCALAR_TYPES = {"struct": "struct"}
+    NON_SCALAR_TYPES = {"struct": "struct", "list": "list"}
     TYPE_MAP = {
         "boolean": ("bool_", "bool"),
         "integer": ("int64", "int8", "int16", "int32", "uint8", "uint16", "uint32", "uint64"),
@@ -45,12 +45,13 @@ class AbstractFileParser(ABC):
         """
 
     @abstractmethod
-    def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> dict:
+    def get_inferred_schema(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> dict:
         """
         Override this with format-specifc logic to infer the schema of file
         Note: needs to return inferred schema with JsonSchema datatypes
 
         :param file: file-like object (opened via StorageFile)
+        :param file_info: file metadata
         :return: mapping of {columns:datatypes} where datatypes are JsonSchema types
         """
 

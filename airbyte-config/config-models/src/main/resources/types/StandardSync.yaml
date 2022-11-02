@@ -11,6 +11,8 @@ required:
   - catalog
   - manual
   - namespaceDefinition
+  - geography
+  - breakingChange
 additionalProperties: false
 properties:
   namespaceDefinition:
@@ -114,3 +116,14 @@ properties:
     format: uuid
   resourceRequirements:
     "$ref": ResourceRequirements.yaml
+  geography:
+    "$ref": Geography.yaml
+  breakingChange:
+    type: boolean
+  notifySchemaChanges:
+    type: boolean
+  nonBreakingChangesPreference:
+    type: string
+    enum:
+      - ignore
+      - disable

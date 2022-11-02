@@ -5,7 +5,7 @@
 import logging
 from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Optional
+from typing import Any, Dict, List, Optional, Type
 
 from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.adsinsights import AdsInsights
@@ -92,6 +92,10 @@ class ConnectorConfig(BaseConfig):
     class Config:
         title = "Source Facebook Marketing"
 
+        @staticmethod
+        def schema_extra(schema: Dict[str, Any], model: Type["ConnectorConfig"]) -> None:
+            schema["properties"]["end_date"].pop("format")
+
     account_id: str = Field(
         title="Account ID",
         order=0,
@@ -128,7 +132,7 @@ class ConnectorConfig(BaseConfig):
         order=3,
         description=(
             "The value of the access token generated. "
-            'See the <a href="https://docs.airbyte.io/integrations/sources/facebook-marketing">docs</a> for more information'
+            'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information'
         ),
         airbyte_secret=True,
     )

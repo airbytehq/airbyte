@@ -24,7 +24,7 @@ class ConnectorConfig(BaseModel):
     )
 
     access_token: str = Field(
-        description='The value of the access token generated. See the <a href="https://docs.airbyte.io/integrations/sources/instagram">docs</a> for more information',
+        description='The value of the access token generated. See the <a href="https://docs.airbyte.com/integrations/sources/instagram">docs</a> for more information',
         airbyte_secret=True,
     )
 
@@ -74,8 +74,8 @@ class SourceInstagram(AbstractSource):
         required to run this integration.
         """
         return ConnectorSpecification(
-            documentationUrl="https://docs.airbyte.io/integrations/sources/instagram",
-            changelogUrl="https://docs.airbyte.io/integrations/sources/instagram",
+            documentationUrl="https://docs.airbyte.com/integrations/sources/instagram",
+            changelogUrl="https://docs.airbyte.com/integrations/sources/instagram",
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.append],
             connectionSpecification=ConnectorConfig.schema(),

@@ -7,7 +7,7 @@ package io.airbyte.commons.protocol;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.protocol.serde.AirbyteMessageDeserializer;
 import io.airbyte.commons.protocol.serde.AirbyteMessageSerializer;
-import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.version.Version;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Singleton;
 import java.util.Collections;
@@ -51,14 +51,14 @@ public class AirbyteMessageSerDeProvider {
   /**
    * Returns the Deserializer for the version if known else empty
    */
-  public Optional<AirbyteMessageDeserializer<?>> getDeserializer(final AirbyteVersion version) {
+  public Optional<AirbyteMessageDeserializer<?>> getDeserializer(final Version version) {
     return Optional.ofNullable(deserializers.get(version.getMajorVersion()));
   }
 
   /**
    * Returns the Serializer for the version if known else empty
    */
-  public Optional<AirbyteMessageSerializer<?>> getSerializer(final AirbyteVersion version) {
+  public Optional<AirbyteMessageSerializer<?>> getSerializer(final Version version) {
     return Optional.ofNullable(serializers.get(version.getMajorVersion()));
   }
 

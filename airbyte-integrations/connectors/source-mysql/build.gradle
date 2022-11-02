@@ -18,7 +18,7 @@ dependencies {
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
-    implementation 'mysql:mysql-connector-java:8.0.22'
+    implementation 'mysql:mysql-connector-java:8.0.30'
     implementation 'org.apache.commons:commons-lang3:3.11'
 
     testImplementation testFixtures(project(':airbyte-integrations:bases:debezium-v1-9-6'))

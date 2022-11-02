@@ -1,8 +1,7 @@
-ARG JDK_VERSION=3.1
-ARG JDK_IMAGE=airbyte/java-datadog-tracer-base:${JDK_VERSION}
+ARG JDK_IMAGE=airbyte/airbyte-base-java-image:1.0
 FROM ${JDK_IMAGE} AS cron
 
-ARG VERSION=0.40.12
+ARG VERSION=0.40.17
 
 ENV APPLICATION airbyte-cron
 ENV VERSION ${VERSION}

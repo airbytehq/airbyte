@@ -1,25 +1,30 @@
 ## @section Global Parameters
 
-##  global Global params that are overwritten with umbrella chart
+##  global -- Global params that are overwritten with umbrella chart
 global:
-  ##  serviceAccountName Service Account name override
+  
+  
+  ##  serviceAccountName -- Service Account name override
   serviceAccountName: &service-account-name "airbyte-admin"
-  ##  deploymentMode Deployment mode, whether or not render the default env vars and volumes in deployment spec
+  ##  deploymentMode -- Deployment mode, whether or not render the default env vars and volumes in deployment spec
   deploymentMode: "oss"
-  #image:
-  #  tag: "dev"
+  image:
+    tag: dev
 
-
-  ##  database [object] Object used to overrite database configuration(to use external DB)
-  ##  database.secretName secret name where DB creds are stored
-  ##  database.secretValue secret value for database password
-  ##  database.host Database host override
-  ##  database.port Database port override
+  ##  database [object] -- Object used to overrite database configuration(to use external DB)
+  ##  database.secretName -- secret name where DB creds are stored
+  ##  database.secretValue -- secret value for database password
+  ##  database.host -- Database host override
+  ##  database.port -- Database port override
   database:
     secretName: ""
     secretValue: ""
     host: "example.com"
     port: "5432"
+  state:
+    ## state.storage.type Determines which state storage will be utilized.  One of "MINIO", "S3" or "GCS"
+    storage:
+      type: "MINIO"
   logs:
     ##  logs.accessKey.password Logs Access Key
     ##  logs.accessKey.existingSecret
@@ -36,6 +41,11 @@ global:
       existingSecret: ""
       existingSecretKey: ""
 
+    ## logs.storage.type Determines which log storage  will be utilized.  One of "MINIO", "S3" or "GCS"
+    ##                   Used in conjunction with logs.minio.*, logs.s3.* or logs.gcs.*
+    storage:
+      type: "MINIO"
+
     ##  logs.minio.enabled Switch to enable or disable the Minio helm chart
     minio:
       enabled: true
@@ -43,6 +53,7 @@ global:
     ##  logs.externalMinio.enabled Switch to enable or disable an external Minio instance
     ##  logs.externalMinio.host External Minio Host
     ##  logs.externalMinio.port External Minio Port
+    ##  logs.externalMinio.endpoint Fully qualified hostname for s3-compatible storage
     externalMinio:
       enabled: false
       host: localhost
@@ -123,27 +134,27 @@ global:
 
 ## @section Common Parameters
 
-##  nameOverride String to partially override airbyte.fullname template with a string (will prepend the release name)
+##  nameOverride -- String to partially override airbyte.fullname template with a string (will prepend the release name)
 ##
 nameOverride: ""
-##  fullnameOverride String to fully override airbyte.fullname template with a string
+##  fullnameOverride -- String to fully override airbyte.fullname template with a string
 ##
 fullnameOverride: ""
 
 ## Pods Service Account
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
-##  serviceAccount.annotations [object] Annotations for service account. Evaluated as a template. Only used if `create` is `true`.
-##  serviceAccount.create Specifies whether a ServiceAccount should be created
-##  serviceAccount.name Name of the service account to use. If not set and create is true, a name is generated using the fullname template.
+##  serviceAccount.annotations -- [object] Annotations for service account. Evaluated as a template. Only used if `create` is `true`.
+##  serviceAccount.create -- Specifies whether a ServiceAccount should be created
+##  serviceAccount.name -- Name of the service account to use. If not set and create is true, a name is generated using the fullname template.
 ##
 serviceAccount:
   create: true
   annotations: {}
   name: *service-account-name
 
-##  version Sets the AIRBYTE_VERSION environment variable. Defaults to Chart.AppVersion.
-## If changing the image tags below, you should probably also update this.
-version: "dev"
+# version Sets the AIRBYTE_VERSION environment variable. Defaults to Chart.AppVersion.
+# If changing the image tags below, you should probably also update this.
+version: ""
 
 ## @section Webapp Parameters
 
@@ -158,7 +169,6 @@ webapp:
   image:
     repository: airbyte/webapp
     pullPolicy: IfNotPresent
-    tag: 0.40.4
 
   ##  webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
   ##
@@ -182,12 +192,7 @@ webapp:
   ##  webapp.livenessProbe.successThreshold Success threshold for livenessProbe
   ##
   livenessProbe:
-    enabled: true
-    initialDelaySeconds: 30
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
+    enabled: false
 
   ##  webapp.readinessProbe.enabled Enable readinessProbe on the webapp
   ##  webapp.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
@@ -197,12 +202,7 @@ webapp:
   ##  webapp.readinessProbe.successThreshold Success threshold for readinessProbe
   ##
   readinessProbe:
-    enabled: true
-    initialDelaySeconds: 10
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
+    enabled: false
 
   ##  webapp.service.type The service type to use for the webapp service
   ##  webapp.service.port The service port to expose the webapp on
@@ -275,14 +275,10 @@ webapp:
   api:
     url: /api/v1/
 
+  ##  webapp.fullstory.enabled Whether or not to enable fullstory
+  fullstory:
+    enabled: false
 
-  ##  webapp.extraEnv [array] Additional env vars for webapp pod(s).
-  ## Example:
-  ##
-  ## extraEnv:
-  ## - name: SAMPLE_ENV_VAR
-  ##   value: "key=sample-value"
-  extraEnv: []
 
   ##  webapp.extraVolumeMounts [array] Additional volumeMounts for webapp container(s).
   ## Examples (when using `webapp.containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -307,6 +303,78 @@ webapp:
   ##     emptyDir: {}
   ##
   extraVolumes: []
+
+  ##  extraContainer [array] Additional container for server pod(s)
+  ## Example:
+  # extraContainers:
+  #   - name: otel_collector
+  #     image: somerepo/someimage:sometag
+  #     args: [
+  #         "--important-args"
+  #     ]
+  #     ports:
+  #       - containerPort: 443
+  #     volumeMounts:
+  #       - name: volumeMountCool
+  #         mountPath: /some/path
+  #         readOnly: true
+  extraContainers: []
+
+  ##  extraInitContainers [array] Additional init containers for server pod(s)
+  ## Example:
+  # extraInitContainers:
+  #   - name: sleepy
+  #     image: alpine
+  #     command: ['sleep', '60']
+
+  extraInitContainers: []
+
+  ##  extraEnv [array] Supply extra env variables to main container using full notation
+  ## Example: (With default env vars and values taken from generated config map)
+  # extraEnv:
+  #   - name: POSTGRES_USER
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: airbyte-secrets
+  #         key: DATABASE_USER
+  #   - name: POSTGRES_PWD
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: airbyte-secrets
+  #         key: DATABASE_PASSWORD
+  #   - name: DYNAMIC_CONFIG_FILE_PATH
+  #     value: "config/dynamicconfig/development.yaml"
+  #   - name: DB
+  #     value: "postgresql"
+  #   - name: DB_PORT
+  #     valueFrom:
+  #       configMapKeyRef:
+  #         name: airbyte-env
+  #         key: DATABASE_PORT
+  #   - name: POSTGRES_SEEDS
+  #     valueFrom:
+  #       configMapKeyRef:
+  #         name: airbyte-env
+  #         key: DATABASE_HOST
+  ##
+  extraEnv: []
+  ##  secrets [object] Supply additional secrets to container
+  ## Example:
+  ## secrets:
+  ##   DATABASE_PASSWORD: strong-password
+  ##   DATABASE_USER: my-db-user
+  secrets: {}
+
+  ##  env_vars [object] Supply extra env variables to main container using simplified notation
+  ## Example:
+  ## env_vars:
+  ##   DATABASE_HOST: airbyte-db
+  ##   DATABASE_PORT: 5432
+  env_vars: {}
+
+
+
+
 
 ## @section Pod Sweeper parameters
 
@@ -428,9 +496,8 @@ server:
   image:
     repository: airbyte/server
     pullPolicy: IfNotPresent
-    tag: 0.40.4
 
-  ##  server.podAnnotations [object] Add extra annotations to the server pod
+  ##  server.podAnnotations [object] Add extra annotations to the server pod(s)
   ##
   podAnnotations: {}
 
@@ -452,12 +519,7 @@ server:
   ##  server.livenessProbe.successThreshold Success threshold for livenessProbe
   ##
   livenessProbe:
-    enabled: true
-    initialDelaySeconds: 30
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
+    enabled: false
 
   ##  server.readinessProbe.enabled Enable readinessProbe on the server
   ##  server.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
@@ -467,14 +529,8 @@ server:
   ##  server.readinessProbe.successThreshold Success threshold for readinessProbe
   ##
   readinessProbe:
-    enabled: true
-    initialDelaySeconds: 10
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
-
-  ## Server app resource requests and limits
+    enabled: false
+  ## server resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
   ## We usually recommend not to specify default resources and to leave this as a conscious
   ## choice for the user. This also increases chances charts run on environments with little
@@ -494,12 +550,6 @@ server:
     ##    cpu: 250m
     requests: {}
 
-  ##  server.service.type The service type to use for the API server
-  ##  server.service.port The service port to expose the API server on
-  service:
-    type: ClusterIP
-    port: 8001
-
   ##  server.nodeSelector [object] Node labels for pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
@@ -515,17 +565,11 @@ server:
   ##
   affinity: {}
 
-  ##  server.log.level The log level to log at
+  ##  server.log.level The log level to log at.
   log:
     level: "INFO"
 
-  ##  server.extraEnv [array] Additional env vars for server pod(s).
-  ## Example:
-  ##
-  ## extraEnv:
-  ## - name: SAMPLE_ENV_VAR
-  ##   value: "key=sample-value"
-  extraEnv: []
+
 
   ##  server.extraVolumeMounts [array] Additional volumeMounts for server container(s).
   ## Examples (when using `server.containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -543,6 +587,75 @@ server:
   ##
   extraVolumes: []
 
+  ##  extraContainer [array] Additional container for server pod(s)
+  ## Example:
+  # extraContainers:
+  #   - name: otel_collector
+  #     image: somerepo/someimage:sometag
+  #     args: [
+  #         "--important-args"
+  #     ]
+  #     ports:
+  #       - containerPort: 443
+  #     volumeMounts:
+  #       - name: volumeMountCool
+  #         mountPath: /some/path
+  #         readOnly: true
+  extraContainers: []
+
+  ##  extraInitContainers [array] Additional init containers for server pod(s)
+  ## Example:
+  # extraInitContainers:
+  #   - name: sleepy
+  #     image: alpine
+  #     command: ['sleep', '60']
+
+  extraInitContainers: []
+
+  ##  extraEnv [array] Supply extra env variables to main container using full notation
+  ## Example: (With default env vars and values taken from generated config map)
+  # extraEnv:
+  #   - name: AIRBYTE_VERSION
+  #     valueFrom:
+  #       configMapKeyRef:
+  #         name: airbyte-env
+  #         key: AIRBYTE_VERSION
+  #   - name: API_URL
+  #     valueFrom:
+  #       configMapKeyRef:
+  #         name: airbyte-env
+  #         key: API_URL
+  #   - name: TRACKING_STRATEGY
+  #     valueFrom:
+  #       configMapKeyRef:
+  #         name: airbyte-env
+  #         key: TRACKING_STRATEGY
+  #   - name: FULLSTORY
+  #     valueFrom:
+  #       configMapKeyRef:
+  #         name: airbyte-env
+  #         key: FULLSTORY
+  #   - name: INTERNAL_API_HOST
+  #     valueFrom:
+  #       configMapKeyRef:
+  #         name: airbyte-env
+  #         key: INTERNAL_API_HOST
+  ##
+  extraEnv: []
+  ##  secrets [object] Supply additional secrets to container
+  ## Example:
+  ## secrets:
+  ##   DATABASE_PASSWORD: strong-password
+  ##   DATABASE_USER: my-db-user
+  secrets: {}
+
+  ##  env_vars [object] Supply extra env variables to main container using simplified notation
+  ## Example:
+  ## env_vars:
+  ##   DATABASE_HOST: airbyte-db
+  ##   DATABASE_PORT: 5432
+  env_vars: {}
+
 ## @section Worker Parameters
 
 worker:
@@ -556,7 +669,7 @@ worker:
   image:
     repository: airbyte/worker
     pullPolicy: IfNotPresent
-    tag: 0.40.4
+    tag: 0.40.9
 
   ##  worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
@@ -665,6 +778,8 @@ worker:
   ##
   extraVolumes: []
 
+  extraContainers: []
+
   hpa:
     enabled: false
   ## Container Orchestrator
@@ -674,7 +789,6 @@ worker:
   containerOrchestrator:
     enabled: true
     image: ""
-
 
 ## @section Metrics parameters
 metrics:
@@ -771,24 +885,23 @@ metrics:
 
 airbyte-bootloader:
   enabled: true
-  ##  bootloader.image.repository The repository to use for the airbyte bootloader image.
-  ##  bootloader.image.pullPolicy the pull policy to use for the airbyte bootloader image
-  ##  bootloader.image.tag The airbyte bootloader image tag. Defaults to the chart's AppVersion
+  ##  image.repository The repository to use for the airbyte bootloader image.
+  ##  image.pullPolicy the pull policy to use for the airbyte bootloader image
+  ##  image.tag The airbyte bootloader image tag. Defaults to the chart's AppVersion
   image:
     repository: airbyte/bootloader
     pullPolicy: IfNotPresent
-    tag: 0.40.4
 
-  ##  bootloader.podAnnotations [object] Add extra annotations to the bootloader pod
+  ##  podAnnotations [object] Add extra annotations to the bootloader pod
   ##
   podAnnotations: {}
 
-  ##  bootloader.nodeSelector [object] Node labels for pod assignment
+  ##  nodeSelector [object] Node labels for pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
   nodeSelector: {}
 
-  ##  bootloader.tolerations [array] Tolerations for worker pod assignment.
+  ##  tolerations [array] Tolerations for worker pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
   tolerations: []
@@ -813,10 +926,99 @@ airbyte-bootloader:
     ##    memory: 1Gi
     limits: {}
 
-  ##  bootloader.affinity [object] Affinity and anti-affinity for bootloader pod assignment.
+  ##  affinity [object] Affinity and anti-affinity for bootloader pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   ##
   affinity: {}
+
+  ##  extraEnv [array] Supply extra env variables to main container using full notation
+  ## Example: (With default env vars and values taken from generated config map)
+  ## extraEnv:
+  ##   - name: AIRBYTE_VERSION
+  ##     valueFrom:
+  ##       configMapKeyRef:
+  ##         name: airbyte-env
+  ##         key: AIRBYTE_VERSION
+  ##   - name: DATABASE_HOST
+  ##     valueFrom:
+  ##       configMapKeyRef:
+  ##         name: airbyte-env
+  ##         key: DATABASE_HOST
+  ##   - name: DATABASE_PORT
+  ##     valueFrom:
+  ##       configMapKeyRef:
+  ##         name: airbyte-env
+  ##         key: DATABASE_PORT
+  ##   - name: DATABASE_PASSWORD
+  ##     valueFrom:
+  ##       secretKeyRef:
+  ##         name: airbyte-secrets
+  ##         key: DATABASE_PASSWORD
+  ##   - name: DATABASE_URL
+  ##     valueFrom:
+  ##       configMapKeyRef:
+  ##         name: airbyte-env
+  ##         key: DATABASE_URL
+  ##   - name: DATABASE_USER
+  ##     valueFrom:
+  ##       secretKeyRef:
+  ##         name: airbyte-secrets
+  ##         key: DATABASE_USER
+  ##
+  extraEnv: []
+  ##  secrets [object] Supply additional secrets to container
+  ## Example:
+  ## secrets:
+  ##   DATABASE_PASSWORD: strong-password
+  ##   DATABASE_USER: my-db-user
+  secrets: {}
+
+  ##  env_vars [object] Supply extra env variables to main container using simplified notation
+  ## Example:
+  ## env_vars:
+  ##   DATABASE_HOST: airbyte-db
+  ##   DATABASE_PORT: 5432
+  env_vars: {}
+  ##  extraContainer [array] Additional container for server pod(s)
+  ## Example:
+  # extraContainers:
+  #   - name: otel_collector
+  #     image: somerepo/someimage:sometag
+  #     args: [
+  #         "--important-args"
+  #     ]
+  #     ports:
+  #       - containerPort: 443
+  #     volumeMounts:
+  #       - name: volumeMountCool
+  #         mountPath: /some/path
+  #         readOnly: true
+  extraContainers: []
+
+  ##  extraInitContainers [array] Additional init containers for server pod(s)
+  ## Example:
+  # extraInitContainers:
+  #   - name: sleepy
+  #     image: alpine
+  #     command: ['sleep', '60']
+
+  extraInitContainers: []
+
+  ##  extraVolumeMounts [array] Additional volumeMounts for server container(s).
+  ## Examples (when using `containerSecurityContext.readOnlyRootFilesystem=true`):
+  ## extraVolumeMounts:
+  ##   - name: tmpdir
+  ##     mountPath: /tmp
+  ##
+  extraVolumeMounts: []
+
+  ##  extraVolumes [array] Additional volumes for server pod(s).
+  ## Examples (when using `containerSecurityContext.readOnlyRootFilesystem=true`):
+  ## extraVolumes:
+  ##   - name: tmpdir
+  ##     emptyDir: {}
+  ##
+  extraVolumes: []
 
 ## @section Temporal parameters
 ## TODO: Move to consuming temporal from a dedicated helm chart
@@ -832,7 +1034,7 @@ temporal:
   image:
     repository: temporalio/auto-setup
     pullPolicy: IfNotPresent
-    tag: "1.13.0"
+    tag: "1.7.0"
 
   ##  temporal.service.type The Kubernetes Service Type
   ##  temporal.service.port The temporal port and exposed kubernetes port
@@ -877,12 +1079,7 @@ temporal:
   ##  temporal.livenessProbe.successThreshold Success threshold for livenessProbe
   ##
   livenessProbe:
-    enabled: true
-    initialDelaySeconds: 5
-    periodSeconds: 30
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
+    enabled: false
 
   ##  temporal.readinessProbe.enabled Enable readinessProbe on the temporal
   ##  temporal.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
@@ -892,12 +1089,7 @@ temporal:
   ##  temporal.readinessProbe.successThreshold Success threshold for readinessProbe
   ##
   readinessProbe:
-    enabled: true
-    initialDelaySeconds: 5
-    periodSeconds: 30
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
+    enabled: false
 
   ##  temporal.nodeSelector [object] Node labels for temporal pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
@@ -961,6 +1153,8 @@ temporal:
     ##    cpu: 200m
     ##    memory: 1Gi
     limits: {}
+
+  extraContainers: []
 
 ## @section Airbyte Database parameters
 

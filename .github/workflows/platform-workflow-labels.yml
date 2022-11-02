@@ -1,0 +1,29 @@
+name: Platform Workflow Labels
+
+on:
+  issues:
+    types: [ labeled, unlabeled ]
+
+jobs:
+  label_issues:
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'team/platform-workflow' }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Label Platform Workflow Issue
+        uses: andymckay/labeler@1.0.4
+        with:
+          add-labels: "platform-workflow/requires-grooming"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+  unlabel_issues:
+    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'team/platform-workflow' }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Unlabel Platform Workflow Issue
+        uses: andymckay/labeler@1.0.4
+        with:
+          remove-labels: "platform-workflow/requires-grooming"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
