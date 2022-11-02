@@ -7,10 +7,21 @@ package io.airbyte.integrations.destination.snowflake;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 
 public class SnowflakeSQLNameTransformer extends ExtendedNameTransformer {
+  private boolean isDoubleQuoted(final String input) {
+    if (input.startsWith("\"") && input.endsWith("\"")) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   @Override
   public String applyDefaultCase(final String input) {
-    return input.toUpperCase();
+    if (isDoubleQuoted(input)) {
+      return input;
+    } else {
+      return input.toUpperCase();
+    }
   }
 
   /**
@@ -20,6 +31,9 @@ public class SnowflakeSQLNameTransformer extends ExtendedNameTransformer {
   public String convertStreamName(final String input) {
     if (input == null) {
       return null;
+    }
+    if (isDoubleQuoted(input)) {
+      return input;
     }
 
     final String normalizedName = super.convertStreamName(input);

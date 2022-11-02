@@ -43,9 +43,11 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
 
   @Override
   public String getStageName(final String namespace, final String streamName) {
+    // Allow it convert the stageName by removing double quotes
+    String unwrappedNamespace = namespace.replaceAll("^\"|\"$", "");
     return nameTransformer.applyDefaultCase(String.join("_",
-        nameTransformer.convertStreamName(namespace),
-        nameTransformer.convertStreamName(streamName)));
+      nameTransformer.convertStreamName(unwrappedNamespace),
+      nameTransformer.convertStreamName(streamName)));
   }
 
   @Override

@@ -37,7 +37,11 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   @Override
   public boolean isSchemaExists(final JdbcDatabase database, final String outputSchema) throws Exception {
     try (final Stream<JsonNode> results = database.unsafeQuery(SHOW_SCHEMAS)) {
-      return results.map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equalsIgnoreCase);
+      if (outputSchema.startsWith("\"") && outputSchema.endsWith("\"")) {
+        return results.map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equals);
+      } else {
+        return results.map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equalsIgnoreCase);
+      }
     }
   }
 
