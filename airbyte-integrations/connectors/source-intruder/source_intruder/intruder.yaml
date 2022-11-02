@@ -27,7 +27,7 @@ definitions:
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
-      type: "*ref(definitions.offset_paginator)"
+      $ref: "*ref(definitions.offset_paginator)"
     requester:
       $ref: "*ref(definitions.requester)"
   base_stream:
