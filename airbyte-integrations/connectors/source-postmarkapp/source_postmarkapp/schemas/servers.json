@@ -2,6 +2,12 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
+    "TotalCount": {
+      "type": "integer"
+    },
+    "Servers": {
+      "type": "array",
+      "items": {
     "ID": {
       "type": "integer"
     },
@@ -10,11 +16,10 @@
     },
     "ApiTokens": {
       "type": "array",
-      "items": [
+      "items":
         {
           "type": "string"
         }
-      ]
     },
     "Color": {
       "type": "string"
@@ -72,6 +77,8 @@
     },
     "EnableSmtpApiErrorHooks": {
       "type": "boolean"
+    }
+      }
     }
   }
 }

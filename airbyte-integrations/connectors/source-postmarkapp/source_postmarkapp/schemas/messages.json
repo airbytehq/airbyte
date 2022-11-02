@@ -37,11 +37,11 @@
     },
     "Recipients": {
       "type": "array",
-      "items": [
+      "items":
         {
           "type": "string"
         }
-      ]
+
     },
     "ReceivedAt": {
       "type": "string"
