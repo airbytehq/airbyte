@@ -29,7 +29,7 @@ Another option is to use OAuth2.0 for authentication. See [Zendesk docs](https:/
 
 ## Supported sync modes
 
-The **Zendesk Talk** source connector supports the following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The **Zendesk Talk** source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 * Full Refresh
 * Incremental Sync
 
