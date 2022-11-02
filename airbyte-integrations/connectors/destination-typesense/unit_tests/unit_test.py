@@ -10,13 +10,13 @@ from destination_typesense.writer import TypesenseWriter
 @patch("typesense.Client")
 def test_default_batch_size(client):
     writer = TypesenseWriter(client, "steam_name")
-    assert writer.batch_size == 1000
+    assert writer.batch_size == 10000
 
 
 @patch("typesense.Client")
 def test_empty_batch_size(client):
     writer = TypesenseWriter(client, "steam_name", "")
-    assert writer.batch_size == 1000
+    assert writer.batch_size == 10000
 
 
 @patch("typesense.Client")

@@ -17,7 +17,7 @@ class TypesenseWriter:
     def __init__(self, client: Client, steam_name: str, batch_size: int = None):
         self.client = client
         self.steam_name = steam_name
-        self.batch_size = batch_size or 1000
+        self.batch_size = batch_size or 10000
 
     def queue_write_operation(self, data: Mapping):
         random_key = str(uuid4())
