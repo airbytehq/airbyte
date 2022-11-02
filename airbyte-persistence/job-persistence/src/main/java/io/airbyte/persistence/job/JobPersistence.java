@@ -36,6 +36,16 @@ public interface JobPersistence {
 
   List<SyncStats> getSyncStats(Long attemptId) throws IOException;
 
+  /**
+   * Return the id of the record in the attempt table corresponding to that job and attempt combination. This is useful to index into other attempt-scoped
+   * metadata.
+   * @param jobId
+   * @param attemptNumber
+   * @return
+   * @throws IOException
+   */
+  Long getAttemptId(Long jobId, Long attemptNumber) throws IOException;
+
   List<NormalizationSummary> getNormalizationSummary(Long attemptId) throws IOException;
 
   Job getJob(long jobId) throws IOException;
@@ -135,6 +145,9 @@ public interface JobPersistence {
    * ConfigRepository#updateConnectionState, which takes care of persisting the connection state.
    */
   void writeOutput(long jobId, int attemptNumber, JobOutput output) throws IOException;
+
+  void writeSyncStats(long jobId, int attemptNumber, long estimatedRecords, long estimatedBytes, long recordsEmitted, long bytesEmitted)
+      throws IOException;
 
   /**
    * Writes a summary of all failures that occurred during the attempt.

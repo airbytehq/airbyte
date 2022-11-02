@@ -11,7 +11,15 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import datadog.trace.api.Trace;
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.generated.ApiClient;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.AttemptStats;
+import io.airbyte.api.client.model.generated.SaveStatsRequestBody;
 import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.config.Configs;
+import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
@@ -79,6 +87,27 @@ import org.slf4j.MDC;
 public class DefaultReplicationWorker implements ReplicationWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultReplicationWorker.class);
+
+  private static final Configs CONFIGS = new EnvConfigs();
+  private static final AirbyteApiClient CLIENT = getAirbyteApiClient();
+
+  // Passing env vars to the container orchestrator isn't working properly. Hack around this for now.
+  // TODO(Davin): This doesn't work for Kube. Need to figure it out.
+  private static AirbyteApiClient getAirbyteApiClient() {
+    if (CONFIGS.getWorkerEnvironment() == WorkerEnvironment.DOCKER) {
+      return new AirbyteApiClient(
+          new ApiClient().setScheme("http")
+              .setHost(CONFIGS.getAirbyteApiHost())
+              .setPort(CONFIGS.getAirbyteApiPort())
+              .setBasePath("/api"));
+    }
+
+    return new AirbyteApiClient(
+        new ApiClient().setScheme("http")
+            .setHost("airbyte-server-svc")
+            .setPort(8001)
+            .setBasePath("/api"));
+  }
 
   private final String jobId;
   private final int attempt;
@@ -180,7 +209,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             });
 
         final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
-            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, metricReporter, timeTracker),
+            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, metricReporter, timeTracker,
+                Long.parseLong(jobId), attempt),
             executors)
             .whenComplete((msg, ex) -> {
               if (ex != null) {
@@ -347,7 +377,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                  final Map<String, String> mdc,
                                                  final RecordSchemaValidator recordSchemaValidator,
                                                  final WorkerMetricReporter metricReporter,
-                                                 final ThreadedTimeTracker timeHolder) {
+                                                 final ThreadedTimeTracker timeHolder,
+                                                 final Long jobId,
+                                                 final Integer attemptNumber) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -367,8 +399,15 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             validateSchema(recordSchemaValidator, validationErrors, airbyteMessage);
             final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
 
+            // metrics block
             messageTracker.acceptFromSource(message);
 
+            // config/mutating platform state block
+            if (message.getType() == Type.STATE || message.getType() == Type.TRACE) {
+              saveStats(messageTracker, jobId, attemptNumber);
+            }
+
+            // continue processing
             try {
               if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
                 destination.accept(message);
@@ -425,6 +464,25 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         }
       }
     };
+  }
+
+  private static void saveStats(MessageTracker messageTracker, Long jobId, Integer attemptNumber) {
+    final AttemptStats attemptStats = new AttemptStats()
+        .bytesEmitted(messageTracker.getTotalBytesEmitted())
+        .recordsEmitted(messageTracker.getTotalRecordsEmitted())
+        .estimatedBytes(messageTracker.getTotalBytesEstimated())
+        .estimatedRecords(messageTracker.getTotalRecordsEstimated());
+
+    final SaveStatsRequestBody saveStatsRequestBody = new SaveStatsRequestBody()
+        .jobId(jobId)
+        .attemptNumber(attemptNumber)
+        .stats(attemptStats);
+    LOGGER.info("saving stats");
+    try {
+      CLIENT.getAttemptApi().saveStats(saveStatsRequestBody);
+    } catch (ApiException e) {
+      LOGGER.warn("error trying to save stats: ", e);
+    }
   }
 
   private static void validateSchema(final RecordSchemaValidator recordSchemaValidator,

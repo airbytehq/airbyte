@@ -75,6 +75,8 @@ create table "public"."sync_stats"(
   "max_seconds_between_state_message_emitted_and_committed" int8 null,
   "created_at" timestamptz(35) not null default null,
   "updated_at" timestamptz(35) not null default null,
+  "estimated_records" int8 null,
+  "estimated_bytes" int8 null,
   constraint "sync_stats_pkey"
     primary key ("id")
 );
