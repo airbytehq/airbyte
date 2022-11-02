@@ -225,6 +225,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/coin-api
   sourceType: api
   releaseStage: alpha
+- name: CoinMarketCap
+  sourceDefinitionId: 239463f5-64bb-4d88-b4bd-18ce673fd572
+  dockerRepository: airbyte/source-coinmarketcap
+  dockerImageTag: 0.1.1
+  documentationUrl: https://docs.airbyte.com/integrations/sources/coinmarketcap
+  sourceType: api
+  releaseStage: alpha
 - name: Commercetools
   sourceDefinitionId: 008b2e26-11a3-11ec-82a8-0242ac130003
   dockerRepository: airbyte/source-commercetools
@@ -321,7 +328,7 @@
 - name: Exchange Rates Api
   sourceDefinitionId: e2b40e36-aa0e-4bed-b41b-bcea6fa348b1
   dockerRepository: airbyte/source-exchange-rates
-  dockerImageTag: 1.2.6
+  dockerImageTag: 1.2.7
   documentationUrl: https://docs.airbyte.com/integrations/sources/exchangeratesapi
   icon: exchangeratesapi.svg
   sourceType: api
@@ -329,7 +336,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.70
+  dockerImageTag: 0.2.71
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -785,7 +792,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 1.0.9
+  dockerImageTag: 1.0.10
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -990,6 +997,13 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/presta-shop
   icon: primetric.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Public APIs
+  sourceDefinitionId: a4617b39-3c14-44cd-a2eb-6e720f269235
+  dockerRepository: airbyte/source-public-apis
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/public-apis
   sourceType: api
   releaseStage: alpha
 - name: Qualaroo
