@@ -3,6 +3,8 @@ import { FormattedMessage } from "react-intl";
 
 import { Modal } from "components/ui/Modal";
 
+import { ModalServiceProvider } from "hooks/services/Modal";
+
 import { CatalogDiffModal } from "./CatalogDiffModal";
 
 export default {
@@ -12,15 +14,17 @@ export default {
 
 const Template: ComponentStory<typeof CatalogDiffModal> = (args) => {
   return (
-    <Modal title={<FormattedMessage id="connection.updateSchema.completed" />}>
-      <CatalogDiffModal
-        catalogDiff={args.catalogDiff}
-        catalog={args.catalog}
-        onClose={() => {
-          return null;
-        }}
-      />
-    </Modal>
+    <ModalServiceProvider>
+      <Modal size="md" title={<FormattedMessage id="connection.updateSchema.completed" />}>
+        <CatalogDiffModal
+          catalogDiff={args.catalogDiff}
+          catalog={args.catalog}
+          onClose={() => {
+            return null;
+          }}
+        />
+      </Modal>
+    </ModalServiceProvider>
   );
 };
 

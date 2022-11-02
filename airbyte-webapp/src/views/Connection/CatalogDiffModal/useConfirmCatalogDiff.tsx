@@ -18,6 +18,7 @@ export const useConfirmCatalogDiff = () => {
       openModal<void>({
         title: formatMessage({ id: "connection.updateSchema.completed" }),
         preventCancel: true,
+        size: "md",
         content: ({ onClose }) => (
           <CatalogDiffModal catalogDiff={catalogDiff} catalog={syncCatalog} onClose={onClose} />
         ),
