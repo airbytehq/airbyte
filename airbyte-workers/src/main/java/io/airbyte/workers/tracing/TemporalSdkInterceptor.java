@@ -4,6 +4,8 @@
 
 package io.airbyte.workers.tracing;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKFLOW_TRACE_OPERATION_NAME;
+
 import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.interceptor.MutableSpan;
 import datadog.trace.api.interceptor.TraceInterceptor;
@@ -18,11 +20,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class TemporalSdkInterceptor implements TraceInterceptor {
-
-  /**
-   * Trace resource name used to scope the filtering performed by this interceptor.
-   */
-  static final String CONNECTION_MANAGER_WORKFLOW_IMPL_RESOURCE_NAME = "ConnectionManagerWorkflowImpl.run";
 
   /**
    * Error message tag key name that contains the Temporal exit error message.
@@ -75,8 +72,8 @@ public class TemporalSdkInterceptor implements TraceInterceptor {
       return false;
 
     return trace.isError() &&
-        EXIT_ERROR_MESSAGE.equals(trace.getTags().getOrDefault(ERROR_MESSAGE_TAG_KEY, "")) &&
-        CONNECTION_MANAGER_WORKFLOW_IMPL_RESOURCE_NAME.equals(trace.getResourceName());
+        EXIT_ERROR_MESSAGE.equalsIgnoreCase(trace.getTags().getOrDefault(ERROR_MESSAGE_TAG_KEY, "").toString()) &&
+        WORKFLOW_TRACE_OPERATION_NAME.equalsIgnoreCase(trace.getOperationName().toString());
   }
 
 }

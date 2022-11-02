@@ -14,10 +14,18 @@ import { PageHeader } from "components/ui/PageHeader";
 
 import { useConfig } from "config";
 import { useDocumentation } from "hooks/services/useDocumentation";
+import { isCloudApp } from "utils/app";
 import { links } from "utils/links";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
 import styles from "./DocumentationPanel.module.scss";
+
+const OSS_ENV_MARKERS = /<!-- env:oss -->([\s\S]*?)<!-- \/env:oss -->/gm;
+const CLOUD_ENV_MARKERS = /<!-- env:cloud -->([\s\S]*?)<!-- \/env:cloud -->/gm;
+
+export const prepareMarkdown = (markdown: string, env: "oss" | "cloud"): string => {
+  return env === "oss" ? markdown.replaceAll(CLOUD_ENV_MARKERS, "") : markdown.replaceAll(OSS_ENV_MARKERS, "");
+};
 
 export const DocumentationPanel: React.FC = () => {
   const { formatMessage } = useIntl();
@@ -57,7 +65,11 @@ export const DocumentationPanel: React.FC = () => {
       <PageHeader withLine title={<FormattedMessage id="connector.setupGuide" />} />
       <Markdown
         className={styles.content}
-        content={docs && !error ? docs : formatMessage({ id: "connector.setupGuide.notFound" })}
+        content={
+          docs && !error
+            ? prepareMarkdown(docs, isCloudApp() ? "cloud" : "oss")
+            : formatMessage({ id: "connector.setupGuide.notFound" })
+        }
         rehypePlugins={urlReplacerPlugin}
       />
     </div>
