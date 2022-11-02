@@ -494,16 +494,23 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   private static RecordMapper<Record, SyncStats> getSyncStatsRecordMapper() {
-    return record -> new SyncStats().withBytesEmitted(record.get(SYNC_STATS.BYTES_EMITTED)).withRecordsEmitted(record.get(SYNC_STATS.RECORDS_EMITTED))
-        .withSourceStateMessagesEmitted(record.get(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED))
-        .withDestinationStateMessagesEmitted(record.get(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED))
-        .withRecordsCommitted(record.get(SYNC_STATS.RECORDS_COMMITTED))
-        .withEstimatedBytes(record.get(SYNC_STATS.ESTIMATED_BYTES))
-        .withEstimatedRecords(record.get(SYNC_STATS.ESTIMATED_RECORDS))
-        .withMeanSecondsBeforeSourceStateMessageEmitted(record.get(SYNC_STATS.MEAN_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED))
-        .withMaxSecondsBeforeSourceStateMessageEmitted(record.get(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED))
-        .withMeanSecondsBetweenStateMessageEmittedandCommitted(record.get(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED))
-        .withMaxSecondsBetweenStateMessageEmittedandCommitted(record.get(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED));
+    return record -> {
+      try {
+        return new SyncStats().withBytesEmitted(record.get(SYNC_STATS.BYTES_EMITTED)).withRecordsEmitted(record.get(SYNC_STATS.RECORDS_EMITTED))
+            .withSourceStateMessagesEmitted(record.get(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED))
+            .withDestinationStateMessagesEmitted(record.get(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED))
+            .withRecordsCommitted(record.get(SYNC_STATS.RECORDS_COMMITTED))
+            .withEstimatedBytes(record.get(SYNC_STATS.ESTIMATED_BYTES))
+            .withEstimatedRecords(record.get(SYNC_STATS.ESTIMATED_RECORDS))
+            .withMeanSecondsBeforeSourceStateMessageEmitted(record.get(SYNC_STATS.MEAN_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED))
+            .withMaxSecondsBeforeSourceStateMessageEmitted(record.get(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED))
+            .withMeanSecondsBetweenStateMessageEmittedandCommitted(record.get(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED))
+            .withMaxSecondsBetweenStateMessageEmittedandCommitted(record.get(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED))
+            .withStreamStats(record.get(SYNC_STATS.STREAM_STATS, String.class) == null ? null : deserializeStreamStats(record));
+      } catch (JsonProcessingException e) {
+        throw new RuntimeException(e);
+      }
+    };
   }
 
   private static RecordMapper<Record, NormalizationSummary> getNormalizationSummaryRecordMapper() {
@@ -522,6 +529,11 @@ public class DefaultJobPersistence implements JobPersistence {
   private static List<FailureReason> deserializeFailureReasons(final Record record) throws JsonProcessingException {
     final ObjectMapper mapper = new ObjectMapper();
     return List.of(mapper.readValue(String.valueOf(record.get(NORMALIZATION_SUMMARIES.FAILURES)), FailureReason[].class));
+  }
+
+  private static List<StreamSyncStats> deserializeStreamStats(final Record record) throws JsonProcessingException {
+    final ObjectMapper mapper = new ObjectMapper();
+    return List.of(mapper.readValue(String.valueOf(record.get(SYNC_STATS.STREAM_STATS)), StreamSyncStats[].class));
   }
 
   @Override
