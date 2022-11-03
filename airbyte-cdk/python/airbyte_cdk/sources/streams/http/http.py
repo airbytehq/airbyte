@@ -17,11 +17,11 @@ from airbyte_cdk.sources.streams.core import Stream
 from requests.auth import AuthBase
 from requests_cache.session import CachedSession
 
-# list of all possible HTTP methods which can be used for sending of request bodies
 from .auth.core import HttpAuthenticator, NoAuth
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 
+# list of all possible HTTP methods which can be used for sending of request bodies
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
 
