@@ -3,7 +3,7 @@
 
 ## Getting started 
 
-Setup the virtual environment and install dependencies
+Set up the virtual environment and install dependencies
 ```bash
 python -m venv .venv
 source .venv/bin/activate
