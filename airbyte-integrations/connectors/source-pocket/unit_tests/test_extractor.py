@@ -21,7 +21,7 @@ decoder = JsonDecoder(options={})
         ("test_field_pointer_does_not_exist", {"id": 1}, []),
     ],
 )
-def test_dpath_extractor(test_name, body, expected_records):
+def test_pocket_extractor(test_name, body, expected_records):
     extractor = PocketExtractor(decoder=decoder, options=options)
 
     response = create_response(body)
