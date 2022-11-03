@@ -29,8 +29,9 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 /**
- * General interface methods for persistence to the Jobs database. This database is separate from the config database as job-related tables
- * has an order of magnitude higher load and scale differently from the config tables.
+ * General interface methods for persistence to the Jobs database. This database is separate from
+ * the config database as job-related tables has an order of magnitude higher load and scale
+ * differently from the config tables.
  */
 public interface JobPersistence {
 
