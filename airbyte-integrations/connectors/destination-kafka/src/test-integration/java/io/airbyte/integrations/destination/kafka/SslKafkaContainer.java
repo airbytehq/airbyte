@@ -1,7 +1,10 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.kafka;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import io.airbyte.commons.resources.MoreResources;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import org.apache.commons.io.IOUtils;
@@ -53,18 +56,18 @@ public class SslKafkaContainer extends KafkaContainer {
 
     String scriptContents = copyFileFromContainer(STARTER_SCRIPT, is -> IOUtils.toString(is, StandardCharsets.UTF_8));
     scriptContents = """
-        #!/bin/bash
-        mkdir -p /etc/kafka/secrets
-        cd /etc/kafka/secrets
-        cp /etc/airbyte_setup/create_certs.sh .
-        ./create_certs.sh
-        cd -
-        
-        """ + scriptContents;
+                     #!/bin/bash
+                     mkdir -p /etc/kafka/secrets
+                     cd /etc/kafka/secrets
+                     cp /etc/airbyte_setup/create_certs.sh .
+                     ./create_certs.sh
+                     cd -
+
+                     """ + scriptContents;
 
     copyFileToContainer(
         Transferable.of(scriptContents.getBytes(StandardCharsets.UTF_8), 0777),
-        STARTER_SCRIPT
-    );
+        STARTER_SCRIPT);
   }
+
 }

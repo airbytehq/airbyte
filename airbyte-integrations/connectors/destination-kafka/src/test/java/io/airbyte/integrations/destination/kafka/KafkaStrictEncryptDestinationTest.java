@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.kafka;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,29 +32,31 @@ public class KafkaStrictEncryptDestinationTest {
     ObjectMapper mapper = new ObjectMapper();
     AirbyteConnectionStatus checkResult = new KafkaStrictEncryptDestination().check(mapper.readTree(
         """
-            {
-              "bootstrap_servers": "PLAINTEXT://localhost:56789,SSL://localhost:67890"
-            }
-            """
-    ));
+        {
+          "bootstrap_servers": "PLAINTEXT://localhost:56789,SSL://localhost:67890"
+        }
+        """));
     LOGGER.info("Check result was {}", checkResult);
     assertEquals(Status.FAILED, checkResult.getStatus());
-    assertEquals("Unsecured connection to bootstrap servers is not allowed. These servers specify an insecure connection protocol: [PLAINTEXT://localhost:56789]", checkResult.getMessage());
+    assertEquals(
+        "Unsecured connection to bootstrap servers is not allowed. These servers specify an insecure connection protocol: [PLAINTEXT://localhost:56789]",
+        checkResult.getMessage());
   }
 
   @Test
   void check_should_attemptConnectionWithSslConfig() throws Exception {
     ObjectMapper mapper = new ObjectMapper();
     // Run check on an incomplete config with SSL enabled.
-    // The check method currently only does anything if there's a test_topic property, so this is expected to succeed.
+    // The check method currently only does anything if there's a test_topic property, so this is
+    // expected to succeed.
     AirbyteConnectionStatus checkResult = new KafkaStrictEncryptDestination().check(mapper.readTree(
         """
-            {
-              "bootstrap_servers": "SSL://localhost:67890,localhost:78901"
-            }
-            """
-    ));
+        {
+          "bootstrap_servers": "SSL://localhost:67890,localhost:78901"
+        }
+        """));
     LOGGER.info("Check result was {}", checkResult);
     assertEquals(Status.SUCCEEDED, checkResult.getStatus());
   }
+
 }

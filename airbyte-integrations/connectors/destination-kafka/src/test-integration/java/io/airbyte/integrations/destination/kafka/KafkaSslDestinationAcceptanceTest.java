@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.kafka;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -6,7 +10,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -28,7 +31,6 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.connect.json.JsonDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -182,13 +184,12 @@ public class KafkaSslDestinationAcceptanceTest extends DestinationAcceptanceTest
         .withEnv(Map.of(
             "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "SSL:SSL,BROKER:PLAINTEXT",
             // Note that the testcontainer will remap advertised.listeners to actual ports/IPs
-            // So the actual advertised listeners will be something like "SSL://localhost:55160,BROKER://172.17.0.3:9092"
+            // So the actual advertised listeners will be something like
+            // "SSL://localhost:55160,BROKER://172.17.0.3:9092"
             "KAFKA_LISTENERS", "SSL://0.0.0.0:9093,BROKER://0.0.0.0:9092",
             "KAFKA_SSL_KEYSTORE_FILENAME", "kafka.broker1.keystore.jks",
             "KAFKA_SSL_KEYSTORE_CREDENTIALS", "broker1_keystore_creds",
-            "KAFKA_SSL_KEY_CREDENTIALS", "broker1_sslkey_creds"
-        ))
-    ;
+            "KAFKA_SSL_KEY_CREDENTIALS", "broker1_sslkey_creds"));
     KAFKA.start();
   }
 

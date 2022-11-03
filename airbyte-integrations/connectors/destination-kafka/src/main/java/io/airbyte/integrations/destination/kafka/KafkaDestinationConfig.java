@@ -8,11 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.commons.json.Jsons;
-import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -110,8 +107,10 @@ public class KafkaDestinationConfig {
   }
 
   private void addSslProperties(JsonNode protocolConfig, Builder<String, Object> builder) {
-    // In theory, we could do something with ssl.truststore.location instead of ssl.truststore.certificates.
-    // But then we'd have to write stuff to file, and handle weirdly-encoded data (e.g. JKS files aren't human-readable).
+    // In theory, we could do something with ssl.truststore.location instead of
+    // ssl.truststore.certificates.
+    // But then we'd have to write stuff to file, and handle weirdly-encoded data (e.g. JKS files aren't
+    // human-readable).
     // ssl.truststore.certificates only accepts PEM certs, which makes our lives a lot easier.
     // From https://kafka.apache.org/documentation/#producerconfigs_ssl.truststore.certificates
     // > Default SSL engine factory supports only PEM format with X.509 certificates.

@@ -49,7 +49,7 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
     stubProtocolConfig.put("security_protocol", KafkaProtocol.PLAINTEXT.toString());
 
     return Jsons.jsonNode(ImmutableMap.builder()
-//        .put("bootstrap_servers", KAFKA.getBootstrapServers())
+        // .put("bootstrap_servers", KAFKA.getBootstrapServers())
         .put("bootstrap_servers", "PLAINTEXT://" + HostPortResolver.resolveHost(KAFKA) + ":" + HostPortResolver.resolvePort(KAFKA))
         .put("topic_pattern", "{namespace}.{stream}." + TOPIC_NAME)
         .put("sync_producer", true)
@@ -177,4 +177,5 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
   protected void tearDown(final TestDestinationEnv testEnv) {
     KAFKA.close();
   }
+
 }

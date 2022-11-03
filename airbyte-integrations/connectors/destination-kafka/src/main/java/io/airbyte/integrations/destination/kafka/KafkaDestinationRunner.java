@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.kafka;
 
 import io.airbyte.integrations.base.adaptive.AdaptiveDestinationRunner;
@@ -10,4 +14,5 @@ public class KafkaDestinationRunner {
         .withCloudDestination(KafkaStrictEncryptDestination::new)
         .run(args);
   }
+
 }

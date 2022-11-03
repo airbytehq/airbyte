@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.kafka;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -43,8 +47,8 @@ public class KafkaStrictEncryptDestination extends SpecModifyingDestination {
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     // Bootstrap servers may specify a protocol. For example, these are both valid configs:
-    //   foo.com:1234,bar.com:1234,baz.com:1234
-    //   PLAINTEXT://foo.com:1234,SSL://bar.com:1234,baz.com:1234
+    // foo.com:1234,bar.com:1234,baz.com:1234
+    // PLAINTEXT://foo.com:1234,SSL://bar.com:1234,baz.com:1234
     // If the connection protocol is specified, we should require it to be SSL.
     String[] bootstrapServers = config.get("bootstrap_servers").asText().split(",");
     List<String> unsecuredServers = new ArrayList<>();
@@ -60,9 +64,11 @@ public class KafkaStrictEncryptDestination extends SpecModifyingDestination {
     if (!unsecuredServers.isEmpty()) {
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
-          .withMessage("Unsecured connection to bootstrap servers is not allowed. These servers specify an insecure connection protocol: " + unsecuredServers);
+          .withMessage(
+              "Unsecured connection to bootstrap servers is not allowed. These servers specify an insecure connection protocol: " + unsecuredServers);
     }
 
     return super.check(config);
   }
+
 }
