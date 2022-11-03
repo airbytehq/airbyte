@@ -7,14 +7,15 @@ package io.airbyte.workers.process;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.temporal.sync.OrchestratorConstants;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.config.storage.MinioS3ClientFactory;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.general.DocumentStoreClient;
+import io.airbyte.workers.storage.DocumentStoreClient;
 import io.airbyte.workers.storage.S3DocumentStoreClient;
-import io.airbyte.workers.temporal.sync.OrchestratorConstants;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.EnvVar;
@@ -113,7 +114,7 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         null,
         null,
         null,
-        true,
+        Map.of(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true"),
         serverPort);
 
     final Map<Integer, Integer> portMap = Map.of(

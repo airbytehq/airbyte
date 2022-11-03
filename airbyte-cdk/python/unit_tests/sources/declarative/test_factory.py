@@ -34,7 +34,8 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
+from airbyte_cdk.sources.declarative.schema import EmptySchemaLoader
+from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
@@ -69,9 +70,9 @@ def test_factory():
     request_options_provider = factory.create_component(config["request_options"], input_config)()
 
     assert type(request_options_provider) == InterpolatedRequestOptionsProvider
-    assert request_options_provider._parameter_interpolator._config == input_config
+    assert request_options_provider._parameter_interpolator.config == input_config
     assert request_options_provider._parameter_interpolator._interpolator.mapping["offset"] == "{{ next_page_token['offset'] }}"
-    assert request_options_provider._body_json_interpolator._config == input_config
+    assert request_options_provider._body_json_interpolator.config == input_config
     assert request_options_provider._body_json_interpolator._interpolator.mapping["body_offset"] == "{{ next_page_token['offset'] }}"
 
 
@@ -318,7 +319,7 @@ retriever:
 partial_stream:
   class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
   schema_loader:
-    class_name: airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema
+    class_name: airbyte_cdk.sources.declarative.schema.json_file_schema_loader.JsonFileSchemaLoader
     file_path: "./source_sendgrid/schemas/{{ options.name }}.json"
   cursor_field: [ ]
 list_stream:
@@ -358,7 +359,7 @@ check:
     assert type(stream) == DeclarativeStream
     assert stream.primary_key == "id"
     assert stream.name == "lists"
-    assert type(stream.schema_loader) == JsonSchema
+    assert type(stream.schema_loader) == JsonFileSchemaLoader
     assert type(stream.retriever) == SimpleRetriever
     assert stream.retriever.requester.http_method == HttpMethod.GET
     assert stream.retriever.requester.authenticator._token.eval(input_config) == "verysecrettoken"
@@ -414,31 +415,31 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
         (
             "test_option_in_selector",
             """
-      extractor:
-        type: DpathExtractor
-        field_pointer: ["{{ options['name'] }}"]
-      selector:
-        class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
-        $options:
-          name: "selector"
-        extractor: "*ref(extractor)"
-    """,
+          extractor:
+            type: DpathExtractor
+            field_pointer: ["{{ options['name'] }}"]
+          selector:
+            class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+            $options:
+              name: "selector"
+            extractor: "*ref(extractor)"
+        """,
             "selector",
         ),
         (
             "test_option_in_extractor",
             """
-      extractor:
-        type: DpathExtractor
-        $options:
-          name: "extractor"
-        field_pointer: ["{{ options['name'] }}"]
-      selector:
-        class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
-        $options:
-          name: "selector"
-        extractor: "*ref(extractor)"
-    """,
+          extractor:
+            type: DpathExtractor
+            $options:
+              name: "extractor"
+            field_pointer: ["{{ options['name'] }}"]
+          selector:
+            class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+            $options:
+              name: "selector"
+            extractor: "*ref(extractor)"
+        """,
             "extractor",
         ),
     ],
@@ -497,6 +498,7 @@ def test_create_composite_error_handler():
             - response_filters:
                 - http_codes: [ 403 ]
                   action: RETRY
+                  error_message: "Retryable error received: {{ response.message }}"
     """
     config = parser.parse(content)
 
@@ -508,6 +510,7 @@ def test_create_composite_error_handler():
     assert isinstance(component.error_handlers[0].response_filters[0], HttpResponseFilter)
     assert component.error_handlers[0].response_filters[0].predicate.condition == "{{ 'code' in response }}"
     assert component.error_handlers[1].response_filters[0].http_codes == [403]
+    assert component.error_handlers[1].response_filters[0].error_message.string == "Retryable error received: {{ response.message }}"
     assert isinstance(component, CompositeErrorHandler)
 
 
@@ -556,13 +559,13 @@ def test_config_with_defaults():
     assert type(stream) == DeclarativeStream
     assert stream.primary_key == "id"
     assert stream.name == "lists"
-    assert type(stream.schema_loader) == JsonSchema
+    assert type(stream.schema_loader) == EmptySchemaLoader
     assert type(stream.retriever) == SimpleRetriever
     assert stream.retriever.requester.http_method == HttpMethod.GET
 
     assert stream.retriever.requester.authenticator._token.eval(input_config) == "verysecrettoken"
     assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_pointer] == ["result"]
-    assert stream.schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.yaml"
+    assert stream.schema_loader.get_json_schema() == {}
     assert isinstance(stream.retriever.paginator, DefaultPaginator)
 
     assert stream.retriever.paginator.url_base.string == "https://api.sendgrid.com"
@@ -658,6 +661,37 @@ class TestCreateTransformations:
             class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
             $options:
                 {self.base_options}
+                transformations:
+                    - type: AddFields
+                      fields:
+                        - path: ["field1"]
+                          value: "static_value"
+        """
+        config = parser.parse(content)
+
+        factory.create_component(config["the_stream"], input_config, False)
+
+        component = factory.create_component(config["the_stream"], input_config)()
+        assert isinstance(component, DeclarativeStream)
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"], value=InterpolatedString(string="static_value", default="static_value", options={}), options={}
+                    )
+                ],
+                options={},
+            )
+        ]
+        assert expected == component.transformations
+
+    def test_add_fields_path_in_options(self):
+        content = f"""
+        the_stream:
+            class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
+            $options:
+                {self.base_options}
+                path: "/wrong_path"
                 transformations:
                     - type: AddFields
                       fields:

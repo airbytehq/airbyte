@@ -5,6 +5,8 @@
 
 export interface Experiments {
   "onboarding.hideOnboarding": boolean;
+  "connector.inviteUsersHint.visible": boolean;
+  "connector.inviteUsersHint.linkToUsersPage": boolean;
   "connector.orderOverwrite": Record<string, number>;
   "connector.frequentlyUsedDestinationIds": string[];
   "connector.startWithDestinationId": string;
@@ -16,4 +18,5 @@ export interface Experiments {
   "authPage.oauth.github": boolean;
   "authPage.oauth.google.signUpPage": boolean;
   "authPage.oauth.github.signUpPage": boolean;
+  "onboarding.speedyConnection": boolean;
 }

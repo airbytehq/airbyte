@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "activity": {
+      "type": ["string", "null"]
+    },
+    "calories": {
+      "type": ["number", "null"]
+    },
+    "day": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "distance": {
+      "type": ["number", "null"]
+    },
+    "end_datetime": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "intensity": {
+      "type": ["string", "null"]
+    },
+    "label": {},
+    "source": {
+      "type": ["string", "null"]
+    },
+    "start_datetime": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    }
+  }
+}

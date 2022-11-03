@@ -17,6 +17,12 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
     ExponentialBackoffStrategy,
 )
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
+    WaitTimeFromHeaderBackoffStrategy,
+)
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_until_time_from_header_backoff_strategy import (
+    WaitUntilTimeFromHeaderBackoffStrategy,
+)
 from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
@@ -26,7 +32,8 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.offset_increment import OffsetIncrement
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
+from airbyte_cdk.sources.declarative.schema import EmptySchemaLoader
+from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
@@ -52,11 +59,13 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "DefaultErrorHandler": DefaultErrorHandler,
     "DefaultPaginator": DefaultPaginator,
     "DpathExtractor": DpathExtractor,
+    "EmptySchemaLoader": EmptySchemaLoader,
     "ExponentialBackoffStrategy": ExponentialBackoffStrategy,
     "HttpRequester": HttpRequester,
     "InterpolatedBoolean": InterpolatedBoolean,
     "InterpolatedString": InterpolatedString,
-    "JsonSchema": JsonSchema,
+    "JsonSchema": JsonFileSchemaLoader,  # todo remove after hacktoberfest and update connectors to use JsonFileSchemaLoader
+    "JsonFileSchemaLoader": JsonFileSchemaLoader,
     "ListStreamSlicer": ListStreamSlicer,
     "MinMaxDatetime": MinMaxDatetime,
     "NoAuth": NoAuth,
@@ -69,4 +78,6 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "SimpleRetriever": SimpleRetriever,
     "SingleSlice": SingleSlice,
     "SubstreamSlicer": SubstreamSlicer,
+    "WaitUntilTimeFromHeader": WaitUntilTimeFromHeaderBackoffStrategy,
+    "WaitTimeFromHeader": WaitTimeFromHeaderBackoffStrategy,
 }

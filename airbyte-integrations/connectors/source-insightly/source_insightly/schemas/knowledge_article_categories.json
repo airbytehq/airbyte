@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "CATEGORY_ID": {
+      "type": "integer"
+    },
+    "CATEGORY_NAME": {
+      "type": ["string", "null"]
+    },
+    "DESCRIPTION": {
+      "type": ["string", "null"]
+    },
+    "CREATED_USER_ID": {
+      "type": ["integer", "null"]
+    },
+    "DATE_CREATED_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "DATE_UPDATED_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    }
+  }
+}

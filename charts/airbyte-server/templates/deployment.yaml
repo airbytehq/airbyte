@@ -37,6 +37,10 @@ spec:
       {{- if .Values.affinity }}
       affinity: {{- include "common.tplvalues.render" (dict "value" .Values.affinity "context" $) | nindent 8 }}
       {{- end }}
+      {{- if .Values.extraInitContainers }}
+      initContainers:
+      {{- toYaml .Values.extraInitContainers | nindent 6 }}
+      {{- end }}
       containers:
       - name: airbyte-server-container
         image: {{ printf "%s:%s" .Values.image.repository (include "server.imageTag" .) }}

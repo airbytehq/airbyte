@@ -14,7 +14,7 @@ A destination is a data warehouse, data lake, database, or an analytics tool whe
 
 ## Connector
 
-An Airbyte component which pulls data from, or pushes data to, a source or destination.
+An Airbyte component which pulls data from a source or pushes data to a destination.
 
 ## Connection
 

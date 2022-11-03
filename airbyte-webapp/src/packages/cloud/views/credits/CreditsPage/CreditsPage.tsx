@@ -1,8 +1,8 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import HeadTitle from "components/HeadTitle";
-import MainPageWithScroll from "components/MainPageWithScroll";
+import { HeadTitle } from "components/common/HeadTitle";
+import { MainPageWithScroll } from "components/common/MainPageWithScroll";
 import { PageHeader } from "components/ui/PageHeader";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
