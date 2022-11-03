@@ -4,16 +4,15 @@
 
 package io.airbyte.commons.lang;
 
+import java.lang.invoke.MethodHandles;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Slf4j
 public class Exceptions {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Exceptions.class);
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /**
    * Catch a checked exception and rethrow as a {@link RuntimeException}
@@ -41,14 +40,6 @@ public class Exceptions {
     castCheckedToRuntime(voidCallable, RuntimeException::new);
   }
 
-  public static void toIllegalState(final Procedure voidCallable) {
-    castCheckedToRuntime(voidCallable, IllegalStateException::new);
-  }
-
-  public static void toIllegalArgument(final Procedure voidCallable) {
-    castCheckedToRuntime(voidCallable, IllegalArgumentException::new);
-  }
-
   private static void castCheckedToRuntime(final Procedure voidCallable, final Function<Exception, RuntimeException> exceptionFactory) {
     try {
       voidCallable.call();
@@ -63,7 +54,7 @@ public class Exceptions {
     try {
       procedure.call();
     } catch (final Exception e) {
-      LOGGER.error("Swallowed error.", e);
+      log.error("Swallowed error.", e);
     }
   }
 
@@ -76,7 +67,7 @@ public class Exceptions {
   public static <T> T swallowWithDefault(final Callable<T> procedure, final T defaultValue) {
     try {
       return procedure.call();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return defaultValue;
     }
   }
