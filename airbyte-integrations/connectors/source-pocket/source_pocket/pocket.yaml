@@ -51,6 +51,8 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
+    schema_loader: 
+      type: "JsonSchema"
   retrieve_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
