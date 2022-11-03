@@ -15,11 +15,13 @@ import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestD
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.integrations.util.HostPortResolver;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -47,21 +49,14 @@ public class KafkaSslDestinationAcceptanceTest extends DestinationAcceptanceTest
 
   @Override
   protected JsonNode getConfig() throws IOException {
-    // kafka.producer.truststore.pem is just a PEM equivalent to kafka.producer.truststore.jks
-    // See https://www.baeldung.com/java-keystore-convert-to-pem-format for explanation.
-    // tl;dr run these commands:
-    // 1. cd destination-kafka/src/test-integration/resources/kafka_ssl
-    // 2. keytool -importkeystore -srckeystore kafka.producer.truststore.jks -destkeystore kafka.producer.truststore.p12 -srcstoretype jks -deststoretype pkcs12
-    // 3. openssl pkcs12 -in kafka.producer.truststore.p12 -out kafka.producer.truststore.pem
-    String truststoreCertificates = MoreResources.readResource("kafka_ssl/kafka.producer.truststore.pem");
-    final ObjectNode stubProtocolConfig = (ObjectNode)mapper.readTree(
-        """
-            {
-              "security_protocol": "SSL"
-            }
-            """
-    );
-    stubProtocolConfig.put("truststore_certificates", truststoreCertificates);
+    // This file is generated inside create_certs.sh
+    String truststoreCertificates = KAFKA.copyFileFromContainer(
+        "/etc/kafka/secrets/kafka.producer.truststore.pem",
+        is -> IOUtils.toString(is, StandardCharsets.UTF_8));
+    JsonNode stubProtocolConfig = Jsons.jsonNode(ImmutableMap.builder()
+        .put("truststore_certificates", truststoreCertificates)
+        .put("security_protocol", "SSL")
+        .build());
 
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("bootstrap_servers", HostPortResolver.resolveHost(KAFKA) + ":" + HostPortResolver.resolvePort(KAFKA))
@@ -184,8 +179,6 @@ public class KafkaSslDestinationAcceptanceTest extends DestinationAcceptanceTest
   @Override
   protected void setup(final TestDestinationEnv testEnv) {
     KAFKA = new SslKafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.0"))
-        // These certs were generated using https://github.com/confluentinc/cp-docker-images/blob/5.3.3-post/examples/kafka-cluster-ssl/secrets/create-certs.sh
-        .withClasspathResourceMapping("kafka_ssl", "/etc/kafka/secrets", BindMode.READ_ONLY)
         .withEnv(Map.of(
             "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "SSL:SSL,BROKER:PLAINTEXT",
             // Note that the testcontainer will remap advertised.listeners to actual ports/IPs
