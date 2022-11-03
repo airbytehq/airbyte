@@ -1,5 +1,7 @@
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useCallback, useMemo } from "react";
+import { useIntl } from "react-intl";
 
 import { ListBox, ListBoxControlButtonProps } from "components/ui/ListBox";
 import { Text } from "components/ui/Text";
@@ -15,25 +17,6 @@ interface SliceSelectorProps {
   onSelect: (sliceIndex: number) => void;
 }
 
-function getSliceLabel(slice: StreamReadSlicesItem, sliceIndex: number) {
-  const fallback = `Slice ${sliceIndex}`;
-
-  const sliceDescriptor = slice.sliceDescriptor;
-
-  if (!sliceDescriptor) {
-    return fallback;
-  }
-
-  const listItem = sliceDescriptor.listItem;
-  const startDatetime = sliceDescriptor.startDatetime;
-
-  if (!listItem && !startDatetime) {
-    return fallback;
-  }
-
-  return [listItem, startDatetime].filter(Boolean).join(" | ");
-}
-
 const ControlButton: React.FC<ListBoxControlButtonProps<number>> = ({ selectedOption }) => {
   return (
     <>
@@ -44,9 +27,37 @@ const ControlButton: React.FC<ListBoxControlButtonProps<number>> = ({ selectedOp
 };
 
 export const SliceSelector: React.FC<SliceSelectorProps> = ({ className, slices, selectedSliceIndex, onSelect }) => {
-  const options = slices.map((slice, index) => {
-    return { label: getSliceLabel(slice, index), value: index };
-  });
+  const { formatMessage } = useIntl();
+
+  const getSliceLabel = useCallback(
+    (slice: StreamReadSlicesItem, sliceIndex: number) => {
+      const fallback = `${formatMessage({ id: "connectorBuilder.sliceLabel" })} ${sliceIndex}`;
+
+      const sliceDescriptor = slice.sliceDescriptor;
+
+      if (!sliceDescriptor) {
+        return fallback;
+      }
+
+      const listItem = sliceDescriptor.listItem;
+      const startDatetime = sliceDescriptor.startDatetime;
+
+      if (!listItem && !startDatetime) {
+        return fallback;
+      }
+
+      return [listItem, startDatetime].filter(Boolean).join(" | ");
+    },
+    [formatMessage]
+  );
+
+  const options = useMemo(
+    () =>
+      slices.map((slice, index) => {
+        return { label: getSliceLabel(slice, index), value: index };
+      }),
+    [slices, getSliceLabel]
+  );
 
   return (
     <ListBox
