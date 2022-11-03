@@ -171,7 +171,8 @@ For more information about the grading system, see [Product Release Stages](http
 | [Smartsheets](sources/smartsheets.md)                                                       | Beta                 | Yes                 |
 | [Snapchat Marketing](sources/snapchat-marketing.md)                                         | Generally Available  | Yes                 |
 | [Snowflake](sources/snowflake.md)                                                           | Alpha                | Yes                 |
-| [Sonar Cloud](sources/sonar-cloud.md)                                                       | Alpha                | Yes                 |
+| [Sonar Cloud](sources/sonar-cloud.md)                                                       | Alpha                | No                  |
+| [SpaceX-API](sources/spacex-api.md)                                                         | Alpha                | No                  |
 | [Spree Commerce](sources/spree-commerce.md)                                                 | Alpha                | No                  |
 | [Square](sources/square.md)                                                                 | Alpha                | Yes                 |
 | [Strava](sources/strava.md)                                                                 | Alpha                | No                  |
