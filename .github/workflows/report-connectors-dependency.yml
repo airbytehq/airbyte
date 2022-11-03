@@ -26,7 +26,7 @@ jobs:
           fi
       - name: Find existing comment for connector dependencies
         # Always run this step because the action may need to
-        # remove a comment created from a previous comment.
+        # remove a comment created from a previous commit.
         uses: peter-evans/find-comment@v2
         id: find_comment
         with:
@@ -51,4 +51,4 @@ jobs:
           body: |
             <!--- this comment is for `report-connectors-dependency.yml` identification, do not remove -->
             ## Affected Connector Report
-            The latest commit has removed all connector-related changes. There is no more dependent connector for this PR.
+            The latest commit has removed all connector-related changes. There are no more dependent connectors for this PR.

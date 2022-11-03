@@ -19,7 +19,7 @@ NOTE ⚠️ Changes in this PR affect the following connectors. Make sure to do 
 | --- | :---: | :---: | :---: |
 {source_rows}
 
-* See "Actionable Items" below for how to resolves warnings and errors.
+* See "Actionable Items" below for how to resolve warnings and errors.
 
 </details>
 
@@ -34,7 +34,7 @@ NOTE ⚠️ Changes in this PR affect the following connectors. Make sure to do 
 | --- | :---: | :---: | :---: |
 {destination_rows}
 
-* See "Actionable Items" below for how to resolves warnings and errors.
+* See "Actionable Items" below for how to resolve warnings and errors.
 
 </details>
 
