@@ -1,3 +1,5 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "consumer_key": "9999999999999999999999999999999999999999",
+  "access_token": "9999999999999999999999999999999999999999",
+  "detail_type": "invalid"
 }
