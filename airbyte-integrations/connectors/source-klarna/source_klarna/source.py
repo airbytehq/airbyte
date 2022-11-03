@@ -24,6 +24,7 @@ class KlarnaStream(HttpStream, ABC):
         super().__init__(authenticator=authenticator)
 
     page_size = 500
+    data_api_field: str
 
     @property
     def url_base(self) -> str:
@@ -36,8 +37,7 @@ class KlarnaStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_json = response.json()
-        if 'pagination' in response_json:
-            if 'next' in response_json['pagination']:
+        if 'next' in response_json.get('pagination', {}).keys():
                 parsed_url = urlparse(response_json['pagination']['next'])
                 query_params = parse_qs(parsed_url.query)
                 # noinspection PyTypeChecker
@@ -53,12 +53,20 @@ class KlarnaStream(HttpStream, ABC):
         else:
             return {"offset": 0, "size": self.page_size}
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        payouts = response.json().get(self.data_api_field, [])
+        yield from payouts
+
 
 class Payouts(KlarnaStream):
     """
     Payouts read from Klarna Settlements API https://developers.klarna.com/api/?json#settlements-api
     """
     primary_key = "payout_date"  # TODO verify
+    data_api_field = "payouts"
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
@@ -66,32 +74,19 @@ class Payouts(KlarnaStream):
     ) -> str:
         return "/settlements/v1/payouts"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        :return an iterable containing each record in the response
-        """
-        payouts = response.json().get("payouts", [])
-        yield from payouts
-
 
 class Transactions(KlarnaStream):
     """
     Transactions read from Klarna Settlements API https://developers.klarna.com/api/?json#settlements-api
     """
     primary_key = "capture_id"  # TODO verify
+    data_api_field = "transactions"
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "/settlements/v1/transactions"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        :return an iterable containing each record in the response
-        """
-        transactions = response.json().get("transactions", [])
-        yield from transactions
 
 
 # Source
