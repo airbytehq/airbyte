@@ -183,6 +183,7 @@ MySQL data types are mapped to the following data types when synchronizing data.
 | `boolean`                                 | boolean                |                                                                                                                |
 | `tinyint(1)`                              | boolean                |                                                                                                                |
 | `tinyint(>1)`                             | number                 |                                                                                                                |
+| `tinyint(>=1) unsigned`                   | number                 |                                                                                                                |
 | `smallint`                                | number                 |                                                                                                                |
 | `mediumint`                               | number                 |                                                                                                                |
 | `int`                                     | number                 |                                                                                                                |
@@ -251,6 +252,9 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 ## Changelog
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.10  | 2022-11-02 | [18619](https://github.com/airbytehq/airbyte/pull/18619)   | Fix bug with handling Tinyint(1) Unsigned values as boolean                                                                                      |
+| 1.0.9   | 2022-10-31 | [18538](https://github.com/airbytehq/airbyte/pull/18538)   | Encode database name                                                                                                                             |
+| 1.0.8   | 2022-10-25 | [18383](https://github.com/airbytehq/airbyte/pull/18383)   | Better SSH error handling + messages                                                                                                             |
 | 1.0.7   | 2022-10-21 | [18263](https://github.com/airbytehq/airbyte/pull/18263)   | Fixes bug introduced in [15833](https://github.com/airbytehq/airbyte/pull/15833) and adds better error messaging for SSH tunnel in Desstinations |
 | 1.0.6   | 2022-10-19 | [18087](https://github.com/airbytehq/airbyte/pull/18087)   | Better error messaging for configuration errors (SSH configs, choosing an invalid cursor)                                                        |
 | 1.0.5   | 2022-10-17 | [18041](https://github.com/airbytehq/airbyte/pull/18041)   | Fixes bug introduced 2022-09-12 with SshTunnel, handles iterator exception properly                                                              |

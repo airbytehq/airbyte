@@ -8,57 +8,17 @@ import { AnySchema } from "yup";
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { FormBlock, WidgetConfig, WidgetConfigMap } from "core/form/types";
 import { buildPathInitialState } from "core/form/uiWidget";
-import { applyFuncAt, removeNestedPaths } from "core/jsonSchema";
 import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
 import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
-import { FeatureItem, useFeature } from "hooks/services/Feature";
 
-import { DestinationDefinitionSpecificationRead } from "../../../core/request/AirbyteClient";
 import { ServiceFormValues } from "./types";
-
-function upgradeSchemaLegacyAuth(
-  connectorSpecification: Required<
-    Pick<DestinationDefinitionSpecificationRead, "authSpecification" | "connectionSpecification">
-  >
-) {
-  const spec = connectorSpecification.authSpecification.oauth2Specification;
-  return applyFuncAt(
-    connectorSpecification.connectionSpecification as JSONSchema7Definition,
-    (spec?.rootObject ?? []) as Array<string | number>,
-    (schema) => {
-      // Very hacky way to allow placing button within section
-      // @ts-expect-error json schema
-      schema.is_auth = true;
-      const schemaWithoutPaths = removeNestedPaths(schema, spec?.oauthFlowInitParameters ?? [], false);
-
-      const schemaWithoutOutputPats = removeNestedPaths(
-        schemaWithoutPaths,
-        spec?.oauthFlowOutputParameters ?? [],
-        false
-      );
-
-      return schemaWithoutOutputPats;
-    }
-  );
-}
 
 export function useBuildInitialSchema(
   connectorSpecification?: ConnectorDefinitionSpecification
 ): JSONSchema7Definition | undefined {
-  const allowOAuthConnector = useFeature(FeatureItem.AllowOAuthConnector);
-
   return useMemo(() => {
-    if (allowOAuthConnector) {
-      if (connectorSpecification?.authSpecification && !connectorSpecification?.advancedAuth) {
-        return upgradeSchemaLegacyAuth({
-          connectionSpecification: connectorSpecification?.connectionSpecification,
-          authSpecification: connectorSpecification.authSpecification,
-        });
-      }
-    }
-
     return connectorSpecification?.connectionSpecification as JSONSchema7Definition | undefined;
-  }, [allowOAuthConnector, connectorSpecification]);
+  }, [connectorSpecification]);
 }
 
 export interface BuildFormHook {

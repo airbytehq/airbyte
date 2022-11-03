@@ -2,7 +2,7 @@ import React, { Suspense, useEffect, useMemo } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
-import ApiErrorBoundary from "components/ApiErrorBoundary";
+import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 import LoadingPage from "components/LoadingPage";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
@@ -67,9 +67,7 @@ const MainRoutes: React.FC = () => {
       cloudWorkspace.creditStatus === CreditStatus.NEGATIVE_MAX_THRESHOLD;
     // If the workspace is out of credits it doesn't allow creation of new connections
     // or syncing existing connections.
-    setWorkspaceFeatures(
-      outOfCredits ? ({ [FeatureItem.AllowCreateConnection]: false, [FeatureItem.AllowSync]: false } as FeatureSet) : []
-    );
+    setWorkspaceFeatures(outOfCredits ? ({ [FeatureItem.AllowSync]: false } as FeatureSet) : []);
     return () => {
       setWorkspaceFeatures(undefined);
     };
