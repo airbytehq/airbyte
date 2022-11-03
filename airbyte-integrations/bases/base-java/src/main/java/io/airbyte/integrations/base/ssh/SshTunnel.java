@@ -6,6 +6,7 @@ package io.airbyte.integrations.base.ssh;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
@@ -311,7 +312,8 @@ public class SshTunnel implements AutoCloseable {
     if (keyPairs != null && keyPairs.iterator().hasNext()) {
       return keyPairs.iterator().next();
     }
-    throw new RuntimeException("Unable to load private key pairs, verify key pairs are properly inputted");
+    throw new ConfigErrorException("Could not connect with provided SSH configuration. Error: "
+        + "Unable to load private key pairs, verify key pairs are properly inputted");
   }
 
   private String validateKey() {
@@ -363,7 +365,7 @@ public class SshTunnel implements AutoCloseable {
           remoteServiceHost, remoteServicePort, address.toInetSocketAddress()));
       return session;
     } catch (final IOException | GeneralSecurityException e) {
-      throw new RuntimeException(e);
+      throw new ConfigErrorException("Could not connect with provided SSH configuration. Error: " + e.getMessage(), e);
     }
   }
 

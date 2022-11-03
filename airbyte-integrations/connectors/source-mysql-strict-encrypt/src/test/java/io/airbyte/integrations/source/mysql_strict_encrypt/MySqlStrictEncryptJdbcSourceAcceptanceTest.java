@@ -5,13 +5,15 @@
 package io.airbyte.integrations.source.mysql_strict_encrypt;
 
 import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -277,9 +279,8 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
     ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));
 
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(Status.FAILED, actual.getStatus());
-    assertFalse(actual.getMessage().contains("Unsecured connection not allowed"));
+    final Throwable throwable = catchThrowable(() -> source.check(config));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
   }
 
   @Test
@@ -302,9 +303,8 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
     ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));
 
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("Could not connect with provided SSH configuration."));
+    final Throwable throwable = catchThrowable(() -> source.check(config));
+    assertThat(throwable).isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -323,9 +323,8 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
     ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));
 
-    final AirbyteConnectionStatus actual = source.check(config);
-    assertEquals(Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().contains("Could not connect with provided SSH configuration."));
+    final Throwable throwable = catchThrowable(() -> source.check(config));
+    assertThat(throwable).isInstanceOf(NullPointerException.class);
   }
 
   @Override
