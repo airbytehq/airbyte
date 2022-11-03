@@ -237,12 +237,14 @@ class AbstractSource(Source, ABC):
                 stream_state=stream_state,
                 cursor_field=configured_stream.cursor_field or None,
             )
-            for record_counter, message in enumerate(records, start=1):
+            record_counter = 0
+            for message_counter, message in enumerate(records, start=1):
                 yield message
                 if message.type == MessageType.RECORD:
                     record = message.record
                     stream_state = stream_instance.get_updated_state(stream_state, record.data)
                     checkpoint_interval = stream_instance.state_checkpoint_interval
+                    record_counter += 1
                     if checkpoint_interval and record_counter % checkpoint_interval == 0:
                         yield self._checkpoint_state(stream_instance, stream_state, state_manager)
 
@@ -293,6 +295,7 @@ class AbstractSource(Source, ABC):
         # instance's deprecated get_updated_state() method.
         try:
             state_manager.update_state_for_stream(stream.name, stream.namespace, stream.state)
+
         except AttributeError:
             state_manager.update_state_for_stream(stream.name, stream.namespace, stream_state)
         return state_manager.create_state_message(stream.name, stream.namespace, send_per_stream_state=self.per_stream_state_enabled)

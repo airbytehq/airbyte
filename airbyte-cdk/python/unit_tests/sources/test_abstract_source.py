@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+import copy
 import logging
 from collections import defaultdict
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -11,6 +11,7 @@ import pytest
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
+    AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateBlob,
@@ -21,14 +22,17 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
+    Level,
     Status,
     StreamDescriptor,
     SyncMode,
-    Type,
 )
+from airbyte_cdk.models import Type
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.utils.record_helper import data_to_airbyte_record
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 logger = logging.getLogger("airbyte")
@@ -147,6 +151,44 @@ class MockStreamWithState(MockStream):
     @state.setter
     def state(self, value):
         pass
+
+
+class MockStreamEmittingAirbyteMessages(MockStreamWithState):
+    def __init__(
+        self, inputs_and_mocked_outputs: List[Tuple[Mapping[str, Any], Iterable[AirbyteMessage]]] = None, name: str = None, state=None
+    ):
+        super().__init__(inputs_and_mocked_outputs, name, state)
+        self._inputs_and_mocked_outputs = inputs_and_mocked_outputs
+        self._name = name
+
+    @property
+    def name(self):
+        return self._name
+
+    def read_records_as_messages(self, **kwargs) -> Iterable[AirbyteMessage]:  # type: ignore
+        # Remove None values
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
+        if self._inputs_and_mocked_outputs:
+            for _input, output in self._inputs_and_mocked_outputs:
+                if kwargs == _input:
+                    return output
+
+        raise Exception(f"No mocked output supplied for input: {kwargs}. Mocked inputs/outputs: {self._inputs_and_mocked_outputs}")
+
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:  # type: ignore
+        raise RuntimeError("Not implemented!")
+
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        return "pk"
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return {self.cursor_field: self._cursor_value} if self._cursor_value else {}
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        self._cursor_value = value.get(self.cursor_field, self.start_date)
 
 
 def test_discover(mocker):
@@ -678,33 +720,28 @@ class TestIncrementalRead:
         assert expected == messages
 
     @pytest.mark.parametrize(
-        "use_legacy",
-        [
-            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
-            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
-        ],
-    )
-    @pytest.mark.parametrize(
         "per_stream_enabled",
         [
-            pytest.param(True, id="test_source_emits_state_as_per_stream_format"),
             pytest.param(False, id="test_source_emits_state_as_per_stream_format"),
         ],
     )
-    def test_with_slices_and_interval(self, mocker, use_legacy, per_stream_enabled):
+    def test_emit_non_records(self, mocker, per_stream_enabled):
         """
         Tests that an incremental read which uses slices and a checkpoint interval:
             1. outputs all records
             2. outputs a state message every N records (N=checkpoint_interval)
             3. outputs a state message after reading the entire slice
         """
-        if use_legacy:
-            input_state = defaultdict(dict)
-        else:
-            input_state = []
+
+        input_state = []
         slices = [{"1": "1"}, {"2": "2"}]
-        stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
-        stream_1 = MockStream(
+        stream_output = [
+            data_to_airbyte_record("s1", {"k1": "v1"}),
+            AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message="HELLO")),
+            data_to_airbyte_record("s1", {"k2": "v2"}),
+            data_to_airbyte_record("s1", {"k3": "v3"}),
+        ]
+        stream_1 = MockStreamEmittingAirbyteMessages(
             [
                 (
                     {
@@ -717,8 +754,9 @@ class TestIncrementalRead:
                 for s in slices
             ],
             name="s1",
+            state=copy.deepcopy(input_state),
         )
-        stream_2 = MockStream(
+        stream_2 = MockStreamEmittingAirbyteMessages(
             [
                 (
                     {
@@ -731,6 +769,7 @@ class TestIncrementalRead:
                 for s in slices
             ],
             name="s2",
+            state=copy.deepcopy(input_state),
         )
         state = {"cursor": "value"}
         mocker.patch.object(MockStream, "get_updated_state", return_value=state)
@@ -754,28 +793,32 @@ class TestIncrementalRead:
 
         expected = [
             # stream 1 slice 1
-            _as_record("s1", stream_output[0]),
-            _as_record("s1", stream_output[1]),
+            stream_output[0],
+            stream_output[1],
+            stream_output[2],
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
-            _as_record("s1", stream_output[2]),
+            stream_output[3],
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
             # stream 1 slice 2
-            _as_record("s1", stream_output[0]),
-            _as_record("s1", stream_output[1]),
+            stream_output[0],
+            stream_output[1],
+            stream_output[2],
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
-            _as_record("s1", stream_output[2]),
+            stream_output[3],
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
             # stream 2 slice 1
-            _as_record("s2", stream_output[0]),
-            _as_record("s2", stream_output[1]),
+            stream_output[0],
+            stream_output[1],
+            stream_output[2],
             _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
-            _as_record("s2", stream_output[2]),
+            stream_output[3],
             _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
             # stream 2 slice 2
-            _as_record("s2", stream_output[0]),
-            _as_record("s2", stream_output[1]),
+            stream_output[0],
+            stream_output[1],
+            stream_output[2],
             _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
-            _as_record("s2", stream_output[2]),
+            stream_output[3],
             _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
         ]
 
