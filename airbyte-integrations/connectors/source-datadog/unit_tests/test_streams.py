@@ -42,7 +42,12 @@ def test_task_stream(requests_mock, stream, config, mock_responses):
 
 @patch.multiple(DatadogStream, __abstractmethods__=set())
 def test_next_page_token(config):
-    stream = DatadogStream(query=config["query"], max_records_per_request=config["max_records_per_request"], start_date=config["start_date"], end_date=config["end_date"])
+    stream = DatadogStream(
+        query=config["query"],
+        max_records_per_request=config["max_records_per_request"],
+        start_date=config["start_date"],
+        end_date=config["end_date"],
+    )
     inputs = {"response": MagicMock()}
     assert stream.next_page_token(**inputs) is None
 
