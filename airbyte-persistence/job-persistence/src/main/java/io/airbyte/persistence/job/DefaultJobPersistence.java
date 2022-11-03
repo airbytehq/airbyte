@@ -346,21 +346,7 @@ public class DefaultJobPersistence implements JobPersistence {
           .execute();
       final Long attemptId = getAttemptId(jobId, attemptNumber, ctx);
 
-      ctx.insertInto(SYNC_STATS)
-          .set(SYNC_STATS.ID, UUID.randomUUID())
-          .set(SYNC_STATS.UPDATED_AT, now)
-          .set(SYNC_STATS.CREATED_AT, now)
-          .set(SYNC_STATS.ATTEMPT_ID, attemptId)
-          .set(SYNC_STATS.BYTES_EMITTED, syncStats.getBytesEmitted())
-          .set(SYNC_STATS.RECORDS_EMITTED, syncStats.getRecordsEmitted())
-          .set(SYNC_STATS.RECORDS_COMMITTED, syncStats.getRecordsCommitted())
-          .set(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED, syncStats.getSourceStateMessagesEmitted())
-          .set(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED, syncStats.getDestinationStateMessagesEmitted())
-          .set(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMaxSecondsBeforeSourceStateMessageEmitted())
-          .set(SYNC_STATS.MEAN_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMeanSecondsBeforeSourceStateMessageEmitted())
-          .set(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted())
-          .set(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted())
-          .execute();
+      writeSyncStats(now, syncStats, attemptId, ctx);
 
       if (normalizationSummary != null) {
         ctx.insertInto(NORMALIZATION_SUMMARIES)
@@ -377,6 +363,24 @@ public class DefaultJobPersistence implements JobPersistence {
       return null;
     });
 
+  }
+
+  private static void writeSyncStats(final OffsetDateTime now, final SyncStats syncStats, final Long attemptId, final DSLContext ctx, ) {
+    ctx.insertInto(SYNC_STATS)
+        .set(SYNC_STATS.ID, UUID.randomUUID())
+        .set(SYNC_STATS.UPDATED_AT, now)
+        .set(SYNC_STATS.CREATED_AT, now)
+        .set(SYNC_STATS.ATTEMPT_ID, attemptId)
+        .set(SYNC_STATS.BYTES_EMITTED, syncStats.getBytesEmitted())
+        .set(SYNC_STATS.RECORDS_EMITTED, syncStats.getRecordsEmitted())
+        .set(SYNC_STATS.RECORDS_COMMITTED, syncStats.getRecordsCommitted())
+        .set(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED, syncStats.getSourceStateMessagesEmitted())
+        .set(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED, syncStats.getDestinationStateMessagesEmitted())
+        .set(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMaxSecondsBeforeSourceStateMessageEmitted())
+        .set(SYNC_STATS.MEAN_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMeanSecondsBeforeSourceStateMessageEmitted())
+        .set(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted())
+        .set(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted())
+        .execute();
   }
 
   @Override
