@@ -57,8 +57,15 @@ import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
+import io.airbyte.server.handlers.JobHistoryHandler;
+import io.airbyte.server.handlers.LogsHandler;
+import io.airbyte.server.handlers.OAuthHandler;
+import io.airbyte.server.handlers.OpenApiConfigHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
+import io.airbyte.server.handlers.SourceDefinitionsHandler;
+import io.airbyte.server.handlers.SourceHandler;
+import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
@@ -286,7 +293,8 @@ public class ServerApp implements ServerRunnable {
         jobPersistence,
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
-        eventRunner);
+        eventRunner,
+        connectionsHandler);
 
     final DbMigrationHandler dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
 
@@ -294,6 +302,39 @@ public class ServerApp implements ServerRunnable {
         destinationHandler);
 
     final HealthCheckHandler healthCheckHandler = new HealthCheckHandler(configRepository);
+
+    final OAuthHandler oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient);
+
+    final SourceHandler sourceHandler = new SourceHandler(
+        configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
+        schemaValidator,
+        connectionsHandler);
+
+    final SourceDefinitionsHandler sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, syncSchedulerClient, sourceHandler);
+
+    final JobHistoryHandler jobHistoryHandler = new JobHistoryHandler(
+        jobPersistence,
+        configs.getWorkerEnvironment(),
+        configs.getLogConfigs(),
+        connectionsHandler,
+        sourceHandler,
+        sourceDefinitionsHandler,
+        destinationHandler,
+        destinationDefinitionsHandler,
+        configs.getAirbyteVersion());
+
+    final LogsHandler logsHandler = new LogsHandler(configs);
+
+    final WorkspacesHandler workspacesHandler = new WorkspacesHandler(
+        configRepository,
+        secretsRepositoryWriter,
+        connectionsHandler,
+        destinationHandler,
+        sourceHandler);
+
+    final OpenApiConfigHandler openApiConfigHandler = new OpenApiConfigHandler();
 
     LOGGER.info("Starting server...");
 
@@ -320,8 +361,13 @@ public class ServerApp implements ServerRunnable {
         destinationDefinitionsHandler,
         destinationHandler,
         healthCheckHandler,
+        jobHistoryHandler,
+        logsHandler,
+        oAuthHandler,
+        openApiConfigHandler,
         operationsHandler,
-        schedulerHandler);
+        schedulerHandler,
+        workspacesHandler);
   }
 
   @VisibleForTesting
