@@ -64,6 +64,7 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "HttpRequester": HttpRequester,
     "InterpolatedBoolean": InterpolatedBoolean,
     "InterpolatedString": InterpolatedString,
+    "JsonSchema": JsonFileSchemaLoader,  # todo remove after hacktoberfest and update connectors to use JsonFileSchemaLoader
     "JsonFileSchemaLoader": JsonFileSchemaLoader,
     "ListStreamSlicer": ListStreamSlicer,
     "MinMaxDatetime": MinMaxDatetime,
