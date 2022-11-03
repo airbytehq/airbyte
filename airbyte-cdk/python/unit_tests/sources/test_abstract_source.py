@@ -720,6 +720,112 @@ class TestIncrementalRead:
         assert expected == messages
 
     @pytest.mark.parametrize(
+        "use_legacy",
+        [
+            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
+            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
+        ],
+    )
+    @pytest.mark.parametrize(
+        "per_stream_enabled",
+        [
+            pytest.param(True, id="test_source_emits_state_as_per_stream_format"),
+            pytest.param(False, id="test_source_emits_state_as_per_stream_format"),
+        ],
+    )
+    def test_with_slices_and_interval(self, mocker, use_legacy, per_stream_enabled):
+        """
+        Tests that an incremental read which uses slices and a checkpoint interval:
+            1. outputs all records
+            2. outputs a state message every N records (N=checkpoint_interval)
+            3. outputs a state message after reading the entire slice
+        """
+        if use_legacy:
+            input_state = defaultdict(dict)
+        else:
+            input_state = []
+        slices = [{"1": "1"}, {"2": "2"}]
+        stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
+        stream_1 = MockStream(
+            [
+                (
+                    {
+                        "sync_mode": SyncMode.incremental,
+                        "stream_slice": s,
+                        "stream_state": mocker.ANY,
+                    },
+                    stream_output,
+                )
+                for s in slices
+            ],
+            name="s1",
+        )
+        stream_2 = MockStream(
+            [
+                (
+                    {
+                        "sync_mode": SyncMode.incremental,
+                        "stream_slice": s,
+                        "stream_state": mocker.ANY,
+                    },
+                    stream_output,
+                )
+                for s in slices
+            ],
+            name="s2",
+        )
+        state = {"cursor": "value"}
+        mocker.patch.object(MockStream, "get_updated_state", return_value=state)
+        mocker.patch.object(MockStream, "supports_incremental", return_value=True)
+        mocker.patch.object(MockStream, "get_json_schema", return_value={})
+        mocker.patch.object(MockStream, "stream_slices", return_value=slices)
+        mocker.patch.object(
+            MockStream,
+            "state_checkpoint_interval",
+            new_callable=mocker.PropertyMock,
+            return_value=2,
+        )
+
+        src = MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled)
+        catalog = ConfiguredAirbyteCatalog(
+            streams=[
+                _configured_stream(stream_1, SyncMode.incremental),
+                _configured_stream(stream_2, SyncMode.incremental),
+            ]
+        )
+
+        expected = [
+            # stream 1 slice 1
+            _as_record("s1", stream_output[0]),
+            _as_record("s1", stream_output[1]),
+            _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+            _as_record("s1", stream_output[2]),
+            _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+            # stream 1 slice 2
+            _as_record("s1", stream_output[0]),
+            _as_record("s1", stream_output[1]),
+            _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+            _as_record("s1", stream_output[2]),
+            _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+            # stream 2 slice 1
+            _as_record("s2", stream_output[0]),
+            _as_record("s2", stream_output[1]),
+            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+            _as_record("s2", stream_output[2]),
+            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+            # stream 2 slice 2
+            _as_record("s2", stream_output[0]),
+            _as_record("s2", stream_output[1]),
+            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+            _as_record("s2", stream_output[2]),
+            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+        ]
+
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
+
+        assert expected == messages
+
+    @pytest.mark.parametrize(
         "per_stream_enabled",
         [
             pytest.param(False, id="test_source_emits_state_as_per_stream_format"),
