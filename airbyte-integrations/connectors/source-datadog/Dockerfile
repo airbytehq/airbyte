@@ -4,7 +4,7 @@ FROM python:3.9-slim
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /airbyte/integration_code
-COPY source_sendgrid ./source_sendgrid
+COPY source_datadog ./source_datadog
 COPY main.py ./
 COPY setup.py ./
 RUN pip install .
@@ -12,5 +12,5 @@ RUN pip install .
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.2.16
-LABEL io.airbyte.name=airbyte/source-sendgrid
+LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.name=airbyte/source-datadog
