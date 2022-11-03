@@ -36,9 +36,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static TrackingClient trackingClient;
   private static WorkerEnvironment workerEnvironment;
   private static LogConfigs logConfigs;
-  private static Path workspaceRoot;
   private static AirbyteVersion airbyteVersion;
-  private static HttpClient httpClient;
   private static EventRunner eventRunner;
 
   public static void setValues(
@@ -69,9 +67,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.trackingClient = trackingClient;
     ConfigurationApiFactory.workerEnvironment = workerEnvironment;
     ConfigurationApiFactory.logConfigs = logConfigs;
-    ConfigurationApiFactory.workspaceRoot = workspaceRoot;
     ConfigurationApiFactory.airbyteVersion = airbyteVersion;
-    ConfigurationApiFactory.httpClient = httpClient;
     ConfigurationApiFactory.eventRunner = eventRunner;
     ConfigurationApiFactory.statePersistence = statePersistence;
   }
@@ -91,8 +87,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.workerEnvironment,
         ConfigurationApiFactory.logConfigs,
         ConfigurationApiFactory.airbyteVersion,
-        ConfigurationApiFactory.workspaceRoot,
-        ConfigurationApiFactory.httpClient,
         ConfigurationApiFactory.eventRunner);
   }
 
