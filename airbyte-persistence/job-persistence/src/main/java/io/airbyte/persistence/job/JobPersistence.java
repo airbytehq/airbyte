@@ -29,14 +29,15 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 /**
- * TODO Introduce a locking mechanism so that no DB operation is allowed when automatic migration is
- * running
+ * General interface methods for persistence to the Jobs database. This database is separate from
+ * the config database as job-related tables has an order of magnitude higher load and scale
+ * differently from the config tables.
  */
 public interface JobPersistence {
 
-  List<SyncStats> getSyncStats(Long attemptId) throws IOException;
+  List<SyncStats> getSyncStats(long jobId, int attemptNumber) throws IOException;
 
-  List<NormalizationSummary> getNormalizationSummary(Long attemptId) throws IOException;
+  List<NormalizationSummary> getNormalizationSummary(long jobId, int attemptNumber) throws IOException;
 
   Job getJob(long jobId) throws IOException;
 
