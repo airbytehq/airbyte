@@ -62,8 +62,8 @@ public class StreamStateManagerTest {
   @Test
   void testGetters() {
     final List<AirbyteStateMessage> state = new ArrayList<>();
-    state.add(createStreamState(STREAM_NAME1, NAMESPACE, List.of(CURSOR_FIELD1), CURSOR));
-    state.add(createStreamState(STREAM_NAME2, NAMESPACE, List.of(), null));
+    state.add(createStreamState(STREAM_NAME1, NAMESPACE, List.of(CURSOR_FIELD1), CURSOR, 0L));
+    state.add(createStreamState(STREAM_NAME2, NAMESPACE, List.of(), null, 0L));
 
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
         .withStreams(List.of(
@@ -113,8 +113,7 @@ public class StreamStateManagerTest {
                 .withStreamName(STREAM_NAME1)
                 .withStreamNamespace(NAMESPACE)
                 .withCursorField(List.of(CURSOR_FIELD1))
-                .withCursor("a")
-                .withCursorRecordCount(1L),
+                .withCursor("a"),
             new DbStreamState()
                 .withStreamName(STREAM_NAME2)
                 .withStreamNamespace(NAMESPACE)
@@ -124,11 +123,12 @@ public class StreamStateManagerTest {
                 .withStreamNamespace(NAMESPACE))
             .stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()));
     final AirbyteStateMessage expectedFirstEmission =
-        createStreamState(STREAM_NAME1, NAMESPACE, List.of(CURSOR_FIELD1), "a").withData(Jsons.jsonNode(expectedFirstDbState));
+        createStreamState(STREAM_NAME1, NAMESPACE, List.of(CURSOR_FIELD1), "a", 0L).withData(Jsons.jsonNode(expectedFirstDbState));
 
     final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a");
     assertEquals(expectedFirstEmission, actualFirstEmission);
 
+    final long expectedRecordCount = 17L;
     final DbState expectedSecondDbState = new DbState()
         .withCdc(false)
         .withStreams(List.of(
@@ -141,15 +141,16 @@ public class StreamStateManagerTest {
                 .withStreamName(STREAM_NAME2)
                 .withStreamNamespace(NAMESPACE)
                 .withCursorField(List.of(CURSOR_FIELD2))
-                .withCursor("b"),
+                .withCursor("b")
+                .withCursorRecordCount(expectedRecordCount),
             new DbStreamState()
                 .withStreamName(STREAM_NAME3)
                 .withStreamNamespace(NAMESPACE))
             .stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()));
     final AirbyteStateMessage expectedSecondEmission =
-        createStreamState(STREAM_NAME2, NAMESPACE, List.of(CURSOR_FIELD2), "b").withData(Jsons.jsonNode(expectedSecondDbState));
+        createStreamState(STREAM_NAME2, NAMESPACE, List.of(CURSOR_FIELD2), "b", expectedRecordCount).withData(Jsons.jsonNode(expectedSecondDbState));
 
-    final AirbyteStateMessage actualSecondEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR2, "b");
+    final AirbyteStateMessage actualSecondEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR2, "b", expectedRecordCount);
     assertEquals(expectedSecondEmission, actualSecondEmission);
   }
 
@@ -228,7 +229,7 @@ public class StreamStateManagerTest {
             .stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()));
 
     final AirbyteStateMessage expectedFirstEmission =
-        createStreamState(STREAM_NAME1, NAMESPACE, List.of(CURSOR_FIELD1), "a").withData(Jsons.jsonNode(expectedFirstDbState));
+        createStreamState(STREAM_NAME1, NAMESPACE, List.of(CURSOR_FIELD1), "a", 0L).withData(Jsons.jsonNode(expectedFirstDbState));
     final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a");
     assertEquals(expectedFirstEmission, actualFirstEmission);
   }
@@ -248,7 +249,8 @@ public class StreamStateManagerTest {
   private AirbyteStateMessage createStreamState(final String name,
                                                 final String namespace,
                                                 final List<String> cursorFields,
-                                                final String cursorValue) {
+                                                final String cursorValue,
+                                                final long cursorRecordCount) {
     final DbStreamState dbStreamState = new DbStreamState()
         .withStreamName(name)
         .withStreamNamespace(namespace);
@@ -259,6 +261,10 @@ public class StreamStateManagerTest {
 
     if (cursorValue != null) {
       dbStreamState.withCursor(cursorValue);
+    }
+
+    if (cursorRecordCount > 0L) {
+      dbStreamState.withCursorRecordCount(cursorRecordCount);
     }
 
     return new AirbyteStateMessage()
