@@ -4,12 +4,10 @@
 
 package io.airbyte.container_orchestrator;
 
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.logging.LoggingHelper;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.KubePodInfo;
 import io.airbyte.workers.process.KubePodProcess;
@@ -19,7 +17,6 @@ import io.micronaut.runtime.Micronaut;
 import jakarta.inject.Singleton;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,8 +36,8 @@ public class Application {
   public static void main(final String[] args) {
     try {
       // wait for config files to be copied
-      final var successFile = Path.of("/tmp/co", KubePodProcess.CONFIG_DIR,
-          KubePodProcess.SUCCESS_FILE_NAME);
+      // todo: fix this to use the correct path
+      final var successFile = Path.of("/tmp/conorc", KubePodProcess.SUCCESS_FILE_NAME);
       log.info("Looking for config file at {}", successFile);
 
       int secondsWaited = 0;
@@ -87,30 +84,31 @@ public class Application {
 
   private final ApplicationContext context;
   private final String application;
-  private final Map<String, String> envMap;
-  private final JobRunConfig jobRunConfig;
+  //  private final Map<String, String> envMap;
+//  private final JobRunConfig jobRunConfig;
   private final KubePodInfo kubePodInfo;
   private final Configs configs;
-  private final FeatureFlags featureFlags;
+  //  private final FeatureFlags featureFlags;
   // private final ProcessFactory processFactory;
   private final JobOrchestrator<?> jobOrchestrator;
 
   public Application(
       final ApplicationContext context,
       final String application,
-      final Map<String, String> envMap,
-      final JobRunConfig jobRunConfig,
+//      final Map<String, String> envMap,
+//      final JobRunConfig jobRunConfig,
       final KubePodInfo kubePodInfo,
-      final FeatureFlags featureFlags,
+      final EnvConfigs configs,
+//      final FeatureFlags featureFlags,
       // final ProcessFactory processFactory,
       final JobOrchestrator<?> jobOrchestrator) {
     this.context = context;
     this.application = application;
-    this.envMap = envMap;
-    this.jobRunConfig = jobRunConfig;
+//    this.envMap = envMap;
+//    this.jobRunConfig = jobRunConfig;
     this.kubePodInfo = kubePodInfo;
-    this.configs = new EnvConfigs(envMap);
-    this.featureFlags = featureFlags;
+    this.configs = configs;
+//    this.featureFlags = featureFlags;
     // this.processFactory = processFactory;
     this.jobOrchestrator = jobOrchestrator;
   }
@@ -130,10 +128,8 @@ public class Application {
 
       // IMPORTANT: Changing the storage location will orphan already existing kube pods when the new
       // version is deployed!
-      final var documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(),
-          STATE_STORAGE_PREFIX);
-      final var asyncStateManager = context.createBean(AsyncStateManager.class,
-          documentStoreClient);
+      final var documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(), STATE_STORAGE_PREFIX);
+      final var asyncStateManager = context.createBean(AsyncStateManager.class, documentStoreClient);
       // final var asyncStateManager = new AsyncStateManager(documentStoreClient);
       return runInternal(asyncStateManager);
     }
@@ -158,8 +154,7 @@ public class Application {
       // }
 
       asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.RUNNING);
-      asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.SUCCEEDED,
-          jobOrchestrator.runJob().orElse(""));
+      asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.SUCCEEDED, jobOrchestrator.runJob().orElse(""));
 
       // required to kill clients with thread pools
       return 0;

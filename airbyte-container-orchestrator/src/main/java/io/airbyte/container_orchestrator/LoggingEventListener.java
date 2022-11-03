@@ -11,6 +11,7 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.micronaut.context.event.ApplicationEventListener;
 import io.micronaut.runtime.server.event.ServerStartupEvent;
+import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.lang.invoke.MethodHandles;
 import java.util.Map;
@@ -27,7 +28,7 @@ public class LoggingEventListener implements ApplicationEventListener<ServerStar
   private final EnvConfigs configs;
   private final JobRunConfig jobRunConfig;
 
-  LoggingEventListener(final Map<String, String> envs, final EnvConfigs configs, final JobRunConfig jobRunConfig) {
+  LoggingEventListener(@Named("envs") final Map<String, String> envs, final EnvConfigs configs, final JobRunConfig jobRunConfig) {
     this.envs = envs;
     this.configs = configs;
     this.jobRunConfig = jobRunConfig;
@@ -47,8 +48,8 @@ public class LoggingEventListener implements ApplicationEventListener<ServerStar
     LogClientSingleton.getInstance().setJobMdc(
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
-        TemporalUtils.getJobRoot(
-            configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId()));
+        TemporalUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId())
+    );
   }
 
 }

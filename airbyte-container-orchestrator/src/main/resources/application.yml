@@ -3,16 +3,17 @@ micronaut:
     port: 9000
 
 airbyte:
-  local:
-    docker-mount: ${LOCAL_DOCKER_MOUNT:}
-    root: ${LOCAL_ROOT:}
-  worker:
-    job:
-      kube:
-        namespace: ${JOB_KUBE_NAMESPACE:default}
-  workspace:
-    docker-mount: ${WORKSPACE_DOCKER_MOUNT:}
-    root: ${WORKSPACE_ROOT:}
+  config-dir: /tmp/conorc
+#  local:
+#    docker-mount: ${LOCAL_DOCKER_MOUNT:}
+#    root: ${LOCAL_ROOT:}
+#  worker:
+#    job:
+#      kube:
+#        namespace: ${JOB_KUBE_NAMESPACE:default}
+#  workspace:
+#    docker-mount: ${WORKSPACE_DOCKER_MOUNT:}
+#    root: ${WORKSPACE_ROOT:}
 
-docker:
-  network: ${DOCKER_NETWORK:host}
+#docker:
+#  network: ${DOCKER_NETWORK:host}
