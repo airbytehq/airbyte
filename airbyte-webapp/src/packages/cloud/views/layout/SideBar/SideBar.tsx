@@ -1,6 +1,6 @@
 import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
-import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
+import { faDesktop, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
@@ -23,7 +23,6 @@ import ChatIcon from "views/layout/SideBar/components/ChatIcon";
 import ConnectionsIcon from "views/layout/SideBar/components/ConnectionsIcon";
 import DestinationIcon from "views/layout/SideBar/components/DestinationIcon";
 import OnboardingIcon from "views/layout/SideBar/components/OnboardingIcon";
-import RecipesIcon from "views/layout/SideBar/components/RecipesIcon";
 import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
 import { SidebarDropdownMenu, SidebarDropdownMenuItemType } from "views/layout/SideBar/components/SidebarDropdownMenu";
 import SourceIcon from "views/layout/SideBar/components/SourceIcon";
@@ -129,9 +128,9 @@ const SideBar: React.FC = () => {
               },
               {
                 type: SidebarDropdownMenuItemType.LINK,
-                href: links.tutorialLink,
-                icon: <RecipesIcon />,
-                displayName: <FormattedMessage id="sidebar.recipes" />,
+                href: links.demoLink,
+                icon: <FontAwesomeIcon icon={faDesktop} />,
+                displayName: <FormattedMessage id="sidebar.demo" />,
               },
             ]}
           />
