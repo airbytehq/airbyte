@@ -8,6 +8,9 @@ DOCKERFILE="$3"
 TAGGED_IMAGE="$4"
 ID_FILE="$5"
 FOLLOW_SYMLINKS="$6"
+BUILD_ARCH="$7"
+BUILD_FROM="$8"
+echo "build_from: $BUILD_FROM"
 DOCKER_BUILD_ARCH="${DOCKER_BUILD_ARCH:-amd64}"
 # https://docs.docker.com/develop/develop-images/build_enhancements/
 export DOCKER_BUILDKIT=1
@@ -16,7 +19,16 @@ cd "$ROOT_DIR"
 . tools/lib/lib.sh
 assert_root
 
-cd "$PROJECT_DIR"
+FULL_PATH_TO_DOCKERFILE="${PROJECT_DIR}/${DOCKERFILE}"
+
+if [ -n "$BUILD_FROM" ]; then
+  cd $BUILD_FROM
+  echo "cd'd into projectdir=${BUILD_FROM}"
+else
+  cd "$PROJECT_DIR"
+  echo "cd'd into projectdir=${PROJECT_DIR}"
+fi
+
 
 function validate_dockerignore() {
   excludes_all=$(grep -w '^\*$' .dockerignore)
@@ -27,7 +39,7 @@ function validate_dockerignore() {
 }
 
 args=(
-    -f "$DOCKERFILE"
+    -f "${FULL_PATH_TO_DOCKERFILE}"
     -t "$TAGGED_IMAGE"
     --iidfile "$ID_FILE"
 )

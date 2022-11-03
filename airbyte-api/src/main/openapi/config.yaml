@@ -2822,6 +2822,9 @@ components:
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
+        connectionId:
+          type: string
+          format: uuid
         disable_cache:
           type: boolean
     SourceUpdate:
@@ -2883,6 +2886,10 @@ components:
         catalogId:
           type: string
           format: uuid
+        catalogDiff:
+          $ref: "#/components/schemas/CatalogDiff"
+        breakingChange:
+          type: boolean
     SourceSearch:
       type: object
       properties:
@@ -3266,6 +3273,10 @@ components:
           format: uuid
         geography:
           $ref: "#/components/schemas/Geography"
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
     WebBackendConnectionCreate:
       type: object
       required:
@@ -3367,6 +3378,12 @@ components:
           format: uuid
         geography:
           $ref: "#/components/schemas/Geography"
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
+        breakingChange:
+          type: boolean
     WebBackendConnectionUpdate:
       type: object
       description: Used to apply a patch-style update to a connection, which means that null properties remain unchanged
@@ -3411,6 +3428,10 @@ components:
           format: uuid
         geography:
           $ref: "#/components/schemas/Geography"
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
     ConnectionRead:
       type: object
       required:
@@ -3463,6 +3484,10 @@ components:
           $ref: "#/components/schemas/Geography"
         breakingChange:
           type: boolean
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
     SchemaChange:
       enum:
         - no_change
@@ -4713,6 +4738,8 @@ components:
         - destination
         - isSyncing
         - schemaChange
+        - notifySchemaChanges
+        - nonBreakingChangesPreference
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -4771,6 +4798,15 @@ components:
           $ref: "#/components/schemas/Geography"
         schemaChange:
           $ref: "#/components/schemas/SchemaChange"
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
+    NonBreakingChangesPreference:
+      enum:
+        - ignore
+        - disable
+      type: string
     WebBackendConnectionReadList:
       type: object
       required:

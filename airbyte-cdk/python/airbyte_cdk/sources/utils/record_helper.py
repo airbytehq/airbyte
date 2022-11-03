@@ -7,11 +7,14 @@ from typing import Any, Mapping
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.sources.utils.transform import TypeTransformer
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 def data_to_airbyte_record(
-    stream_name: str, data: Mapping[str, Any], transformer: TypeTransformer, schema: Mapping[str, Any]
+    stream_name: str,
+    data: Mapping[str, Any],
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform),
+    schema: Mapping[str, Any] = {},
 ) -> AirbyteMessage:
     now_millis = int(datetime.datetime.now().timestamp() * 1000)
     # Transform object fields according to config. Most likely you will
