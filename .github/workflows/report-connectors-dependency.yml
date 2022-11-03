@@ -49,5 +49,6 @@ jobs:
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
           edit-mode: "replace"
           body: |
+            <!--- this comment is for `report-connectors-dependency.yml` identification, do not remove -->
             ## Affected Connector Report
             The latest commit has removed all connector-related changes. There is no more dependent connector for this PR.
