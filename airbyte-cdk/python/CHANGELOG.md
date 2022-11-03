@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.2
+Low-code: Allow for read even when schemas are not defined for a connector yet
+
 ## 0.4.2
 Low-code: Fix off by one error with the stream slicers
 
