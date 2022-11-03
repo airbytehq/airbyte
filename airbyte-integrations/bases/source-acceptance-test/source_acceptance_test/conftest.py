@@ -151,7 +151,12 @@ def build_configured_catalog_from_custom_catalog(configured_catalog_path: str, d
     """
     catalog = ConfiguredAirbyteCatalog.parse_file(configured_catalog_path)
     for configured_stream in catalog.streams:
-        configured_stream.stream = discovered_catalog.get(configured_stream.stream.name, configured_stream.stream)
+        try:
+            configured_stream.stream = discovered_catalog[configured_stream.stream.name]
+        except KeyError:
+            pytest.fail(
+                f"The {configured_stream.stream.name} stream you have set in {configured_catalog_path} is not part of the discovered_catalog"
+            )
     logging.info("The configured catalog is built from a custom configured catalog.")
     return catalog
 

@@ -203,7 +203,7 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
             assert configured_catalog == conftest.build_configured_catalog_from_custom_catalog.return_value
 
 
-DUMB_DISCOVERED_CATALOG = {
+DUMMY_DISCOVERED_CATALOG = {
     "stream_a": AirbyteStream(
         name="stream_a",
         json_schema={"a": {"type": "string"}},
@@ -216,18 +216,49 @@ DUMB_DISCOVERED_CATALOG = {
     ),
 }
 
+DUMMY_CUSTOM_CATALOG = {
+    "stream_a": AirbyteStream(
+        name="stream_a",
+        json_schema={"a": {"type": "number"}},
+        supported_sync_modes=[SyncMode.full_refresh],
+    ),
+    "stream_b": AirbyteStream(
+        name="stream_b",
+        json_schema={"a": {"type": "number"}},
+        supported_sync_modes=[SyncMode.full_refresh],
+    ),
+}
+
+DUMMY_CUSTOM_CATALOG_WITH_EXTRA_STREAM = {
+    "stream_a": AirbyteStream(
+        name="stream_a",
+        json_schema={"a": {"type": "number"}},
+        supported_sync_modes=[SyncMode.full_refresh],
+    ),
+    "stream_b": AirbyteStream(
+        name="stream_b",
+        json_schema={"a": {"type": "number"}},
+        supported_sync_modes=[SyncMode.full_refresh],
+    ),
+    "stream_c": AirbyteStream(
+        name="stream_c",
+        json_schema={"a": {"type": "number"}},
+        supported_sync_modes=[SyncMode.full_refresh],
+    ),
+}
+
 
 @pytest.mark.parametrize(
     "discovered_catalog, empty_streams",
     [
-        (DUMB_DISCOVERED_CATALOG, set()),
-        (DUMB_DISCOVERED_CATALOG, {EmptyStreamConfiguration(name="stream_b", bypass_reason="foobar")}),
+        (DUMMY_DISCOVERED_CATALOG, set()),
+        (DUMMY_DISCOVERED_CATALOG, {EmptyStreamConfiguration(name="stream_b", bypass_reason="foobar")}),
     ],
 )
 def test_build_configured_catalog_from_discovered_catalog_and_empty_streams(mocker, discovered_catalog, empty_streams):
     mocker.patch.object(conftest, "logging")
     configured_catalog = conftest.build_configured_catalog_from_discovered_catalog_and_empty_streams(discovered_catalog, empty_streams)
-    assert len(configured_catalog.streams) == len(DUMB_DISCOVERED_CATALOG.values()) - len(empty_streams)
+    assert len(configured_catalog.streams) == len(DUMMY_DISCOVERED_CATALOG.values()) - len(empty_streams)
     if empty_streams:
         conftest.logging.warning.assert_called_once()
         configured_stream_names = [configured_stream.stream.name for configured_stream in configured_catalog.streams]
@@ -235,3 +266,30 @@ def test_build_configured_catalog_from_discovered_catalog_and_empty_streams(mock
             assert empty_stream.name not in configured_stream_names
     else:
         conftest.logging.info.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "custom_configured_catalog, expect_failure", [(DUMMY_CUSTOM_CATALOG, False), (DUMMY_CUSTOM_CATALOG_WITH_EXTRA_STREAM, True)]
+)
+def test_build_configured_catalog_from_custom_catalog(mocker, custom_configured_catalog, expect_failure):
+    mocker.patch.object(conftest, "logging")
+    mocker.patch.object(conftest.pytest, "fail")
+
+    dummy_configured_catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(stream=stream, sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.append)
+            for stream in custom_configured_catalog.values()
+        ]
+    )
+    mocker.patch.object(conftest.ConfiguredAirbyteCatalog, "parse_file", mocker.Mock(return_value=dummy_configured_catalog))
+
+    configured_catalog = conftest.build_configured_catalog_from_custom_catalog("path", DUMMY_DISCOVERED_CATALOG)
+
+    if not expect_failure:
+        assert len(configured_catalog.streams) == len(dummy_configured_catalog.streams)
+        # Checking that the function under test retrieves the stream from the discovered catalog
+        assert configured_catalog.streams[0].stream == DUMMY_DISCOVERED_CATALOG["stream_a"]
+        assert configured_catalog.streams[0].stream != custom_configured_catalog["stream_a"]
+        conftest.logging.info.assert_called_once()
+    else:
+        conftest.pytest.fail.assert_called_once()
