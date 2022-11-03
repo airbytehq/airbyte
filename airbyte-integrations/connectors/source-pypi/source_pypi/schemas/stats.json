@@ -17,7 +17,7 @@
           ],
           "properties" : {
             "size" : {
-              "type" : "integer"
+              "type" : ["null", "integer"]
             }
           }
         }

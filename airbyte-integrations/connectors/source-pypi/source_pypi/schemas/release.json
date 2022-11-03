@@ -112,7 +112,7 @@
         },
         "platform": {
           "description": "[DEPRECATED]",
-          "type": "string"
+          "type": ["null", "string"]
         },
         "project_url": {
           "description": "URL to the project page",
@@ -120,10 +120,9 @@
         },
         "project_urls": {
           "description": "Additional URLs that are relevant to your project. Corresponds to https://packaging.python.org/specifications/core-metadata/#project-url-multiple-use",
-          "type": "object",
           "patternProperties": {
             ".*": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         },
