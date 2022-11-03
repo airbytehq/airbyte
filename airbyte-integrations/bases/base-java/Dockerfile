@@ -1,13 +1,20 @@
 ARG JDK_VERSION=17.0.4
 FROM amazoncorretto:${JDK_VERSION}
 COPY --from=airbyte/integration-base:dev /airbyte /airbyte
-
-RUN yum install -y tar openssl && yum clean all
-
+#RUN amazon-linux-extras install epel
+RUN yum install -y tar openssl python3 net-tools && yum clean all
+RUN yum install -y git gcc autoconf automake libtool gettext flex bison pkgconfig libpcap libpcap-devel
+RUN git clone https://github.com/ntop/nDPI.git
+#RUN cd nDPI
+WORKDIR /nDPI
+RUN ./autogen.sh
+RUN make
+RUN ls example
+#RUN example/ndpiReader --help
 WORKDIR /airbyte
-
+COPY mon.py /
 COPY javabase.sh .
-
+#COPY ./libndpi4-4.0-1.6.aarch64.rpm .
 # airbyte base commands
 ENV AIRBYTE_SPEC_CMD "/airbyte/javabase.sh --spec"
 ENV AIRBYTE_CHECK_CMD "/airbyte/javabase.sh --check"

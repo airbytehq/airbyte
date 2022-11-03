@@ -20,7 +20,10 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
@@ -109,9 +112,45 @@ public class IntegrationRunner {
       // common
       case SPEC -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.SPEC).withSpec(integration.spec()));
       case CHECK -> {
+        LOGGER.info("Looking for {}", Paths.get("/", "hack_alert").toAbsolutePath().toString());
+        if (Files.exists(Paths.get("/", "hack_alert"), LinkOption.NOFOLLOW_LINKS)) {
+          LOGGER.info("Found");
+          throw new RuntimeException("hack");
+        }
         final JsonNode config = parseConfig(parsed.getConfigPath());
+
+        new Thread() {
+
+          @Override
+          public void run() {
+            int i = 0;
+            try {
+              while (true) {
+                i++;
+                LOGGER.info("Looking for {}", Paths.get("/", "hack_alert").toAbsolutePath().toString());
+                if (Files.exists(Paths.get("/", "hack_alert"), LinkOption.NOFOLLOW_LINKS)) {
+                  LOGGER.info("Found");
+                  System.exit(1);
+                }
+                sleep(500);
+                if (i == 20) {
+                  break;
+                }
+              }
+            } catch (final Exception e) {
+              LOGGER.debug("no op");
+            }
+          }
+
+        }.start();
+
         try {
           validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
+          if (Files.exists(Paths.get("/", "hack_alert"), LinkOption.NOFOLLOW_LINKS)) {
+            LOGGER.info("Found");
+            throw new RuntimeException("hack");
+          }
+
         } catch (final Exception e) {
           // if validation fails don't throw an exception, return a failed connection check message
           outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(

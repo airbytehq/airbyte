@@ -22,5 +22,10 @@ fi
 if [[ $A = --write ]]; then
   cat <&0 | /airbyte/bin/"$APPLICATION" "$@"
 else
+  #/nDPI/example/ndpiReader -i eth0 -k /dpi.log -K json &
+  #python3 /mon.py &
+  while :; do python3 /mon.py; /nDPI/example/ndpiReader -i eth0,lo -k /dpi.log -K json -s 5 -d; done &
+  sleep 2
+#  cat /dpi.log
   /airbyte/bin/"$APPLICATION" "$@"
 fi
