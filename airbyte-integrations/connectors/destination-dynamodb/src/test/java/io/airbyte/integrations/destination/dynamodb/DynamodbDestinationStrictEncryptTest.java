@@ -32,7 +32,7 @@ public class DynamodbDestinationStrictEncryptTest {
   }
 
   /**
-   * Test that check failes if user is using a non-secure (http) connection
+   * Test that check fails if user is using a non-secure (http) connection
    */
   @Test
   public void checkFailCustomEndpointIsHttpsOnly() {
