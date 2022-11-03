@@ -48,4 +48,5 @@ class EventListeners {
       throw new ApplicationStartupException("missing config file");
     }
   }
+
 }

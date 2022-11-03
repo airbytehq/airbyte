@@ -58,10 +58,10 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   private final AirbyteMessageVersionedMigratorFactory migratorFactory;
 
   public ReplicationJobOrchestrator(final Configs configs,
-      final ProcessFactory processFactory,
-      final FeatureFlags featureFlags,
-      final AirbyteMessageSerDeProvider serDeProvider,
-      final AirbyteMessageVersionedMigratorFactory migratorFactory) {
+                                    final ProcessFactory processFactory,
+                                    final FeatureFlags featureFlags,
+                                    final AirbyteMessageSerDeProvider serDeProvider,
+                                    final AirbyteMessageVersionedMigratorFactory migratorFactory) {
     this.configs = configs;
     this.processFactory = processFactory;
     this.featureFlags = featureFlags;

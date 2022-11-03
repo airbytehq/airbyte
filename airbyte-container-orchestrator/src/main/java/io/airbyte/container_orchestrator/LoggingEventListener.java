@@ -27,8 +27,7 @@ public class LoggingEventListener implements ApplicationEventListener<ServerStar
   private final EnvConfigs configs;
   private final JobRunConfig jobRunConfig;
 
-  LoggingEventListener(final Map<String, String> envs, final EnvConfigs configs,
-      final JobRunConfig jobRunConfig) {
+  LoggingEventListener(final Map<String, String> envs, final EnvConfigs configs, final JobRunConfig jobRunConfig) {
     this.envs = envs;
     this.configs = configs;
     this.jobRunConfig = jobRunConfig;
@@ -51,4 +50,5 @@ public class LoggingEventListener implements ApplicationEventListener<ServerStar
         TemporalUtils.getJobRoot(
             configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId()));
   }
+
 }

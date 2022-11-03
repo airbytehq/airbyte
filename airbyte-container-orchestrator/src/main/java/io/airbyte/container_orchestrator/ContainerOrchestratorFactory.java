@@ -37,34 +37,34 @@ class ContainerOrchestratorFactory {
   @Singleton
   String application() throws IOException {
     return "NO_OP";
-//    return Files.readString(
-//        Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_APPLICATION));
+    // return Files.readString(
+    // Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_APPLICATION));
   }
 
   @Singleton
   Map<String, String> env() {
     return Map.of();
-//    return Jsons.deserialize(
-//        Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_ENV_MAP).toFile(),
-//        new TypeReference<>() {
-//        });
+    // return Jsons.deserialize(
+    // Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_ENV_MAP).toFile(),
+    // new TypeReference<>() {
+    // });
   }
 
   @Singleton
   JobRunConfig jobRunConfig() {
     return new JobRunConfig().withJobId("1").withAttemptId(2L);
-//    return Jsons.deserialize(
-//        Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_JOB_RUN_CONFIG)
-//            .toFile(),
-//        JobRunConfig.class);
+    // return Jsons.deserialize(
+    // Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_JOB_RUN_CONFIG)
+    // .toFile(),
+    // JobRunConfig.class);
   }
 
   @Singleton
   KubePodInfo kubePodInfo() {
     return new KubePodInfo("namespace", "name", null);
-//    return Jsons.deserialize(
-//        Path.of(KubePodProcess.CONFIG_DIR, AsyncOrchestratorPodProcess.KUBE_POD_INFO).toFile(),
-//        KubePodInfo.class);
+    // return Jsons.deserialize(
+    // Path.of(KubePodProcess.CONFIG_DIR, AsyncOrchestratorPodProcess.KUBE_POD_INFO).toFile(),
+    // KubePodInfo.class);
   }
 
   @Singleton
@@ -85,29 +85,27 @@ class ContainerOrchestratorFactory {
   @Singleton
   @Requires(notEnv = Environment.KUBERNETES)
   ProcessFactory dockerProcessFactory(
-      final WorkerConfigs workerConfigs,
-      @Value("${airbyte.workspace.root}") final String workspaceRoot,
-      @Value("${airbyte.workspace.docker-mount}") final String workspaceDockerMount,
-      @Value("${airbyte.local.docker-mount}") final String localDockerMount,
-      @Value("${airbyte.local.root}") final String localRoot,
-      @Value("${docker.network}") final String dockerNetwork
-  ) {
+                                      final WorkerConfigs workerConfigs,
+                                      @Value("${airbyte.workspace.root}") final String workspaceRoot,
+                                      @Value("${airbyte.workspace.docker-mount}") final String workspaceDockerMount,
+                                      @Value("${airbyte.local.docker-mount}") final String localDockerMount,
+                                      @Value("${airbyte.local.root}") final String localRoot,
+                                      @Value("${docker.network}") final String dockerNetwork) {
     return new DockerProcessFactory(
         workerConfigs,
         Path.of(workspaceRoot),
         workspaceDockerMount,
         localDockerMount,
-        dockerNetwork
-    );
+        dockerNetwork);
   }
 
   @Singleton
   @Requires(env = Environment.KUBERNETES)
   ProcessFactory kubeProcessFactory(
-      final WorkerConfigs workerConfigs,
-      @Value("${airbyte.worker.job.kube.namespace}") final String k8sNamespace,
-      @Value("${micronaut.server.port}") final int serverPort
-  ) throws UnknownHostException {
+                                    final WorkerConfigs workerConfigs,
+                                    @Value("${airbyte.worker.job.kube.namespace}") final String k8sNamespace,
+                                    @Value("${micronaut.server.port}") final int serverPort)
+      throws UnknownHostException {
     final var localIp = InetAddress.getLocalHost().getHostAddress();
     final var kubeHeartbeatUrl = localIp + ":" + serverPort;
 
@@ -124,19 +122,15 @@ class ContainerOrchestratorFactory {
 
   @Singleton
   JobOrchestrator<?> jobOrchestrator(
-      final String application,
-      final EnvConfigs envConfigs,
-      final ProcessFactory processFactory,
-      final FeatureFlags featureFlags,
-      final WorkerConfigs workerConfigs
-  ) {
+                                     final String application,
+                                     final EnvConfigs envConfigs,
+                                     final ProcessFactory processFactory,
+                                     final FeatureFlags featureFlags,
+                                     final WorkerConfigs workerConfigs) {
     return switch (application) {
-      case ReplicationLauncherWorker.REPLICATION ->
-          new ReplicationJobOrchestrator(envConfigs, processFactory, featureFlags);
-      case NormalizationLauncherWorker.NORMALIZATION ->
-          new NormalizationJobOrchestrator(envConfigs, processFactory);
-      case DbtLauncherWorker.DBT ->
-          new DbtJobOrchestrator(envConfigs, workerConfigs, processFactory);
+      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(envConfigs, processFactory, featureFlags);
+      case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(envConfigs, processFactory);
+      case DbtLauncherWorker.DBT -> new DbtJobOrchestrator(envConfigs, workerConfigs, processFactory);
       case AsyncOrchestratorPodProcess.NO_OP -> new NoOpOrchestrator();
       default -> throw new IllegalStateException(
           "Could not find job orchestrator for application: " + application);

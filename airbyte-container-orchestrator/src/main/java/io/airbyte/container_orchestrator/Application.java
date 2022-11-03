@@ -67,7 +67,7 @@ public class Application {
     // To mimic previous behavior, assume an exit code of 1 unless Application.run returns otherwise.
     final var exitCode = 1;
     try (final var ctx = Micronaut.run(Application.class, args)) {
-//      exitCode = ctx.getBean(Application.class).run();
+      // exitCode = ctx.getBean(Application.class).run();
     } catch (final Throwable t) {
       log.error("could not run  {}", t.getMessage());
       t.printStackTrace();
@@ -94,18 +94,18 @@ public class Application {
   private final KubePodInfo kubePodInfo;
   private final Configs configs;
   private final FeatureFlags featureFlags;
-  //  private final ProcessFactory processFactory;
+  // private final ProcessFactory processFactory;
   private final JobOrchestrator<?> jobOrchestrator;
 
   public Application(
-      final ApplicationContext context,
-      final String application,
-      final Map<String, String> envMap,
-      final JobRunConfig jobRunConfig,
-      final KubePodInfo kubePodInfo,
-      final FeatureFlags featureFlags,
-//      final ProcessFactory processFactory,
-      final JobOrchestrator<?> jobOrchestrator) {
+                     final ApplicationContext context,
+                     final String application,
+                     final Map<String, String> envMap,
+                     final JobRunConfig jobRunConfig,
+                     final KubePodInfo kubePodInfo,
+                     final FeatureFlags featureFlags,
+                     // final ProcessFactory processFactory,
+                     final JobOrchestrator<?> jobOrchestrator) {
     this.context = context;
     this.application = application;
     this.envMap = envMap;
@@ -113,7 +113,7 @@ public class Application {
     this.kubePodInfo = kubePodInfo;
     this.configs = new EnvConfigs(envMap);
     this.featureFlags = featureFlags;
-//    this.processFactory = processFactory;
+    // this.processFactory = processFactory;
     this.jobOrchestrator = jobOrchestrator;
   }
 
@@ -150,15 +150,15 @@ public class Application {
     try {
       asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.INITIALIZING);
 
-//      final var workerConfigs = new WorkerConfigs(configs);
-//      final var processFactory = getProcessBuilderFactory(configs, workerConfigs);
-//      final var jobOrchestrator = getJobOrchestrator(configs, workerConfigs,
-//          processFactory, application, featureFlags);
+      // final var workerConfigs = new WorkerConfigs(configs);
+      // final var processFactory = getProcessBuilderFactory(configs, workerConfigs);
+      // final var jobOrchestrator = getJobOrchestrator(configs, workerConfigs,
+      // processFactory, application, featureFlags);
 
-//      if (jobOrchestrator == null) {
-//        throw new IllegalStateException(
-//            "Could not find job orchestrator for application: " + application);
-//      }
+      // if (jobOrchestrator == null) {
+      // throw new IllegalStateException(
+      // "Could not find job orchestrator for application: " + application);
+      // }
 
       asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.RUNNING);
       asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.SUCCEEDED,
@@ -174,66 +174,67 @@ public class Application {
   }
 
   private void configureLogging() {
-//    OrchestratorConstants.ENV_VARS_TO_TRANSFER.stream()
-//        .filter(envMap::containsKey)
-//        .forEach(envVar -> System.setProperty(envVar, envMap.get(envVar)));
-//
-//    // make sure the new configuration is picked up
-//    final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-//    ctx.reconfigure();
-//
-//    LogClientSingleton.getInstance().setJobMdc(
-//        configs.getWorkerEnvironment(),
-//        configs.getLogConfigs(),
-//        TemporalUtils.getJobRoot(
-//            configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId()));
+    // OrchestratorConstants.ENV_VARS_TO_TRANSFER.stream()
+    // .filter(envMap::containsKey)
+    // .forEach(envVar -> System.setProperty(envVar, envMap.get(envVar)));
+    //
+    // // make sure the new configuration is picked up
+    // final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+    // ctx.reconfigure();
+    //
+    // LogClientSingleton.getInstance().setJobMdc(
+    // configs.getWorkerEnvironment(),
+    // configs.getLogConfigs(),
+    // TemporalUtils.getJobRoot(
+    // configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId()));
   }
 
-//  private JobOrchestrator<?> getJobOrchestrator(final Configs configs,
-//      final WorkerConfigs workerConfigs,
-//      final ProcessFactory processFactory,
-//      final String application,
-//      final FeatureFlags featureFlags) {
-//    return switch (application) {
-//      case ReplicationLauncherWorker.REPLICATION ->
-//          new ReplicationJobOrchestrator(configs, processFactory, featureFlags);
-//      case NormalizationLauncherWorker.NORMALIZATION ->
-//          new NormalizationJobOrchestrator(configs, processFactory);
-//      case DbtLauncherWorker.DBT -> new DbtJobOrchestrator(configs, workerConfigs, processFactory);
-//      case AsyncOrchestratorPodProcess.NO_OP -> new NoOpOrchestrator();
-//      default -> null;
-//    };
-//  }
-//
-//  /**
-//   * Creates a process builder factory that will be used to create connector containers/pods.
-//   */
-//  private ProcessFactory getProcessBuilderFactory(final Configs configs,
-//      final WorkerConfigs workerConfigs)
-//      throws IOException {
-//    if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
-//      final var localIp = InetAddress.getLocalHost().getHostAddress();
-//      // TODO move port to configuration
-//      final var kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
-//      log.info("Using Kubernetes namespace: {}", configs.getJobKubeNamespace());
-//
-//      // this needs to have two ports for the source and two ports for the destination (all four must be
-//      // exposed)
-//      KubePortManagerSingleton.init(OrchestratorConstants.PORTS);
-//
-//      return new KubeProcessFactory(workerConfigs,
-//          configs.getJobKubeNamespace(),
-//          new DefaultKubernetesClient(),
-//          kubeHeartbeatUrl,
-//          false);
-//    } else {
-//      return new DockerProcessFactory(
-//          workerConfigs,
-//          configs.getWorkspaceRoot(),
-//          configs.getWorkspaceDockerMount(),
-//          configs.getLocalDockerMount(),
-//          configs.getDockerNetwork());
-//    }
-//  }
+  // private JobOrchestrator<?> getJobOrchestrator(final Configs configs,
+  // final WorkerConfigs workerConfigs,
+  // final ProcessFactory processFactory,
+  // final String application,
+  // final FeatureFlags featureFlags) {
+  // return switch (application) {
+  // case ReplicationLauncherWorker.REPLICATION ->
+  // new ReplicationJobOrchestrator(configs, processFactory, featureFlags);
+  // case NormalizationLauncherWorker.NORMALIZATION ->
+  // new NormalizationJobOrchestrator(configs, processFactory);
+  // case DbtLauncherWorker.DBT -> new DbtJobOrchestrator(configs, workerConfigs, processFactory);
+  // case AsyncOrchestratorPodProcess.NO_OP -> new NoOpOrchestrator();
+  // default -> null;
+  // };
+  // }
+  //
+  // /**
+  // * Creates a process builder factory that will be used to create connector containers/pods.
+  // */
+  // private ProcessFactory getProcessBuilderFactory(final Configs configs,
+  // final WorkerConfigs workerConfigs)
+  // throws IOException {
+  // if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
+  // final var localIp = InetAddress.getLocalHost().getHostAddress();
+  // // TODO move port to configuration
+  // final var kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
+  // log.info("Using Kubernetes namespace: {}", configs.getJobKubeNamespace());
+  //
+  // // this needs to have two ports for the source and two ports for the destination (all four must
+  // be
+  // // exposed)
+  // KubePortManagerSingleton.init(OrchestratorConstants.PORTS);
+  //
+  // return new KubeProcessFactory(workerConfigs,
+  // configs.getJobKubeNamespace(),
+  // new DefaultKubernetesClient(),
+  // kubeHeartbeatUrl,
+  // false);
+  // } else {
+  // return new DockerProcessFactory(
+  // workerConfigs,
+  // configs.getWorkspaceRoot(),
+  // configs.getWorkspaceDockerMount(),
+  // configs.getLocalDockerMount(),
+  // configs.getDockerNetwork());
+  // }
+  // }
 
 }
