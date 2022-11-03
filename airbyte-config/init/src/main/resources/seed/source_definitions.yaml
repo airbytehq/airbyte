@@ -21,6 +21,13 @@
   icon: airtable.svg
   sourceType: api
   releaseStage: alpha
+- name: Alpha Vantage
+  sourceDefinitionId: db385323-9333-4fec-bec3-9e0ca9326c90
+  dockerRepository: airbyte/source-alpha-vantage
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/alpha-vantage
+  sourceType: api
+  releaseStage: alpha
 - name: AlloyDB for PostgreSQL
   sourceDefinitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
   dockerRepository: airbyte/source-alloydb
