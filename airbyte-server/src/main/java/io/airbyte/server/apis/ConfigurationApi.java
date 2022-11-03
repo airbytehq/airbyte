@@ -838,14 +838,22 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   // Operations
 
+  /**
+   * This implementation has been moved to {@link OperationApiController}. Since the path of
+   * {@link OperationApiController} is more granular, it will override this implementation
+   */
   @Override
   public CheckOperationRead checkOperation(final OperatorConfiguration operatorConfiguration) {
-    return execute(() -> operationsHandler.checkOperation(operatorConfiguration));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link OperationApiController}. Since the path of
+   * {@link OperationApiController} is more granular, it will override this implementation
+   */
   @Override
   public OperationRead createOperation(final OperationCreate operationCreate) {
-    return execute(() -> operationsHandler.createOperation(operationCreate));
+    throw new NotImplementedException();
   }
 
   @Override
@@ -853,27 +861,40 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     return ConfigurationApi.execute(() -> stateHandler.createOrUpdateState(connectionStateCreateOrUpdate));
   }
 
+  /**
+   * This implementation has been moved to {@link OperationApiController}. Since the path of
+   * {@link OperationApiController} is more granular, it will override this implementation
+   */
   @Override
   public void deleteOperation(final OperationIdRequestBody operationIdRequestBody) {
-    execute(() -> {
-      operationsHandler.deleteOperation(operationIdRequestBody);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link OperationApiController}. Since the path of
+   * {@link OperationApiController} is more granular, it will override this implementation
+   */
   @Override
   public OperationReadList listOperationsForConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> operationsHandler.listOperationsForConnection(connectionIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link OperationApiController}. Since the path of
+   * {@link OperationApiController} is more granular, it will override this implementation
+   */
   @Override
   public OperationRead getOperation(final OperationIdRequestBody operationIdRequestBody) {
-    return execute(() -> operationsHandler.getOperation(operationIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link OperationApiController}. Since the path of
+   * {@link OperationApiController} is more granular, it will override this implementation
+   */
   @Override
   public OperationRead updateOperation(final OperationUpdate operationUpdate) {
-    return execute(() -> operationsHandler.updateOperation(operationUpdate));
+    throw new NotImplementedException();
   }
 
   @Override
