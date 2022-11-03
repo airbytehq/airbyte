@@ -75,6 +75,9 @@ def test_discover_incremental(mock_request):
                     "LogicalName": "stream",
                     "PrimaryIdAttribute": "primary",
                     "ChangeTrackingEnabled": true,
+                    "CanChangeTrackingBeEnabled": {
+                        "Value": true
+                    },
                     "Attributes": [
                         {
                             "LogicalName": "test",
@@ -109,6 +112,9 @@ def test_discover_full_refresh(mock_request):
                     "LogicalName": "stream",
                     "PrimaryIdAttribute": "primary",
                     "ChangeTrackingEnabled": false,
+                    "CanChangeTrackingBeEnabled": {
+                        "Value": false
+                    },
                     "Attributes": [
                         {
                             "LogicalName": "test",
