@@ -22,4 +22,4 @@ def get_json_schema(self):
     return schema
 ```
 
-Delete this file once you're done. Or don't. Up to you :)  
+Delete this file once you're done. Or don't. Up to you :)
