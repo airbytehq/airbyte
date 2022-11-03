@@ -69,7 +69,7 @@ export const UpdateConnectionDataResidency: React.FC = () => {
                 label: formatMessage({ id: `connection.geography.${geography}` }),
                 value: geography,
               }))}
-              value={selectedValue ? selectedValue : connection.geography}
+              value={selectedValue || connection.geography}
               onChange={handleSubmit}
             />
           </div>
