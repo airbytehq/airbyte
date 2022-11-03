@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.3
+Low-code: Get response.json in a safe way
+
 ## 0.4.2
 Low-code: Fix off by one error with the stream slicers
 
