@@ -27,7 +27,6 @@ import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
 import io.temporal.workflow.Workflow;
-import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -92,7 +91,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
             try {
               shouldRun = normalizationSummaryCheckActivity.shouldRunNormalization(Long.valueOf(jobRunConfig.getJobId()), jobRunConfig.getAttemptId(),
                   Optional.ofNullable(syncOutput.getStandardSyncSummary().getTotalStats().getRecordsCommitted()));
-            } catch (final IOException e) {
+            } catch (final Exception e) {
               shouldRun = true;
             }
             if (!shouldRun) {

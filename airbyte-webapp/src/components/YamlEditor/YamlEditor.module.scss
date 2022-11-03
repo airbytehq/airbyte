@@ -1,4 +1,5 @@
 @use "scss/colors";
+@use "scss/variables";
 
 .container {
   display: flex;
@@ -10,25 +11,11 @@
   flex: 0 0 auto;
   background-color: colors.$dark-blue;
   display: flex;
-  padding: 10px;
+  padding: variables.$spacing-md;
+  flex-direction: row;
+  justify-content: flex-end;
 }
 
 .editorContainer {
   flex: 1 1 0;
-  background-image: linear-gradient(colors.$dark-blue-900, colors.$dark-blue-1000);
-}
-
-.downloadButton {
-  margin-left: auto;
-}
-
-// Export colors to be used in monaco editor
-:export {
-  // Monaco editor requires 6-character hex values for theme colors
-  /* stylelint-disable-next-line color-hex-length, color-no-hex */
-  tokenString: colors.$white;
-  tokenType: colors.$blue-300;
-  tokenNumber: colors.$orange-300;
-  tokenDelimiter: colors.$yellow-300;
-  tokenKeyword: colors.$green-300;
 }
