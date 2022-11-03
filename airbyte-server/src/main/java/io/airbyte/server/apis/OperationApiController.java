@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server.apis;
 
 import io.airbyte.api.generated.OperationApi;
@@ -19,30 +23,37 @@ public class OperationApiController implements OperationApi {
 
   private final OperationsHandler operationsHandler;
 
-  @Override public CheckOperationRead checkOperation(final OperatorConfiguration operatorConfiguration) {
+  @Override
+  public CheckOperationRead checkOperation(final OperatorConfiguration operatorConfiguration) {
     return ConfigurationApi.execute(() -> operationsHandler.checkOperation(operatorConfiguration));
   }
 
-  @Override public OperationRead createOperation(final OperationCreate operationCreate) {
+  @Override
+  public OperationRead createOperation(final OperationCreate operationCreate) {
     return ConfigurationApi.execute(() -> operationsHandler.createOperation(operationCreate));
   }
 
-  @Override public void deleteOperation(final OperationIdRequestBody operationIdRequestBody) {
+  @Override
+  public void deleteOperation(final OperationIdRequestBody operationIdRequestBody) {
     ConfigurationApi.execute(() -> {
       operationsHandler.deleteOperation(operationIdRequestBody);
       return null;
     });
   }
 
-  @Override public OperationRead getOperation(final OperationIdRequestBody operationIdRequestBody) {
+  @Override
+  public OperationRead getOperation(final OperationIdRequestBody operationIdRequestBody) {
     return ConfigurationApi.execute(() -> operationsHandler.getOperation(operationIdRequestBody));
   }
 
-  @Override public OperationReadList listOperationsForConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
+  @Override
+  public OperationReadList listOperationsForConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
     return ConfigurationApi.execute(() -> operationsHandler.listOperationsForConnection(connectionIdRequestBody));
   }
 
-  @Override public OperationRead updateOperation(final OperationUpdate operationUpdate) {
+  @Override
+  public OperationRead updateOperation(final OperationUpdate operationUpdate) {
     return ConfigurationApi.execute(() -> operationsHandler.updateOperation(operationUpdate));
   }
+
 }
