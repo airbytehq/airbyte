@@ -1,46 +1,218 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "type": "object",
-    "properties": {
-        "id": {"type": "string"},
-        "url": {"type": "string"},
-        "title": {"type": "string"},
-        "scheduled": {"type": "string"},
-        "started": {"type": "string"},
-        "duration": {"type": "integer"},
-        "primaryUserId": {"type": "string"},
-        "direction": {"type": "string"},
-        "system": {"type": "string"},
-        "scope": {"type": "string"},
-        "media": {"type": "string"},
-        "language": {"type": "string"},
-        "workspaceId": {"type": "string"},
-        "sdrDisposition": {"type": "null"},
-        "clientUniqueId": {"type": "null"},
-        "customData": {"type": "null"},
-        "purpose": {"type": "null"},
-        "meetingUrl": {"type": "string"},
-        "isPrivate": {"type": "boolean"}
-    },
-    "required": [
-        "id",
-        "url",
-        "title",
-        "scheduled",
-        "started",
-        "duration",
-        "primaryUserId",
-        "direction",
-        "system",
-        "scope",
-        "media",
-        "language",
-        "workspaceId",
-        "sdrDisposition",
-        "clientUniqueId",
-        "customData",
-        "purpose",
-        "meetingUrl",
-        "isPrivate"
-    ]
-}
+    "$schema":"http://json-schema.org/draft-04/schema#",
+    "type":"object",
+    "properties":{
+       "metaData":{
+          "type":"object",
+          "properties":{
+             "id":{
+                "type":"string"
+             },
+             "url":{
+                "type":"string"
+             },
+             "title":{
+                "type":"string"
+             },
+             "scheduled":{
+                "type":"string"
+             },
+             "started":{
+                "type":"string"
+             },
+             "duration":{
+                "type":"integer"
+             },
+             "primaryUserId":{
+                "type":"string"
+             },
+             "direction":{
+                "type":"string"
+             },
+             "system":{
+                "type":"string"
+             },
+             "scope":{
+                "type":"string"
+             },
+             "media":{
+                "type":"string"
+             },
+             "language":{
+                "type":"string"
+             },
+             "workspaceId":{
+                "type":"string"
+             },
+             "sdrDisposition":{
+                "type":[
+                   "null",
+                   "string"
+                ]
+             },
+             "clientUniqueId":{
+                "type":[
+                   "null",
+                   "string"
+                ]
+             },
+             "customData":{
+                "type":[
+                   "null",
+                   "string"
+                ]
+             },
+             "purpose":{
+                "type":[
+                   "null",
+                   "string"
+                ]
+             },
+             "meetingUrl":{
+                "type":"string"
+             },
+             "isPrivate":{
+                "type":"boolean"
+             }
+          }
+       },
+       "context":{
+          "items":{
+             "additionalProperties":true,
+             "properties":{
+                "system":{
+                   "type":["string", "null"]
+                },
+                "objects":{
+                    "items": {
+                    "additionalProperties":true,
+                   "properties":{
+                      "objectType":{
+                         "type":[
+                            "string",
+                            "integer",
+                            "boolean","null"
+                         ]
+                      },
+                      "objectId":{
+                         "type":[
+                            "string",
+                            "integer",
+                            "boolean","null"
+                         ]
+                      },
+                      "fields":{
+                         "additionalProperties":true,
+                         "items":{
+                            "properties":{
+                               "name":{
+                                  "type":[
+                                     "string",
+                                     "integer",
+                                     "boolean","null"
+                                  ]
+                               },
+                               "value":{
+                                  "type":[
+                                     "string",
+                                     "integer",
+                                     "boolean","null"
+                                  ]
+                               }
+                            },
+                            "type":[
+                               "null",
+                               "object"
+                            ]
+                         },
+                         "type": ["array","null"]
+                      }
+                   },
+                   "type": ["object", "null"]
+                },
+                "type":["array", "null"]
+             }
+            },
+             "type":["object", "null"]
+          },
+          "type":[
+             "array",
+             "null"
+          ]
+       },
+       "parties":{
+          "items":{
+             "additionalProperties":true,
+             "properties":{
+                "id":{
+                   "type":[
+                      "null",
+                      "string"
+                   ]
+                },
+                "name":{
+                   "type":[
+                      "null",
+                      "string"
+                   ]
+                },
+                "speakerId":{
+                   "type":[
+                      "null",
+                      "string"
+                   ]
+                },
+                "context":{
+                   "type":[
+                      "null",
+                      "array"
+                   ]
+                },
+                "affiliation":{
+                   "type":[
+                      "null",
+                      "string"
+                   ]
+                },
+                "methods":{
+                   "type":[
+                      "null",
+                      "array"
+                   ],
+                   "additionalProperties":true,
+                   "items":{
+                      "type":[
+                         "null",
+                         "string"
+                      ]
+                   }
+                }
+             },
+             "type":[
+                "object",
+                "null"
+             ]
+          },
+          "type":[
+             "array",
+             "null"
+          ]
+       },
+       "interaction":{
+          "type":"object",
+          "properties":{
+             "questions":{
+                "type":"object",
+                "properties":{
+                   "companyCount":{
+                      "type":"integer"
+                   },
+                   "nonCompanyCount":{
+                      "type":"integer"
+                   }
+                }
+             }
+          }
+       }
+    }
+ }

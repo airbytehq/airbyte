@@ -171,31 +171,108 @@ class IncrementalGongStream(GongStream, ABC):
 
 
 class Calls(IncrementalGongStream):
-    http_method = "GET"
+    http_method = "POST"
     data_field = "calls"
     primary_key = "id"
     cursor_field ="_airbyte_emitted_at"
+    # def path(
+    #     self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    # ) -> str:
+        # if self.cursor_field not in  stream_state:
+
+        #     date = self._start_ts
+        #     print("******First sync detected *******")
+        #     print("Start date is: ")
+        #     print(date)
+        #     date = datetime.datetime.fromtimestamp(date)
+        #     return "calls/?fromDateTime={}".format((date).strftime("%Y-%m-%dT%H:%M:%SZ"))
+        # else:
+        #     print("Start date is: ")
+        #     print(stream_state)
+        #     date = datetime.datetime.fromtimestamp(stream_state[self.cursor_field])
+        #     return "calls/?fromDateTime={}".format((date).strftime("%Y-%m-%dT%H:%M:%SZ"))
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        if self.cursor_field not in  stream_state:
+        return "calls/extensive"
 
+    def request_body_json(self, stream_slice: Mapping = None, **kwargs) -> Optional[Mapping]:
+        stream_state =kwargs["stream_state"]
+        if self.cursor_field not in  stream_state:
             date = self._start_ts
-            print("******First sync detected *******")
             print("Start date is: ")
             print(date)
-            date = datetime.datetime.fromtimestamp(date)
-            return "calls/?fromDateTime={}".format((date).strftime("%Y-%m-%dT%H:%M:%SZ"))
+            return {
+             "contentSelector": {
+            "context": "Extended",
+            "exposedFields": {
+            "collaboration": {
+                "publicComments": False
+            },
+            "content": {
+                "pointsOfInterest": False,
+                "structure": False,
+                "topics": False,
+                "trackers": False
+            },
+            "interaction": {
+                "personInteractionStats": True,
+                "questions": True,
+                "speakers": True,
+                "video": False
+                },
+                "media": False,
+                "parties":True,
+                }
+            },
+            "filter": {
+                    "fromDateTime": date
+            }
+}
         else:
             print("Start date is: ")
             print(stream_state)
             date = datetime.datetime.fromtimestamp(stream_state[self.cursor_field])
-            return "calls/?fromDateTime={}".format((date).strftime("%Y-%m-%dT%H:%M:%SZ"))
-                
-                
-        
+            return {
+                     "contentSelector": {
+                    "context": "Extended",
+                    "exposedFields": {
+                    "collaboration": {
+                        "publicComments": False
+                    },
+                    "content": {
+                        "pointsOfInterest": False,
+                        "structure": False,
+                        "topics": False,
+                        "trackers": False
+                    },
+                    "interaction": {
+                        "personInteractionStats": True,
+                        "questions": True,
+                        "speakers": True,
+                        "video": False
+                    },
+                    "media": False,
+                    "parties":True,
+                    }
+                },
+                "filter": {
+                        "fromDateTime": (date).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+                }
+                }
 
         
+class Users(GongStream):
+    http_method = "GET"
+    data_field = "users"
+    primary_key = "id"
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "users"
+
 class CallTranscripts(IncrementalGongStream):
     http_method = "POST"
     data_field = "callTranscripts"
@@ -255,5 +332,6 @@ class SourceGong(AbstractSource):
         # TODO remove the authenticator if not required.
         authenticator = self._get_authenticator(config)
           # Oauth2Authenticator is also available if you need oauth support
+        global default_start_date
         default_start_date = pendulum.parse(config["start_date"])
-        return [Calls(authenticator=authenticator,default_start_date=default_start_date),CallTranscripts(authenticator=authenticator,default_start_date=default_start_date)]
+        return [Calls(authenticator=authenticator,default_start_date=default_start_date),CallTranscripts(authenticator=authenticator,default_start_date=default_start_date),Users(authenticator=authenticator)]

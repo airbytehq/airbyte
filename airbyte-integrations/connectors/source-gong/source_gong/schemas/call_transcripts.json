@@ -5,13 +5,13 @@
     "callId": {
       "type": "string"
     },
-    "speakerId": {
-      "type": "string"
-    },
     "transcript": {
       "items": {
       "additionalProperties": true,
       "properties": {
+        "speakerId": {
+          "type": "string"
+        },
         "topic": {
           "type": "string"
         },

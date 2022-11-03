@@ -39,6 +39,7 @@ To build using Gradle, from the Airbyte repository root, run:
 ```
 
 
+
 ### Locally running the connector
 ```
 python main.py spec
