@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.jdbc;
 
-import static io.airbyte.commons.exceptions.DisplayErrorMessage.getErrorMessage;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.DisplayErrorMessage;

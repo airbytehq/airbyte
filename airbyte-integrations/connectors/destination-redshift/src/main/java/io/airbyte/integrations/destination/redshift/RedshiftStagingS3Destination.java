@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.redshift;
 
-import static io.airbyte.commons.exceptions.DisplayErrorMessage.getErrorMessage;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.SSL_JDBC_PARAMETERS;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.getJdbcConfig;
 import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.findS3Options;
