@@ -21,13 +21,13 @@ declare global {
 export interface Config {
   segment: { token: string; enabled: boolean };
   apiUrl: string;
-  connectorBuilderApiUrl: string;
+  #connectorBuilderApiUrl: string; #FIXME: Uncomment this when enabling the connector-builder
   oauthRedirectUrl: string;
   healthCheckInterval: number;
   version?: string;
   integrationUrl: string;
   launchDarkly?: string;
-  connectorBuilderUrl: string;
+  #connectorBuilderUrl: string; #FIXME: Uncomment this when enabling the connector-builder
 }
 
 export type DeepPartial<T> = {

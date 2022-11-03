@@ -2,9 +2,9 @@ upstream api-server {
     server $INTERNAL_API_HOST;
 }
 
-#upstream connector-builder-server { #FIXME: Uncomment this block when enabling the connector-builder
+# upstream connector-builder-server { #FIXME: Uncomment this block when enabling the connector-builder
 #    server $CONNECTOR_BUILDER_API_HOST;
-#}
+# }
 
 server {
     listen       80;
