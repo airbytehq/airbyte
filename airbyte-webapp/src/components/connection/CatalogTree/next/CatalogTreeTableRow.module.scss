@@ -18,7 +18,11 @@
   background: colors.$white;
   border-bottom: 1px solid colors.$grey-50;
   padding: variables.$spacing-sm variables.$spacing-md variables.$spacing-sm variables.$spacing-sm;
-  gap: variables.$spacing-lg;
+  gap: variables.$spacing-sm;
+  display: flex;
+  flex-direction: row;
+  align-items: space-between;
+  width: 100%;
 
   &:hover {
     background: colors.$grey-30;
@@ -49,4 +53,9 @@
   text-align: center;
   font-size: 10px;
   line-height: 13px;
+}
+
+.streamRowItem {
+  min-width: 0;
+  padding-left: variables.$spacing-xs;
 }

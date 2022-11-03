@@ -83,18 +83,18 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
         </div>
       )}
-      <Cell flex={0.4}>
+      <Cell flex={0.4} className={styles.streamRowItem}>
         <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
       </Cell>
       {/* <Cell>{fieldCount}</Cell> */}
-      <HeaderCell ellipsis title={stream.stream?.namespace || ""}>
+      <HeaderCell ellipsis title={stream.stream?.namespace || ""} className={styles.streamRowItem}>
         {stream.stream?.namespace || <FormattedMessage id="form.noNamespace" />}
       </HeaderCell>
-      <HeaderCell ellipsis title={stream.stream?.name || ""}>
+      <HeaderCell ellipsis title={stream.stream?.name || ""} className={styles.streamRowItem}>
         {stream.stream?.name}
       </HeaderCell>
       {/* todo: this is weird, we have a cell nested inside a cell */}
-      <Cell>
+      <Cell className={styles.streamRowItem}>
         {disabled ? (
           <HeaderCell ellipsis title={syncSchema.syncMode}>
             {syncSchema.syncMode}
@@ -103,7 +103,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           <SyncModeSelect options={availableSyncModes} onChange={onSelectSyncMode} value={syncSchema} />
         )}
       </Cell>
-      <HeaderCell>
+      <HeaderCell className={styles.streamRowItem}>
         {cursorType && (
           <StreamPathSelect
             pathType={cursorType}
@@ -113,7 +113,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           />
         )}
       </HeaderCell>
-      <HeaderCell ellipsis>
+      <HeaderCell ellipsis className={styles.streamRowItem}>
         {pkType && (
           <StreamPathSelect
             pathType={pkType}
@@ -124,23 +124,23 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           />
         )}
       </HeaderCell>
-      <Cell>
+      <Cell className={styles.streamRowItem}>
         <FontAwesomeIcon icon={faArrowRight} />
       </Cell>
-      <HeaderCell ellipsis title={destNamespace}>
+      <HeaderCell ellipsis title={destNamespace} className={styles.streamRowItem}>
         {destNamespace}
       </HeaderCell>
-      <HeaderCell ellipsis title={destName}>
+      <HeaderCell ellipsis title={destName} className={styles.streamRowItem}>
         {destName}
       </HeaderCell>
-      <Cell>
+      <Cell className={styles.streamRowItem}>
         {disabled ? (
           <HeaderCell ellipsis title={syncSchema.destinationSyncMode}>
             {syncSchema.destinationSyncMode}
           </HeaderCell>
         ) : (
           // TODO: Replace with Dropdown/Popout
-          <HeaderCell ellipsis title={syncSchema.destinationSyncMode}>
+          <HeaderCell ellipsis title={syncSchema.destinationSyncMode} className={styles.streamRowItem}>
             {syncSchema.destinationSyncMode}
           </HeaderCell>
         )}
