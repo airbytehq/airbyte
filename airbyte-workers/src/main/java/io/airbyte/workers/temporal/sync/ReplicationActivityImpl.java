@@ -226,22 +226,24 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   }
 
   private static void traceReplicationSummary(final ReplicationAttemptSummary replicationSummary) {
-    if (replicationSummary != null) {
-      final Map<String, Object> tags = new HashMap<>();
-      if (replicationSummary.getBytesSynced() != null) {
-        tags.put(REPLICATION_BYTES_SYNCED_KEY, replicationSummary.getBytesSynced());
-        MetricClientFactory.getMetricClient().count(OssMetricsRegistry.REPLICATION_BYTES_SYNCED, replicationSummary.getBytesSynced());
-      }
-      if (replicationSummary.getRecordsSynced() != null) {
-        tags.put(REPLICATION_RECORDS_SYNCED_KEY, replicationSummary.getRecordsSynced());
-        MetricClientFactory.getMetricClient().count(OssMetricsRegistry.REPLICATION_RECORDS_SYNCED, replicationSummary.getRecordsSynced());
-      }
-      if (replicationSummary.getStatus() != null) {
-        tags.put(REPLICATION_STATUS_KEY, replicationSummary.getStatus().value());
-      }
-      if (CollectionUtils.isNotEmpty(tags)) {
-        ApmTraceUtils.addTagsToTrace(tags);
-      }
+    if (replicationSummary == null) {
+      return;
+    }
+
+    final Map<String, Object> tags = new HashMap<>();
+    if (replicationSummary.getBytesSynced() != null) {
+      tags.put(REPLICATION_BYTES_SYNCED_KEY, replicationSummary.getBytesSynced());
+      MetricClientFactory.getMetricClient().count(OssMetricsRegistry.REPLICATION_BYTES_SYNCED, replicationSummary.getBytesSynced());
+    }
+    if (replicationSummary.getRecordsSynced() != null) {
+      tags.put(REPLICATION_RECORDS_SYNCED_KEY, replicationSummary.getRecordsSynced());
+      MetricClientFactory.getMetricClient().count(OssMetricsRegistry.REPLICATION_RECORDS_SYNCED, replicationSummary.getRecordsSynced());
+    }
+    if (replicationSummary.getStatus() != null) {
+      tags.put(REPLICATION_STATUS_KEY, replicationSummary.getStatus().value());
+    }
+    if (!tags.isEmpty()) {
+      ApmTraceUtils.addTagsToTrace(tags);
     }
   }
 
