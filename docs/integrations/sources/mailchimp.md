@@ -229,7 +229,8 @@ Now that you have set up the Mailchimp source connector, check out the following
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                  |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------|
+|---------|------------|----------------------------------------------------------|--------------------------------------------------------------------------|
+| 0.3.0   | 2022-11-07 | [19023](https://github.com/airbytehq/airbyte/pull/19023) | Set primary key for Email Activity stream.                               |
 | 0.2.15  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                            |
 | 0.2.14  | 2022-04-12 | [11352](https://github.com/airbytehq/airbyte/pull/11352) | Update documentation                                                     |
 | 0.2.13  | 2022-04-11 | [11632](https://github.com/airbytehq/airbyte/pull/11632) | Add unit tests                                                           |
