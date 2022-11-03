@@ -66,7 +66,7 @@ export const DataResidencyView: React.FC = () => {
           <FormattedMessage
             id="settings.defaultDataResidencyDescription"
             values={{
-              a: (node: React.ReactNode) => (
+              lnk: (node: React.ReactNode) => (
                 <a href={links.cloudAllowlistIPsLink} target="_blank" rel="noreferrer">
                   {node}
                 </a>
@@ -87,8 +87,8 @@ export const DataResidencyView: React.FC = () => {
                         <FormattedMessage
                           id="connection.geographyDescription"
                           values={{
-                            a: (node: React.ReactNode) => (
-                              <a href={links.docsLink} target="_blank" rel="noreferrer">
+                            lnk: (node: React.ReactNode) => (
+                              <a href={links.cloudAllowlistIPsLink} target="_blank" rel="noreferrer">
                                 {node}
                               </a>
                             ),
