@@ -18,7 +18,7 @@ export const UpdateConnectionDataResidency: React.FC = () => {
   const { connection, updateConnection, connectionUpdating } = useConnectionEditService();
   const { registerNotification } = useNotificationService();
   const { formatMessage } = useIntl();
-  const [selectedValue, setSelectedValue] = useState<Geography | undefined>();
+  const [selectedValue, setSelectedValue] = useState<Geography>();
 
   const { geographies } = useAvailableGeographies();
 
