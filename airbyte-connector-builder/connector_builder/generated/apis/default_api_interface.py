@@ -1,3 +1,4 @@
+# This file was auto-generated from Airbyte's custom OpenAPI templates
 # coding: utf-8
 
 import inspect
