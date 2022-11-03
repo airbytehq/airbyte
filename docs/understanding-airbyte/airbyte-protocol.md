@@ -8,7 +8,7 @@ This document describes the protocol as it exists in its CURRENT form. Stay tune
 
 This document is intended to contain ALL the rules of the Airbyte Protocol in one place. Anything not contained in this document is NOT part of the Protocol. At the time of writing, there is one known exception, which is the [Supported Data Types](supported-data-types.md), which contains rules on data types that are part of the Protocol. That said, there are additional articles, e.g. [A Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md) that repackage the information in this document for different audiences.
 
-### Key Concepts
+## Key Concepts
 
 There are 2 major components in the Airbyte Protocol: Source and Destination. These components are referred to as Actors. A source is an application that is described by a series of standard interfaces. This application extracts data from an underlying data store. A data store in this context refers to the tool where the data is actually stored. A data store includes: databases, APIs, anything that produces data, etc. For example, the Postgres Source is a Source that pulls from Postgres (which is a data store). A Destination is an application that is described by a series of standard interfaces that loads data into a data store.
 
