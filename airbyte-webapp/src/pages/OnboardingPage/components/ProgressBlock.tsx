@@ -4,7 +4,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled, { keyframes } from "styled-components";
 
-import Link from "components/Link";
+import { Link } from "components/common/Link";
 import { Button } from "components/ui/Button";
 import { Heading } from "components/ui/Heading";
 

@@ -4,10 +4,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { LoadingPage } from "components";
 import { CloudInviteUsersHint } from "components/CloudInviteUsersHint";
+import { HeadTitle } from "components/common/HeadTitle";
 import ConnectionBlock from "components/ConnectionBlock";
 import { FormPageContent } from "components/ConnectorBlocks";
 import { CreateConnectionForm } from "components/CreateConnection/CreateConnectionForm";
-import HeadTitle from "components/HeadTitle";
 import { PageHeader } from "components/ui/PageHeader";
 import { StepsMenu } from "components/ui/StepsMenu";
 
