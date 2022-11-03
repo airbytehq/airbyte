@@ -4,17 +4,17 @@
 
 package io.airbyte.server.apis.binders;
 
-import io.airbyte.server.apis.OperationApiController;
-import io.airbyte.server.apis.factories.OperationApiFactory;
+import io.airbyte.server.apis.SchedulerApiController;
+import io.airbyte.server.apis.factories.SchedulerApiFactory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.process.internal.RequestScoped;
 
-public class OperationApiBinder extends AbstractBinder {
+public class SchedulerApiBinder extends AbstractBinder {
 
   @Override
   protected void configure() {
-    bindFactory(OperationApiFactory.class)
-        .to(OperationApiController.class)
+    bindFactory(SchedulerApiFactory.class)
+        .to(SchedulerApiController.class)
         .in(RequestScoped.class);
   }
 

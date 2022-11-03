@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server.apis.factories;
 
 import io.airbyte.server.apis.OperationApiController;
@@ -12,11 +16,14 @@ public class OperationApiFactory implements Factory<OperationApiController> {
     OperationApiFactory.operationsHandler = operationsHandler;
   }
 
-  @Override public OperationApiController provide() {
+  @Override
+  public OperationApiController provide() {
     return new OperationApiController(OperationApiFactory.operationsHandler);
   }
 
-  @Override public void dispose(final OperationApiController instance) {
+  @Override
+  public void dispose(final OperationApiController instance) {
     /* no op */
   }
+
 }

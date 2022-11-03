@@ -27,6 +27,7 @@ import io.airbyte.server.apis.JobsApiController;
 import io.airbyte.server.apis.LogsApiController;
 import io.airbyte.server.apis.NotificationsApiController;
 import io.airbyte.server.apis.OperationApiController;
+import io.airbyte.server.apis.SchedulerApiController;
 import io.airbyte.server.apis.binders.AttemptApiBinder;
 import io.airbyte.server.apis.binders.ConnectionApiBinder;
 import io.airbyte.server.apis.binders.DbMigrationBinder;
@@ -39,6 +40,7 @@ import io.airbyte.server.apis.binders.JobsApiBinder;
 import io.airbyte.server.apis.binders.LogsApiBinder;
 import io.airbyte.server.apis.binders.NotificationApiBinder;
 import io.airbyte.server.apis.binders.OperationApiBinder;
+import io.airbyte.server.apis.binders.SchedulerApiBinder;
 import io.airbyte.server.apis.binders.SourceOauthApiBinder;
 import io.airbyte.server.apis.factories.AttemptApiFactory;
 import io.airbyte.server.apis.factories.ConnectionApiFactory;
@@ -52,6 +54,7 @@ import io.airbyte.server.apis.factories.JobsApiFactory;
 import io.airbyte.server.apis.factories.LogsApiFactory;
 import io.airbyte.server.apis.factories.NotificationsApiFactory;
 import io.airbyte.server.apis.factories.OperationApiFactory;
+import io.airbyte.server.apis.factories.SchedulerApiFactory;
 import io.airbyte.server.apis.factories.SourceOauthApiFactory;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
@@ -189,6 +192,8 @@ public interface ServerFactory {
 
       OperationApiFactory.setValues(operationsHandler);
 
+      SchedulerApiFactory.setValues(schedulerHandler);
+
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(
           ConfigurationApi.class,
@@ -204,6 +209,7 @@ public interface ServerFactory {
           LogsApiController.class,
           NotificationsApiController.class,
           OperationApiController.class,
+          SchedulerApiController.class,
           SourceOauthApiFactory.class);
 
       final Set<Object> components = Set.of(
@@ -221,6 +227,7 @@ public interface ServerFactory {
           new LogsApiBinder(),
           new NotificationApiBinder(),
           new OperationApiBinder(),
+          new SchedulerApiBinder(),
           new SourceOauthApiBinder());
 
       // construct server
