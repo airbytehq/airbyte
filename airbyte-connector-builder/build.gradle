@@ -10,7 +10,7 @@ airbytePython {
     moduleDirectory 'connector_builder'
 }
 
-task generateServer(type: GenerateTask){
+task generateOpenApiPythonServer(type: GenerateTask){
     def generatedCodeDir = "$buildDir/server"
     inputSpec = "$rootDir.absolutePath/connector-builder-server/src/main/openapi/openapi.yaml"
     outputDir = generatedCodeDir
