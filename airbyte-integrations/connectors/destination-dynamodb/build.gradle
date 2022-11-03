@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.dynamodb.DynamodbDestination'
+    mainClass = 'io.airbyte.integrations.destination.dynamodb.DynamodbDestinationRunner'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
