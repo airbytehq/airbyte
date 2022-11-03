@@ -43,23 +43,11 @@ setup(
     packages=find_packages(exclude=("unit_tests", "integration_tests", "docs")),
     package_data={},
     install_requires=[
-        "click~=8.0.3",
-        "fastapi>=0.68.0,<0.69.0",
-        "pydantic>=1.8.0,<2.0.0",
-        "uvicorn>=0.15.0,<0.16.0",
-        f"airbyte_api_client @ file://{os.getcwd()}/build/airbyte_api_client",
-        "jinja2~=3.0.3",
-        "deepdiff~=5.7.0",
-        "pyyaml~=6.0",
-        "analytics-python~=1.4.0",
-        "python-slugify~=6.1.2",
+        "fastapi",
+        "uvicorn"
     ],
     python_requires=">=3.9.11",
     extras_require={
         "tests": ["MyPy~=0.812", "pytest~=6.2.5", "pytest-cov", "pytest-mock", "pytest-recording", "requests-mock", "pre-commit"],
-        "sphinx-docs": [
-            "Sphinx~=4.2",
-            "sphinx-rtd-theme~=1.0",
-        ],
     },
 )

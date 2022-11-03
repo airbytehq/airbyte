@@ -12,7 +12,7 @@ pip install .
 
 Then run the server
 ```python
-uvicorn connector_builder.entrypoint:app --port 8080
+uvicorn connector_builder.entrypoint:app --host 0.0.0.0 --port 8080
 ```
 
 The server is now reachable on localhost:8080
