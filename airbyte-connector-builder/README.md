@@ -4,14 +4,14 @@
 ## Getting started 
 
 Setup the virtual environment and install dependencies
-```python
+```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install .
 ```
 
 Then run the server
-```python
+```bash
 uvicorn connector_builder.entrypoint:app --host 0.0.0.0 --port 8080
 ```
 
