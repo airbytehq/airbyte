@@ -7322,7 +7322,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mixpanel:0.1.28"
+- dockerImage: "airbyte/source-mixpanel:0.1.29"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mixpanel"
     connectionSpecification:
@@ -7331,7 +7331,7 @@
       type: "object"
       properties:
         credentials:
-          title: "Authentication"
+          title: "Authentication *"
           description: "Choose how to authenticate to Mixpanel"
           type: "object"
           order: 0
@@ -7727,7 +7727,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.10"
+- dockerImage: "airbyte/source-mysql:1.0.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
