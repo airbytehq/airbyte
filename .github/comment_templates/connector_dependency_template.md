@@ -17,6 +17,8 @@ NOTE ⚠️ Changes in this PR affect the following connectors. Make sure to do 
 | --- | :---: | :---: | :---: |
 {source_rows}
 
+* See "Actionable Items" below for how to resolves warnings and errors.
+
 </details>
 
 <details {destination_open}>
@@ -30,6 +32,8 @@ NOTE ⚠️ Changes in this PR affect the following connectors. Make sure to do 
 | --- | :---: | :---: | :---: |
 {destination_rows}
 
+* See "Actionable Items" below for how to resolves warnings and errors.
+
 </details>
 
 {others}
@@ -38,7 +42,9 @@ NOTE ⚠️ Changes in this PR affect the following connectors. Make sure to do 
 
 <summary>
 
-### Notes
+### Actionable Items
+
+(click to expand)
 
 </summary>
 

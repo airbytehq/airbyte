@@ -40,3 +40,11 @@ jobs:
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
           edit-mode: "replace"
           body-file: "comment_body.md"
+      - name: Delete deprecated comment in PR
+        if: steps.dependency_report.outputs.comment != 'true' && steps.find_comment.outputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.find_comment.outputs.comment-id }}
+          edit-mode: "replace"
+          body: "The latest commit has removed all connector-related changes. There is no more dependent connector for this PR."
