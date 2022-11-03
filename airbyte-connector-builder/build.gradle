@@ -20,6 +20,8 @@ task generateServer(type: GenerateTask){
     templateDir = "$projectDir/openapi/templates"
     packageName = "connector_builder.generated"
 
+    // After we generate, we're only interested in the API declaration and the generated pydantic models.
+    // So we copy those from the build/ directory
     doLast {
         def sourceDir = "$generatedCodeDir/src/connector_builder/generated/"
         def targetDir = "$projectDir/connector_builder/generated"
