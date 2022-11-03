@@ -1477,6 +1477,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/waiteraid
   sourceType: api
   releaseStage: alpha
+- name: Wikipedia Pageviews
+  sourceDefinitionId: 87c58f70-6f7a-4f70-aba5-bab1a458f5ba
+  dockerRepository: airbyte/source-wikipedia-pageviews
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/wikipedia-pageviews
+  sourceType: api
+  releaseStage: alpha
 - name: Yandex Metrica
   sourceDefinitionId: 7865dce4-2211-4f6a-88e5-9d0fe161afe7
   dockerRepository: airbyte/source-yandex-metrica
