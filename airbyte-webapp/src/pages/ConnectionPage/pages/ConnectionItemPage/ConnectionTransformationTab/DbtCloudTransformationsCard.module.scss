@@ -1,6 +1,10 @@
 @use "scss/colors";
+@use "scss/variables" as vars;
 
 .jobListContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 25px 25px 22px;
   background-color: colors.$grey-50;
 }
@@ -14,16 +18,10 @@
   width: 100%;
 }
 
-.emptyListContent {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  > img {
-    width: 111px;
-    height: 111px;
-    margin: 20px 0;
-  }
+.emptyListImage {
+  width: 111px;
+  height: 111px;
+  margin: vars.$spacing-xl 0;
 }
 
 .contextExplanation {
@@ -38,26 +36,26 @@
 .jobListButtonGroup {
   display: flex;
   justify-content: flex-end;
-  margin-top: 20px;
+  margin-top: vars.$spacing-xl;
   width: 100%;
 }
 
 .jobListButton {
-  margin-left: 10px;
+  margin-left: vars.$spacing-md;
 }
 
 .jobListItem {
-  margin-top: 10px;
+  margin-top: vars.$spacing-md;
   padding: 18px;
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
 
-  & img {
-    height: 32px;
-    width: 32px;
-  }
+.dbtLogo {
+  height: 32px;
+  width: 32px;
 }
 
 .jobListItemIntegrationName {
@@ -84,7 +82,7 @@
 .jobListItemDelete {
   color: colors.$grey-200;
   font-size: large;
-  margin: 0 1em;
+  margin-left: vars.$spacing-lg;
   cursor: pointer;
   border: none;
   background-color: inherit;
