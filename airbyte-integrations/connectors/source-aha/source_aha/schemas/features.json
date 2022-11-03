@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "features": {
+      "type": "object",
+      "properties": {
+        "id":{
+          "type": ["null", "string"]
+      
+        },
+        "reference_num":{
+          "type": ["null", "string"]
+      
+        },
+        "name":{
+          "type": ["null", "string"]
+      
+        },
+        "created_at":{
+          "type": ["null", "string"]
+      
+        },
+        "url":{
+          "type": ["null", "string"]
+      
+        },
+        "resource":{
+          "type": ["null", "string"]
+      
+        },
+        "product_id":{
+          "type": ["null", "string"]
+      
+        }
+      }
+    },
+    "pagination": {
+      "type": "object",
+      "properties": {
+        "total_records":{
+          "type": ["null", "integer"]
+      
+        },
+        "total_pages":{
+          "type": ["null", "integer"]
+      
+        },
+        "current_page":{
+          "type": ["null", "integer"]
+      
+        }
+      }
+      
+    }
+  }
+}
