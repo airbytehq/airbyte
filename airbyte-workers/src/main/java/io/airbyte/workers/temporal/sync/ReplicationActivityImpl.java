@@ -7,6 +7,9 @@ package io.airbyte.workers.temporal.sync;
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.REPLICATION_BYTES_SYNCED_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.REPLICATION_RECORDS_SYNCED_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.REPLICATION_STATUS_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_DOCKER_IMAGE_KEY;
 
 import datadog.trace.api.Trace;
@@ -36,6 +39,7 @@ import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
+import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.ContainerOrchestratorConfig;
@@ -59,11 +63,13 @@ import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.sync.ReplicationLauncherWorker;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.core.util.CollectionUtils;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -185,7 +191,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           final String standardSyncOutputString = standardSyncOutput.toString();
           LOGGER.info("sync summary: {}", standardSyncOutputString);
           if (standardSyncOutputString.length() > MAX_TEMPORAL_MESSAGE_SIZE) {
-            LOGGER.error("Sync ouput exceeds the max temporal message size of {}, actual is {}.", MAX_TEMPORAL_MESSAGE_SIZE,
+            LOGGER.error("Sync output exceeds the max temporal message size of {}, actual is {}.", MAX_TEMPORAL_MESSAGE_SIZE,
                 standardSyncOutputString.length());
           } else {
             LOGGER.info("Sync summary length: {}", standardSyncOutputString.length());
@@ -201,6 +207,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     final StandardSyncSummary syncSummary = new StandardSyncSummary();
     final ReplicationAttemptSummary replicationSummary = output.getReplicationAttemptSummary();
 
+    traceReplicationSummary(replicationSummary);
+
     syncSummary.setBytesSynced(replicationSummary.getBytesSynced());
     syncSummary.setRecordsSynced(replicationSummary.getRecordsSynced());
     syncSummary.setStartTime(replicationSummary.getStartTime());
@@ -215,6 +223,26 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     standardSyncOutput.setFailures(output.getFailures());
 
     return standardSyncOutput;
+  }
+
+  private static void traceReplicationSummary(final ReplicationAttemptSummary replicationSummary) {
+    if (replicationSummary != null) {
+      final Map<String, Object> tags = new HashMap<>();
+      if (replicationSummary.getBytesSynced() != null) {
+        tags.put(REPLICATION_BYTES_SYNCED_KEY, replicationSummary.getBytesSynced());
+        MetricClientFactory.getMetricClient().count(OssMetricsRegistry.REPLICATION_BYTES_SYNCED, replicationSummary.getBytesSynced());
+      }
+      if (replicationSummary.getRecordsSynced() != null) {
+        tags.put(REPLICATION_RECORDS_SYNCED_KEY, replicationSummary.getRecordsSynced());
+        MetricClientFactory.getMetricClient().count(OssMetricsRegistry.REPLICATION_RECORDS_SYNCED, replicationSummary.getRecordsSynced());
+      }
+      if (replicationSummary.getStatus() != null) {
+        tags.put(REPLICATION_STATUS_KEY, replicationSummary.getStatus().value());
+      }
+      if (CollectionUtils.isNotEmpty(tags)) {
+        ApmTraceUtils.addTagsToTrace(tags);
+      }
+    }
   }
 
   private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getLegacyWorkerFactory(final IntegrationLauncherConfig sourceLauncherConfig,
