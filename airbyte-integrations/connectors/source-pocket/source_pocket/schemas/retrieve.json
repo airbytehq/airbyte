@@ -103,6 +103,7 @@
       "patternProperties": {
         "[0-9]+": {
           "type": ["null", "object"],
+          "additionalProperties": true,
           "properties": {
             "item_id": {
               "type": ["null", "string"],
@@ -147,6 +148,7 @@
       "patternProperties": {
         "[0-9]+": {
           "type": ["null", "object"],
+          "additionalProperties": true,
           "properties": {
             "item_id": {
               "type": ["null", "string"],
@@ -182,6 +184,7 @@
       "patternProperties": {
         "[0-9]+": {
           "type": ["null", "object"],
+          "additionalProperties": true,
           "properties": {
             "item_id": {
               "type": ["null", "string"],
