@@ -3,49 +3,31 @@
   "type": "object",
   "properties": {
     "config": {
-      "type": [
-        "object",
-        "null"
-      ],
+      "type": ["object", "null"],
       "description": "Configuration object for a Synthetic test.",
       "additionalProperties": true
     },
     "creator": {
-      "type": [
-        "object",
-        "null"
-      ],
+      "type": ["object", "null"],
       "description": "Object describing the creator of the shared element.",
       "properties": {
         "email": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "description": "Email of the creator."
         },
         "handle": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "description": "Handle of the creator."
         },
         "name": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "description": "Name of the creator."
         }
       },
       "additionalProperties": true
     },
     "locations": {
-      "type": [
-        "array",
-        "null"
-      ],
+      "type": ["array", "null"],
       "items": {
         "type": "string"
       },
@@ -53,70 +35,43 @@
       "readOnly": true
     },
     "message": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "description": "Notification message associated with the test.",
       "readOnly": true
     },
     "monitor_id": {
-      "type": [
-        "integer",
-        "null"
-      ],
+      "type": ["integer", "null"],
       "description": "The associated monitor ID.",
       "readOnly": true
     },
     "name": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "description": "Name of the test.",
       "readOnly": true
     },
     "options": {
-      "type": [
-        "object",
-        "null"
-      ],
+      "type": ["object", "null"],
       "description": "Object describing the extra options for a Synthetic test.",
       "additionalProperties": true
     },
     "public_id": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "description": "The test public ID.",
       "readOnly": true
     },
     "status": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "enum": [
-        "live",
-        "paused"
-      ],
+      "type": ["string", "null"],
+      "enum": ["live", "paused"],
       "description": "Define whether you want to start (live) or pause (paused) a Synthetic test. Allowed enum values: live,paused",
       "readOnly": true
     },
     "steps": {
-      "type": [
-        "object",
-        "null"
-      ],
+      "type": ["object", "null"],
       "description": "For browser test, the steps of the test.",
       "additionalProperties": true
     },
     "subtype": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "enum": [
         "http",
         "ssl",
@@ -132,10 +87,7 @@
       "readOnly": true
     },
     "tags": {
-      "type": [
-        "array",
-        "null"
-      ],
+      "type": ["array", "null"],
       "items": {
         "type": "string"
       },
@@ -143,14 +95,8 @@
       "readOnly": true
     },
     "type": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "enum": [
-        "api",
-        "browser"
-      ],
+      "type": ["string", "null"],
+      "enum": ["api", "browser"],
       "description": "Type of the Synthetic test, either api or browser. Allowed enum values: api,browser",
       "readOnly": true
     }
