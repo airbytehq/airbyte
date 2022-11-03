@@ -900,19 +900,31 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   // SCHEDULER
+  /**
+   * This implementation has been moved to {@link SchedulerApiController}. Since the path of
+   * {@link SchedulerApiController} is more granular, it will override this implementation
+   */
   @Override
   public CheckConnectionRead executeSourceCheckConnection(final SourceCoreConfig sourceConfig) {
-    return execute(() -> schedulerHandler.checkSourceConnectionFromSourceCreate(sourceConfig));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SchedulerApiController}. Since the path of
+   * {@link SchedulerApiController} is more granular, it will override this implementation
+   */
   @Override
   public CheckConnectionRead executeDestinationCheckConnection(final DestinationCoreConfig destinationConfig) {
-    return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationCreate(destinationConfig));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SchedulerApiController}. Since the path of
+   * {@link SchedulerApiController} is more granular, it will override this implementation
+   */
   @Override
   public SourceDiscoverSchemaRead executeSourceDiscoverSchema(final SourceCoreConfig sourceCreate) {
-    return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCreate));
+    throw new NotImplementedException();
   }
 
   /**
