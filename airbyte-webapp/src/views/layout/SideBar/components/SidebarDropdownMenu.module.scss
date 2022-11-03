@@ -18,7 +18,7 @@
   border-radius: variables.$border-radius-md;
   color: inherit;
   text-decoration: none;
-  transition: variables.$transition-out;
+  transition: all variables.$transition-out;
 
   .text {
     margin-top: 7px;
@@ -69,7 +69,8 @@
       color: colors.$dark-blue;
     }
 
-    &.active, &:hover {
+    &.active,
+    &:hover {
       background-color: colors.$grey-50;
     }
   }

@@ -4,7 +4,7 @@
 
 package io.airbyte.workers.tracing;
 
-import static io.airbyte.workers.tracing.TemporalSdkInterceptor.CONNECTION_MANAGER_WORKFLOW_IMPL_RESOURCE_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKFLOW_TRACE_OPERATION_NAME;
 import static io.airbyte.workers.tracing.TemporalSdkInterceptor.ERROR_MESSAGE_TAG_KEY;
 import static io.airbyte.workers.tracing.TemporalSdkInterceptor.EXIT_ERROR_MESSAGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,23 +25,23 @@ class TemporalSdkInterceptorTest {
 
     final var noError = new DummySpan();
     noError.setError(false);
-    noError.setResourceName(CONNECTION_MANAGER_WORKFLOW_IMPL_RESOURCE_NAME);
+    noError.setOperationName(WORKFLOW_TRACE_OPERATION_NAME);
     noError.setTag("tag", "value");
 
     final var otherError = new DummySpan();
     otherError.setError(true);
-    otherError.setResourceName(CONNECTION_MANAGER_WORKFLOW_IMPL_RESOURCE_NAME);
+    otherError.setOperationName(WORKFLOW_TRACE_OPERATION_NAME);
     otherError.setTag("error.message", "some other error");
 
     final var temporalExitMsgError = new DummySpan();
     temporalExitMsgError.setError(true);
+    temporalExitMsgError.setOperationName(WORKFLOW_TRACE_OPERATION_NAME);
     temporalExitMsgError.setTag(ERROR_MESSAGE_TAG_KEY, EXIT_ERROR_MESSAGE);
-    temporalExitMsgError.setResourceName(CONNECTION_MANAGER_WORKFLOW_IMPL_RESOURCE_NAME);
 
     final var temporalExitMsgOtherResourceError = new DummySpan();
     temporalExitMsgOtherResourceError.setError(true);
+    temporalExitMsgOtherResourceError.setOperationName("OtherOperation");
     temporalExitMsgOtherResourceError.setTag(ERROR_MESSAGE_TAG_KEY, EXIT_ERROR_MESSAGE);
-    temporalExitMsgOtherResourceError.setResourceName("OtherResource.run");
 
     final var spans = List.of(
         simple, noError, otherError, temporalExitMsgError, temporalExitMsgOtherResourceError);
@@ -65,24 +65,24 @@ class TemporalSdkInterceptorTest {
     assertEquals(false, interceptor.isExitTrace(new DummySpan()));
 
     final var temporalTrace = new DummySpan();
-    temporalTrace.setResourceName(CONNECTION_MANAGER_WORKFLOW_IMPL_RESOURCE_NAME);
+    temporalTrace.setOperationName(WORKFLOW_TRACE_OPERATION_NAME);
     assertEquals(false, interceptor.isExitTrace(temporalTrace));
 
     final var temporalTraceWithError = new DummySpan();
     temporalTraceWithError.setError(true);
-    temporalTraceWithError.setResourceName(CONNECTION_MANAGER_WORKFLOW_IMPL_RESOURCE_NAME);
+    temporalTraceWithError.setOperationName(WORKFLOW_TRACE_OPERATION_NAME);
     assertEquals(false, interceptor.isExitTrace(temporalTraceWithError));
 
     final var temporalTraceWithExitError = new DummySpan();
     temporalTraceWithExitError.setError(true);
+    temporalTraceWithExitError.setOperationName(WORKFLOW_TRACE_OPERATION_NAME);
     temporalTraceWithExitError.setTag(ERROR_MESSAGE_TAG_KEY, EXIT_ERROR_MESSAGE);
-    temporalTraceWithExitError.setResourceName(CONNECTION_MANAGER_WORKFLOW_IMPL_RESOURCE_NAME);
     assertEquals(true, interceptor.isExitTrace(temporalTraceWithExitError));
 
     final var otherTemporalTraceWithExitError = new DummySpan();
     otherTemporalTraceWithExitError.setError(true);
+    otherTemporalTraceWithExitError.setOperationName("OtherOperation");
     otherTemporalTraceWithExitError.setTag(ERROR_MESSAGE_TAG_KEY, EXIT_ERROR_MESSAGE);
-    otherTemporalTraceWithExitError.setResourceName("OtherResource");
     assertEquals(false, interceptor.isExitTrace(otherTemporalTraceWithExitError));
   }
 
