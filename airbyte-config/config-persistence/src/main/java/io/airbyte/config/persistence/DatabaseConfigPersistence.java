@@ -257,7 +257,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     } else if (configType == ConfigSchema.STANDARD_SYNC_OPERATION) {
       return (ConfigWithMetadata<T>) validateAndReturn(configId, listStandardSyncOperationWithMetadata(configIdOpt), configType);
     } else if (configType == ConfigSchema.STANDARD_SYNC) {
-      return (ConfigWithMetadata<T>) validateAndReturn(configId, listStandardSyncWithMetadata(configIdOpt), configType);
+      throw buildUseStandardSyncPersistenceException();
     } else if (configType == ConfigSchema.STANDARD_SYNC_STATE) {
       return (ConfigWithMetadata<T>) validateAndReturn(configId, listStandardSyncStateWithMetadata(configIdOpt), configType);
     } else if (configType == ConfigSchema.ACTOR_CATALOG) {
