@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
+    "airbyte-cdk~=0.2",
 ]
 
 TEST_REQUIREMENTS = ["pytest~=6.1", "requests-mock~=1.9.3", "source-acceptance-test"]

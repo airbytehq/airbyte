@@ -4,9 +4,9 @@
 
 package io.airbyte.container_orchestrator;
 
-import static io.airbyte.container_orchestrator.TraceConstants.JOB_ORCHESTRATOR_OPERATION_NAME;
-import static io.airbyte.container_orchestrator.TraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
-import static io.airbyte.container_orchestrator.TraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.JOB_ORCHESTRATOR_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
 import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;

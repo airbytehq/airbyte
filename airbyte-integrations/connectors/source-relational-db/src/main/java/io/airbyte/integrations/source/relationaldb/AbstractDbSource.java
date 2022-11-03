@@ -9,6 +9,7 @@ import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getError
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -21,7 +22,6 @@ import io.airbyte.config.StateWrapper;
 import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.db.AbstractDatabase;
 import io.airbyte.db.IncrementalUtils;
-import io.airbyte.db.exception.ConnectionErrorException;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
@@ -135,7 +135,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state)
-    throws Exception {
+      throws Exception {
     try {
       final StateManager stateManager =
           StateManagerFactory.createStateManager(getSupportedStateType(config), deserializeInitialState(state, config), catalog);
@@ -175,7 +175,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   private boolean isConfigError(final Exception exception) {
-    // For now, enhanced error details should only be shown for InvalidCursorException. In the future, enhanced error messages will exist for
+    // For now, enhanced error details should only be shown for InvalidCursorException. In the future,
+    // enhanced error messages will exist for
     // additional error types.
     return exception instanceof InvalidCursorException;
   }
