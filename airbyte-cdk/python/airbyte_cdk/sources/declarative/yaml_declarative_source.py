@@ -72,9 +72,10 @@ class YamlDeclarativeSource(DeclarativeSource):
 
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:
         """
-        Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username
-        and password) required to run this integration. For low-code connectors, this will first attempt to load the spec from the
-        manifest's spec block, otherwise it will load it from "spec.yaml" or "spec.json" in the project root.
+        Returns the connector specification (spec) as defined in the Airbyte Protocol. The spec is an object describing the possible
+        configurations (e.g: username and password) which can be configured when running this connector. For low-code connectors, this
+        will first attempt to load the spec from the manifest's spec block, otherwise it will load it from "spec.yaml" or "spec.json"
+        in the project root.
         """
 
         self.logger.debug(

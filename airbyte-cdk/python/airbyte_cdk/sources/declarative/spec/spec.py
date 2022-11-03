@@ -16,15 +16,12 @@ class Spec(JsonSchemaMixin):
 
     Attributes:
         documentation_url (str): The link the Airbyte documentation about this connector
-        connection_specification (str): information related to how a connector can be configured
+        connection_specification (Mapping[str, Any]): information related to how a connector can be configured
     """
 
     documentation_url: str
     connection_specification: Mapping[str, Any]
     options: InitVar[Mapping[str, Any]]
-
-    def __post_init__(self, options: Mapping[str, Any]):
-        self._options = options
 
     def generate_spec(self) -> ConnectorSpecification:
         """
