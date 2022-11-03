@@ -1,5 +1,8 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+  "search": {
+    "publishedAt": "2999-12-31T23:59:59Z"
+  },
+  "top_headlines": {
+    "publishedAt": "2999-12-31T23:59:59Z"
   }
 }

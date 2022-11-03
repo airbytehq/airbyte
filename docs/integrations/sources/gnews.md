@@ -16,7 +16,7 @@ Two output streams are available from this source:
 | Feature           | Supported? |
 |:------------------|:-----------|
 | Full Refresh Sync | Yes        |
-| Incremental Sync  | No         |
+| Incremental Sync  | Yes        |
 
 ### Performance considerations
 
