@@ -1,5 +1,7 @@
 <!--- this comment is for `report-connectors-dependency.yml` identification, do not remove -->
 
+## Affected Connector Report
+
 NOTE ⚠️ Changes in this PR affect the following connectors. Make sure to do the following as needed:
 - Run integration tests
 - Bump connector version
@@ -17,6 +19,8 @@ NOTE ⚠️ Changes in this PR affect the following connectors. Make sure to do 
 | --- | :---: | :---: | :---: |
 {source_rows}
 
+* See "Actionable Items" below for how to resolve warnings and errors.
+
 </details>
 
 <details {destination_open}>
@@ -30,6 +34,8 @@ NOTE ⚠️ Changes in this PR affect the following connectors. Make sure to do 
 | --- | :---: | :---: | :---: |
 {destination_rows}
 
+* See "Actionable Items" below for how to resolve warnings and errors.
+
 </details>
 
 {others}
@@ -38,7 +44,9 @@ NOTE ⚠️ Changes in this PR affect the following connectors. Make sure to do 
 
 <summary>
 
-### Notes
+### Actionable Items
+
+(click to expand)
 
 </summary>
 
