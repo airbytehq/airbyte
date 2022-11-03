@@ -1,20 +1,19 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.temporal.scheduling;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.temporal.scheduling.ConnectionNotificationWorkflow;
-import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.notification.NotificationClient;
-import io.airbyte.workers.temporal.scheduling.activities.NotifySchemaChangeActivity;
 import io.airbyte.workers.temporal.scheduling.activities.NotifySchemaChangeActivityImpl;
-import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity;
 import io.airbyte.workers.temporal.support.TemporalProxyHelper;
-import io.airbyte.workers.temporal.sync.SyncWorkflowImpl;
 import io.micronaut.context.BeanRegistration;
 import io.micronaut.inject.BeanIdentifier;
 import io.temporal.activity.ActivityOptions;
@@ -31,20 +30,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 @Slf4j
 
 public class ConnectionNotificationWorkflowTest {
+
   private TestWorkflowEnvironment testEnv;
   private Worker notificationsWorker;
   private WorkflowClient client;
-  private static final String NOTIFICATIONS_QUEUE = "NOTIFICATIONS";
+  private static final String NOTIFICATIONS_QUEUE = "NOTIFY";
   private ActivityOptions activityOptions;
   private TemporalProxyHelper temporalProxyHelper;
 
   private NotifySchemaChangeActivityImpl mNotifySchemaChangeActivity;
-
 
   @BeforeEach
   void setUp() throws IOException, InterruptedException {
@@ -82,7 +80,6 @@ public class ConnectionNotificationWorkflowTest {
     testEnv.close();
   }
 
-
   @Test
   void sendSchemaChangeNotificationNonBreakingChangeTest() throws IOException, InterruptedException {
     notificationsWorker.registerActivitiesImplementations(mNotifySchemaChangeActivity);
@@ -96,11 +93,11 @@ public class ConnectionNotificationWorkflowTest {
     final UUID connectionId = UUID.randomUUID();
     final boolean isBreaking = false;
 
-
     workflow.sendSchemaChangeNotification(connectionId, isBreaking);
 
     log.info("sent schema change notif");
 
     verify(mNotifySchemaChangeActivity, times(1)).notifySchemaChange(any(NotificationClient.class), connectionId, isBreaking);
   }
+
 }

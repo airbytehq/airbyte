@@ -10,7 +10,6 @@ import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.notification.NotificationClient;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
 import io.airbyte.workers.temporal.scheduling.activities.NotifySchemaChangeActivity;
-import io.airbyte.workers.temporal.sync.PersistStateActivity;
 import java.io.IOException;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;

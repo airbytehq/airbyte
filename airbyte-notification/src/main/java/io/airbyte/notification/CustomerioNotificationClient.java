@@ -122,7 +122,7 @@ public class CustomerioNotificationClient extends NotificationClient {
   }
 
   @Override
-  public boolean notifySchemaChange(final UUID connectionId, final boolean isBreaking){
+  public boolean notifySchemaChange(final UUID connectionId, final boolean isBreaking) {
     throw new NotImplementedException();
   }
 

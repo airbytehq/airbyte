@@ -170,6 +170,9 @@ airbyte:
       max-workers: ${MAX_SYNC_WORKERS:5}
       max-attempts: ${SYNC_JOB_MAX_ATTEMPTS:3}
       max-timeout: ${SYNC_JOB_MAX_TIMEOUT_DAYS:3}
+    notify:
+      enabled: ${SHOULD_RUN_NOTIFY_WORKFLOWS:true}
+      max-workers: ${MAX_NOTIFY_WORKERS:5}
   role: ${AIRBYTE_ROLE:}
   secret:
     persistence: ${SECRET_PERSISTENCE:TESTING_CONFIG_DB_TABLE}
