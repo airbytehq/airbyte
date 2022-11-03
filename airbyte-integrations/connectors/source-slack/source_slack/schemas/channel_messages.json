@@ -20,7 +20,7 @@
       "type": ["null", "string"]
     },
     "bot_profile": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "app_id": {
           "type": ["null", "string"]

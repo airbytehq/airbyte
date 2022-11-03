@@ -1,0 +1,71 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "emailAddress": {
+        "type": "string"
+      },
+      "created": {
+        "type": "string"
+      },
+      "active": {
+        "type": "boolean"
+      },
+      "emailAliases": {
+        "type": "array"
+      },
+      "firstName": {
+        "type": "string"
+      },
+      "lastName": {
+        "type": "string"
+      },
+      "title": {
+        "type": "null"
+      },
+      "phoneNumber": {
+        "type": "null"
+      },
+      "extension": {
+        "type": "null"
+      },
+      "personalMeetingUrls": {
+        "type": "array"
+      },
+      "settings": {
+        "type": "object",
+        "properties": {
+          "webConferencesRecorded": {
+            "type": "boolean"
+          },
+          "preventWebConferenceRecording": {
+            "type": "boolean"
+          },
+          "telephonyCallsImported": {
+            "type": "boolean"
+          },
+          "emailsImported": {
+            "type": "boolean"
+          },
+          "preventEmailImport": {
+            "type": "boolean"
+          },
+          "nonRecordedMeetingsImported": {
+            "type": "boolean"
+          }
+        }
+      },
+      "managerId": {
+        "type": "null"
+      },
+      "meetingConsentPageUrl": {
+        "type": "null"
+      },
+      "spokenLanguages": {
+        "type": "array"
+      }
+    }
+  }
