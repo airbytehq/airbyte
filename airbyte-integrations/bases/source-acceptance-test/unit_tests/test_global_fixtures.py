@@ -201,3 +201,37 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
             conftest.build_configured_catalog_from_custom_catalog.assert_called_once_with(configured_catalog_path, mock_discovered_catalog)
             conftest.build_configured_catalog_from_discovered_catalog_and_empty_streams.assert_not_called()
             assert configured_catalog == conftest.build_configured_catalog_from_custom_catalog.return_value
+
+
+DUMB_DISCOVERED_CATALOG = {
+    "stream_a": AirbyteStream(
+        name="stream_a",
+        json_schema={"a": {"type": "string"}},
+        supported_sync_modes=[SyncMode.full_refresh],
+    ),
+    "stream_b": AirbyteStream(
+        name="stream_b",
+        json_schema={"a": {"type": "string"}},
+        supported_sync_modes=[SyncMode.full_refresh],
+    ),
+}
+
+
+@pytest.mark.parametrize(
+    "discovered_catalog, empty_streams",
+    [
+        (DUMB_DISCOVERED_CATALOG, set()),
+        (DUMB_DISCOVERED_CATALOG, {EmptyStreamConfiguration(name="stream_b", bypass_reason="foobar")}),
+    ],
+)
+def test_build_configured_catalog_from_discovered_catalog_and_empty_streams(mocker, discovered_catalog, empty_streams):
+    mocker.patch.object(conftest, "logging")
+    configured_catalog = conftest.build_configured_catalog_from_discovered_catalog_and_empty_streams(discovered_catalog, empty_streams)
+    assert len(configured_catalog.streams) == len(DUMB_DISCOVERED_CATALOG.values()) - len(empty_streams)
+    if empty_streams:
+        conftest.logging.warning.assert_called_once()
+        configured_stream_names = [configured_stream.stream.name for configured_stream in configured_catalog.streams]
+        for empty_stream in empty_streams:
+            assert empty_stream.name not in configured_stream_names
+    else:
+        conftest.logging.info.assert_called_once()
