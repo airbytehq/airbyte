@@ -4,8 +4,8 @@
 
 package io.airbyte.api.server.repositories.clients;
 
+import static io.airbyte.api.server.repositories.impl.ConnectionsRepositoryRESTImpl.GATEWAY_AUTH_HEADER;
 import static io.micronaut.http.HttpHeaders.ACCEPT;
-import static io.micronaut.http.HttpHeaders.AUTHORIZATION;
 import static io.micronaut.http.HttpHeaders.USER_AGENT;
 
 import io.micronaut.http.HttpResponse;
@@ -27,7 +27,7 @@ public interface ConfigApiClient {
 
   @Post(value = "/api/v1/connections/sync",
         processes = MediaType.APPLICATION_JSON)
-  HttpResponse<String> sync(@Body SyncDto connectionId, @Header(name = AUTHORIZATION) String authorization);
+  HttpResponse<String> sync(@Body SyncDto connectionId, @Header(name = GATEWAY_AUTH_HEADER) String authorization);
 
   @Post(value = "/api/v1/connections/reset",
       processes = MediaType.APPLICATION_JSON)
