@@ -219,7 +219,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:1.0.16"
+- dockerImage: "airbyte/source-alloydb:1.0.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -1140,7 +1140,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.16"
+- dockerImage: "airbyte/source-amplitude:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amplitude"
     connectionSpecification:
@@ -2286,6 +2286,47 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-coinmarketcap:0.1.1"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/coinmarketcap"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Coinmarketcap Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "data_type"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API Key"
+          type: "string"
+          description: "Your API Key. See <a href=\"https://coinmarketcap.com/api/documentation/v1/#section/Authentication\"\
+            >here</a>. The token is case sensitive."
+          airbyte_secret: true
+        data_type:
+          title: "Data type"
+          type: "string"
+          enum:
+          - "latest"
+          - "historical"
+          description: "/latest: Latest market ticker quotes and averages for cryptocurrencies\
+            \ and exchanges. /historical: Intervals of historic market data like OHLCV\
+            \ data or data for use in charting libraries. See <a href=\"https://coinmarketcap.com/api/documentation/v1/#section/Endpoint-Overview\"\
+            >here</a>."
+        symbols:
+          title: "Symbol"
+          type: "array"
+          items:
+            type: "string"
+          description: "Cryptocurrency symbols. (only used for quotes stream)"
+          minItems: 1
+          examples:
+          - "AVAX"
+          - "BTC"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-commercetools:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/commercetools"
@@ -2441,6 +2482,68 @@
           type: "string"
           title: "Customer.io App API Key"
           airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-datadog:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/datadog"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Datadog Source Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "application_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API Key"
+          description: "Datadog API key"
+          type: "string"
+          airbyte_secret: true
+          order: 1
+        application_key:
+          title: "Application Key"
+          description: "Datadog application key"
+          type: "string"
+          airbyte_secret: true
+          order: 2
+        query:
+          title: "Query"
+          description: "The search query. This just applies to Incremental syncs.\
+            \ If empty, it'll collect all logs."
+          type: "string"
+          order: 3
+        max_records_per_request:
+          type: "integer"
+          title: "Max records per requests"
+          default: 5000
+          minimum: 1
+          maximum: 5000
+          description: "Maximum number of records to collect per request."
+          order: 4
+        start_date:
+          title: "Start date"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
+            \ data before this date will not be replicated. This just applies to Incremental\
+            \ syncs."
+          type: "string"
+          examples:
+          - "2022-10-01T00:00:00Z"
+          order: 5
+        end_date:
+          title: "End date"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          description: "UTC date and time in the format 2017-01-25T00:00:00Z. Data\
+            \ after this date will  not be replicated. An empty value will represent\
+            \ the current datetime for each  execution. This just applies to Incremental\
+            \ syncs."
+          examples:
+          - "2022-10-01T00:00:00Z"
+          type: "string"
+          order: 6
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -2794,7 +2897,7 @@
     supportsDBT: false
     supported_destination_sync_modes: []
     protocol_version: "0.2.1"
-- dockerImage: "airbyte/source-exchange-rates:1.2.6"
+- dockerImage: "airbyte/source-exchange-rates:1.2.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/exchangeratesapi"
     connectionSpecification:
@@ -2832,7 +2935,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.70"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.71"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -4188,7 +4291,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.30"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.31"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics"
     connectionSpecification:
@@ -5426,7 +5529,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-intercom:0.1.28"
+- dockerImage: "airbyte/source-intercom:0.1.29"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/intercom"
     connectionSpecification:
@@ -6538,6 +6641,42 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-mailjet-sms:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/mailjet-sms"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Mailjet Sms Spec"
+      type: "object"
+      required:
+      - "token"
+      additionalProperties: true
+      properties:
+        token:
+          title: "Access Token"
+          type: "string"
+          description: "Your access token. See <a href=\"https://dev.mailjet.com/sms/reference/overview/authentication\"\
+            >here</a>."
+          airbyte_secret: true
+        start_date:
+          title: "Start date"
+          type: "integer"
+          description: "Retrieve SMS messages created after the specified timestamp.\
+            \ Required format - Unix timestamp."
+          pattern: "^[0-9]*$"
+          examples:
+          - 1666261656
+        end_date:
+          title: "End date"
+          type: "integer"
+          description: "Retrieve SMS messages created before the specified timestamp.\
+            \ Required format - Unix timestamp."
+          pattern: "^[0-9]*$"
+          examples:
+          - 1666281656
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-mailerlite:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailerlite"
@@ -6641,7 +6780,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-metabase:0.1.0"
+- dockerImage: "airbyte/source-metabase:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/metabase"
     connectionSpecification:
@@ -6657,7 +6796,8 @@
           title: "Metabase Instance API URL"
           description: "URL to your metabase instance API"
           examples:
-          - "http://localhost:3000/api/"
+          - "https://localhost:3000/api/"
+          pattern: "^https://"
           order: 0
         username:
           type: "string"
@@ -7509,7 +7649,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.8"
+- dockerImage: "airbyte/source-mysql:1.0.10"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -8369,6 +8509,25 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+- dockerImage: "airbyte/source-omnisend:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/omnisend"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Omnisend Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API Key"
+          type: "string"
+          description: "API Key"
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-onesignal:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/onesignal"
@@ -9406,7 +9565,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.21"
+- dockerImage: "airbyte/source-postgres:1.0.22"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -9811,7 +9970,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-prestashop:0.1.0"
+- dockerImage: "airbyte/source-prestashop:0.2.0"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -9821,7 +9980,6 @@
       required:
       - "url"
       - "access_key"
-      additionalProperties: false
       properties:
         url:
           type: "string"
@@ -9865,6 +10023,18 @@
           pattern: "^[a-zA-Z0-9]+$"
           airbyte_secret: true
           order: 1
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-public-apis:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/public-apis"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Public Apis Spec"
+      type: "object"
+      required: []
+      properties: {}
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -10643,7 +10813,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.22"
+- dockerImage: "airbyte/source-salesforce:1.0.23"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -10846,7 +11016,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sendgrid:0.2.15"
+- dockerImage: "airbyte/source-sendgrid:0.2.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/sendgrid"
     connectionSpecification:
