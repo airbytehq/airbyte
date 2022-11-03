@@ -324,11 +324,11 @@ class SourceWeatherstack(AbstractSource):
         streams = [
             CurrentWeather(authenticator=auth, config=config),
             Forecast(authenticator=auth, config=config),
-            LocationLookup(authenticator=auth, config=config),
         ]
 
         # Historical stream is only supported by paid accounts
         if config["is_paid_account"] is not False:
+            streams.append(LocationLookup(authenticator=auth, config=config))
             streams.append(Historical(authenticator=auth, config=config))
 
         return streams
