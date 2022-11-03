@@ -113,7 +113,6 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[AirbyteMessage]:
-        # FIXME: safeguard this assignment!
         if hasattr(self.logger, "level"):
             self.retriever.logger.setLevel(self.logger.level)
         for message in self.retriever.read_records_as_message(sync_mode, cursor_field, stream_slice, stream_state):
