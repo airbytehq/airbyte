@@ -365,7 +365,7 @@ public class DefaultJobPersistence implements JobPersistence {
 
   }
 
-  private static void writeSyncStats(final OffsetDateTime now, final SyncStats syncStats, final Long attemptId, final DSLContext ctx, ) {
+  private static void writeSyncStats(final OffsetDateTime now, final SyncStats syncStats, final Long attemptId, final DSLContext ctx) {
     ctx.insertInto(SYNC_STATS)
         .set(SYNC_STATS.ID, UUID.randomUUID())
         .set(SYNC_STATS.UPDATED_AT, now)
