@@ -1,15 +1,21 @@
 import { Popout, PopoutProps } from "../Popout";
 import { Tooltip } from "../Tooltip";
-import { PillButton } from "./PillButton";
+import { PillButton, PillButtonVariant } from "./PillButton";
 
-type PillSelectProps = Pick<PopoutProps, "value" | "options" | "isMulti" | "onChange" | "className">;
+type PickedPopoutProps = Pick<PopoutProps, "value" | "options" | "isMulti" | "onChange" | "className">;
+
+interface PillSelectProps extends PickedPopoutProps {
+  variant?: PillButtonVariant;
+  disabled?: boolean;
+}
 
 export const PillSelect: React.FC<PillSelectProps> = ({ className, ...props }) => {
-  const { isMulti } = props;
+  const { isMulti, variant, disabled } = props;
 
   return (
     <Popout
       {...props}
+      isDisabled={disabled}
       targetComponent={({ onOpen, isOpen, value }) => {
         const label = value
           ? isMulti
@@ -21,6 +27,8 @@ export const PillSelect: React.FC<PillSelectProps> = ({ className, ...props }) =
           <Tooltip
             control={
               <PillButton
+                variant={variant}
+                disabled={disabled}
                 onClick={(event) => {
                   event.stopPropagation();
                   onOpen();
