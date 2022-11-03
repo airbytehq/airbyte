@@ -22,7 +22,7 @@ class SourceMicrosoftDataverse(AbstractSource):
         response_json = response.json()
         streams = []
         for entity in response_json["value"]:
-            schema = {"properties":{}}
+            schema = {"properties": {}}
             for attribute in entity["Attributes"]:
                 attribute_type = convert_dataverse_type(attribute["AttributeType"])
 
@@ -38,8 +38,7 @@ class SourceMicrosoftDataverse(AbstractSource):
                 stream.default_cursor_field = ["modifiedon"]
             else:
                 stream = AirbyteStream(name=entity["LogicalName"], json_schema=schema, supported_sync_modes=[SyncMode.full_refresh])
-                stream.source_defined_cursor = None
-                stream.default_cursor_field = None
+
             stream.source_defined_primary_key = [[entity["PrimaryIdAttribute"]]]
             streams.append(stream)
         return AirbyteCatalog(streams=streams)

@@ -69,8 +69,9 @@ def do_request(config: Mapping[str, Any], path: str):
 
 
 def convert_dataverse_type(dataverse_type: str) -> Optional[dict]:
-    if dataverse_type in list(DataverseType.__members__):
-        enum_type = DataverseType[dataverse_type].value
+    if dataverse_type in DataverseType.__members__:
+        enum_type = DataverseType[dataverse_type]
         if enum_type:
-            return enum_type.value
+            return enum_type.value if enum_type.value is None else enum_type.value.value
+
     return AirbyteType.String.value
