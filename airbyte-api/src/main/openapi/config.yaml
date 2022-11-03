@@ -49,8 +49,10 @@ tags:
     description: Destination related resources.
   - name: connection
     description: Connection between sources and destinations.
-  - name: oauth
-    description: OAuth related resources to delegate access from user.
+  - name: destination_oauth
+    description: Source OAuth related resources to delegate access from user.
+  - name: source_oauth
+    description: Source OAuth related resources to delegate access from user.
   - name: db_migration
     description: Database migration related resources.
   - name: web_backend
@@ -1762,7 +1764,7 @@ paths:
   /v1/source_oauths/oauth_params/create:
     post:
       tags:
-        - oauth
+        - source_oauth
       summary: >
         Sets instancewide variables to be used for the oauth flow when creating this source. When set, these variables will be injected
         into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with
@@ -1785,7 +1787,7 @@ paths:
   /v1/source_oauths/get_consent_url:
     post:
       tags:
-        - oauth
+        - source_oauth
       summary: Given a source connector definition ID, return the URL to the consent screen where to redirect the user to.
       operationId: getSourceOAuthConsent
       requestBody:
@@ -1808,7 +1810,7 @@ paths:
   /v1/source_oauths/complete_oauth:
     post:
       tags:
-        - oauth
+        - source_oauth
       summary: Given a source def ID generate an access/refresh token etc.
       operationId: completeSourceOAuth
       requestBody:
@@ -1831,7 +1833,7 @@ paths:
   /v1/destination_oauths/get_consent_url:
     post:
       tags:
-        - oauth
+        - destination_oauth
       summary: Given a destination connector definition ID, return the URL to the consent screen where to redirect the user to.
       operationId: getDestinationOAuthConsent
       requestBody:
@@ -1854,7 +1856,7 @@ paths:
   /v1/destination_oauths/complete_oauth:
     post:
       tags:
-        - oauth
+        - destination_oauth
       summary: Given a destination def ID generate an access/refresh token etc.
       operationId: completeDestinationOAuth
       requestBody:
@@ -1877,7 +1879,7 @@ paths:
   /v1/destination_oauths/oauth_params/create:
     post:
       tags:
-        - oauth
+        - destination_oauth
       summary: >
         Sets instancewide variables to be used for the oauth flow when creating this destination. When set, these variables will be injected
         into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with
@@ -2822,6 +2824,9 @@ components:
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
+        connectionId:
+          type: string
+          format: uuid
         disable_cache:
           type: boolean
     SourceUpdate:
@@ -2883,6 +2888,10 @@ components:
         catalogId:
           type: string
           format: uuid
+        catalogDiff:
+          $ref: "#/components/schemas/CatalogDiff"
+        breakingChange:
+          type: boolean
     SourceSearch:
       type: object
       properties:
@@ -3266,6 +3275,10 @@ components:
           format: uuid
         geography:
           $ref: "#/components/schemas/Geography"
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
     WebBackendConnectionCreate:
       type: object
       required:
@@ -3367,6 +3380,12 @@ components:
           format: uuid
         geography:
           $ref: "#/components/schemas/Geography"
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
+        breakingChange:
+          type: boolean
     WebBackendConnectionUpdate:
       type: object
       description: Used to apply a patch-style update to a connection, which means that null properties remain unchanged
@@ -3411,6 +3430,10 @@ components:
           format: uuid
         geography:
           $ref: "#/components/schemas/Geography"
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
     ConnectionRead:
       type: object
       required:
@@ -3463,6 +3486,10 @@ components:
           $ref: "#/components/schemas/Geography"
         breakingChange:
           type: boolean
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
     SchemaChange:
       enum:
         - no_change
@@ -4713,6 +4740,8 @@ components:
         - destination
         - isSyncing
         - schemaChange
+        - notifySchemaChanges
+        - nonBreakingChangesPreference
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -4771,6 +4800,15 @@ components:
           $ref: "#/components/schemas/Geography"
         schemaChange:
           $ref: "#/components/schemas/SchemaChange"
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
+    NonBreakingChangesPreference:
+      enum:
+        - ignore
+        - disable
+      type: string
     WebBackendConnectionReadList:
       type: object
       required:
