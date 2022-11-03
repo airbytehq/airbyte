@@ -10,10 +10,13 @@ import { ErrorOccurredView } from "views/common/ErrorOccurredView";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 
+import ServerUnavailableView from "./components/ServerUnavailableView";
+
 interface ApiErrorBoundaryState {
   errorId?: string;
   message?: string;
   didRetry?: boolean;
+  retryDelay?: number;
 }
 
 enum ErrorId {
@@ -32,11 +35,15 @@ interface ApiErrorBoundaryProps {
   onError?: (errorId?: string) => void;
 }
 
+const RETRY_DELAY = 2500;
+
 class ApiErrorBoundary extends React.Component<
   ApiErrorBoundaryHookProps & ApiErrorBoundaryProps,
   ApiErrorBoundaryState
 > {
-  state: ApiErrorBoundaryState = {};
+  state: ApiErrorBoundaryState = {
+    retryDelay: RETRY_DELAY,
+  };
 
   static getDerivedStateFromError(error: { message: string; status?: number; __type?: string }): ApiErrorBoundaryState {
     // Update state so the next render will show the fallback UI.
@@ -65,28 +72,25 @@ class ApiErrorBoundary extends React.Component<
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  componentDidCatch(): void {}
+  retry = () => {
+    this.setState((state) => ({
+      didRetry: true,
+      errorId: undefined,
+      retryDelay: Math.round((state?.retryDelay || RETRY_DELAY) * 1.2),
+    }));
+    this.props.onRetry?.();
+  };
 
   render(): React.ReactNode {
-    const { errorId, didRetry, message } = this.state;
-    const { onRetry, navigate, children } = this.props;
+    const { navigate, children } = this.props;
+    const { errorId, didRetry, message, retryDelay } = this.state;
 
     if (errorId === ErrorId.VersionMismatch) {
       return <ErrorOccurredView message={message} />;
     }
 
     if (errorId === ErrorId.ServerUnavailable && !didRetry) {
-      return (
-        <ErrorOccurredView
-          message={<FormattedMessage id="webapp.cannotReachServer" />}
-          ctaButtonText={<FormattedMessage id="errorView.retry" />}
-          onCtaButtonClick={() => {
-            this.setState({ didRetry: true, errorId: undefined });
-            onRetry?.();
-          }}
-        />
-      );
+      return <ServerUnavailableView retryDelay={retryDelay || RETRY_DELAY} onRetryClick={this.retry} />;
     }
 
     return !errorId ? (

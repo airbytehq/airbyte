@@ -34,6 +34,7 @@ module.exports = function (plop) {
   const genericSourceInputRoot = '../source-generic';
   const genericJdbcSourceInputRoot = '../source-java-jdbc';
   const httpApiInputRoot = '../source-python-http-api';
+  const lowCodeSourceInputRoot = '../source-configuration-based';
   const javaDestinationInput = '../destination-java';
   const pythonDestinationInputRoot = '../destination-python';
 
@@ -133,6 +134,36 @@ module.exports = function (plop) {
         path: `${httpApiOutputRoot}/.dockerignore`
       },
       {type: 'emitSuccess', outputPath: httpApiOutputRoot}
+    ]
+  });
+
+  plop.setGenerator('Configuration Based Source', {
+    description: 'Generate a Source that is described using a low code configuration file',
+    prompts: [{type: 'input', name: 'name', message: 'Source name e.g: "google-analytics"'}],
+        actions: [
+      {
+        abortOnFail: true,
+        type:'addMany',
+        destination: pythonSourceOutputRoot,
+        base: lowCodeSourceInputRoot,
+        templateFiles: `${lowCodeSourceInputRoot}/**/**`,
+      },
+      // common acceptance tests
+      {
+        abortOnFail: true,
+        type:'addMany',
+        destination: pythonSourceOutputRoot,
+        base: sourceAcceptanceTestFilesInputRoot,
+        templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
+      },
+      // plop doesn't add dotfiles by default so we manually add them
+      {
+        type:'add',
+        abortOnFail: true,
+        templateFile: `${lowCodeSourceInputRoot}/.dockerignore.hbs`,
+        path: `${pythonSourceOutputRoot}/.dockerignore`
+      },
+      {type: 'emitSuccess', outputPath: pythonSourceOutputRoot}
     ]
   });
 

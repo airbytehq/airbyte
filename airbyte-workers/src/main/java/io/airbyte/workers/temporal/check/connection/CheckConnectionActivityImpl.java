@@ -7,8 +7,10 @@ package io.airbyte.workers.temporal.check.connection;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
@@ -54,7 +56,8 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     this.airbyteVersion = airbyteVersion;
   }
 
-  public StandardCheckConnectionOutput run(final CheckConnectionInput args) {
+  @Override
+  public ConnectorJobOutput runWithJobOutput(final CheckConnectionInput args) {
     final JsonNode fullConfig = secretsHydrator.hydrate(args.getConnectionConfiguration().getConnectionConfiguration());
 
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
@@ -62,7 +65,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
 
     final ActivityExecutionContext context = Activity.getExecutionContext();
 
-    final TemporalAttemptExecution<StandardCheckConnectionInput, StandardCheckConnectionOutput> temporalAttemptExecution =
+    final TemporalAttemptExecution<StandardCheckConnectionInput, ConnectorJobOutput> temporalAttemptExecution =
         new TemporalAttemptExecution<>(
             workspaceRoot, workerEnvironment, logConfigs,
             args.getJobRunConfig(),
@@ -76,8 +79,18 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     return temporalAttemptExecution.get();
   }
 
-  private CheckedSupplier<Worker<StandardCheckConnectionInput, StandardCheckConnectionOutput>, Exception> getWorkerFactory(
-                                                                                                                           final IntegrationLauncherConfig launcherConfig) {
+  @Override
+  public StandardCheckConnectionOutput run(final CheckConnectionInput args) {
+    final ConnectorJobOutput output = runWithJobOutput(args);
+    if (output.getFailureReason() != null) {
+      return new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage("Error checking connection");
+    }
+
+    return output.getCheckConnection();
+  }
+
+  private CheckedSupplier<Worker<StandardCheckConnectionInput, ConnectorJobOutput>, Exception> getWorkerFactory(
+                                                                                                                final IntegrationLauncherConfig launcherConfig) {
     return () -> {
       final IntegrationLauncher integrationLauncher = new AirbyteIntegrationLauncher(
           launcherConfig.getJobId(),

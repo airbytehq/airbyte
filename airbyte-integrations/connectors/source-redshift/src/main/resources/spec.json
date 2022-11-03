@@ -5,7 +5,6 @@
     "title": "Redshift Source Spec",
     "type": "object",
     "required": ["host", "port", "database", "username", "password"],
-    "additionalProperties": false,
     "properties": {
       "host": {
         "title": "Host",

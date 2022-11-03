@@ -1,32 +1,27 @@
 import React from "react";
-import styled from "styled-components";
 
 import DeleteBlock from "components/DeleteBlock";
 
 import { useDeleteConnection } from "hooks/services/useConnectionHook";
 
+import { WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
+import styles from "./SettingsView.module.scss";
 import { StateBlock } from "./StateBlock";
 
-interface IProps {
-  connectionId: string;
+interface SettingsViewProps {
+  connection: WebBackendConnectionRead;
 }
 
-const Content = styled.div`
-  max-width: 647px;
-  margin: 0 auto;
-  padding-bottom: 10px;
-`;
-
-const SettingsView: React.FC<IProps> = ({ connectionId }) => {
+const SettingsView: React.FC<SettingsViewProps> = ({ connection }) => {
   const { mutateAsync: deleteConnection } = useDeleteConnection();
 
-  const onDelete = () => deleteConnection(connectionId);
+  const onDelete = () => deleteConnection(connection);
 
   return (
-    <Content>
-      <StateBlock connectionId={connectionId} />
+    <div className={styles.container}>
+      <StateBlock connectionId={connection.connectionId} />
       <DeleteBlock type="connection" onDelete={onDelete} />
-    </Content>
+    </div>
   );
 };
 

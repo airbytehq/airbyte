@@ -31,6 +31,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   public static final String CHECK_JOB = "check";
   public static final String DISCOVER_JOB = "discover";
 
+  private static final String CONFIG = "--config";
+
   /**
    * A sync job can actually be broken down into the following steps. Try to be as precise as possible
    * with naming/labels to help operations.
@@ -95,7 +97,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         getWorkerMetadata(),
         Collections.emptyMap(),
         "check",
-        "--config", configFilename);
+        CONFIG, configFilename);
   }
 
   @Override
@@ -114,7 +116,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         getWorkerMetadata(),
         Collections.emptyMap(),
         "discover",
-        "--config", configFilename);
+        CONFIG, configFilename);
   }
 
   @Override
@@ -128,7 +130,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
       throws WorkerException {
     final List<String> arguments = Lists.newArrayList(
         "read",
-        "--config", configFilename,
+        CONFIG, configFilename,
         "--catalog", catalogFilename);
 
     final Map<String, String> files = new HashMap<>();
@@ -184,7 +186,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         getWorkerMetadata(),
         Collections.emptyMap(),
         "write",
-        "--config", configFilename,
+        CONFIG, configFilename,
         "--catalog", catalogFilename);
   }
 

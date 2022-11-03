@@ -4,6 +4,7 @@
 
 import copy
 from abc import ABC, abstractmethod
+from ntpath import join
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
@@ -88,16 +89,32 @@ class ChanneledStream(SlackStream, ABC):
 class Channels(ChanneledStream):
     data_field = "channels"
 
+
+    def __init__(self, only_channels_bot_is_in: bool = True, **kwargs):
+        # If only_channels_bot_is_in = true then we only return the channels that the bot is in. It's a different API than getting all the public channels
+        self.only_channels_bot_is_in = only_channels_bot_is_in
+        super().__init__(**kwargs)
+
     @property
     def use_cache(self) -> bool:
         return True
 
     def path(self, **kwargs) -> str:
-        return "conversations.list"
+        if self.only_channels_bot_is_in:
+            return "users.conversations"
+        else:
+            return "conversations.list"
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
         params["types"] = "public_channel"
+        
+        if self.only_channels_bot_is_in:
+            # We want to fetch private and public channels
+            params["types"] = "private_channel,public_channel"
+        else:
+            params["types"] = "public_channel"
+
         return params
 
     def parse_response(
@@ -109,7 +126,7 @@ class Channels(ChanneledStream):
     ) -> Iterable[MutableMapping]:
         json_response = response.json()
         channels = json_response.get(self.data_field, [])
-        if self.channel_filter:
+        if self.channel_filter and not self.only_channels_bot_is_in:
             channels = [channel for channel in channels if channel["name"] in self.channel_filter]
         yield from channels
 
@@ -132,7 +149,7 @@ class ChannelMembers(ChanneledStream):
             yield {"member_id": member_id, "channel_id": stream_slice["channel_id"]}
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        channels_stream = Channels(authenticator=self._session.auth, channel_filter=self.channel_filter)
+        channels_stream = Channels(authenticator=self._session.auth)
         for channel_record in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"channel_id": channel_record["id"]}
 
@@ -237,7 +254,7 @@ class Threads(IncrementalMessageStream):
         """
 
         stream_state = stream_state or {}
-        channels_stream = Channels(authenticator=self._session.auth, channel_filter=self.channel_filter)
+        channels_stream = Channels(authenticator=self._session.auth)
 
         if self.cursor_field in stream_state:
             # Since new messages can be posted to threads continuously after the parent message has been posted, we get messages from the latest date
@@ -282,6 +299,11 @@ class JoinChannelsStream(HttpStream):
     http_method = "POST"
     primary_key = "id"
 
+    def __init__(self, join_all_channels: bool = False, channel_filter: List[str] = [], **kwargs):
+        self.join_all_channels = join_all_channels
+        self.channel_filter = channel_filter
+        super().__init__(**kwargs)
+
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         return [{"message": f"Successfully joined channel: {stream_slice['channel_name']}"}]
 
@@ -292,7 +314,14 @@ class JoinChannelsStream(HttpStream):
         return "conversations.join"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        channels_stream = Channels(authenticator=self._session.auth)
+        if self.join_all_channels:
+            channels_stream = Channels(authenticator=self._session.auth,only_channels_bot_is_in=False)
+        else:
+            if len(self.channel_filter) > 0:
+                channels_stream = Channels(authenticator=self._session.auth,only_channels_bot_is_in=False, channel_filter = self.channel_filter)
+            else:
+                return []
+
         for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"channel": channel["id"], "channel_name": channel["name"]}
 
@@ -338,31 +367,31 @@ class SourceSlack(AbstractSource):
         authenticator = self._get_authenticator(config)
         default_start_date = pendulum.parse(config["start_date"])
         threads_lookback_window = pendulum.Duration(days=config["lookback_window"])
-        channel_filter = config["channel_filter"]
 
-        channels = Channels(authenticator=authenticator, channel_filter=channel_filter)
+        # We don't need the channel_filter when we are using Channels Bot Is In
+        channels = Channels(authenticator=authenticator,only_channels_bot_is_in=True)
         streams = [
             channels,
-            ChannelMembers(authenticator=authenticator, channel_filter=channel_filter),
+            ChannelMembers(authenticator=authenticator),
             ChannelMessages(
-                parent=channels, authenticator=authenticator, default_start_date=default_start_date, channel_filter=channel_filter
+                parent=channels, authenticator=authenticator, default_start_date=default_start_date
             ),
             Threads(
                 authenticator=authenticator,
                 default_start_date=default_start_date,
                 lookback_window=threads_lookback_window,
-                channel_filter=channel_filter,
             ),
             Users(authenticator=authenticator),
         ]
 
-        # To sync data from channels, the bot backed by this token needs to join all those channels. This operation is idempotent.
-        if config["join_channels"]:
-            logger = AirbyteLogger()
-            logger.info("joining Slack channels")
-            join_channels_stream = JoinChannelsStream(authenticator=authenticator)
-            for stream_slice in join_channels_stream.stream_slices():
-                for message in join_channels_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-                    logger.info(message["message"])
+        # if config["join_channels"] == True - we join all the channels
+        # else - we join only the filtered channels
+        channel_filter = config["channel_filter"]
+        logger = AirbyteLogger()
+        logger.info("joining Slack channels")
+        join_channels_stream = JoinChannelsStream(authenticator=authenticator,join_all_channels=config["join_channels"],channel_filter = channel_filter)
+        for stream_slice in join_channels_stream.stream_slices():
+            for message in join_channels_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                logger.info(message["message"])
 
         return streams

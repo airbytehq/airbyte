@@ -1,0 +1,7 @@
+.content {
+  margin: 0 32px 0 27px;
+
+  > table > tbody > tr > td:first-of-type {
+    padding-left: 32px !important;
+  }
+}

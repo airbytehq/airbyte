@@ -1,5 +1,5 @@
 import { Field, FieldProps, Formik } from "formik";
-import React from "react";
+import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
@@ -7,11 +7,13 @@ import * as yup from "yup";
 import { LabeledInput, Link, LoadingButton } from "components";
 
 import { useConfig } from "config";
+import { useExperiment } from "hooks/services/Experiment";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
 import CheckBoxControl from "../../components/CheckBoxControl";
 import { BottomBlock, FieldItem, Form, RowFieldItem } from "../../components/FormComponents";
+import styles from "./SignupForm.module.scss";
 
 interface FormValues {
   name: string;
@@ -21,14 +23,6 @@ interface FormValues {
   news: boolean;
   security: boolean;
 }
-
-const SignupPageValidationSchema = yup.object().shape({
-  email: yup.string().email("form.email.error").required("form.empty.error"),
-  password: yup.string().min(12, "signup.password.minLength").required("form.empty.error"),
-  name: yup.string().required("form.empty.error"),
-  companyName: yup.string().required("form.empty.error"),
-  security: yup.boolean().oneOf([true], "form.empty.error"),
-});
 
 const MarginBlock = styled.div`
   margin-bottom: 15px;
@@ -173,8 +167,48 @@ export const SecurityField: React.FC = () => {
   );
 };
 
+interface SignupButtonProps {
+  isLoading: boolean;
+  disabled: boolean;
+  buttonMessageId?: string;
+}
+
+export const SignupButton: React.FC<SignupButtonProps> = ({
+  isLoading,
+  disabled,
+  buttonMessageId = "login.signup.submitButton",
+}) => (
+  <LoadingButton className={styles.signUpButton} type="submit" isLoading={isLoading} disabled={disabled}>
+    <FormattedMessage id={buttonMessageId} />
+  </LoadingButton>
+);
+
+export const SignupFormStatusMessage: React.FC = ({ children }) => (
+  <div className={styles.statusMessage}>{children}</div>
+);
+
 export const SignupForm: React.FC = () => {
   const { signUp } = useAuthService();
+
+  const showName = !useExperiment("authPage.signup.hideName", false);
+  const showCompanyName = !useExperiment("authPage.signup.hideCompanyName", false);
+
+  const validationSchema = useMemo(() => {
+    const shape = {
+      email: yup.string().email("form.email.error").required("form.empty.error"),
+      password: yup.string().min(12, "signup.password.minLength").required("form.empty.error"),
+      name: yup.string(),
+      companyName: yup.string(),
+      security: yup.boolean().oneOf([true], "form.empty.error"),
+    };
+    if (showName) {
+      shape.name = shape.name.required("form.empty.error");
+    }
+    if (showCompanyName) {
+      shape.companyName = shape.companyName.required("form.empty.error");
+    }
+    return yup.object().shape(shape);
+  }, [showName, showCompanyName]);
 
   return (
     <Formik<FormValues>
@@ -186,7 +220,7 @@ export const SignupForm: React.FC = () => {
         news: true,
         security: false,
       }}
-      validationSchema={SignupPageValidationSchema}
+      validationSchema={validationSchema}
       onSubmit={async (values, { setFieldError, setStatus }) =>
         signUp(values).catch((err) => {
           if (err instanceof FieldError) {
@@ -199,12 +233,14 @@ export const SignupForm: React.FC = () => {
       validateOnBlur
       validateOnChange
     >
-      {({ isValid, isSubmitting, values }) => (
+      {({ isValid, isSubmitting, values, status }) => (
         <Form>
-          <RowFieldItem>
-            <NameField />
-            <CompanyNameField />
-          </RowFieldItem>
+          {(showName || showCompanyName) && (
+            <RowFieldItem>
+              {showName && <NameField />}
+              {showCompanyName && <CompanyNameField />}
+            </RowFieldItem>
+          )}
 
           <FieldItem>
             <EmailField />
@@ -217,12 +253,8 @@ export const SignupForm: React.FC = () => {
             <SecurityField />
           </FieldItem>
           <BottomBlock>
-            <>
-              <div />
-              <LoadingButton type="submit" isLoading={isSubmitting} disabled={!isValid || !values.security}>
-                <FormattedMessage id="login.signup" />
-              </LoadingButton>
-            </>
+            <SignupButton isLoading={isSubmitting} disabled={!isValid || !values.security} />
+            {status && <SignupFormStatusMessage>{status}</SignupFormStatusMessage>}
           </BottomBlock>
         </Form>
       )}

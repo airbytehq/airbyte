@@ -2,18 +2,20 @@
 
 .page {
   overflow-y: hidden;
+  width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.headerError {
-  padding-top: 25px;
+.contentContainer {
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .content {
   overflow-y: auto;
-  padding-top: 17px;
   height: 100%;
-  padding-bottom: variables.$spacing-page-bottom;
+  padding: variables.$spacing-lg variables.$spacing-xl variables.$spacing-page-bottom variables.$spacing-xl;
+  min-width: variables.$main-page-content-min-width;
 }

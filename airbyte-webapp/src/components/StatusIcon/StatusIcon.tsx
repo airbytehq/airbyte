@@ -1,4 +1,4 @@
-import { faBan, faCheck, faExclamationTriangle, faTimes, IconDefinition } from "@fortawesome/free-solid-svg-icons";
+import { faBan, faCheck, faExclamationTriangle, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import styled from "styled-components";
@@ -8,7 +8,7 @@ import { MoonIcon } from "components/icons/MoonIcon";
 import PauseIcon from "../icons/PauseIcon";
 import CircleLoader from "./CircleLoader";
 
-export type StatusIconStatus = "sleep" | "inactive" | "success" | "warning" | "loading";
+export type StatusIconStatus = "sleep" | "inactive" | "success" | "warning" | "loading" | "error";
 
 interface StatusIconProps {
   className?: string;
@@ -20,20 +20,22 @@ interface StatusIconProps {
 
 const getBadgeWidth = (props: StatusIconProps) => (props.big ? (props.value ? 57 : 40) : props.value ? 37 : 20);
 
-const _iconByStatus: Partial<Record<StatusIconStatus, IconDefinition | undefined>> = {
+const _iconByStatus = {
   sleep: faBan,
   success: faCheck,
   warning: faExclamationTriangle,
-};
+  error: faTimes,
+} as const;
 
-const _themeByStatus: Partial<Record<StatusIconStatus, string>> = {
+const _themeByStatus = {
   sleep: "lightTextColor",
   inactive: "lightTextColor",
   success: "successColor",
   warning: "warningColor",
-};
+  error: "dangerColor",
+} as const;
 
-const Container = styled.div<StatusIconProps>`
+const Container = styled.div<Pick<StatusIconProps, "big" | "value">>`
   width: ${(props) => getBadgeWidth(props)}px;
   height: ${({ big }) => (big ? 40 : 20)}px;
   margin-right: 10px;
@@ -44,8 +46,8 @@ const Container = styled.div<StatusIconProps>`
   vertical-align: middle;
 `;
 
-const Badge = styled(Container)<StatusIconProps>`
-  background: ${(props) => props.theme[(props.status && _themeByStatus[props.status]) || "dangerColor"]};
+const Badge = styled(Container)<{ status: Exclude<StatusIconStatus, "loading"> }>`
+  background: ${({ theme, status }) => theme[_themeByStatus[status]]};
   border-radius: ${({ value }) => (value ? "15px" : "50%")};
   color: ${({ theme }) => theme.whiteColor};
   padding-top: ${({ status }) => (status === "warning" || status === "inactive" ? 3 : 4)}px;
@@ -66,7 +68,7 @@ const Value = styled.span`
   padding-left: 3px;
 `;
 
-const StatusIcon: React.FC<StatusIconProps> = ({ title, status, ...props }) => {
+const StatusIcon: React.FC<StatusIconProps> = ({ title, status = "error", ...props }) => {
   const valueElement = props.value ? <Value>{props.value}</Value> : null;
 
   if (status === "loading") {
@@ -85,7 +87,7 @@ const StatusIcon: React.FC<StatusIconProps> = ({ title, status, ...props }) => {
       ) : status === "sleep" ? (
         <MoonIcon title={title} />
       ) : (
-        <FontAwesomeIcon icon={(status && _iconByStatus[status]) || faTimes} title={title} />
+        <FontAwesomeIcon icon={_iconByStatus[status]} title={title} />
       )}
       {valueElement}
     </Badge>

@@ -12,17 +12,6 @@
       }
     },
     {
-      "name": "big_integer_test",
-      "json_schema": {
-        "properties": {
-          "data": {
-            "type": "number",
-            "airbyte_type": "big_integer"
-          }
-        }
-      }
-    },
-    {
       "name": "float_test",
       "json_schema": {
         "properties": {

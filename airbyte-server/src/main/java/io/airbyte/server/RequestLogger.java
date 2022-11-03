@@ -66,7 +66,7 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
 
   @Override
   public void filter(final ContainerRequestContext requestContext) throws IOException {
-    if (requestContext.getMethod().equals("POST")) {
+    if ("POST".equals(requestContext.getMethod())) {
       // hack to refill the entity stream so it doesn't interfere with other operations
       final ByteArrayOutputStream baos = new ByteArrayOutputStream();
       IOUtils.copy(requestContext.getEntityStream(), baos);

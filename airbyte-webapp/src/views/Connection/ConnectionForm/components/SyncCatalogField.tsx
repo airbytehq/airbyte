@@ -4,7 +4,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { CheckBox } from "components";
+import { CheckBox, H5 } from "components";
 import { Cell, Header } from "components/SimpleTableComponents";
 
 import { useConfig } from "config";
@@ -209,28 +209,34 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
 
   return (
     <BatchEditProvider nodes={streams} update={onChangeSchema}>
-      <HeaderBlock>
-        {mode !== "readonly" ? (
-          <>
-            <FormattedMessage id="form.dataSync" />
-            {additionalControl}
-          </>
-        ) : (
-          <FormattedMessage id="form.dataSync.readonly" />
-        )}
-      </HeaderBlock>
-      {mode !== "readonly" && <Search onSearch={setSearchString} />}
-      <CatalogHeader mode={mode} />
-      <CatalogSubheader mode={mode} />
-      <BulkHeader destinationSupportedSyncModes={destinationSupportedSyncModes} />
-      <TreeViewContainer mode={mode}>
-        <CatalogTree
-          streams={filteredStreams}
-          onChangeStream={onChangeStream}
-          destinationSupportedSyncModes={destinationSupportedSyncModes}
-          mode={mode}
-        />
-      </TreeViewContainer>
+      <div>
+        <HeaderBlock>
+          {mode !== "readonly" ? (
+            <>
+              <H5 bold>
+                <FormattedMessage id="form.dataSync" />
+              </H5>
+              {additionalControl}
+            </>
+          ) : (
+            <H5 bold>
+              <FormattedMessage id="form.dataSync.readonly" />
+            </H5>
+          )}
+        </HeaderBlock>
+        {mode !== "readonly" && <Search onSearch={setSearchString} />}
+        <CatalogHeader mode={mode} />
+        <CatalogSubheader mode={mode} />
+        <BulkHeader destinationSupportedSyncModes={destinationSupportedSyncModes} />
+        <TreeViewContainer mode={mode}>
+          <CatalogTree
+            streams={filteredStreams}
+            onChangeStream={onChangeStream}
+            destinationSupportedSyncModes={destinationSupportedSyncModes}
+            mode={mode}
+          />
+        </TreeViewContainer>
+      </div>
     </BatchEditProvider>
   );
 };

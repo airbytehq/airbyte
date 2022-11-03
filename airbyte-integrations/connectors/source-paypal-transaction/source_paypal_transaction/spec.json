@@ -4,19 +4,66 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Paypal Transaction Search",
     "type": "object",
-    "required": ["client_id", "secret", "start_date", "is_sandbox"],
+    "required": ["start_date", "is_sandbox"],
     "additionalProperties": true,
     "properties": {
-      "client_id": {
-        "title": "Client ID",
-        "type": "string",
-        "description": "The Client ID of your Paypal developer application."
-      },
-      "secret": {
-        "title": "Client Secret",
-        "type": "string",
-        "description": "The Client Secret of your Paypal developer application.",
-        "airbyte_secret": true
+      "credentials": {
+        "title": "Authenticate using",
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "OAuth2.0",
+            "required": ["auth_type", "refresh_token"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "oauth2.0"
+              },
+              "client_id": {
+                "type": "string",
+                "title": "Client ID",
+                "description": "The Client ID of your Paypal developer application.",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "type": "string",
+                "title": "Client secret",
+                "description": "The Client Secret of your Paypal developer application.",
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "type": "string",
+                "title": "Refresh token",
+                "description": "The key to refresh the expired access token.",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "title": "Private OAuth Creds",
+            "type": "object",
+            "required": ["auth_type", "client_id", "client_secret"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "private_oauth"
+              },
+              "client_id": {
+                "type": "string",
+                "title": "Client ID",
+                "description": "The Client ID of your Paypal developer application.",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "type": "string",
+                "title": "Client secret",
+                "description": "The Client Secret of your Paypal developer application.",
+                "airbyte_secret": true
+              }
+            }
+          }
+        ]
       },
       "start_date": {
         "type": "string",
@@ -31,6 +78,14 @@
         "type": "boolean",
         "default": false
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["credentials", "0"],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["refresh_token"]]
     }
   }
 }

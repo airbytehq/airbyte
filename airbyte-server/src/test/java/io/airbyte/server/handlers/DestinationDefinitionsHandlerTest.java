@@ -411,7 +411,6 @@ class DestinationDefinitionsHandlerTest {
         .getDestinationDefinition(
             new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationDefinition.getDestinationDefinitionId()));
     final String currentTag = currentDestination.getDockerImageTag();
-    final String dockerRepository = currentDestination.getDockerRepository();
     final String newDockerImageTag = "averydifferenttag";
     assertNotEquals(newDockerImageTag, currentTag);
 

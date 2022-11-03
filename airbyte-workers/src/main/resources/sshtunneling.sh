@@ -23,6 +23,7 @@ function openssh() {
   tunnel_method=$(cat $1 | jq -r '.tunnel_map.tunnel_method' | tr '[:lower:]' '[:upper:]')
   tunnel_username=$(cat $1 | jq -r '.tunnel_map.tunnel_user')
   tunnel_host=$(cat $1 | jq -r '.tunnel_map.tunnel_host')
+  tunnel_port=$(cat $1 | jq -r '.tunnel_map.tunnel_port')
   tunnel_local_port=$(cat $1 | jq -r '.local_port')
   # set a path for a control socket, allowing us to close this specific ssh connection when desired
   tmpcontrolsocket="/tmp/sshsocket${tunnel_db_remote_port}-${RANDOM}"
@@ -33,8 +34,8 @@ function openssh() {
     tmpkeyfile=$(mktemp /tmp/xyzfile.XXXXXXXXXXX) || return 1
     cat $1 | jq -r '.tunnel_map.ssh_key | gsub("\\\\n"; "\n")' > $tmpkeyfile
     # -f=background  -N=no remote command  -M=master mode  StrictHostKeyChecking=no auto-adds host
-    echo "Running: ssh -f -N -M -o StrictHostKeyChecking=no -S {control socket} -i {key file} -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} ${tunnel_host}"
-    ssh -f -N -M -o StrictHostKeyChecking=no -S $tmpcontrolsocket -i $tmpkeyfile -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} ${tunnel_host} &&
+        echo "Running: ssh -f -N -M -o StrictHostKeyChecking=no -S {control socket} -i {key file} -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} -p ${tunnel_port} ${tunnel_host}"
+        ssh -f -N -M -o StrictHostKeyChecking=no -S $tmpcontrolsocket -i $tmpkeyfile -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} -p ${tunnel_port} ${tunnel_host} &&
     sshopen="yes" &&
     echo "ssh tunnel opened"
     rm -f $tmpkeyfile
@@ -49,8 +50,8 @@ function openssh() {
     fi
     # put ssh password in env var for use in sshpass. Better than directly passing with -p
     export SSHPASS=$(cat $1 | jq -r '.tunnel_map.tunnel_user_password')
-    echo "Running: sshpass -e ssh -f -N -M -o StrictHostKeyChecking=no -S {control socket} -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} ${tunnel_host}"
-    sshpass -e ssh -f -N -M -o StrictHostKeyChecking=no -S $tmpcontrolsocket -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} ${tunnel_host} &&
+    echo "Running: sshpass -e ssh -f -N -M -o StrictHostKeyChecking=no -S {control socket} -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} -p ${tunnel_port} ${tunnel_host}"
+    sshpass -e ssh -f -N -M -o StrictHostKeyChecking=no -S $tmpcontrolsocket -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} -p ${tunnel_port} ${tunnel_host} &&
     sshopen="yes" &&
     echo "ssh tunnel opened"
   fi
@@ -61,7 +62,7 @@ function openssh() {
 function closessh() {
   # $sshopen $tmpcontrolsocket comes from openssh() function
   if [ ! -z "$sshopen" ] ; then
-    ssh -S $tmpcontrolsocket -O exit ${tunnel_host} &&
+    ssh -S $tmpcontrolsocket -O exit -p ${tunnel_port} ${tunnel_host} &&
     echo "closed ssh tunnel"
     trap 'rm -f "$tmpcontrolsocket"' EXIT
   fi

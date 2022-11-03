@@ -16,7 +16,8 @@ projectDir=(
 )
 
 # Set default values to required vars. If set in env, values will be taken from there.
-JDK_VERSION=${JDK_VERSION:-17.0.1}
+# Primarily for testing.
+JDK_VERSION=${JDK_VERSION:-19-slim-bullseye}
 ALPINE_IMAGE=${ALPINE_IMAGE:-alpine:3.14}
 POSTGRES_IMAGE=${POSTGRES_IMAGE:-postgres:13-alpine}
 

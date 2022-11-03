@@ -16,7 +16,7 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-cdk~=0.1"],
+    install_requires=["airbyte-cdk~=0.1.74"],
     package_data={"": ["*.json", "schemas/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,

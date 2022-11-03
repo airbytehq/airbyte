@@ -210,5 +210,7 @@ class TestIncremental(BaseTest):
         records = filter_output(output, type_=Type.RECORD)
         states = filter_output(output, type_=Type.STATE)
 
-        assert not records, "The sync should produce no records when run with the state with abnormally large values"
+        assert (
+            not records
+        ), f"The sync should produce no records when run with the state with abnormally large values {records[0].record.stream}"
         assert states, "The sync should produce at least one STATE message"

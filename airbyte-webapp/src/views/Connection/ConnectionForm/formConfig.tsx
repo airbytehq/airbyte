@@ -234,7 +234,7 @@ const useInitialValues = (
     const initialValues: FormikConnectionFormValues = {
       name: connection.name ?? `${connection.source.name} <> ${connection.destination.name}`,
       syncCatalog: initialSchema,
-      schedule: connection.connectionId || connection.schedule ? connection.schedule ?? null : DEFAULT_SCHEDULE,
+      schedule: connection.connectionId ? connection.schedule ?? null : DEFAULT_SCHEDULE,
       prefix: connection.prefix || "",
       namespaceDefinition: connection.namespaceDefinition || NamespaceDefinitionType.source,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,

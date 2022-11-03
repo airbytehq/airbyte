@@ -71,7 +71,7 @@ public class SentryExceptionHelper {
         lastMatchIdx = matcher.end();
       }
 
-      if (stackFrames.size() > 0) {
+      if (!stackFrames.isEmpty()) {
         stackTrace.setFrames(stackFrames);
 
         final SentryException sentryException = new SentryException();
@@ -93,7 +93,7 @@ public class SentryExceptionHelper {
       }
     }
 
-    if (sentryExceptions.size() == 0)
+    if (sentryExceptions.isEmpty())
       return Optional.empty();
 
     return Optional.of(sentryExceptions);
@@ -138,7 +138,7 @@ public class SentryExceptionHelper {
         stackFrames.add(stackFrame);
       }
 
-      if (stackFrames.size() > 0) {
+      if (!stackFrames.isEmpty()) {
         Collections.reverse(stackFrames);
         stackTrace.setFrames(stackFrames);
 
@@ -160,7 +160,7 @@ public class SentryExceptionHelper {
       }
     }
 
-    if (sentryExceptions.size() == 0)
+    if (sentryExceptions.isEmpty())
       return Optional.empty();
 
     return Optional.of(sentryExceptions);

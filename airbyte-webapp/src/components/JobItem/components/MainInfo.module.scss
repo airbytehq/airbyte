@@ -1,0 +1,83 @@
+@use "../../../scss/colors";
+@use "../../../scss/variables";
+
+.mainView {
+  cursor: pointer;
+  min-height: 75px;
+
+  .titleCell {
+    display: flex;
+    color: colors.$dark-blue;
+
+    .statusIcon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 75px;
+
+      & > div {
+        margin: 0;
+      }
+    }
+
+    .lastAttempt {
+      font-size: 12px;
+      font-weight: bold;
+      color: colors.$grey;
+    }
+
+    .justification {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+  }
+
+  .timestampCell {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+
+    .attemptCount {
+      font-size: 12px;
+      line-height: 15px;
+      color: colors.$red;
+    }
+
+    .arrow {
+      transform: rotate(-90deg);
+      transition: variables.$transition;
+      opacity: 0;
+      color: colors.$dark-blue-50;
+      font-size: 22px;
+      margin: 0 30px 0 50px;
+
+      div:hover > div > &,
+      div:hover > div > div > &,
+      div:hover > & {
+        opacity: 1;
+      }
+    }
+  }
+
+  &.open {
+    .arrow {
+      transform: rotate(-0deg);
+    }
+  }
+
+  &.failed {
+    .arrow,
+    .lastAttempt {
+      color: colors.$red;
+    }
+  }
+
+  &.open:not(.failed) {
+    border-bottom: variables.$border-thin solid colors.$grey-100;
+  }
+
+  &.open.failed {
+    border-bottom: variables.$border-thin solid colors.$red-50;
+  }
+}

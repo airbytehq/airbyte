@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.general;
 
+import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.StandardCheckConnectionInput;
-import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.workers.Worker;
 
-public interface CheckConnectionWorker extends Worker<StandardCheckConnectionInput, StandardCheckConnectionOutput> {}
+public interface CheckConnectionWorker extends Worker<StandardCheckConnectionInput, ConnectorJobOutput> {}

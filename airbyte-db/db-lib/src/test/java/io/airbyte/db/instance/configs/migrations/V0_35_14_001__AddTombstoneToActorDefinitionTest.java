@@ -16,10 +16,10 @@ import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class V0_35_14_001__AddTombstoneToActorDefinitionTest extends AbstractConfigsDatabaseTest {
+class V0_35_14_001__AddTombstoneToActorDefinitionTest extends AbstractConfigsDatabaseTest {
 
   @Test
-  public void test() throws SQLException, IOException {
+  void test() throws SQLException, IOException {
     final DSLContext context = getDslContext();
 
     // necessary to add actor_definition table

@@ -48,7 +48,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected JsonNode getConfig() throws Exception {
-    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, database).put("schema", schemaName));
+    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, database).put(JdbcUtils.SCHEMA_KEY, schemaName));
   }
 
   @Override
@@ -107,12 +107,12 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
     final DSLContext dslContext = DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%s",
-            config.get("host").asText(),
-            config.get("port").asInt()),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt()),
         null);
     return new Database(dslContext);
   }
@@ -122,8 +122,8 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,
-        MSSQLDestination.HOST_KEY,
-        MSSQLDestination.PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(
                 ctx -> ctx
@@ -143,8 +143,8 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
 
     SshTunnel.sshWrap(
         getConfig(),
-        MSSQLDestination.HOST_KEY,
-        MSSQLDestination.PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> {
             ctx.fetch(String.format("CREATE DATABASE %s;", database));

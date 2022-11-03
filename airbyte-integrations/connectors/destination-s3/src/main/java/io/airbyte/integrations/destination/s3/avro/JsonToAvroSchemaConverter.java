@@ -218,7 +218,7 @@ public class JsonToAvroSchemaConverter {
 
     final Schema fieldSchema;
     switch (fieldType) {
-      case INTEGER, NUMBER, NUMBER_INT, NUMBER_LONG, NUMBER_FLOAT, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
+      case INTEGER, NUMBER, NUMBER_INT, NUMBER_BIGINT, NUMBER_FLOAT, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
       case STRING -> {
         if (fieldDefinition.has("format")) {
           final String format = fieldDefinition.get("format").asText();

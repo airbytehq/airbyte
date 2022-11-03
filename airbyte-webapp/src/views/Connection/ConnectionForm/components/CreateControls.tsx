@@ -12,7 +12,7 @@ interface CreateControlsProps {
 }
 
 const ButtonContainer = styled.div`
-  margin-top: 34px;
+  padding: 15px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;

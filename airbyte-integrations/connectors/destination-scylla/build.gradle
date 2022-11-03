@@ -20,6 +20,7 @@ dependencies {
 
     implementation "com.scylladb:scylla-driver-core:${scyllaDriver}"
 
+    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
     // https://mvnrepository.com/artifact/org.assertj/assertj-core
     testImplementation "org.assertj:assertj-core:${assertVersion}"
     // https://mvnrepository.com/artifact/org.testcontainers/testcontainers

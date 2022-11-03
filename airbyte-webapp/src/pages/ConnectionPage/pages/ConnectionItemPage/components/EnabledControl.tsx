@@ -5,9 +5,10 @@ import styled from "styled-components";
 
 import { Switch } from "components";
 
+import { Action, Namespace } from "core/analytics";
 import { buildConnectionUpdate } from "core/domain/connection";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
-import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 
 import { ConnectionStatus, WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 
@@ -37,7 +38,7 @@ interface EnabledControlProps {
 
 const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, frequencyType, onStatusUpdating }) => {
   const { mutateAsync: updateConnection, isLoading } = useUpdateConnection();
-  const trackSourceAction = useTrackAction(TrackActionNamespace.SOURCE, TrackActionLegacyType.SOURCE);
+  const analyticsService = useAnalyticsService();
 
   const onChangeStatus = async () => {
     await updateConnection(
@@ -46,15 +47,13 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, f
       })
     );
 
-    const trackableAction =
-      connection.status === ConnectionStatus.active ? TrackActionType.DISABLE : TrackActionType.REENABLE;
+    const trackableAction = connection.status === ConnectionStatus.active ? Action.DISABLE : Action.REENABLE;
 
-    const trackableActionString = `${trackableAction} connection`;
-
-    trackSourceAction(trackableActionString, trackableAction, {
+    analyticsService.track(Namespace.CONNECTION, trackableAction, {
+      actionDescription: `${trackableAction} connection`,
       connector_source: connection.source?.sourceName,
       connector_source_definition_id: connection.source?.sourceDefinitionId,
-      connector_destination: connection.destination?.name,
+      connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
       frequency: frequencyType,
     });

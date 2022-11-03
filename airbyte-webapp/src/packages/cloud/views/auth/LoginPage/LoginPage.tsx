@@ -13,6 +13,8 @@ import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { BottomBlock, FieldItem, Form } from "packages/cloud/views/auth/components/FormComponents";
 import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
 
+import styles from "./LoginPage.module.scss";
+
 const LoginPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
   password: yup.string().required("form.empty.error"),
@@ -26,7 +28,7 @@ const LoginPage: React.FC = () => {
   return (
     <div>
       <HeadTitle titles={[{ id: "login.login" }]} />
-      <FormTitle bold>
+      <FormTitle>
         <FormattedMessage id="login.loginTitle" />
       </FormTitle>
 
@@ -86,10 +88,15 @@ const LoginPage: React.FC = () => {
             </FieldItem>
             <BottomBlock>
               <>
-                <Link to={CloudRoutes.ResetPassword} $light data-testid="reset-password-link">
+                <Link
+                  to={CloudRoutes.ResetPassword}
+                  className={styles.forgotPassword}
+                  $light
+                  data-testid="reset-password-link"
+                >
                   <FormattedMessage id="login.forgotPassword" />
                 </Link>
-                <LoadingButton type="submit" isLoading={isSubmitting}>
+                <LoadingButton className={styles.logInBtn} type="submit" isLoading={isSubmitting}>
                   <FormattedMessage id="login.login" />
                 </LoadingButton>
               </>

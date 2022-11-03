@@ -1,7 +1,8 @@
 import { getFrequencyConfig } from "config/utils";
+import { Action, Namespace } from "core/analytics";
 import { buildConnectionUpdate } from "core/domain/connection";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useSyncConnection, useUpdateConnection } from "hooks/services/useConnectionHook";
-import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 
 import { ConnectionStatus, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 
@@ -11,7 +12,7 @@ const useSyncActions = (): {
 } => {
   const { mutateAsync: updateConnection } = useUpdateConnection();
   const { mutateAsync: syncConnection } = useSyncConnection();
-  const trackSourceAction = useTrackAction(TrackActionNamespace.CONNECTION, TrackActionLegacyType.SOURCE);
+  const analyticsService = useAnalyticsService();
 
   const changeStatus = async (connection: WebBackendConnectionRead) => {
     await updateConnection(
@@ -24,16 +25,13 @@ const useSyncActions = (): {
 
     const enabledStreams = connection.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
 
-    const trackableAction =
-      connection.status === ConnectionStatus.active ? TrackActionType.DISABLE : TrackActionType.REENABLE;
+    const trackableAction = connection.status === ConnectionStatus.active ? Action.DISABLE : Action.REENABLE;
 
-    const trackableActionString = `${trackableAction} connection`;
-
-    trackSourceAction(trackableActionString, trackableAction, {
+    analyticsService.track(Namespace.CONNECTION, trackableAction, {
       frequency: frequency?.type,
       connector_source: connection.source?.sourceName,
       connector_source_definition_id: connection.source?.sourceDefinitionId,
-      connector_destination: connection.destination?.name,
+      connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
       available_streams: connection.syncCatalog.streams.length,
       enabled_streams: enabledStreams,

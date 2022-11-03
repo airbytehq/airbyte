@@ -17,10 +17,10 @@
   {
     "fieldName": "big_integer_field",
     "jsonFieldSchema": {
-      "type": "number",
+      "type": "string",
       "airbyte_type": "big_integer"
     },
-    "avroFieldType": ["null", "long"]
+    "avroFieldType": ["null", "string"]
   },
   {
     "fieldName": "float_field",
@@ -72,7 +72,7 @@
           "type": "number"
         },
         {
-          "type": "number",
+          "type": "string",
           "airbyte_type": "big_integer"
         }
       ]
@@ -81,7 +81,7 @@
       "null",
       {
         "type": "array",
-        "items": ["null", "string", "double", "long"]
+        "items": ["null", "string", "double"]
       }
     ]
   },
@@ -93,8 +93,8 @@
         "id": {
           "type": "integer"
         },
-        "long_id": {
-          "type": "number",
+        "big_integer_id": {
+          "type": "string",
           "airbyte_type": "big_integer"
         },
         "node_id": {
@@ -114,8 +114,8 @@
             "default": null
           },
           {
-            "name": "long_id",
-            "type": ["null", "long"],
+            "name": "big_integer_id",
+            "type": ["null", "string"],
             "default": null
           },
           {
@@ -194,10 +194,10 @@
       "oneOf": [
         { "type": "string" },
         { "type": "integer" },
-        { "type": "number", "airbyte_type": "big_integer" }
+        { "type": "string", "airbyte_type": "big_integer" }
       ]
     },
-    "avroFieldType": ["null", "string", "int", "long"]
+    "avroFieldType": ["null", "string", "int"]
   },
   {
     "fieldName": "logical_type_date_time",

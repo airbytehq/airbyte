@@ -6,21 +6,42 @@
       "type": ["null", "integer"]
     },
     "address_id": {
-      "type": ["null", "integer", "string"]
+      "oneOf": [
+        {
+          "type": ["null", "number"]
+        },
+        {
+          "type": ["null", "string"]
+        }
+      ]
     },
     "created_at": {
       "type": ["null", "string"],
       "format": "date-time"
     },
     "customer_id": {
-      "type": ["null", "integer", "string"]
+      "oneOf": [
+        {
+          "type": ["null", "number"]
+        },
+        {
+          "type": ["null", "string"]
+        }
+      ]
     },
     "next_charge_scheduled_at": {
       "type": ["null", "string"],
       "format": "date-time"
     },
     "price": {
-      "type": ["null", "integer", "string", "number"]
+      "oneOf": [
+        {
+          "type": ["null", "number"]
+        },
+        {
+          "type": ["null", "string"]
+        }
+      ]
     },
     "product_title": {
       "type": ["null", "string"]

@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 class TrackingMetadataTest {
 
   @Test
-  public void testNulls() {
+  void testNulls() {
     final UUID connectionId = UUID.randomUUID();
     final StandardSync standardSync = mock(StandardSync.class);
 

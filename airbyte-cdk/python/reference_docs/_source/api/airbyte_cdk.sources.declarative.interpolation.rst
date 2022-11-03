@@ -42,6 +42,14 @@ airbyte\_cdk.sources.declarative.interpolation.jinja module
    :undoc-members:
    :show-inheritance:
 
+airbyte\_cdk.sources.declarative.interpolation.macros module
+------------------------------------------------------------
+
+.. automodule:: airbyte_cdk.sources.declarative.interpolation.macros
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 

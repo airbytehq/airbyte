@@ -112,7 +112,7 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
             try {
               cursor.close();
             } catch (final Exception e) {
-              throw new RuntimeException();
+              throw new RuntimeException(e.getMessage(), e);
             }
           });
 

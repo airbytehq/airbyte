@@ -46,6 +46,7 @@ import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
 import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -987,6 +988,12 @@ public class ConfigRepository {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSync standardSync = getStandardSync(connectionId);
     return CatalogHelpers.extractStreamDescriptors(standardSync.getCatalog());
+  }
+
+  public ConfiguredAirbyteCatalog getConfiguredCatalogForConnection(final UUID connectionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardSync standardSync = getStandardSync(connectionId);
+    return standardSync.getCatalog();
   }
 
 }

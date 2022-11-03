@@ -47,10 +47,10 @@ and place them into `secrets/config.json`.
 
 ### Locally running the connector
 ```
-python main_dev.py spec
-python main_dev.py check --config secrets/config.json
-python main_dev.py discover --config secrets/config.json
-python main_dev.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+python main.py spec
+python main.py check --config secrets/config.json
+python main.py discover --config secrets/config.json
+python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Unit Tests

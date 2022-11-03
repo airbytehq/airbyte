@@ -128,7 +128,6 @@ public class NormalizationActivityImpl implements NormalizationActivity {
       throws IOException {
     final var jobScope = jobPersistence.getJob(Long.parseLong(jobRunConfig.getJobId())).getScope();
     final var connectionId = UUID.fromString(jobScope);
-
     return () -> new NormalizationLauncherWorker(
         connectionId,
         destinationLauncherConfig,

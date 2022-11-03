@@ -1,0 +1,33 @@
+@use "../../../../scss/variables";
+@use "./DiffSection.module.scss";
+
+.accordionSubHeader {
+  @extend .sectionSubHeader;
+
+  & .padLeft {
+    padding-left: variables.$spacing-lg;
+  }
+
+  & th {
+    font-size: 10px;
+    width: 228px;
+    padding-left: variables.$spacing-md;
+  }
+}
+
+.table {
+  width: 100%;
+  padding-left: variables.$spacing-xl;
+
+  & tbody > tr:first-of-type > td:nth-of-type(2) {
+    border-radius: variables.$border-radius-sm variables.$border-radius-sm 0px 0px;
+  }
+
+  & tbody > tr:last-of-type > td:nth-of-type(2) {
+    border-radius: 0px 0px variables.$border-radius-sm variables.$border-radius-sm;
+  }
+
+  & tbody > tr:only-of-type > td:nth-of-type(2) {
+    border-radius: variables.$border-radius-sm;
+  }
+}

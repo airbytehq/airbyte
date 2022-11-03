@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.sync;
 
 import com.google.common.base.Stopwatch;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ResourceRequirements;
@@ -34,6 +35,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 
 /**
  * Coordinates configuring and managing the state of an async process. This is tied to the (job_id,
@@ -70,6 +72,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                         final ResourceRequirements resourceRequirements,
                         final Class<OUTPUT> outputClass,
                         final Supplier<ActivityExecutionContext> activityContext) {
+
     this.connectionId = connectionId;
     this.application = application;
     this.podNamePrefix = podNamePrefix;
@@ -114,6 +117,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
         final var podName = podNameAndJobPrefix + jobRunConfig.getAttemptId();
 
         final var kubePodInfo = new KubePodInfo(containerOrchestratorConfig.namespace(), podName);
+        val featureFlag = new EnvVariableFeatureFlags();
 
         process = new AsyncOrchestratorPodProcess(
             kubePodInfo,
@@ -122,7 +126,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             containerOrchestratorConfig.secretName(),
             containerOrchestratorConfig.secretMountPath(),
             containerOrchestratorConfig.containerOrchestratorImage(),
-            containerOrchestratorConfig.googleApplicationCredentials());
+            containerOrchestratorConfig.googleApplicationCredentials(),
+            featureFlag.useStreamCapableState());
 
         cancellationCallback.set(() -> {
           // When cancelled, try to set to true.
@@ -146,7 +151,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                 portMap);
           } catch (final KubernetesClientException e) {
             throw new WorkerException(
-                "Failed to create pod " + podName + ", pre-existing pod exists which didn't advance out of the NOT_STARTED state.");
+                "Failed to create pod " + podName + ", pre-existing pod exists which didn't advance out of the NOT_STARTED state.", e);
           }
         }
 

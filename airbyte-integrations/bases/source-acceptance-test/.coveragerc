@@ -1,0 +1,8 @@
+[report]
+# show lines missing coverage
+show_missing = true
+# coverage 64% measured on 62303a85def89450d2e46573a3d96cd326f2e921 (2022-08-09)
+# This number should probably never be adjusted down, only up i.e: we should only ever increase our test coverage
+fail_under = 64
+skip_covered = true
+skip_empty = true

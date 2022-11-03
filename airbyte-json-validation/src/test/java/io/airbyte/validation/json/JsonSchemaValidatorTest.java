@@ -20,6 +20,8 @@ import org.junit.jupiter.api.Test;
 
 class JsonSchemaValidatorTest {
 
+  private static final String PROPERTIES = "properties";
+
   private static final JsonNode VALID_SCHEMA = Jsons.deserialize(
       "{\n" +
           "    \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n" +
@@ -91,11 +93,11 @@ class JsonSchemaValidatorTest {
     final File schemaFile = IOs.writeFile(Files.createTempDirectory("test"), "schema.json", schema).toFile();
 
     // outer object
-    assertTrue(JsonSchemaValidator.getSchema(schemaFile).get("properties").has("field1"));
-    assertFalse(JsonSchemaValidator.getSchema(schemaFile).get("properties").has("field2"));
+    assertTrue(JsonSchemaValidator.getSchema(schemaFile).get(PROPERTIES).has("field1"));
+    assertFalse(JsonSchemaValidator.getSchema(schemaFile).get(PROPERTIES).has("field2"));
     // inner object
-    assertTrue(JsonSchemaValidator.getSchema(schemaFile, "InnerObject").get("properties").has("field2"));
-    assertFalse(JsonSchemaValidator.getSchema(schemaFile, "InnerObject").get("properties").has("field1"));
+    assertTrue(JsonSchemaValidator.getSchema(schemaFile, "InnerObject").get(PROPERTIES).has("field2"));
+    assertFalse(JsonSchemaValidator.getSchema(schemaFile, "InnerObject").get(PROPERTIES).has("field1"));
     // non-existent object
     assertNull(JsonSchemaValidator.getSchema(schemaFile, "NonExistentObject"));
   }

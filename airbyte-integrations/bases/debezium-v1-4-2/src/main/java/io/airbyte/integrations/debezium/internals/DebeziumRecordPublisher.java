@@ -6,6 +6,7 @@ package io.airbyte.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
@@ -148,17 +149,17 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     props.setProperty("value.converter.schemas.enable", "false");
 
     // debezium names
-    props.setProperty("name", config.get("database").asText());
-    props.setProperty("database.server.name", config.get("database").asText());
+    props.setProperty("name", config.get(JdbcUtils.DATABASE_KEY).asText());
+    props.setProperty("database.server.name", config.get(JdbcUtils.DATABASE_KEY).asText());
 
     // db connection configuration
-    props.setProperty("database.hostname", config.get("host").asText());
-    props.setProperty("database.port", config.get("port").asText());
-    props.setProperty("database.user", config.get("username").asText());
-    props.setProperty("database.dbname", config.get("database").asText());
+    props.setProperty("database.hostname", config.get(JdbcUtils.HOST_KEY).asText());
+    props.setProperty("database.port", config.get(JdbcUtils.PORT_KEY).asText());
+    props.setProperty("database.user", config.get(JdbcUtils.USERNAME_KEY).asText());
+    props.setProperty("database.dbname", config.get(JdbcUtils.DATABASE_KEY).asText());
 
-    if (config.has("password")) {
-      props.setProperty("database.password", config.get("password").asText());
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      props.setProperty("database.password", config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     // By default "decimal.handing.mode=precise" which's caused returning this value as a binary.
@@ -171,7 +172,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     // table selection
     final String tableWhitelist = getTableWhitelist(catalog);
     props.setProperty("table.include.list", tableWhitelist);
-    props.setProperty("database.include.list", config.get("database").asText());
+    props.setProperty("database.include.list", config.get(JdbcUtils.DATABASE_KEY).asText());
 
     return props;
   }

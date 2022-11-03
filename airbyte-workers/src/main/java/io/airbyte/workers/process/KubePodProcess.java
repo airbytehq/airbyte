@@ -94,6 +94,9 @@ import org.slf4j.MDC;
  * See the constructor for more information.
  */
 
+// Suppressing AvoidPrintStackTrace PMD warnings because
+// it is required for the connectors
+@SuppressWarnings("PMD.AvoidPrintStackTrace")
 // TODO(Davin): Better test for this. See https://github.com/airbytehq/airbyte/issues/3700.
 public class KubePodProcess extends Process implements KubePod {
 
@@ -189,7 +192,7 @@ public class KubePodProcess extends Process implements KubePod {
                                    final ResourceRequirements resourceRequirements,
                                    final Map<Integer, Integer> internalToExternalPorts,
                                    final Map<String, String> envMap,
-                                   final String[] args)
+                                   final String... args)
       throws IOException {
     final var argsStr = String.join(" ", args);
     final var optionalStdin = usesStdin ? String.format("< %s", STDIN_PIPE_FILE) : "";
@@ -269,7 +272,7 @@ public class KubePodProcess extends Process implements KubePod {
           // Copying the success indicator file to the init container causes the container to immediately
           // exit, causing the `kubectl cp` command to exit with code 137. This check ensures that an error is
           // not thrown in this case if the init container exits successfully.
-          if (file.getKey().equals(SUCCESS_FILE_NAME) && waitForInitPodToTerminate(client, podDefinition, 5, TimeUnit.MINUTES) == 0) {
+          if (SUCCESS_FILE_NAME.equals(file.getKey()) && waitForInitPodToTerminate(client, podDefinition, 5, TimeUnit.MINUTES) == 0) {
             LOGGER.info("Init was successful; ignoring non-zero kubectl cp exit code for success indicator file.");
           } else {
             throw new IOException("kubectl cp failed with exit code " + exitCode);
@@ -722,7 +725,8 @@ public class KubePodProcess extends Process implements KubePod {
         throw new RuntimeException(
             prependPodInfo("Cannot find pod %s : %s while trying to retrieve exit code. This probably means the pod was not correctly created.",
                 podDefinition.getMetadata().getNamespace(),
-                podDefinition.getMetadata().getName()));
+                podDefinition.getMetadata().getName()),
+            e);
       }
     } else {
       throw new IllegalThreadStateException(prependPodInfo("Main container in kube pod has not terminated yet.",

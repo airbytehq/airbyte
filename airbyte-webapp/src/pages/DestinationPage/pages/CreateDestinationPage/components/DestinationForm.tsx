@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
+import { Action, Namespace } from "core/analytics";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationDefinitionRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import useRouter from "hooks/useRouter";
-import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
@@ -39,10 +40,7 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
   afterSelectConnector,
 }) => {
   const { location } = useRouter();
-  const trackNewDestinationAction = useTrackAction(
-    TrackActionNamespace.DESTINATION,
-    TrackActionLegacyType.NEW_DESTINATION
-  );
+  const analyticsService = useAnalyticsService();
 
   const [destinationDefinitionId, setDestinationDefinitionId] = useState(
     hasDestinationDefinitionId(location.state) ? location.state.destinationDefinitionId : null
@@ -63,7 +61,8 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
       afterSelectConnector();
     }
 
-    trackNewDestinationAction("Select a connector", TrackActionType.SELECT, {
+    analyticsService.track(Namespace.DESTINATION, Action.SELECT, {
+      actionDescription: "Destination connector type selected",
       connector_destination: connector?.name,
       connector_destination_definition_id: destinationDefinitionId,
     });

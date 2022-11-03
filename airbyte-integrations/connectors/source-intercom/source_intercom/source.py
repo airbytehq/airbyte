@@ -94,6 +94,10 @@ class IntercomStream(HttpStream, ABC):
 class IncrementalIntercomStream(IntercomStream, ABC):
     cursor_field = "updated_at"
 
+    @property
+    def state_checkpoint_interval(self):
+        return self.page_size
+
     def __init__(self, authenticator: AuthBase, start_date: str = None, **kwargs):
         super().__init__(authenticator, start_date, **kwargs)
         self.has_old_records = False

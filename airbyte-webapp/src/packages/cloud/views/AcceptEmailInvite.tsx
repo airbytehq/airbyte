@@ -2,19 +2,21 @@ import { Formik } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
-import { H1, LoadingButton } from "components";
 import HeadTitle from "components/HeadTitle";
 
 import { FieldError } from "../lib/errors/FieldError";
 import { useAuthService } from "../services/auth/AuthService";
 import { EmailLinkErrorCodes } from "../services/auth/types";
-import { BottomBlock, BottomBlockStatusMessage, FieldItem, Form } from "./auth/components/FormComponents";
+import { FieldItem, Form } from "./auth/components/FormComponents";
+import { FormTitle } from "./auth/components/FormTitle";
 import {
   EmailField,
   NameField,
   NewsField,
   PasswordField,
   SecurityField,
+  SignupButton,
+  SignupFormStatusMessage,
 } from "./auth/SignupPage/components/SignupForm";
 
 const ValidationSchema = yup.object().shape({
@@ -71,17 +73,12 @@ export const AcceptEmailInvite: React.FC = () => {
             <NewsField />
             <SecurityField />
           </FieldItem>
-          <BottomBlock>
-            <LoadingButton
-              type="submit"
-              isLoading={isSubmitting}
-              disabled={!isValid || !values.security}
-              data-testid="login.signup"
-            >
-              <FormattedMessage id="login.signup" />
-            </LoadingButton>
-            {status && <BottomBlockStatusMessage>{status}</BottomBlockStatusMessage>}
-          </BottomBlock>
+          <SignupButton
+            isLoading={isSubmitting}
+            disabled={!isValid || !values.security}
+            buttonMessageId="login.activateAccess.submitButton"
+          />
+          {status && <SignupFormStatusMessage>{status}</SignupFormStatusMessage>}
         </Form>
       )}
     </Formik>
@@ -90,9 +87,9 @@ export const AcceptEmailInvite: React.FC = () => {
   return (
     <>
       <HeadTitle titles={[{ id: "login.inviteTitle" }]} />
-      <H1 bold>
+      <FormTitle>
         <FormattedMessage id="login.inviteTitle" />
-      </H1>
+      </FormTitle>
       {formElement}
     </>
   );

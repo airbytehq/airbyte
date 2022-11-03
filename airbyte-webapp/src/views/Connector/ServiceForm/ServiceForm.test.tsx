@@ -8,19 +8,55 @@ import { render } from "utils/testutils";
 import { ServiceForm } from "views/Connector/ServiceForm";
 
 import { DestinationDefinitionSpecificationRead } from "../../../core/request/AirbyteClient";
-import { ConnectorDocumentationWrapper } from "../ConnectorDocumentationLayout";
+import { DocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ServiceFormValues } from "./types";
 
 // hack to fix tests. https://github.com/remarkjs/react-markdown/issues/635
-jest.mock(
-  "components/Markdown",
-  () =>
-    function ReactMarkdown({ children }: React.PropsWithChildren<unknown>) {
-      return <>{children}</>;
-    }
-);
+jest.mock("components/Markdown", () => ({ children }: React.PropsWithChildren<unknown>) => <>{children}</>);
+
+jest.mock("../ConnectorDocumentationLayout/DocumentationPanelContext", () => {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const emptyFn = () => {};
+
+  const useDocumentationPanelContext: () => DocumentationPanelContext = () => ({
+    documentationPanelOpen: false,
+    documentationUrl: "",
+    setDocumentationPanelOpen: emptyFn,
+    setDocumentationUrl: emptyFn,
+  });
+
+  return {
+    useDocumentationPanelContext,
+  };
+});
 
 jest.setTimeout(10000);
+
+const useAddPriceListItem = (container: HTMLElement) => {
+  const priceList = getByTestId(container, "connectionConfiguration.priceList");
+  let index = 0;
+
+  return async (name: string, price: string) => {
+    const addButton = getByTestId(priceList, "addItemButton");
+    await waitFor(() => userEvent.click(addButton));
+
+    const arrayOfObjectsEditModal = getByTestId(document.body, "arrayOfObjects-editModal");
+    const getPriceListInput = (index: number, key: string) =>
+      arrayOfObjectsEditModal.querySelector(`input[name='__temp__connectionConfiguration_priceList${index}.${key}']`);
+
+    // Type items into input
+    const nameInput = getPriceListInput(index, "name");
+    userEvent.type(nameInput!, name);
+
+    const priceInput = getPriceListInput(index, "price");
+    userEvent.type(priceInput!, price);
+
+    const doneButton = getByTestId(arrayOfObjectsEditModal, "done-button");
+    await waitFor(() => userEvent.click(doneButton));
+
+    index++;
+  };
+};
 
 const schema: AirbyteJSONSchema = {
   type: "object",
@@ -117,21 +153,19 @@ describe("Service Form", () => {
     beforeEach(async () => {
       const handleSubmit = jest.fn();
       const renderResult = await render(
-        <ConnectorDocumentationWrapper>
-          <ServiceForm
-            formType="source"
-            onSubmit={handleSubmit}
-            selectedConnectorDefinitionSpecification={
-              // @ts-expect-error Partial objects for testing
-              {
-                connectionSpecification: schema,
-                sourceDefinitionId: "1",
-                documentationUrl: "",
-              } as DestinationDefinitionSpecificationRead
-            }
-            availableServices={[]}
-          />
-        </ConnectorDocumentationWrapper>
+        <ServiceForm
+          formType="source"
+          onSubmit={handleSubmit}
+          selectedConnectorDefinitionSpecification={
+            // @ts-expect-error Partial objects for testing
+            {
+              connectionSpecification: schema,
+              sourceDefinitionId: "1",
+              documentationUrl: "",
+            } as DestinationDefinitionSpecificationRead
+          }
+          availableServices={[]}
+        />
       );
       container = renderResult.container;
     });
@@ -202,22 +236,20 @@ describe("Service Form", () => {
     let container: HTMLElement;
     beforeEach(async () => {
       const renderResult = await render(
-        <ConnectorDocumentationWrapper>
-          <ServiceForm
-            formType="source"
-            formValues={{ name: "test-name", serviceType: "test-service-type" }}
-            onSubmit={(values) => (result = values)}
-            selectedConnectorDefinitionSpecification={
-              // @ts-expect-error Partial objects for testing
-              {
-                connectionSpecification: schema,
-                sourceDefinitionId: "test-service-type",
-                documentationUrl: "",
-              } as DestinationDefinitionSpecificationRead
-            }
-            availableServices={[]}
-          />
-        </ConnectorDocumentationWrapper>
+        <ServiceForm
+          formType="source"
+          formValues={{ name: "test-name", serviceType: "test-service-type" }}
+          onSubmit={(values) => (result = values)}
+          selectedConnectorDefinitionSpecification={
+            // @ts-expect-error Partial objects for testing
+            {
+              connectionSpecification: schema,
+              sourceDefinitionId: "test-service-type",
+              documentationUrl: "",
+            } as DestinationDefinitionSpecificationRead
+          }
+          availableServices={[]}
+        />
       );
       container = renderResult.container;
     });
@@ -231,8 +263,6 @@ describe("Service Form", () => {
       const apiKey = container.querySelector("input[name='connectionConfiguration.credentials.api_key']");
       const emails = container.querySelector("input[name='connectionConfiguration.emails']");
       const workTime = container.querySelector("div[name='connectionConfiguration.workTime']");
-      const priceList = getByTestId(container, "connectionConfiguration.priceList");
-      const addButton = getByTestId(priceList, "addItemButton");
 
       userEvent.type(name!, "{selectall}{del}name");
       userEvent.type(host!, "test-host");
@@ -243,13 +273,8 @@ describe("Service Form", () => {
       userEvent.type(emails!, "test@test.com{enter}");
       userEvent.type(workTime!.querySelector("input")!, "day{enter}");
 
-      await waitFor(() => userEvent.click(addButton));
-      const listName = container.querySelector("input[name='connectionConfiguration.priceList.0.name']");
-      const listPrice = container.querySelector("input[name='connectionConfiguration.priceList.0.price']");
-      const done = getByTestId(container, "done-button");
-      userEvent.type(listName!, "test-price-list-name");
-      userEvent.type(listPrice!, "1");
-      await waitFor(() => userEvent.click(done));
+      const addPriceListItem = useAddPriceListItem(container);
+      await addPriceListItem("test-price-list-name", "1");
 
       const submit = container.querySelector("button[type='submit']");
       await waitFor(() => userEvent.click(submit!));
@@ -327,32 +352,18 @@ describe("Service Form", () => {
     });
 
     test("should fill right values in array of objects field", async () => {
-      const priceList = container.querySelector("div[data-testid='connectionConfiguration.priceList']");
-      let addButton = priceList?.querySelector("button[data-testid='addItemButton']");
-      await waitFor(() => userEvent.click(addButton!));
-
-      const done = priceList!.querySelector("button[data-testid='done-button']");
-
-      const name1 = container.querySelector("input[name='connectionConfiguration.priceList.0.name']");
-      const price1 = container.querySelector("input[name='connectionConfiguration.priceList.0.price']");
-      userEvent.type(name1!, "test-1");
-      userEvent.type(price1!, "1");
-      await waitFor(() => userEvent.click(done!));
-      addButton = priceList?.querySelector("button[data-testid='addItemButton']");
-      await waitFor(() => userEvent.click(addButton!));
-
-      const name2 = container.querySelector("input[name='connectionConfiguration.priceList.1.name']");
-      const price2 = container.querySelector("input[name='connectionConfiguration.priceList.1.price']");
-
-      userEvent.type(name2!, "test-2");
-      userEvent.type(price2!, "2");
-      await waitFor(() => userEvent.click(done!));
+      const addPriceListItem = useAddPriceListItem(container);
+      await addPriceListItem("test-1", "1");
+      await addPriceListItem("test-2", "2");
 
       const submit = container.querySelector("button[type='submit']");
       await waitFor(() => userEvent.click(submit!));
 
-      // @ts-expect-error typed unknown, okay in test file
-      expect(result.connectionConfiguration.priceList).toEqual([
+      const { connectionConfiguration } = result as {
+        connectionConfiguration: { priceList: Array<{ name: string; price: number }> };
+      };
+
+      expect(connectionConfiguration.priceList).toEqual([
         { name: "test-1", price: 1 },
         { name: "test-2", price: 2 },
       ]);

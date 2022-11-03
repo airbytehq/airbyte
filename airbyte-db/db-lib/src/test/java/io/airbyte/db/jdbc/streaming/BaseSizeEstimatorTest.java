@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 class BaseSizeEstimatorTest {
 
   @Test
-  public void testGetEstimatedByteSize() {
+  void testGetEstimatedByteSize() {
     assertEquals(0L, BaseSizeEstimator.getEstimatedByteSize(null));
     assertEquals(28L, BaseSizeEstimator.getEstimatedByteSize("12345"));
     assertEquals(60L, BaseSizeEstimator.getEstimatedByteSize(Jsons.jsonNode(Map.of("key", "value"))));
@@ -41,7 +41,7 @@ class BaseSizeEstimatorTest {
   }
 
   @Test
-  public void testGetBoundedFetchSize() {
+  void testGetBoundedFetchSize() {
     final long bufferByteSize = 120;
     final int minFetchSize = 10;
     final int defaultFetchSize = 20;

@@ -37,6 +37,11 @@ import javax.xml.bind.DatatypeConverter;
  */
 public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implements JdbcCompatibleSourceOperations<Datatype> {
 
+  /**
+   * A Date representing the earliest date in CE. Any date before this is in BCE.
+   */
+  private static final Date ONE_CE = Date.valueOf("0001-01-01");
+
   @Override
   public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
     // the first call communicates with the database. after that the result is cached.
@@ -253,27 +258,69 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     return schemaName != null ? enquoteIdentifier(connection, schemaName) + "." + quotedTableName : quotedTableName;
   }
 
-  protected <DateTime> DateTime getDateTimeObject(ResultSet resultSet, int index, Class<DateTime> clazz) throws SQLException {
+  protected <ObjectType> ObjectType getObject(final ResultSet resultSet, final int index, final Class<ObjectType> clazz) throws SQLException {
     return resultSet.getObject(index, clazz);
   }
 
-  protected void putTimeWithTimezone(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
-    OffsetTime timetz = getDateTimeObject(resultSet, index, OffsetTime.class);
+  protected void putTimeWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    final OffsetTime timetz = getObject(resultSet, index, OffsetTime.class);
     node.put(columnName, timetz.format(TIMETZ_FORMATTER));
   }
 
-  protected void putTimestampWithTimezone(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
-    OffsetDateTime timestamptz = getDateTimeObject(resultSet, index, OffsetDateTime.class);
-    LocalDate localDate = timestamptz.toLocalDate();
+  protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
+      throws SQLException {
+    final OffsetDateTime timestamptz = getObject(resultSet, index, OffsetDateTime.class);
+    final LocalDate localDate = timestamptz.toLocalDate();
     node.put(columnName, resolveEra(localDate, timestamptz.format(TIMESTAMPTZ_FORMATTER)));
   }
 
-  protected String resolveEra(LocalDate date, String value) {
-    return isBCE(date) ? value.substring(1) + " BC" : value;
+  /**
+   * Modifies a string representation of a date/timestamp and normalizes its era indicator.
+   * Specifically, if this is a BCE value:
+   * <ul>
+   * <li>The leading negative sign will be removed if present</li>
+   * <li>The "BC" suffix will be appended, if not already present</li>
+   * </ul>
+   *
+   * You most likely would prefer to call one of the overloaded methods, which accept temporal types.
+   */
+  public static String resolveEra(final boolean isBce, final String value) {
+    String mangledValue = value;
+    if (isBce) {
+      if (mangledValue.startsWith("-")) {
+        mangledValue = mangledValue.substring(1);
+      }
+      if (!mangledValue.endsWith(" BC")) {
+        mangledValue += " BC";
+      }
+    }
+    return mangledValue;
   }
 
-  public static boolean isBCE(LocalDate date) {
+  public static boolean isBce(final LocalDate date) {
     return date.getEra().equals(IsoEra.BCE);
+  }
+
+  public static String resolveEra(final LocalDate date, final String value) {
+    return resolveEra(isBce(date), value);
+  }
+
+  /**
+   * java.sql.Date objects don't properly represent their era (for example, using toLocalDate() always
+   * returns an object in CE). So to determine the era, we just check whether the date is before 1 AD.
+   *
+   * This is technically kind of sketchy due to ancient timestamps being weird (leap years, etc.), but
+   * my understanding is that {@link #ONE_CE} has the same weirdness, so it cancels out.
+   */
+  public static String resolveEra(final Date date, final String value) {
+    return resolveEra(date.before(ONE_CE), value);
+  }
+
+  /**
+   * See {@link #resolveEra(Date, String)} for explanation.
+   */
+  public static String resolveEra(final Timestamp timestamp, final String value) {
+    return resolveEra(timestamp.before(ONE_CE), value);
   }
 
 }

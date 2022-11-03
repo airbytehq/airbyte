@@ -1,0 +1,41 @@
+@use "../../../../../scss/colors";
+@use "../../../../../scss/variables";
+
+.connectorLink {
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: 10px;
+
+  &:hover {
+    background-color: colors.$grey-50;
+  }
+}
+
+.container,
+.pathContainer {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pathContainer,
+.pathContainer > *,
+.enabledControlContainer {
+  flex-grow: 1;
+}
+
+.container {
+  width: 650px;
+  flex-wrap: wrap;
+  padding: variables.$spacing-md variables.$spacing-xl;
+  background-color: white;
+  border-radius: 10px;
+}
+
+.enabledControlContainer {
+  display: flex;
+  justify-content: space-around;
+  padding: variables.$spacing-md;
+}

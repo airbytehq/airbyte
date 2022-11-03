@@ -5,7 +5,7 @@
     "title": "Freshdesk Spec",
     "type": "object",
     "required": ["domain", "api_key"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "domain": {
         "type": "string",

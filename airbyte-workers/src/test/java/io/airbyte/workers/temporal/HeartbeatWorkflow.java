@@ -12,8 +12,6 @@ import io.temporal.workflow.Workflow;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.time.Duration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @WorkflowInterface
 public interface HeartbeatWorkflow {
@@ -47,8 +45,6 @@ public interface HeartbeatWorkflow {
   }
 
   class HeartbeatActivityImpl implements HeartbeatActivity {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(HeartbeatActivityImpl.class);
 
     private final Runnable runnable;
 

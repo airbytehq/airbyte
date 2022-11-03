@@ -5,7 +5,6 @@
     "title": "MySql Source Spec",
     "type": "object",
     "required": ["host", "port", "database", "username", "replication_method"],
-    "additionalProperties": false,
     "properties": {
       "host": {
         "description": "The host name of the database.",

@@ -7,7 +7,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSl
 
 
 def test():
-    iterator = SingleSlice()
+    iterator = SingleSlice(options={})
 
     stream_slices = iterator.stream_slices(SyncMode.incremental, None)
     assert stream_slices == [dict()]

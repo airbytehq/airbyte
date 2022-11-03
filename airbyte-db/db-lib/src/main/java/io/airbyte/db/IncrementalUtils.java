@@ -9,6 +9,8 @@ import io.airbyte.protocol.models.JsonSchemaPrimitive;
 
 public class IncrementalUtils {
 
+  private static final String PROPERTIES = "properties";
+
   public static String getCursorField(final ConfiguredAirbyteStream stream) {
     if (stream.getCursorField().size() == 0) {
       throw new IllegalStateException("No cursor field specified for stream attempting to do incremental.");
@@ -20,21 +22,21 @@ public class IncrementalUtils {
   }
 
   public static JsonSchemaPrimitive getCursorType(final ConfiguredAirbyteStream stream, final String cursorField) {
-    if (stream.getStream().getJsonSchema().get("properties") == null) {
+    if (stream.getStream().getJsonSchema().get(PROPERTIES) == null) {
       throw new IllegalStateException(String.format("No properties found in stream: %s.", stream.getStream().getName()));
     }
 
-    if (stream.getStream().getJsonSchema().get("properties").get(cursorField) == null) {
+    if (stream.getStream().getJsonSchema().get(PROPERTIES).get(cursorField) == null) {
       throw new IllegalStateException(
           String.format("Could not find cursor field: %s in schema for stream: %s.", cursorField, stream.getStream().getName()));
     }
 
-    if (stream.getStream().getJsonSchema().get("properties").get(cursorField).get("type") == null) {
+    if (stream.getStream().getJsonSchema().get(PROPERTIES).get(cursorField).get("type") == null) {
       throw new IllegalStateException(
           String.format("Could not find cursor type for field: %s in schema for stream: %s.", cursorField, stream.getStream().getName()));
     }
 
-    return JsonSchemaPrimitive.valueOf(stream.getStream().getJsonSchema().get("properties").get(cursorField).get("type").asText().toUpperCase());
+    return JsonSchemaPrimitive.valueOf(stream.getStream().getJsonSchema().get(PROPERTIES).get(cursorField).get("type").asText().toUpperCase());
   }
 
   // x < 0 mean replace original

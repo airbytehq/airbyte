@@ -24,7 +24,10 @@ from airbyte_api_client.model.airbyte_stream import AirbyteStream
 from airbyte_api_client.model.airbyte_stream_and_configuration import AirbyteStreamAndConfiguration
 from airbyte_api_client.model.airbyte_stream_configuration import AirbyteStreamConfiguration
 from airbyte_api_client.model.connection_read import ConnectionRead
-from airbyte_api_client.model.connection_schedule import ConnectionSchedule
+from airbyte_api_client.model.connection_schedule_data import ConnectionScheduleData
+from airbyte_api_client.model.connection_schedule_data_basic_schedule import ConnectionScheduleDataBasicSchedule
+from airbyte_api_client.model.connection_schedule_data_cron import ConnectionScheduleDataCron
+from airbyte_api_client.model.connection_schedule_type import ConnectionScheduleType
 from airbyte_api_client.model.connection_status import ConnectionStatus
 from airbyte_api_client.model.destination_create import DestinationCreate
 from airbyte_api_client.model.destination_definition_id_with_workspace_id import DestinationDefinitionIdWithWorkspaceId
@@ -577,6 +580,7 @@ class Connection(BaseResource):
         "is_syncing",
         "latest_sync_job_status",
         "latest_sync_job_created_at",
+        "schedule",
     ]  # We do not allow local editing of these keys
 
     # We do not allow local editing of these keys
@@ -595,8 +599,20 @@ class Connection(BaseResource):
         self._check_for_legacy_connection_configuration_keys(configuration)
         configuration["sync_catalog"] = self._create_configured_catalog(configuration["sync_catalog"])
         configuration["namespace_definition"] = NamespaceDefinitionType(configuration["namespace_definition"])
-        if "schedule" in configuration:
-            configuration["schedule"] = ConnectionSchedule(**configuration["schedule"])
+
+        if "schedule_type" in configuration:
+            # If schedule type is manual we do not expect a schedule_data field to be set
+            # TODO: sending a WebConnectionCreate payload without schedule_data (for manual) fails.
+            is_manual = configuration["schedule_type"] == "manual"
+            configuration["schedule_type"] = ConnectionScheduleType(configuration["schedule_type"])
+            if not is_manual:
+                if "basic_schedule" in configuration["schedule_data"]:
+                    basic_schedule = ConnectionScheduleDataBasicSchedule(**configuration["schedule_data"]["basic_schedule"])
+                    configuration["schedule_data"]["basic_schedule"] = basic_schedule
+                if "cron" in configuration["schedule_data"]:
+                    cron = ConnectionScheduleDataCron(**configuration["schedule_data"]["cron"])
+                    configuration["schedule_data"]["cron"] = cron
+                configuration["schedule_data"] = ConnectionScheduleData(**configuration["schedule_data"])
         if "resource_requirements" in configuration:
             configuration["resource_requirements"] = ResourceRequirements(**configuration["resource_requirements"])
         configuration["status"] = ConnectionStatus(configuration["status"])
@@ -738,8 +754,16 @@ class Connection(BaseResource):
             deserialized_operations.append(operation)
         return deserialized_operations
 
-    # TODO this check can be removed when all our active user are on >= 0.37.0
     def _check_for_legacy_connection_configuration_keys(self, configuration_to_check):
+        self._check_for_wrong_casing_in_connection_configurations_keys(configuration_to_check)
+        self._check_for_schedule_in_connection_configurations_keys(configuration_to_check)
+
+    # TODO this check can be removed when all our active user are on >= 0.37.0
+    def _check_for_schedule_in_connection_configurations_keys(self, configuration_to_check):
+        error_message = "The schedule key is deprecated since 0.40.0, please use a combination of schedule_type and schedule_data"
+        self._check_for_invalid_configuration_keys(configuration_to_check, {"schedule"}, error_message)
+
+    def _check_for_wrong_casing_in_connection_configurations_keys(self, configuration_to_check):
         """We changed connection configuration keys from camelCase to snake_case in 0.37.0.
         This function check if the connection configuration has some camelCase keys and display a meaningful error message.
         Args:

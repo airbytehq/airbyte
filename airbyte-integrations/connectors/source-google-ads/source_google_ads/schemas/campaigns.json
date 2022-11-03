@@ -110,7 +110,7 @@
     "campaign.maximize_conversion_value.target_roas": {
       "type": ["null", "number"]
     },
-    "campaign.maximize_conversions.target_cpa": {
+    "campaign.maximize_conversions.target_cpa_micros": {
       "type": ["null", "integer"]
     },
     "campaign.name": {

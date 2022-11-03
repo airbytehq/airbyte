@@ -12,6 +12,7 @@ import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.debezium.engine.ChangeEvent;
+import java.time.Duration;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -34,13 +35,14 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumRecordIterator.class);
 
-  private static final WaitTime FIRST_RECORD_WAIT_TIME_MINUTES = new WaitTime(5, TimeUnit.MINUTES);
-  private static final WaitTime SUBSEQUENT_RECORD_WAIT_TIME_SECONDS = new WaitTime(1, TimeUnit.MINUTES);
+  private static final Duration SUBSEQUENT_RECORD_WAIT_TIME = Duration.ofMinutes(1);
 
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
   private final CdcTargetPosition targetPosition;
   private final Supplier<Boolean> publisherStatusSupplier;
   private final VoidCallable requestClose;
+  private final Duration firstRecordWaitTime;
+
   private boolean receivedFirstRecord;
   private boolean hasSnapshotFinished;
   private boolean signalledClose;
@@ -48,11 +50,14 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   public DebeziumRecordIterator(final LinkedBlockingQueue<ChangeEvent<String, String>> queue,
                                 final CdcTargetPosition targetPosition,
                                 final Supplier<Boolean> publisherStatusSupplier,
-                                final VoidCallable requestClose) {
+                                final VoidCallable requestClose,
+                                final Duration firstRecordWaitTime) {
     this.queue = queue;
     this.targetPosition = targetPosition;
     this.publisherStatusSupplier = publisherStatusSupplier;
     this.requestClose = requestClose;
+    this.firstRecordWaitTime = firstRecordWaitTime;
+
     this.receivedFirstRecord = false;
     this.hasSnapshotFinished = true;
     this.signalledClose = false;
@@ -66,8 +71,8 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
       final ChangeEvent<String, String> next;
       try {
-        final WaitTime waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME_SECONDS : FIRST_RECORD_WAIT_TIME_MINUTES;
-        next = queue.poll(waitTime.period, waitTime.timeUnit);
+        final Duration waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME : firstRecordWaitTime;
+        next = queue.poll(waitTime.getSeconds(), TimeUnit.SECONDS);
       } catch (final InterruptedException e) {
         throw new RuntimeException(e);
       }
@@ -138,18 +143,6 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     if (!hasSnapshotFinished) {
       throw new RuntimeException("Closing down debezium engine but snapshot has not finished");
     }
-  }
-
-  private static class WaitTime {
-
-    public final int period;
-    public final TimeUnit timeUnit;
-
-    public WaitTime(final int period, final TimeUnit timeUnit) {
-      this.period = period;
-      this.timeUnit = timeUnit;
-    }
-
   }
 
 }

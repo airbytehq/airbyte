@@ -6,16 +6,27 @@ package io.airbyte.workers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.ConnectorJobOutput;
+import io.airbyte.config.ConnectorJobOutput.OutputType;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.helper.FailureHelper;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -98,6 +109,24 @@ public class WorkerUtils {
         .withDestinationConnectionConfiguration(sync.getDestinationConfiguration())
         .withCatalog(sync.getCatalog())
         .withState(sync.getState());
+  }
+
+  public static ConnectorJobOutput getJobFailureOutputOrThrow(final OutputType outputType,
+                                                              final Map<Type, List<AirbyteMessage>> messagesByType,
+                                                              final String defaultErrorMessage)
+      throws WorkerException {
+    final Optional<AirbyteTraceMessage> traceMessage =
+        messagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream()
+            .map(AirbyteMessage::getTrace)
+            .filter(trace -> trace.getType() == AirbyteTraceMessage.Type.ERROR)
+            .findFirst();
+
+    if (traceMessage.isPresent()) {
+      final FailureReason failureReason = FailureHelper.genericFailure(traceMessage.get(), null, null);
+      return new ConnectorJobOutput().withOutputType(outputType).withFailureReason(failureReason);
+    }
+
+    throw new WorkerException(defaultErrorMessage);
   }
 
   public static Map<String, JsonNode> mapStreamNamesToSchemas(final StandardSyncInput syncInput) {

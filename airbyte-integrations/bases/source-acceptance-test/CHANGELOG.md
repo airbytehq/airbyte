@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.2.1
+Don't fail on updating `additionalProperties`: fix IndexError [#15532](https://github.com/airbytehq/airbyte/pull/15532/)
+
+## 0.2.0
+Finish backward compatibility syntactic tests implementation: check that cursor fields were not changed. [#15520](https://github.com/airbytehq/airbyte/pull/15520/)
+
+## 0.1.62
+Backward compatibility tests: add syntactic validation of catalogs [#15486](https://github.com/airbytehq/airbyte/pull/15486/)
+
+## 0.1.61
+Add unit tests coverage computation [#15443](https://github.com/airbytehq/airbyte/pull/15443/).
+
+## 0.1.60
+Backward compatibility tests: validate fake previous config against current connector specification. [#15367](https://github.com/airbytehq/airbyte/pull/15367)
+
+## 0.1.59
+Backward compatibility tests: add syntactic validation of specs [#15194](https://github.com/airbytehq/airbyte/pull/15194/).
+
+## 0.1.58
+Bootstrap spec backward compatibility tests. Add fixtures to retrieve a previous connector version spec [#14954](https://github.com/airbytehq/airbyte/pull/14954/).
+
+## 0.1.57
+Run connector from its image `working_dir` instead of from `/data`.
+
+## 0.1.56
+Add test case in `TestDiscovery` and `TestConnection` to assert `additionalProperties` fields are set to true if they are declared [#14878](https://github.com/airbytehq/airbyte/pull/14878/).
+
+## 0.1.55
+Add test case in `TestDiscovery` to assert `supported_sync_modes` stream field in catalog is set and not empty.
+
 ## 0.1.54
 Fixed `AirbyteTraceMessage` test case to make connectors fail more reliably.
 

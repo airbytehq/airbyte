@@ -7,6 +7,7 @@ export const actions = {
   loggedIn: createAction("LOGGED_IN")<{ user: User; emailVerified: boolean }>(),
   emailVerified: createAction("EMAIL_VERIFIED")<boolean>(),
   loggedOut: createAction("LOGGED_OUT")<void>(),
+  updateUserName: createAction("UPDATE_USER_NAME")<{ value: string }>(),
 };
 
 type Actions = ActionType<typeof actions>;
@@ -56,5 +57,17 @@ export const authStateReducer = createReducer<AuthServiceState, Actions>(initial
       currentUser: null,
       emailVerified: false,
       loggedOut: true,
+    };
+  })
+  .handleAction(actions.updateUserName, (state, action): AuthServiceState => {
+    if (!state.currentUser) {
+      return state;
+    }
+    return {
+      ...state,
+      currentUser: {
+        ...state.currentUser,
+        name: action.payload.value,
+      },
     };
   });

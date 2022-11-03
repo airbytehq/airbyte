@@ -1975,6 +1975,27 @@ paths:
                 $ref: "#/components/schemas/WebBackendConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/web_backend/connections/updateNew:
+    post:
+      operationId: webBackendUpdateConnectionNew
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebBackendConnectionUpdate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendConnectionRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Update a connection
+      tags:
+        - web_backend
   /v1/web_backend/connections/search:
     post:
       tags:
@@ -2563,6 +2584,13 @@ components:
           description: The date when this connector was first released, in yyyy-mm-dd format.
           type: string
           format: date
+        sourceType:
+          type: string
+          enum:
+            - api
+            - file
+            - database
+            - custom
         resourceRequirements:
           $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
     SourceDefinitionReadList:
@@ -3190,6 +3218,10 @@ components:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
+        scheduleType:
+          $ref: "#/components/schemas/ConnectionScheduleType"
+        scheduleData:
+          $ref: "#/components/schemas/ConnectionScheduleData"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
@@ -3229,6 +3261,10 @@ components:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
+        scheduleType:
+          $ref: "#/components/schemas/ConnectionScheduleType"
+        scheduleData:
+          $ref: "#/components/schemas/ConnectionScheduleData"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
@@ -3270,6 +3306,10 @@ components:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
+        scheduleType:
+          $ref: "#/components/schemas/ConnectionScheduleType"
+        scheduleData:
+          $ref: "#/components/schemas/ConnectionScheduleData"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
@@ -3307,11 +3347,17 @@ components:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
+        scheduleType:
+          $ref: "#/components/schemas/ConnectionScheduleType"
+        scheduleData:
+          $ref: "#/components/schemas/ConnectionScheduleData"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
         withRefreshedCatalog:
+          type: boolean
+        skipReset:
           type: boolean
         operations:
           type: array
@@ -3356,6 +3402,10 @@ components:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
+        scheduleType:
+          $ref: "#/components/schemas/ConnectionScheduleType"
+        scheduleData:
+          $ref: "#/components/schemas/ConnectionScheduleData"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
@@ -3386,6 +3436,10 @@ components:
           $ref: "#/components/schemas/DestinationId"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
+        scheduleType:
+          $ref: "#/components/schemas/ConnectionScheduleType"
+        scheduleData:
+          $ref: "#/components/schemas/ConnectionScheduleData"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         source:
@@ -3415,6 +3469,10 @@ components:
           $ref: "#/components/schemas/DestinationId"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
+        scheduleType:
+          $ref: "#/components/schemas/ConnectionScheduleType"
+        scheduleData:
+          $ref: "#/components/schemas/ConnectionScheduleData"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         source:
@@ -3437,6 +3495,8 @@ components:
         - active
         - inactive
         - deprecated
+    # TODO(https://github.com/airbytehq/airbyte/issues/11432): remove.
+    # Prefer the ConnectionScheduleType and ConnectionScheduleData properties.
     ConnectionSchedule:
       description: if null, then no schedule is set.
       type: object
@@ -3455,6 +3515,46 @@ components:
             - days
             - weeks
             - months
+    ConnectionScheduleType:
+      description: determine how the schedule data should be interpreted
+      type: string
+      enum:
+        - manual
+        - basic
+        - cron
+    ConnectionScheduleData:
+      description: schedule for when the the connection should run, per the schedule type
+      type: object
+      properties:
+        # This should be populated when schedule type is basic.
+        basicSchedule:
+          type: object
+          required:
+            - timeUnit
+            - units
+          properties:
+            timeUnit:
+              type: string
+              enum:
+                - minutes
+                - hours
+                - days
+                - weeks
+                - months
+            units:
+              type: integer
+              format: int64
+        # This should be populated when schedule type is cron.
+        cron:
+          type: object
+          required:
+            - cronExpression
+            - cronTimeZone
+          properties:
+            cronExpression:
+              type: string
+            cronTimeZone:
+              type: string
     NamespaceDefinitionType:
       type: string
       description: Method used for computing final namespace in destination
@@ -4534,6 +4634,10 @@ components:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
+        scheduleType:
+          $ref: "#/components/schemas/ConnectionScheduleType"
+        scheduleData:
+          $ref: "#/components/schemas/ConnectionScheduleData"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         operationIds:

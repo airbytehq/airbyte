@@ -240,10 +240,11 @@ def test_raise_on_http_errors_off_5xx(mocker, status_code):
 @pytest.mark.parametrize("status_code", [400, 401, 402, 403, 416])
 def test_raise_on_http_errors_off_non_retryable_4xx(mocker, status_code):
     stream = AutoFailFalseHttpStream()
-    req = requests.Response()
-    req.status_code = status_code
+    req = requests.PreparedRequest()
+    res = requests.Response()
+    res.status_code = status_code
 
-    mocker.patch.object(requests.Session, "send", return_value=req)
+    mocker.patch.object(requests.Session, "send", return_value=res)
     response = stream._send_request(req, {})
     assert response.status_code == status_code
 
@@ -437,9 +438,10 @@ def test_send_raise_on_http_errors_logs(mocker, status_code):
     mocker.patch.object(AutoFailTrueHttpStream, "logger")
     mocker.patch.object(AutoFailTrueHttpStream, "should_retry", mocker.Mock(return_value=False))
     stream = AutoFailTrueHttpStream()
-    req = requests.Response()
-    req.status_code = status_code
-    mocker.patch.object(requests.Session, "send", return_value=req)
+    req = requests.PreparedRequest()
+    res = requests.Response()
+    res.status_code = status_code
+    mocker.patch.object(requests.Session, "send", return_value=res)
     with pytest.raises(requests.exceptions.HTTPError):
         response = stream._send_request(req, {})
         stream.logger.error.assert_called_with(response.text)

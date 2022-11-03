@@ -7,9 +7,12 @@ package io.airbyte.workers.helper;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
+import io.airbyte.config.ScheduleData;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
@@ -83,14 +86,26 @@ public class ConnectionHelper {
       newConnection.withResourceRequirements(original.getResourceRequirements());
     }
 
-    // update sync schedule
-    if (update.getSchedule() != null) {
+    if (update.getScheduleType() != null) {
+      newConnection.withScheduleType(update.getScheduleType());
+      newConnection.withManual(update.getManual());
+      if (update.getScheduleData() != null) {
+        newConnection.withScheduleData(Jsons.clone(update.getScheduleData()));
+      }
+    } else if (update.getSchedule() != null) {
       final Schedule newSchedule = new Schedule()
           .withTimeUnit(update.getSchedule().getTimeUnit())
           .withUnits(update.getSchedule().getUnits());
       newConnection.withManual(false).withSchedule(newSchedule);
+      // Also write into the new field. This one will be consumed if populated.
+      newConnection
+          .withScheduleType(ScheduleType.BASIC_SCHEDULE);
+      newConnection.withScheduleData(new ScheduleData().withBasicSchedule(
+          new BasicSchedule().withTimeUnit(convertTimeUnitSchema(update.getSchedule().getTimeUnit()))
+              .withUnits(update.getSchedule().getUnits())));
     } else {
       newConnection.withManual(true).withSchedule(null);
+      newConnection.withScheduleType(ScheduleType.MANUAL).withScheduleData(null);
     }
 
     return newConnection;
@@ -121,6 +136,24 @@ public class ConnectionHelper {
               sourceWorkspace,
               operationId,
               operationWorkspace));
+    }
+  }
+
+  // Helper method to convert between TimeUnit enums for old and new schedule schemas.
+  private static BasicSchedule.TimeUnit convertTimeUnitSchema(Schedule.TimeUnit timeUnit) {
+    switch (timeUnit) {
+      case MINUTES:
+        return BasicSchedule.TimeUnit.MINUTES;
+      case HOURS:
+        return BasicSchedule.TimeUnit.HOURS;
+      case DAYS:
+        return BasicSchedule.TimeUnit.DAYS;
+      case WEEKS:
+        return BasicSchedule.TimeUnit.WEEKS;
+      case MONTHS:
+        return BasicSchedule.TimeUnit.MONTHS;
+      default:
+        throw new RuntimeException("Unhandled TimeUnitEnum: " + timeUnit);
     }
   }
 

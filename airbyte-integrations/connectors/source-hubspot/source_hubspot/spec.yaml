@@ -85,6 +85,26 @@ connectionSpecification:
                 if you need help finding this key.
               type: string
               airbyte_secret: true
+        - type: object
+          title: Private APP
+          required:
+            - access_token
+            - credentials_title
+          properties:
+            credentials_title:
+              type: string
+              title: Credentials
+              description: Name of the credentials set
+              const: Private App Credentials
+              order: 0
+            access_token:
+              title: Access token
+              description: >-
+                HubSpot Access token. See the <a
+                href="https://developers.hubspot.com/docs/api/private-apps">Hubspot docs</a>
+                if you need help finding this token.
+              type: string
+              airbyte_secret: true
 authSpecification:
   auth_type: oauth2.0
   oauth2Specification:

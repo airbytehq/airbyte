@@ -42,7 +42,6 @@ import io.airbyte.api.client.model.generated.SyncMode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.test.utils.AirbyteAcceptanceTestHarness;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -81,18 +80,19 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings({"rawtypes", "ConstantConditions"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class AdvancedAcceptanceTests {
+class AdvancedAcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AdvancedAcceptanceTests.class);
+  private static final String TYPE = "type";
+  private static final String COLUMN1 = "column1";
 
   private static AirbyteAcceptanceTestHarness testHarness;
   private static AirbyteApiClient apiClient;
   private static UUID workspaceId;
-  private static KubernetesClient kubernetesClient;
 
   @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
-  public static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
+  static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost("localhost")
@@ -113,30 +113,29 @@ public class AdvancedAcceptanceTests {
     LOGGER.info("pg destination definition: {}", destinationDef.getDockerImageTag());
 
     testHarness = new AirbyteAcceptanceTestHarness(apiClient, workspaceId);
-    kubernetesClient = testHarness.getKubernetesClient();
   }
 
   @AfterAll
-  public static void end() {
+  static void end() {
     testHarness.stopDbAndContainers();
   }
 
   @BeforeEach
-  public void setup() throws URISyntaxException, IOException, SQLException {
+  void setup() throws URISyntaxException, IOException, SQLException {
     testHarness.setup();
   }
 
   @AfterEach
-  public void tearDown() {
+  void tearDown() {
     testHarness.cleanup();
   }
 
   @RetryingTest(3)
   @Order(1)
-  public void testManualSync() throws Exception {
+  void testManualSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
@@ -151,7 +150,7 @@ public class AdvancedAcceptanceTests {
 
   @RetryingTest(3)
   @Order(2)
-  public void testCheckpointing() throws Exception {
+  void testCheckpointing() throws Exception {
     final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
     final DestinationDefinitionRead destinationDefinition = testHarness.createE2eDestinationDefinition();
 
@@ -160,7 +159,7 @@ public class AdvancedAcceptanceTests {
         workspaceId,
         sourceDefinition.getSourceDefinitionId(),
         Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "EXCEPTION_AFTER_N")
+            .put(TYPE, "EXCEPTION_AFTER_N")
             .put("throw_after_n_records", 100)
             .build()));
 
@@ -168,7 +167,7 @@ public class AdvancedAcceptanceTests {
         "E2E Test Destination -" + UUID.randomUUID(),
         workspaceId,
         destinationDefinition.getDestinationDefinitionId(),
-        Jsons.jsonNode(ImmutableMap.of("type", "SILENT")));
+        Jsons.jsonNode(ImmutableMap.of(TYPE, "SILENT")));
 
     final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
@@ -200,7 +199,9 @@ public class AdvancedAcceptanceTests {
     // now cancel it so that we freeze state!
     try {
       apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead1.getJob().getId()));
-    } catch (final Exception e) {}
+    } catch (final Exception e) {
+      LOGGER.error("error:", e);
+    }
 
     final ConnectionState connectionState = waitForConnectionState(apiClient, connectionId);
 
@@ -208,21 +209,21 @@ public class AdvancedAcceptanceTests {
     // nature, we can't guarantee exactly what checkpoint will be registered. what we can do is send
     // enough messages to make sure that we checkpoint at least once.
     assertNotNull(connectionState.getState());
-    assertTrue(connectionState.getState().get("column1").isInt());
-    LOGGER.info("state value: {}", connectionState.getState().get("column1").asInt());
-    assertTrue(connectionState.getState().get("column1").asInt() > 0);
-    assertEquals(0, connectionState.getState().get("column1").asInt() % 5);
+    assertTrue(connectionState.getState().get(COLUMN1).isInt());
+    LOGGER.info("state value: {}", connectionState.getState().get(COLUMN1).asInt());
+    assertTrue(connectionState.getState().get(COLUMN1).asInt() > 0);
+    assertEquals(0, connectionState.getState().get(COLUMN1).asInt() % 5);
   }
 
   @RetryingTest(3)
   @Order(3)
-  public void testRedactionOfSensitiveRequestBodies() throws Exception {
+  void testRedactionOfSensitiveRequestBodies() throws Exception {
     // check that the source password is not present in the logs
     final List<String> serverLogLines = java.nio.file.Files.readAllLines(
         apiClient.getLogsApi().getLogs(new LogsRequestBody().logType(LogType.SERVER)).toPath(),
         Charset.defaultCharset());
 
-    assertTrue(serverLogLines.size() > 0);
+    assertFalse(serverLogLines.isEmpty());
 
     boolean hasRedacted = false;
 
@@ -240,7 +241,7 @@ public class AdvancedAcceptanceTests {
   // verify that when the worker uses backpressure from pipes that no records are lost.
   @RetryingTest(3)
   @Order(4)
-  public void testBackpressure() throws Exception {
+  void testBackpressure() throws Exception {
     final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
     final DestinationDefinitionRead destinationDefinition = testHarness.createE2eDestinationDefinition();
 
@@ -249,7 +250,7 @@ public class AdvancedAcceptanceTests {
         workspaceId,
         sourceDefinition.getSourceDefinitionId(),
         Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "INFINITE_FEED")
+            .put(TYPE, "INFINITE_FEED")
             .put("max_records", 5000)
             .build()));
 
@@ -258,7 +259,7 @@ public class AdvancedAcceptanceTests {
         workspaceId,
         destinationDefinition.getDestinationDefinitionId(),
         Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "THROTTLED")
+            .put(TYPE, "THROTTLED")
             .put("millis_per_record", 1)
             .build()));
 

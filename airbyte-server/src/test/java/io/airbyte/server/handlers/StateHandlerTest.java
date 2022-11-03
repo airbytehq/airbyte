@@ -32,7 +32,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class StateHandlerTest {
+class StateHandlerTest {
 
   public static final UUID CONNECTION_ID = UUID.randomUUID();
   private static final JsonNode JSON_BLOB = Jsons.deserialize("{\"users\": 10}");

@@ -1,6 +1,6 @@
 {{ config(
     sort = "_airbyte_emitted_at",
-    schema = "test_normalization",
+    schema = "test_normalization_xjvlg",
     tags = [ "nested" ]
 ) }}
 -- Final base SQL model
