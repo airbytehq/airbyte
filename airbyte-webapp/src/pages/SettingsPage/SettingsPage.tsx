@@ -2,9 +2,9 @@ import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
-import HeadTitle from "components/HeadTitle";
+import { HeadTitle } from "components/common/HeadTitle";
+import { MainPageWithScroll } from "components/common/MainPageWithScroll";
 import LoadingPage from "components/LoadingPage";
-import MainPageWithScroll from "components/MainPageWithScroll";
 import { PageHeader } from "components/ui/PageHeader";
 import { SideMenu, CategoryItem, SideMenuItem } from "components/ui/SideMenu";
 
