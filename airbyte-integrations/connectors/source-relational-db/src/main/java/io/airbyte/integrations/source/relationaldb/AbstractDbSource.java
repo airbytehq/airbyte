@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.relationaldb;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.exceptions.ConfigErrorException;
@@ -220,7 +221,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     }
   }
 
-  protected List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(
+  private List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(
       final Database database) throws Exception {
     final Set<String> systemNameSpaces = getExcludedInternalNameSpaces();
     final List<TableInfo<CommonField<DataType>>> discoveredTables = discoverInternal(database);
@@ -230,7 +231,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                 Collectors.toList()));
   }
 
-  protected List<AutoCloseableIterator<AirbyteMessage>> getFullRefreshIterators(
+  private List<AutoCloseableIterator<AirbyteMessage>> getFullRefreshIterators(
       final Database database,
       final ConfiguredAirbyteCatalog catalog,
       final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
@@ -273,7 +274,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    *                         sync mode
    * @return List of AirbyteMessageIterators containing all iterators for a catalog
    */
-  protected List<AutoCloseableIterator<AirbyteMessage>> getSelectedIterators(
+  private List<AutoCloseableIterator<AirbyteMessage>> getSelectedIterators(
       final Database database,
       final ConfiguredAirbyteCatalog catalog,
       final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
@@ -317,7 +318,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param emittedAt     Time when data was emitted from the Source database
    * @return
    */
-  protected AutoCloseableIterator<AirbyteMessage> createReadIterator(final Database database,
+  private AutoCloseableIterator<AirbyteMessage> createReadIterator(final Database database,
       final ConfiguredAirbyteStream airbyteStream,
       final TableInfo<CommonField<DataType>> table,
       final StateManager stateManager,
@@ -400,7 +401,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param emittedAt              Time when data was emitted from the Source database
    * @return AirbyteMessage Iterator that
    */
-  protected AutoCloseableIterator<AirbyteMessage> getIncrementalStream(final Database database,
+  private AutoCloseableIterator<AirbyteMessage> getIncrementalStream(final Database database,
       final ConfiguredAirbyteStream airbyteStream,
       final List<String> selectedDatabaseFields,
       final TableInfo<CommonField<DataType>> table,
@@ -442,7 +443,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param emittedAt              Time when data was emitted from the Source database
    * @return AirbyteMessageIterator with all records for a database source
    */
-  protected AutoCloseableIterator<AirbyteMessage> getFullRefreshStream(final Database database,
+  private AutoCloseableIterator<AirbyteMessage> getFullRefreshStream(final Database database,
       final String streamName,
       final String namespace,
       final List<String> selectedDatabaseFields,
@@ -454,11 +455,11 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     return getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
   }
 
-  protected String getFullyQualifiedTableName(final String nameSpace, final String tableName) {
+  private String getFullyQualifiedTableName(final String nameSpace, final String tableName) {
     return nameSpace != null ? nameSpace + "." + tableName : tableName;
   }
 
-  public AutoCloseableIterator<AirbyteMessage> getMessageIterator(
+  private AutoCloseableIterator<AirbyteMessage> getMessageIterator(
       final AutoCloseableIterator<JsonNode> recordIterator,
       final String streamName,
       final String namespace,
@@ -479,7 +480,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return list of table/data structure info
    * @throws Exception might throw an error during connection to database
    */
-  protected List<TableInfo<Field>> getTables(final Database database) throws Exception {
+  private List<TableInfo<Field>> getTables(final Database database) throws Exception {
     final List<TableInfo<CommonField<DataType>>> tableInfos = discoverWithoutSystemTables(database);
     final Map<String, List<String>> fullyQualifiedTableNameToPrimaryKeys = discoverPrimaryKeys(
         database, tableInfos);
@@ -508,7 +509,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         .collect(Collectors.toList());
   }
 
-  protected Field toField(final CommonField<DataType> field) {
+  private Field toField(final CommonField<DataType> field) {
     if (getType(field.getType()) == JsonSchemaType.OBJECT && field.getProperties() != null
         && !field.getProperties().isEmpty()) {
       final var properties = field.getProperties().stream().map(this::toField).toList();
@@ -518,7 +519,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     }
   }
 
-  protected void assertColumnsWithSameNameAreSame(final String nameSpace, final String tableName,
+  private void assertColumnsWithSameNameAreSame(final String nameSpace, final String tableName,
       final List<CommonField<DataType>> columns) {
     columns.stream()
         .collect(Collectors.groupingBy(CommonField<DataType>::getName))
@@ -543,7 +544,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * for SELECT-ing the table with privileges. In some cases such SELECT doesn't require (e.g. in
    * Oracle DB - the schema is the user, you cannot REVOKE a privilege on a table from its owner).
    */
-  public <T> Set<T> getPrivilegesTableForCurrentUser(final JdbcDatabase database,
+  protected <T> Set<T> getPrivilegesTableForCurrentUser(final JdbcDatabase database,
       final String schema) throws SQLException {
     return Collections.emptySet();
   }
@@ -571,7 +572,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    *
    * @return list of consumers that run queries for the check command.
    */
-  public abstract List<CheckedConsumer<Database, Exception>> getCheckOperations(JsonNode config)
+  protected abstract List<CheckedConsumer<Database, Exception>> getCheckOperations(JsonNode config)
       throws Exception;
 
   /**
@@ -587,7 +588,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    *
    * @return set of system namespaces(schemas) to be excluded
    */
-  public abstract Set<String> getExcludedInternalNameSpaces();
+  protected abstract Set<String> getExcludedInternalNameSpaces();
 
   /**
    * Discover all available tables in the source database.
@@ -639,7 +640,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param tableName   target table
    * @return iterator with read data
    */
-  public abstract AutoCloseableIterator<JsonNode> queryTableFullRefresh(final Database database,
+  protected abstract AutoCloseableIterator<JsonNode> queryTableFullRefresh(final Database database,
       final List<String> columnNames,
       final String schemaName,
       final String tableName);
@@ -652,7 +653,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    *
    * @return iterator with read data
    */
-  public abstract AutoCloseableIterator<JsonNode> queryTableIncremental(Database database,
+  protected abstract AutoCloseableIterator<JsonNode> queryTableIncremental(Database database,
       List<String> columnNames,
       String schemaName,
       String tableName,
@@ -671,7 +672,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   /**
    * @return list of fields that could be used as cursors
    */
-  public abstract boolean isCursorType(DataType type);
+  protected abstract boolean isCursorType(DataType type);
 
   private Database createDatabaseInternal(final JsonNode sourceConfig) throws Exception {
     final Database database = createDatabase(sourceConfig);
