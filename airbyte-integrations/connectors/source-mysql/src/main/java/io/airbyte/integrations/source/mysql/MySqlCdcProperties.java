@@ -50,7 +50,7 @@ public class MySqlCdcProperties {
      * {@link MySQLConverter}
      */
     props.setProperty("converters", "boolean, datetime");
-    props.setProperty("boolean.type", "io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter");
+    props.setProperty("boolean.type", "io.airbyte.integrations.debezium.internals.CustomMySQLTinyIntOneToBooleanConverter");
     props.setProperty("datetime.type", "io.airbyte.integrations.debezium.internals.MySQLDateTimeConverter");
 
     // For CDC mode, the user cannot provide timezone arguments as JDBC parameters - they are
