@@ -5,7 +5,6 @@
 import boto3
 import logging
 import pandas as pd
-import pyarrow as pa
 import awswrangler as wr
 
 from retrying import retry
@@ -126,7 +125,6 @@ class AwsHandler:
             use_threads=False,  # True causes s3 NoCredentialsError error
             catalog_versioning=True,
             boto3_session=self._session,
-            concurrent_partitioning=True,
             partition_cols=partition_cols,
             compression=self._get_compression_type(self._config.compression_codec),
             dtype=dtype,
@@ -155,7 +153,6 @@ class AwsHandler:
             lines=True,
             catalog_versioning=True,
             boto3_session=self._session,
-            concurrent_partitioning=True,
             partition_cols=partition_cols,
             dtype=dtype,
             compression=self._get_compression_type(self._config.compression_codec),

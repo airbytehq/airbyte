@@ -169,6 +169,7 @@ def get_big_schema_configured_stream():
                 "type": ["integer", "number"],
             },
             "empty_array": {"type": ["null", "array"]},
+            "airbyte_type_object": {"type": "number", "airbyte_type": "integer"},
         },
     }
 
@@ -223,12 +224,12 @@ def test_get_cursor_field():
 
 def test_add_partition_column():
     tests = {
-        "NO PARTITIONING": [],
-        "DATE": ["datetime_col_date"],
-        "MONTH": ["datetime_col_month"],
-        "YEAR": ["datetime_col_year"],
-        "DAY": ["datetime_col_day"],
-        "YEAR/MONTH/DAY": ["datetime_col_year", "datetime_col_month", "datetime_col_day"],
+        "NO PARTITIONING": {},
+        "DATE": {"datetime_col_date": "date"},
+        "MONTH": {"datetime_col_month": "bigint"},
+        "YEAR": {"datetime_col_year": "bigint"},
+        "DAY": {"datetime_col_day": "bigint"},
+        "YEAR/MONTH/DAY": {"datetime_col_year": "bigint", "datetime_col_month": "bigint", "datetime_col_day": "bigint"},
     }
 
     for partitioning, expected_columns in tests.items():
@@ -249,6 +250,7 @@ def test_get_glue_dtypes_from_json_schema():
     writer = get_big_schema_writer(get_config())
     result, json_casts = writer._get_glue_dtypes_from_json_schema(writer._schema)
     assert result == {
+        "airbyte_type_object": "bigint",
         "answers": "array<string>",
         "answers_nested_bad": "string",
         "appId": "bigint",

@@ -4,6 +4,7 @@
 
 import json
 import logging
+import numpy as np
 import pandas as pd
 
 from typing import Dict, Any, Optional, List, Union, Tuple
@@ -52,26 +53,33 @@ class StreamWriter:
         partitioning = self._config.partitioning
 
         if partitioning == PartitionOptions.NONE:
-            return []
+            return {}
 
         partitions = partitioning.value.split("/")
 
-        fields = []
+        fields = {}
         for partition in partitions:
             date_col = f"{col}_{partition.lower()}"
+            fields[date_col] = 'bigint'
+
+            # defaulting to 0 since both governed tables
+            # and pyarrow don't play well with __HIVE_DEFAULT_PARTITION__
+            # - pyarrow will fail to cast the column to any other type than string
+            # - governed tables will fail when trying to query a table with partitions that have __HIVE_DEFAULT_PARTITION__
+            # aside from the above, awswrangler will remove data from a table if the partition value is null
+            # see: https://github.com/aws/aws-sdk-pandas/issues/921
             if partition == "YEAR":
-                df[date_col] = df[col].dt.year
+                df[date_col] = df[col].dt.strftime('%Y').fillna("0").astype("Int64")
 
             elif partition == "MONTH":
-                df[date_col] = df[col].dt.month
+                df[date_col] = df[col].dt.strftime('%m').fillna("0").astype("Int64")
 
             elif partition == "DAY":
-                df[date_col] = df[col].dt.day
+                df[date_col] = df[col].dt.strftime('%d').fillna("0").astype("Int64")
 
             elif partition == "DATE":
-                df[date_col] = df[col].dt.date
-
-            fields.append(date_col)
+                fields[date_col] = 'date'
+                df[date_col] = df[col].dt.strftime('%Y-%m-%d')
 
         return fields
 
@@ -122,7 +130,7 @@ class StreamWriter:
     def _get_pandas_dtypes_from_json_schema(self, df: pd.DataFrame) -> Dict[str, str]:
         type_mapper = {
             "string": "string",
-            "integer": "int64",
+            "integer": "Int64",
             "number": "float64",
             "boolean": "bool",
             "object": "object",
@@ -135,6 +143,12 @@ class StreamWriter:
         for col in df.columns:
             if col in self._schema:
                 typ = self._schema[col].get("type", "string")
+                airbyte_type = self._schema[col].get("airbyte_type")
+
+                # special case where the json schema type contradicts the airbyte type
+                if airbyte_type and typ == "number" and airbyte_type == "integer":
+                    typ = "integer"
+
                 typ = self._get_json_schema_type(typ)
 
             column_types[col] = type_mapper.get(typ, "string")
@@ -219,9 +233,14 @@ class StreamWriter:
 
             result_typ = None
             col_typ = definition.get("type")
+            airbyte_type = definition.get("airbyte_type")
             col_format = definition.get("format")
 
             col_typ = self._get_json_schema_type(col_typ)
+
+            # special case where the json schema type contradicts the airbyte type
+            if airbyte_type and col_typ == "number" and airbyte_type == "integer":
+                col_typ = "integer"
 
             if col_typ == "string" and col_format == "date-time":
                 result_typ = "timestamp"
@@ -305,7 +324,7 @@ class StreamWriter:
             logger.info(f"No messages to write to {self._database}:{self._table}")
             return
 
-        partition_fields = []
+        partition_fields = {}
         date_columns = self._get_date_columns()
         for col in date_columns:
             if col in df.columns:
@@ -314,12 +333,14 @@ class StreamWriter:
                 # Create date column for partitioning
                 if self._cursor_fields and col in self._cursor_fields:
                     fields = self._add_partition_column(col, df)
-                    partition_fields.extend(fields)
+                    partition_fields.update(fields)
 
         dtype, json_casts = self._get_glue_dtypes_from_json_schema(self._schema)
+        dtype = {**dtype, **partition_fields}
+        partition_fields = list(partition_fields.keys())
 
         # Make sure complex types that can't be converted
-        # to a struct or array are converted to json
+        # to a struct or array are converted to a json string
         # so they can be queried with json_extract
         for col in json_casts:
             if col in df.columns:
