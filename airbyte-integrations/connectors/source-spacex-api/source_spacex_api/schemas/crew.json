@@ -7,40 +7,23 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "status": {
           "type": "string",
-          "enum": [
-            "active",
-            "inactive",
-            "retired",
-            "unknown"
-          ]
+          "enum": ["active", "inactive", "retired", "unknown"]
         },
         "agency": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "image": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "wikipedia": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "launches": {
@@ -50,9 +33,7 @@
           }
         }
       },
-      "required": [
-        "status"
-      ]
+      "required": ["status"]
     },
     "id": {
       "type": "string",

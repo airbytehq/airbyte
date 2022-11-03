@@ -27,14 +27,14 @@ definitions:
       name: "launches"
       primary_key: "id"
       path: "/launches/{{config['options'] or config['id'] or latest}}"
-  
+
   capsules_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "capsules"
       primary_key: "id"
       path: "/capsules"
-      
+
   company_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -112,7 +112,6 @@ definitions:
       primary_key: "id"
       path: "/starlink"
 
-
 streams:
   - "*ref(definitions.launches_stream)"
   - "*ref(definitions.capsules_stream)"
@@ -129,7 +128,7 @@ streams:
   - "*ref(definitions.starlink_stream)"
 
 check:
-  stream_names: 
+  stream_names:
     - "launches"
     - "capsules"
     - "company"
@@ -142,4 +141,4 @@ check:
     - "rockets"
     - "roadster"
     - "ships"
-    - "starlink" 
+    - "starlink"
