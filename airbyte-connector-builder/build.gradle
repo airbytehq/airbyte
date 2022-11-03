@@ -11,7 +11,7 @@ airbytePython {
 }
 
 
-task generateApiServer(type: GenerateTask) {
+task generateApiClient(type: GenerateTask) {
     inputSpec = "$rootDir.absolutePath/airbyte-connector-builder/src/main/openapi/openapi.yaml"
     outputDir = "$buildDir/airbyte_connector_builder_server"
 
@@ -19,7 +19,7 @@ task generateApiServer(type: GenerateTask) {
     packageName = "airbyte_connector_builder_server"
 }
 
-blackFormat.dependsOn generateApiServer
-isortFormat.dependsOn generateApiServer
-flakeCheck.dependsOn generateApiServer
-installReqs.dependsOn generateApiServer
+blackFormat.dependsOn generateApiClient
+isortFormat.dependsOn generateApiClient
+flakeCheck.dependsOn generateApiClient
+installReqs.dependsOn generateApiClient
