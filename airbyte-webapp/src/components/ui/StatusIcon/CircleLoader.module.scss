@@ -15,11 +15,11 @@
 }
 
 .centerDot {
-  fill: colors.$blue;
+  fill: var(--color-blue-400);
 }
 
 :export {
   // Export colors to be used in SVG gradients
-  gradientStart: colors.$blue;
+  gradientStart: var(--color-blue-400);
   gradientStop: colors.$blue-transparent;
 }

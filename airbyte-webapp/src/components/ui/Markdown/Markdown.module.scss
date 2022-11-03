@@ -3,7 +3,7 @@
 
 .markdown {
   * {
-    color: colors.$dark-blue;
+    color: var(--color-dark-blue-900);
     line-height: 24px;
     font-size: 16px;
     font-weight: 400;
@@ -31,7 +31,7 @@
   }
 
   a {
-    color: colors.$blue;
+    color: var(--color-blue-400);
     text-decoration: none;
     line-height: 24px;
 

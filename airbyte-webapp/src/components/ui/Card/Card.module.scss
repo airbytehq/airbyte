@@ -18,7 +18,7 @@
 
 .title {
   padding: 25px 25px 22px;
-  color: colors.$dark-blue;
+  color: var(--color-dark-blue-900);
   border-bottom: colors.$grey-100 vars.$border-thin solid;
   font-weight: 600;
   letter-spacing: 0.008em;

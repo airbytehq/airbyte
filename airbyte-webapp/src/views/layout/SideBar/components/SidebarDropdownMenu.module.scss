@@ -72,7 +72,7 @@
       align-items: center;
       width: 34px;
       font-size: 22px;
-      color: colors.$dark-blue;
+      color: var(--color-dark-blue-900);
     }
 
     &.active {

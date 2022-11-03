@@ -1,5 +1,5 @@
 @use "../../../../../../scss/colors";
 
 .title {
-  color: colors.$blue;
+  color: var(--color-blue-400);
 }

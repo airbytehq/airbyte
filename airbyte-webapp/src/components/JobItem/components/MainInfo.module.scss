@@ -10,7 +10,7 @@
   .titleCell {
     width: 80%;
     display: flex;
-    color: colors.$dark-blue;
+    color: var(--color-dark-blue-900);
     min-width: 0;
 
     .statusIcon {

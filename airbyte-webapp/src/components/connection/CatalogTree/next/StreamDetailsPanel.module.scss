@@ -15,5 +15,5 @@
   height: calc(100vh - 100px);
   background: colors.$white;
   border-radius: 15px 15px 0 0;
-  box-shadow: 0 0 22px rgba(colors.$dark-blue-900, 12%);
+  box-shadow: 0 0 22px rgba(var(--color-dark-blue-900), 12%);
 }

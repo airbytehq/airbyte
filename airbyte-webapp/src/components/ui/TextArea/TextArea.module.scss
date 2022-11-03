@@ -12,8 +12,8 @@
   font-weight: normal;
   border: 1px solid colors.$grey-50;
   background-color: colors.$grey-50;
-  color: colors.$dark-blue;
-  caret-color: colors.$blue;
+  color: var(--color-dark-blue-900);
+  caret-color: var(--color-blue-400);
 
   &.error {
     border-color: colors.$red;
@@ -38,7 +38,7 @@
 
   &:focus {
     background-color: colors.$primaryColor12;
-    border-color: colors.$blue;
+    border-color: var(--color-blue-400);
 
     &.light {
       background-color: colors.$white;

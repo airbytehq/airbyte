@@ -33,7 +33,7 @@
   }
 
   &.blue {
-    background: colors.$blue;
+    background: var(--color-blue-400);
     color: colors.$white;
   }
 }

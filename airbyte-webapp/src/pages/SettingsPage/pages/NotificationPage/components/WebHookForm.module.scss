@@ -49,10 +49,10 @@
     display: inline-flex;
     align-items: center;
     padding: variables.$spacing-sm 0;
-    color: colors.$blue;
+    color: var(--color-blue-400);
 
     .text {
-      color: colors.$blue;
+      color: var(--color-blue-400);
       padding-left: variables.$spacing-md;
     }
   }
@@ -85,7 +85,7 @@
     padding: 0;
 
     .webhookGuideButton {
-      color: colors.$blue;
+      color: var(--color-blue-400);
       text-decoration: underline;
       padding-left: 0;
       padding-right: 0;
@@ -93,7 +93,7 @@
       margin-right: 45px;
 
       &:hover {
-        color: colors.$blue;
+        color: var(--color-blue-400);
       }
     }
 

@@ -21,7 +21,7 @@
 .arrow {
   margin-left: variables.$spacing-md;
   margin-top: -1px;
-  color: colors.$blue;
+  color: var(--color-blue-400);
 }
 
 .optionsMenu {

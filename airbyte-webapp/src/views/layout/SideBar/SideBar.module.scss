@@ -11,7 +11,7 @@
   height: 100%;
   width: 100px;
   min-width: 65px;
-  background-color: colors.$dark-blue;
+  background-color: var(--color-dark-blue-900);
   padding: 23px 4px 15px;
   text-align: center;
 }
@@ -63,7 +63,7 @@
 
   &.active {
     color: colors.$white;
-    background: colors.$blue-400;
+    background: var(--color-blue-400);
     transition: all variables.$transition-out;
 
     &:hover,

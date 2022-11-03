@@ -23,7 +23,7 @@
 
 .connectionName {
   font-size: 14px;
-  color: colors.$dark-blue-900;
+  color: var(--color-dark-blue-900);
   text-align: left;
   margin-right: variables.$spacing-md;
 }

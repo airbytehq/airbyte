@@ -11,7 +11,7 @@
   font-size: 13px;
   line-height: 16px;
   cursor: pointer;
-  color: colors.$dark-blue;
+  color: var(--color-dark-blue-900);
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -28,6 +28,6 @@
 
   & a {
     text-decoration: underline;
-    color: colors.$blue;
+    color: var(--color-blue-400);
   }
 }

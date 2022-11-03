@@ -16,10 +16,10 @@
     border: none;
     cursor: pointer;
     background: colors.$white;
-    color: colors.$dark-blue;
+    color: var(--color-dark-blue-900);
 
     &:hover {
-      color: colors.$blue;
+      color: var(--color-blue-400);
     }
   }
 }
@@ -35,7 +35,7 @@
   padding: 2px 6px;
   height: 14px;
   background: colors.$grey-100;
-  color: colors.$dark-blue;
+  color: var(--color-dark-blue-900);
   text-transform: uppercase;
   border-radius: 25px;
   font-weight: 500;

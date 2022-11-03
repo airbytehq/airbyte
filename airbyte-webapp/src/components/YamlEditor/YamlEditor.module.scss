@@ -9,7 +9,7 @@
 
 .control {
   flex: 0 0 auto;
-  background-color: colors.$dark-blue;
+  background-color: var(--color-dark-blue-900);
   display: flex;
   padding: variables.$spacing-md;
   flex-direction: row;

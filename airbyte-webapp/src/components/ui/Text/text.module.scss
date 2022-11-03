@@ -1,7 +1,7 @@
 @use "scss/colors";
 
 .text {
-  color: colors.$dark-blue;
+  color: var(--color-dark-blue-900);
   margin: 0;
   padding: 0;
 }

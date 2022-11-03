@@ -23,7 +23,7 @@
 
   // used to control svg size, not text size
   font-size: 18px;
-  color: colors.$blue;
+  color: var(--color-blue-400);
 }
 
 .nameContainer {
@@ -45,7 +45,7 @@
 
   &:hover {
     cursor: pointer;
-    border: variables.$border-thin solid colors.$blue;
+    border: variables.$border-thin solid var(--color-blue-400);
     background-color: colors.$blue-50;
 
     & > .icon {
@@ -57,7 +57,7 @@
 .editingContainer {
   composes: textContainer;
   background-color: colors.$white;
-  border: variables.$border-thin solid colors.$blue;
+  border: variables.$border-thin solid var(--color-blue-400);
   border-radius: variables.$border-radius-sm;
 }
 

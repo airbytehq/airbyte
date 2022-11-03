@@ -32,7 +32,7 @@
 
   &.focused {
     background-color: colors.$primaryColor12;
-    border-color: colors.$blue;
+    border-color: var(--color-blue-400);
 
     &.light {
       background-color: colors.$white;
@@ -50,8 +50,8 @@
     font-weight: normal;
     border: none;
     background: none;
-    color: colors.$dark-blue;
-    caret-color: colors.$blue;
+    color: var(--color-dark-blue-900);
+    caret-color: var(--color-blue-400);
 
     &::placeholder {
       color: colors.$grey-300;

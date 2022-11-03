@@ -10,10 +10,10 @@
 }
 
 .link {
-  color: colors.$dark-blue;
+  color: var(--color-dark-blue-900);
 
   &:hover,
   &:focus {
-    color: colors.$blue-400;
+    color: var(--color-blue-400);
   }
 }

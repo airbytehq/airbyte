@@ -60,7 +60,7 @@
     height: 0;
 
     &:checked + .slider {
-      background-color: colors.$blue;
+      background-color: var(--color-blue-400);
 
       &::before {
         @include knob-transform(right, false);

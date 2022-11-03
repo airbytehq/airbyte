@@ -9,7 +9,7 @@
   justify-content: space-between;
   align-items: center;
   padding: variables.$spacing-xl variables.$spacing-xl 0;
-  color: colors.$dark-blue;
+  color: var(--color-dark-blue-900);
 
   &.withLine {
     border-bottom: variables.$border-thin solid colors.$grey-100;
