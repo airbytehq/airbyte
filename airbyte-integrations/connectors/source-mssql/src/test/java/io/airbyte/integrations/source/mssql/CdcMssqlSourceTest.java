@@ -296,31 +296,27 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   void testCdcCheckOperations() throws Exception {
     // assertCdcEnabledInDb
     switchCdcOnDatabase(false, dbName);
-    AirbyteConnectionStatus status = getSource().check(getConfig());
-    assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
+    assertThrows(Exception.class, () -> getSource().check(getConfig()));
     switchCdcOnDatabase(true, dbName);
     // assertCdcSchemaQueryable
     alterPermissionsOnSchema(false, "cdc");
-    status = getSource().check(getConfig());
-    assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
+    assertThrows(Exception.class, () -> getSource().check(getConfig()));
     alterPermissionsOnSchema(true, "cdc");
     // assertSqlServerAgentRunning
     executeQuery(String.format("USE master;\n" + "GRANT VIEW SERVER STATE TO %s", TEST_USER_NAME));
     switchSqlServerAgentAndWait(false);
-    status = getSource().check(getConfig());
-    assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
+    assertThrows(Exception.class, () -> getSource().check(getConfig()));
     switchSqlServerAgentAndWait(true);
     // assertSnapshotIsolationAllowed
     switchSnapshotIsolation(false, dbName);
-    status = getSource().check(getConfig());
-    assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
+    assertThrows(Exception.class, () -> getSource().check(getConfig()));
   }
 
   @Test
   void testCdcCheckOperationsWithDot() throws Exception {
     // assertCdcEnabledInDb and validate escape with special character
     switchCdcOnDatabase(true, dbNamewithDot);
-    AirbyteConnectionStatus status = getSource().check(getConfig());
+    final AirbyteConnectionStatus status = getSource().check(getConfig());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 

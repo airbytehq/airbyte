@@ -8,6 +8,8 @@ import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest.setEnv;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -20,6 +22,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
@@ -153,8 +156,10 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   @Test
   void testCheckWithoutPublication() throws Exception {
     database.query(ctx -> ctx.execute("DROP PUBLICATION " + PUBLICATION + ";"));
-    final AirbyteConnectionStatus status = source.check(config);
-    assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
+
+    final Throwable throwable = catchThrowable(() -> source.check(config));
+    assertThat(throwable.getMessage()
+        .contains("Expected exactly one publication slot but found 0. Please read the docs and add a replication slot to your database."));
   }
 
   @Test
@@ -162,8 +167,9 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
     database.query(ctx -> ctx.execute("SELECT pg_drop_replication_slot('" + fullReplicationSlot + "');"));
 
-    final AirbyteConnectionStatus status = source.check(config);
-    assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
+    final Throwable throwable = catchThrowable(() -> source.check(config));
+    assertThat(throwable.getMessage()
+        .contains("Expected exactly one publication slot but found 0. Please read the docs and add a replication slot to your database."));
   }
 
   @Test

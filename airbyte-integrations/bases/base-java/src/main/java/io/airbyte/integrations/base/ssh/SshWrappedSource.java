@@ -39,15 +39,7 @@ public class SshWrappedSource implements Source {
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
-    try {
-      return SshTunnel.sshWrap(config, hostKey, portKey, delegate::check);
-    } catch (final RuntimeException e) {
-      final String sshErrorMessage = "Could not connect with provided SSH configuration. Error: " + e.getMessage();
-      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, sshErrorMessage);
-      return new AirbyteConnectionStatus()
-          .withStatus(Status.FAILED)
-          .withMessage(sshErrorMessage);
-    }
+    return SshTunnel.sshWrap(config, hostKey, portKey, delegate::check);
   }
 
   @Override
