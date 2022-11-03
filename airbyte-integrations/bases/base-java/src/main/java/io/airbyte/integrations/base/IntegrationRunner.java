@@ -22,7 +22,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
@@ -159,7 +158,8 @@ public class IntegrationRunner {
         AirbyteTraceMessageUtility.emitConfigErrorTrace(e, displayMessage);
       }
       if (parsed.getCommand().equals(Command.CHECK)) {
-        // Currently, special handling is required for the SPEC case since the user display information in the trace message is
+        // Currently, special handling is required for the SPEC case since the user display information in
+        // the trace message is
         // not properly surfaced to the FE. In the future, we can remove this and just throw an exception.
         outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
             new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(displayMessage)));
@@ -170,7 +170,7 @@ public class IntegrationRunner {
 
     LOGGER.info("Completed integration: {}", integration.getClass().getName());
   }
-  
+
   private boolean isConfigError(final Exception e) {
     return e instanceof ConfigErrorException;
   }
