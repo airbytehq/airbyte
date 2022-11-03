@@ -109,7 +109,10 @@ jobs:
         id: changelog
         run: |
           cd ./airbyte/
-          echo "::set-output name=changelog::$(PAGER=cat git log $(git describe --tags --match "*-helm" $(git rev-list --tags --max-count=1))..HEAD --oneline --decorate=no)"
+          changelog=$(PAGER=cat git log $(git describe --tags --match "*-helm" $(git rev-list --tags --max-count=1))..HEAD --oneline --decorate=no)
+          echo "changelog<<EOF" >> $GITHUB_ENV
+          echo "$changelog" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
@@ -122,7 +125,7 @@ jobs:
             ## What
             Bump version reference in all Chart.yaml files to ${{ needs.generate-semantic-version.outputs.next-version }}
             CHANGELOG:
-            ${{ steps.changelog.outputs.changelog }}
+            ${{ env.changelog }}
           commit-message: Bump helm chart version reference to ${{ needs.generate-semantic-version.outputs.next-version }}
           delete-branch: true
 
