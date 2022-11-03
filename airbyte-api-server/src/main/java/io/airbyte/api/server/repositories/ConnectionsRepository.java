@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public interface ConnectionsRepository extends GenericRepository<Connection, UUID> {
 
-  HttpResponse<String> sync(UUID connection);
+  HttpResponse<String> sync(UUID connection, String authorization);
 
   HttpResponse<String> reset(UUID connection);
 

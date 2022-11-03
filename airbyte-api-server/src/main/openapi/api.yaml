@@ -19,6 +19,8 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
       operationId: syncConnection
       summary: Trigger a manual sync of the connection
+#      security:
+#        - bearerAuth: [ ]
     parameters:
       - name: connectionId
         schema:
@@ -26,6 +28,14 @@ paths:
           type: string
         in: path
         required: true
+      - name: Authorization
+        in: header
+        schema:
+          type: string
+#          format: jwt
+        description: an authorization header
+        required: true
+#        type: string
   "/connections/{connectionId}/reset":
     post:
       tags:
@@ -698,3 +708,10 @@ components:
             items:
               $ref: "#/components/schemas/SearchResults"
       description: ""
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT # optional, arbitrary value for documentation purposes
+security:
+  - bearerAuth: []

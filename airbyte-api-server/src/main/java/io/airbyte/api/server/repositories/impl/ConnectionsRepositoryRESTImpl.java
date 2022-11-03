@@ -24,9 +24,9 @@ public class ConnectionsRepositoryRESTImpl implements ConnectionsRepository {
   }
 
   @Override
-  public HttpResponse<String> sync(@NotBlank final UUID connection) {
+  public HttpResponse<String> sync(@NotBlank final UUID connection, final String authorization) {
     final var syncDto = new SyncDto(connection.toString());
-    return client.sync(syncDto);
+    return client.sync(syncDto, authorization);
   }
 
   @Override

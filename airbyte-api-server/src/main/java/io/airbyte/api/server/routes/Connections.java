@@ -40,8 +40,8 @@ public class Connections implements ConnectionApi {
   }
 
   @Override
-  public void syncConnection(final UUID connectionId) {
-    connectionsRepository.sync(connectionId);
+  public void syncConnection(final UUID connectionId, final String authorization) {
+    connectionsRepository.sync(connectionId, authorization);
   }
 
 }
