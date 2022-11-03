@@ -1,7 +1,7 @@
 import React from "react";
 
 import { DeleteBlock } from "components/common/DeleteBlock";
-import { UpdateConnectionGeography } from "components/UpdateConnectionGeography";
+import { UpdateConnectionDataResidency } from "components/connection/UpdateConnectionDataResidency";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
@@ -23,7 +23,7 @@ export const ConnectionSettingsTab: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      {canUpdateDefaultDataResidency && <UpdateConnectionGeography />}
+      {canUpdateDefaultDataResidency && <UpdateConnectionDataResidency />}
       {isAdvancedMode && <StateBlock connectionId={connection.connectionId} />}
       <DeleteBlock type="connection" onDelete={onDelete} />
     </div>

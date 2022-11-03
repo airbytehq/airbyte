@@ -12,9 +12,9 @@ import { useNotificationService } from "hooks/services/Notification";
 import { useAvailableGeographies } from "packages/cloud/services/geographies/GeographiesService";
 import { links } from "utils/links";
 
-import styles from "./UpdateConnectionGeography.module.scss";
+import styles from "./UpdateConnectionDataResidency.module.scss";
 
-export const UpdateConnectionGeography: React.FC = () => {
+export const UpdateConnectionDataResidency: React.FC = () => {
   const { connection, updateConnection, connectionUpdating } = useConnectionEditService();
   const { registerNotification } = useNotificationService();
   const { formatMessage } = useIntl();
