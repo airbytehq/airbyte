@@ -268,7 +268,8 @@ def test_generate_schema():
 
     declarative_stream = schema["definitions"]["DeclarativeStream"]
     assert {"retriever", "config"}.issubset(declarative_stream["required"])
-    assert declarative_stream["properties"]["schema_loader"]["$ref"] == "#/definitions/JsonSchema"
+    assert {"$ref": "#/definitions/EmptySchemaLoader"} in declarative_stream["properties"]["schema_loader"]["anyOf"]
+    assert {"$ref": "#/definitions/JsonFileSchemaLoader"} in declarative_stream["properties"]["schema_loader"]["anyOf"]
     assert declarative_stream["properties"]["retriever"]["$ref"] == "#/definitions/SimpleRetriever"
     assert declarative_stream["properties"]["name"]["type"] == "string"
     assert {"type": "array", "items": {"type": "string"}} in declarative_stream["properties"]["primary_key"]["anyOf"]
