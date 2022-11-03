@@ -17,7 +17,7 @@ jobs:
           add-labels: "platform-workflow/requires-grooming"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Add Issue To Project
-        uses: action/add-to-project@v0.3.0
+        uses: actions/add-to-project@v0.3.0
         with:
           project-url: https://github.com/orgs/airbytehq/projects/25
           github-token: ${{ secrets.PLATFORM_WORKFLOW_PROJECT_AUTOMATION }}
