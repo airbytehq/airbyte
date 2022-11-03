@@ -6,7 +6,7 @@ definitions:
 
   schema_loader:
     type: JsonSchema
-    file_path: "./source_call_rail/schemas/{{ options['name'] }}.json"
+    file_path: "./source_callrail/schemas/{{ options['name'] }}.json"
 
   requester:
     type: HttpRequester
@@ -113,4 +113,4 @@ streams:
 
 check:
   type: CheckStream
-  stream_names: ["calls"]
+  stream_names: ["calls", "companies", "conversations", "users"]
