@@ -7,7 +7,7 @@ The source connector fetches data from [Auth0 Management API](https://auth0.com/
 ## Prerequisites
 
 * You own an Auth0 account, free or paid.
-* Follow the [Setup guide](/docs/integrations/sources/auth0.md#setup-guide) to authorize Airbyte to read data from your account.
+* Follow the [Setup guide](#setup-guide) to authorize Airbyte to read data from your account.
 
 ## Setup guide
 
