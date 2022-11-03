@@ -11,8 +11,6 @@ from source_tiktok_marketing.streams import (
     AdGroupsReports,
     Ads,
     AdsAudienceReports,
-    AdsAudienceReportsByCountry,
-    AdsAudienceReportsByProvince,
     AdsReports,
     Advertisers,
     AdvertisersAudienceReports,
