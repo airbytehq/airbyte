@@ -115,13 +115,15 @@ The start time is defined in the config file, while the end time is defined by t
 Note that we're also setting the `stream_cursor_field` in the stream's `$options` so it can be accessed by the `StreamSlicer`:
 
 ```yaml
-streams:
-  - type: DeclarativeStream
+definitions:
+  <...>
+  rates_stream:
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "rates"
+      primary_key: "date"
+      path: "/exchangerates_data/{{config['start_date'] or 'latest'}}"
       stream_cursor_field: "date"
-    primary_key: "rates"
-    <...>
 ```
 
 We'll also update the retriever to user the stream slicer:
@@ -137,20 +139,6 @@ definitions:
 
 This will generate slices from the start time until the end time, where each slice is exactly one day.
 The start time is defined in the config file, while the end time is defined by the `now_utc()` macro, which will evaluate to the current date in the current timezone at runtime. See the section on [string interpolation](../advanced-topics.md#string-interpolation) for more details.
-
-Note that we're also setting the `stream_cursor_field` in the stream's `$options` so it can be accessed by the `StreamSlicer`:
-
-```yaml
-definitions:
-  <...>
-  rates_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
-      name: "rates"
-      primary_key: "date"
-      path: "/exchangerates_data/{{config['start_date'] or 'latest'}}"
-      stream_cursor_field: "date"
-```
 
 Finally, we'll update the path to point to the `stream_slice`'s start_time
 
