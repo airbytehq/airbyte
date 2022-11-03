@@ -1216,6 +1216,13 @@
   icon: surveymonkey.svg
   sourceType: api
   releaseStage: generally_available
+- name: SurveySparrow
+  sourceDefinitionId: 4a4d887b-0f2d-4b33-ab7f-9b01b9072804
+  dockerRepository: airbyte/source-survey-sparrow
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/survey-sparrow
+  sourceType: api
+  releaseStage: alpha
 - name: TalkDesk Explore
   sourceDefinitionId: f00d2cf4-3c28-499a-ba93-b50b6f26359e
   dockerRepository: airbyte/source-talkdesk-explore
