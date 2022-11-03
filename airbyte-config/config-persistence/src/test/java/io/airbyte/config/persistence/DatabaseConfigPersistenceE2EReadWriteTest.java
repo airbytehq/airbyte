@@ -93,7 +93,8 @@ class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfigPersis
     // Making sure that the objects that have been migrated out of config persistence are protected with
     // an explicit error.
     assertThrows(NotImplementedException.class, () -> configPersistence.getConfig(ConfigSchema.STANDARD_SYNC, anyString, StandardSync.class));
-    assertThrows(NotImplementedException.class, () -> configPersistence.getConfigWithMetadata(ConfigSchema.STANDARD_SYNC, anyString, StandardSync.class));
+    assertThrows(NotImplementedException.class,
+        () -> configPersistence.getConfigWithMetadata(ConfigSchema.STANDARD_SYNC, anyString, StandardSync.class));
     assertThrows(NotImplementedException.class, () -> configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class));
     assertThrows(NotImplementedException.class, () -> configPersistence.listConfigsWithMetadata(ConfigSchema.STANDARD_SYNC, StandardSync.class));
     assertThrows(NotImplementedException.class,
