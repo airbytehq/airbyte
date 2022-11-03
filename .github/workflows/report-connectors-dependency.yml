@@ -48,4 +48,6 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
           edit-mode: "replace"
-          body: "The latest commit has removed all connector-related changes. There is no more dependent connector for this PR."
+          body: |
+            ## Affected Connector Report
+            The latest commit has removed all connector-related changes. There is no more dependent connector for this PR.
