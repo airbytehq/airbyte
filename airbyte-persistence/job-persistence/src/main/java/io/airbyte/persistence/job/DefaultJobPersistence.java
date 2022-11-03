@@ -400,16 +400,19 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<SyncStats> getSyncStats(final Long attemptId) throws IOException {
+  public List<SyncStats> getSyncStats(final Long jobId, final Integer attemptNumber) throws IOException {
     return jobDatabase
-        .query(ctx -> ctx.select(DSL.asterisk()).from(DSL.table("sync_stats")).where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
-            .fetch(getSyncStatsRecordMapper())
-            .stream()
-            .toList());
+        .query(ctx -> {
+          final Long attemptId = getAttemptId(jobId, attemptNumber, ctx);
+          return ctx.select(DSL.asterisk()).from(DSL.table("sync_stats")).where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
+              .fetch(getSyncStatsRecordMapper())
+              .stream()
+              .toList();
+        });
   }
 
   @Override
-  public List<NormalizationSummary> getNormalizationSummary(final Long attemptId) throws IOException, JsonProcessingException {
+  public List<NormalizationSummary> getNormalizationSummary(final Long attemptId) throws IOException {
     return jobDatabase
         .query(ctx -> ctx.select(DSL.asterisk()).from(NORMALIZATION_SUMMARIES).where(NORMALIZATION_SUMMARIES.ATTEMPT_ID.eq(attemptId))
             .fetch(getNormalizationSummaryRecordMapper())
