@@ -71,6 +71,8 @@ public class ConnectionNotificationWorkflowTest {
     when(activityOptionsBeanRegistration.getIdentifier()).thenReturn(activityOptionsBeanIdentifier);
     when(activityOptionsBeanRegistration.getBean()).thenReturn(activityOptions);
     temporalProxyHelper = new TemporalProxyHelper(List.of(activityOptionsBeanRegistration));
+
+    notificationsWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(ConnectionNotificationWorkflowImpl.class));
     log.info("got here");
 
   }
@@ -96,6 +98,7 @@ public class ConnectionNotificationWorkflowTest {
     workflow.sendSchemaChangeNotification(connectionId, isBreaking);
 
     log.info("sent schema change notif");
+    when(mNotifySchemaChangeActivity.notifySchemaChange(any(), any(), any())).thenReturn(true);
 
     verify(mNotifySchemaChangeActivity, times(1)).notifySchemaChange(any(NotificationClient.class), connectionId, isBreaking);
   }
