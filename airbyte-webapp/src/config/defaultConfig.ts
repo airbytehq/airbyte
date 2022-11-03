@@ -5,10 +5,10 @@ const defaultConfig: Config = {
   healthCheckInterval: 20000,
   version: "dev",
   apiUrl: `${window.location.protocol}//${window.location.hostname}:8001/api`,
-  connectorBuilderApiUrl: `${window.location.protocol}//${window.location.hostname}:8003/`,
+  #connectorBuilderApiUrl: `${window.location.protocol}//${window.location.hostname}:8003/`, #FIXME: Uncomment this when enabling connector-builder
   integrationUrl: "/docs",
   oauthRedirectUrl: `${window.location.protocol}//${window.location.host}`,
-  connectorBuilderUrl: `${window.location.protocol}//${window.location.hostname}:8003/`,
+  #connectorBuilderUrl: `${window.location.protocol}//${window.location.hostname}:8003/`, #FIXME: Uncomment this when enabling connector-builder
 };
 
 export { defaultConfig };
