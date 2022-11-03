@@ -61,11 +61,9 @@ def table_schema() -> str:
                 "format": "datetime",
                 "airbyte_type": "timestamp_without_timezone",
             },
-            # TODO: replace column5 with commented value once Decimal
-            # is enabled for all accounts in Firebolt (out of Alpha)
-            # https://docs.firebolt.io/general-reference/decimal-data-type.html
-            # "column5": {"type": ["null", "string"], "airbyte_type": "big_number"},
-            "column5": {"type": ["null", "number"]},
+            # If column check fails you mignt not have the latest Firebolt version
+            # with Decimal data type enabled
+            "column5": {"type": ["null", "string"], "airbyte_type": "big_number"},
             "column6": {"type": "array", "items": {"type": ["null", "integer"]}},
             "column7": {"type": ["null", "integer"]},
         },
@@ -175,11 +173,9 @@ def test_read(
         {
             "column3": "2021-01-02",
             "column4": "2021-01-02T12:00:02",
-            # TODO: replace column5 with commented value once Decimal
-            # is enabled for all accounts in Firebolt (out of Alpha)
-            # https://docs.firebolt.io/general-reference/decimal-data-type.html
-            # "column5": "1231232.1234599999904570548442587065362",
-            "column5": 1231232.12346,
+            # If column5 check fails you mignt not have the latest Firebolt version
+            # with Decimal data type enabled
+            "column5": "1231232.1234599999904570548442587065362",
             "column6": [1, 2, 3],
         },
     ]
