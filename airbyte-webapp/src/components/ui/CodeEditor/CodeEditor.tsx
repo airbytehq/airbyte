@@ -13,6 +13,17 @@ interface CodeEditorProps {
   lineNumberCharacterWidth?: number;
 }
 
+// Converts 3-character hex values into 6-character ones.
+// Required for custom monaco theme, because it fails when receiving 3-character hex values.
+function expandHexValue(input: string) {
+  // matches strings of the form #aaa
+  const match = /^#([0-9a-f])\1{2}$/.exec(input);
+  if (match) {
+    return input + match[1].repeat(3);
+  }
+  return input;
+}
+
 export const CodeEditor: React.FC<CodeEditorProps> = ({
   value,
   language,
@@ -27,11 +38,11 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       base: "vs-dark",
       inherit: true,
       rules: [
-        { token: "string", foreground: styles.tokenString },
-        { token: "type", foreground: styles.tokenType },
-        { token: "number", foreground: styles.tokenNumber },
-        { token: "delimiter", foreground: styles.tokenDelimiter },
-        { token: "keyword", foreground: styles.tokenKeyword },
+        { token: "string", foreground: expandHexValue(styles.tokenString) },
+        { token: "type", foreground: expandHexValue(styles.tokenType) },
+        { token: "number", foreground: expandHexValue(styles.tokenNumber) },
+        { token: "delimiter", foreground: expandHexValue(styles.tokenDelimiter) },
+        { token: "keyword", foreground: expandHexValue(styles.tokenKeyword) },
       ],
       colors: {
         "editor.background": "#00000000", // transparent, so that parent background is shown instead
