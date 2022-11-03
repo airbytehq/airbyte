@@ -790,6 +790,7 @@ class CampaignsAudienceReportsByCountry(AudienceReport):
     report_level = ReportLevel.CAMPAIGN
     audience_dimensions = ["country_code"]
 
+
 class AdsAudienceReportsByCountry(AudienceReport):
     """Custom reports for ads by country"""
 
@@ -797,6 +798,7 @@ class AdsAudienceReportsByCountry(AudienceReport):
 
     report_level = ReportLevel.AD
     audience_dimensions = ["country_code"]
+
 
 class AdsAudienceReportsByProvince(AudienceReport):
     """Custom reports for ads by province"""
