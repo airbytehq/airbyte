@@ -1231,7 +1231,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/tempo
   icon: tempo.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: TiDB
   sourceDefinitionId: 0dad1a35-ccf8-4d03-b73e-6788c00b13ae
   dockerRepository: airbyte/source-tidb
