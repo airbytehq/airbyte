@@ -3,7 +3,7 @@
 connector_image: airbyte/source-prestashop:dev
 tests:
   spec:
-    - spec_path: "source_prestashop/spec.json"
+    - spec_path: "integration_tests/spec.json"
       # unfortunately timeout plugin takes into account setup code as well (docker setup)
       timeout_seconds: 300
   connection:

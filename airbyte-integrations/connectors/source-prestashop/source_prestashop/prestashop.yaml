@@ -1,0 +1,47 @@
+version: "0.2.1"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: ["shops"]
+  requester:
+    url_base: "{{ config['url'] }}/api/"
+    http_method: "GET"
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['access_key'] }}"
+    request_options_provider:
+      request_headers:
+        Output-Format: JSON
+      request_parameters:
+        display: full
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  shops_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "shops"
+      primary_key: "id"
+      path: "/shops"
+  zones_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "zones"
+      primary_key: "id"
+      path: "/zones"
+
+streams:
+  - "*ref(definitions.shops_stream)"
+  - "*ref(definitions.zones_stream)"
+
+check:
+  stream_names:
+    - "shops"
