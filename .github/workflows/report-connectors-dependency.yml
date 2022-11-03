@@ -25,6 +25,8 @@ jobs:
             echo "comment=true" >> $GITHUB_OUTPUT
           fi
       - name: Find existing comment for connector dependencies
+        # Always run this step because the action may need to
+        # remove a comment created from a previous comment.
         uses: peter-evans/find-comment@v2
         id: find_comment
         with:
@@ -39,7 +41,7 @@ jobs:
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
           edit-mode: "replace"
           body-file: "comment_body.md"
-      - name: Delete deprecated comment in PR
+      - name: Remove deprecated report in PR
         if: steps.dependency_report.outputs.comment != 'true' && steps.find_comment.outputs.comment-id != ''
         uses: peter-evans/create-or-update-comment@v2
         with:
