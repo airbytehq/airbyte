@@ -23,6 +23,10 @@ jobs:
         with:
           service_account_key: ${{ secrets.PROD_SPEC_CACHE_SA_KEY }}
           export_default_credentials: true
+      - name: Install Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: "17"
       - name: Generate catalog
         run: SUB_BUILD=PLATFORM ./gradlew :airbyte-config:init:processResources
       - name: Upload catalog to GCS
