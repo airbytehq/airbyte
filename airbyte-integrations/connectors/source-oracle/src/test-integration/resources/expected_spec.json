@@ -116,9 +116,7 @@
             "properties" : {
               "encryption_method" : {
                 "type" : "string",
-                "const": "unencrypted",
-                "enum": ["unencrypted"],
-                "default": "unencrypted"
+                "const" : "unencrypted"
               }
             }
           },
@@ -137,7 +135,7 @@
                 "type" : "string",
                 "description" : "This parameter defines what encryption algorithm is used.",
                 "title" : "Encryption Algorithm",
-                "const" : "AES256",
+                "default" : "AES256",
                 "enum" : [
                   "AES256",
                   "RC4_56",
