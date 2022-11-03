@@ -19,8 +19,11 @@ export const useInviteUsersModalService = () => {
   return ctx;
 };
 
+interface InviteUsersModalServiceProviderProps {
+  invitedFrom: "source" | "destination" | "user.settings";
+}
 export const InviteUsersModalServiceProvider: React.FC<
-  React.PropsWithChildren<unknown> & { invitedFrom: "source" | "destination" | "user.settings" }
+  React.PropsWithChildren<InviteUsersModalServiceProviderProps>
 > = ({ children, invitedFrom }) => {
   const [isOpen, toggleIsOpen] = useToggle(false);
 
