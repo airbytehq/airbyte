@@ -34,9 +34,9 @@ import java.util.stream.Stream;
  */
 public interface JobPersistence {
 
-  List<SyncStats> getSyncStats(Long jobId, Integer attemptNumber) throws IOException;
+  List<SyncStats> getSyncStats(long jobId, int attemptNumber) throws IOException;
 
-  List<NormalizationSummary> getNormalizationSummary(Long attemptId) throws IOException;
+  List<NormalizationSummary> getNormalizationSummary(long jobId, int attemptNumber) throws IOException;
 
   Job getJob(long jobId) throws IOException;
 

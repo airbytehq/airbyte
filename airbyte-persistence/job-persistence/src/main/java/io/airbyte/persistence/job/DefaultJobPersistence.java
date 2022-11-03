@@ -379,14 +379,6 @@ public class DefaultJobPersistence implements JobPersistence {
 
   }
 
-  private static Long getAttemptId(long jobId, int attemptNumber, DSLContext ctx) {
-    final Optional<Record> record =
-        ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
-            attemptNumber).stream().findFirst();
-    final Long attemptId = record.get().get("id", Long.class);
-    return attemptId;
-  }
-
   @Override
   public void writeAttemptFailureSummary(final long jobId, final int attemptNumber, final AttemptFailureSummary failureSummary) throws IOException {
     final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
@@ -400,7 +392,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<SyncStats> getSyncStats(final Long jobId, final Integer attemptNumber) throws IOException {
+  public List<SyncStats> getSyncStats(final long jobId, final int attemptNumber) throws IOException {
     return jobDatabase
         .query(ctx -> {
           final Long attemptId = getAttemptId(jobId, attemptNumber, ctx);
@@ -412,12 +404,22 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<NormalizationSummary> getNormalizationSummary(final Long attemptId) throws IOException {
+  public List<NormalizationSummary> getNormalizationSummary(final long jobId, final int attemptNumber) throws IOException {
     return jobDatabase
-        .query(ctx -> ctx.select(DSL.asterisk()).from(NORMALIZATION_SUMMARIES).where(NORMALIZATION_SUMMARIES.ATTEMPT_ID.eq(attemptId))
-            .fetch(getNormalizationSummaryRecordMapper())
-            .stream()
-            .toList());
+        .query(ctx -> {
+          final Long attemptId = getAttemptId(jobId, attemptNumber, ctx);
+          return ctx.select(DSL.asterisk()).from(NORMALIZATION_SUMMARIES).where(NORMALIZATION_SUMMARIES.ATTEMPT_ID.eq(attemptId))
+              .fetch(getNormalizationSummaryRecordMapper())
+              .stream()
+              .toList();
+        });
+  }
+
+  private static Long getAttemptId(final long jobId, final int attemptNumber, final DSLContext ctx) {
+    final Optional<Record> record =
+        ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
+            attemptNumber).stream().findFirst();
+    return record.get().get("id", Long.class);
   }
 
   private static RecordMapper<Record, SyncStats> getSyncStatsRecordMapper() {
