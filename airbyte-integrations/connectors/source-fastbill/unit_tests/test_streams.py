@@ -28,25 +28,24 @@ def test_request_params(patch_base_class):
 
 def test_next_page_token(patch_base_class):
     stream = FastbillStream()
-    # TODO: replace this with your input parameters
+    stream.endpoint = "test_endpoint"
+    stream.data = "test_data"
     inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
+
+    inputs["response"].json.return_value = {"REQUEST": {"OFFSET": 0}, "RESPONSE": {"test_data": []}}
     expected_token = None
     assert stream.next_page_token(**inputs) == expected_token
 
 
 def test_request_headers(patch_base_class):
     stream = FastbillStream()
-    # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
     expected_headers = {'Content-type': 'application/json'}
     assert stream.request_headers(**inputs) == expected_headers
 
 
 def test_http_method(patch_base_class):
     stream = FastbillStream()
-    # TODO: replace this with your expected http request method
     expected_method = "POST"
     assert stream.http_method == expected_method
 
