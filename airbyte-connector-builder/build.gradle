@@ -10,16 +10,30 @@ airbytePython {
     moduleDirectory 'connector_builder'
 }
 
+task generateServer(type: GenerateTask){
+    def generatedCodeDir = "$buildDir/server"
+    inputSpec = "$rootDir.absolutePath/connector-builder-server/src/main/openapi/openapi.yaml"
+    outputDir = generatedCodeDir
 
-task generateApiClient(type: GenerateTask) {
-    inputSpec = "$rootDir.absolutePath/airbyte-api/src/main/openapi/config.yaml"
-    outputDir = "$buildDir/airbyte_api_client"
+    generatorName = "python-fastapi"
+    configFile = "$projectDir/openapi/generator_config.yaml"
+    templateDir = "$projectDir/openapi/templates"
+    packageName = "connector_builder.generated"
 
-    generatorName = "python"
-    packageName = "airbyte_api_client"
+    doLast {
+        def sourceDir = "$generatedCodeDir/src/connector_builder/generated/"
+        def targetDir = "$projectDir/connector_builder/generated"
+        mkdir targetDir
+        copy {
+            from "$sourceDir/apis"
+            include "*_interface.py", "__init__.py"
+            into "$targetDir/apis"
+        }
+        copy {
+            from "$sourceDir/models"
+            include "*.py"
+            into "$targetDir/models"
+        }
+    }
+
 }
-
-blackFormat.dependsOn generateApiClient
-isortFormat.dependsOn generateApiClient
-flakeCheck.dependsOn generateApiClient
-installReqs.dependsOn generateApiClient
