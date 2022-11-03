@@ -1,11 +1,10 @@
-import Editor, { Monaco } from "@monaco-editor/react";
-import { useState } from "react";
-import { useDebounce, useLocalStorage } from "react-use";
+import { CodeEditor } from "components/ui/CodeEditor";
+
+import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { DownloadYamlButton } from "./DownloadYamlButton";
 import { TestBuilderServer } from "./TestBuilderServer";
 import styles from "./YamlEditor.module.scss";
-import { template } from "./YamlTemplate";
 
 export const YamlEditor: React.FC = () => {
   const [locallyStoredEditorValue, setLocallyStoredEditorValue] = useLocalStorage<string>(
@@ -42,27 +41,14 @@ export const YamlEditor: React.FC = () => {
   return (
     <div className={styles.container}>
       <div className={styles.control}>
-        <DownloadYamlButton className={styles.downloadButton} yaml={editorValue} />
-        <TestBuilderServer />
       </div>
       <div className={styles.editorContainer}>
-        <Editor
-          beforeMount={setEditorTheme}
-          value={editorValue}
+        <CodeEditor
+          value={yamlManifest}
           language="yaml"
           theme="airbyte"
-          onChange={handleEditorChange}
-          options={{
-            lineNumbersMinChars: 6,
-            matchBrackets: "always",
-            minimap: {
-              enabled: false,
-            },
-            padding: {
-              top: 20,
-              bottom: 20,
-            },
-          }}
+          onChange={(value: string | undefined) => setYamlManifest(value ?? "")}
+          lineNumberCharacterWidth={6}
         />
       </div>
     </div>

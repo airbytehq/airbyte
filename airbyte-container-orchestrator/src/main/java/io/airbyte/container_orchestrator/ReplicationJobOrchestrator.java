@@ -12,7 +12,10 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_DOCKER_IMAGE_
 import datadog.trace.api.Trace;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
+import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
 import io.airbyte.commons.temporal.TemporalUtils;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.Configs;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
@@ -30,10 +33,14 @@ import io.airbyte.workers.general.DefaultReplicationWorker;
 import io.airbyte.workers.general.ReplicationWorker;
 import io.airbyte.workers.internal.AirbyteMessageTracker;
 import io.airbyte.workers.internal.AirbyteSource;
+import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteDestination;
 import io.airbyte.workers.internal.DefaultAirbyteSource;
+import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.internal.EmptyAirbyteSource;
 import io.airbyte.workers.internal.NamespacingMapper;
+import io.airbyte.workers.internal.VersionedAirbyteMessageBufferedWriterFactory;
+import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.KubePodProcess;
@@ -50,13 +57,19 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   private final ProcessFactory processFactory;
   private final Configs configs;
   private final FeatureFlags featureFlags;
+  private final AirbyteMessageSerDeProvider serDeProvider;
+  private final AirbyteMessageVersionedMigratorFactory migratorFactory;
 
   public ReplicationJobOrchestrator(final Configs configs,
                                     final ProcessFactory processFactory,
-                                    final FeatureFlags featureFlags) {
+                                    final FeatureFlags featureFlags,
+                                    final AirbyteMessageSerDeProvider serDeProvider,
+                                    final AirbyteMessageVersionedMigratorFactory migratorFactory) {
     this.configs = configs;
     this.processFactory = processFactory;
     this.featureFlags = featureFlags;
+    this.serDeProvider = serDeProvider;
+    this.migratorFactory = migratorFactory;
   }
 
   @Override
@@ -107,7 +120,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     final AirbyteSource airbyteSource =
         WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage()) ? new EmptyAirbyteSource(
             featureFlags.useStreamCapableState())
-            : new DefaultAirbyteSource(sourceLauncher);
+            : new DefaultAirbyteSource(sourceLauncher, getStreamFactory(sourceLauncherConfig.getProtocolVersion()));
 
     MetricClientFactory.initialize(MetricEmittingApps.WORKER);
     final MetricClient metricClient = MetricClientFactory.getMetricClient();
@@ -119,7 +132,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         Math.toIntExact(jobRunConfig.getAttemptId()),
         airbyteSource,
         new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
-        new DefaultAirbyteDestination(destinationLauncher),
+        new DefaultAirbyteDestination(destinationLauncher, getStreamFactory(destinationLauncherConfig.getProtocolVersion()),
+            new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
         new AirbyteMessageTracker(),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
         metricReporter);
@@ -130,6 +144,12 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
 
     log.info("Returning output...");
     return Optional.of(Jsons.serialize(replicationOutput));
+  }
+
+  private AirbyteStreamFactory getStreamFactory(final Version protocolVersion) {
+    return protocolVersion != null
+        ? new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, protocolVersion)
+        : new DefaultAirbyteStreamFactory();
   }
 
 }

@@ -7,21 +7,18 @@ package io.airbyte.config.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
-import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Validates that json input and outputs for the ConfigPersistence against their schemas.
  */
 @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
+@Deprecated(forRemoval = true)
 public class ValidatingConfigPersistence implements ConfigPersistence {
 
   private final JsonSchemaValidator schemaValidator;
@@ -54,24 +51,6 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> ConfigWithMetadata<T> getConfigWithMetadata(final AirbyteConfig configType, final String configId, final Class<T> clazz)
-      throws ConfigNotFoundException, JsonValidationException, IOException {
-    final ConfigWithMetadata<T> config = decoratedPersistence.getConfigWithMetadata(configType, configId, clazz);
-    validateJson(config.getConfig(), configType);
-    return config;
-  }
-
-  @Override
-  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig configType, final Class<T> clazz)
-      throws JsonValidationException, IOException {
-    final List<ConfigWithMetadata<T>> configs = decoratedPersistence.listConfigsWithMetadata(configType, clazz);
-    for (final ConfigWithMetadata<T> config : configs) {
-      validateJson(config.getConfig(), configType);
-    }
-    return configs;
-  }
-
-  @Override
   public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) throws JsonValidationException, IOException {
 
     final Map<String, T> configIdToConfig = new HashMap<>();
@@ -92,32 +71,6 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   @Override
   public void deleteConfig(final AirbyteConfig configType, final String configId) throws ConfigNotFoundException, IOException {
     decoratedPersistence.deleteConfig(configType, configId);
-  }
-
-  @Override
-  public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
-    final Map<AirbyteConfig, Stream<?>> augmentedMap = new HashMap<>(configs).entrySet()
-        .stream()
-        .collect(Collectors.toMap(
-            Entry::getKey,
-            entry -> entry.getValue().peek(config -> {
-              try {
-                validateJson(config, entry.getKey());
-              } catch (final JsonValidationException e) {
-                throw new RuntimeException(e);
-              }
-            })));
-    decoratedPersistence.replaceAllConfigs(augmentedMap, dryRun);
-  }
-
-  @Override
-  public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
-    return decoratedPersistence.dumpConfigs();
-  }
-
-  @Override
-  public void loadData(final ConfigPersistence seedPersistence) throws IOException {
-    decoratedPersistence.loadData(seedPersistence);
   }
 
   private <T> void validateJson(final T config, final AirbyteConfig configType) throws JsonValidationException {
