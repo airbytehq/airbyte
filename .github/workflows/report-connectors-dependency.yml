@@ -23,6 +23,8 @@ jobs:
           python ./tools/bin/ci_check_dependency.py ./changed_files.txt
           if [[ -f comment_body.md ]]; then
             echo "comment=true" >> $GITHUB_OUTPUT
+          else
+            echo "comment=false" >> $GITHUB_OUTPUT
           fi
       - name: Find existing comment for connector dependencies
         if: steps.dependency_report.outputs.comment == 'true'
