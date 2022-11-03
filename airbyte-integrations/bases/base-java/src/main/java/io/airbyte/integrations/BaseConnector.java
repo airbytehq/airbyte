@@ -18,6 +18,7 @@ public abstract class BaseConnector implements Integration {
    * @return specification.
    * @throws Exception - any exception.
    */
+  @Override
   public ConnectorSpecification spec() throws Exception {
     // return a JsonSchema representation of the spec for the integration.
     final String resourceString = MoreResources.readResource("spec.json");

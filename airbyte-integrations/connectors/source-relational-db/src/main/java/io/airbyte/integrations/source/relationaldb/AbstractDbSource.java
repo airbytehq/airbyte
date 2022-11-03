@@ -78,6 +78,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   // TODO: Remove when the flag is not use anymore
   private final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
+  @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     try {
       final Database database = createDatabaseInternal(config);
@@ -102,6 +103,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     }
   }
 
+  @Override
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
     try {
       final Database database = createDatabaseInternal(config);
@@ -130,6 +132,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return AirbyteMessageIterator with all the streams that are to be synced
    * @throws Exception
    */
+  @Override
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state)
