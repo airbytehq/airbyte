@@ -11,7 +11,7 @@ connectionSpecification:
     base_url:
       type: string
       title: Base URL
-      examples: 
+      examples:
         - "https://dev-yourOrg.us.auth0.com/"
       description: The Authentication API is served over HTTPS. All URLs referenced in the documentation have the following base `https://YOUR_DOMAIN`
     credentials:

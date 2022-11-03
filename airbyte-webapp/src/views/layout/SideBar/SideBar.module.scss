@@ -58,19 +58,19 @@
   &:hover,
   &:focus-visible {
     background: colors.$dark-blue-800;
-    transition: variables.$transition-out;
+    transition: all variables.$transition-out;
   }
 
   &.active {
     color: colors.$white;
     background: colors.$blue-400;
-    transition: variables.$transition-out;
+    transition: all variables.$transition-out;
 
     &:hover,
     &:focus-visible {
       color: colors.$white;
       background: colors.$blue-300;
-      transition: variables.$transition-out;
+      transition: all variables.$transition-out;
     }
   }
 

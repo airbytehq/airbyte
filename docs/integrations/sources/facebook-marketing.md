@@ -11,10 +11,13 @@ This page guides you through the process of setting up the Facebook Marketing so
 ## Prerequisites
 
 * A [Facebook Ad Account ID](https://www.facebook.com/business/help/1492627900875762)
+<!-- env:oss -->
 * (For Open Source) A [Facebook App](https://developers.facebook.com/apps/) with the Marketing API enabled
+<!-- /env:oss -->
 
 ## Set up Facebook Marketing as a source in Airbyte 
 
+<!-- env:cloud -->
 ### For Airbyte Cloud
 
 To set up Facebook Marketing as a source in Airbyte Cloud:
@@ -60,7 +63,9 @@ To set up Facebook Marketing as a source in Airbyte Cloud:
 12. For **Page Size of Requests**, fill in the size of the page in case pagintion kicks in. Feel free to ignore it, the default value should work in most cases.
 13. For **Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
 14. Click **Set up source**.
+<!-- /env:cloud -->
 
+<!-- env:oss -->
 ### For Airbyte Open Source
 
 To set up Facebook Marketing as a source in Airbyte Open Source:
@@ -76,6 +81,7 @@ To set up Facebook Marketing as a source in Airbyte Open Source:
 
     See the Facebook [documentation on Authorization](https://developers.facebook.com/docs/marketing-api/overview/authorization/#access-levels) to request Advanced Access to the relevant permissions.
 5. Navigate to the Airbyte Open Source Dashboard. Add the access token when prompted to do so and follow the same instructions as for [setting up the Facebook Connector on Airbyte Cloud](#for-airbyte-cloud).
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -127,7 +133,8 @@ Please be informed that the connector uses the `lookback_window` parameter to pe
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.2.70  | 2022-10-26 | [18045](https://github.com/airbytehq/airbyte/pull/18045) | Upgrade FB SDK to v15.0 |
+| 0.2.71  | 2022-10-31 | [18734](https://github.com/airbytehq/airbyte/pull/18734) | Reduce request record limit on retry                                                                                                                                                                                                                                                              |
+| 0.2.70  | 2022-10-26 | [18045](https://github.com/airbytehq/airbyte/pull/18045) | Upgrade FB SDK to v15.0                                                                                                                                                                                                                                                                           |
 | 0.2.69  | 2022-10-17 | [18045](https://github.com/airbytehq/airbyte/pull/18045) | Remove "pixel" field from the Custom Conversions stream schema                                                                                                                                                                                                                                    |
 | 0.2.68  | 2022-10-12 | [17869](https://github.com/airbytehq/airbyte/pull/17869) | Remove "format" from optional datetime `end_date` field                                                                                                                                                                                                                                           |
 | 0.2.67  | 2022-10-04 | [17551](https://github.com/airbytehq/airbyte/pull/17551) | Add `cursor_field` for custom_insights stream schema                                                                                                                                                                                                                                              |
