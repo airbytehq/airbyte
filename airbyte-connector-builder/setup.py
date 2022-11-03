@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import os
 import pathlib
 
 from setuptools import find_packages, setup
@@ -47,7 +46,7 @@ setup(
         "fastapi>=0.68.0,<0.69.0",
         "pydantic>=1.8.0,<2.0.0",
         "uvicorn>=0.15.0,<0.16.0",
-        f"airbyte_api_client @ file://{os.getcwd()}/build/airbyte_api_client",
+        # f"airbyte_connector_builder_server @ file://{os.getcwd()}/build/airbyte_connector_builder_server",
         "jinja2~=3.0.3",
         "deepdiff~=5.7.0",
         "pyyaml~=6.0",
