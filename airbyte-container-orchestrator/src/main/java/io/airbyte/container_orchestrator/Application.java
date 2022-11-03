@@ -24,15 +24,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Entrypoint for the application responsible for launching containers and handling all message
- * passing for replication, normalization, and dbt. Also, the current version relies on a heartbeat
- * from a Temporal worker. This will also be removed in the future so this can run fully async.
+ * Entrypoint for the application responsible for launching containers and handling all message passing for replication, normalization, and dbt. Also,
+ * the current version relies on a heartbeat from a Temporal worker. This will also be removed in the future so this can run fully async.
  * <p>
- * This application retrieves most of its configuration from copied files from the calling Temporal
- * worker.
+ * This application retrieves most of its configuration from copied files from the calling Temporal worker.
  * <p>
- * This app uses default logging which is directly captured by the calling Temporal worker. In the
- * future this will need to independently interact with cloud storage.
+ * This app uses default logging which is directly captured by the calling Temporal worker. In the future this will need to independently interact
+ * with cloud storage.
  */
 @SuppressWarnings({"PMD.AvoidCatchingThrowable", "PMD.DoNotTerminateVM"})
 @Singleton
@@ -98,14 +96,14 @@ public class Application {
   private final JobOrchestrator<?> jobOrchestrator;
 
   public Application(
-                     final ApplicationContext context,
-                     final String application,
-                     final Map<String, String> envMap,
-                     final JobRunConfig jobRunConfig,
-                     final KubePodInfo kubePodInfo,
-                     final FeatureFlags featureFlags,
-                     // final ProcessFactory processFactory,
-                     final JobOrchestrator<?> jobOrchestrator) {
+      final ApplicationContext context,
+      final String application,
+      final Map<String, String> envMap,
+      final JobRunConfig jobRunConfig,
+      final KubePodInfo kubePodInfo,
+      final FeatureFlags featureFlags,
+      // final ProcessFactory processFactory,
+      final JobOrchestrator<?> jobOrchestrator) {
     this.context = context;
     this.application = application;
     this.envMap = envMap;
@@ -118,11 +116,11 @@ public class Application {
   }
 
   /**
-   * Configures logging/mdc scope, and creates all objects necessary to handle state updates.
-   * Everything else is delegated to {@link Application#runInternal}.
+   * Configures logging/mdc scope, and creates all objects necessary to handle state updates. Everything else is delegated to
+   * {@link Application#runInternal}.
    */
   int run() {
-    configureLogging();
+//    configureLogging();
 
     // set mdc scope for the remaining execution
     try (final var mdcScope = new MdcScope.Builder()
@@ -142,9 +140,8 @@ public class Application {
   }
 
   /**
-   * Handles state updates (including writing failures) and running the job orchestrator. As much of
-   * the initialization as possible should go in here, so it's logged properly and the state storage
-   * is updated appropriately.
+   * Handles state updates (including writing failures) and running the job orchestrator. As much of the initialization as possible should go in here,
+   * so it's logged properly and the state storage is updated appropriately.
    */
   private int runInternal(final AsyncStateManager asyncStateManager) {
     try {
@@ -173,21 +170,21 @@ public class Application {
     }
   }
 
-  private void configureLogging() {
-    // OrchestratorConstants.ENV_VARS_TO_TRANSFER.stream()
-    // .filter(envMap::containsKey)
-    // .forEach(envVar -> System.setProperty(envVar, envMap.get(envVar)));
-    //
-    // // make sure the new configuration is picked up
-    // final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-    // ctx.reconfigure();
-    //
-    // LogClientSingleton.getInstance().setJobMdc(
-    // configs.getWorkerEnvironment(),
-    // configs.getLogConfigs(),
-    // TemporalUtils.getJobRoot(
-    // configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId()));
-  }
+//  private void configureLogging() {
+  // OrchestratorConstants.ENV_VARS_TO_TRANSFER.stream()
+  // .filter(envMap::containsKey)
+  // .forEach(envVar -> System.setProperty(envVar, envMap.get(envVar)));
+  //
+  // // make sure the new configuration is picked up
+  // final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+  // ctx.reconfigure();
+  //
+  // LogClientSingleton.getInstance().setJobMdc(
+  // configs.getWorkerEnvironment(),
+  // configs.getLogConfigs(),
+  // TemporalUtils.getJobRoot(
+  // configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId()));
+//  }
 
   // private JobOrchestrator<?> getJobOrchestrator(final Configs configs,
   // final WorkerConfigs workerConfigs,

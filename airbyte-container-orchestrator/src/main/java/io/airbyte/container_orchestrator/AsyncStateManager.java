@@ -16,11 +16,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The state manager writes the "truth" for states of the async pod process. If the store isn't
- * updated by the underlying pod, it will appear as failed.
+ * The state manager writes the "truth" for states of the async pod process. If the store isn't updated by the underlying pod, it will appear as
+ * failed.
  * <p>
- * It doesn't have a single value for a state. Instead, in a location on cloud storage or disk, it
- * writes every state it's encountered.
+ * It doesn't have a single value for a state. Instead, in a location on cloud storage or disk, it writes every state it's encountered.
  */
 @Prototype
 public class AsyncStateManager {
@@ -44,9 +43,7 @@ public class AsyncStateManager {
   /**
    * Writes an empty file to a location designated by the input status.
    */
-  public void write(final KubePodInfo kubePodInfo,
-                    final AsyncKubePodStatus status,
-                    final String value) {
+  public void write(final KubePodInfo kubePodInfo, final AsyncKubePodStatus status, final String value) {
     final var key = getDocumentStoreKey(kubePodInfo, status);
     log.info("Writing async status {} for {}...", status, kubePodInfo);
     documentStoreClient.write(key, value);
@@ -81,18 +78,16 @@ public class AsyncStateManager {
     final var key = getDocumentStoreKey(kubePodInfo, AsyncKubePodStatus.SUCCEEDED);
     final var output = documentStoreClient.read(key);
 
-    return output.orElseThrow(() -> new IllegalArgumentException(
-        "Expected to retrieve output from a successfully completed pod!"));
+    return output.orElseThrow(() -> new IllegalArgumentException("Expected to retrieve output from a successfully completed pod!"));
 
   }
 
   /**
-   * IMPORTANT: Changing the storage location will orphan already existing kube pods when the new
-   * version is deployed!
+   * IMPORTANT: Changing the storage location will orphan already existing kube pods when the new version is deployed!
    */
   @VisibleForTesting
   static String getDocumentStoreKey(final KubePodInfo kubePodInfo,
-                                    final AsyncKubePodStatus status) {
+      final AsyncKubePodStatus status) {
     return kubePodInfo.namespace() + "/" + kubePodInfo.name() + "/" + status.name();
   }
 
