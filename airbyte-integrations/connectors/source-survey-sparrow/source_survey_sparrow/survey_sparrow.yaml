@@ -29,6 +29,9 @@ definitions:
     requester:
       $ref: "*ref(definitions.requester)"
   base_stream:
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_survey_sparrow/schemas/{{ options['name'] }}.json"
     retriever:
       $ref: "*ref(definitions.retriever)"
   contacts_stream:
