@@ -21,6 +21,7 @@ import { ConnectionReplicationTab } from "./ConnectionReplicationTab";
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => ({
   useGetDestinationDefinitionSpecification: () => mockDest,
 }));
+jest.setTimeout(10000);
 
 jest.mock("services/workspaces/WorkspacesService", () => ({
   useCurrentWorkspace: () => mockWorkspace,

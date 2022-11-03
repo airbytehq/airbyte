@@ -17,11 +17,12 @@
   "sidebar.resources": "Resources",
   "sidebar.documentation": "Documentation",
   "sidebar.joinSlack": "Join our Slack",
-  "sidebar.status": "Airbyte status",
+  "sidebar.status": "Airbyte Status",
   "sidebar.chat": "Chat with us",
   "sidebar.support": "Support",
   "sidebar.supportTicket": "Submit a Ticket",
   "sidebar.recipes": "Tutorials - Use cases",
+  "sidebar.demo": "Explore our demo",
 
   "form.continue": "Continue",
   "form.error": "Error: {message}",
@@ -334,6 +335,7 @@
   "syncMode.full_refresh": "Full refresh",
   "syncMode.incremental": "Incremental",
 
+  "connection.emptyStateFooter": "or play around in our <demoLnk>demo instance</demoLnk>.",
   "connection.resetModalTitle": "Stream configuration changed",
   "connection.streamResetHint": "Due to changes in the stream configuration, we recommend a data reset. A reset will delete data in the destination of the affected streams and then re-sync that data. Skipping the reset is discouraged and might lead to unexpected behavior.",
   "connection.streamFullResetHint": "Due to changes in the stream configuration, we recommend a data reset. A reset will delete data in the destination of the affected streams and then re-sync that data. Skipping the reset is discouraged and might lead to unexpected behavior.",
