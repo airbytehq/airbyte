@@ -8,11 +8,9 @@ export interface ListBoxControlButtonProps<T> {
   selectedOption: Option<T>;
 }
 
-// Not using arrow function due to generic type
-// eslint-disable-next-line react/function-component-definition
-function DefaultControlButton<T>({ selectedOption }: ListBoxControlButtonProps<T>) {
+const DefaultControlButton = <T,>({ selectedOption }: ListBoxControlButtonProps<T>) => {
   return <>{selectedOption.label}</>;
-}
+};
 
 export interface Option<T> {
   label: string;
@@ -28,18 +26,14 @@ interface ListBoxProps<T> {
   controlButton?: React.ComponentType<ListBoxControlButtonProps<T>>;
 }
 
-// Not using arrow function due to generic type
-// eslint-disable-next-line react/function-component-definition
-export function ListBox<T>(props: ListBoxProps<T>) {
-  const {
-    className,
-    options,
-    selectedValue,
-    onSelect,
-    buttonClassName,
-    controlButton: ControlButton = DefaultControlButton,
-  } = props;
-
+export const ListBox = <T,>({
+  className,
+  options,
+  selectedValue,
+  onSelect,
+  buttonClassName,
+  controlButton: ControlButton = DefaultControlButton,
+}: ListBoxProps<T>) => {
   const selectedOption = options.find((option) => option.value === selectedValue) ?? {
     label: String(selectedValue),
     value: selectedValue,
@@ -70,4 +64,4 @@ export function ListBox<T>(props: ListBoxProps<T>) {
       </Listbox>
     </div>
   );
-}
+};
