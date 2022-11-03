@@ -31,7 +31,7 @@ class SourceMicrosoftDataverse(AbstractSource):
 
                 schema["properties"][attribute["LogicalName"]] = attribute_type
 
-            if entity["ChangeTrackingEnabled"]:
+            if entity["CanChangeTrackingBeEnabled"]["Value"] and entity["ChangeTrackingEnabled"]:
                 schema["properties"].update({"_ab_cdc_updated_at": {"type": "string"}, "_ab_cdc_deleted_at": {"type": ["null", "string"]}})
                 stream = AirbyteStream(name=entity["LogicalName"], json_schema=schema, supported_sync_modes=[SyncMode.full_refresh,SyncMode.incremental])
                 stream.source_defined_cursor = True
