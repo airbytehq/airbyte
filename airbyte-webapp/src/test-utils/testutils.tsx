@@ -122,4 +122,6 @@ export const mockConnection: WebBackendConnectionRead = {
   catalogId: "",
   isSyncing: false,
   schemaChange: "no_change",
+  notifySchemaChanges: true,
+  nonBreakingChangesPreference: "ignore",
 };

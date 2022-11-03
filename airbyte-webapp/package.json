@@ -1,11 +1,12 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.40.17",
+  "version": "0.40.18",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
   },
   "scripts": {
+    "prepare": "cd .. && husky install airbyte-webapp/.husky",
     "prestart": "npm run generate-client",
     "start": "craco start",
     "prebuild": "npm run generate-client",
@@ -115,7 +116,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-unused-imports": "^2.0.0",
     "express": "^4.18.1",
-    "husky": "^4.2.3",
+    "husky": "^8.0.1",
     "license-checker": "^25.0.1",
     "lint-staged": "^12.3.7",
     "mini-css-extract-plugin": "^2.6.1",
@@ -134,11 +135,6 @@
     "tmpl": "^1.0.5",
     "ts-node": "^10.8.1",
     "typescript": "^4.7.3"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   },
   "lint-staged": {
     "src/**/*.{js,jsx,ts,tsx}": [

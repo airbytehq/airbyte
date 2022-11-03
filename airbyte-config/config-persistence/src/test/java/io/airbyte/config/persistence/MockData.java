@@ -30,6 +30,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.NonBreakingChangesPreference;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
@@ -479,7 +480,9 @@ public class MockData {
         .withStatus(Status.ACTIVE)
         .withSchedule(schedule)
         .withGeography(Geography.AUTO)
-        .withBreakingChange(false);
+        .withBreakingChange(false)
+        .withNonBreakingChangesPreference(NonBreakingChangesPreference.IGNORE)
+        .withNotifySchemaChanges(true);
 
     final StandardSync standardSync2 = new StandardSync()
         .withOperationIds(Arrays.asList(OPERATION_ID_1, OPERATION_ID_2))
@@ -496,7 +499,9 @@ public class MockData {
         .withStatus(Status.ACTIVE)
         .withSchedule(schedule)
         .withGeography(Geography.AUTO)
-        .withBreakingChange(false);
+        .withBreakingChange(false)
+        .withNonBreakingChangesPreference(NonBreakingChangesPreference.IGNORE)
+        .withNotifySchemaChanges(true);
 
     final StandardSync standardSync3 = new StandardSync()
         .withOperationIds(Arrays.asList(OPERATION_ID_1, OPERATION_ID_2))
@@ -513,7 +518,9 @@ public class MockData {
         .withStatus(Status.ACTIVE)
         .withSchedule(schedule)
         .withGeography(Geography.AUTO)
-        .withBreakingChange(false);
+        .withBreakingChange(false)
+        .withNonBreakingChangesPreference(NonBreakingChangesPreference.IGNORE)
+        .withNotifySchemaChanges(true);
 
     final StandardSync standardSync4 = new StandardSync()
         .withOperationIds(Collections.emptyList())
@@ -530,7 +537,9 @@ public class MockData {
         .withStatus(Status.DEPRECATED)
         .withSchedule(schedule)
         .withGeography(Geography.AUTO)
-        .withBreakingChange(false);
+        .withBreakingChange(false)
+        .withNonBreakingChangesPreference(NonBreakingChangesPreference.IGNORE)
+        .withNotifySchemaChanges(true);
 
     final StandardSync standardSync5 = new StandardSync()
         .withOperationIds(Arrays.asList(OPERATION_ID_3))
@@ -547,7 +556,9 @@ public class MockData {
         .withStatus(Status.ACTIVE)
         .withSchedule(schedule)
         .withGeography(Geography.AUTO)
-        .withBreakingChange(false);
+        .withBreakingChange(false)
+        .withNonBreakingChangesPreference(NonBreakingChangesPreference.IGNORE)
+        .withNotifySchemaChanges(true);
 
     final StandardSync standardSync6 = new StandardSync()
         .withOperationIds(Arrays.asList())
@@ -564,7 +575,9 @@ public class MockData {
         .withStatus(Status.DEPRECATED)
         .withSchedule(schedule)
         .withGeography(Geography.AUTO)
-        .withBreakingChange(false);
+        .withBreakingChange(false)
+        .withNonBreakingChangesPreference(NonBreakingChangesPreference.IGNORE)
+        .withNotifySchemaChanges(true);
 
     return Arrays.asList(standardSync1, standardSync2, standardSync3, standardSync4, standardSync5, standardSync6);
   }
