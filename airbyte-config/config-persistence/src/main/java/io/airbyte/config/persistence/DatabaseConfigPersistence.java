@@ -221,6 +221,14 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     }
   }
 
+  private <T> ConfigWithMetadata<T> validateAndReturn(final String configId,
+                                                      final List<ConfigWithMetadata<T>> result,
+                                                      final AirbyteConfig airbyteConfig)
+      throws ConfigNotFoundException {
+    validate(configId, result, airbyteConfig);
+    return result.get(0);
+  }
+
   @Override
   public <T> List<T> listConfigs(final AirbyteConfig configType, final Class<T> clazz) throws JsonValidationException, IOException {
     final List<T> config = new ArrayList<>();
@@ -228,9 +236,42 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     return config;
   }
 
-  // listConfigWithMetadata seems to be unused at this point.
-  // It is only called by listConfigs and it only reads the config. The "metadata" part seems to be
-  // unused.
+  @Override
+  public <T> ConfigWithMetadata<T> getConfigWithMetadata(final AirbyteConfig configType, final String configId, final Class<T> clazz)
+      throws ConfigNotFoundException, JsonValidationException, IOException {
+    final Optional<UUID> configIdOpt = Optional.of(UUID.fromString(configId));
+    if (configType == ConfigSchema.STANDARD_WORKSPACE) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listStandardWorkspaceWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listStandardSourceDefinitionWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listStandardDestinationDefinitionWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.SOURCE_CONNECTION) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listSourceConnectionWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.DESTINATION_CONNECTION) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listDestinationConnectionWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.SOURCE_OAUTH_PARAM) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listSourceOauthParamWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.DESTINATION_OAUTH_PARAM) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listDestinationOauthParamWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.STANDARD_SYNC_OPERATION) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listStandardSyncOperationWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.STANDARD_SYNC) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listStandardSyncWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.STANDARD_SYNC_STATE) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listStandardSyncStateWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.ACTOR_CATALOG) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listActorCatalogWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listActorCatalogFetchEventWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.WORKSPACE_SERVICE_ACCOUNT) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listWorkspaceServiceAccountWithMetadata(configIdOpt), configType);
+    } else {
+      throw new IllegalArgumentException(UNKNOWN_CONFIG_TYPE + configType);
+    }
+  }
+
+  @Override
   public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig configType, final Class<T> clazz) throws IOException {
     final List<ConfigWithMetadata<T>> configWithMetadata = new ArrayList<>();
     if (configType == ConfigSchema.STANDARD_WORKSPACE) {
