@@ -58,8 +58,7 @@ public class JsonSchemas {
    * @param jsonNode - a json object with children that contain types.
    */
   public static void mutateTypeToArrayStandard(final JsonNode jsonNode) {
-    if (jsonNode.get(JSON_SCHEMA_TYPE_KEY) != null && !jsonNode.get(JSON_SCHEMA_TYPE_KEY)
-        .isArray()) {
+    if (jsonNode.get(JSON_SCHEMA_TYPE_KEY) != null && !jsonNode.get(JSON_SCHEMA_TYPE_KEY).isArray()) {
       final JsonNode type = jsonNode.get(JSON_SCHEMA_TYPE_KEY);
       ((ObjectNode) jsonNode).putArray(JSON_SCHEMA_TYPE_KEY).add(type);
     }
@@ -100,8 +99,7 @@ public class JsonSchemas {
    * @param jsonSchema - JsonSchema object to traverse
    * @param consumer - accepts the current node and the path to that node.
    */
-  public static void traverseJsonSchema(final JsonNode jsonSchema,
-                                        final BiConsumer<JsonNode, List<FieldNameOrList>> consumer) {
+  public static void traverseJsonSchema(final JsonNode jsonSchema, final BiConsumer<JsonNode, List<FieldNameOrList>> consumer) {
     traverseJsonSchemaInternal(jsonSchema, new ArrayList<>(), consumer);
   }
 
@@ -116,8 +114,7 @@ public class JsonSchemas {
    *         Collection } because there is no order or uniqueness guarantee so neither List nor Set
    *         make sense.
    */
-  public static <T> List<T> traverseJsonSchemaWithCollector(final JsonNode jsonSchema,
-                                                            final BiFunction<JsonNode, List<FieldNameOrList>, T> mapper) {
+  public static <T> List<T> traverseJsonSchemaWithCollector(final JsonNode jsonSchema, final BiFunction<JsonNode, List<FieldNameOrList>, T> mapper) {
     // for the sake of code reuse, use the filtered collector method but makes sure the filter always
     // returns true.
     return traverseJsonSchemaWithFilteredCollector(jsonSchema,
@@ -152,8 +149,7 @@ public class JsonSchemas {
    * @param predicate - predicate to determine if the path for a node should be collected.
    * @return - collection of all paths that were collected during the traversal.
    */
-  public static List<List<FieldNameOrList>> collectPathsThatMeetCondition(final JsonNode obj,
-                                                                          final Predicate<JsonNode> predicate) {
+  public static List<List<FieldNameOrList>> collectPathsThatMeetCondition(final JsonNode obj, final Predicate<JsonNode> predicate) {
     return traverseJsonSchemaWithFilteredCollector(obj, (node, path) -> {
       if (predicate.test(node)) {
         return Optional.of(path);
@@ -178,8 +174,7 @@ public class JsonSchemas {
                                                  final BiConsumer<JsonNode, List<FieldNameOrList>> consumer) {
     if (!jsonSchemaNode.isObject()) {
       throw new IllegalArgumentException(
-          String.format("json schema nodes should always be object nodes. path: %s actual: %s",
-              path, jsonSchemaNode));
+          String.format("json schema nodes should always be object nodes. path: %s actual: %s", path, jsonSchemaNode));
     }
     consumer.accept(jsonSchemaNode, path);
     // if type is missing assume object. not official JsonSchema, but it seems to be a common
@@ -194,12 +189,9 @@ public class JsonSchemas {
           newPath.add(FieldNameOrList.list());
           if (jsonSchemaNode.has(JSON_SCHEMA_ITEMS_KEY)) {
             // hit every node.
-            traverseJsonSchemaInternal(jsonSchemaNode.get(JSON_SCHEMA_ITEMS_KEY), newPath,
-                consumer);
+            traverseJsonSchemaInternal(jsonSchemaNode.get(JSON_SCHEMA_ITEMS_KEY), newPath, consumer);
           } else {
-            log.warn(
-                "The array is missing an items field. The traversal is silently stopped. Current schema: "
-                    + jsonSchemaNode);
+            log.warn("The array is missing an items field. The traversal is silently stopped. Current schema: " + jsonSchemaNode);
           }
         }
         case OBJECT_TYPE -> {
@@ -217,9 +209,7 @@ public class JsonSchemas {
               traverseJsonSchemaInternal(arrayItem, path, consumer);
             }
           } else {
-            log.warn(
-                "The object is a properties key or a combo keyword. The traversal is silently stopped. Current schema: "
-                    + jsonSchemaNode);
+            log.warn("The object is a properties key or a combo keyword. The traversal is silently stopped. Current schema: " + jsonSchemaNode);
           }
         }
       }
