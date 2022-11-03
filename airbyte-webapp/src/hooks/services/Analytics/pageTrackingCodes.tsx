@@ -27,7 +27,7 @@ export enum PageTrackingCodes {
   SETTINGS_NOTIFICATION = "Settings.Notifications",
   SETTINGS_ACCESS_MANAGEMENT = "Settings.AccessManagement",
   SETTINGS_METRICS = "Settings.Metrics",
-  SETTINGS_DEFAULT_DATA_RESIDENCY = "Settings.DefaultDataResidency",
+  SETTINGS_DATA_RESIDENCY = "Settings.DataResidency",
   CREDITS = "Credits",
   WORKSPACES = "Workspaces",
   PREFERENCES = "Preferences",

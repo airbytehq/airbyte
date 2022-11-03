@@ -16,7 +16,7 @@ import { SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 import { useUpdateWorkspace } from "services/workspaces/WorkspacesService";
 import { links } from "utils/links";
 
-import styles from "./DefaultDataResidencyView.module.scss";
+import styles from "./DataResidencyView.module.scss";
 
 interface SelectGeographyOption {
   label: Geography;
@@ -27,14 +27,14 @@ interface DefaultDataResidencyFormValues {
   defaultGeography: Geography | undefined;
 }
 
-export const DefaultDataResidencyView: React.FC = () => {
+export const DataResidencyView: React.FC = () => {
   const workspace = useCurrentWorkspace();
   const { geographies } = useAvailableGeographies();
   const { mutateAsync: updateWorkspace } = useUpdateWorkspace();
   const { registerNotification } = useNotificationService();
 
   const { formatMessage } = useIntl();
-  useTrackPage(PageTrackingCodes.SETTINGS_DEFAULT_DATA_RESIDENCY);
+  useTrackPage(PageTrackingCodes.SETTINGS_DATA_RESIDENCY);
 
   const handleSubmit = async (
     values: DefaultDataResidencyFormValues,

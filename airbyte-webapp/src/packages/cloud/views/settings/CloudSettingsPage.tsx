@@ -6,7 +6,7 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { DbtCloudSettingsView } from "packages/cloud/views/settings/integrations/DbtCloudSettingsView";
 import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView";
 import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView";
-import { DefaultDataResidencyView } from "packages/cloud/views/workspaces/DefaultDataResidencyView";
+import { DataResidencyView } from "packages/cloud/views/workspaces/DataResidencyView";
 import { WorkspaceSettingsView } from "packages/cloud/views/workspaces/WorkspaceSettingsView";
 import SettingsPage from "pages/SettingsPage";
 import {
@@ -24,7 +24,7 @@ export const CloudSettingsPage: React.FC = () => {
   // TODO: uncomment when supported in cloud
   // const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
   const supportsCloudDbtIntegration = useFeature(FeatureItem.AllowDBTCloudIntegration);
-  const supportsDefaultDataResidency = useFeature(FeatureItem.AllowChangeDataGeographies);
+  const supportsDataResidency = useFeature(FeatureItem.AllowChangeDataGeographies);
 
   const pageConfig = useMemo<PageConfig>(
     () => ({
@@ -57,12 +57,12 @@ export const CloudSettingsPage: React.FC = () => {
               component: WorkspaceSettingsView,
               id: "workspaceSettings.generalSettings",
             },
-            ...(supportsDefaultDataResidency
+            ...(supportsDataResidency
               ? [
                   {
                     path: CloudSettingsRoutes.DataResidency,
-                    name: "Default Data Residency",
-                    component: DefaultDataResidencyView,
+                    name: <FormattedMessage id="settings.dataResidency" />,
+                    component: DataResidencyView,
                   },
                 ]
               : []),
@@ -113,7 +113,7 @@ export const CloudSettingsPage: React.FC = () => {
           : []),
       ],
     }),
-    [supportsCloudDbtIntegration, supportsDefaultDataResidency]
+    [supportsCloudDbtIntegration, supportsDataResidency]
   );
 
   return <SettingsPage pageConfig={pageConfig} />;

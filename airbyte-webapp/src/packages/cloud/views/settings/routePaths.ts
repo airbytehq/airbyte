@@ -6,7 +6,7 @@ export const CloudSettingsRoutes = {
   Account: SettingsRoute.Account,
   Source: SettingsRoute.Source,
   Destination: SettingsRoute.Destination,
-  DataResidency: SettingsRoute.DefaultDataResidency,
+  DataResidency: SettingsRoute.DataResidency,
 
   Workspace: "workspaces",
   AccessManagement: "access-management",

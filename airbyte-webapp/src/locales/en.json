@@ -518,7 +518,8 @@
   "settings.account": "Account",
   "settings.accountSettings.updateEmailSuccess": "Email updated",
   "settings.cookiePreferences": "Cookie Preferences",
-  "settings.defaultDataResidency": "Default Data residency",
+  "settings.dataResidency": "Default Data Residency",
+  "settings.defaultDataResidency": "Default Data Residency",
   "settings.defaultGeography": "Geography",
   "settings.defaultDataResidencyDescription": "Choose the default preferred data processing location for all of your connections. Setting this choice means your data never leaves this region. <a>Learn more</a>.",
 

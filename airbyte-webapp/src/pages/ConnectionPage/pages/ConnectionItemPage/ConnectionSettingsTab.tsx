@@ -15,7 +15,7 @@ import { StateBlock } from "./StateBlock";
 export const ConnectionSettingsTab: React.FC = () => {
   const { connection } = useConnectionEditService();
   const { mutateAsync: deleteConnection } = useDeleteConnection();
-  const canUpdateDefaultDataResidency = useFeature(FeatureItem.AllowChangeDataGeographies);
+  const canUpdateDataResidency = useFeature(FeatureItem.AllowChangeDataGeographies);
 
   const [isAdvancedMode] = useAdvancedModeSetting();
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_SETTINGS);
@@ -23,7 +23,7 @@ export const ConnectionSettingsTab: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      {canUpdateDefaultDataResidency && <UpdateConnectionDataResidency />}
+      {canUpdateDataResidency && <UpdateConnectionDataResidency />}
       {isAdvancedMode && <StateBlock connectionId={connection.connectionId} />}
       <DeleteBlock type="connection" onDelete={onDelete} />
     </div>
