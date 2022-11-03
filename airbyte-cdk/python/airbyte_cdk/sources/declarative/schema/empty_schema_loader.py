@@ -11,7 +11,7 @@ from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class MockSchemaLoader(SchemaLoader, JsonSchemaMixin):
+class EmptySchemaLoader(SchemaLoader, JsonSchemaMixin):
     """
     Loads an empty schema for streams that have not defined their schema file yet.
 
