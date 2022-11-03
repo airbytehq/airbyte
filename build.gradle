@@ -369,7 +369,7 @@ subprojects { subproj ->
             includeTags integrationTagName
         }
         testLogging() {
-            events "passed", "skipped", "failed", "started"
+            events "passed", "failed", "started"
             exceptionFormat 'full'
             // uncomment to get the full log output
             // showStandardStreams = true
@@ -382,7 +382,7 @@ subprojects { subproj ->
             includeTags slowIntegrationTagName
         }
         testLogging() {
-            events "passed", "skipped", "failed", "started"
+            events "passed", "failed", "started"
             exceptionFormat 'full'
             // uncomment to get the full log output
             // showStandardStreams = true
@@ -393,7 +393,7 @@ subprojects { subproj ->
     task allTests(type: Test) {
         useJUnitPlatform()
         testLogging() {
-            events "passed", "skipped", "failed", "started"
+            events "passed", "failed", "started"
             exceptionFormat 'full'
             // uncomment to get the full log output
             // showStandardStreams = true
