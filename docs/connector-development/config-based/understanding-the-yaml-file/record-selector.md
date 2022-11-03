@@ -1,8 +1,43 @@
 # Record selector
 
 The record selector is responsible for translating an HTTP response into a list of Airbyte records by extracting records from the response and optionally filtering and shaping records based on a heuristic.
+Schema:
+
+```yaml
+  HttpSelector:
+    type: object
+    anyOf:
+      - "$ref": "#/definitions/RecordSelector"
+  RecordSelector:
+    type: object
+    required:
+      - extractor
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      extractor:
+        "$ref": "#/definitions/RecordExtractor"
+      record_filter:
+        "$ref": "#/definitions/RecordFilter"
+```
 
 The current record extraction implementation uses [dpath](https://pypi.org/project/dpath/) to select records from the json-decoded HTTP response.
+Schema:
+
+```yaml
+  DpathExtractor:
+    type: object
+    additionalProperties: true
+    required:
+      - field_pointer
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      field_pointer:
+        type: array
+        items:
+          type: string
+```
 
 ## Common recipes:
 
@@ -19,7 +54,6 @@ selector:
 ```
 
 If the root of the response is a json object representing a single record, the record can be extracted and wrapped in an array.
-
 For example, given a response body of the form
 
 ```json
@@ -102,9 +136,7 @@ and a selector
 ```yaml
 selector:
   extractor:
-    field_pointer:
-      - "data"
-      - "records"
+    field_pointer: [ "data", "records" ]
 ```
 
 The selected records will be
@@ -139,10 +171,56 @@ selector:
 
 Fields can be added or removed from records by adding `Transformation`s to a stream's definition.
 
+Schema:
+
+```yaml
+  RecordTransformation:
+    type: object
+    anyOf:
+      - "$ref": "#/definitions/AddFields"
+      - "$ref": "#/definitions/RemoveFields"
+```
+
 ### Adding fields
 
 Fields can be added with the `AddFields` transformation.
 This example adds a top-level field "field1" with a value "static_value"
+
+Schema:
+
+```yaml
+  AddFields:
+    type: object
+    required:
+      - fields
+    additionalProperties: true
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      fields:
+        type: array
+        items:
+          "$ref": "#/definitions/AddedFieldDefinition"
+  AddedFieldDefinition:
+    type: object
+    required:
+      - path
+      - value
+    additionalProperties: true
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      path:
+        "$ref": "#/definitions/FieldPointer"
+      value:
+        type: string
+  FieldPointer:
+    type: array
+    items:
+      type: string
+```
+
+Example:
 
 ```yaml
 stream:
@@ -163,7 +241,7 @@ stream:
       - type: AddFields
         fields:
           - path: [ "start_date" ]
-            value: {{ stream_slice[ 'start_date' ] }}
+            value: { { stream_slice[ 'start_date' ] } }
 ```
 
 Fields can also be added in a nested object by writing the fields' path as a list.
@@ -208,6 +286,24 @@ resulting in the following record:
 ### Removing fields
 
 Fields can be removed from records with the `RemoveFields` transformation.
+
+Schema:
+
+```yaml
+  RemoveFields:
+    type: object
+    required:
+      - field_pointers
+    additionalProperties: true
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      field_pointers:
+        type: array
+        items:
+          "$ref": "#/definitions/FieldPointer"
+
+```
 
 Given a record of the following shape:
 

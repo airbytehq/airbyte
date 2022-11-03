@@ -8,6 +8,9 @@ additionalProperties: false
 required:
   - connectionConfiguration
   - dockerImage
+  - sourceId
+  - connectorVersion
+  - configHash
 properties:
   connectionConfiguration:
     description: Integration specific blob. Must be a valid JSON string.
@@ -15,3 +18,18 @@ properties:
     existingJavaType: com.fasterxml.jackson.databind.JsonNode
   dockerImage:
     type: string
+    description: The connector image
+    example: airbyte/source-postgres:1.0.12
+  sourceId:
+    description: The ID of the source being discovered, so we can persist this alongside the discovered catalog
+    type: string
+  connectorVersion:
+    description: Connector version, so we can persist this alongside the discovered catalog
+    type: string
+    example: 1.0.12
+  configHash:
+    description: Hash of the source configuration -- see `configuration` field in SourceConnection.yaml -- so we can persist this alongside the discovered catalog.
+    type: string
+  protocolVersion:
+    type: object
+    existingJavaType: io.airbyte.commons.version.Version

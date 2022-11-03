@@ -168,4 +168,12 @@ class TestJsonlParser(AbstractTestParser):
                 "line_checks": {},
                 "fails": [],
             },
+            "array_in_schema_test": {
+                "AbstractFileParser": JsonlParser(format={"filetype": "jsonl"}),
+                "filepath": os.path.join(SAMPLE_DIRECTORY, "jsonl/test_file_11_array_in_schema.jsonl"),
+                "num_records": 3,
+                "inferred_schema": {"id": "integer", "name": "string", "books": "array"},
+                "line_checks": {},
+                "fails": [],
+            },
         }

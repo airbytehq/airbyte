@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mariadb-columnstore",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/mariadb-columnstore",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,

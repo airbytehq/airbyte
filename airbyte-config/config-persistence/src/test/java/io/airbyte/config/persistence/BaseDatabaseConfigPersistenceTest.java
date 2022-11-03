@@ -12,6 +12,7 @@ import static org.mockito.Mockito.mock;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.Geography;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -146,7 +147,8 @@ class BaseDatabaseConfigPersistenceTest {
         .withWorkspaceId(workspaceId)
         .withName(CANNOT_BE_NULL)
         .withSlug(CANNOT_BE_NULL)
-        .withInitialSetupComplete(true);
+        .withInitialSetupComplete(true)
+        .withDefaultGeography(Geography.AUTO);
     configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), workspace);
 
     final SourceConnection sourceConnection = new SourceConnection()
@@ -172,7 +174,8 @@ class BaseDatabaseConfigPersistenceTest {
         .withWorkspaceId(workspaceId)
         .withName(CANNOT_BE_NULL)
         .withSlug(CANNOT_BE_NULL)
-        .withInitialSetupComplete(true);
+        .withInitialSetupComplete(true)
+        .withDefaultGeography(Geography.AUTO);
     configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), workspace);
 
     final DestinationConnection destinationConnection = new DestinationConnection()
