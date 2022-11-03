@@ -22,6 +22,7 @@ class CustomBaseModel(BaseModel):
 
 
 class AdUnitPerHourItem(CustomBaseModel):
+    ad_unit_id: int
     cpm_cpc_revenue: int
     impressions: int
     eCpm: int
@@ -42,6 +43,7 @@ class AdUnitPerHourItem(CustomBaseModel):
             AdUnitPerHourItem: the python object
         """
         return AdUnitPerHourItem(
+            ad_unit_id=AdUnitPerReferrerItem.convert_to_int_or_return_zero(row_dict.get('Ad unit ID 1')),
             cpm_cpc_revenue=AdUnitPerHourItem.convert_to_int_or_return_zero(row_dict.get('Column.TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE')),
             impressions=AdUnitPerHourItem.convert_to_int_or_return_zero(row_dict.get('Column.TOTAL_LINE_ITEM_LEVEL_IMPRESSIONS')),
             eCpm=AdUnitPerHourItem.convert_to_int_or_return_zero(row_dict.get('Column.TOTAL_LINE_ITEM_LEVEL_WITHOUT_CPD_AVERAGE_ECPM')),
@@ -55,7 +57,9 @@ class AdUnitPerHourItem(CustomBaseModel):
 
 class AdUnitPerReferrerItem(CustomBaseModel):
     ad_unit: str  # should be part of the index
+    ad_unit_id: int
     referrer: str  # should be part of the index
+    advertiser_name: str
     impressions: int
     cpm_cpc_revenue: int
     customer_name: str
@@ -75,7 +79,9 @@ class AdUnitPerReferrerItem(CustomBaseModel):
         """
         return AdUnitPerReferrerItem(
             ad_unit=row_dict.get('Ad unit 1'),
+            ad_unit_id=AdUnitPerReferrerItem.convert_to_int_or_return_zero(row_dict.get('Ad unit ID 1')),
             referrer=row_dict.get('Dimension.CUSTOM_CRITERIA').replace("referrer=", ""),
+            advertiser_name=row_dict.get('Dimension.ADVERTISER_NAME'),
             impressions=AdUnitPerHourItem.convert_to_int_or_return_zero(row_dict.get('Column.TOTAL_LINE_ITEM_LEVEL_IMPRESSIONS')),
             cpm_cpc_revenue=AdUnitPerHourItem.convert_to_int_or_return_zero(row_dict.get('Column.TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE')),
             eCpm=AdUnitPerHourItem.convert_to_int_or_return_zero(row_dict.get('Column.TOTAL_LINE_ITEM_LEVEL_WITHOUT_CPD_AVERAGE_ECPM')),

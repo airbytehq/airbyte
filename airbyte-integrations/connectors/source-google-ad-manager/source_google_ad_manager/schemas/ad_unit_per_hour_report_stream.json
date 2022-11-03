@@ -12,10 +12,12 @@
     "ad_unit": { "title": "Ad Unit", "type": "string" },
     "hour": { "title": "Hour", "type": "integer" },
     "date": { "title": "Date", "type": "string", "format": "date-time" },
-    "customer_name": { "title": "Customer Name", "type": "string" }
+    "customer_name": { "title": "Customer Name", "type": "string" },
+    "ad_unit_id": { "title": "Ad Unit Id", "type": "integer" }
   },
   "required": [
     "cpm_cpc_revenue",
+    "ad_unit_id",
     "impressions",
     "eCpm",
     "unfilled_impressions",

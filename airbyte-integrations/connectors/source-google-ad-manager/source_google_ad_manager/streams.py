@@ -244,7 +244,6 @@ class AdUnitPerHourReportStream(BaseGoogleAdManagerReportStream):
         """
         row['customer_name'] = self.customer_name
         try:
-
             return AdUnitPerHourItem.from_dict(row)
         except Exception as e:
             logger.error(f"error while parsing the row {row}, the error is {e}")
@@ -258,7 +257,7 @@ class AdUnitPerHourReportStream(BaseGoogleAdManagerReportStream):
         list of list of strings if composite primary key consisting of nested fields.
         If the stream has no primary keys, return None.
         """
-        return ["ad_unit", "hour", "date", "customer_name"]
+        return ["ad_unit", "hour", "date", "customer_name", "ad_unit_id"]
 
 
 class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
@@ -381,7 +380,6 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
         """
         row['customer_name'] = self.customer_name
         try:
-
             return AdUnitPerReferrerItem.from_dict(row)
         except Exception as e:
             # todo: sometimes null values are returned from the apis, ignoring them now and they will be pulled on the next run
@@ -396,4 +394,4 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
         list of list of strings if composite primary key consisting of nested fields.
         If the stream has no primary keys, return None.
         """
-        return ["ad_unit", "referrer", "date", "customer_name"]
+        return ["ad_unit", "referrer", "date", "customer_name", "ad_unit_id", "advertiser_name"]

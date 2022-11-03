@@ -14,10 +14,14 @@
     "hour": { "title": "Hour", "type": "integer" },
     "click": { "title": "Click", "type": "integer" },
     "date": { "title": "Date", "type": "string", "format": "date-time" },
-    "customer_name": { "title": "Customer Name", "type": "string" }
+    "customer_name": { "title": "Customer Name", "type": "string" },
+    "ad_unit_id": { "title": "Ad Unit Id", "type": "integer" },
+    "advertiser_name": { "title": "Advertiser Name", "type": "string" }
   },
   "required": [
     "cpm_cpc_revenue",
+    "ad_unit_id",
+    "advertiser_name",
     "impressions",
     "eCpm",
     "unfilled_impressions",
