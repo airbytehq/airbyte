@@ -344,10 +344,7 @@ public class DefaultJobPersistence implements JobPersistence {
           .set(ATTEMPTS.UPDATED_AT, now)
           .where(ATTEMPTS.JOB_ID.eq(jobId), ATTEMPTS.ATTEMPT_NUMBER.eq(attemptNumber))
           .execute();
-      final Optional<Record> record =
-          ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
-              attemptNumber).stream().findFirst();
-      final Long attemptId = record.get().get("id", Long.class);
+      final Long attemptId = getAttemptId(jobId, attemptNumber, ctx);
 
       ctx.insertInto(SYNC_STATS)
           .set(SYNC_STATS.ID, UUID.randomUUID())
@@ -380,6 +377,14 @@ public class DefaultJobPersistence implements JobPersistence {
       return null;
     });
 
+  }
+
+  private static Long getAttemptId(long jobId, int attemptNumber, DSLContext ctx) {
+    final Optional<Record> record =
+        ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
+            attemptNumber).stream().findFirst();
+    final Long attemptId = record.get().get("id", Long.class);
+    return attemptId;
   }
 
   @Override
