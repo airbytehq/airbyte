@@ -18,8 +18,8 @@ export class ConnectorBuilderRequestService extends AirbyteRequestService {
     return new Promise((resolve) => setTimeout(resolve, 200)).then(() => {
       return {
         logs: [
-          { level: "INFO", message: "Syncing stream: rates " },
-          { level: "INFO", message: "Setting state of rates stream to {'date': '2022-09-25'}" },
+          { level: "INFO", message: `Syncing stream: ${readParams.stream}` },
+          { level: "INFO", message: `Setting state of ${readParams.stream} to {'date': '2022-09-25'}` },
         ],
         slices: [
           {
@@ -27,7 +27,7 @@ export class ConnectorBuilderRequestService extends AirbyteRequestService {
             state: {
               type: "STREAM",
               stream: { stream_descriptor: { name: readParams.stream }, stream_state: { date: "2022-09-26" } },
-              data: { rates: { date: "2022-09-26" } },
+              data: { [readParams.stream]: { date: "2022-09-26" } },
             },
             pages: [
               {
@@ -43,7 +43,7 @@ export class ConnectorBuilderRequestService extends AirbyteRequestService {
                   },
                 ],
                 request: {
-                  url: "https://api.com/path",
+                  url: `https://api.com/${readParams.stream}`,
                 },
                 response: {
                   status: 200,
