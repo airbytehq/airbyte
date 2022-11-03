@@ -16,10 +16,9 @@ interface CodeEditorProps {
 // Converts 3-character hex values into 6-character ones.
 // Required for custom monaco theme, because it fails when receiving 3-character hex values.
 function expandHexValue(input: string) {
-  // matches strings of the form #aaa
-  const match = /^#([0-9a-f])\1{2}$/.exec(input);
+  const match = /^#([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])$/.exec(input);
   if (match) {
-    return input + match[1].repeat(3);
+    return `#${match[1].repeat(2)}${match[2].repeat(2)}${match[3].repeat(2)}`;
   }
   return input;
 }
