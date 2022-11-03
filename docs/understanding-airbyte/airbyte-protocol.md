@@ -181,7 +181,7 @@ For the sake of brevity, we will not re-describe `spec` and `check`. They are ex
 
 This concludes the overview of the Actor Interface. The remaining content will dive deeper into each concept covered so far.
 
-# Actor Specification
+## Actor Specification
 
 The specification allows the Actor to share information about itself.
 
