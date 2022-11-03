@@ -77,6 +77,9 @@ pub enum Error {
 
     #[error("go.estuary.dev/E033: Adapting airbyte schema to flow: {0}")]
     InvalidAirbyteSchema(String),
+
+    #[error("go.estuary.dev/E035: Adapting airbyte schema to flow: {0}")]
+    InvalidMapping(String),
 }
 
 pub fn raise_err<T>(message: &str) -> Result<T, std::io::Error> {
