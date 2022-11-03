@@ -29,7 +29,7 @@ This section should contain a table with the following format:
 ### Performance considerations
 
 Every ten thousand pieces of incoming airbyte data in a stream ————we call it a batch, would produce one data file(
-Parquet/ORC/Avro) in an Iceberg table. This batch size can be configurabled by `Data file flushing batch size`
+Parquet/Avro) in an Iceberg table. This batch size can be configurabled by `Data file flushing batch size`
 property.  
 As the quantity of Iceberg data files grows, it causes an unnecessary amount of metadata and less efficient queries from
 file open costs.  

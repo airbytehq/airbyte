@@ -285,7 +285,6 @@
             "description" : "",
             "enum" : [
               "Parquet",
-              "ORC",
               "Avro"
             ],
             "order" : 0

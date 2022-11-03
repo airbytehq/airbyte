@@ -6,14 +6,18 @@ import lombok.Getter;
  * @author Leibniz on 2022/10/31.
  */
 public enum DataFileFormat {
-    AVRO("avro"),
-    PARQUET("parquet"),
-    ORC("orc");
+    AVRO("avro", "Avro"),
+    PARQUET("parquet", "Parquet"),
+//    ORC("orc"),
+    ;
 
     @Getter
     private final String formatName;
+    @Getter
+    private final String configValue;
 
-    DataFileFormat(final String formatName) {
+    DataFileFormat(final String formatName, String configValue) {
         this.formatName = formatName;
+        this.configValue = configValue;
     }
 }

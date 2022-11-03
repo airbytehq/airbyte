@@ -28,8 +28,10 @@ dependencies {
     implementation "org.apache.hadoop:hadoop-client-runtime:3.3.2"
     implementation "org.postgresql:postgresql:42.5.0"
     implementation "commons-collections:commons-collections:3.2.2"
-
 //    implementation "software.amazon.awssdk:utils:2.17.131"
+
+    testImplementation libs.connectors.testcontainers.postgresql
+    integrationTestJavaImplementation libs.connectors.testcontainers.postgresql
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-iceberg')
@@ -45,4 +47,8 @@ dependencies {
 
 test {
     jvmArgs = ['--add-opens=java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens=java.base/java.nio=ALL-UNNAMED']
+}
+
+task prepareKotlinBuildScriptModel {
+
 }
