@@ -21,8 +21,11 @@
   gap: variables.$spacing-sm;
   display: flex;
   flex-direction: row;
-  align-items: space-between;
+  justify-content: flex-start;
+  align-items: center;
   width: 100%;
+  margin-top: variables.$spacing-lg;
+  margin-bottom: variables.$spacing-lg;
 
   &:hover {
     background: colors.$grey-30;
@@ -58,4 +61,9 @@
 .streamRowItem {
   min-width: 0;
   padding-left: variables.$spacing-xs;
+}
+
+.arrowCell {
+  width: 20px;
+  padding: 0;
 }

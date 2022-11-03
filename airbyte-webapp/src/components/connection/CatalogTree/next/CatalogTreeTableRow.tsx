@@ -94,7 +94,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
         {stream.stream?.name}
       </HeaderCell>
       {/* todo: this is weird, we have a cell nested inside a cell */}
-      <Cell className={styles.streamRowItem}>
+      <Cell>
         {disabled ? (
           <HeaderCell ellipsis title={syncSchema.syncMode}>
             {syncSchema.syncMode}
@@ -124,9 +124,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           />
         )}
       </HeaderCell>
-      <Cell className={styles.streamRowItem}>
-        <FontAwesomeIcon icon={faArrowRight} />
-      </Cell>
+      <FontAwesomeIcon icon={faArrowRight} className={styles.arrowCell} />
       <HeaderCell ellipsis title={destNamespace} className={styles.streamRowItem}>
         {destNamespace}
       </HeaderCell>
