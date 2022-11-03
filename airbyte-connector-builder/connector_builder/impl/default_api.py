@@ -14,7 +14,7 @@ class DefaultApiImpl(DefaultApi):
         return "Hello World"
 
     async def list_streams(self, streams_list_request_body: StreamsListRequestBody = Body(None, description="")) -> StreamsListRead:
-        pass
+        raise Exception("not yet implemented")
 
     async def read_stream(self, stream_read_request_body: StreamReadRequestBody = Body(None, description="")) -> StreamRead:
-        pass
+        raise Exception("not yet implemented")
