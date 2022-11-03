@@ -14,6 +14,7 @@ import io.airbyte.api.model.generated.ConnectionStatus;
 import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.JobType;
 import io.airbyte.api.model.generated.JobTypeResourceLimit;
+import io.airbyte.api.model.generated.NonBreakingChangesPreference;
 import io.airbyte.api.model.generated.ResourceRequirements;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.BasicSchedule;
@@ -93,7 +94,10 @@ public class ApiPojoConverters {
         .prefix(standardSync.getPrefix())
         .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()))
         .sourceCatalogId(standardSync.getSourceCatalogId())
-        .geography(Enums.convertTo(standardSync.getGeography(), Geography.class));
+        .breakingChange(standardSync.getBreakingChange())
+        .geography(Enums.convertTo(standardSync.getGeography(), Geography.class))
+        .nonBreakingChangesPreference(Enums.convertTo(standardSync.getNonBreakingChangesPreference(), NonBreakingChangesPreference.class))
+        .notifySchemaChanges(standardSync.getNotifySchemaChanges());
 
     if (standardSync.getResourceRequirements() != null) {
       connectionRead.resourceRequirements(resourceRequirementsToApi(standardSync.getResourceRequirements()));

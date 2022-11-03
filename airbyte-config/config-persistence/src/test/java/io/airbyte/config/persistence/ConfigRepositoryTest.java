@@ -29,6 +29,7 @@ import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
+import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -62,7 +63,7 @@ class ConfigRepositoryTest {
   void setup() {
     configPersistence = mock(ConfigPersistence.class);
     database = mock(Database.class);
-    configRepository = spy(new ConfigRepository(configPersistence, database));
+    configRepository = spy(new ConfigRepository(configPersistence, database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database))));
   }
 
   @AfterEach
