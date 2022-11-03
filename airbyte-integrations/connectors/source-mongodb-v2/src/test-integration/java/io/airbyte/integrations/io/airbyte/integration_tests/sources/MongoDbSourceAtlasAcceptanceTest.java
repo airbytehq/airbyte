@@ -5,6 +5,8 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.ATLAS;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,6 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCollection;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
@@ -119,35 +122,39 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
   @Test
   public void testCheckIncorrectUsername() throws Exception {
     ((ObjectNode) config).put("user", "fake");
-    final AirbyteConnectionStatus status = new MongoDbSource().check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 18"));
+    final Throwable throwable = catchThrowable(() -> new MongoDbSource().check(config));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    assertThat(((ConfigErrorException) throwable).getDisplayMessage()
+        .contains("State code: 18"));
   }
 
   @Test
   public void testCheckIncorrectPassword() throws Exception {
     ((ObjectNode) config).put("password", "fake");
-    final AirbyteConnectionStatus status = new MongoDbSource().check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 18"));
+    final Throwable throwable = catchThrowable(() -> new MongoDbSource().check(config));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    assertThat(((ConfigErrorException) throwable).getDisplayMessage()
+        .contains("State code: 18"));
   }
 
   @Test
   public void testCheckIncorrectCluster() throws Exception {
     ((ObjectNode) config).with("instance_type")
         .put("cluster_url", "cluster0.iqgf8.mongodb.netfail");
-    final AirbyteConnectionStatus status = new MongoDbSource().check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: -4"));
+    final Throwable throwable = catchThrowable(() -> new MongoDbSource().check(config));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    assertThat(((ConfigErrorException) throwable).getDisplayMessage()
+        .contains("State code: -4"));
   }
 
   @Test
   public void testCheckIncorrectAccessToDataBase() throws Exception {
     ((ObjectNode) config).put("user", "test_user_without_access")
         .put("password", "test12321");
-    final AirbyteConnectionStatus status = new MongoDbSource().check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 13"));
+    final Throwable throwable = catchThrowable(() -> new MongoDbSource().check(config));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    assertThat(((ConfigErrorException) throwable).getDisplayMessage()
+        .contains("State code: 13"));
   }
 
 }

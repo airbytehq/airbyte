@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.oracle;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -14,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
@@ -404,35 +407,37 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     executeOracleStatement(String.format("CREATE USER locked_user IDENTIFIED BY password DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS"));
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "locked_user");
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
-    final AirbyteConnectionStatus status = source.check(config);
-
-    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertEquals("State code: 72000; Error code: 1017; Message: ORA-01017: invalid username/password; logon denied\n",
-        status.getMessage());
+    final Throwable throwable = catchThrowable(() -> source.check(config));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    assertThat(((ConfigErrorException) throwable).getDisplayMessage()
+        .contains("State code: 72000; Error code: 1017; Message: ORA-01017: invalid username/password; logon denied\n"));
   }
 
   @Test
   public void testCheckIncorrectUsernameFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "fake");
-    final AirbyteConnectionStatus status = source.check(config);
-    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 72000; Error code: 1017;"));
+    final Throwable throwable = catchThrowable(() -> source.check(config));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    assertThat(((ConfigErrorException) throwable).getDisplayMessage()
+        .contains("State code: 72000; Error code: 1017;"));
   }
 
   @Test
   public void testCheckIncorrectHostFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
-    final AirbyteConnectionStatus status = source.check(config);
-    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 08006; Error code: 17002;"));
+    final Throwable throwable = catchThrowable(() -> source.check(config));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    assertThat(((ConfigErrorException) throwable).getDisplayMessage()
+        .contains("State code: 08006; Error code: 17002;"));
   }
 
   @Test
   public void testCheckIncorrectPortFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "0000");
-    final AirbyteConnectionStatus status = source.check(config);
-    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 08006; Error code: 17002;"));
+    final Throwable throwable = catchThrowable(() -> source.check(config));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    assertThat(((ConfigErrorException) throwable).getDisplayMessage()
+        .contains("State code: 08006; Error code: 17002;"));
   }
 
   @Test
@@ -440,9 +445,10 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     executeOracleStatement(String.format("CREATE USER %s IDENTIFIED BY %s", USERNAME_WITHOUT_PERMISSION, PASSWORD_WITHOUT_PERMISSION));
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, USERNAME_WITHOUT_PERMISSION);
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, PASSWORD_WITHOUT_PERMISSION);
-    final AirbyteConnectionStatus status = source.check(config);
-    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 72000; Error code: 1045;"));
+    final Throwable throwable = catchThrowable(() -> source.check(config));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    assertThat(((ConfigErrorException) throwable).getDisplayMessage()
+        .contains("State code: 72000; Error code: 1045;"));
   }
 
 }

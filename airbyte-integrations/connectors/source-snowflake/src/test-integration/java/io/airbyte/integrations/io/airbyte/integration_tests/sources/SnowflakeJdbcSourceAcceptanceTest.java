@@ -4,13 +4,17 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -18,6 +22,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.integrations.source.relationaldb.InvalidCursorException;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -108,33 +113,35 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Test
   void testCheckFailure() throws Exception {
     ((ObjectNode) config).with("credentials").put(JdbcUtils.PASSWORD_KEY, "fake");
-    final AirbyteConnectionStatus status = source.check(config);
-    assertEquals(Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 08001; Error code: 390100;"));
+    final Throwable throwable = catchThrowable(() -> source.check(config));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    assertThat(((ConfigErrorException) throwable).getDisplayMessage()
+        .contains("State code: 08001; Error code: 390100;"));
   }
 
   @Test
   public void testCheckIncorrectUsernameFailure() throws Exception {
     ((ObjectNode) config).with("credentials").put(JdbcUtils.USERNAME_KEY, "fake");
-    final AirbyteConnectionStatus status = source.check(config);
-    assertEquals(Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 08001; Error code: 390100;"));
+    final Throwable throwable = catchThrowable(() -> source.check(config));
+    assertThat(((ConfigErrorException) throwable).getDisplayMessage()
+        .contains("State code: 08001; Error code: 390100;"));
   }
 
   @Test
   public void testCheckEmptyUsernameFailure() throws Exception {
     ((ObjectNode) config).with("credentials").put(JdbcUtils.USERNAME_KEY, "");
-    final AirbyteConnectionStatus status = source.check(config);
-    assertEquals(Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 28000; Error code: 200011;"));
+    final Throwable throwable = catchThrowable(() -> source.check(config));
+    assertThat(((ConfigErrorException) throwable).getDisplayMessage()
+        .contains("State code: 28000; Error code: 200011;"));
   }
 
   @Test
   public void testCheckIncorrectHostFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
-    final AirbyteConnectionStatus status = source.check(config);
-    assertEquals(Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("Could not connect with provided configuration"));
+    final Throwable throwable = catchThrowable(() -> source.check(config));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    assertThat(((ConfigErrorException) throwable).getDisplayMessage()
+        .contains("Could not connect with provided configuration"));
   }
 
   @Override

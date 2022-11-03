@@ -152,21 +152,20 @@ public class IntegrationRunner {
         default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
       }
     } catch (final Exception e) {
+      final String displayMessage = getDisplayMessage(e);
       // If the source connector throws a config error, a trace message with the relevant message should
       // be surfaced.
       if (isConfigError(e)) {
-        final String displayMessage = getDisplayMessage(e);
-        AirbyteTraceMessageUtility.emitConfigErrorTrace(e, getDisplayMessage(e));
-        switch (parsed.getCommand()) {
-          // Currently, special handling is required for the SPEC case since the user display information in the trace message is
-          // not properly surfaced to the FE. In the future, we can remove this and just throw an exception.
-          case CHECK -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
-              new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(displayMessage)));
-          default -> throw e;
-        }
-      } else {
-        throw e;
+        AirbyteTraceMessageUtility.emitConfigErrorTrace(e, displayMessage);
       }
+      if (parsed.getCommand().equals(Command.CHECK)) {
+        // Currently, special handling is required for the SPEC case since the user display information in the trace message is
+        // not properly surfaced to the FE. In the future, we can remove this and just throw an exception.
+        outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
+            new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(displayMessage)));
+        return;
+      }
+      throw e;
     }
 
     LOGGER.info("Completed integration: {}", integration.getClass().getName());
@@ -180,7 +179,7 @@ public class IntegrationRunner {
     if (e instanceof ConfigErrorException) {
       return ((ConfigErrorException) e).getDisplayMessage();
     } else {
-      return e.getMessage();
+      return "Could not connect with provided configuration. Error: " + e.getMessage();
     }
   }
 

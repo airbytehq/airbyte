@@ -83,17 +83,6 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       }
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (final ConfigErrorException ex) {
-      AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, ex.getDisplayMessage());
-      return new AirbyteConnectionStatus()
-          .withStatus(Status.FAILED)
-          .withMessage(ex.getDisplayMessage());
-    }
-    catch (final Exception e) {
-      LOGGER.info("Exception while checking connection: ", e);
-      return new AirbyteConnectionStatus()
-          .withStatus(Status.FAILED)
-          .withMessage("Could not connect with provided configuration. Error: " + e.getMessage());
     } finally {
       close();
     }

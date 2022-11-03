@@ -14,7 +14,7 @@ public class ConfigErrorException extends RuntimeException {
   }
 
   public ConfigErrorException(final String displayMessage, final Throwable exception) {
-    super(exception);
+    super(displayMessage, exception);
     this.displayMessage = displayMessage;
   }
 

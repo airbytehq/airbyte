@@ -5,12 +5,15 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.STANDALONE;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCollection;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
@@ -121,9 +124,10 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
         .put("database", DATABASE_NAME)
         .put("auth_source", "admin")
         .build());
-    final AirbyteConnectionStatus status = new MongoDbSource().check(conf);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: -3"));
+    final Throwable throwable = catchThrowable(() -> new MongoDbSource().check(config));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    assertThat(((ConfigErrorException) throwable).getDisplayMessage()
+        .contains("State code: -3"));
   }
 
   @Test
@@ -140,9 +144,10 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
         .put("database", DATABASE_NAME)
         .put("auth_source", "admin")
         .build());
-    final AirbyteConnectionStatus status = new MongoDbSource().check(conf);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: -3"));
+    final Throwable throwable = catchThrowable(() -> new MongoDbSource().check(config));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    assertThat(((ConfigErrorException) throwable).getDisplayMessage()
+        .contains("State code: -3"));
   }
 
 }
