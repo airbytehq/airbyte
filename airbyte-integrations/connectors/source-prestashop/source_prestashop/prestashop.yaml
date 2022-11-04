@@ -25,12 +25,336 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
+  addresses_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "addresses"
+      primary_key: "id"
+      path: "/addresses"
+  carriers_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "carriers"
+      primary_key: "id"
+      path: "/carriers"
+  cart_rules_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "cart_rules"
+      primary_key: "id"
+      path: "/cart_rules"
+  carts_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "carts"
+      primary_key: "id"
+      path: "/carts"
+  categories_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "categories"
+      primary_key: "id"
+      path: "/categories"
+  combinations_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "combinations"
+      primary_key: "id"
+      path: "/combinations"
+  configurations_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "configurations"
+      primary_key: "id"
+      path: "/configurations"
+  contacts_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "contacts"
+      primary_key: "id"
+      path: "/contacts"
+  content_management_system_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "content_management_system"
+      primary_key: "id"
+      path: "/content_management_system"
+  countries_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "countries"
+      primary_key: "id"
+      path: "/countries"
+  currencies_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "currencies"
+      primary_key: "id"
+      path: "/currencies"
+  customer_messages_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "customer_messages"
+      primary_key: "id"
+      path: "/customer_messages"
+  customers_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "customers"
+      primary_key: "id"
+      path: "/customers"
+  customer_threads_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "customer_threads"
+      primary_key: "id"
+      path: "/customer_threads"
+  deliveries_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "deliveries"
+      primary_key: "id"
+      path: "/deliveries"
+  employees_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "employees"
+      primary_key: "id"
+      path: "/employees"
+  groups_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "groups"
+      primary_key: "id"
+      path: "/groups"
+  guests_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "guests"
+      primary_key: "id"
+      path: "/guests"
+  image_types_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "image_types"
+      primary_key: "id"
+      path: "/image_types"
+  languages_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "languages"
+      primary_key: "id"
+      path: "/languages"
+  manufacturers_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "manufacturers"
+      primary_key: "id"
+      path: "/manufacturers"
+  messages_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "messages"
+      primary_key: "id"
+      path: "/messages"
+  order_carriers_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "order_carriers"
+      primary_key: "id"
+      path: "/order_carriers"
+  order_details_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "order_details"
+      primary_key: "id"
+      path: "/order_details"
+  order_histories_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "order_histories"
+      primary_key: "id"
+      path: "/order_histories"
+  order_invoices_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "order_invoices"
+      primary_key: "id"
+      path: "/order_invoices"
+  order_payments_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "order_payments"
+      primary_key: "id"
+      path: "/order_payments"
+  orders_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "orders"
+      primary_key: "id"
+      path: "/orders"
+  order_slip_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "order_slip"
+      primary_key: "id"
+      path: "/order_slip"
+  order_states_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "order_states"
+      primary_key: "id"
+      path: "/order_states"
+  price_ranges_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "price_ranges"
+      primary_key: "id"
+      path: "/price_ranges"
+  product_customization_fields_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "product_customization_fields"
+      primary_key: "id"
+      path: "/product_customization_fields"
+  product_features_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "product_features"
+      primary_key: "id"
+      path: "/product_features"
+  product_feature_values_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "product_feature_values"
+      primary_key: "id"
+      path: "/product_feature_values"
+  product_options_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "product_options"
+      primary_key: "id"
+      path: "/product_options"
+  product_option_values_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "product_option_values"
+      primary_key: "id"
+      path: "/product_option_values"
+  products_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "products"
+      primary_key: "id"
+      path: "/products"
+  product_suppliers_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "product_suppliers"
+      primary_key: "id"
+      path: "/product_suppliers"
+  shop_groups_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "shop_groups"
+      primary_key: "id"
+      path: "/shop_groups"
   shops_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "shops"
       primary_key: "id"
       path: "/shops"
+  shop_urls_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "shop_urls"
+      primary_key: "id"
+      path: "/shop_urls"
+  specific_price_rules_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "specific_price_rules"
+      primary_key: "id"
+      path: "/specific_price_rules"
+  specific_prices_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "specific_prices"
+      primary_key: "id"
+      path: "/specific_prices"
+  states_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "states"
+      primary_key: "id"
+      path: "/states"
+  stock_availables_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "stock_availables"
+      primary_key: "id"
+      path: "/stock_availables"
+  stock_movement_reasons_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "stock_movement_reasons"
+      primary_key: "id"
+      path: "/stock_movement_reasons"
+  stock_movements_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "stock_movements"
+      primary_key: "id"
+      path: "/stock_movements"
+  stores_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "stores"
+      primary_key: "id"
+      path: "/stores"
+  suppliers_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "suppliers"
+      primary_key: "id"
+      path: "/suppliers"
+  tags_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "tags"
+      primary_key: "id"
+      path: "/tags"
+  taxes_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "taxes"
+      primary_key: "id"
+      path: "/taxes"
+  tax_rule_groups_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "tax_rule_groups"
+      primary_key: "id"
+      path: "/tax_rule_groups"
+  tax_rules_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "tax_rules"
+      primary_key: "id"
+      path: "/tax_rules"
+  translated_configurations_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "translated_configurations"
+      primary_key: "id"
+      path: "/translated_configurations"
+  weight_ranges_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "weight_ranges"
+      primary_key: "id"
+      path: "/weight_ranges"
   zones_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -39,7 +363,61 @@ definitions:
       path: "/zones"
 
 streams:
+  - "*ref(definitions.addresses_stream)"
+  - "*ref(definitions.carriers_stream)"
+  - "*ref(definitions.cart_rules_stream)"
+  - "*ref(definitions.carts_stream)"
+  - "*ref(definitions.categories_stream)"
+  - "*ref(definitions.combinations_stream)"
+  - "*ref(definitions.configurations_stream)"
+  - "*ref(definitions.contacts_stream)"
+  - "*ref(definitions.content_management_system_stream)"
+  - "*ref(definitions.countries_stream)"
+  - "*ref(definitions.currencies_stream)"
+  - "*ref(definitions.customer_messages_stream)"
+  - "*ref(definitions.customers_stream)"
+  - "*ref(definitions.customer_threads_stream)"
+  - "*ref(definitions.deliveries_stream)"
+  - "*ref(definitions.employees_stream)"
+  - "*ref(definitions.groups_stream)"
+  - "*ref(definitions.guests_stream)"
+  - "*ref(definitions.image_types_stream)"
+  - "*ref(definitions.languages_stream)"
+  - "*ref(definitions.manufacturers_stream)"
+  - "*ref(definitions.messages_stream)"
+  - "*ref(definitions.order_carriers_stream)"
+  - "*ref(definitions.order_details_stream)"
+  - "*ref(definitions.order_histories_stream)"
+  - "*ref(definitions.order_invoices_stream)"
+  - "*ref(definitions.order_payments_stream)"
+  - "*ref(definitions.orders_stream)"
+  - "*ref(definitions.order_slip_stream)"
+  - "*ref(definitions.order_states_stream)"
+  - "*ref(definitions.price_ranges_stream)"
+  - "*ref(definitions.product_customization_fields_stream)"
+  - "*ref(definitions.product_features_stream)"
+  - "*ref(definitions.product_feature_values_stream)"
+  - "*ref(definitions.product_options_stream)"
+  - "*ref(definitions.product_option_values_stream)"
+  - "*ref(definitions.products_stream)"
+  - "*ref(definitions.product_suppliers_stream)"
+  - "*ref(definitions.shop_groups_stream)"
   - "*ref(definitions.shops_stream)"
+  - "*ref(definitions.shop_urls_stream)"
+  - "*ref(definitions.specific_price_rules_stream)"
+  - "*ref(definitions.specific_prices_stream)"
+  - "*ref(definitions.states_stream)"
+  - "*ref(definitions.stock_availables_stream)"
+  - "*ref(definitions.stock_movement_reasons_stream)"
+  - "*ref(definitions.stock_movements_stream)"
+  - "*ref(definitions.stores_stream)"
+  - "*ref(definitions.suppliers_stream)"
+  - "*ref(definitions.tags_stream)"
+  - "*ref(definitions.taxes_stream)"
+  - "*ref(definitions.tax_rule_groups_stream)"
+  - "*ref(definitions.tax_rules_stream)"
+  - "*ref(definitions.translated_configurations_stream)"
+  - "*ref(definitions.weight_ranges_stream)"
   - "*ref(definitions.zones_stream)"
 
 check:
