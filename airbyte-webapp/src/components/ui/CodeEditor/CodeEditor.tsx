@@ -1,4 +1,5 @@
 import Editor, { Monaco } from "@monaco-editor/react";
+import { editor } from "monaco-editor/esm/vs/editor/editor.api";
 import React from "react";
 
 import styles from "./CodeEditor.module.scss";
@@ -11,6 +12,7 @@ interface CodeEditorProps {
   onChange?: (value: string | undefined) => void;
   height?: string;
   lineNumberCharacterWidth?: number;
+  onMount?: (editor: editor.IStandaloneCodeEditor) => void;
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -21,6 +23,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   onChange,
   height,
   lineNumberCharacterWidth,
+  onMount,
 }) => {
   const setAirbyteTheme = (monaco: Monaco) => {
     monaco.editor.defineTheme("airbyte", {
@@ -44,6 +47,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   return (
     <Editor
       beforeMount={setAirbyteTheme}
+      onMount={onMount}
       value={value}
       onChange={onChange}
       language={language}
