@@ -1,11 +1,11 @@
 @use "scss/variables";
 
 .container {
-  padding: variables.$spacing-xl;
+  padding: variables.$spacing-xl variables.$spacing-md variables.$spacing-md variables.$spacing-md;
   display: flex;
   flex-direction: column;
   height: 100%;
-  gap: variables.$spacing-xl;
+  gap: variables.$spacing-lg;
 }
 
 .streamSelector {

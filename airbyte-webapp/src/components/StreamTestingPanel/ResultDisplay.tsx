@@ -1,7 +1,9 @@
 import classNames from "classnames";
 import { useState } from "react";
+import { FormattedMessage } from "react-intl";
 
 import { Paginator } from "components/ui/Paginator";
+import { ResizablePanels } from "components/ui/ResizablePanels";
 import { Text } from "components/ui/Text";
 
 import { StreamRead } from "core/request/ConnectorBuilderClient";
@@ -18,6 +20,7 @@ interface ResultDisplayProps {
 export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead, className }) => {
   const [selectedSliceIndex, setSelectedSliceIndex] = useState(0);
   const [selectedPage, setSelectedPage] = useState(0);
+  // const [flex, setFlex] = useState(0.0);
 
   const handlePageChange = (selectedPageIndex: number) => {
     setSelectedPage(selectedPageIndex);
@@ -28,18 +31,48 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead, classN
   const page = slice.pages[selectedPage];
 
   return (
-    <div className={classNames(className, styles.container)}>
-      <SliceSelector
-        className={styles.sliceSelector}
-        slices={streamRead.slices}
-        selectedSliceIndex={selectedSliceIndex}
-        onSelect={setSelectedSliceIndex}
-      />
-      <PageDisplay className={styles.pageDisplay} page={page} />
-      <div className={styles.paginator}>
-        <Text className={styles.pageLabel}>Page:</Text>
-        <Paginator numPages={numPages} onPageChange={handlePageChange} selectedPage={selectedPage} />
-      </div>
-    </div>
+    <ResizablePanels
+      className={classNames(className, styles.container)}
+      orientation="horizontal"
+      firstPanel={{
+        className: styles.resultContainer,
+        children: (
+          <>
+            <SliceSelector
+              className={styles.sliceSelector}
+              slices={streamRead.slices}
+              selectedSliceIndex={selectedSliceIndex}
+              onSelect={setSelectedSliceIndex}
+            />
+            <PageDisplay className={styles.pageDisplay} page={page} />
+            <div className={styles.paginator}>
+              <Text className={styles.pageLabel}>Page:</Text>
+              <Paginator numPages={numPages} onPageChange={handlePageChange} selectedPage={selectedPage} />
+            </div>
+          </>
+        ),
+        minWidth: 120,
+      }}
+      secondPanel={{
+        className: styles.logsContainer,
+        children: (
+          <>
+            <div className={styles.logsHeader}>
+              <Text size="sm" bold>
+                <FormattedMessage id="connectorBuilder.connectorLogs" />
+              </Text>
+              <Text className={styles.numLogsDisplay} size="xs" bold>
+                {streamRead.logs.length}
+              </Text>
+            </div>
+            <div className={styles.logsDisplay}>
+              <pre>{JSON.stringify(streamRead.logs, null, 2)}</pre>
+            </div>
+          </>
+        ),
+        minWidth: 30,
+        flex: 0,
+      }}
+    />
   );
 };

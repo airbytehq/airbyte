@@ -8,6 +8,7 @@ import styles from "./ResizablePanels.module.scss";
 
 interface ResizablePanelsProps {
   className?: string;
+  orientation?: "vertical" | "horizontal";
   firstPanel: PanelProps;
   secondPanel: PanelProps;
   hideSecondPanel?: boolean;
@@ -17,7 +18,7 @@ interface PanelProps {
   children: React.ReactNode;
   minWidth: number;
   className?: string;
-  startingFlex?: number;
+  flex?: number;
   overlay?: Overlay;
 }
 
@@ -65,17 +66,18 @@ const PanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = (
 
 export const ResizablePanels: React.FC<ResizablePanelsProps> = ({
   className,
+  orientation = "vertical",
   firstPanel,
   secondPanel,
   hideSecondPanel = false,
 }) => {
   return (
-    <ReflexContainer className={className} orientation="vertical">
+    <ReflexContainer className={className} orientation={orientation}>
       <ReflexElement
         className={styles.panelStyle}
         propagateDimensions
         minSize={firstPanel.minWidth}
-        flex={firstPanel.startingFlex}
+        flex={firstPanel.flex}
       >
         <PanelContainer className={firstPanel.className} overlay={firstPanel.overlay}>
           {firstPanel.children}
@@ -84,8 +86,18 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = ({
       {/* NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately. */}
       {!hideSecondPanel && (
         <ReflexSplitter className={styles.splitter}>
-          <div className={styles.panelGrabber}>
-            <div className={styles.grabberHandleIcon} />
+          <div
+            className={classNames({
+              [styles.panelGrabberVertical]: orientation === "vertical",
+              [styles.panelGrabberHorizontal]: orientation === "horizontal",
+            })}
+          >
+            <div
+              className={classNames(styles.handleIcon, {
+                [styles.handleIconVertical]: orientation === "vertical",
+                [styles.handleIconHorizontal]: orientation === "horizontal",
+              })}
+            />
           </div>
         </ReflexSplitter>
       )}
@@ -94,7 +106,8 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = ({
           className={styles.panelStyle}
           propagateDimensions
           minSize={secondPanel.minWidth}
-          flex={secondPanel.startingFlex}
+          flex={secondPanel.flex}
+          onResize={(args) => console.log(args.component.props.flex)}
         >
           <PanelContainer className={secondPanel.className} overlay={secondPanel.overlay}>
             {secondPanel.children}

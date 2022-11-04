@@ -2,9 +2,15 @@
 @use "scss/variables";
 
 .container {
+  // required to hide the connector logs splitter underneath the resizable panel overlay
+  z-index: 0;
+}
+
+.resultContainer {
   display: flex;
   flex-direction: column;
   gap: variables.$spacing-lg;
+  padding-bottom: variables.$spacing-md;
 }
 
 .sliceSelector {
@@ -34,4 +40,29 @@
   flex-direction: column;
   justify-content: center;
   font-size: 10px;
+}
+
+.logsContainer {
+  padding-top: variables.$spacing-sm;
+  display: flex;
+  flex-direction: column;
+}
+
+.logsHeader {
+  background-color: colors.$grey-50;
+  display: flex;
+  align-items: center;
+  gap: variables.$spacing-md;
+  padding: variables.$spacing-sm variables.$spacing-md;
+}
+
+.numLogsDisplay {
+  border-radius: variables.$border-radius-md;
+  background-color: colors.$red;
+  padding: 1px variables.$spacing-sm;
+  color: colors.$white;
+}
+
+.logsDisplay {
+  overflow-y: auto;
 }
