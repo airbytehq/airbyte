@@ -148,7 +148,5 @@ class SourceLinkedinPages(AbstractSource):
             OrganizationLookup(config),
             FollowerStatistics(config),
             ShareStatistics(config),
-            TotalFollowerCount(config),
-            ShareStatistics(config),
-            TotalFollowerCount(config),
+            TotalFollowerCount(config)
         ]
