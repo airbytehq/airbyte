@@ -2,9 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
-
 import json
+
 import pytest
 import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers import HttpResponseFilter
@@ -100,7 +99,7 @@ def test_matches(requests_mock, action, http_codes, predicate, error_contains, b
         "https://airbyte.io/",
         text=response.get("json") and json.dumps(response.get("json")),
         headers=response.get("headers") or {},
-        status_code=response.get("status_code")
+        status_code=response.get("status_code"),
     )
     response = requests.get("https://airbyte.io/")
     response_filter = HttpResponseFilter(
