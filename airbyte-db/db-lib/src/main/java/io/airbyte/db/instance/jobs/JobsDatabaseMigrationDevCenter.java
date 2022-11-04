@@ -18,7 +18,7 @@ import org.flywaydb.core.Flyway;
 public class JobsDatabaseMigrationDevCenter extends MigrationDevCenter {
 
   public JobsDatabaseMigrationDevCenter() {
-    super("jobs", "src/main/resources/jobs_database/schema_dump.txt", DatabaseConstants.JOBS_SCHEMA_PATH);
+    super("jobs", DatabaseConstants.JOBS_SCHEMA_DUMP_PATH, DatabaseConstants.JOBS_INITIAL_SCHEMA_PATH);
   }
 
   @Override

@@ -4,6 +4,7 @@
 
 package io.airbyte.db.instance.development;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -97,7 +98,8 @@ public abstract class MigrationDevCenter {
     }
   }
 
-  private void dumpSchema() {
+  @VisibleForTesting
+  public String dumpSchema(final boolean persistToFile) {
     try (final PostgreSQLContainer<?> container = createContainer()) {
       final DataSource dataSource =
           DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
@@ -107,7 +109,10 @@ public abstract class MigrationDevCenter {
         final FlywayDatabaseMigrator migrator = getMigrator(database, flyway);
         migrator.migrate();
         final String schema = migrator.dumpSchema();
-        MigrationDevHelper.dumpSchema(schema, schemaDumpFile, true);
+        if (persistToFile) {
+          MigrationDevHelper.dumpSchema(schema, schemaDumpFile, true);
+        }
+        return schema;
       }
     } catch (final Exception e) {
       throw new RuntimeException(e);
@@ -128,7 +133,7 @@ public abstract class MigrationDevCenter {
     switch (command) {
       case CREATE -> devCenter.createMigration();
       case MIGRATE -> devCenter.runLastMigration();
-      case DUMP_SCHEMA -> devCenter.dumpSchema();
+      case DUMP_SCHEMA -> devCenter.dumpSchema(true);
       default -> throw new IllegalArgumentException("Unexpected command: " + args[1]);
     }
   }

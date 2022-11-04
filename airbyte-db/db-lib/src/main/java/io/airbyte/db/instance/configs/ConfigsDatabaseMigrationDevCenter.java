@@ -18,7 +18,7 @@ import org.flywaydb.core.Flyway;
 public class ConfigsDatabaseMigrationDevCenter extends MigrationDevCenter {
 
   public ConfigsDatabaseMigrationDevCenter() {
-    super("configs", "src/main/resources/configs_database/schema_dump.txt", DatabaseConstants.CONFIGS_SCHEMA_PATH);
+    super("configs", DatabaseConstants.CONFIGS_SCHEMA_DUMP_PATH, DatabaseConstants.CONFIGS_INITIAL_SCHEMA_PATH);
   }
 
   @Override
