@@ -1,6 +1,7 @@
 import {
   StreamRead,
   StreamReadRequestBody,
+  StreamReadSlicesItem,
   StreamsListRead,
   StreamsListRequestBody,
 } from "core/request/ConnectorBuilderClient";
@@ -71,7 +72,18 @@ export class ConnectorBuilderRequestService extends AirbyteRequestService {
     console.log(`Connector manifest:\n${JSON.stringify(readParams.manifest)}`);
     console.log(`Config:\n${JSON.stringify(readParams.config)}`);
     return new Promise((resolve) => setTimeout(resolve, 200)).then(() => {
-      const slices = Array.from(Array(4).keys()).map((i) => mockSlice(readParams.stream, i + 1, 20, 20));
+      let slices: StreamReadSlicesItem[] = [];
+      switch (readParams.stream) {
+        case "disputes":
+          slices = [mockSlice(readParams.stream, 1, 1, 45)];
+          break;
+        case "transactions":
+          slices = [mockSlice(readParams.stream, 1, 13, 35)];
+          break;
+        case "users":
+          slices = Array.from(Array(4).keys()).map((i) => mockSlice(readParams.stream, i + 1, 20, 25));
+          break;
+      }
 
       return {
         logs: [

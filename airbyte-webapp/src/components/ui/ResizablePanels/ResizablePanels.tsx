@@ -107,7 +107,6 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = ({
           propagateDimensions
           minSize={secondPanel.minWidth}
           flex={secondPanel.flex}
-          onResize={(args) => console.log(args.component.props.flex)}
         >
           <PanelContainer className={secondPanel.className} overlay={secondPanel.overlay}>
             {secondPanel.children}

@@ -43,7 +43,7 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className }) => 
       <Tab.Group>
         <Tab.List className={styles.tabList}>
           {tabs.map((tab) => (
-            <Tab className={styles.tab}>
+            <Tab className={styles.tab} key={tab.title}>
               {({ selected }) => (
                 <Text className={classNames(styles.tabTitle, { [styles.selected]: selected })}>{tab.title}</Text>
               )}
@@ -52,7 +52,7 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className }) => 
         </Tab.List>
         <Tab.Panels className={styles.tabPanelContainer}>
           {tabs.map((tab) => (
-            <Tab.Panel className={styles.tabPanel}>
+            <Tab.Panel className={styles.tabPanel} key={tab.title}>
               <pre>{JSON.stringify(tab.content, null, 2)}</pre>
             </Tab.Panel>
           ))}

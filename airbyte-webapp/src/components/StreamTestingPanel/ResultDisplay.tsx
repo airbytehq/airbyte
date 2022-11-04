@@ -37,17 +37,21 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead, classN
         className: styles.resultContainer,
         children: (
           <>
-            <SliceSelector
-              className={styles.sliceSelector}
-              slices={streamRead.slices}
-              selectedSliceIndex={selectedSliceIndex}
-              onSelect={setSelectedSliceIndex}
-            />
+            {streamRead.slices.length > 1 && (
+              <SliceSelector
+                className={styles.sliceSelector}
+                slices={streamRead.slices}
+                selectedSliceIndex={selectedSliceIndex}
+                onSelect={setSelectedSliceIndex}
+              />
+            )}
             <PageDisplay className={styles.pageDisplay} page={page} />
-            <div className={styles.paginator}>
-              <Text className={styles.pageLabel}>Page:</Text>
-              <Paginator numPages={numPages} onPageChange={handlePageChange} selectedPage={selectedPage} />
-            </div>
+            {slice.pages.length > 1 && (
+              <div className={styles.paginator}>
+                <Text className={styles.pageLabel}>Page:</Text>
+                <Paginator numPages={numPages} onPageChange={handlePageChange} selectedPage={selectedPage} />
+              </div>
+            )}
           </>
         ),
         minWidth: 120,
