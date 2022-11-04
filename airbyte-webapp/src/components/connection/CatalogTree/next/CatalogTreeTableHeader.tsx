@@ -12,7 +12,7 @@ import { links } from "utils/links";
 
 import styles from "./CatalogTreeTableHeader.module.scss";
 
-const TextCell: React.FC<React.PropsWithChildren<{ flex?: number }>> = ({ flex, children }) => {
+const TextCell: React.FC<React.PropsWithChildren<{ flex?: number }>> = ({ flex, children, wide }) => {
   return (
     <Cell flex={flex}>
       <Text size="sm" className={styles.cellText}>
@@ -71,13 +71,6 @@ export const CatalogTreeTableHeader: React.FC = () => {
       </TextCell>
       <TextCell>
         <FormattedMessage id="form.streamName" />
-      </TextCell>
-      <TextCell>
-        <FormattedMessage id="form.syncMode" />
-        <InfoTooltip>
-          <FormattedMessage id="connectionForm.syncType.info" />
-          <TooltipLearnMoreLink url={links.syncModeLink} />
-        </InfoTooltip>
       </TextCell>
     </Header>
   );
