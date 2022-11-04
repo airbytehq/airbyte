@@ -20,7 +20,9 @@ const GeographyOption: React.FC<OptionProps> = (props) => {
       <div className={styles.flag}>
         <span className={`fi fi-${props.label === "auto" ? "us" : props.label}`} />
       </div>
-      <span className={styles.label}>{formatMessage({ id: `geography.${props.label}` })}</span>
+      <span className={styles.label}>
+        {formatMessage({ id: `geography.${props.label}`, defaultMessage: props.label.toUpperCase() })}
+      </span>
     </components.Option>
   );
 };
