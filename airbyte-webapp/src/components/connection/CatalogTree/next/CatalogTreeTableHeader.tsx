@@ -12,7 +12,7 @@ import { links } from "utils/links";
 
 import styles from "./CatalogTreeTableHeader.module.scss";
 
-const TextCell: React.FC<React.PropsWithChildren<{ flex?: number }>> = ({ flex, children, wide }) => {
+const TextCell: React.FC<React.PropsWithChildren<{ flex?: number }>> = ({ flex, children }) => {
   return (
     <Cell flex={flex}>
       <Text size="sm" className={styles.cellText}>

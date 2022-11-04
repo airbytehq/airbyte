@@ -17,15 +17,13 @@
 .streamHeaderContent {
   background: colors.$white;
   border-bottom: 1px solid colors.$grey-50;
-  padding: variables.$spacing-sm variables.$spacing-md variables.$spacing-sm variables.$spacing-sm;
+  padding: variables.$spacing-xl variables.$spacing-md variables.$spacing-xl variables.$spacing-sm;
   gap: variables.$spacing-sm;
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
   width: 100%;
-  margin-top: variables.$spacing-lg;
-  margin-bottom: variables.$spacing-lg;
 
   &:hover {
     background: colors.$grey-30;
@@ -47,15 +45,22 @@
   &.selected {
     background-color: colors.$blue-transparent;
   }
+
+  &.disabled {
+    background-color: colors.$grey-50;
+  }
 }
 
 .streamRowCheckboxCell {
-  padding-left: 2px;
   margin-right: variables.$spacing-sm;
   max-width: 43px;
   text-align: center;
   font-size: 10px;
   line-height: 13px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding-left: calc(variables.$spacing-xl + 4px);
 }
 
 .streamRowItem {
