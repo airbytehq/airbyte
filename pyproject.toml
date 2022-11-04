@@ -12,7 +12,7 @@ omit = [
     "setup.py",
     "unit_tests/*",
     "integration_tests/*",
-
+    "**/generated/*",
 ]
 
 [tool.flake8]
@@ -25,6 +25,8 @@ extend-exclude = [
     "airbyte-cdk/python/airbyte_cdk/models/__init__.py",
     ".tox",
     "airbyte_api_client",
+    "**/generated/*",
+    
 
 ]
 max-complexity = 20
@@ -50,7 +52,7 @@ use_parentheses = true
 
 [tool.mypy]
 platform = "linux"
-exclude = "(build|integration_tests|unit_tests)"
+exclude = "(build|integration_tests|unit_tests|**/generated/*)"
 
 # Optionals
 ignore_missing_imports = true
