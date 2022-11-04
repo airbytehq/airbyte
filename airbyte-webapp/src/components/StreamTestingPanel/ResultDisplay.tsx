@@ -3,7 +3,7 @@ import classNames from "classnames";
 import { Paginator } from "components/ui/Paginator";
 import { Text } from "components/ui/Text";
 
-import { StreamRead } from "core/request/ConnectorBuilderClient";
+import { StreamReadSlicesItem } from "core/request/ConnectorBuilderClient";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { PageDisplay } from "./PageDisplay";
@@ -11,23 +11,23 @@ import styles from "./ResultDisplay.module.scss";
 import { SliceSelector } from "./SliceSelector";
 
 interface ResultDisplayProps {
-  streamRead: StreamRead;
+  slices: StreamReadSlicesItem[];
   className?: string;
 }
 
-export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead, className }) => {
+export const ResultDisplay: React.FC<ResultDisplayProps> = ({ slices, className }) => {
   const { selectedSlice, selectedPage, setSelectedSlice, setSelectedPage } = useConnectorBuilderState();
 
-  const slice = streamRead.slices[selectedSlice];
+  const slice = slices[selectedSlice];
   const numPages = slice.pages.length;
   const page = slice.pages[selectedPage];
 
   return (
     <div className={classNames(className, styles.container)}>
-      {streamRead.slices.length > 1 && (
+      {slices.length > 1 && (
         <SliceSelector
           className={styles.sliceSelector}
-          slices={streamRead.slices}
+          slices={slices}
           selectedSliceIndex={selectedSlice}
           onSelect={setSelectedSlice}
         />

@@ -34,7 +34,7 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
           className={styles.resizablePanelsContainer}
           orientation="horizontal"
           firstPanel={{
-            children: <ResultDisplay streamRead={streamReadData} />,
+            children: <ResultDisplay slices={streamReadData.slices} />,
             minWidth: 120,
           }}
           secondPanel={{
