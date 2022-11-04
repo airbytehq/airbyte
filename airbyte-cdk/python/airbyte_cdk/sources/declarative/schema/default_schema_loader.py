@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 from dataclasses import InitVar, dataclass
 from typing import Any, Mapping
 
@@ -25,6 +25,7 @@ class DefaultSchemaLoader(SchemaLoader, JsonSchemaMixin):
     options: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, options: Mapping[str, Any]):
+        self._options = options
         self.default_loader = JsonFileSchemaLoader(options=options, config=self.config)
 
     def get_json_schema(self) -> Mapping[str, Any]:
@@ -37,4 +38,8 @@ class DefaultSchemaLoader(SchemaLoader, JsonSchemaMixin):
         try:
             return self.default_loader.get_json_schema()
         except FileNotFoundError:
+            # A slight hack since we don't directly have the stream name. However, when building the default filepath we assume the
+            # runtime options stores stream name 'name' so we'll do the same here
+            stream_name = self._options.get("name", "")
+            logging.info(f"Could not find schema for stream {stream_name}, defaulting to the empty schema")
             return {}
