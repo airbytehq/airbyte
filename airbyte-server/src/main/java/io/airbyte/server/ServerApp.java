@@ -360,22 +360,7 @@ public class ServerApp implements ServerRunnable {
     LOGGER.info("Starting server...");
 
     return apiFactory.create(
-        syncSchedulerClient,
-        configRepository,
-        secretsRepositoryReader,
-        secretsRepositoryWriter,
-        jobPersistence,
-        configsDatabase,
-        jobsDatabase,
-        trackingClient,
-        configs.getWorkerEnvironment(),
-        configs.getLogConfigs(),
         configs.getAirbyteVersion(),
-        configs.getWorkspaceRoot(),
-        httpClient,
-        eventRunner,
-        configsFlyway,
-        jobsFlyway,
         attemptHandler,
         connectionsHandler,
         dbMigrationHandler,

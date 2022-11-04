@@ -25,12 +25,12 @@ public class WorkspaceApiController implements WorkspaceApi {
 
   @Override
   public WorkspaceRead createWorkspace(final WorkspaceCreate workspaceCreate) {
-    return ConfigurationApi.execute(() -> workspacesHandler.createWorkspace(workspaceCreate));
+    return ApiHelper.execute(() -> workspacesHandler.createWorkspace(workspaceCreate));
   }
 
   @Override
   public void deleteWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    ConfigurationApi.execute(() -> {
+    ApiHelper.execute(() -> {
       workspacesHandler.deleteWorkspace(workspaceIdRequestBody);
       return null;
     });
@@ -38,27 +38,27 @@ public class WorkspaceApiController implements WorkspaceApi {
 
   @Override
   public WorkspaceRead getWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return ConfigurationApi.execute(() -> workspacesHandler.getWorkspace(workspaceIdRequestBody));
+    return ApiHelper.execute(() -> workspacesHandler.getWorkspace(workspaceIdRequestBody));
   }
 
   @Override
   public WorkspaceRead getWorkspaceBySlug(final SlugRequestBody slugRequestBody) {
-    return ConfigurationApi.execute(() -> workspacesHandler.getWorkspaceBySlug(slugRequestBody));
+    return ApiHelper.execute(() -> workspacesHandler.getWorkspaceBySlug(slugRequestBody));
   }
 
   @Override
   public WorkspaceReadList listWorkspaces() {
-    return ConfigurationApi.execute(workspacesHandler::listWorkspaces);
+    return ApiHelper.execute(workspacesHandler::listWorkspaces);
   }
 
   @Override
   public WorkspaceRead updateWorkspace(final WorkspaceUpdate workspaceUpdate) {
-    return ConfigurationApi.execute(() -> workspacesHandler.updateWorkspace(workspaceUpdate));
+    return ApiHelper.execute(() -> workspacesHandler.updateWorkspace(workspaceUpdate));
   }
 
   @Override
   public void updateWorkspaceFeedback(final WorkspaceGiveFeedback workspaceGiveFeedback) {
-    ConfigurationApi.execute(() -> {
+    ApiHelper.execute(() -> {
       workspacesHandler.setFeedbackDone(workspaceGiveFeedback);
       return null;
     });
@@ -66,7 +66,7 @@ public class WorkspaceApiController implements WorkspaceApi {
 
   @Override
   public WorkspaceRead updateWorkspaceName(final WorkspaceUpdateName workspaceUpdateName) {
-    return ConfigurationApi.execute(() -> workspacesHandler.updateWorkspaceName(workspaceUpdateName));
+    return ApiHelper.execute(() -> workspacesHandler.updateWorkspaceName(workspaceUpdateName));
   }
 
 }

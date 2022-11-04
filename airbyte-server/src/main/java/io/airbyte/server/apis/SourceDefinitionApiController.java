@@ -28,19 +28,19 @@ public class SourceDefinitionApiController implements SourceDefinitionApi {
 
   @Override
   public SourceDefinitionRead createCustomSourceDefinition(final CustomSourceDefinitionCreate customSourceDefinitionCreate) {
-    return ConfigurationApi.execute(() -> sourceDefinitionsHandler.createCustomSourceDefinition(customSourceDefinitionCreate));
+    return ApiHelper.execute(() -> sourceDefinitionsHandler.createCustomSourceDefinition(customSourceDefinitionCreate));
   }
 
   // TODO: Deprecate this route in favor of createCustomSourceDefinition
   // since all connector definitions created through the API are custom
   @Override
   public SourceDefinitionRead createSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate) {
-    return ConfigurationApi.execute(() -> sourceDefinitionsHandler.createPrivateSourceDefinition(sourceDefinitionCreate));
+    return ApiHelper.execute(() -> sourceDefinitionsHandler.createPrivateSourceDefinition(sourceDefinitionCreate));
   }
 
   @Override
   public void deleteCustomSourceDefinition(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
-    ConfigurationApi.execute(() -> {
+    ApiHelper.execute(() -> {
       sourceDefinitionsHandler.deleteCustomSourceDefinition(sourceDefinitionIdWithWorkspaceId);
       return null;
     });
@@ -48,7 +48,7 @@ public class SourceDefinitionApiController implements SourceDefinitionApi {
 
   @Override
   public void deleteSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
-    ConfigurationApi.execute(() -> {
+    ApiHelper.execute(() -> {
       sourceDefinitionsHandler.deleteSourceDefinition(sourceDefinitionIdRequestBody);
       return null;
     });
@@ -56,42 +56,42 @@ public class SourceDefinitionApiController implements SourceDefinitionApi {
 
   @Override
   public SourceDefinitionRead getSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
-    return ConfigurationApi.execute(() -> sourceDefinitionsHandler.getSourceDefinition(sourceDefinitionIdRequestBody));
+    return ApiHelper.execute(() -> sourceDefinitionsHandler.getSourceDefinition(sourceDefinitionIdRequestBody));
   }
 
   @Override
   public SourceDefinitionRead getSourceDefinitionForWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
-    return ConfigurationApi.execute(() -> sourceDefinitionsHandler.getSourceDefinitionForWorkspace(sourceDefinitionIdWithWorkspaceId));
+    return ApiHelper.execute(() -> sourceDefinitionsHandler.getSourceDefinitionForWorkspace(sourceDefinitionIdWithWorkspaceId));
   }
 
   @Override
   public PrivateSourceDefinitionRead grantSourceDefinitionToWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
-    return ConfigurationApi.execute(() -> sourceDefinitionsHandler.grantSourceDefinitionToWorkspace(sourceDefinitionIdWithWorkspaceId));
+    return ApiHelper.execute(() -> sourceDefinitionsHandler.grantSourceDefinitionToWorkspace(sourceDefinitionIdWithWorkspaceId));
   }
 
   @Override
   public SourceDefinitionReadList listLatestSourceDefinitions() {
-    return ConfigurationApi.execute(sourceDefinitionsHandler::listLatestSourceDefinitions);
+    return ApiHelper.execute(sourceDefinitionsHandler::listLatestSourceDefinitions);
   }
 
   @Override
   public PrivateSourceDefinitionReadList listPrivateSourceDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return ConfigurationApi.execute(() -> sourceDefinitionsHandler.listPrivateSourceDefinitions(workspaceIdRequestBody));
+    return ApiHelper.execute(() -> sourceDefinitionsHandler.listPrivateSourceDefinitions(workspaceIdRequestBody));
   }
 
   @Override
   public SourceDefinitionReadList listSourceDefinitions() {
-    return ConfigurationApi.execute(sourceDefinitionsHandler::listSourceDefinitions);
+    return ApiHelper.execute(sourceDefinitionsHandler::listSourceDefinitions);
   }
 
   @Override
   public SourceDefinitionReadList listSourceDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return ConfigurationApi.execute(() -> sourceDefinitionsHandler.listSourceDefinitionsForWorkspace(workspaceIdRequestBody));
+    return ApiHelper.execute(() -> sourceDefinitionsHandler.listSourceDefinitionsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
   public void revokeSourceDefinitionFromWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
-    ConfigurationApi.execute(() -> {
+    ApiHelper.execute(() -> {
       sourceDefinitionsHandler.revokeSourceDefinitionFromWorkspace(sourceDefinitionIdWithWorkspaceId);
       return null;
     });
@@ -99,12 +99,12 @@ public class SourceDefinitionApiController implements SourceDefinitionApi {
 
   @Override
   public SourceDefinitionRead updateCustomSourceDefinition(final CustomSourceDefinitionUpdate customSourceDefinitionUpdate) {
-    return ConfigurationApi.execute(() -> sourceDefinitionsHandler.updateCustomSourceDefinition(customSourceDefinitionUpdate));
+    return ApiHelper.execute(() -> sourceDefinitionsHandler.updateCustomSourceDefinition(customSourceDefinitionUpdate));
   }
 
   @Override
   public SourceDefinitionRead updateSourceDefinition(final SourceDefinitionUpdate sourceDefinitionUpdate) {
-    return ConfigurationApi.execute(() -> sourceDefinitionsHandler.updateSourceDefinition(sourceDefinitionUpdate));
+    return ApiHelper.execute(() -> sourceDefinitionsHandler.updateSourceDefinition(sourceDefinitionUpdate));
   }
 
 }

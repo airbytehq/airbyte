@@ -22,12 +22,12 @@ public class DbMigrationApiController implements DbMigrationApi {
 
   @Override
   public DbMigrationExecutionRead executeMigrations(final DbMigrationRequestBody dbMigrationRequestBody) {
-    return ConfigurationApi.execute(() -> dbMigrationHandler.migrate(dbMigrationRequestBody));
+    return ApiHelper.execute(() -> dbMigrationHandler.migrate(dbMigrationRequestBody));
   }
 
   @Override
   public DbMigrationReadList listMigrations(final DbMigrationRequestBody dbMigrationRequestBody) {
-    return ConfigurationApi.execute(() -> dbMigrationHandler.list(dbMigrationRequestBody));
+    return ApiHelper.execute(() -> dbMigrationHandler.list(dbMigrationRequestBody));
   }
 
 }
