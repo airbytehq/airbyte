@@ -1,6 +1,7 @@
 package io.airbyte.integrations.destination.s3;
 
 import static io.airbyte.integrations.destination.s3.constant.GlueConstants.GLUE_DATABASE;
+import static io.airbyte.integrations.destination.s3.constant.GlueConstants.SERIALIZATION_LIBRARY;
 import static io.airbyte.integrations.destination.s3.constant.S3Constants.ACCESS_KEY_ID;
 import static io.airbyte.integrations.destination.s3.constant.S3Constants.SECRET_ACCESS_KEY;
 import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_REGION;
@@ -26,15 +27,18 @@ public class GlueDestinationConfig {
 
     private String secretAccessKey;
 
+    private String serializationLibrary;
+
     private GlueDestinationConfig() {
 
     }
 
-    private GlueDestinationConfig(String database, String region, String accessKeyId, String secretAccessKey) {
+    private GlueDestinationConfig(String database, String region, String accessKeyId, String secretAccessKey, String serializationLibrary) {
         this.database = database;
         this.region = region;
         this.accessKeyId = accessKeyId;
         this.secretAccessKey = secretAccessKey;
+        this.serializationLibrary = serializationLibrary;
     }
 
     public static GlueDestinationConfig getInstance(JsonNode jsonNode) {
@@ -42,7 +46,8 @@ public class GlueDestinationConfig {
             jsonNode.get(GLUE_DATABASE) != null ? jsonNode.get(GLUE_DATABASE).asText() : null,
             jsonNode.get(S_3_BUCKET_REGION) != null ? jsonNode.get(S_3_BUCKET_REGION).asText() : null,
             jsonNode.get(ACCESS_KEY_ID) != null ? jsonNode.get(ACCESS_KEY_ID).asText() : null,
-            jsonNode.get(SECRET_ACCESS_KEY) != null ? jsonNode.get(SECRET_ACCESS_KEY).asText() : null
+            jsonNode.get(SECRET_ACCESS_KEY) != null ? jsonNode.get(SECRET_ACCESS_KEY).asText() : null,
+            jsonNode.get(SERIALIZATION_LIBRARY) != null ? jsonNode.get(SERIALIZATION_LIBRARY).asText() : "org.openx.data.jsonserde.JsonSerDe"
         );
     }
 
@@ -68,6 +73,10 @@ public class GlueDestinationConfig {
 
     public String getDatabase() {
         return database;
+    }
+
+    public String getSerializationLibrary() {
+        return serializationLibrary;
     }
 
 }

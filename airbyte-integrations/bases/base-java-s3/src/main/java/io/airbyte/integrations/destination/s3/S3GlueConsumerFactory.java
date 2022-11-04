@@ -153,10 +153,12 @@ public class S3GlueConsumerFactory {
                 LOGGER.info("Cleaning up destination completed.");
             } else {
                 //TODO (itaseski) include s3 path format in location?
-                String tableLocation = "s3://" + s3DestinationConfig.getBucketName() + "/" +s3DestinationConfig.getBucketPath() + "/";
+                String tableLocation = "s3://" + s3DestinationConfig.getBucketName() + "/" + s3DestinationConfig.getBucketPath() + "/";
                 if (s3DestinationConfig.getFormatConfig().getFormat() == S3Format.JSONL) {
                     for (final WriteConfig writeConfig : writeConfigs) {
-                        metastoreOperations.upsertTable(glueDestinationConfig.getDatabase(), writeConfig.getStreamName(), tableLocation, writeConfig.getJsonSchema());
+                        metastoreOperations.upsertTable(glueDestinationConfig.getDatabase(),
+                            writeConfig.getStreamName(), tableLocation, writeConfig.getJsonSchema(),
+                            glueDestinationConfig.getSerializationLibrary());
                     }
                 }
             }

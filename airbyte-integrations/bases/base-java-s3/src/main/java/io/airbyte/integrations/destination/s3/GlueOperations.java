@@ -36,7 +36,7 @@ public class GlueOperations implements MetastoreOperations {
 
     //TODO (itaseski) can location change after table is created?
     @Override
-    public void upsertTable(String databaseName, String tableName, String location, JsonNode jsonSchema) {
+    public void upsertTable(String databaseName, String tableName, String location, JsonNode jsonSchema, String serializationLibrary) {
         try {
             GetTableRequest getTableRequest = new GetTableRequest()
                 .withDatabaseName(databaseName)
@@ -54,6 +54,11 @@ public class GlueOperations implements MetastoreOperations {
                             new StorageDescriptor()
                                 .withLocation(location)
                                 .withColumns(transformSchema(jsonSchema))
+                                .withSerdeInfo(
+                                    new SerDeInfo()
+                                        .withSerializationLibrary(serializationLibrary)
+                                        .withParameters(Map.of("paths", ","))
+                                )
                         )
                 );
 
@@ -73,7 +78,7 @@ public class GlueOperations implements MetastoreOperations {
                                 .withOutputFormat("org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat")
                                 .withSerdeInfo(
                                     new SerDeInfo()
-                                        .withSerializationLibrary("org.openx.data.jsonserde.JsonSerDe")
+                                        .withSerializationLibrary(serializationLibrary)
                                         .withParameters(Map.of("paths", ","))
                                 )
                         )
