@@ -6,7 +6,7 @@
     "stylelint-config-prettier-scss"
   ],
   "rules": {
-    "selector-class-pattern": "^[a-z][a-zA-Z0-9]+$",
+    "selector-class-pattern": "^[a-z][a-zA-Z0-9_/-]+$",
     "color-function-notation": null,
     "font-family-name-quotes": null,
     "no-unknown-animations": true,
