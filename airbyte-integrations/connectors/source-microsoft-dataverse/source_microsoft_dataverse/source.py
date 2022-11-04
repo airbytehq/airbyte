@@ -35,7 +35,8 @@ class SourceMicrosoftDataverse(AbstractSource):
                 schema["properties"].update({"_ab_cdc_updated_at": {"type": "string"}, "_ab_cdc_deleted_at": {"type": ["null", "string"]}})
                 stream = AirbyteStream(name=entity["LogicalName"], json_schema=schema, supported_sync_modes=[SyncMode.full_refresh,SyncMode.incremental])
                 stream.source_defined_cursor = True
-                stream.default_cursor_field = ["modifiedon"]
+                if "modifiedon" in schema["properties"]:
+                    stream.default_cursor_field = ["modifiedon"]
             else:
                 stream = AirbyteStream(name=entity["LogicalName"], json_schema=schema, supported_sync_modes=[SyncMode.full_refresh])
 
