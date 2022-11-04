@@ -33,7 +33,7 @@ public class V0_40_18_002__AddActorDefinitionNormalizationAndDbtColumns extends 
     ctx.alterTable("actor_definition")
         .addColumnIfNotExists(DSL.field(
             "normalization_repository",
-            SQLDataType.VARCHAR(256).nullable(true)))
+            SQLDataType.VARCHAR(255).nullable(true)))
         .execute();
   }
 
@@ -41,7 +41,7 @@ public class V0_40_18_002__AddActorDefinitionNormalizationAndDbtColumns extends 
     ctx.alterTable("actor_definition")
         .addColumnIfNotExists(DSL.field(
             "normalization_tag",
-            SQLDataType.VARCHAR(256).nullable(true)))
+            SQLDataType.VARCHAR(255).nullable(true)))
         .execute();
   }
 
