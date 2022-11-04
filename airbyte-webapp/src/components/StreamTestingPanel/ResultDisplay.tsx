@@ -20,7 +20,6 @@ interface ResultDisplayProps {
 export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead, className }) => {
   const [selectedSliceIndex, setSelectedSliceIndex] = useState(0);
   const [selectedPage, setSelectedPage] = useState(0);
-  // const [flex, setFlex] = useState(0.0);
 
   const handlePageChange = (selectedPageIndex: number) => {
     setSelectedPage(selectedPageIndex);
