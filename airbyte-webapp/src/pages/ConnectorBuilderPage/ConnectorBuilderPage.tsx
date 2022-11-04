@@ -28,7 +28,7 @@ const ConnectorBuilderPageInner: React.FC = () => {
         flex: 0.33,
         minWidth: 60,
         overlay: {
-          displayThreshold: 300,
+          displayThreshold: 325,
           header: capitalize(selectedStream.name),
           rotation: "counter-clockwise",
         },
