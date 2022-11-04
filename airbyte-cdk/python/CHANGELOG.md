@@ -1,7 +1,14 @@
 # Changelog
 
-## 0.4.3
+## 0.5.4
 Low-code: Get response.json in a safe way
+
+## 0.5.3
+Low-code: Replace EmptySchemaLoader with DefaultSchemaLoader to retain backwards compatibility
+Low-code: Evaluate backoff strategies at runtime
+
+## 0.5.2
+Low-code: Allow for read even when schemas are not defined for a connector yet
 
 ## 0.4.2
 Low-code: Fix off by one error with the stream slicers

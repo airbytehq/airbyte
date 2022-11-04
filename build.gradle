@@ -357,8 +357,9 @@ subprojects { subproj ->
             excludeTags(integrationTagName, slowIntegrationTagName, cloudStorageTestTagName)
         }
         testLogging() {
-            events 'failed'
+            events "passed", "skipped", "failed"
             exceptionFormat 'full'
+            // uncomment to get the full log output
             // showStandardStreams = true
         }
         finalizedBy jacocoTestReport
@@ -369,8 +370,10 @@ subprojects { subproj ->
             includeTags integrationTagName
         }
         testLogging() {
-            events 'failed'
+            events "passed", "failed", "started"
             exceptionFormat 'full'
+            // uncomment to get the full log output
+            // showStandardStreams = true
         }
         finalizedBy jacocoTestReport
     }
@@ -380,8 +383,10 @@ subprojects { subproj ->
             includeTags slowIntegrationTagName
         }
         testLogging() {
-            events 'failed'
+            events "passed", "failed", "started"
             exceptionFormat 'full'
+            // uncomment to get the full log output
+            // showStandardStreams = true
         }
         finalizedBy jacocoTestReport
     }
@@ -389,8 +394,10 @@ subprojects { subproj ->
     task allTests(type: Test) {
         useJUnitPlatform()
         testLogging() {
-            events 'failed'
+            events "passed", "failed", "started"
             exceptionFormat 'full'
+            // uncomment to get the full log output
+            // showStandardStreams = true
         }
         finalizedBy jacocoTestReport
     }
