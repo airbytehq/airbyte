@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Sets;
 import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -47,14 +48,14 @@ class ValidatingConfigPersistenceTest {
   private JsonSchemaValidator schemaValidator;
 
   private ValidatingConfigPersistence configPersistence;
-  private DatabaseConfigPersistence decoratedConfigPersistence;
+  private ConfigPersistence decoratedConfigPersistence;
   private static final String ERROR_MESSAGE = "error";
 
   @BeforeEach
   void setUp() {
     schemaValidator = mock(JsonSchemaValidator.class);
 
-    decoratedConfigPersistence = mock(DatabaseConfigPersistence.class);
+    decoratedConfigPersistence = mock(ConfigPersistence.class);
     configPersistence = new ValidatingConfigPersistence(decoratedConfigPersistence, schemaValidator);
   }
 
@@ -141,6 +142,59 @@ class ValidatingConfigPersistenceTest {
 
     assertThrows(JsonValidationException.class, () -> configPersistence
         .listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class));
+  }
+
+  @Test
+  void testGetConfigWithMetadataSuccess() throws IOException, JsonValidationException, ConfigNotFoundException {
+    when(decoratedConfigPersistence.getConfigWithMetadata(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), StandardSourceDefinition.class))
+        .thenReturn(withMetadata(SOURCE_1));
+    final ConfigWithMetadata<StandardSourceDefinition> actualConfig = configPersistence
+        .getConfigWithMetadata(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), StandardSourceDefinition.class);
+
+    assertEquals(withMetadata(SOURCE_1), actualConfig);
+  }
+
+  @Test
+  void testGetConfigWithMetadataFailure() throws IOException, JsonValidationException, ConfigNotFoundException {
+    doThrow(new JsonValidationException(ERROR_MESSAGE)).when(schemaValidator).ensure(any(), any());
+    when(decoratedConfigPersistence.getConfigWithMetadata(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), StandardSourceDefinition.class))
+        .thenReturn(withMetadata(SOURCE_1));
+
+    assertThrows(
+        JsonValidationException.class,
+        () -> configPersistence.getConfigWithMetadata(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), StandardSourceDefinition.class));
+  }
+
+  @Test
+  void testListConfigsWithMetadataSuccess() throws JsonValidationException, IOException {
+    when(decoratedConfigPersistence.listConfigsWithMetadata(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
+        .thenReturn(List.of(withMetadata(SOURCE_1), withMetadata(SOURCE_2)));
+
+    final List<ConfigWithMetadata<StandardSourceDefinition>> actualConfigs = configPersistence
+        .listConfigsWithMetadata(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
+
+    // noinspection unchecked
+    assertEquals(
+        Sets.newHashSet(withMetadata(SOURCE_1), withMetadata(SOURCE_2)),
+        Sets.newHashSet(actualConfigs));
+  }
+
+  @Test
+  void testListConfigsWithMetadataFailure() throws JsonValidationException, IOException {
+    doThrow(new JsonValidationException(ERROR_MESSAGE)).when(schemaValidator).ensure(any(), any());
+    when(decoratedConfigPersistence.listConfigsWithMetadata(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
+        .thenReturn(List.of(withMetadata(SOURCE_1), withMetadata(SOURCE_2)));
+
+    assertThrows(JsonValidationException.class, () -> configPersistence
+        .listConfigsWithMetadata(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class));
+  }
+
+  private static ConfigWithMetadata<StandardSourceDefinition> withMetadata(final StandardSourceDefinition sourceDef) {
+    return new ConfigWithMetadata<>(sourceDef.getSourceDefinitionId().toString(),
+        ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
+        INSTANT,
+        INSTANT,
+        sourceDef);
   }
 
 }
