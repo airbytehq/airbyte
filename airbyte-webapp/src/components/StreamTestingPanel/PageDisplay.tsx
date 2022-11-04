@@ -27,7 +27,7 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className }) => 
   const { formatMessage } = useIntl();
   const tabs: TabData[] = [
     {
-      title: `${formatMessage({ id: "connectorBuilder.recordsTab" })} (${page.records.length})`,
+      title: formatMessage({ id: "connectorBuilder.recordsTab" }),
       content: page.records,
     },
   ];

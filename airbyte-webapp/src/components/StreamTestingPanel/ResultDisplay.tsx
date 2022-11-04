@@ -1,5 +1,4 @@
 import classNames from "classnames";
-import { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Paginator } from "components/ui/Paginator";
@@ -7,6 +6,7 @@ import { ResizablePanels } from "components/ui/ResizablePanels";
 import { Text } from "components/ui/Text";
 
 import { StreamRead } from "core/request/ConnectorBuilderClient";
+import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { PageDisplay } from "./PageDisplay";
 import styles from "./ResultDisplay.module.scss";
@@ -18,14 +18,9 @@ interface ResultDisplayProps {
 }
 
 export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead, className }) => {
-  const [selectedSliceIndex, setSelectedSliceIndex] = useState(0);
-  const [selectedPage, setSelectedPage] = useState(0);
+  const { selectedSlice, selectedPage, setSelectedSlice, setSelectedPage } = useConnectorBuilderState();
 
-  const handlePageChange = (selectedPageIndex: number) => {
-    setSelectedPage(selectedPageIndex);
-  };
-
-  const slice = streamRead.slices[selectedSliceIndex];
+  const slice = streamRead.slices[selectedSlice];
   const numPages = slice.pages.length;
   const page = slice.pages[selectedPage];
 
@@ -41,15 +36,15 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead, classN
               <SliceSelector
                 className={styles.sliceSelector}
                 slices={streamRead.slices}
-                selectedSliceIndex={selectedSliceIndex}
-                onSelect={setSelectedSliceIndex}
+                selectedSliceIndex={selectedSlice}
+                onSelect={setSelectedSlice}
               />
             )}
             <PageDisplay className={styles.pageDisplay} page={page} />
             {slice.pages.length > 1 && (
               <div className={styles.paginator}>
                 <Text className={styles.pageLabel}>Page:</Text>
-                <Paginator numPages={numPages} onPageChange={handlePageChange} selectedPage={selectedPage} />
+                <Paginator numPages={numPages} onPageChange={setSelectedPage} selectedPage={selectedPage} />
               </div>
             )}
           </>

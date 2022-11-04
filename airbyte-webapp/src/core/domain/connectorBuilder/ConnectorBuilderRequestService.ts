@@ -67,10 +67,7 @@ export class ConnectorBuilderRequestService extends AirbyteRequestService {
   public readStream(readParams: StreamReadRequestBody): Promise<StreamRead> {
     // TODO: uncomment this and remove mock responses once there is a real API to call
     // return readStream(readParams, this.requestOptions);
-    console.log("------------");
-    console.log(`Stream: ${readParams.stream}`);
-    console.log(`Connector manifest:\n${JSON.stringify(readParams.manifest)}`);
-    console.log(`Config:\n${JSON.stringify(readParams.config)}`);
+
     return new Promise((resolve) => setTimeout(resolve, 200)).then(() => {
       let slices: StreamReadSlicesItem[] = [];
       switch (readParams.stream) {
@@ -99,6 +96,7 @@ export class ConnectorBuilderRequestService extends AirbyteRequestService {
     // TODO: uncomment this and remove mock responses once there is a real API to call
     // return listStreams(listParams, this.requestOptions);
     console.log(`Received listStreams body: ${JSON.stringify(listParams)}`);
+
     return new Promise((resolve) => setTimeout(resolve, 200)).then(() => {
       return {
         streams: [
