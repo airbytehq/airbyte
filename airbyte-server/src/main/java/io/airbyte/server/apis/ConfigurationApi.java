@@ -937,9 +937,13 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link StateApiController}. Since the path of
+   * {@link StateApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionState createOrUpdateState(final ConnectionStateCreateOrUpdate connectionStateCreateOrUpdate) {
-    return ConfigurationApi.execute(() -> stateHandler.createOrUpdateState(connectionStateCreateOrUpdate));
+    throw new NotImplementedException();
   }
 
   /**
@@ -978,9 +982,13 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link StateApiController}. Since the path of
+   * {@link StateApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return ConfigurationApi.execute(() -> stateHandler.getState(connectionIdRequestBody));
+    throw new NotImplementedException();
   }
 
   // SCHEDULER

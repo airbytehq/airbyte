@@ -25,6 +25,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
@@ -65,6 +66,7 @@ import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
+import io.airbyte.server.handlers.StateHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.server.scheduler.EventRunner;
@@ -336,6 +338,10 @@ public class ServerApp implements ServerRunnable {
 
     final OpenApiConfigHandler openApiConfigHandler = new OpenApiConfigHandler();
 
+    final StatePersistence statePersistence = new StatePersistence(configsDatabase);
+
+    final StateHandler stateHandler = new StateHandler(statePersistence);
+
     LOGGER.info("Starting server...");
 
     return apiFactory.create(
@@ -369,6 +375,7 @@ public class ServerApp implements ServerRunnable {
         schedulerHandler,
         sourceHandler,
         sourceDefinitionsHandler,
+        stateHandler,
         workspacesHandler);
   }
 

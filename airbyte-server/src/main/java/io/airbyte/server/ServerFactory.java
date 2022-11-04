@@ -65,6 +65,7 @@ import io.airbyte.server.apis.factories.SchedulerApiFactory;
 import io.airbyte.server.apis.factories.SourceApiFactory;
 import io.airbyte.server.apis.factories.SourceDefinitionApiFactory;
 import io.airbyte.server.apis.factories.SourceOauthApiFactory;
+import io.airbyte.server.apis.factories.StateApiFactory;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DbMigrationHandler;
@@ -79,6 +80,7 @@ import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
+import io.airbyte.server.handlers.StateHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
@@ -121,6 +123,7 @@ public interface ServerFactory {
                         final SchedulerHandler schedulerHandler,
                         final SourceHandler sourceHandler,
                         final SourceDefinitionsHandler sourceDefinitionsHandler,
+                        final StateHandler stateHandler,
                         final WorkspacesHandler workspacesHandler);
 
   class Api implements ServerFactory {
@@ -156,6 +159,7 @@ public interface ServerFactory {
                                  final SchedulerHandler schedulerHandler,
                                  final SourceHandler sourceHandler,
                                  final SourceDefinitionsHandler sourceDefinitionsHandler,
+                                 final StateHandler stateHandler,
                                  final WorkspacesHandler workspacesHandler) {
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
@@ -217,6 +221,8 @@ public interface ServerFactory {
       SourceApiFactory.setValues(schedulerHandler, sourceHandler);
 
       SourceDefinitionApiFactory.setValues(sourceDefinitionsHandler);
+
+      StateApiFactory.setValues(stateHandler);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(
