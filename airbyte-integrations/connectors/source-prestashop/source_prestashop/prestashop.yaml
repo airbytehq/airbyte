@@ -3,7 +3,7 @@ version: "0.2.1"
 definitions:
   selector:
     extractor:
-      field_pointer: ["shops"]
+      field_pointer: ["{{ options['data_key'] }}"]
   requester:
     url_base: "{{ config['url'] }}/api/"
     http_method: "GET"
@@ -31,336 +31,392 @@ definitions:
       name: "addresses"
       primary_key: "id"
       path: "/addresses"
+      data_key: "addresses"
   carriers_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "carriers"
       primary_key: "id"
       path: "/carriers"
+      data_key: "carriers"
   cart_rules_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "cart_rules"
       primary_key: "id"
       path: "/cart_rules"
+      data_key: "cart_rules"
   carts_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "carts"
       primary_key: "id"
       path: "/carts"
+      data_key: "carts"
   categories_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "categories"
       primary_key: "id"
       path: "/categories"
+      data_key: "categories"
   combinations_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "combinations"
       primary_key: "id"
       path: "/combinations"
+      data_key: "combinations"
   configurations_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "configurations"
       primary_key: "id"
       path: "/configurations"
+      data_key: "configurations"
   contacts_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "contacts"
       primary_key: "id"
       path: "/contacts"
+      data_key: "contacts"
   content_management_system_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "content_management_system"
       primary_key: "id"
       path: "/content_management_system"
+      data_key: "content_management_system"
   countries_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "countries"
       primary_key: "id"
       path: "/countries"
+      data_key: "countries"
   currencies_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "currencies"
       primary_key: "id"
       path: "/currencies"
+      data_key: "currencies"
   customer_messages_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "customer_messages"
       primary_key: "id"
       path: "/customer_messages"
+      data_key: "customer_messages"
   customers_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "customers"
       primary_key: "id"
       path: "/customers"
+      data_key: "customers"
   customer_threads_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "customer_threads"
       primary_key: "id"
       path: "/customer_threads"
+      data_key: "customer_threads"
   deliveries_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "deliveries"
       primary_key: "id"
       path: "/deliveries"
+      data_key: "deliveries"
   employees_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "employees"
       primary_key: "id"
       path: "/employees"
+      data_key: "employees"
   groups_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "groups"
       primary_key: "id"
       path: "/groups"
+      data_key: "groups"
   guests_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "guests"
       primary_key: "id"
       path: "/guests"
+      data_key: "guests"
   image_types_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "image_types"
       primary_key: "id"
       path: "/image_types"
+      data_key: "image_types"
   languages_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "languages"
       primary_key: "id"
       path: "/languages"
+      data_key: "languages"
   manufacturers_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "manufacturers"
       primary_key: "id"
       path: "/manufacturers"
+      data_key: "manufacturers"
   messages_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "messages"
       primary_key: "id"
       path: "/messages"
+      data_key: "messages"
   order_carriers_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "order_carriers"
       primary_key: "id"
       path: "/order_carriers"
+      data_key: "order_carriers"
   order_details_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "order_details"
       primary_key: "id"
       path: "/order_details"
+      data_key: "order_details"
   order_histories_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "order_histories"
       primary_key: "id"
       path: "/order_histories"
+      data_key: "order_histories"
   order_invoices_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "order_invoices"
       primary_key: "id"
       path: "/order_invoices"
+      data_key: "order_invoices"
   order_payments_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "order_payments"
       primary_key: "id"
       path: "/order_payments"
+      data_key: "order_payments"
   orders_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "orders"
       primary_key: "id"
       path: "/orders"
+      data_key: "orders"
   order_slip_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "order_slip"
       primary_key: "id"
       path: "/order_slip"
+      data_key: "order_slips"
   order_states_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "order_states"
       primary_key: "id"
       path: "/order_states"
+      data_key: "order_states"
   price_ranges_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "price_ranges"
       primary_key: "id"
       path: "/price_ranges"
+      data_key: "price_ranges"
   product_customization_fields_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "product_customization_fields"
       primary_key: "id"
       path: "/product_customization_fields"
+      data_key: "customization_fields"
   product_features_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "product_features"
       primary_key: "id"
       path: "/product_features"
+      data_key: "product_features"
   product_feature_values_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "product_feature_values"
       primary_key: "id"
       path: "/product_feature_values"
+      data_key: "product_feature_values"
   product_options_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "product_options"
       primary_key: "id"
       path: "/product_options"
+      data_key: "product_options"
   product_option_values_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "product_option_values"
       primary_key: "id"
       path: "/product_option_values"
+      data_key: "product_option_values"
   products_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "products"
       primary_key: "id"
       path: "/products"
+      data_key: "products"
   product_suppliers_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "product_suppliers"
       primary_key: "id"
       path: "/product_suppliers"
+      data_key: "product_suppliers"
   shop_groups_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "shop_groups"
       primary_key: "id"
       path: "/shop_groups"
+      data_key: "shop_groups"
   shops_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "shops"
       primary_key: "id"
       path: "/shops"
+      data_key: "shops"
   shop_urls_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "shop_urls"
       primary_key: "id"
       path: "/shop_urls"
+      data_key: "shop_urls"
   specific_price_rules_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "specific_price_rules"
       primary_key: "id"
       path: "/specific_price_rules"
+      data_key: "specific_price_rules"
   specific_prices_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "specific_prices"
       primary_key: "id"
       path: "/specific_prices"
+      data_key: "specific_prices"
   states_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "states"
       primary_key: "id"
       path: "/states"
+      data_key: "states"
   stock_availables_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "stock_availables"
       primary_key: "id"
       path: "/stock_availables"
+      data_key: "stock_availables"
   stock_movement_reasons_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "stock_movement_reasons"
       primary_key: "id"
       path: "/stock_movement_reasons"
+      data_key: "stock_movement_reasons"
   stock_movements_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "stock_movements"
       primary_key: "id"
       path: "/stock_movements"
+      data_key: "stock_mvts"
   stores_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "stores"
       primary_key: "id"
       path: "/stores"
+      data_key: "stores"
   suppliers_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "suppliers"
       primary_key: "id"
       path: "/suppliers"
+      data_key: "suppliers"
   tags_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "tags"
       primary_key: "id"
       path: "/tags"
+      data_key: "tags"
   taxes_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "taxes"
       primary_key: "id"
       path: "/taxes"
+      data_key: "taxes"
   tax_rule_groups_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "tax_rule_groups"
       primary_key: "id"
       path: "/tax_rule_groups"
+      data_key: "tax_rule_groups"
   tax_rules_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "tax_rules"
       primary_key: "id"
       path: "/tax_rules"
+      data_key: "tax_rules"
   translated_configurations_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "translated_configurations"
       primary_key: "id"
       path: "/translated_configurations"
+      data_key: "translated_configurations"
   weight_ranges_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "weight_ranges"
       primary_key: "id"
       path: "/weight_ranges"
+      data_key: "weight_ranges"
   zones_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "zones"
       primary_key: "id"
       path: "/zones"
+      data_key: "zones"
 
 streams:
   - "*ref(definitions.addresses_stream)"
