@@ -7,22 +7,20 @@ import { useDebounce, useLocalStorage } from "react-use";
 import { CodeEditor } from "components/ui/CodeEditor";
 
 import { StreamsListRequestBodyManifest } from "core/request/ConnectorBuilderClient";
+import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { DownloadYamlButton } from "./DownloadYamlButton";
 import styles from "./YamlEditor.module.scss";
 import { template } from "./YamlTemplate";
 
-interface YamlEditorProps {
-  localStorageKey: string;
-  setJsonValue: (value: Record<string, object>) => void;
-}
-
-export const YamlEditor: React.FC<YamlEditorProps> = ({ localStorageKey, setJsonValue }) => {
+export const YamlEditor: React.FC = () => {
   const yamlEditorRef = useRef<editor.IStandaloneCodeEditor>();
 
-  const [locallyStoredYaml, setLocallyStoredYaml] = useLocalStorage<string>(localStorageKey, template);
+  const [locallyStoredYaml, setLocallyStoredYaml] = useLocalStorage<string>("connectorBuilderYaml", template);
   const [yamlValue, setYamlValue] = useState(locallyStoredYaml ?? template);
   useDebounce(() => setLocallyStoredYaml(yamlValue), 500, [yamlValue]);
+
+  const { setJsonManifest } = useConnectorBuilderState();
 
   const monaco = useMonaco();
 
@@ -34,7 +32,7 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ localStorageKey, setJson
 
       try {
         const json = load(yamlValue) as StreamsListRequestBodyManifest;
-        setJsonValue(json);
+        setJsonManifest(json);
 
         // clear editor errors
         if (yamlEditorModel) {
@@ -59,7 +57,7 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ localStorageKey, setJson
         }
       }
     }
-  }, [yamlValue, monaco, setJsonValue]);
+  }, [yamlValue, monaco, setJsonManifest]);
 
   return (
     <div className={styles.container}>

@@ -12,13 +12,13 @@ import {
 import styles from "./ConnectorBuilderPage.module.scss";
 
 const ConnectorBuilderPageInner: React.FC = () => {
-  const { selectedStream, setJsonManifest } = useConnectorBuilderState();
+  const { selectedStream } = useConnectorBuilderState();
 
   return (
     <ResizablePanels
       className={styles.container}
       firstPanel={{
-        children: <YamlEditor localStorageKey="connectorBuilderYaml" setJsonValue={setJsonManifest} />,
+        children: <YamlEditor />,
         className: styles.leftPanel,
         minWidth: 400,
       }}
