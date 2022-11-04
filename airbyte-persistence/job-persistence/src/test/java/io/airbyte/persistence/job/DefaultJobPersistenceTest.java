@@ -874,7 +874,7 @@ class DefaultJobPersistenceTest {
       final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
       jobPersistence.succeedAttempt(jobId, attemptNumber);
 
-      assertDoesNotThrows(() -> jobPersistence.failJob(jobId));
+      assertDoesNotThrow(() -> jobPersistence.failJob(jobId));
 
       final Job updated = jobPersistence.getJob(jobId);
       assertEquals(JobStatus.SUCCEEDED, updated.getStatus());
