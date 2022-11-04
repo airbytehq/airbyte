@@ -6,6 +6,7 @@ package io.airbyte.db.instance.jobs;
 
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.FlywayFactory;
+import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.db.instance.FlywayDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevCenter;
 import javax.sql.DataSource;
@@ -17,7 +18,7 @@ import org.flywaydb.core.Flyway;
 public class JobsDatabaseMigrationDevCenter extends MigrationDevCenter {
 
   public JobsDatabaseMigrationDevCenter() {
-    super("jobs", "src/main/resources/jobs_database/schema_dump.txt", "jobs_database/schema.sql");
+    super("jobs", "src/main/resources/jobs_database/schema_dump.txt", DatabaseConstants.JOBS_SCHEMA_PATH);
   }
 
   @Override

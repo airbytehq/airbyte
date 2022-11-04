@@ -6,6 +6,7 @@ package io.airbyte.db.instance.configs;
 
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.FlywayFactory;
+import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.db.instance.FlywayDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevCenter;
 import javax.sql.DataSource;
@@ -17,7 +18,7 @@ import org.flywaydb.core.Flyway;
 public class ConfigsDatabaseMigrationDevCenter extends MigrationDevCenter {
 
   public ConfigsDatabaseMigrationDevCenter() {
-    super("configs", "src/main/resources/configs_database/schema_dump.txt", "configs_database/schema.sql");
+    super("configs", "src/main/resources/configs_database/schema_dump.txt", DatabaseConstants.CONFIGS_SCHEMA_PATH);
   }
 
   @Override
