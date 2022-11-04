@@ -1,5 +1,5 @@
-@use "../../../scss/colors";
-@use "../../../scss/fonts";
+@use "scss/colors";
+@use "scss/fonts";
 
 .circle {
   height: 20px;
@@ -17,6 +17,7 @@
   font-style: normal;
   font-weight: 500;
   font-size: 10px;
+  color: colors.$white;
 
   &.default {
     background: colors.$dark-blue-100;
@@ -24,16 +25,13 @@
 
   &.green {
     background: colors.$green;
-    color: colors.$black;
   }
 
   &.red {
     background: colors.$red;
-    color: colors.$black;
   }
 
   &.blue {
     background: colors.$blue;
-    color: colors.$white;
   }
 }
