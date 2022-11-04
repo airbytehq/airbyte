@@ -1078,7 +1078,7 @@ class Campaigns(Stream):
     limit = 500
     updated_at_field = "lastUpdatedTime"
     primary_key = "id"
-    scopes = {"crm.lists.read"}
+    scopes = {"crm.lists.read", "sales-email-read", "content"}
 
     def read_records(
         self,
