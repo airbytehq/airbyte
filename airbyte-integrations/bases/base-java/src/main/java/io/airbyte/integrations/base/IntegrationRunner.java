@@ -69,9 +69,9 @@ public class IntegrationRunner {
 
   @VisibleForTesting
   IntegrationRunner(final IntegrationCliParser cliParser,
-      final Consumer<AirbyteMessage> outputRecordCollector,
-      final Destination destination,
-      final Source source) {
+                    final Consumer<AirbyteMessage> outputRecordCollector,
+                    final Destination destination,
+                    final Source source) {
     Preconditions.checkState(destination != null ^ source != null, "can only pass in a destination or a source");
     this.cliParser = cliParser;
     this.outputRecordCollector = outputRecordCollector;
@@ -86,10 +86,10 @@ public class IntegrationRunner {
 
   @VisibleForTesting
   IntegrationRunner(final IntegrationCliParser cliParser,
-      final Consumer<AirbyteMessage> outputRecordCollector,
-      final Destination destination,
-      final Source source,
-      final JsonSchemaValidator jsonSchemaValidator) {
+                    final Consumer<AirbyteMessage> outputRecordCollector,
+                    final Destination destination,
+                    final Source source,
+                    final JsonSchemaValidator jsonSchemaValidator) {
     this(cliParser, outputRecordCollector, destination, source);
     validator = jsonSchemaValidator;
   }
@@ -163,8 +163,14 @@ public class IntegrationRunner {
         // Currently, special handling is required for the SPEC case since the user display information in
         // the trace message is
         // not properly surfaced to the FE. In the future, we can remove this and just throw an exception.
-        outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
-            new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(displayMessage)));
+        outputRecordCollector
+            .accept(
+                new AirbyteMessage()
+                    .withType(Type.CONNECTION_STATUS)
+                    .withConnectionStatus(
+                        new AirbyteConnectionStatus()
+                            .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                            .withMessage(displayMessage)));
         return;
       }
       throw e;
@@ -181,9 +187,8 @@ public class IntegrationRunner {
     if (e instanceof ConfigErrorException) {
       return ((ConfigErrorException) e).getDisplayMessage();
     } else if (e instanceof ConnectionErrorException) {
-      final ConnectionErrorException connEx= (ConnectionErrorException) e;
-      return ErrorMessage.getErrorMessage
-          (connEx.getStateCode(), connEx.getErrorCode(), connEx.getExceptionMessage(), e);
+      final ConnectionErrorException connEx = (ConnectionErrorException) e;
+      return ErrorMessage.getErrorMessage(connEx.getStateCode(), connEx.getErrorCode(), connEx.getExceptionMessage(), e);
     } else {
       return "Could not connect with provided configuration. Error: " + e.getMessage();
     }
@@ -233,11 +238,11 @@ public class IntegrationRunner {
    */
   @VisibleForTesting
   static void watchForOrphanThreads(final Procedure runMethod,
-      final Runnable exitHook,
-      final int interruptTimeDelay,
-      final TimeUnit interruptTimeUnit,
-      final int exitTimeDelay,
-      final TimeUnit exitTimeUnit)
+                                    final Runnable exitHook,
+                                    final int interruptTimeDelay,
+                                    final TimeUnit interruptTimeUnit,
+                                    final int exitTimeDelay,
+                                    final TimeUnit exitTimeUnit)
       throws Exception {
     final Thread currentThread = Thread.currentThread();
     try {
