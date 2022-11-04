@@ -29,6 +29,7 @@ import io.airbyte.server.apis.NotificationsApiController;
 import io.airbyte.server.apis.OpenapiApiController;
 import io.airbyte.server.apis.OperationApiController;
 import io.airbyte.server.apis.SchedulerApiController;
+import io.airbyte.server.apis.SourceOauthApiController;
 import io.airbyte.server.apis.binders.AttemptApiBinder;
 import io.airbyte.server.apis.binders.ConnectionApiBinder;
 import io.airbyte.server.apis.binders.DbMigrationBinder;
@@ -219,7 +220,7 @@ public interface ServerFactory {
           OpenapiApiController.class,
           OperationApiController.class,
           SchedulerApiController.class,
-          SourceOauthApiFactory.class);
+          SourceOauthApiController.class);
 
       final Set<Object> components = Set.of(
           new CorsFilter(),
