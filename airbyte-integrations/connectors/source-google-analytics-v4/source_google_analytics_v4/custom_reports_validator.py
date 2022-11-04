@@ -104,7 +104,6 @@ class CustomReportsValidator:
             for report in self.reports:
                 self.model.parse_obj(report)
         except ValidationError as e:
-            print(e.errors())
             raise AirbyteTracedException(
                 message=None,
                 internal_message=f"Custom Reports has invalid structure in report: {report}, errors: {self.explainer.explain(e.errors())}",
