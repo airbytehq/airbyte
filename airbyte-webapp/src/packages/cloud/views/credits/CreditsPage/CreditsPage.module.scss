@@ -7,3 +7,11 @@
 .emailVerificationHint {
   margin-bottom: variables.$spacing-md;
 }
+
+.creditUsageLoading {
+  display: flex;
+  gap: variables.$spacing-md;
+  justify-content: center;
+  align-items: center;
+  margin: variables.$spacing-2xl auto;
+}
