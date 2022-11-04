@@ -4,43 +4,58 @@ import styled from "styled-components";
 
 import { BigButton } from "components/CenteredPageComponents";
 
-import { useConfig } from "config";
+// import { useConfig } from "config";
 
-import HighlightedText from "./HighlightedText";
+// import HighlightedText from "./HighlightedText";
 import TitlesBlock from "./TitlesBlock";
-import VideoItem from "./VideoItem";
+// import VideoItem from "./VideoItem";
 
 interface WelcomeStepProps {
   onNextStep: () => void;
   userName?: string;
 }
 
-const Videos = styled.div`
+const ImageContainer = styled.div`
   width: 100%;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   color: ${({ theme }) => theme.lightTextColor};
   font-size: 16px;
-  margin: 20px 0 67px;
 `;
 
-const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onNextStep }) => {
-  const config = useConfig();
+const ButtonContainer = styled.div`
+  padding: 18px;
+  background-color: #2a2f66;
+  border-radius: 60px;
+`;
+
+// const Videos = styled.div`
+//   width: 100%;
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: center;
+//   color: ${({ theme }) => theme.lightTextColor};
+//   font-size: 16px;
+//   margin: 20px 0 67px;
+// `;
+// { onNextStep }
+const WelcomeStep: React.FC<WelcomeStepProps> = () => {
+  // const config = useConfig();
 
   return (
     <>
       <TitlesBlock
         testId="onboarding.welcome"
         title={
-          userName ? (
-            <FormattedMessage
-              id="onboarding.welcomeUser"
-              values={{ name: <HighlightedText>{userName}</HighlightedText> }}
-            />
-          ) : (
-            <FormattedMessage id="onboarding.welcome" />
-          )
+          // userName ? (
+          //   <FormattedMessage
+          //     id="onboarding.welcomeUser"
+          //     values={{ name: <HighlightedText>{userName}</HighlightedText> }}
+          //   />
+          // ) : (
+          <FormattedMessage id="onboarding.welcome" />
+          // )
         }
       >
         <FormattedMessage
@@ -55,22 +70,28 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onNextStep }) => {
           }}
         />
       </TitlesBlock>
-      <Videos>
-        <VideoItem
-          description={<FormattedMessage id="onboarding.watchVideo" />}
-          videoId="sKDviQrOAbU"
-          img="/videoCover.png"
-        />
-        <FormattedMessage id="onboarding.or" />
-        <VideoItem
-          description={<FormattedMessage id="onboarding.exploreDemo" />}
-          img="/videoCover.png"
-          link={config.links.demoLink}
-        />
-      </Videos>
-      <BigButton onClick={onNextStep} shadow>
-        <FormattedMessage id="onboarding.firstConnection" />
-      </BigButton>
+      <ImageContainer>
+        <img src="/daspireDashboard.png" alt="logo" style={{ maxWidth: "100%", height: "auto", objectFit: "cover" }} />
+      </ImageContainer>
+      {/* <Videos>*/}
+      {/*  <VideoItem*/}
+      {/*    description={<FormattedMessage id="onboarding.watchVideo" />}*/}
+      {/*    videoId="sKDviQrOAbU"*/}
+      {/*    img="/videoCover.png"*/}
+      {/*  />*/}
+      {/*  <FormattedMessage id="onboarding.or" />*/}
+      {/*  <VideoItem*/}
+      {/*    description={<FormattedMessage id="onboarding.exploreDemo" />}*/}
+      {/*    img="/videoCover.png"*/}
+      {/*    link={config.links.demoLink}*/}
+      {/*  />*/}
+      {/* </Videos>*/}
+      <ButtonContainer>
+        {/* onClick={onNextStep}*/}
+        <BigButton shadow>
+          <FormattedMessage id="onboarding.firstConnection" />
+        </BigButton>
+      </ButtonContainer>
     </>
   );
 };

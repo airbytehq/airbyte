@@ -35,9 +35,9 @@
   overflow: auto;
   height: 100%;
 
-  & > *:last-child {
-    padding-bottom: variables.$spacing-page-bottom;
-  }
+  // & > *:last-child {
+  //  padding-bottom: variables.$spacing-page-bottom;
+  // }
 }
 
 .rightPanelContainer {
