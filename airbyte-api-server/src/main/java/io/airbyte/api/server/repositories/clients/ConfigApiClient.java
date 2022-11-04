@@ -21,16 +21,16 @@ import io.micronaut.http.client.annotation.Client;
         value = "Micronaut HTTP Client")
 @Header(name = ACCEPT,
         value = "application/json")
-//@Header(name = "${airbyte.internal.api.auth-header.name}",
-//        value = "${airbyte.internal.api.auth-header.value}")
+// @Header(name = "${airbyte.internal.api.auth-header.name}",
+// value = "${airbyte.internal.api.auth-header.value}")
 public interface ConfigApiClient {
 
   @Post(value = "/api/v1/connections/sync",
         processes = MediaType.APPLICATION_JSON)
-  HttpResponse<String> sync(@Body SyncDto connectionId, @Header(name = GATEWAY_AUTH_HEADER) String authorization);
+  HttpResponse<String> sync(@Body SyncDto connectionId, @Header(name = GATEWAY_AUTH_HEADER) String xEndpointAPIUserInfo);
 
   @Post(value = "/api/v1/connections/reset",
-      processes = MediaType.APPLICATION_JSON)
+        processes = MediaType.APPLICATION_JSON)
   HttpResponse<String> reset(@Body SyncDto connectionId);
 
   @Post("/api/v1/workspaces/list")

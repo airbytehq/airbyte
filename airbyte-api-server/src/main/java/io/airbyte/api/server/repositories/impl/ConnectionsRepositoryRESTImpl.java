@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Repository
 @Slf4j
 public class ConnectionsRepositoryRESTImpl implements ConnectionsRepository {
+
   public static final String GATEWAY_AUTH_HEADER = "X-Endpoint-API-UserInfo";
 
   private final ConfigApiClient client;
@@ -27,7 +28,6 @@ public class ConnectionsRepositoryRESTImpl implements ConnectionsRepository {
   @Override
   public HttpResponse<String> sync(@NotBlank final UUID connection, final String authorization) {
     final var syncDto = new SyncDto(connection.toString());
-
     return client.sync(syncDto, authorization);
   }
 
