@@ -48,8 +48,7 @@ public class LoggingEventListener implements ApplicationEventListener<ServerStar
     LogClientSingleton.getInstance().setJobMdc(
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
-        TemporalUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId())
-    );
+        TemporalUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId()));
   }
 
 }

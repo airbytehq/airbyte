@@ -32,84 +32,80 @@ class AsyncStateManagerTest {
   @BeforeEach
   void setup() {
     documentStore = mock(DocumentStoreClient.class);
-    stateManager = new AsyncStateManager(documentStore);
+    stateManager = new AsyncStateManager(documentStore, KUBE_POD_INFO);
   }
 
   @Test
   void testEmptyWrite() {
-    stateManager.write(KUBE_POD_INFO, AsyncKubePodStatus.INITIALIZING);
+    stateManager.write(AsyncKubePodStatus.INITIALIZING);
 
     // test for overwrite (which should be allowed)
-    stateManager.write(KUBE_POD_INFO, AsyncKubePodStatus.INITIALIZING);
+    stateManager.write(AsyncKubePodStatus.INITIALIZING);
 
-    final var key = getKey(AsyncKubePodStatus.INITIALIZING);
+    final var key = stateManager.getDocumentStoreKey(AsyncKubePodStatus.INITIALIZING);
     verify(documentStore, times(2)).write(key, "");
   }
 
   @Test
   void testContentfulWrite() {
-    stateManager.write(KUBE_POD_INFO, AsyncKubePodStatus.SUCCEEDED, OUTPUT);
+    stateManager.write(AsyncKubePodStatus.SUCCEEDED, OUTPUT);
 
-    final var key = getKey(AsyncKubePodStatus.SUCCEEDED);
+    final var key = stateManager.getDocumentStoreKey(AsyncKubePodStatus.SUCCEEDED);
     verify(documentStore, times(1)).write(key, OUTPUT);
   }
 
   @Test
   void testReadingOutputWhenItExists() {
-    final var key = getKey(AsyncKubePodStatus.SUCCEEDED);
+    final var key = stateManager.getDocumentStoreKey(AsyncKubePodStatus.SUCCEEDED);
     when(documentStore.read(key)).thenReturn(Optional.of(OUTPUT));
-    assertEquals(OUTPUT, stateManager.getOutput(KUBE_POD_INFO));
+    assertEquals(OUTPUT, stateManager.getOutput());
   }
 
   @Test
   void testReadingOutputWhenItDoesNotExist() {
     // getting the output should throw an exception when there is no record in the document store
     assertThrows(IllegalArgumentException.class, () -> {
-      stateManager.getOutput(KUBE_POD_INFO);
+      stateManager.getOutput();
     });
   }
 
   @Test
   void testSuccessfulStatusRetrievalLifecycle() {
-    when(documentStore.read(getKey(AsyncKubePodStatus.INITIALIZING))).thenReturn(Optional.empty());
-    final var beforeInitializingStatus = stateManager.getStatus(KUBE_POD_INFO);
+    when(documentStore.read(stateManager.getDocumentStoreKey(AsyncKubePodStatus.INITIALIZING))).thenReturn(Optional.empty());
+    final var beforeInitializingStatus = stateManager.getStatus();
     assertEquals(AsyncKubePodStatus.NOT_STARTED, beforeInitializingStatus);
 
-    when(documentStore.read(getKey(AsyncKubePodStatus.INITIALIZING))).thenReturn(Optional.of(""));
-    final var initializingStatus = stateManager.getStatus(KUBE_POD_INFO);
+    when(documentStore.read(stateManager.getDocumentStoreKey(AsyncKubePodStatus.INITIALIZING))).thenReturn(Optional.of(""));
+    final var initializingStatus = stateManager.getStatus();
     assertEquals(AsyncKubePodStatus.INITIALIZING, initializingStatus);
 
-    when(documentStore.read(getKey(AsyncKubePodStatus.RUNNING))).thenReturn(Optional.of(""));
-    final var runningStatus = stateManager.getStatus(KUBE_POD_INFO);
+    when(documentStore.read(stateManager.getDocumentStoreKey(AsyncKubePodStatus.RUNNING))).thenReturn(Optional.of(""));
+    final var runningStatus = stateManager.getStatus();
     assertEquals(AsyncKubePodStatus.RUNNING, runningStatus);
 
-    when(documentStore.read(getKey(AsyncKubePodStatus.SUCCEEDED))).thenReturn(
+    when(documentStore.read(stateManager.getDocumentStoreKey(AsyncKubePodStatus.SUCCEEDED))).thenReturn(
         Optional.of("output"));
-    final var succeededStatus = stateManager.getStatus(KUBE_POD_INFO);
+    final var succeededStatus = stateManager.getStatus();
     assertEquals(AsyncKubePodStatus.SUCCEEDED, succeededStatus);
   }
 
   @Test
   void testFailureStatusRetrievalLifecycle() {
-    when(documentStore.read(getKey(AsyncKubePodStatus.INITIALIZING))).thenReturn(Optional.empty());
-    final var beforeInitializingStatus = stateManager.getStatus(KUBE_POD_INFO);
+    when(documentStore.read(stateManager.getDocumentStoreKey(AsyncKubePodStatus.INITIALIZING))).thenReturn(Optional.empty());
+    final var beforeInitializingStatus = stateManager.getStatus();
     assertEquals(AsyncKubePodStatus.NOT_STARTED, beforeInitializingStatus);
 
-    when(documentStore.read(getKey(AsyncKubePodStatus.INITIALIZING))).thenReturn(Optional.of(""));
-    final var initializingStatus = stateManager.getStatus(KUBE_POD_INFO);
+    when(documentStore.read(stateManager.getDocumentStoreKey(AsyncKubePodStatus.INITIALIZING))).thenReturn(Optional.of(""));
+    final var initializingStatus = stateManager.getStatus();
     assertEquals(AsyncKubePodStatus.INITIALIZING, initializingStatus);
 
-    when(documentStore.read(getKey(AsyncKubePodStatus.RUNNING))).thenReturn(Optional.of(""));
-    final var runningStatus = stateManager.getStatus(KUBE_POD_INFO);
+    when(documentStore.read(stateManager.getDocumentStoreKey(AsyncKubePodStatus.RUNNING))).thenReturn(Optional.of(""));
+    final var runningStatus = stateManager.getStatus();
     assertEquals(AsyncKubePodStatus.RUNNING, runningStatus);
 
-    when(documentStore.read(getKey(AsyncKubePodStatus.FAILED))).thenReturn(Optional.of("output"));
-    final var failedStatus = stateManager.getStatus(KUBE_POD_INFO);
+    when(documentStore.read(stateManager.getDocumentStoreKey(AsyncKubePodStatus.FAILED))).thenReturn(Optional.of("output"));
+    final var failedStatus = stateManager.getStatus();
     assertEquals(AsyncKubePodStatus.FAILED, failedStatus);
-  }
-
-  private static String getKey(final AsyncKubePodStatus status) {
-    return AsyncStateManager.getDocumentStoreKey(KUBE_POD_INFO, status);
   }
 
 }

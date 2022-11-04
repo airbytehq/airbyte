@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.container_orchestrator;
+package io.airbyte.container_orchestrator.orchestrator;
 
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
 import java.lang.invoke.MethodHandles;

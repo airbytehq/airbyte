@@ -36,29 +36,28 @@ public class ConfigFactory {
   @Singleton
   @Named("application")
   String application(@Named("configDir") final String configDir) throws IOException {
-//    return "NO_OP";
+    // return "NO_OP";
     return Files.readString(Path.of(configDir, OrchestratorConstants.INIT_FILE_APPLICATION));
   }
 
   @Singleton
   @Named("envs")
   Map<String, String> envs(@Named("configDir") final String configDir) {
-//    return Map.of();
+    // return Map.of();
     return Jsons.deserialize(
-        Path.of(configDir, OrchestratorConstants.INIT_FILE_ENV_MAP).toFile(), new TypeReference<>() {
-        }
-    );
+        Path.of(configDir, OrchestratorConstants.INIT_FILE_ENV_MAP).toFile(), new TypeReference<>() {});
   }
 
   @Singleton
   JobRunConfig jobRunConfig(@Named("configDir") final String configDir) {
-//    return new JobRunConfig().withJobId("1").withAttemptId(2L);
+    // return new JobRunConfig().withJobId("1").withAttemptId(2L);
     return Jsons.deserialize(Path.of(configDir, OrchestratorConstants.INIT_FILE_JOB_RUN_CONFIG).toFile(), JobRunConfig.class);
   }
 
   @Singleton
   KubePodInfo kubePodInfo(@Named("configDir") final String configDir) {
-//    return new KubePodInfo("namespace", "name", null);
+    // return new KubePodInfo("namespace", "name", null);
     return Jsons.deserialize(Path.of(configDir, AsyncOrchestratorPodProcess.KUBE_POD_INFO).toFile(), KubePodInfo.class);
   }
+
 }
