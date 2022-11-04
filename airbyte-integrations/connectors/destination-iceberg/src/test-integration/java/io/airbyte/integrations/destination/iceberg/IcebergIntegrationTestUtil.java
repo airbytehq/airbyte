@@ -18,7 +18,10 @@ import io.airbyte.integrations.destination.iceberg.config.storage.S3Config;
 import io.airbyte.integrations.destination.iceberg.container.MinioContainer;
 import io.airbyte.integrations.destination.iceberg.container.MinioContainer.CredentialsProvider;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -82,15 +85,18 @@ public class IcebergIntegrationTestUtil {
         String tableName = namingResolver.getIdentifier("airbyte_raw_" + streamName).toLowerCase();
         LOGGER.info("Select data from:{}", tableName);
         Table table = catalog.loadTable(TableIdentifier.of(dbName, tableName));
-        try (CloseableIterable<Record> records = IcebergGenerics.read(table).build()) {
-            return Lists.newArrayList(records)
-                .stream()
-                .sorted((r1, r2) -> Comparator.<OffsetDateTime>naturalOrder()
-                    .compare((OffsetDateTime) r1.getField(JavaBaseConstants.COLUMN_NAME_EMITTED_AT),
-                        (OffsetDateTime) r2.getField(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)))
+        try (CloseableIterable<Record> recordItr = IcebergGenerics.read(table).build()) {
+            ArrayList<Record> records = Lists.newArrayList(recordItr);
+            return records.stream()
+                .sorted(Comparator.comparingLong(r -> offsetDataTimeToTimestamp((OffsetDateTime) r.getField(
+                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))))
                 .map(r -> Jsons.deserialize((String) r.getField(JavaBaseConstants.COLUMN_NAME_DATA)))
                 .collect(Collectors.toList());
         }
+    }
+
+    private static long offsetDataTimeToTimestamp(OffsetDateTime offsetDateTime) {
+        return Timestamp.valueOf(offsetDateTime.atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()).getTime();
     }
 
     public static String getContainerIpAddr(GenericContainer<?> container) {

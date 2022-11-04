@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.iceberg;
 
+import static io.airbyte.integrations.destination.iceberg.IcebergIntegrationTestUtil.ICEBERG_IMAGE_NAME;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
@@ -24,7 +26,7 @@ public class IcebergDestinationAcceptanceTest extends DestinationAcceptanceTest 
 
     @Override
     protected String getImageName() {
-        return "airbyte/destination-iceberg:dev";
+        return ICEBERG_IMAGE_NAME;
     }
 
     @Override

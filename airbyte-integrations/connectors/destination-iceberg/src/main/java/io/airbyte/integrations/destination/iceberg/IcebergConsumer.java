@@ -107,6 +107,7 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
      */
     @Override
     protected void acceptTracked(AirbyteMessage msg) throws Exception {
+        log.info("Receive record message type:{}", msg.getType());
         if (msg.getType() != Type.RECORD) {
             return;
         }
@@ -183,7 +184,7 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
         } finally {
             log.info("Removing temp tables...");
             for (Entry<AirbyteStreamNameNamespacePair, WriteConfig> entry : writeConfigs.entrySet()) {
-                tryDropTempTable(entry.getValue().getFullTempTableName());
+                tryDropTempTable(icebergCatalog, entry.getValue());
             }
             log.info("Closing Spark Session...");
             this.spark.close();
@@ -191,16 +192,16 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
         }
     }
 
-    private void tryDropTempTable(String tempTableName) {
+    private void tryDropTempTable(Catalog icebergCatalog, WriteConfig writeConfig) {
         try {
-            spark.sql("DROP TABLE IF EXISTS " + tempTableName + " PURGE");
+            log.info("Trying to drop temp table: {}", writeConfig.getFullTempTableName());
+            TableIdentifier tempTableIdentifier = TableIdentifier.of(writeConfig.getNamespace(),
+                writeConfig.getTempTableName());
+            boolean dropSuccess = icebergCatalog.dropTable(tempTableIdentifier, true);
+            log.info("Drop temp table: {}", writeConfig.getFullTempTableName());
         } catch (Exception e) {
             String errMsg = e.getMessage();
-            if (errMsg != null && errMsg.contains("Table or view not found")) {
-                log.warn("Drop temp table caught exception:{}", errMsg);
-            } else {
-                log.error("Drop temp table caught exception:{}", errMsg, e);
-            }
+            log.error("Drop temp table caught exception:{}", errMsg, e);
         }
     }
 

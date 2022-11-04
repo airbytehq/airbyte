@@ -23,15 +23,20 @@ public class WriteConfig implements Serializable {
 
     private final String namespace;
     private final String tableName;
+    private final String tempTableName;
     private final String fullTableName;
     private final String fullTempTableName;
     private final boolean isAppendMode;
     private final Integer flushBatchSize;
+
+    //TODO perf: use stageFile to do cache, see io.airbyte.integrations.destination.bigquery.BigQueryWriteConfig.addStagedFile
     private final List<Row> dataCache;
 
+
     public WriteConfig(String namespace, String streamName, boolean isAppendMode, Integer flushBatchSize) {
-        this.namespace = namespace;
+        this.namespace = namingResolver.convertStreamName(namespace);
         this.tableName = namingResolver.convertStreamName(AIRBYTE_RAW_TABLE_PREFIX + streamName);
+        this.tempTableName = namingResolver.convertStreamName(AIRBYTE_TMP_TABLE_PREFIX + streamName);
         final String tableName = genTableName(namespace, AIRBYTE_RAW_TABLE_PREFIX + streamName);
         final String tempTableName = genTableName(namespace, AIRBYTE_TMP_TABLE_PREFIX + streamName);
         this.fullTableName = tableName;
