@@ -35,7 +35,6 @@ export const NamespaceDefinitionField: React.FC<FieldProps<string>> = ({ field, 
         <ControlLabels
           nextLine
           error={!!meta.error && meta.touched}
-          labelAdditionLength={0}
           label={<FormattedMessage id="connectionForm.namespaceDefinition.title" />}
           message={<FormattedMessage id="connectionForm.namespaceDefinition.subtitle" />}
         />
