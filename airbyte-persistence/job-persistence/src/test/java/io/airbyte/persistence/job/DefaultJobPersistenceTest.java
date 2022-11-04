@@ -8,6 +8,7 @@ import static io.airbyte.db.instance.jobs.jooq.generated.Tables.AIRBYTE_METADATA
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.SYNC_STATS;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -1653,7 +1654,7 @@ class DefaultJobPersistenceTest {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
 
       jobPersistence.cancelJob(jobId);
-      assertThrows(IllegalStateException.class, () -> jobPersistence.resetJob(jobId));
+      assertDoesNotThrow(() -> jobPersistence.resetJob(jobId));
 
       final Job updated = jobPersistence.getJob(jobId);
       assertEquals(JobStatus.CANCELLED, updated.getStatus());
