@@ -46,6 +46,10 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   protected static final String NO_ACTIVE_WAREHOUSE_ERR_MSG = "No active warehouse selected in the current session. "
       + " Select an active warehouse with the 'use warehouse' command.";
 
+  protected static final String NO_USER_PRIVILEGES_ERR_MSG = "Schema 'TEXT_SCHEMA' already exists, but current role "
+      + "has no privileges on it. If this is unexpected and you cannot resolve this problem, contact your system "
+      + "administrator. ACCOUNTADMIN role may be required to manage the privileges on the object.";
+
   // this config is based on the static config, and it contains a random
   // schema name that is different for each test run
   private JsonNode config;
@@ -99,6 +103,11 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   protected JsonNode getConfigNoActiveWarehouseUser() {
     return Jsons.deserialize(IOs.readFile(
         Path.of("secrets/internal_staging_config_no_active_warehouse.json")));
+  }
+
+  protected JsonNode getConfigNoTextSchemaPermissionUser() {
+    return Jsons.deserialize(IOs.readFile(
+        Path.of("secrets/config_no_text_schema_permission.json")));
   }
 
   @Override
@@ -194,6 +203,15 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
     assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
     assertThat(standardCheckConnectionOutput.getMessage()).contains(NO_ACTIVE_WAREHOUSE_ERR_MSG);
+  }
+
+  @Test
+  public void testCheckNoTextSchemaPermissionConnection() throws Exception {
+    StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(
+        getConfigNoTextSchemaPermissionUser());
+
+    assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
+    assertThat(standardCheckConnectionOutput.getMessage()).contains(NO_USER_PRIVILEGES_ERR_MSG);
   }
 
   @Test
