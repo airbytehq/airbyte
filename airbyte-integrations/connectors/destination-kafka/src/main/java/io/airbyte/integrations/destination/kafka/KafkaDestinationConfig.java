@@ -114,10 +114,17 @@ public class KafkaDestinationConfig {
     // ssl.truststore.certificates only accepts PEM certs, which makes our lives a lot easier.
     // From https://kafka.apache.org/documentation/#producerconfigs_ssl.truststore.certificates
     // > Default SSL engine factory supports only PEM format with X.509 certificates.
-    JsonNode certs = protocolConfig.get("truststore_certificates");
-    if (certs != null && !certs.isNull()) {
-      builder.put(SslConfigs.SSL_TRUSTSTORE_CERTIFICATES_CONFIG, certs.asText());
+    JsonNode trustedCerts = protocolConfig.get("truststore_certificates");
+    if (trustedCerts != null && !trustedCerts.isNull()) {
+      builder.put(SslConfigs.SSL_TRUSTSTORE_CERTIFICATES_CONFIG, trustedCerts.asText());
       builder.put(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, "PEM");
+    }
+
+    // Same deal with client certs - it's easier to only accept PEM-format certs
+    JsonNode mtlsCerts = protocolConfig.get("keystore_certificates");
+    if (mtlsCerts != null && !mtlsCerts.isNull()) {
+      builder.put(SslConfigs.SSL_KEYSTORE_CERTIFICATE_CHAIN_CONFIG, mtlsCerts.asText());
+      builder.put(SslConfigs.SSL_KEYSTORE_TYPE_CONFIG, "PEM");
     }
   }
 

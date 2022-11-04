@@ -179,6 +179,13 @@
                 "type": "string",
                 "airbyte_secret": "true",
                 "multiline": true
+              },
+              "keystore_certificates": {
+                "title": "SSL keystore certificates",
+                "description": "Client certificates. Used for mutual TLS authentication.",
+                "type": "string",
+                "airbyte_secret": "true",
+                "multiline": true
               }
             }
           }
