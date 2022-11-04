@@ -12,7 +12,6 @@ import org.jooq.impl.SQLDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO: update migration description in the class name
 public class V0_40_15_001__AddActorDefinitionNormalizationAndDbtColumns extends BaseJavaMigration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(V0_40_15_001__AddActorDefinitionNormalizationAndDbtColumns.class);
@@ -34,7 +33,7 @@ public class V0_40_15_001__AddActorDefinitionNormalizationAndDbtColumns extends 
     ctx.alterTable("actor_definition")
         .addColumnIfNotExists(DSL.field(
             "normalization_repository",
-            SQLDataType.VARCHAR(256).nullable(true)))
+            SQLDataType.VARCHAR(255).nullable(true)))
         .execute();
   }
 
@@ -42,7 +41,7 @@ public class V0_40_15_001__AddActorDefinitionNormalizationAndDbtColumns extends 
     ctx.alterTable("actor_definition")
         .addColumnIfNotExists(DSL.field(
             "normalization_tag",
-            SQLDataType.VARCHAR(256).nullable(true)))
+            SQLDataType.VARCHAR(255).nullable(true)))
         .execute();
   }
 
