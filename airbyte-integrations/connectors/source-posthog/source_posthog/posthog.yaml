@@ -1,0 +1,128 @@
+version: "0.1.0"
+
+definitions:
+
+  schema_loader:
+    file_path: "./source_posthog/schemas/{{ options['name'] }}.json"
+
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_pointer: ['results']
+
+  requester:
+    type: HttpRequester
+    name: "{{ options['name'] }}"
+    url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+
+  retriever:
+    type: SimpleRetriever
+    name: "{{ options['name'] }}"
+    primary_key: "{{ options['primary_key'] }}"
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: "DefaultPaginator"
+      url_base: "*ref(definitions.requester.url_base)"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "limit"
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 100
+      page_token_option:
+        field_name: "offset"
+        inject_into: "request_parameter"
+
+  base_stream:
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+
+  projects_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "projects"
+      path: "projects"
+
+  base_slicing_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/projects/{{ stream_slice.id }}/{{ options['name'] }}"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.projects_stream)"
+            parent_key: id
+            stream_slice_field: id
+
+
+  cohorts_stream:
+    $ref: "*ref(definitions.base_slicing_stream)"
+    $options:
+      name: "cohorts"
+      path: "cohorts"
+
+  feature_flags_stream:
+    $ref: "*ref(definitions.base_slicing_stream)"
+    $options:
+      name: "feature_flags"
+      path: "feature_flags"
+
+  persons_stream:
+    $ref: "*ref(definitions.base_slicing_stream)"
+    $options:
+      name: "persons"
+      path: "persons"
+
+  annotations_stream:
+    $ref: "*ref(definitions.base_slicing_stream)"
+    $options:
+      name: "annotations"
+      path: "annotations"
+
+
+  events_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "events"
+      path: "events"
+    stream_cursor_field: "timestamp"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/projects/{{ stream_slice.project_id }}/{{ options['name'] }}"
+        request_options_provider:
+          class_name: source_posthog.components.PosthogInterpolatedRequestOptionsProvider
+
+      stream_slicer:
+        class_name: source_posthog.components.PosthogIncrementalSlicer
+        parent_stream: "*ref(definitions.projects_stream)"
+        request_cursor_field: "after"
+        stream_slice_field: "project_id"
+        cursor_field: "timestamp"
+        parent_key: "id"
+
+streams:
+  - "*ref(definitions.projects_stream)"
+  - "*ref(definitions.cohorts_stream)"
+  - "*ref(definitions.feature_flags_stream)"
+  - "*ref(definitions.persons_stream)"
+  - "*ref(definitions.events_stream)"
+  - "*ref(definitions.annotations_stream)"
+check:
+  type: CheckStream
+  stream_names: ["projects"]
