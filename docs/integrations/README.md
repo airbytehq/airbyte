@@ -22,6 +22,14 @@ For more information about the grading system, see [Product Release Stages](http
     allowtransparency
 ></iframe>
 
+<iframe
+    src="https://airbyte.metabaseapp.com/public/question/9af21fd5-ff87-4809-8e04-966207490e0b#titled=false&hide_download_button=true"
+    frameborder="0"
+    width="600"
+    height="2000"
+    allowtransparency
+></iframe>
+
 ## Destinations
 
 <iframe
