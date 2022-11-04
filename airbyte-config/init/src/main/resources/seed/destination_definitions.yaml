@@ -87,7 +87,7 @@
 - name: DynamoDB
   destinationDefinitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
   dockerRepository: airbyte/destination-dynamodb
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.7
   documentationUrl: https://docs.airbyte.com/integrations/destinations/dynamodb
   icon: dynamodb.svg
   releaseStage: alpha
@@ -137,6 +137,12 @@
   documentationUrl: https://docs.airbyte.com/integrations/destinations/pubsub
   icon: googlepubsub.svg
   releaseStage: alpha
+- name: Heap Analytics
+  destinationDefinitionId: f8e68742-407a-4a3c-99ad-dfd42ae2cba8
+  dockerRepository: airbyte/destination-heap-analytics
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/heap-analytics
+  releaseStage: alpha
 - name: Kafka
   destinationDefinitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
   dockerRepository: airbyte/destination-kafka
@@ -182,7 +188,7 @@
 - name: MeiliSearch
   destinationDefinitionId: af7c921e-5892-4ff2-b6c1-4a5ab258fb7e
   dockerRepository: airbyte/destination-meilisearch
-  dockerImageTag: 0.2.13
+  dockerImageTag: 1.0.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/meilisearch
   icon: meilisearch.svg
   releaseStage: alpha
@@ -231,7 +237,7 @@
 - name: Redis
   destinationDefinitionId: d4d3fef9-e319-45c2-881a-bd02ce44cc9f
   dockerRepository: airbyte/destination-redis
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.com/integrations/destinations/redis
   icon: redis.svg
   releaseStage: alpha
@@ -311,7 +317,7 @@
 - name: Google Sheets
   destinationDefinitionId: a4cbd2d1-8dbe-4818-b8bc-b90ad782d12a
   dockerRepository: airbyte/destination-google-sheets
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/destinations/google-sheets
   icon: google-sheets.svg
   releaseStage: alpha
@@ -328,4 +334,17 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/tidb
   icon: tidb.svg
+  releaseStage: alpha
+- name: Typesense
+  destinationDefinitionId: 36be8dc6-9851-49af-b776-9d4c30e4ab6a
+  dockerRepository: airbyte/destination-typesense
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/typesense
+  releaseStage: alpha
+- name: YugabyteDB
+  destinationDefinitionId: 2300fdcf-a532-419f-9f24-a014336e7966
+  dockerRepository: airbyte/destination-yugabytedb
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/yugabytedb
+  icon: yugabytedb.svg
   releaseStage: alpha

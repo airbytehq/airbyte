@@ -197,3 +197,18 @@ class TestConfig:
     def test_legacy_config_migration(self, legacy_config, expected_parsed_config):
         assert config.Config.is_legacy(legacy_config)
         assert config.Config.parse_obj(legacy_config) == expected_parsed_config
+
+
+class TestExpectedRecordsConfig:
+    @pytest.mark.parametrize(
+        "path, bypass_reason, expectation",
+        [
+            pytest.param("my_path", None, does_not_raise()),
+            pytest.param(None, "Good bypass reason", does_not_raise()),
+            pytest.param(None, None, pytest.raises(ValidationError)),
+            pytest.param("my_path", "Good bypass reason", pytest.raises(ValidationError)),
+        ],
+    )
+    def test_bypass_reason_behavior(self, path, bypass_reason, expectation):
+        with expectation:
+            config.ExpectedRecordsConfig(path=path, bypass_reason=bypass_reason)

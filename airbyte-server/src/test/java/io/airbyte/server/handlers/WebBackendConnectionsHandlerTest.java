@@ -121,6 +121,7 @@ class WebBackendConnectionsHandlerTest {
   private OperationReadList brokenOperationReadList;
   private WebBackendConnectionRead expected;
   private WebBackendConnectionRead expectedWithNewSchema;
+  private WebBackendConnectionRead expectedWithNewSchemaAndBreakingChange;
   private WebBackendConnectionRead expectedWithNewSchemaBroken;
   private WebBackendConnectionRead expectedNoDiscoveryWithNewSchema;
   private EventRunner eventRunner;
@@ -275,6 +276,13 @@ class WebBackendConnectionsHandlerTest {
                     .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("users-data1"))
                     .updateStream(null))));
 
+    expectedWithNewSchemaAndBreakingChange = expectedWebBackendConnectionReadObject(connectionRead, sourceRead, destinationRead,
+        new OperationReadList().operations(expected.getOperations()), SchemaChange.BREAKING, now, modifiedCatalog, null)
+            .catalogDiff(new CatalogDiff().transforms(List.of(
+                new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)
+                    .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("users-data1"))
+                    .updateStream(null))));
+
     expectedWithNewSchemaBroken = expectedWebBackendConnectionReadObject(brokenConnectionRead, sourceRead, destinationRead, brokenOperationReadList,
         SchemaChange.BREAKING, now, connectionRead.getSyncCatalog(), brokenConnectionRead.getSourceCatalogId());
     when(schedulerHandler.resetConnection(any(ConnectionIdRequestBody.class)))
@@ -403,16 +411,35 @@ class WebBackendConnectionsHandlerTest {
   @Test
   void testWebBackendGetConnectionWithDiscoveryAndNewSchema() throws ConfigNotFoundException,
       IOException, JsonValidationException {
-    when(connectionsHandler.getDiff(any(), any(),
-        any())).thenReturn(expectedWithNewSchema.getCatalogDiff());
     final UUID newCatalogId = UUID.randomUUID();
     when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
         .thenReturn(Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(newCatalogId)));
     when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withId(UUID.randomUUID()));
+    SourceDiscoverSchemaRead schemaRead =
+        new SourceDiscoverSchemaRead().catalogDiff(expectedWithNewSchema.getCatalogDiff()).catalog(expectedWithNewSchema.getSyncCatalog())
+            .breakingChange(false);
+    when(schedulerHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
+
     final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead,
         operationReadList);
-    verify(schedulerHandler).discoverSchemaForSourceFromSourceId(any());
     assertEquals(expectedWithNewSchema, result);
+  }
+
+  @Test
+  void testWebBackendGetConnectionWithDiscoveryAndNewSchemaBreakingChange() throws ConfigNotFoundException,
+      IOException, JsonValidationException {
+    final UUID newCatalogId = UUID.randomUUID();
+    when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
+        .thenReturn(Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(newCatalogId)));
+    when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withId(UUID.randomUUID()));
+    SourceDiscoverSchemaRead schemaRead =
+        new SourceDiscoverSchemaRead().catalogDiff(expectedWithNewSchema.getCatalogDiff()).catalog(expectedWithNewSchema.getSyncCatalog())
+            .breakingChange(true);
+    when(schedulerHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
+
+    final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead,
+        operationReadList);
+    assertEquals(expectedWithNewSchemaAndBreakingChange, result);
   }
 
   @Test
@@ -538,7 +565,7 @@ class WebBackendConnectionsHandlerTest {
     final Set<String> handledMethods =
         Set.of("name", "namespaceDefinition", "namespaceFormat", "prefix", "sourceId", "destinationId", "operationIds",
             "addOperationIdsItem", "removeOperationIdsItem", "syncCatalog", "schedule", "scheduleType", "scheduleData",
-            "status", "resourceRequirements", "sourceCatalogId", "geography");
+            "status", "resourceRequirements", "sourceCatalogId", "geography", "nonBreakingChangesPreference", "notifySchemaChanges");
 
     final Set<String> methods = Arrays.stream(ConnectionCreate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionCreate.class)
@@ -560,7 +587,7 @@ class WebBackendConnectionsHandlerTest {
     final Set<String> handledMethods =
         Set.of("schedule", "connectionId", "syncCatalog", "namespaceDefinition", "namespaceFormat", "prefix", "status",
             "operationIds", "addOperationIdsItem", "removeOperationIdsItem", "resourceRequirements", "name",
-            "sourceCatalogId", "scheduleType", "scheduleData", "geography");
+            "sourceCatalogId", "scheduleType", "scheduleData", "geography", "breakingChange", "notifySchemaChanges", "nonBreakingChangesPreference");
 
     final Set<String> methods = Arrays.stream(ConnectionUpdate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionUpdate.class)
