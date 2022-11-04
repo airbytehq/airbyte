@@ -39,14 +39,14 @@ import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.SelectJoinStep;
 
-record StandardSyncIdsWithProtocolVersions(
-                                           UUID standardSyncId,
-                                           UUID sourceDefId,
-                                           Version sourceProtocolVersion,
-                                           UUID destinationDefId,
-                                           Version destinationProtocolVersion) {}
-
 public class StandardSyncPersistence {
+
+  private record StandardSyncIdsWithProtocolVersions(
+                                                     UUID standardSyncId,
+                                                     UUID sourceDefId,
+                                                     Version sourceProtocolVersion,
+                                                     UUID destinationDefId,
+                                                     Version destinationProtocolVersion) {}
 
   private final ExceptionWrappingDatabase database;
 
