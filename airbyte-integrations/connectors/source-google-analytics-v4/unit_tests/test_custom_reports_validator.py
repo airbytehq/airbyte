@@ -21,5 +21,4 @@ def test_custom_reports_validator(custom_reports, expected):
     try:
         CustomReportsValidator(custom_reports).validate()
     except AirbyteTracedException as e:
-        print(str(e))
         assert expected in str(e)
