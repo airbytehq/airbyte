@@ -33,9 +33,6 @@ public class SlackNotificationClient extends NotificationClient {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SlackNotificationClient.class);
 
-  private final HttpClient httpClient = HttpClient.newBuilder()
-      .version(HttpClient.Version.HTTP_2)
-      .build();
   private final SlackNotificationConfiguration config;
 
   public SlackNotificationClient(final Notification notification) {
@@ -137,6 +134,9 @@ public class SlackNotificationClient extends NotificationClient {
   }
 
   private boolean notify(final String message) throws IOException, InterruptedException {
+    final HttpClient httpClient = HttpClient.newBuilder()
+        .version(HttpClient.Version.HTTP_2)
+        .build();
     final ImmutableMap<String, String> body = new Builder<String, String>()
         .put("text", message)
         .build();

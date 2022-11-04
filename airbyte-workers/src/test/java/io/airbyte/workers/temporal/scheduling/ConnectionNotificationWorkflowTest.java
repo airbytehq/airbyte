@@ -87,7 +87,6 @@ public class ConnectionNotificationWorkflowTest {
     notificationsWorker.registerActivitiesImplementations(mNotifySchemaChangeActivity);
     testEnv.start();
 
-    log.info("started test env");
     final ConnectionNotificationWorkflow workflow =
         client.newWorkflowStub(ConnectionNotificationWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(NOTIFICATIONS_QUEUE).build());
 
@@ -98,7 +97,6 @@ public class ConnectionNotificationWorkflowTest {
     workflow.sendSchemaChangeNotification(connectionId, isBreaking);
 
     log.info("sent schema change notif");
-    when(mNotifySchemaChangeActivity.notifySchemaChange(any(), any(), any())).thenReturn(true);
 
     verify(mNotifySchemaChangeActivity, times(1)).notifySchemaChange(any(NotificationClient.class), connectionId, isBreaking);
   }

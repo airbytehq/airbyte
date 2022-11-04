@@ -7,6 +7,7 @@ package io.airbyte.workers.temporal.scheduling;
 import io.airbyte.commons.temporal.scheduling.ConnectionNotificationWorkflow;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
+import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.notification.NotificationClient;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
 import io.airbyte.workers.temporal.scheduling.activities.NotifySchemaChangeActivity;
@@ -17,13 +18,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ConnectionNotificationWorkflowImpl implements ConnectionNotificationWorkflow {
 
+  private static final String VERSION_LABEL = "notify-workflow";
+  private static final int CURRENT_VERSION = 2;
+
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private NotifySchemaChangeActivity notifySchemaChangeActivity;
 
   @Override
   public boolean sendSchemaChangeNotification(UUID connectionId, boolean isBreaking) throws IOException, InterruptedException {
     log.info("inside sending schema change notification");
-    Notification notification = new Notification().withNotificationType(NotificationType.SLACK);
+    SlackNotificationConfiguration slackConfig = new SlackNotificationConfiguration().withWebhook();
+    Notification notification = new Notification().withNotificationType(NotificationType.SLACK).withSendOnFailure(false).withSendOnSuccess(false).withSlackConfiguration(slackConfig);
     NotificationClient notificationClient = NotificationClient.createNotificationClient(notification);
     log.info("notification client is: " + notificationClient);
     return notifySchemaChangeActivity.notifySchemaChange(notificationClient, connectionId, isBreaking);
