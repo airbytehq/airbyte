@@ -26,6 +26,7 @@ class PosthogIncrementalSlicer(SubstreamSlicer):
         if not last_record:
             # this is actually initial stream state from CLI
             self._cursor = stream_slice
+            return
 
         # only one parent stream is expected
         stream_slice_field = self.parent_stream_configs[0].stream_slice_field
