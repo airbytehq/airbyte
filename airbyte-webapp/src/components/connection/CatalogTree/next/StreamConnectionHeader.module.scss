@@ -5,10 +5,9 @@ $icon-size: 15px;
 .container {
   display: flex;
   flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  padding: variables.$spacing-lg calc(variables.$spacing-lg * 2) 0;
+  padding: variables.$spacing-xl calc(variables.$spacing-lg * 2) 0;
   height: 43px;
+  align-items: center;
 }
 
 .connector {
@@ -16,11 +15,25 @@ $icon-size: 15px;
   flex-direction: row;
   flex: none;
   align-self: stretch;
-  flex-grow: 0;
+  align-items: center;
+}
+
+.source {
+  flex: 7.3 0 0;
+  min-width: 0;
+}
+
+.destination {
+  flex: 2 0 0;
+  min-width: 0;
 }
 
 .icon {
-  height: $icon-size;
   width: $icon-size;
+  height: $icon-size;
   padding-right: variables.$spacing-sm;
+}
+
+.arrowContainer {
+  width: 20px;
 }

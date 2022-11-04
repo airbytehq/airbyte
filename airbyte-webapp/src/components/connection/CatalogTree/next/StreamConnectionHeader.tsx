@@ -1,5 +1,6 @@
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classnames from "classnames";
 import { FormattedMessage } from "react-intl";
 
 import { Heading } from "components/ui/Heading";
@@ -19,17 +20,20 @@ export const StreamConnectionHeader: React.FC = () => {
   } = useConnectionEditService();
   const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
-
+  const sourceStyles = classnames(styles.connector, styles.source);
+  const destinationStyles = classnames(styles.connector, styles.destination);
   return (
     <div className={styles.container}>
-      <div className={styles.connector}>
+      <div className={sourceStyles}>
         {renderIcon(sourceDefinition.icon)}{" "}
         <Heading as="h5" size="sm">
           <FormattedMessage id="connectionForm.sourceTitle" />
         </Heading>
       </div>
-      <FontAwesomeIcon icon={faArrowRight} />
-      <div className={styles.connector}>
+      <div className={styles.arrowContainer}>
+        <FontAwesomeIcon icon={faArrowRight} />
+      </div>
+      <div className={destinationStyles}>
         {renderIcon(destinationDefinition.icon)}{" "}
         <Heading as="h5" size="sm">
           <FormattedMessage id="connectionForm.destinationTitle" />
