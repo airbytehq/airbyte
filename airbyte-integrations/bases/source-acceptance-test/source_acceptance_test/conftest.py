@@ -13,20 +13,20 @@ from subprocess import STDOUT, check_output, run
 from typing import Any, List, MutableMapping, Optional, Set
 
 import pytest
-from airbyte_cdk.models import (
-    AirbyteRecordMessage,
-    AirbyteStream,
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-    ConnectorSpecification,
-    DestinationSyncMode,
-    Type,
-)
+from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
 from docker import errors
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import Config, EmptyStreamConfiguration, ExpectedRecordsConfig
 from source_acceptance_test.tests import TestBasicRead
-from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, load_config, load_yaml_or_json_path
+from source_acceptance_test.utils import (
+    ConnectorRunner,
+    SecretDict,
+    build_configured_catalog_from_custom_catalog,
+    build_configured_catalog_from_discovered_catalog_and_empty_streams,
+    filter_output,
+    load_config,
+    load_yaml_or_json_path,
+)
 
 
 @pytest.fixture(name="acceptance_test_config", scope="session")
@@ -76,89 +76,16 @@ def configured_catalog_path_fixture(inputs, base_path) -> Optional[str]:
 
 @pytest.fixture(name="configured_catalog")
 def configured_catalog_fixture(
-    test_strictness_level: Config.TestStrictnessLevel,
     configured_catalog_path: Optional[str],
     discovered_catalog: MutableMapping[str, AirbyteStream],
-    empty_streams: Set[EmptyStreamConfiguration],
 ) -> ConfiguredAirbyteCatalog:
     """Build a configured catalog.
-    We discard the use of custom configured catalog if:
-      - No custom configured catalog is declared with configured_catalog_path.
-      - We are in high test strictness level.
-    When a custom configured catalog is discarded we use the discovered catalog from which we remove the declared empty streams.
-    We use a custom configured catalog if a configured_catalog_path is declared and we are not in high test strictness level.
-    Args:
-        test_strictness_level (Config.TestStrictnessLevel): The current test strictness level according to the global test configuration.
-        configured_catalog_path (Optional[str]): Path to a JSON file containing a custom configured catalog.
-        discovered_catalog (MutableMapping[str, AirbyteStream]): The discovered catalog.
-        empty_streams (Set[EmptyStreamConfiguration]): The empty streams declared in the test configuration.
-
-    Returns:
-        ConfiguredAirbyteCatalog: the configured Airbyte catalog.
+    If a configured catalog path is given we build a configured catalog from it, we build it from the discovered catalog otherwise.
     """
-    if test_strictness_level is Config.TestStrictnessLevel.high or not configured_catalog_path:
-        if configured_catalog_path:
-            logging.warning(
-                "High test strictness level: the custom configured catalog is discarded in favor of the discovered catalog from which the declared empty streams will be removed."
-            )
-        return build_configured_catalog_from_discovered_catalog_and_empty_streams(discovered_catalog, empty_streams)
-    else:
+    if configured_catalog_path:
         return build_configured_catalog_from_custom_catalog(configured_catalog_path, discovered_catalog)
-
-
-def build_configured_catalog_from_discovered_catalog_and_empty_streams(
-    discovered_catalog: MutableMapping[str, AirbyteStream], empty_streams: Set[EmptyStreamConfiguration]
-):
-    """Build a configured catalog from the discovered catalog with empty streams removed.
-
-    Args:
-        discovered_catalog (MutableMapping[str, AirbyteStream]): The discovered catalog.
-        empty_streams (Set[EmptyStreamConfiguration]): The set of empty streams declared in the test configuration.
-
-    Returns:
-        ConfiguredAirbyteCatalog: a configured Airbyte catalog.
-    """
-    empty_stream_names = [empty_stream.name for empty_stream in empty_streams]
-    streams = [
-        ConfiguredAirbyteStream(
-            stream=stream,
-            sync_mode=stream.supported_sync_modes[0],
-            destination_sync_mode=DestinationSyncMode.append,
-            cursor_field=stream.default_cursor_field,
-            primary_key=stream.source_defined_primary_key,
-        )
-        for _, stream in discovered_catalog.items()
-        if stream.name not in empty_stream_names
-    ]
-    if empty_stream_names:
-        logging.warning(
-            f"The configured catalog was built with the discovered catalog from which the following empty streams were removed: {', '.join(empty_stream_names)}."
-        )
     else:
-        logging.info("The configured catalog is built from a fully discovered catalog.")
-    return ConfiguredAirbyteCatalog(streams=streams)
-
-
-def build_configured_catalog_from_custom_catalog(configured_catalog_path: str, discovered_catalog: MutableMapping[str, AirbyteStream]):
-    """Build a configured catalog from a local one stored in a JSON file.
-
-    Args:
-        configured_catalog_path (str): Local path to a custom configured catalog path
-        discovered_catalog (MutableMapping[str, AirbyteStream]): The discovered catalog
-
-    Returns:
-        ConfiguredAirbyteCatalog: a configured Airbyte catalog
-    """
-    catalog = ConfiguredAirbyteCatalog.parse_file(configured_catalog_path)
-    for configured_stream in catalog.streams:
-        try:
-            configured_stream.stream = discovered_catalog[configured_stream.stream.name]
-        except KeyError:
-            pytest.fail(
-                f"The {configured_stream.stream.name} stream you have set in {configured_catalog_path} is not part of the discovered_catalog"
-            )
-    logging.info("The configured catalog is built from a custom configured catalog.")
-    return catalog
+        return build_configured_catalog_from_discovered_catalog_and_empty_streams(discovered_catalog, set())
 
 
 @pytest.fixture(name="image_tag")

@@ -167,129 +167,15 @@ def test_expected_records_by_stream_fixture(
         conftest.pytest.fail.assert_not_called()
 
 
-@pytest.mark.parametrize(
-    "test_strictness_level, configured_catalog_path",
-    [
-        (Config.TestStrictnessLevel.high, None),
-        (Config.TestStrictnessLevel.high, "custom_configured_catalog_path"),
-        (Config.TestStrictnessLevel.low, None),
-        (Config.TestStrictnessLevel.low, "custom_configured_catalog_path"),
-    ],
-)
-def test_configured_catalog_fixture(mocker, test_strictness_level, configured_catalog_path):
-    mocker.patch.object(conftest, "build_configured_catalog_from_discovered_catalog_and_empty_streams")
-    mocker.patch.object(conftest, "build_configured_catalog_from_custom_catalog")
+@pytest.mark.parametrize("configured_catalog_path", [None, "my_path"])
+def test_configured_catalog_fixture(mocker, configured_catalog_path):
     mock_discovered_catalog = mocker.Mock()
-    mock_empty_streams = mocker.Mock()
-    configured_catalog = conftest.configured_catalog_fixture.__wrapped__(
-        test_strictness_level, configured_catalog_path, mock_discovered_catalog, mock_empty_streams
-    )
-    if test_strictness_level is Config.TestStrictnessLevel.high:
-        conftest.build_configured_catalog_from_discovered_catalog_and_empty_streams.assert_called_once_with(
-            mock_discovered_catalog, mock_empty_streams
-        )
-        conftest.build_configured_catalog_from_custom_catalog.assert_not_called()
+    mocker.patch.object(conftest, "build_configured_catalog_from_custom_catalog")
+    mocker.patch.object(conftest, "build_configured_catalog_from_discovered_catalog_and_empty_streams")
+    configured_catalog = conftest.configured_catalog_fixture.__wrapped__(configured_catalog_path, mock_discovered_catalog)
+    if configured_catalog_path:
+        assert configured_catalog == conftest.build_configured_catalog_from_custom_catalog.return_value
+        conftest.build_configured_catalog_from_custom_catalog.assert_called_once_with(configured_catalog_path, mock_discovered_catalog)
+    else:
         assert configured_catalog == conftest.build_configured_catalog_from_discovered_catalog_and_empty_streams.return_value
-    else:
-        if configured_catalog_path is None:
-            conftest.build_configured_catalog_from_discovered_catalog_and_empty_streams.assert_called_once_with(
-                mock_discovered_catalog, mock_empty_streams
-            )
-            conftest.build_configured_catalog_from_custom_catalog.assert_not_called()
-            assert configured_catalog == conftest.build_configured_catalog_from_discovered_catalog_and_empty_streams.return_value
-        else:
-            conftest.build_configured_catalog_from_custom_catalog.assert_called_once_with(configured_catalog_path, mock_discovered_catalog)
-            conftest.build_configured_catalog_from_discovered_catalog_and_empty_streams.assert_not_called()
-            assert configured_catalog == conftest.build_configured_catalog_from_custom_catalog.return_value
-
-
-DUMMY_DISCOVERED_CATALOG = {
-    "stream_a": AirbyteStream(
-        name="stream_a",
-        json_schema={"a": {"type": "string"}},
-        supported_sync_modes=[SyncMode.full_refresh],
-    ),
-    "stream_b": AirbyteStream(
-        name="stream_b",
-        json_schema={"a": {"type": "string"}},
-        supported_sync_modes=[SyncMode.full_refresh],
-    ),
-}
-
-DUMMY_CUSTOM_CATALOG = {
-    "stream_a": AirbyteStream(
-        name="stream_a",
-        json_schema={"a": {"type": "number"}},
-        supported_sync_modes=[SyncMode.full_refresh],
-    ),
-    "stream_b": AirbyteStream(
-        name="stream_b",
-        json_schema={"a": {"type": "number"}},
-        supported_sync_modes=[SyncMode.full_refresh],
-    ),
-}
-
-DUMMY_CUSTOM_CATALOG_WITH_EXTRA_STREAM = {
-    "stream_a": AirbyteStream(
-        name="stream_a",
-        json_schema={"a": {"type": "number"}},
-        supported_sync_modes=[SyncMode.full_refresh],
-    ),
-    "stream_b": AirbyteStream(
-        name="stream_b",
-        json_schema={"a": {"type": "number"}},
-        supported_sync_modes=[SyncMode.full_refresh],
-    ),
-    "stream_c": AirbyteStream(
-        name="stream_c",
-        json_schema={"a": {"type": "number"}},
-        supported_sync_modes=[SyncMode.full_refresh],
-    ),
-}
-
-
-@pytest.mark.parametrize(
-    "discovered_catalog, empty_streams",
-    [
-        (DUMMY_DISCOVERED_CATALOG, set()),
-        (DUMMY_DISCOVERED_CATALOG, {EmptyStreamConfiguration(name="stream_b", bypass_reason="foobar")}),
-    ],
-)
-def test_build_configured_catalog_from_discovered_catalog_and_empty_streams(mocker, discovered_catalog, empty_streams):
-    mocker.patch.object(conftest, "logging")
-    configured_catalog = conftest.build_configured_catalog_from_discovered_catalog_and_empty_streams(discovered_catalog, empty_streams)
-    assert len(configured_catalog.streams) == len(DUMMY_DISCOVERED_CATALOG.values()) - len(empty_streams)
-    if empty_streams:
-        conftest.logging.warning.assert_called_once()
-        configured_stream_names = [configured_stream.stream.name for configured_stream in configured_catalog.streams]
-        for empty_stream in empty_streams:
-            assert empty_stream.name not in configured_stream_names
-    else:
-        conftest.logging.info.assert_called_once()
-
-
-@pytest.mark.parametrize(
-    "custom_configured_catalog, expect_failure", [(DUMMY_CUSTOM_CATALOG, False), (DUMMY_CUSTOM_CATALOG_WITH_EXTRA_STREAM, True)]
-)
-def test_build_configured_catalog_from_custom_catalog(mocker, custom_configured_catalog, expect_failure):
-    mocker.patch.object(conftest, "logging")
-    mocker.patch.object(conftest.pytest, "fail")
-
-    dummy_configured_catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            ConfiguredAirbyteStream(stream=stream, sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.append)
-            for stream in custom_configured_catalog.values()
-        ]
-    )
-    mocker.patch.object(conftest.ConfiguredAirbyteCatalog, "parse_file", mocker.Mock(return_value=dummy_configured_catalog))
-
-    configured_catalog = conftest.build_configured_catalog_from_custom_catalog("path", DUMMY_DISCOVERED_CATALOG)
-
-    if not expect_failure:
-        assert len(configured_catalog.streams) == len(dummy_configured_catalog.streams)
-        # Checking that the function under test retrieves the stream from the discovered catalog
-        assert configured_catalog.streams[0].stream == DUMMY_DISCOVERED_CATALOG["stream_a"]
-        assert configured_catalog.streams[0].stream != custom_configured_catalog["stream_a"]
-        conftest.logging.info.assert_called_once()
-    else:
-        conftest.pytest.fail.assert_called_once()
+        conftest.build_configured_catalog_from_discovered_catalog_and_empty_streams.assert_called_once_with(mock_discovered_catalog, set())
