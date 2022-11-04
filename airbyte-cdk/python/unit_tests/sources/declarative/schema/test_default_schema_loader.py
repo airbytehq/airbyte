@@ -16,7 +16,7 @@ from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
         pytest.param(None, FileNotFoundError, {}, id="test_schema_file_does_not_exist"),
     ],
 )
-def test_extract_resource_and_schema_path(found_schema, found_error, expected_schema):
+def test_get_json_schema(found_schema, found_error, expected_schema):
     default_schema_loader = DefaultSchemaLoader({}, {})
 
     json_file_schema_loader = MagicMock()
