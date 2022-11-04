@@ -8,6 +8,7 @@ import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getError
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
@@ -21,8 +22,10 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -84,10 +87,25 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     }
   }
 
+  /**
+   * This method is deprecated. It verifies table creation, but not insert right to a newly created
+   * table. Use attemptSQLCreateAndDropTableOperations with isNeedTryMakeTestDataInsertInTable
+   * argument instead
+   */
+  @Deprecated
   public static void attemptSQLCreateAndDropTableOperations(final String outputSchema,
                                                             final JdbcDatabase database,
                                                             final NamingConventionTransformer namingResolver,
                                                             final SqlOperations sqlOps)
+      throws Exception {
+    attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOps, false);
+  }
+
+  public static void attemptSQLCreateAndDropTableOperations(final String outputSchema,
+                                                            final JdbcDatabase database,
+                                                            final NamingConventionTransformer namingResolver,
+                                                            final SqlOperations sqlOps,
+                                                            final boolean isNeedTryMakeTestDataInsertInTable)
       throws Exception {
     // verify we have write permissions on the target schema by creating a table with a random name,
     // then dropping that table
@@ -100,7 +118,17 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
       sqlOps.createSchemaIfNotExists(database, outputSchema);
       sqlOps.createTableIfNotExists(database, outputSchema, outputTableName);
-      sqlOps.dropTableIfExists(database, outputSchema, outputTableName);
+      // verify if user has permission to make SQL INSERT queries
+      try {
+        if (isNeedTryMakeTestDataInsertInTable) {
+          final JsonNode dummyDataToInsert = Jsons.deserialize("{ \"field1\": true }");
+          AirbyteRecordMessage airbyteRecordMessage =
+              new AirbyteRecordMessage().withStream("stream1").withData(dummyDataToInsert).withEmittedAt(1602637589000L);
+          sqlOps.insertRecords(database, List.of(airbyteRecordMessage), outputSchema, outputTableName);
+        }
+      } finally {
+        sqlOps.dropTableIfExists(database, outputSchema, outputTableName);
+      }
     } catch (final SQLException e) {
       if (Objects.isNull(e.getCause()) || !(e.getCause() instanceof SQLException)) {
         throw new ConnectionErrorException(e.getSQLState(), e.getErrorCode(), e.getMessage(), e);

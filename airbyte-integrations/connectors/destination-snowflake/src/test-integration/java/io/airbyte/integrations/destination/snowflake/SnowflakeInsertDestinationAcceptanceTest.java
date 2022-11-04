@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -14,6 +15,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -41,6 +43,8 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final NamingConventionTransformer NAME_TRANSFORMER = new SnowflakeSQLNameTransformer();
+  protected static final String NO_ACTIVE_WAREHOUSE_ERR_MSG = "No active warehouse selected in the current session. "
+      + " Select an active warehouse with the 'use warehouse' command.";
 
   // this config is based on the static config, and it contains a random
   // schema name that is different for each test run
@@ -90,6 +94,11 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     final JsonNode invalidConfig = Jsons.clone(config);
     ((ObjectNode) invalidConfig.get("credentials")).put("password", "wrong password");
     return invalidConfig;
+  }
+
+  protected JsonNode getConfigNoActiveWarehouseUser() {
+    return Jsons.deserialize(IOs.readFile(
+        Path.of("secrets/internal_staging_config_no_active_warehouse.json")));
   }
 
   @Override
@@ -176,6 +185,15 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     final String createSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
     database.execute(createSchemaQuery);
     DataSourceFactory.close(dataSource);
+  }
+
+  @Test
+  public void testCheckNoActiveWarehouseConnection() throws Exception {
+    StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(
+        getConfigNoActiveWarehouseUser());
+
+    assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
+    assertThat(standardCheckConnectionOutput.getMessage()).contains(NO_ACTIVE_WAREHOUSE_ERR_MSG);
   }
 
   @Test
