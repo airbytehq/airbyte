@@ -82,6 +82,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class JobCreationAndStatusUpdateActivityTest {
 
+  public static final String REASON = "reason";
   @Mock
   private SyncJobFactory mJobFactory;
 
@@ -393,10 +394,10 @@ class JobCreationAndStatusUpdateActivityTest {
       Mockito.when(mJobPersistence.getJob(JOB_ID))
           .thenReturn(mJob);
 
-      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, 1, CONNECTION_ID, "reason"));
+      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, 1, CONNECTION_ID, REASON));
 
       verify(mJobPersistence).failJob(JOB_ID);
-      verify(mJobNotifier).failJob(eq("reason"), Mockito.any());
+      verify(mJobNotifier).failJob(eq(REASON), Mockito.any());
       verify(mJobErrorReporter).reportSyncJobFailure(eq(CONNECTION_ID), eq(failureSummary), Mockito.any());
     }
 
@@ -430,10 +431,10 @@ class JobCreationAndStatusUpdateActivityTest {
       Mockito.when(mJobPersistence.getJob(JOB_ID))
           .thenReturn(mJob);
 
-      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, 1, CONNECTION_ID, "reason"));
+      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, 1, CONNECTION_ID, REASON));
 
       verify(mJobPersistence).failJob(JOB_ID);
-      verify(mJobNotifier).failJob(eq("reason"), Mockito.any());
+      verify(mJobNotifier).failJob(eq(REASON), Mockito.any());
       verify(mJobErrorReporter).reportSyncJobFailure(eq(CONNECTION_ID), eq(failureSummary), Mockito.any());
     }
 
