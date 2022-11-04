@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -198,13 +198,14 @@ class TiktokStream(HttpStream, ABC):
         """
         Once the rate limit is met, the server returns "code": 40100
         Docs: https://business-api.tiktok.com/marketing_api/docs?id=1701890997610497
+        Retry 50002 as well - it's a server error.
         """
         try:
             data = response.json()
         except Exception:
             self.logger.error(f"Incorrect JSON response: {response.text}")
             raise
-        if data["code"] == 40100:
+        if data["code"] in (40100, 50002):
             return True
         return super().should_retry(response)
 
@@ -226,16 +227,16 @@ class AdvertiserIds(TiktokStream):
     primary_key = "advertiser_id"
     use_cache = True  # it is used in all streams
 
-    def __init__(self, client_id: int, client_secret: str, access_token: str, **kwargs):
+    def __init__(self, app_id: int, secret: str, access_token: str, **kwargs):
         super().__init__(advertiser_id=0, authenticator=None)
 
         # for Production env
-        self._client_secret = client_secret
-        self._client_id = client_id
+        self._secret = secret
+        self._app_id = app_id
         self._access_token = access_token
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        return {"access_token": self._access_token, "secret": self._client_secret, "app_id": self._client_id}
+        return {"access_token": self._access_token, "secret": self._secret, "app_id": self._app_id}
 
     def path(self, *args, **kwargs) -> str:
         return "oauth2/advertiser/get/"
@@ -665,13 +666,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """All reports have same schema"""
-        schema = ResourceSchemaLoader(package_name_from_class(AdvertiserIds)).get_schema(self.schema_name)
-        schema["required"].append(self.primary_key)
-        schema["required"] = list(set(schema["required"]))
-        if "null" in schema["properties"][self.primary_key]["type"]:
-            schema["properties"][self.primary_key]["type"].remove("null")
-
-        return schema
+        return ResourceSchemaLoader(package_name_from_class(AdvertiserIds)).get_schema(self.schema_name)
 
     def select_cursor_field_value(self, data: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None) -> str:
         if stream_slice:

@@ -1,0 +1,4 @@
+{
+  "/credentials/app_id": "/credentials/client_id",
+  "/credentials/secret": "/credentials/client_secret"
+}

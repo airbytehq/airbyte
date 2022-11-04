@@ -1,0 +1,79 @@
+{
+  "properties": {
+    "credentials": {
+        "title": "Authentication Method",
+        "description": "Authentication method",
+        "order": 0,
+        "type": "object",
+        "oneOf": [
+            {
+                "title": "OAuth2.0",
+                "x-oauth2-provider": "tiktok",
+                "type": "object",
+                "properties": {
+                    "auth_type": {
+                        "title": "Auth Type",
+                        "const": "oauth2.0",
+                        "default": "oauth2.0",
+                        "order": 0,
+                        "type": "string"
+                    },
+                    "client_id": {
+                        "title": "Client ID",
+                        "description": "The Developer Application App ID.",
+                        "airbyte_secret": true,
+                        "type": "string"
+                    },
+                    "client_secret": {
+                        "title": "Client Secret",
+                        "description": "The Developer Application Secret.",
+                        "airbyte_secret": true,
+                        "type": "string"
+                    },
+                    "access_token": {
+                        "title": "Access Token",
+                        "description": "Long-term Authorized Access Token.",
+                        "airbyte_secret": true,
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "client_id",
+                    "client_secret",
+                    "access_token"
+                ]
+            },
+            {
+                "title": "Sandbox Access Token",
+                "type": "object",
+                "properties": {
+                    "auth_type": {
+                        "title": "Auth Type",
+                        "const": "sandbox_access_token",
+                        "order": 0,
+                        "type": "string"
+                    },
+                    "advertiser_id": {
+                        "title": "Advertiser ID",
+                        "description": "The Advertiser ID which generated for the developer's Sandbox application.",
+                        "type": "string"
+                    },
+                    "access_token": {
+                        "title": "Access Token",
+                        "description": "The long-term authorized access token.",
+                        "airbyte_secret": true,
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "advertiser_id",
+                    "access_token"
+                ]
+            }
+        ]
+    },
+    "report_granularity": {
+      "airbyte_hidden": null
+    }
+  }
+}

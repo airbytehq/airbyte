@@ -1,6 +1,5 @@
 {
-  "type": ["object"],
-  "required": [],
+  "type": ["null", "object"],
   "additionalProperties": true,
   "properties": {
     "stat_time_day": {

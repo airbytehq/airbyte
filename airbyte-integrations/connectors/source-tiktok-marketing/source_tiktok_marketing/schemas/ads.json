@@ -1,6 +1,5 @@
 {
-  "type": ["object"],
-  "required": ["ad_id"],
+  "type": ["null", "object"],
   "properties": {
     "advertiser_id": {
       "type": "integer"

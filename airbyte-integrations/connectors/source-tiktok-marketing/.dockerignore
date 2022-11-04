@@ -1,4 +1,8 @@
 *
+!documentation_url.patch.json
+!spec.patch.json
+!spec.map.json
+!oauth2.patch.json
 !Dockerfile
 !Dockerfile.test
 !main.py

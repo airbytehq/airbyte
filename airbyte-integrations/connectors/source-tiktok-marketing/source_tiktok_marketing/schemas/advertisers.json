@@ -1,6 +1,5 @@
 {
-  "type": ["object"],
-  "required": ["id"],
+  "type": ["null", "object"],
   "properties": {
     "id": {
       "type": "integer"

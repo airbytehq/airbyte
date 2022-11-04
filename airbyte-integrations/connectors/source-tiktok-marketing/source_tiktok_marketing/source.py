@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, List, Mapping, Tuple
@@ -33,7 +33,7 @@ from .streams import (
     ReportGranularity,
 )
 
-DOCUMENTATION_URL = "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
+DOCUMENTATION_URL = "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
 
 
 def get_report_stream(report: BasicReports, granularity: ReportGranularity) -> BasicReports:
@@ -64,13 +64,13 @@ class SourceTiktokMarketing(AbstractSource):
         if credentials:
             # used for new config format
             access_token = credentials["access_token"]
-            client_secret = credentials.get("client_secret")
-            client_id = int(credentials.get("client_id", 0))
+            secret = credentials.get("secret")
+            app_id = int(credentials.get("app_id", 0))
             advertiser_id = int(credentials.get("advertiser_id", 0))
         else:
             access_token = config["access_token"]
-            client_secret = config.get("environment", {}).get("client_secret")
-            client_id = int(config.get("environment", {}).get("client_id", 0))
+            secret = config.get("environment", {}).get("secret")
+            app_id = int(config.get("environment", {}).get("app_id", 0))
             advertiser_id = int(config.get("environment", {}).get("advertiser_id", 0))
 
         return {
@@ -78,8 +78,8 @@ class SourceTiktokMarketing(AbstractSource):
             "start_date": config.get("start_date") or DEFAULT_START_DATE,
             "end_date": config.get("end_date") or DEFAULT_END_DATE,
             "advertiser_id": advertiser_id,
-            "client_id": client_id,
-            "client_secret": client_secret,
+            "app_id": app_id,
+            "secret": secret,
             "access_token": access_token,
         }
 

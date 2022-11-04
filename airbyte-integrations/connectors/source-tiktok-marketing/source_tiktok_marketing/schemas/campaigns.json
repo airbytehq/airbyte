@@ -1,6 +1,5 @@
 {
-  "type": ["object"],
-  "required": ["campaign_id"],
+  "type": ["null", "object"],
   "properties": {
     "campaign_id": {
       "type": "integer"

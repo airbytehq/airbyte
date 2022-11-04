@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -18,8 +18,8 @@ class OauthCredSpec(BaseModel):
         title = "OAuth2.0"
 
     auth_type: str = Field(default="oauth2.0", const=True, order=0)
-    client_id: str = Field(title="Client ID", description="The Developer Application App ID.", airbyte_secret=True)
-    client_secret: str = Field(title="Client Secret", description="The Developer Application Secret.", airbyte_secret=True)
+    app_id: str = Field(title="App ID", description="The Developer Application App ID.", airbyte_secret=True)
+    secret: str = Field(title="Secret", description="The Developer Application Secret.", airbyte_secret=True)
     access_token: str = Field(title="Access Token", description="Long-term Authorized Access Token.", airbyte_secret=True)
 
 
@@ -45,7 +45,7 @@ class SourceTiktokMarketingSpec(BaseModel):
     )
 
     start_date: str = Field(
-        title="Replication Start Date *",
+        title="Replication Start Date",
         default=DEFAULT_START_DATE,
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         description="The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated. "
@@ -72,6 +72,7 @@ class SourceTiktokMarketingSpec(BaseModel):
         'href="https://docs.airbyte.com/integrations/sources/tiktok-marketing/#report-aggregation">the docs</a>.',
         enum=[g.value for g in ReportGranularity],
         order=3,
+        airbyte_hidden=True,
     )
 
     @classmethod
