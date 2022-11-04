@@ -4,7 +4,6 @@
 
 package io.airbyte.server;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
@@ -18,10 +17,7 @@ import io.airbyte.commons.temporal.TemporalWorkflowUtils;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
@@ -70,16 +66,12 @@ import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
 import io.airbyte.validation.json.JsonSchemaValidator;
-import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
-import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -256,14 +248,6 @@ public class ServerApp implements ServerRunnable {
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
     final EventRunner eventRunner = new TemporalEventRunner(temporalClient);
 
-    // It is important that the migration to the temporal scheduler is performed before the server
-    // accepts any requests.
-    // This is why this migration is performed here instead of in the bootloader - so that the server
-    // blocks on this.
-    // TODO (https://github.com/airbytehq/airbyte/issues/12823): remove this method after the next
-    // "major" version bump as it will no longer be needed.
-    migrateExistingConnectionsToTemporalScheduler(configRepository, jobPersistence, eventRunner);
-
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
 
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
@@ -368,28 +352,6 @@ public class ServerApp implements ServerRunnable {
         operationsHandler,
         schedulerHandler,
         workspacesHandler);
-  }
-
-  @VisibleForTesting
-  static void migrateExistingConnectionsToTemporalScheduler(final ConfigRepository configRepository,
-                                                            final JobPersistence jobPersistence,
-                                                            final EventRunner eventRunner)
-      throws JsonValidationException, ConfigNotFoundException, IOException {
-    // Skip the migration if it was already performed, to save on resources/startup time
-    if (jobPersistence.isSchedulerMigrated()) {
-      LOGGER.info("Migration to temporal scheduler has already been performed");
-      return;
-    }
-
-    LOGGER.info("Start migration to the new scheduler...");
-    final Set<UUID> connectionIds =
-        configRepository.listStandardSyncs().stream()
-            .filter(standardSync -> standardSync.getStatus() == Status.ACTIVE || standardSync.getStatus() == Status.INACTIVE)
-            .map(StandardSync::getConnectionId)
-            .collect(Collectors.toSet());
-    eventRunner.migrateSyncIfNeeded(connectionIds);
-    jobPersistence.setSchedulerMigrationDone();
-    LOGGER.info("Done migrating to the new scheduler...");
   }
 
   public static void main(final String[] args) {
