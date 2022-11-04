@@ -55,7 +55,7 @@ def test_parse_response(patch_base_class):
         "title": "Test Title",
         "link": "http://testlink",
         "description": "Test Description",
-        "published": "2022-10-28T16:16:00+00:00"
+        "published": "2022-10-28T16:16:00+00:00",
     }
 
     assert next(stream.parse_response(response=SampleResponse(), stream_state={})) == expected_parsed_object

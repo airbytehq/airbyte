@@ -26,17 +26,11 @@ def test_get_updated_state(patch_incremental_base_class):
     stream = IncrementalRssStream()
 
     inputs = {
-        "current_stream_state": {
-            "published": "2022-10-24T16:16:00+00:00"
-        },
-        "latest_record": {
-            "published": "2022-10-30T16:16:00+00:00"
-        }
+        "current_stream_state": {"published": "2022-10-24T16:16:00+00:00"},
+        "latest_record": {"published": "2022-10-30T16:16:00+00:00"},
     }
 
-    expected_state = {
-        "published": "2022-10-30T16:16:00+00:00"
-    }
+    expected_state = {"published": "2022-10-30T16:16:00+00:00"}
     assert stream.get_updated_state(**inputs) == expected_state
 
 

@@ -4,19 +4,17 @@
 
 
 from abc import ABC
+from datetime import datetime
+from time import mktime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
-from datetime import datetime
-from dateutil.parser import parse
 import feedparser
-import requests
-import time
 import pytz
-from time import mktime
-
+import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from dateutil.parser import parse
 
 item_keys = [
     "title",
@@ -54,7 +52,7 @@ def convert_item_to_mapping(item) -> Mapping:
 def is_newer(item, initial_state_date) -> bool:
     try:
         current_record_date = parse(item["published"])
-    except:
+    except Exception:
         current_record_date = None
 
     if initial_state_date is None:
@@ -65,6 +63,7 @@ def is_newer(item, initial_state_date) -> bool:
         return True
     else:
         return current_record_date > initial_state_date
+
 
 # Basic stream
 class RssStream(HttpStream, ABC):
@@ -81,7 +80,7 @@ class RssStream(HttpStream, ABC):
 
         try:
             initial_state_date = parse(stream_state["published"])
-        except:
+        except Exception:
             initial_state_date = None
 
         # go through in reverse order which helps the state comparisons
@@ -105,12 +104,12 @@ class IncrementalRssStream(RssStream, ABC):
         try:
             latest_record_date = parse(latest_record["published"])
             latest_record_state = {"published": latest_record["published"]}
-        except:
+        except Exception:
             latest_record_date = None
 
         try:
             current_record_date = parse(current_stream_state["published"])
-        except:
+        except Exception:
             current_record_date = None
 
         if latest_record_date and current_record_date:
@@ -134,7 +133,7 @@ class Items(IncrementalRssStream):
     primary_key = None
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return self.url
 
