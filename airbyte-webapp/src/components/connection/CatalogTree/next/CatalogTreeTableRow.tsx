@@ -98,8 +98,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             {syncSchema.syncMode}
           </HeaderCell>
         ) : (
-          // todo: SyncModeSelect flex items should fill the entire pill width
-          // todo: SyncModeSelect should probably have a Tooltip
+          // todo: SyncModeSelect should probably have a Tooltip, append/dedupe ends up ellipsing
           <SyncModeSelect options={availableSyncModes} onChange={onSelectSyncMode} value={syncSchema} />
         )}
       </Cell>
