@@ -92,7 +92,6 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
       <HeaderCell flex={1} ellipsis title={stream.stream?.name || ""} className={styles.streamRowItem}>
         {stream.stream?.name}
       </HeaderCell>
-      {/* todo: this is weird, we have a cell nested inside a cell */}
       <Cell flex={2}>
         {disabled ? (
           <HeaderCell ellipsis title={syncSchema.syncMode}>
