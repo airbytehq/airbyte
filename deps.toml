@@ -41,6 +41,11 @@ appender-log4j2 = { module = "com.therealvan:appender-log4j2", version = "3.6.0"
 assertj-core = { module = "org.assertj:assertj-core", version = "3.21.0" }
 aws-java-sdk-s3 = { module = "com.amazonaws:aws-java-sdk-s3", version = "1.12.6" }
 aws-java-sdk-sts = {module = "com.amazonaws:aws-java-sdk-sts", version = "1.12.6"}
+aws-bom = "software.amazon.awssdk:bom:2.16.84"
+aws-s3 = { module = "software.amazon.awssdk:s3" }
+aws-sts = { module = "software.amazon.awssdk:sts" }
+aws-auth = { module = "software.amazon.awssdk:auth" }
+aws-iam = { module = "software.amazon.awssdk:iam" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commons_io" }
 connectors-destination-testcontainers-clickhouse = { module = "org.testcontainers:clickhouse", version.ref = "connectors-destination-testcontainers-clickhouse" }
 connectors-destination-testcontainers-oracle-xe = { module = "org.testcontainers:oracle-xe", version.ref = "connectors-destination-testcontainers-oracle-xe" }
@@ -148,6 +153,7 @@ micronaut-validation = { module = "io.micronaut:micronaut-validation" }
 
 [bundles]
 apache = ["apache-commons", "apache-commons-lang"]
+aws = ["aws-s3","aws-sts","aws-auth","aws-iam"]
 datadog = ["datadog-trace-api", "datadog-trace-ot"]
 jackson = ["jackson-databind", "jackson-annotations", "jackson-dataformat", "jackson-datatype"]
 junit = ["junit-jupiter-api", "junit-jupiter-params", "mockito-junit-jupiter"]
