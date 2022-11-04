@@ -7,10 +7,6 @@ definitions:
   requester:
     url_base: "https://api.punkapi.com/v2/"
     http_method: "GET"
-    authenticator:
-      type: ApiKeyAuthenticator
-      header: "apikey"
-      api_token: "{{ config['api_key'] }}"
 
   retriever:
     record_selector:
@@ -21,6 +17,9 @@ definitions:
       $ref: "*ref(definitions.requester)"
 
   base_stream:
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_punk_api/schemas/{{ options['name'] }}.json"
     retriever:
       $ref: "*ref(definitions.retriever)"
 
