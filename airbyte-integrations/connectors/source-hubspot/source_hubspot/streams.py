@@ -54,6 +54,7 @@ CUSTOM_FIELD_TYPE_TO_VALUE = {
 
 CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
 
+TOKEN_EXPIRED_ERROR = "oauth-token is expired"
 
 def retry_connection_handler(**kwargs):
     """Retry helper, log each attempt"""
@@ -64,6 +65,8 @@ def retry_connection_handler(**kwargs):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
     def giveup_handler(exc):
+        if isinstance(exc, HubspotInvalidAuth) and TOKEN_EXPIRED_ERROR in exc.response:
+            return False
         if isinstance(exc, (HubspotInvalidAuth, HubspotAccessDenied)):
             return True
         return exc.response is not None and HTTPStatus.BAD_REQUEST <= exc.response.status_code < HTTPStatus.INTERNAL_SERVER_ERROR
@@ -181,6 +184,9 @@ class API:
         self, url: str, params: MutableMapping[str, Any] = None
     ) -> Tuple[Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]], requests.Response]:
         response = self._session.get(self.BASE_URL + url, params=params)
+        if TOKEN_EXPIRED_ERROR in response.json():
+            logger.info("Oauth token expired. Re-fetching token")
+            self._session.auth = self.get_authenticator()
         return self._parse_and_handle_errors(response), response
 
     def post(
