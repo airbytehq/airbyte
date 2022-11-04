@@ -27,6 +27,9 @@
     margin: 0 10px;
     max-width: 280px;
     font-weight: 500;
+    color: colors.$black;
+    border-radius: 10px;
+    cursor: pointer;
   }
 }
 
@@ -47,3 +50,21 @@
   align-items: center;
   font-weight: 500;
 }
+
+/* stylelint-disable no-descending-specificity */
+:global(.reactSelect__option--is-focused).option {
+  background-color: colors.$grey-50;
+
+  &:active {
+    background-color: colors.$grey-50;
+  }
+}
+
+:global(.reactSelect__option--is-selected).option {
+  background-color: colors.$blue-50;
+
+  &:active {
+    background-color: colors.$blue-50;
+  }
+}
+/* stylelint-enable no-descending-specificity */

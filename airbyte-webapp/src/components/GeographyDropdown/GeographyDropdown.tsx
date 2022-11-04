@@ -10,7 +10,6 @@ import { DropDown } from "components/ui/DropDown";
 import { DropdownProps } from "components/ui/DropDown";
 
 import { Geography } from "core/request/AirbyteClient";
-import { theme } from "packages/cloud/theme";
 
 import styles from "./GeographyDropdown.module.scss";
 
@@ -45,10 +44,10 @@ interface GeographySelectOption {
 }
 
 export const GeographyDropdown: React.FC<DropdownProps<GeographySelectOption>> = ({ options }) => {
-  const [option, setOption] = useState();
+  const [option, setOption] = useState({});
   const { formatMessage } = useIntl();
-  const handleOptionSelect = (e: any) => {
-    setOption(e.label);
+  const handleOptionSelect = (event: { label: string }) => {
+    setOption(event.label);
   };
 
   const formatOptionLabel = ({ label }: { label: string }) => {
@@ -57,36 +56,14 @@ export const GeographyDropdown: React.FC<DropdownProps<GeographySelectOption>> =
         <div className={styles.flag}>
           <span className={`fi fi-${label === "auto" ? "us" : label}`} />
         </div>
-        <span className={styles.label}>{formatMessage({ id: `geography.${label}` })}</span>
+        <span className={styles.label}>
+          {formatMessage({ id: `geography.${label}`, defaultMessage: label.toUpperCase() })}
+        </span>
       </div>
     );
   };
 
   const customStyles: StylesConfig<GeographySelectOption> = {
-    option: (base, state) => {
-      let backgroundColor = theme.white;
-      const color = theme.black;
-      const borderRadius = "10px";
-
-      if (state.isSelected) {
-        backgroundColor = theme.blue50;
-      }
-
-      if (state.isFocused) {
-        backgroundColor = theme.grey50;
-      }
-
-      if (state.isFocused && state.isSelected) {
-        backgroundColor = theme.blue50;
-      }
-
-      return {
-        ...base,
-        backgroundColor,
-        color,
-        borderRadius,
-      };
-    },
     valueContainer: () => ({
       display: "flex",
     }),
@@ -102,7 +79,7 @@ export const GeographyDropdown: React.FC<DropdownProps<GeographySelectOption>> =
       value={option}
       formatOptionLabel={formatOptionLabel}
       styles={customStyles}
-      placeholder="Select a region..."
+      placeholder={formatMessage({ id: "geography.select" })}
     />
   );
 };

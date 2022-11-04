@@ -410,6 +410,7 @@
   "geography.eu": "Europe",
   "geography.auto": "Airbyte default",
   "geography.new": "Request a new geography",
+  "geography.select": "Select a region …",
 
   "connection.replicationFrequency": "Replication frequency*",
   "connection.replicationFrequency.subtitle": "Set how often data should sync to the destination",

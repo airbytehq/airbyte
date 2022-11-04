@@ -3,7 +3,7 @@ import { ComponentStory, ComponentMeta } from "@storybook/react";
 import { GeographyDropdown } from "./GeographyDropdown";
 
 export default {
-  title: "Ui/GeographyDropdown",
+  title: "Common/GeographyDropdown",
   component: GeographyDropdown,
 } as ComponentMeta<typeof GeographyDropdown>;
 
