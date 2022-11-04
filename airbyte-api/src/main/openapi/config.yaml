@@ -2271,7 +2271,7 @@ paths:
       tags:
         - attempt
         - internal
-      summary: For worker to set running attempt stats.
+      summary: For worker to set sync stats of a running attempt.
       operationId: saveStats
       requestBody:
         content:
