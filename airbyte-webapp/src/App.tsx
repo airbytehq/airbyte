@@ -25,17 +25,13 @@ import {
   ValueProvider,
   windowConfigProvider,
 } from "./config";
-import GlobalStyle from "./global-styles";
 import en from "./locales/en.json";
 import { Routing } from "./pages/routes";
 import { WorkspaceServiceProvider } from "./services/workspaces/WorkspacesService";
 import { theme } from "./theme";
 
 const StyleProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
-  <ThemeProvider theme={theme}>
-    <GlobalStyle />
-    {children}
-  </ThemeProvider>
+  <ThemeProvider theme={theme}>{children}</ThemeProvider>
 );
 
 const configProviders: ValueProvider<Config> = [envConfigProvider, windowConfigProvider];

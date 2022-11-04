@@ -64,6 +64,7 @@ import io.airbyte.api.model.generated.PrivateDestinationDefinitionRead;
 import io.airbyte.api.model.generated.PrivateDestinationDefinitionReadList;
 import io.airbyte.api.model.generated.PrivateSourceDefinitionRead;
 import io.airbyte.api.model.generated.PrivateSourceDefinitionReadList;
+import io.airbyte.api.model.generated.SaveStatsRequestBody;
 import io.airbyte.api.model.generated.SetInstancewideDestinationOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
@@ -360,6 +361,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
       sourceDefinitionsHandler.revokeSourceDefinitionFromWorkspace(sourceDefinitionIdWithWorkspaceId);
       return null;
     });
+  }
+
+  @Override
+  public InternalOperationResult saveStats(SaveStatsRequestBody saveStatsRequestBody) {
+    throw new UnsupportedOperationException();
   }
 
   // SOURCE SPECIFICATION
@@ -900,19 +906,31 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   // SCHEDULER
+  /**
+   * This implementation has been moved to {@link SchedulerApiController}. Since the path of
+   * {@link SchedulerApiController} is more granular, it will override this implementation
+   */
   @Override
   public CheckConnectionRead executeSourceCheckConnection(final SourceCoreConfig sourceConfig) {
-    return execute(() -> schedulerHandler.checkSourceConnectionFromSourceCreate(sourceConfig));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SchedulerApiController}. Since the path of
+   * {@link SchedulerApiController} is more granular, it will override this implementation
+   */
   @Override
   public CheckConnectionRead executeDestinationCheckConnection(final DestinationCoreConfig destinationConfig) {
-    return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationCreate(destinationConfig));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SchedulerApiController}. Since the path of
+   * {@link SchedulerApiController} is more granular, it will override this implementation
+   */
   @Override
   public SourceDiscoverSchemaRead executeSourceDiscoverSchema(final SourceCoreConfig sourceCreate) {
-    return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCreate));
+    throw new NotImplementedException();
   }
 
   /**
