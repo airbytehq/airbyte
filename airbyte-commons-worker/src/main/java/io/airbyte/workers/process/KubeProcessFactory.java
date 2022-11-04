@@ -97,6 +97,7 @@ public class KubeProcessFactory implements ProcessFactory {
     try {
       // used to differentiate source and destination processes with the same id and attempt
       final String podName = ProcessFactory.createProcessName(imageName, jobType, jobId, attempt, KUBE_NAME_LEN_LIMIT);
+      final String jobIdentifier = String.format("%s-%s-%s", jobType, jobId, attempt);
       LOGGER.info("Attempting to start pod = {} for {} with resources {}", podName, imageName, resourceRequirements);
 
       final int stdoutLocalPort = KubePortManagerSingleton.getInstance().take();
@@ -106,6 +107,7 @@ public class KubeProcessFactory implements ProcessFactory {
       LOGGER.info("{} stderrLocalPort = {}", podName, stderrLocalPort);
 
       final var allLabels = getLabels(jobId, attempt, customLabels);
+      allLabels.put("job_identifier", jobIdentifier);
 
       return new KubePodProcess(
           isOrchestrator,

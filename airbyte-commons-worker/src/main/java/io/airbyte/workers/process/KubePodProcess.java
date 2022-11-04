@@ -11,14 +11,18 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.TolerationPOJO;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
+import io.fabric8.kubernetes.api.model.Affinity;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.LabelSelector;
 import io.fabric8.kubernetes.api.model.LocalObjectReference;
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodAffinity;
+import io.fabric8.kubernetes.api.model.PodAffinityTerm;
 import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.api.model.PodFluent;
 import io.fabric8.kubernetes.api.model.Quantity;
@@ -29,6 +33,7 @@ import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
+import io.fabric8.kubernetes.api.model.WeightedPodAffinityTerm;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.PodResource;
 import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
@@ -506,6 +511,14 @@ public class KubePodProcess extends Process implements KubePod {
     if (isOrchestrator) {
       podBuilder = podBuilder.withServiceAccount("airbyte-admin").withAutomountServiceAccountToken(true);
     }
+
+    // add a non-required affinity for pods that contain the same "job_identifier" (tuple of job type,
+    // job id, attempt)
+    final LabelSelector labelSelector = new LabelSelector(null, Map.of("job_identifier", labels.get("job_identifier")));
+    final PodAffinityTerm podAffinityTerm = new PodAffinityTerm(labelSelector, null, null, null);
+    final WeightedPodAffinityTerm weightedPodAffinityTerm = new WeightedPodAffinityTerm(podAffinityTerm, 1);
+    final PodAffinity podAffinity = new PodAffinity(List.of(weightedPodAffinityTerm), null);
+    final Affinity affinity = new Affinity(null, podAffinity, null);
 
     final Pod pod = podBuilder.withTolerations(buildPodTolerations(tolerations))
         .withImagePullSecrets(new LocalObjectReference(imagePullSecret)) // An empty string turns this into a no-op setting.
