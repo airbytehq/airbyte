@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths: 
-      - airbyte-config/init/src/main/resources/seed
+      - airbyte-config/init/src/main/resources/seed/**
 
   workflow_dispatch:
 
