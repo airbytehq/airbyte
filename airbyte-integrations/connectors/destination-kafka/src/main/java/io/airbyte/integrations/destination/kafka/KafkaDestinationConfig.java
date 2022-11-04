@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.commons.json.Jsons;
 import java.util.Map;
 import java.util.stream.Collectors;
+import joptsimple.internal.Strings;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -85,7 +86,6 @@ public class KafkaDestinationConfig {
     final ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder()
         .put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, protocol.toString());
 
-    LOGGER.info("Got protocol {}", protocol);
     switch (protocol) {
       case PLAINTEXT -> {}
       case SSL -> {
@@ -114,9 +114,11 @@ public class KafkaDestinationConfig {
     // ssl.truststore.certificates only accepts PEM certs, which makes our lives a lot easier.
     // From https://kafka.apache.org/documentation/#producerconfigs_ssl.truststore.certificates
     // > Default SSL engine factory supports only PEM format with X.509 certificates.
-    // TODO how to convert JKS to PEM
-    builder.put(SslConfigs.SSL_TRUSTSTORE_CERTIFICATES_CONFIG, protocolConfig.get("truststore_certificates").asText());
-    builder.put(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, "PEM");
+    JsonNode certs = protocolConfig.get("truststore_certificates");
+    if (certs != null && !certs.isNull()) {
+      builder.put(SslConfigs.SSL_TRUSTSTORE_CERTIFICATES_CONFIG, certs.asText());
+      builder.put(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, "PEM");
+    }
   }
 
   public String getTopicPattern() {
