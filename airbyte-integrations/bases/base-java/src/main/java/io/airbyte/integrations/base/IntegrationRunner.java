@@ -10,11 +10,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions.Procedure;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.base.errors.messages.ErrorMessage;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -172,12 +174,16 @@ public class IntegrationRunner {
   }
 
   private boolean isConfigError(final Exception e) {
-    return e instanceof ConfigErrorException;
+    return e instanceof ConfigErrorException || e instanceof ConnectionErrorException;
   }
 
   private String getDisplayMessage(final Exception e) {
     if (e instanceof ConfigErrorException) {
       return ((ConfigErrorException) e).getDisplayMessage();
+    } else if (e instanceof ConnectionErrorException) {
+      final ConnectionErrorException connEx= (ConnectionErrorException) e;
+      return ErrorMessage.getErrorMessage
+          (connEx.getStateCode(), connEx.getErrorCode(), connEx.getExceptionMessage(), e);
     } else {
       return "Could not connect with provided configuration. Error: " + e.getMessage();
     }
