@@ -98,7 +98,7 @@ def configured_catalogue(test_table_name: str, table_schema: str) -> ConfiguredA
     # Deleting one column to simulate manipulation in UI
     del table_schema["properties"]["column1"]
     append_stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name=test_table_name, json_schema=table_schema),
+        stream=AirbyteStream(name=test_table_name, json_schema=table_schema, supported_sync_modes=[SyncMode.full_refresh]),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
     )
@@ -108,7 +108,7 @@ def configured_catalogue(test_table_name: str, table_schema: str) -> ConfiguredA
 @fixture
 def configured_view_catalogue(test_view_name: str, view_schema: str) -> ConfiguredAirbyteCatalog:
     append_stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name=test_view_name, json_schema=view_schema),
+        stream=AirbyteStream(name=test_view_name, json_schema=view_schema, supported_sync_modes=[SyncMode.full_refresh]),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
     )
