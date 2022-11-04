@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.2
+Low-code: Allow for read even when schemas are not defined for a connector yet
+
+## 0.4.2
+Low-code: Fix off by one error with the stream slicers
+
+## 0.4.1
+Low-code: Fix a few bugs with the stream slicers
+
 ## 0.4.0
 Low-code: Add support for custom error messages on error response filters
 

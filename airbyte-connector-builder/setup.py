@@ -41,6 +41,7 @@ setup(
     },
     packages=find_packages(exclude=("unit_tests", "integration_tests", "docs")),
     package_data={},
+<<<<<<< HEAD
     install_requires=["fastapi", "uvicorn"],
     python_requires=">=3.9.11",
     extras_require={

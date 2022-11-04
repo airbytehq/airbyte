@@ -100,19 +100,3 @@ services:
         platforms:
           - linux/amd64
           - linux/arm64
-  connector-builder:
-    image: airbyte/connector-builder:${VERSION}
-    build:
-      dockerfile: Dockerfile
-      context: airbyte-connector-builder/build/docker
-      labels:
-        io.airbyte.git-revision: ${GIT_REVISION}
-      args:
-        VERSION: ${VERSION}
-      x-bake:
-        tags:
-          - airbyte/connector-builder:${VERSION}
-          - airbyte/connector-builder:${ALT_TAG:-${VERSION}}
-        platforms:
-          - linux/amd64
-          - linux/arm64
