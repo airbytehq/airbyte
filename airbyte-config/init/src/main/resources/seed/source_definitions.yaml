@@ -148,7 +148,7 @@
 - name: BigQuery
   sourceDefinitionId: bfd1ddf8-ae8a-4620-b1d7-55597d2ba08c
   dockerRepository: airbyte/source-bigquery
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/bigquery
   icon: bigquery.svg
   sourceType: database
@@ -1062,7 +1062,7 @@
 - name: Redshift
   sourceDefinitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
   dockerRepository: airbyte/source-redshift
-  dockerImageTag: 0.3.14
+  dockerImageTag: 0.3.15
   documentationUrl: https://docs.airbyte.com/integrations/sources/redshift
   icon: redshift.svg
   sourceType: database
@@ -1108,7 +1108,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 1.0.23
+  dockerImageTag: 1.0.24
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
@@ -1182,6 +1182,13 @@
   dockerRepository: airbyte/source-sonar-cloud
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/sonar-cloud
+  sourceType: api
+  releaseStage: alpha
+- name: SpaceX API
+  sourceDefinitionId: 62235e65-af7a-4138-9130-0bda954eb6a8
+  dockerRepository: airbyte/source-spacex-api
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/spacex-api
   sourceType: api
   releaseStage: alpha
 - name: Square

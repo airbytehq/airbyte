@@ -88,12 +88,15 @@ class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfigPersis
   }
 
   private void checkSafeguards() {
-    final String anyString = "";
+    final String anyString = "00000000-0000-0000-0000-000000000000";
 
     // Making sure that the objects that have been migrated out of config persistence are protected with
     // an explicit error.
     assertThrows(NotImplementedException.class, () -> configPersistence.getConfig(ConfigSchema.STANDARD_SYNC, anyString, StandardSync.class));
+    assertThrows(NotImplementedException.class,
+        () -> configPersistence.getConfigWithMetadata(ConfigSchema.STANDARD_SYNC, anyString, StandardSync.class));
     assertThrows(NotImplementedException.class, () -> configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class));
+    assertThrows(NotImplementedException.class, () -> configPersistence.listConfigsWithMetadata(ConfigSchema.STANDARD_SYNC, StandardSync.class));
     assertThrows(NotImplementedException.class,
         () -> configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC, anyString, MockData.standardSyncs().get(0)));
     assertThrows(NotImplementedException.class,

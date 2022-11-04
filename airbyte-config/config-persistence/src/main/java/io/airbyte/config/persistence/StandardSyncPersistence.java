@@ -39,6 +39,10 @@ public class StandardSyncPersistence {
   }
 
   public StandardSync getStandardSync(final UUID connectionId) throws IOException, ConfigNotFoundException {
+    return getStandardSyncWithMetadata(connectionId).getConfig();
+  }
+
+  public ConfigWithMetadata<StandardSync> getStandardSyncWithMetadata(final UUID connectionId) throws IOException, ConfigNotFoundException {
     final List<ConfigWithMetadata<StandardSync>> result = listStandardSyncWithMetadata(Optional.of(connectionId));
 
     final boolean foundMoreThanOneConfig = result.size() > 1;
@@ -47,11 +51,15 @@ public class StandardSyncPersistence {
     } else if (foundMoreThanOneConfig) {
       throw new IllegalStateException(String.format("Multiple %s configs found for ID %s: %s", ConfigSchema.STANDARD_SYNC, connectionId, result));
     }
-    return result.get(0).getConfig();
+    return result.get(0);
   }
 
   public List<StandardSync> listStandardSync() throws IOException {
-    return listStandardSyncWithMetadata(Optional.empty()).stream().map(ConfigWithMetadata::getConfig).toList();
+    return listStandardSyncWithMetadata().stream().map(ConfigWithMetadata::getConfig).toList();
+  }
+
+  public List<ConfigWithMetadata<StandardSync>> listStandardSyncWithMetadata() throws IOException {
+    return listStandardSyncWithMetadata(Optional.empty());
   }
 
   public void writeStandardSync(final StandardSync standardSync) throws IOException {
