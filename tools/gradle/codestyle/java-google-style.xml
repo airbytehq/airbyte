@@ -82,7 +82,7 @@
         <setting id="org.eclipse.jdt.core.formatter.insert_space_before_comma_in_method_invocation_arguments" value="do not insert"/>
         <setting id="org.eclipse.jdt.core.formatter.insert_space_before_opening_brace_in_switch" value="insert"/>
         <setting id="org.eclipse.jdt.core.formatter.comment.align_tags_descriptions_grouped" value="false"/>
-        <setting id="org.eclipse.jdt.core.formatter.comment.line_length" value="100"/>
+        <setting id="org.eclipse.jdt.core.formatter.comment.line_length" value="150"/>
         <setting id="org.eclipse.jdt.core.formatter.use_on_off_tags" value="true"/>
         <setting id="org.eclipse.jdt.core.formatter.keep_method_body_on_one_line" value="one_line_if_empty"/>
         <setting id="org.eclipse.jdt.core.formatter.insert_space_between_empty_brackets_in_array_allocation_expression" value="do not insert"/>
