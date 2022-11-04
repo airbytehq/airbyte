@@ -22,7 +22,7 @@ from pendulum import Date
 from pydantic import BaseModel
 from source_amazon_ads.schemas import CatalogModel, MetricsReport, Profile
 from source_amazon_ads.streams.common import BasicAmazonAdsStream
-from source_amazon_ads.utils import iterate_one_by_one
+from source_amazon_ads.utils import get_typed_env, iterate_one_by_one
 
 
 class RecordType(str, Enum):
@@ -112,14 +112,16 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     ]
 
     def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):
+        super().__init__(config, profiles)
         self._state = {}
         self._authenticator = authenticator
         self._session = requests.Session()
         self._model = self._generate_model()
-        self.report_wait_timeout = config.get("report_wait_timeout", 60)
-        self.report_generation_maximum_retries = config.get("report_generation_max_retries", 5)
         self._start_date: Optional[Date] = config.get("start_date")
-        super().__init__(config, profiles)
+        # Timeout duration in minutes for Reports
+        self.report_wait_timeout: int = get_typed_env("REPORT_WAIT_TIMEOUT", 60)
+        # Maximum retries Airbyte will attempt for fetching report data
+        self.report_generation_maximum_retries: int = get_typed_env("REPORT_GENERATION_MAX_RETRIES", 5)
 
     @property
     def model(self) -> CatalogModel:
