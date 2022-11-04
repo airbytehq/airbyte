@@ -68,7 +68,6 @@ definitions:
             parent_key: id
             stream_slice_field: id
 
-
   cohorts_stream:
     $ref: "*ref(definitions.base_slicing_stream)"
     $options:
@@ -93,7 +92,6 @@ definitions:
       name: "annotations"
       path: "annotations"
 
-
   events_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -107,14 +105,12 @@ definitions:
         path: "/projects/{{ stream_slice.project_id }}/{{ options['name'] }}"
         request_options_provider:
           class_name: source_posthog.components.PosthogInterpolatedRequestOptionsProvider
-
       stream_slicer:
         class_name: source_posthog.components.PosthogIncrementalSlicer
-        parent_stream: "*ref(definitions.projects_stream)"
-        request_cursor_field: "after"
-        stream_slice_field: "project_id"
-        cursor_field: "timestamp"
-        parent_key: "id"
+        parent_stream_configs:
+          - stream: "*ref(definitions.projects_stream)"
+            parent_key: "id"
+            stream_slice_field: "project_id"
 
 streams:
   - "*ref(definitions.projects_stream)"
@@ -123,6 +119,7 @@ streams:
   - "*ref(definitions.persons_stream)"
   - "*ref(definitions.events_stream)"
   - "*ref(definitions.annotations_stream)"
+
 check:
   type: CheckStream
   stream_names: ["projects"]

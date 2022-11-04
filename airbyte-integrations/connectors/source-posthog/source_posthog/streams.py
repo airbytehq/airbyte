@@ -54,10 +54,12 @@ class PosthogStream(HttpStream, ABC):
             params.update(next_page_token)
         return params
 
+
 class Projects(PosthogStream):
     """
     Docs: https://posthog.com/docs/api/projects
     """
+
     def path(self, **kwargs) -> str:
         return "projects"
 
@@ -69,7 +71,7 @@ class PosthogStreamSlices(PosthogStream):
 
         project_stream = Projects(authenticator=self._authenticator, base_url=self.url_base[:-5])
         projects = project_stream.read_records(sync_mode=SyncMode.full_refresh)
-        return [{'id': project['id'] for project in projects}]
+        return [{"id": project["id"] for project in projects}]
 
 
 class IncrementalPosthogStream(PosthogStreamSlices, ABC):
@@ -180,6 +182,7 @@ class FeatureFlags(PosthogStreamSlices):
     """
     Docs: https://posthog.com/docs/api/feature-flags
     """
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"projects/{stream_slice['id']}/feature_flags"
 
