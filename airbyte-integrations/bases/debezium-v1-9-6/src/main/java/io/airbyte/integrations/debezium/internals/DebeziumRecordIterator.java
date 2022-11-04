@@ -46,6 +46,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   private boolean receivedFirstRecord;
   private boolean hasSnapshotFinished;
   private boolean signalledClose;
+  private int maxInstanceOfNoRecordsFound;
 
   public DebeziumRecordIterator(final LinkedBlockingQueue<ChangeEvent<String, String>> queue,
                                 final CdcTargetPosition targetPosition,
@@ -61,6 +62,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     this.receivedFirstRecord = false;
     this.hasSnapshotFinished = true;
     this.signalledClose = false;
+    this.maxInstanceOfNoRecordsFound = 0;
   }
 
   @Override
@@ -80,9 +82,12 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       // if within the timeout, the consumer could not get a record, it is time to tell the producer to
       // shutdown.
       if (next == null) {
-        LOGGER.info("Closing cause next is returned as null");
-        requestClose();
+        if ((!receivedFirstRecord || hasSnapshotFinished || maxInstanceOfNoRecordsFound >= 10) && !signalledClose) {
+          LOGGER.info("Closing cause next is returned as null");
+          requestClose();
+        }
         LOGGER.info("no record found. polling again.");
+        maxInstanceOfNoRecordsFound++;
         continue;
       }
 
@@ -94,6 +99,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
         requestClose();
       }
       receivedFirstRecord = true;
+      maxInstanceOfNoRecordsFound = 0;
       return next;
     }
     return endOfData();
