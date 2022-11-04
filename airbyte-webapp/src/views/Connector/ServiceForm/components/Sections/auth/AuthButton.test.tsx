@@ -3,6 +3,7 @@ import { TestWrapper } from "test-utils/testutils";
 
 import { useFormikOauthAdapter } from "views/Connector/ServiceForm/components/Sections/auth/useOauthFlowAdapter";
 import { useServiceForm } from "views/Connector/ServiceForm/serviceFormContext";
+import { useAuthentication } from "views/Connector/ServiceForm/useAuthentication";
 
 import { AuthButton } from "./AuthButton";
 jest.setTimeout(10000);
@@ -41,18 +42,22 @@ const baseUseServiceFormValues = {
   selectedService: undefined,
 };
 
+jest.mock("views/Connector/ServiceForm/useAuthentication");
+const mockUseAuthentication = useAuthentication as unknown as jest.Mock<Partial<typeof useAuthentication>>;
+
 describe("auth button", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
+    mockUseAuthentication.mockReturnValue({ hiddenAuthFieldErrors: {} });
   });
 
   it("initially renders with correct message and no status message", () => {
     // no auth errors
     mockUseServiceForm.mockImplementationOnce(() => {
-      const authErrors = {};
-      const { selectedConnector, allowOAuthConnector, selectedService } = baseUseServiceFormValues;
+      const { selectedConnector, selectedService } = baseUseServiceFormValues;
 
-      return { authErrors, selectedConnector, allowOAuthConnector, selectedService };
+      return { selectedConnector, selectedService };
     });
 
     // not done
@@ -85,10 +90,9 @@ describe("auth button", () => {
   it("after successful authentication, it renders with correct message and success message", () => {
     // no auth errors
     mockUseServiceForm.mockImplementationOnce(() => {
-      const authErrors = {};
-      const { selectedConnector, allowOAuthConnector, selectedService } = baseUseServiceFormValues;
+      const { selectedConnector, selectedService } = baseUseServiceFormValues;
 
-      return { authErrors, selectedConnector, allowOAuthConnector, selectedService };
+      return { selectedConnector, selectedService };
     });
 
     // done
@@ -114,13 +118,14 @@ describe("auth button", () => {
     expect(successMessage).toBeInTheDocument();
   });
 
-  it("if authError is true, it renders the correct message", () => {
+  it("renders an error if there are any auth fields with empty values", () => {
     // auth errors
-    mockUseServiceForm.mockImplementationOnce(() => {
-      const authErrors = { field: "form.empty.error" };
-      const { selectedConnector, allowOAuthConnector, selectedService } = baseUseServiceFormValues;
+    mockUseAuthentication.mockReturnValue({ hiddenAuthFieldErrors: { field: "form.empty.error" } });
 
-      return { authErrors, selectedConnector, allowOAuthConnector, selectedService };
+    mockUseServiceForm.mockImplementationOnce(() => {
+      const { selectedConnector, selectedService } = baseUseServiceFormValues;
+
+      return { selectedConnector, selectedService };
     });
 
     // not done

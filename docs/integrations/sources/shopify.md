@@ -145,6 +145,7 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                   |
 |:--------|:-----------|:----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 0.2.0   | 2022-10-21 | [18298](https://github.com/airbytehq/airbyte/pull/18298)  | Updated API version to the `2022-10`, make stream schemas backward cpmpatible                                                                                 |
 | 0.1.39  | 2022-10-13 | [17962](https://github.com/airbytehq/airbyte/pull/17962)  | Add metafield streams; support for nested list streams                                                    |
 | 0.1.38  | 2022-10-10 | [17777](https://github.com/airbytehq/airbyte/pull/17777)  | Fixed `404` for configured streams, fix missing `cursor` error for old records                            |
 | 0.1.37  | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500)  | Improve input configuration copy                                                                          |

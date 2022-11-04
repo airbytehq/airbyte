@@ -7,10 +7,10 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useUnmount } from "react-use";
 
 import { ControlLabels } from "components";
-import { FormChangeTracker } from "components/FormChangeTracker";
+import { FormChangeTracker } from "components/common/FormChangeTracker";
 import { Button } from "components/ui/Button";
+import { Heading } from "components/ui/Heading";
 import { Input } from "components/ui/Input";
-import { Text } from "components/ui/Text";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
@@ -20,7 +20,7 @@ import { ValuesProps } from "hooks/services/useConnectionHook";
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
 import { useRefreshSourceSchemaWithConfirmationOnDirty } from "./components/refreshSourceSchemaWithConfirmationOnDirty";
 import { Section } from "./components/Section";
-import SchemaField from "./components/SyncCatalogField";
+import { SyncCatalogField } from "./components/SyncCatalogField";
 import styles from "./ConnectionFormFields.module.scss";
 import { FormikConnectionFormValues } from "./formConfig";
 import { ScheduleField } from "./ScheduleField";
@@ -55,9 +55,9 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
           <ScheduleField />
         </Section>
         <Section>
-          <Text as="h5">
+          <Heading as="h2" size="sm">
             <FormattedMessage id="connection.streams" />
-          </Text>
+          </Heading>
           <span className={readonlyClass}>
             <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
           </span>
@@ -119,10 +119,10 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
         <Section>
           <Field
             name="syncCatalog.streams"
-            component={SchemaField}
+            component={SyncCatalogField}
             isSubmitting={isSubmitting}
             additionalControl={
-              <Button onClick={refreshSchema} type="button" variant="secondary">
+              <Button onClick={refreshSchema} type="button" variant="secondary" disabled={isSubmitting}>
                 <FontAwesomeIcon icon={faSyncAlt} className={styles.tryArrow} />
                 <FormattedMessage id="connection.updateSchema" />
               </Button>

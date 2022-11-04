@@ -4,10 +4,8 @@
 
 package io.airbyte.workers.process;
 
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.workers.storage.DocumentStoreClient;
@@ -61,7 +59,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   private final String secretMountPath;
   private final String googleApplicationCredentials;
   private final AtomicReference<Optional<Integer>> cachedExitValue;
-  private final boolean useStreamCapableState;
+  private final Map<String, String> environmentVariables;
   private final Integer serverPort;
 
   public AsyncOrchestratorPodProcess(
@@ -71,7 +69,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
                                      final String secretName,
                                      final String secretMountPath,
                                      final String googleApplicationCredentials,
-                                     final boolean useStreamCapableState,
+                                     final Map<String, String> environmentVariables,
                                      final Integer serverPort) {
     this.kubePodInfo = kubePodInfo;
     this.documentStoreClient = documentStoreClient;
@@ -80,7 +78,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     this.secretMountPath = secretMountPath;
     this.googleApplicationCredentials = googleApplicationCredentials;
     this.cachedExitValue = new AtomicReference<>(Optional.empty());
-    this.useStreamCapableState = useStreamCapableState;
+    this.environmentVariables = environmentVariables;
     this.serverPort = serverPort;
   }
 
@@ -294,12 +292,9 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
     }
 
-    final EnvConfigs envConfigs = new EnvConfigs();
-    envVars.add(new EnvVar(EnvConfigs.METRIC_CLIENT, envConfigs.getMetricClient(), null));
-    envVars.add(new EnvVar(EnvConfigs.DD_AGENT_HOST, envConfigs.getDDAgentHost(), null));
-    envVars.add(new EnvVar(EnvConfigs.DD_DOGSTATSD_PORT, envConfigs.getDDDogStatsDPort(), null));
-    envVars.add(new EnvVar(EnvConfigs.PUBLISH_METRICS, Boolean.toString(envConfigs.getPublishMetrics()), null));
-    envVars.add(new EnvVar(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, Boolean.toString(useStreamCapableState), null));
+    // Copy all additionally provided environment variables
+    envVars.addAll(environmentVariables.entrySet().stream().map(e -> new EnvVar(e.getKey(), e.getValue(), null)).toList());
+
     final List<ContainerPort> containerPorts = KubePodProcess.createContainerPortList(portMap);
     containerPorts.add(new ContainerPort(serverPort, null, null, null, null));
 

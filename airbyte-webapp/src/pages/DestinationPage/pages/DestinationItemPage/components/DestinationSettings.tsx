@@ -1,7 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import DeleteBlock from "components/DeleteBlock";
+import { DeleteBlock } from "components/common/DeleteBlock";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { Connector } from "core/domain/connector";
