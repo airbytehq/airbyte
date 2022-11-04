@@ -20,6 +20,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
+from .custom_reports_validator import CustomReportsValidator
+
 DATA_IS_NOT_GOLDEN_MSG = "Google Analytics data is not golden. Future requests may return different data."
 
 RESULT_IS_SAMPLED_MSG = (
@@ -572,12 +574,12 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         config["metrics"] = ["ga:hits"]
         config["dimensions"] = ["ga:date"]
 
+        # load and verify the custom_reports
         try:
             # test the eligibility of custom_reports input
             custom_reports = config.get("custom_reports")
             if custom_reports:
-                json.loads(custom_reports)
-
+                CustomReportsValidator(json.loads(custom_reports)).validate()
             # Read records to check the reading permissions
             read_check = list(TestStreamConnection(config).read_records(sync_mode=None))
             if read_check:
