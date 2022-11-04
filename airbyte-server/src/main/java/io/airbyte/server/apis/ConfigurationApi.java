@@ -108,7 +108,6 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
-import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
@@ -117,13 +116,9 @@ import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
-import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
-import io.airbyte.server.handlers.StateHandler;
-import io.airbyte.server.handlers.WebBackendConnectionsHandler;
-import io.airbyte.server.handlers.WebBackendGeographiesHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
@@ -145,19 +140,14 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   private final DestinationDefinitionsHandler destinationDefinitionsHandler;
   private final DestinationHandler destinationHandler;
   private final ConnectionsHandler connectionsHandler;
-  private final OperationsHandler operationsHandler;
   private final SchedulerHandler schedulerHandler;
-  private final StateHandler stateHandler;
   private final JobHistoryHandler jobHistoryHandler;
-  private final WebBackendConnectionsHandler webBackendConnectionsHandler;
-  private final WebBackendGeographiesHandler webBackendGeographiesHandler;
 
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
                           final SecretsRepositoryReader secretsRepositoryReader,
                           final SecretsRepositoryWriter secretsRepositoryWriter,
                           final SynchronousSchedulerClient synchronousSchedulerClient,
-                          final StatePersistence statePersistence,
                           final TrackingClient trackingClient,
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
@@ -185,7 +175,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         eventRunner,
         connectionsHandler);
 
-    stateHandler = new StateHandler(statePersistence);
     sourceHandler = new SourceHandler(
         configRepository,
         secretsRepositoryReader,
@@ -193,7 +182,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         schemaValidator,
         connectionsHandler);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, synchronousSchedulerClient, sourceHandler);
-    operationsHandler = new OperationsHandler(configRepository);
     destinationHandler = new DestinationHandler(
         configRepository,
         secretsRepositoryReader,
@@ -209,17 +197,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         sourceHandler);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence, workerEnvironment, logConfigs, connectionsHandler, sourceHandler,
         sourceDefinitionsHandler, destinationHandler, destinationDefinitionsHandler, airbyteVersion);
-    webBackendConnectionsHandler = new WebBackendConnectionsHandler(
-        connectionsHandler,
-        stateHandler,
-        sourceHandler,
-        destinationHandler,
-        jobHistoryHandler,
-        schedulerHandler,
-        operationsHandler,
-        eventRunner,
-        configRepository);
-    webBackendGeographiesHandler = new WebBackendGeographiesHandler();
   }
 
   // WORKSPACE

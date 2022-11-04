@@ -353,8 +353,7 @@ public class ServerApp implements ServerRunnable {
         schedulerHandler,
         operationsHandler,
         eventRunner,
-        configRepository
-    );
+        configRepository);
 
     final WebBackendGeographiesHandler webBackendGeographiesHandler = new WebBackendGeographiesHandler();
 
@@ -392,10 +391,9 @@ public class ServerApp implements ServerRunnable {
         sourceHandler,
         sourceDefinitionsHandler,
         stateHandler,
-        workspacesHandler,sub
+        workspacesHandler,
         webBackendConnectionsHandler,
-        webBackendGeographiesHandler
-        );
+        webBackendGeographiesHandler);
   }
 
   @VisibleForTesting
