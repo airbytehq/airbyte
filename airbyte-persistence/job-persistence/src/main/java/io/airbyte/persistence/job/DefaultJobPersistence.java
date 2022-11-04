@@ -222,6 +222,10 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private void updateJobStatus(final DSLContext ctx, final long jobId, final JobStatus newStatus, final LocalDateTime now) {
     final Job job = getJob(ctx, jobId);
+    if (job.isJobInTerminalState()) {
+      // If the job is already terminal, no need to set a new status
+      return;
+    }
     job.validateStatusTransition(newStatus);
     ctx.execute(
         "UPDATE jobs SET status = CAST(? as JOB_STATUS), updated_at = ? WHERE id = ?",
@@ -344,26 +348,9 @@ public class DefaultJobPersistence implements JobPersistence {
           .set(ATTEMPTS.UPDATED_AT, now)
           .where(ATTEMPTS.JOB_ID.eq(jobId), ATTEMPTS.ATTEMPT_NUMBER.eq(attemptNumber))
           .execute();
-      final Optional<Record> record =
-          ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
-              attemptNumber).stream().findFirst();
-      final Long attemptId = record.get().get("id", Long.class);
+      final Long attemptId = getAttemptId(jobId, attemptNumber, ctx);
 
-      ctx.insertInto(SYNC_STATS)
-          .set(SYNC_STATS.ID, UUID.randomUUID())
-          .set(SYNC_STATS.UPDATED_AT, now)
-          .set(SYNC_STATS.CREATED_AT, now)
-          .set(SYNC_STATS.ATTEMPT_ID, attemptId)
-          .set(SYNC_STATS.BYTES_EMITTED, syncStats.getBytesEmitted())
-          .set(SYNC_STATS.RECORDS_EMITTED, syncStats.getRecordsEmitted())
-          .set(SYNC_STATS.RECORDS_COMMITTED, syncStats.getRecordsCommitted())
-          .set(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED, syncStats.getSourceStateMessagesEmitted())
-          .set(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED, syncStats.getDestinationStateMessagesEmitted())
-          .set(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMaxSecondsBeforeSourceStateMessageEmitted())
-          .set(SYNC_STATS.MEAN_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMeanSecondsBeforeSourceStateMessageEmitted())
-          .set(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted())
-          .set(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted())
-          .execute();
+      writeSyncStats(now, syncStats, attemptId, ctx);
 
       if (normalizationSummary != null) {
         ctx.insertInto(NORMALIZATION_SUMMARIES)
@@ -382,6 +369,24 @@ public class DefaultJobPersistence implements JobPersistence {
 
   }
 
+  private static void writeSyncStats(final OffsetDateTime now, final SyncStats syncStats, final Long attemptId, final DSLContext ctx) {
+    ctx.insertInto(SYNC_STATS)
+        .set(SYNC_STATS.ID, UUID.randomUUID())
+        .set(SYNC_STATS.UPDATED_AT, now)
+        .set(SYNC_STATS.CREATED_AT, now)
+        .set(SYNC_STATS.ATTEMPT_ID, attemptId)
+        .set(SYNC_STATS.BYTES_EMITTED, syncStats.getBytesEmitted())
+        .set(SYNC_STATS.RECORDS_EMITTED, syncStats.getRecordsEmitted())
+        .set(SYNC_STATS.RECORDS_COMMITTED, syncStats.getRecordsCommitted())
+        .set(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED, syncStats.getSourceStateMessagesEmitted())
+        .set(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED, syncStats.getDestinationStateMessagesEmitted())
+        .set(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMaxSecondsBeforeSourceStateMessageEmitted())
+        .set(SYNC_STATS.MEAN_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMeanSecondsBeforeSourceStateMessageEmitted())
+        .set(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted())
+        .set(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted())
+        .execute();
+  }
+
   @Override
   public void writeAttemptFailureSummary(final long jobId, final int attemptNumber, final AttemptFailureSummary failureSummary) throws IOException {
     final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
@@ -395,21 +400,34 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<SyncStats> getSyncStats(final Long attemptId) throws IOException {
+  public List<SyncStats> getSyncStats(final long jobId, final int attemptNumber) throws IOException {
     return jobDatabase
-        .query(ctx -> ctx.select(DSL.asterisk()).from(DSL.table("sync_stats")).where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
-            .fetch(getSyncStatsRecordMapper())
-            .stream()
-            .toList());
+        .query(ctx -> {
+          final Long attemptId = getAttemptId(jobId, attemptNumber, ctx);
+          return ctx.select(DSL.asterisk()).from(DSL.table("sync_stats")).where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
+              .fetch(getSyncStatsRecordMapper())
+              .stream()
+              .toList();
+        });
   }
 
   @Override
-  public List<NormalizationSummary> getNormalizationSummary(final Long attemptId) throws IOException, JsonProcessingException {
+  public List<NormalizationSummary> getNormalizationSummary(final long jobId, final int attemptNumber) throws IOException {
     return jobDatabase
-        .query(ctx -> ctx.select(DSL.asterisk()).from(NORMALIZATION_SUMMARIES).where(NORMALIZATION_SUMMARIES.ATTEMPT_ID.eq(attemptId))
-            .fetch(getNormalizationSummaryRecordMapper())
-            .stream()
-            .toList());
+        .query(ctx -> {
+          final Long attemptId = getAttemptId(jobId, attemptNumber, ctx);
+          return ctx.select(DSL.asterisk()).from(NORMALIZATION_SUMMARIES).where(NORMALIZATION_SUMMARIES.ATTEMPT_ID.eq(attemptId))
+              .fetch(getNormalizationSummaryRecordMapper())
+              .stream()
+              .toList();
+        });
+  }
+
+  private static Long getAttemptId(final long jobId, final int attemptNumber, final DSLContext ctx) {
+    final Optional<Record> record =
+        ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
+            attemptNumber).stream().findFirst();
+    return record.get().get("id", Long.class);
   }
 
   private static RecordMapper<Record, SyncStats> getSyncStatsRecordMapper() {
