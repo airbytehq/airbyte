@@ -10,6 +10,7 @@
 
 .creditUsageLoading {
   display: flex;
+  flex-direction: column;
   gap: variables.$spacing-md;
   justify-content: center;
   align-items: center;
