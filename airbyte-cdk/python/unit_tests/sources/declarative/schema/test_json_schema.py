@@ -3,7 +3,7 @@
 #
 
 import pytest
-from airbyte_cdk.sources.declarative.schema import JsonSchema
+from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 
 
 @pytest.mark.parametrize(
@@ -19,7 +19,7 @@ from airbyte_cdk.sources.declarative.schema import JsonSchema
     ],
 )
 def test_extract_resource_and_schema_path(test_name, input_path, expected_resource, expected_path):
-    json_schema = JsonSchema(input_path, {}, {})
+    json_schema = JsonFileSchemaLoader({}, {}, input_path)
     actual_resource, actual_path = json_schema.extract_resource_and_schema_path(input_path)
 
     assert actual_resource == expected_resource
