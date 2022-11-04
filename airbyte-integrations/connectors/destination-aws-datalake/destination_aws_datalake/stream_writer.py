@@ -98,6 +98,22 @@ class StreamWriter:
 
         return record
 
+    def _fix_obvious_type_violations(self, record: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Helper that fixes obvious type violations in a record's top level keys that may
+        cause issues when casting data to pyarrow types. Such as:
+        - Objects having empty strings or " " or "-" as value instead of null or {}
+        - Arrays having empty strings or " " or "-" as value instead of null or []
+        """
+        schema_keys = self._schema.keys()
+        for key in schema_keys:
+            typ = self._schema[key].get("type")
+            typ = self._get_json_schema_type(typ)
+            if typ in ["object", "array"]:
+                if record.get(key) in ["", " ", "-", "/", "null"]:
+                    record[key] = None
+
+        return record
 
     def _get_non_null_json_schema_types(self, typ: Union[str, List[str]]) -> Union[str, List[str]]:
         if isinstance(typ, list):
@@ -222,7 +238,7 @@ class StreamWriter:
         type_mapper = {
             "string": "string",
             "integer": "bigint",
-            "number": "decimal(38, 18)" if self._config.glue_catalog_float_as_decimal else "double",
+            "number": "decimal(38, 25)" if self._config.glue_catalog_float_as_decimal else "double",
             "boolean": "boolean",
             "null": "string",
         }
@@ -304,6 +320,7 @@ class StreamWriter:
 
     def append_message(self, message: Dict[str, Any]):
         clean_message = self._drop_additional_top_level_properties(message)
+        clean_message = self._fix_obvious_type_violations(clean_message)
         self._messages.append(clean_message)
 
     def reset(self):
