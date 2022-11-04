@@ -1,42 +1,44 @@
 import { faSortDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Listbox } from "@headlessui/react";
 import classNames from "classnames";
+import { capitalize } from "lodash";
 
-import { Text } from "components/ui/Text";
+import { Heading } from "components/ui/Heading";
+import { ListBox, ListBoxControlButtonProps } from "components/ui/ListBox";
 
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { Heading } from "../ui/Heading";
 import styles from "./StreamSelector.module.scss";
 
-export const StreamSelector: React.FC = () => {
+interface StreamSelectorProps {
+  className?: string;
+}
+
+const ControlButton: React.FC<ListBoxControlButtonProps<string>> = ({ selectedOption }) => {
+  return (
+    <>
+      <Heading as="h1" size="sm">
+        {selectedOption.label}
+      </Heading>
+      <FontAwesomeIcon className={styles.arrow} icon={faSortDown} />
+    </>
+  );
+};
+
+export const StreamSelector: React.FC<StreamSelectorProps> = ({ className }) => {
   const { streams, selectedStream, setSelectedStream } = useConnectorBuilderState();
+  const options = streams.map((stream) => {
+    return { label: capitalize(stream.name), value: stream.name };
+  });
 
   return (
-    <Listbox value={selectedStream.name} onChange={setSelectedStream}>
-      <Listbox.Button className={classNames(styles.button, styles.centered)}>
-        <Heading className={styles.capitalized} as="h1" size="sm">
-          {selectedStream.name}
-        </Heading>
-        <FontAwesomeIcon className={styles.arrow} icon={faSortDown} />
-      </Listbox.Button>
-      {/* wrap in div to make `position: absolute` on Listbox.Options result in correct vertical positioning */}
-      <div>
-        <Listbox.Options className={classNames(styles.optionsMenu, styles.centered)}>
-          {streams.map(({ name: streamName }) => (
-            <Listbox.Option key={streamName} value={streamName} className={styles.option}>
-              {({ active }) => (
-                <div className={classNames(styles.optionValue, { [styles.active]: active })}>
-                  <Text className={styles.capitalized} size="lg">
-                    {streamName}
-                  </Text>
-                </div>
-              )}
-            </Listbox.Option>
-          ))}
-        </Listbox.Options>
-      </div>
-    </Listbox>
+    <ListBox
+      className={classNames(className, styles.centered)}
+      options={options}
+      selectedValue={selectedStream.name}
+      onSelect={setSelectedStream}
+      buttonClassName={styles.button}
+      controlButton={ControlButton}
+    />
   );
 };
