@@ -1,11 +1,11 @@
-package io.airbyte.integrations.destination.iceberg;
+package io.airbyte.integrations.destination.iceberg.jdbc;
 
 import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
 
 /**
  * @author Leibniz on 2022/11/3.
  */
-public class IcebergHadoopCatalogS3ParquetIntegrationTest extends AbstractIcebergHadoopCatalogS3IntegrationTest {
+public class IcebergJdbcCatalogS3ParquetIntegrationTest extends BaseIcebergJdbcCatalogS3IntegrationTest {
 
     @Override
     DataFileFormat fileFormat() {

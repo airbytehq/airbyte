@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.iceberg;
+package io.airbyte.integrations.destination.iceberg.jdbc;
 
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.DEFAULT_DATABASE_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBERG_CATALOG_CONFIG_KEY;
@@ -16,15 +16,18 @@ import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_BU
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_ENDPOINT_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_SECRET_KEY_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_WAREHOUSE_URI_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergIntegrationTestUtil.ICEBERG_IMAGE_NAME;
 import static io.airbyte.integrations.destination.iceberg.IcebergIntegrationTestUtil.WAREHOUSE_BUCKET_NAME;
-import static io.airbyte.integrations.destination.iceberg.MinioContainer.DEFAULT_ACCESS_KEY;
-import static io.airbyte.integrations.destination.iceberg.MinioContainer.DEFAULT_SECRET_KEY;
+import static io.airbyte.integrations.destination.iceberg.container.MinioContainer.DEFAULT_ACCESS_KEY;
+import static io.airbyte.integrations.destination.iceberg.container.MinioContainer.DEFAULT_SECRET_KEY;
 import static java.util.Map.entry;
 import static java.util.Map.ofEntries;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.iceberg.IcebergIntegrationTestUtil;
 import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
+import io.airbyte.integrations.destination.iceberg.container.MinioContainer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.util.HostPortResolver;
 import java.util.List;
@@ -36,9 +39,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
 /**
  * @author Leibniz on 2022/11/3.
  */
-public abstract class AbstractIcebergJdbcCatalogS3IntegrationTest extends DestinationAcceptanceTest {
+public abstract class BaseIcebergJdbcCatalogS3IntegrationTest extends DestinationAcceptanceTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractIcebergJdbcCatalogS3IntegrationTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BaseIcebergJdbcCatalogS3IntegrationTest.class);
     private static final String PG_SCHEMA = "public";
 
     private PostgreSQLContainer<?> catalogDb;
@@ -51,7 +54,7 @@ public abstract class AbstractIcebergJdbcCatalogS3IntegrationTest extends Destin
         catalogDb.start();
         LOGGER.info("==> Started PostgreSQL docker container...");
 
-        s3Storage = IcebergIntegrationTestUtil.createAndStartMinioContainer();
+        s3Storage = IcebergIntegrationTestUtil.createAndStartMinioContainer(null);
         IcebergIntegrationTestUtil.createS3WarehouseBucket(getConfig());
     }
 
@@ -63,7 +66,7 @@ public abstract class AbstractIcebergJdbcCatalogS3IntegrationTest extends Destin
 
     @Override
     protected String getImageName() {
-        return "airbyte/destination-iceberg:dev";
+        return ICEBERG_IMAGE_NAME;
     }
 
     @Override

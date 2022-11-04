@@ -18,9 +18,11 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.sql.Timestamp;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
@@ -68,10 +70,19 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
     @Override
     protected void startTracked() throws Exception {
         Map<AirbyteStreamNameNamespacePair, WriteConfig> configs = new HashMap<>();
+        Set<String> namespaceSet = new HashSet<>();
         for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
             final String streamName = stream.getStream().getName().toLowerCase();
             String namespace = (isNotBlank(stream.getStream().getNamespace()) ? stream.getStream().getNamespace()
                 : catalogConfig.defaultOutputDatabase()).toLowerCase();
+            if (!namespaceSet.contains(namespace)) {
+                namespaceSet.add(namespace);
+                try {
+                    spark.sql("CREATE DATABASE IF NOT EXISTS " + namespace);
+                } catch (Exception e) {
+                    log.warn("Create non-existed database failed: {}", e.getMessage(), e);
+                }
+            }
             final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
             if (syncMode == null) {
                 throw new IllegalStateException("Undefined destination sync mode");
@@ -182,7 +193,7 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
 
     private void tryDropTempTable(String tempTableName) {
         try {
-            spark.sql("DROP TABLE IF EXISTS " + tempTableName);
+            spark.sql("DROP TABLE IF EXISTS " + tempTableName + " PURGE");
         } catch (Exception e) {
             String errMsg = e.getMessage();
             if (errMsg != null && errMsg.contains("Table or view not found")) {
