@@ -99,7 +99,10 @@ export const DataResidencyView: React.FC = () => {
                     <div className={styles.defaultGeographyDropdown}>
                       <DropDown
                         options={geographies.map((geography) => ({
-                          label: formatMessage({ id: `connection.geography.${geography}` }),
+                          label: formatMessage({
+                            id: `connection.geography.${geography}`,
+                            defaultMessage: geography.toUpperCase(),
+                          }),
                           value: geography,
                         }))}
                         value={field.value}

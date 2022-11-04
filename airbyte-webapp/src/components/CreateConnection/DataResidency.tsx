@@ -46,7 +46,10 @@ export const DataResidency: React.FC<DataResidencyProps> = ({ name = "geography"
               <DropDown
                 isDisabled={form.isSubmitting}
                 options={geographies.map((geography) => ({
-                  label: formatMessage({ id: `connection.geography.${geography}` }),
+                  label: formatMessage({
+                    id: `connection.geography.${geography}`,
+                    defaultMessage: geography.toUpperCase(),
+                  }),
                   value: geography,
                 }))}
                 value={field.value}

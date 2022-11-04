@@ -66,7 +66,10 @@ export const UpdateConnectionDataResidency: React.FC = () => {
             <DropDown
               isDisabled={connectionUpdating}
               options={geographies.map((geography) => ({
-                label: formatMessage({ id: `connection.geography.${geography}` }),
+                label: formatMessage({
+                  id: `connection.geography.${geography}`,
+                  defaultMessage: geography.toUpperCase(),
+                }),
                 value: geography,
               }))}
               value={selectedValue || connection.geography}
