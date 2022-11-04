@@ -1105,39 +1105,67 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   // WEB BACKEND
 
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> webBackendConnectionsHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
   public WebBackendGeographiesListResult webBackendListGeographies() {
-    return execute(webBackendGeographiesHandler::listGeographiesOSS);
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
   public WebBackendConnectionRead webBackendGetConnection(final WebBackendConnectionRequestBody webBackendConnectionRequestBody) {
-    return execute(() -> webBackendConnectionsHandler.webBackendGetConnection(webBackendConnectionRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
   public WebBackendConnectionRead webBackendCreateConnection(final WebBackendConnectionCreate webBackendConnectionCreate) {
-    return execute(() -> webBackendConnectionsHandler.webBackendCreateConnection(webBackendConnectionCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
   public WebBackendConnectionRead webBackendUpdateConnection(final WebBackendConnectionUpdate webBackendConnectionUpdate) {
-    return execute(() -> webBackendConnectionsHandler.webBackendUpdateConnection(webBackendConnectionUpdate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return ConfigurationApi.execute(() -> webBackendConnectionsHandler.getStateType(connectionIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
   public WebBackendWorkspaceStateResult webBackendGetWorkspaceState(final WebBackendWorkspaceState webBackendWorkspaceState) {
-    return execute(() -> webBackendConnectionsHandler.getWorkspaceState(webBackendWorkspaceState));
+    throw new NotImplementedException();
   }
 
   // TODO: Move to common when all the api are moved
