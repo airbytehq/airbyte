@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.4
+Low-code: Get response.json in a safe way
+
 ## 0.5.3
 Low-code: Replace EmptySchemaLoader with DefaultSchemaLoader to retain backwards compatibility
 Low-code: Evaluate backoff strategies at runtime
