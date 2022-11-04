@@ -65,7 +65,10 @@ class DestinationAwsDatalake(Destination):
                     if message.state.stream:
                         stream = message.state.stream.stream_descriptor.name
                         logger.info(f"Received empty state for stream {stream}, resetting stream")
-                        streams[stream].reset()
+                        if stream in streams:
+                            streams[stream].reset()
+                        else:
+                            logger.warning(f"Trying to reset stream {stream} that is not in the configured catalog")
 
                     if not message.state.stream:
                         logger.info(f"Received empty state for, resetting all streams including non-incremental streams")

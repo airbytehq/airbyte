@@ -93,6 +93,7 @@ class ConnectorConfig:
         lakeformation_database_name: str = None,
         lakeformation_database_default_tag_key: str = None,
         lakeformation_database_default_tag_values: str = None,
+        lakeformation_governed_tables: bool = False,
         glue_catalog_float_as_decimal: bool = False,
         table_name: str = None,
         format: dict = None,
@@ -107,6 +108,7 @@ class ConnectorConfig:
         self.lakeformation_database_name = lakeformation_database_name
         self.lakeformation_database_default_tag_key = lakeformation_database_default_tag_key
         self.lakeformation_database_default_tag_values = lakeformation_database_default_tag_values
+        self.lakeformation_governed_tables = lakeformation_governed_tables
         self.glue_catalog_float_as_decimal = glue_catalog_float_as_decimal
         self.table_name = table_name
 

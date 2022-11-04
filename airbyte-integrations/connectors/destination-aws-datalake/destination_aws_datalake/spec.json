@@ -154,6 +154,13 @@
         "type": "string",
         "order": 8
       },
+      "lakeformation_governed_tables": {
+        "title": "Lake Formation Governed Tables",
+        "description": "Whether to create tables as LF governed tables.",
+        "type": "boolean",
+        "default": false,
+        "order": 9
+      },
       "format": {
         "title": "Output Format *",
         "type": "object",
@@ -198,7 +205,7 @@
             }
           }
         ],
-        "order": 9
+        "order": 10
       },
       "partitioning": {
         "title": "Choose how to partition data",
@@ -214,14 +221,14 @@
           "YEAR/MONTH/DAY"
         ],
         "default": "NO PARTITIONING",
-        "order": 10
+        "order": 11
       },
       "glue_catalog_float_as_decimal": {
         "title": "Glue Catalog: Float as Decimal",
         "description": "Cast float/double as decimal(38,18). This can help achieve higher accuracy and represent numbers correctly as received from the source.",
         "type": "boolean",
         "default": false,
-        "order": 11
+        "order": 12
       }
     }
   }

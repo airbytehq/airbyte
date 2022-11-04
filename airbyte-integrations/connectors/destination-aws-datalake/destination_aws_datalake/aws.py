@@ -71,6 +71,8 @@ class AwsHandler:
         self.s3_client = self._session.client("s3")
         self.lf_client = self._session.client("lakeformation")
 
+        self._table_type = "GOVERNED" if self._config.lakeformation_governed_tables else "EXTERNAL_TABLE"
+
     @retry(stop_max_attempt_number=10, wait_random_min=1000, wait_random_max=2000)
     def create_session(self):
         if self._config.credentials_type == CredentialsType.IAM_USER:
@@ -120,7 +122,7 @@ class AwsHandler:
             dataset=True,
             database=database,
             table=table,
-            table_type="GOVERNED",
+            table_type=self._table_type,
             mode=mode,
             use_threads=False,  # True causes s3 NoCredentialsError error
             catalog_versioning=True,
@@ -146,7 +148,7 @@ class AwsHandler:
             dataset=True,
             database=database,
             table=table,
-            table_type="GOVERNED",
+            table_type=self._table_type,
             mode=mode,
             use_threads=False,  # True causes s3 NoCredentialsError error
             orient="records",
