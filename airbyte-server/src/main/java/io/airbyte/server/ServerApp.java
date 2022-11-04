@@ -368,6 +368,7 @@ public class ServerApp implements ServerRunnable {
         operationsHandler,
         schedulerHandler,
         sourceHandler,
+        sourceDefinitionsHandler,
         workspacesHandler);
   }
 
