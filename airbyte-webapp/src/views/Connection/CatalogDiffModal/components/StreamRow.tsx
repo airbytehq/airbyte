@@ -35,16 +35,20 @@ export const StreamRow: React.FC<StreamRowProps> = ({ streamTransform, syncMode,
   const namespace = streamTransform.streamDescriptor.namespace;
   return (
     <tr className={rowStyle}>
-      <td>
-        {diffVerb === "new" ? (
-          <FontAwesomeIcon icon={faPlus} size="1x" className={iconStyle} />
-        ) : diffVerb === "removed" ? (
-          <FontAwesomeIcon icon={faMinus} size="1x" className={iconStyle} />
-        ) : (
-          <ModificationIcon />
-        )}
+      <td className={styles.nameCell}>
+        <div className={styles.content}>
+          <div className={styles.iconContainer}>
+            {diffVerb === "new" ? (
+              <FontAwesomeIcon icon={faPlus} size="1x" className={iconStyle} />
+            ) : diffVerb === "removed" ? (
+              <FontAwesomeIcon icon={faMinus} size="1x" className={iconStyle} />
+            ) : (
+              <ModificationIcon />
+            )}
+          </div>
+          {namespace}
+        </div>
       </td>
-      <td className={styles.nameCell}>{namespace}</td>
       <td className={styles.nameCell}>{itemName}</td>
       <td>{diffVerb === "removed" && syncMode && <SyncModeBox syncModeString={syncMode} />} </td>
     </tr>

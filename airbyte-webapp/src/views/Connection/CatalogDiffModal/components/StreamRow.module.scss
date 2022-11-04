@@ -6,7 +6,7 @@
   flex-direction: row;
   height: 40px;
   align-items: center;
-  padding: variables.$spacing-sm variables.$spacing-xl;
+  padding: variables.$spacing-sm variables.$spacing-lg;
   gap: variables.$spacing-md;
   border-bottom: 1px solid colors.$white;
   width: 100%;
@@ -19,6 +19,19 @@
   &.remove {
     background-color: colors.$red-50;
   }
+}
+
+.content {
+  display: flex;
+  align-items: center;
+}
+
+.iconContainer {
+  width: 10px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  margin-right: variables.$spacing-lg;
 }
 
 .icon {
@@ -49,7 +62,7 @@
 
 .nameCell,
 %nameCell {
-  width: 140px;
+  width: 150px;
   text-align: left;
 
   & .row {
