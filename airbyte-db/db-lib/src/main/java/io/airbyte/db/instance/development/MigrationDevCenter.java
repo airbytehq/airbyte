@@ -37,10 +37,12 @@ public abstract class MigrationDevCenter {
 
   private final String dbIdentifier;
   private final String schemaDumpFile;
+  private final String initialScript;
 
-  protected MigrationDevCenter(final String dbIdentifier, final String schemaDumpFile) {
+  protected MigrationDevCenter(final String dbIdentifier, final String schemaDumpFile, final String initialScript) {
     this.dbIdentifier = dbIdentifier;
     this.schemaDumpFile = schemaDumpFile;
+    this.initialScript = initialScript;
   }
 
   private PostgreSQLContainer<?> createContainer() {
@@ -49,14 +51,9 @@ public abstract class MigrationDevCenter {
         .withUsername("docker")
         .withPassword("docker");
     container.start();
-    initializeDatabase(container);
-    return container;
-  }
-
-  protected void initializeDatabase(final PostgreSQLContainer<?> container) {
     final var containerDelegate = new JdbcDatabaseDelegate(container, "");
-    ScriptUtils.runInitScript(containerDelegate, "configs_database/schema.sql");
-    ScriptUtils.runInitScript(containerDelegate, "jobs_database/schema.sql");
+    ScriptUtils.runInitScript(containerDelegate, initialScript);
+    return container;
   }
 
   protected abstract FlywayDatabaseMigrator getMigrator(Database database, Flyway flyway);

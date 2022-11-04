@@ -10,9 +10,6 @@ import io.airbyte.db.instance.FlywayDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevCenter;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.ext.ScriptUtils;
-import org.testcontainers.jdbc.JdbcDatabaseDelegate;
 
 /**
  * Helper class for migration development. See README for details.
@@ -20,18 +17,12 @@ import org.testcontainers.jdbc.JdbcDatabaseDelegate;
 public class JobsDatabaseMigrationDevCenter extends MigrationDevCenter {
 
   public JobsDatabaseMigrationDevCenter() {
-    super("jobs", "src/main/resources/jobs_database/schema_dump.txt");
+    super("jobs", "src/main/resources/jobs_database/schema_dump.txt", "jobs_database/schema.sql");
   }
 
   @Override
   protected FlywayDatabaseMigrator getMigrator(final Database database, final Flyway flyway) {
     return new JobsDatabaseMigrator(database, flyway);
-  }
-
-  @Override
-  protected void initializeDatabase(final PostgreSQLContainer<?> container) {
-    final var containerDelegate = new JdbcDatabaseDelegate(container, "");
-    ScriptUtils.runInitScript(containerDelegate, "jobs_database/schema.sql");
   }
 
   @Override
