@@ -64,6 +64,7 @@ import io.airbyte.api.model.generated.PrivateDestinationDefinitionRead;
 import io.airbyte.api.model.generated.PrivateDestinationDefinitionReadList;
 import io.airbyte.api.model.generated.PrivateSourceDefinitionRead;
 import io.airbyte.api.model.generated.PrivateSourceDefinitionReadList;
+import io.airbyte.api.model.generated.SaveStatsRequestBody;
 import io.airbyte.api.model.generated.SetInstancewideDestinationOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
@@ -360,6 +361,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
       sourceDefinitionsHandler.revokeSourceDefinitionFromWorkspace(sourceDefinitionIdWithWorkspaceId);
       return null;
     });
+  }
+
+  @Override
+  public InternalOperationResult saveStats(SaveStatsRequestBody saveStatsRequestBody) {
+    throw new UnsupportedOperationException();
   }
 
   // SOURCE SPECIFICATION

@@ -471,7 +471,7 @@
 - name: Google Analytics (Universal Analytics)
   sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   dockerRepository: airbyte/source-google-analytics-v4
-  dockerImageTag: 0.1.31
+  dockerImageTag: 0.1.32
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics
   icon: google-analytics.svg
   sourceType: api
@@ -765,7 +765,7 @@
 - name: Microsoft SQL Server (MSSQL)
   sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 0.4.24
+  dockerImageTag: 0.4.25
   documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   icon: mssql.svg
   sourceType: database
