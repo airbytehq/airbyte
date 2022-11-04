@@ -2,6 +2,7 @@ import { act, renderHook } from "@testing-library/react-hooks";
 import React from "react";
 import mockConnection from "test-utils/mock-data/mockConnection.json";
 import mockDest from "test-utils/mock-data/mockDestinationDefinition.json";
+import mockWorkspace from "test-utils/mock-data/mockWorkspace.json";
 import { TestWrapper } from "test-utils/testutils";
 
 import { WebBackendConnectionUpdate } from "core/request/AirbyteClient";
@@ -11,6 +12,10 @@ import { ConnectionEditServiceProvider, useConnectionEditService } from "./Conne
 
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => ({
   useGetDestinationDefinitionSpecification: () => mockDest,
+}));
+
+jest.mock("services/workspaces/WorkspacesService", () => ({
+  useCurrentWorkspace: () => mockWorkspace,
 }));
 
 jest.mock("../useConnectionHook", () => ({
