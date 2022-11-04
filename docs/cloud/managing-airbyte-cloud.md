@@ -85,9 +85,16 @@ To switch between workspaces:
 3. Click the name of the workspace you want to switch to.
 
 ### Choose your default data residency
-Default data residency allows you to choose where your data is processed. When you set the default data residency, it applies that data residency to all new connections, but it will not affect existing connections. 
+Default data residency allows you to choose where your data is processed. When you set the default data residency, it is applied to all new connections, but it does not affect existing connections. 
 
-For individual connections, you can choose a data residency that is different from the default. You can do this in the [connection settings](#choose-the-data-residency-for-a-connection) or when you create a [new connection](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-connection). Your data will not leave the chosen data residency for your connection.
+For individual connections, you can choose a data residency that is different from the default. You can do this in the [connection settings](#choose-the-data-residency-for-a-connection) or when you create a [new connection](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-connection).
+
+:::note 
+
+Your data is processed in the chosen residency, but some data is still stored in the US.
+
+:::
+
 
 To choose your default data residency:
 
