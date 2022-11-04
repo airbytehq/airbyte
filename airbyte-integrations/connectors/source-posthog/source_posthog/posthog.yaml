@@ -92,6 +92,12 @@ definitions:
       name: "annotations"
       path: "annotations"
 
+  insights_stream:
+    $ref: "*ref(definitions.base_slicing_stream)"
+    $options:
+      name: "insights"
+      path: "insights"
+
   events_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -119,6 +125,7 @@ streams:
   - "*ref(definitions.persons_stream)"
   - "*ref(definitions.events_stream)"
   - "*ref(definitions.annotations_stream)"
+  - "*ref(definitions.insights_stream)"
 
 check:
   type: CheckStream
