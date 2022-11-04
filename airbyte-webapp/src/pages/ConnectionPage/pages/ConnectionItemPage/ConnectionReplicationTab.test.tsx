@@ -19,6 +19,7 @@ import { ConnectionReplicationTab } from "./ConnectionReplicationTab";
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => ({
   useGetDestinationDefinitionSpecification: () => mockDest,
 }));
+jest.setTimeout(10000);
 
 describe("ConnectionReplicationTab", () => {
   const Wrapper: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
