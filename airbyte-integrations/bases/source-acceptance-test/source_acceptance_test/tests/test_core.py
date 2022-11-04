@@ -513,7 +513,7 @@ class TestBasicRead(BaseTest):
         """
         if test_strictness_level is Config.TestStrictnessLevel.high or not configured_catalog_path:
             if configured_catalog_path:
-                pytest.fail("High strictness level error: you can't set a custom configured catalog on the basic read test.")
+                pytest.fail("High strictness level error: you can't set a custom configured catalog on the basic read test when strictness level is high.")
             return build_configured_catalog_from_discovered_catalog_and_empty_streams(discovered_catalog, empty_streams)
         else:
             return build_configured_catalog_from_custom_catalog(configured_catalog_path, discovered_catalog)
