@@ -6,8 +6,7 @@
 }
 
 .headerContainer {
-  margin: variables.$spacing-xl calc(variables.$spacing-xl + variables.$spacing-sm) variables.$spacing-lg
-    variables.$spacing-sm;
+  margin: variables.$spacing-xl variables.$spacing-md variables.$spacing-lg variables.$spacing-sm;
   gap: variables.$spacing-sm;
 }
 
