@@ -17,12 +17,12 @@ const ConnectorBuilderPageInner: React.FC = () => {
   return (
     <ResizablePanels
       className={styles.container}
-      leftPanel={{
+      firstPanel={{
         children: <YamlEditor />,
         className: styles.leftPanel,
         minWidth: 400,
       }}
-      rightPanel={{
+      secondPanel={{
         children: <StreamTestingPanel />,
         className: styles.rightPanel,
         startingFlex: 0.33,

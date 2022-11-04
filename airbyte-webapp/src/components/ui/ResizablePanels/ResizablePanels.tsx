@@ -1,5 +1,3 @@
-import { faGripLinesVertical } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
@@ -10,9 +8,9 @@ import styles from "./ResizablePanels.module.scss";
 
 interface ResizablePanelsProps {
   className?: string;
-  hideRightPanel?: boolean;
-  leftPanel: PanelProps;
-  rightPanel: PanelProps;
+  firstPanel: PanelProps;
+  secondPanel: PanelProps;
+  hideSecondPanel?: boolean;
 }
 
 interface PanelProps {
@@ -67,39 +65,39 @@ const PanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = (
 
 export const ResizablePanels: React.FC<ResizablePanelsProps> = ({
   className,
-  hideRightPanel = false,
-  leftPanel,
-  rightPanel,
+  firstPanel,
+  secondPanel,
+  hideSecondPanel = false,
 }) => {
   return (
     <ReflexContainer className={className} orientation="vertical">
       <ReflexElement
         className={styles.panelStyle}
         propagateDimensions
-        minSize={leftPanel.minWidth}
-        flex={leftPanel.startingFlex}
+        minSize={firstPanel.minWidth}
+        flex={firstPanel.startingFlex}
       >
-        <PanelContainer className={leftPanel.className} overlay={leftPanel.overlay}>
-          {leftPanel.children}
+        <PanelContainer className={firstPanel.className} overlay={firstPanel.overlay}>
+          {firstPanel.children}
         </PanelContainer>
       </ReflexElement>
       {/* NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately. */}
-      {!hideRightPanel && (
+      {!hideSecondPanel && (
         <ReflexSplitter className={styles.splitter}>
           <div className={styles.panelGrabber}>
-            <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
+            <div className={styles.grabberHandleIcon} />
           </div>
         </ReflexSplitter>
       )}
-      {!hideRightPanel && (
+      {!hideSecondPanel && (
         <ReflexElement
           className={styles.panelStyle}
           propagateDimensions
-          minSize={rightPanel.minWidth}
-          flex={rightPanel.startingFlex}
+          minSize={secondPanel.minWidth}
+          flex={secondPanel.startingFlex}
         >
-          <PanelContainer className={rightPanel.className} overlay={rightPanel.overlay}>
-            {rightPanel.children}
+          <PanelContainer className={secondPanel.className} overlay={secondPanel.overlay}>
+            {secondPanel.children}
           </PanelContainer>
         </ReflexElement>
       )}

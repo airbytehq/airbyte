@@ -42,14 +42,18 @@
 
 .panelGrabber {
   height: 100vh;
-  padding: variables.$spacing-sm;
+
+  // padding: variables.$spacing-sm;
+  width: 10px;
   display: flex;
 }
 
 .grabberHandleIcon {
-  margin: auto;
-  height: 25px;
-  color: colors.$grey-100;
+  margin: auto 0 auto auto;
+  height: 30px;
+  width: 3px;
+  background-color: colors.$grey-100;
+  border-radius: variables.$border-radius-sm;
 }
 
 .splitter {
