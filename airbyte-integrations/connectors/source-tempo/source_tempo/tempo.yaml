@@ -1,8 +1,6 @@
 version: "0.1.0"
 
 definitions:
-  schema_loader:
-    file_path: "./source_tempo/schemas/{{ options['name'] }}.json"
   selector:
     type: RecordSelector
     extractor:
@@ -45,12 +43,7 @@ definitions:
         inject_into: "path"
       url_base: "*ref(definitions.requester.url_base)"
   base_stream:
-    $options:
-      name: "accounts"
-      path: "accounts"
-      primary_key: "id"
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+    primary_key: "id"
     retriever:
       $ref: "*ref(definitions.retriever)"
       requester:
@@ -91,7 +84,7 @@ definitions:
     $options:
       name: "worklogs"
       path: "worklogs"
-      primary_key: "tempoWorklogId"
+    primary_key: "tempoWorklogId"
   workload_schemes_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
