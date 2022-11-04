@@ -9,18 +9,22 @@
   z-index: 3;
   font-size: 12px;
   line-height: 30px;
-  color: colors.$black;
-
-  & a {
-    color: colors.$black;
-  }
 }
 
 .default {
   background-color: colors.$blue;
   color: colors.$white;
+
+  & a {
+    color: colors.$white;
+  }
 }
 
 .red {
   background-color: colors.$red;
+  color: colors.$black;
+
+  & a {
+    color: colors.$black;
+  }
 }
