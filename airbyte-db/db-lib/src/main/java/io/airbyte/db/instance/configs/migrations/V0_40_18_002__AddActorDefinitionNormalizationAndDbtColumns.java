@@ -19,17 +19,13 @@ public class V0_40_18_002__AddActorDefinitionNormalizationAndDbtColumns extends 
   @Override
   public void migrate(final Context context) throws Exception {
     LOGGER.info("Running migration: {}", this.getClass().getSimpleName());
-
-    // Warning: please do not use any jOOQ generated code to write a migration.
-    // As database schema changes, the generated jOOQ code can be deprecated. So
-    // old migration may not compile if there is any generated code.
     final DSLContext ctx = DSL.using(context.getConnection());
     addNormalizationRepositoryColumn(ctx);
     addNormalizationTagColumn(ctx);
     addSupportsDbtColumn(ctx);
   }
 
-  private void addNormalizationRepositoryColumn(final DSLContext ctx) {
+  static void addNormalizationRepositoryColumn(final DSLContext ctx) {
     ctx.alterTable("actor_definition")
         .addColumnIfNotExists(DSL.field(
             "normalization_repository",
@@ -37,7 +33,7 @@ public class V0_40_18_002__AddActorDefinitionNormalizationAndDbtColumns extends 
         .execute();
   }
 
-  private void addNormalizationTagColumn(final DSLContext ctx) {
+  static void addNormalizationTagColumn(final DSLContext ctx) {
     ctx.alterTable("actor_definition")
         .addColumnIfNotExists(DSL.field(
             "normalization_tag",
@@ -45,7 +41,7 @@ public class V0_40_18_002__AddActorDefinitionNormalizationAndDbtColumns extends 
         .execute();
   }
 
-  public static void addSupportsDbtColumn(final DSLContext ctx) {
+  static void addSupportsDbtColumn(final DSLContext ctx) {
     ctx.alterTable("actor_definition")
         .addColumnIfNotExists(DSL.field("supports_dbt",
             SQLDataType.BOOLEAN.nullable(true)))
