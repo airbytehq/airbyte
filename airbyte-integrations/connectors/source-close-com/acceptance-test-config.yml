@@ -14,10 +14,24 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: ["meeting_activities", "missed_call_tasks", "email_followup_tasks", "answered_detached_call_tasks",
-                      "incoming_sms_tasks", "zoom_connected_accounts", "custom_email_connected_accounts",
-                      "google_connected_accounts", "send_as", "email_sequences", "dialer", "email_bulk_actions",
-                      "sequence_subscription_bulk_actions", "delete_bulk_actions"]
+      empty_streams:
+        - meeting_activities
+        - missed_call_tasks
+        - email_followup_tasks
+        - answered_detached_call_tasks
+        - incoming_sms_tasks
+        - zoom_connected_accounts
+        - custom_email_connected_accounts
+        - google_connected_accounts
+        - send_as
+        - email_sequences
+        - dialer
+        - email_bulk_actions
+        - sequence_subscription_bulk_actions
+        - delete_bulk_actions
+        - events
+        - incoming_email_tasks
+        - voicemail_tasks
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
