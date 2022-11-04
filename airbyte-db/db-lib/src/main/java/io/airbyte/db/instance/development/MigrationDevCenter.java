@@ -43,23 +43,29 @@ public abstract class MigrationDevCenter {
     this.schemaDumpFile = schemaDumpFile;
   }
 
-  private static PostgreSQLContainer<?> createContainer() {
+  private PostgreSQLContainer<?> createContainer() {
     final PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withDatabaseName("airbyte")
         .withUsername("docker")
         .withPassword("docker");
     container.start();
-
     initializeDatabase(container);
-
     return container;
+  }
+
+  protected void initializeDatabase(final PostgreSQLContainer<?> container) {
+    final var containerDelegate = new JdbcDatabaseDelegate(container, "");
+    ScriptUtils.runInitScript(containerDelegate, "configs_database/schema.sql");
+    ScriptUtils.runInitScript(containerDelegate, "jobs_database/schema.sql");
   }
 
   protected abstract FlywayDatabaseMigrator getMigrator(Database database, Flyway flyway);
 
-  protected abstract Database getDatabase(DSLContext dslContext) throws IOException;
-
   protected abstract Flyway getFlyway(DataSource dataSource);
+
+  private Database getDatabase(final DSLContext dslContext) throws IOException {
+    return new Database(dslContext);
+  }
 
   private void createMigration() {
     try (final PostgreSQLContainer<?> container = createContainer()) {
@@ -109,12 +115,6 @@ public abstract class MigrationDevCenter {
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private static void initializeDatabase(final PostgreSQLContainer container) {
-    final var containerDelegate = new JdbcDatabaseDelegate(container, "");
-    ScriptUtils.runInitScript(containerDelegate, "configs_database/schema.sql");
-    ScriptUtils.runInitScript(containerDelegate, "jobs_database/schema.sql");
   }
 
   public static void main(final String[] args) {

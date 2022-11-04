@@ -8,10 +8,11 @@ import io.airbyte.db.Database;
 import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.instance.FlywayDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevCenter;
-import java.io.IOException;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
-import org.jooq.DSLContext;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.ext.ScriptUtils;
+import org.testcontainers.jdbc.JdbcDatabaseDelegate;
 
 /**
  * Helper class for migration development. See README for details.
@@ -28,8 +29,9 @@ public class JobsDatabaseMigrationDevCenter extends MigrationDevCenter {
   }
 
   @Override
-  protected Database getDatabase(final DSLContext dslContext) throws IOException {
-    return new Database(dslContext);
+  protected void initializeDatabase(final PostgreSQLContainer<?> container) {
+    final var containerDelegate = new JdbcDatabaseDelegate(container, "");
+    ScriptUtils.runInitScript(containerDelegate, "jobs_database/schema.sql");
   }
 
   @Override
