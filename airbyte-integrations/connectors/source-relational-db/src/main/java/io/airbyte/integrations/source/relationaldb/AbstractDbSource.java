@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.relationaldb;
 import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.exceptions.ConnectionErrorException;

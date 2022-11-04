@@ -254,6 +254,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
+  public WorkspaceRead getWorkspaceByConnectionId(final ConnectionIdRequestBody connectionIdRequestBody) {
+    return execute(() -> workspacesHandler.getWorkspaceByConnectionId(connectionIdRequestBody));
+  }
+
+  @Override
   public WorkspaceRead updateWorkspace(final WorkspaceUpdate workspaceUpdate) {
     return execute(() -> workspacesHandler.updateWorkspace(workspaceUpdate));
   }
