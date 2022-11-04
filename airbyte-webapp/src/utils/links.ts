@@ -21,12 +21,15 @@ export const links = {
   namespaceLink: `${BASE_DOCS_LINK}/understanding-airbyte/namespaces`,
   tutorialLink: "https://www.youtube.com/watch?v=Rcpt5SVsMpk&feature=emb_logo",
   statusLink: "https://status.airbyte.io/",
-  recipesLink: "https://airbyte.com/recipes",
+  tutorialsLink: "https://airbyte.com/tutorials",
   syncModeLink: `${BASE_DOCS_LINK}/understanding-airbyte/connections`,
   demoLink: "https://demo.airbyte.io",
   contactSales: "https://airbyte.com/talk-to-sales",
   webpageLink: "https://airbyte.com",
+  webhookVideoGuideLink: "https://www.youtube.com/watch?v=NjYm8F-KiFc",
+  webhookGuideLink: `${BASE_DOCS_LINK}/operator-guides/configuring-sync-notifications/`,
   cronReferenceLink: "http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html",
+  cloudAllowlistIPsLink: `${BASE_DOCS_LINK}/cloud/getting-started-with-airbyte-cloud/#allowlist-ip-address`,
 } as const;
 
 export type OutboundLinks = typeof links;

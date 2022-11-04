@@ -91,5 +91,6 @@ By default, the webservice feature is disabled on PrestaShop and needs to be [sw
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.0 | 2022-10-31 | [\#18599](https://github.com/airbytehq/airbyte/pull/18599) | Only https scheme is allowed |
 | 0.1.0 | 2021-07-02 | [\#4465](https://github.com/airbytehq/airbyte/pull/4465) | Initial implementation |
 

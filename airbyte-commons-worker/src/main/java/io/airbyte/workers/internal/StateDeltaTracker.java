@@ -4,7 +4,10 @@
 
 package io.airbyte.workers.internal;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+
 import com.google.common.annotations.VisibleForTesting;
+import datadog.trace.api.Trace;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,6 +75,7 @@ public class StateDeltaTracker {
    * @throws StateDeltaTrackerException thrown when the memory footprint of stateDeltas exceeds
    *         available capacity.
    */
+  @Trace(operationName = WORKER_OPERATION_NAME)
   public void addState(final int stateHash, final Map<Short, Long> streamIndexToRecordCount) throws StateDeltaTrackerException {
     synchronized (this) {
       final int size = STATE_HASH_BYTES + (streamIndexToRecordCount.size() * BYTES_PER_STREAM);
@@ -104,6 +108,7 @@ public class StateDeltaTracker {
    * @throws StateDeltaTrackerException thrown when committed counts can no longer be reliably
    *         computed.
    */
+  @Trace(operationName = WORKER_OPERATION_NAME)
   public void commitStateHash(final int stateHash) throws StateDeltaTrackerException {
     synchronized (this) {
       if (capacityExceeded) {
@@ -139,6 +144,7 @@ public class StateDeltaTracker {
     }
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   public Map<Short, Long> getStreamToCommittedRecords() {
     return streamToCommittedRecords;
   }
