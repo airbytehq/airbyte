@@ -9,7 +9,9 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.FailureReason;
@@ -26,6 +28,8 @@ import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
@@ -39,6 +43,7 @@ import io.airbyte.workers.internal.AirbyteSource;
 import io.airbyte.workers.internal.MessageTracker;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +97,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final AtomicBoolean hasFailed;
   private final RecordSchemaValidator recordSchemaValidator;
   private final WorkerMetricReporter metricReporter;
+  private final boolean enableColumnFiltering;
 
   public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
@@ -101,6 +107,18 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final MessageTracker messageTracker,
                                   final RecordSchemaValidator recordSchemaValidator,
                                   final WorkerMetricReporter metricReporter) {
+    this(jobId, attempt, source, mapper, destination, messageTracker, recordSchemaValidator, metricReporter, false);
+  }
+
+  public DefaultReplicationWorker(final String jobId,
+                                  final int attempt,
+                                  final AirbyteSource source,
+                                  final AirbyteMapper mapper,
+                                  final AirbyteDestination destination,
+                                  final MessageTracker messageTracker,
+                                  final RecordSchemaValidator recordSchemaValidator,
+                                  final WorkerMetricReporter metricReporter,
+                                  final boolean enableColumnFiltering) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
@@ -110,6 +128,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.executors = Executors.newFixedThreadPool(2);
     this.recordSchemaValidator = recordSchemaValidator;
     this.metricReporter = metricReporter;
+    this.enableColumnFiltering = enableColumnFiltering;
 
     this.cancelled = new AtomicBoolean(false);
     this.hasFailed = new AtomicBoolean(false);
@@ -151,7 +170,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .collect(Collectors.toMap(s -> s.getStream().getNamespace() + "." + s.getStream().getName(),
               s -> String.format("%s - %s", s.getSyncMode(), s.getDestinationSyncMode()))));
       final WorkerSourceConfig sourceConfig = WorkerUtils.syncToWorkerSourceConfig(syncInput);
-
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
       ApmTraceUtils.addTagsToTrace(generateTraceTags(destinationConfig, jobRoot));
@@ -178,9 +196,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                 }
               }
             });
-
         final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
-            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, metricReporter, timeTracker),
+            getReplicationRunnable(source, destination, sourceConfig.getCatalog(), cancelled, mapper, messageTracker, mdc, recordSchemaValidator,
+                metricReporter, timeTracker, enableColumnFiltering),
             executors)
             .whenComplete((msg, ex) -> {
               if (ex != null) {
@@ -341,13 +359,15 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
   private static Runnable getReplicationRunnable(final AirbyteSource source,
                                                  final AirbyteDestination destination,
+                                                 final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
                                                  final AtomicBoolean cancelled,
                                                  final AirbyteMapper mapper,
                                                  final MessageTracker messageTracker,
                                                  final Map<String, String> mdc,
                                                  final RecordSchemaValidator recordSchemaValidator,
                                                  final WorkerMetricReporter metricReporter,
-                                                 final ThreadedTimeTracker timeHolder) {
+                                                 final ThreadedTimeTracker timeHolder,
+                                                 final boolean isColumnFilteringEnabled) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -364,7 +384,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
           if (messageOptional.isPresent()) {
             final AirbyteMessage airbyteMessage = messageOptional.get();
-            validateSchema(recordSchemaValidator, validationErrors, airbyteMessage);
+            filterAndValidateSchema(recordSchemaValidator, validationErrors, configuredAirbyteCatalog, airbyteMessage, isColumnFilteringEnabled);
             final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
 
             messageTracker.acceptFromSource(message);
@@ -427,14 +447,33 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
-  private static void validateSchema(final RecordSchemaValidator recordSchemaValidator,
-                                     final Map<String, ImmutablePair<Set<String>, Integer>> validationErrors,
-                                     final AirbyteMessage message) {
+  private static void filterAndValidateSchema(final RecordSchemaValidator recordSchemaValidator,
+                                              final Map<String, ImmutablePair<Set<String>, Integer>> validationErrors,
+                                              final ConfiguredAirbyteCatalog catalog,
+                                              final AirbyteMessage message,
+                                              final boolean isColumnFilteringEnabled) {
     if (message.getRecord() == null) {
       return;
     }
 
     final AirbyteRecordMessage record = message.getRecord();
+
+    if (isColumnFilteringEnabled) {
+      Optional<ConfiguredAirbyteStream> maybeRelevantStream = catalog.getStreams().stream()
+          .filter((stream) -> stream.getStream().getName().equals(message.getRecord().getStream())).findFirst();
+      if (maybeRelevantStream.isPresent()) {
+        final var relevantStream = maybeRelevantStream.get();
+        final JsonNode schema = relevantStream.getStream().getJsonSchema();
+        final JsonNode columns = schema.findValue("properties");
+        List<String> columnsToRetain = Collections.emptyList();
+        columns.fieldNames().forEachRemaining(columnsToRetain::add);
+
+        final JsonNode data = record.getData();
+        if (data.isObject()) {
+          ((ObjectNode) data).retain(columnsToRetain);
+        }
+      }
+    }
     final String messageStream = WorkerUtils.streamNameWithNamespace(record.getNamespace(), record.getStream());
     // avoid noise by validating only if the stream has less than 10 records with validation errors
     final boolean streamHasLessThenTenErrs =

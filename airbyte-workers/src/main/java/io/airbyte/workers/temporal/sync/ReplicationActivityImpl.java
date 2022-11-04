@@ -284,7 +284,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
               new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
           new AirbyteMessageTracker(),
           new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
-          metricReporter);
+          metricReporter,
+          true);
     };
   }
 
