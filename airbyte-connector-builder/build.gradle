@@ -37,6 +37,7 @@ task generateOpenApiPythonServer(type: GenerateTask){
             into "$targetDir/models"
         }
     }
-
 }
+
+project.build.dependsOn(generateOpenApiPythonServer)
     

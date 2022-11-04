@@ -57,7 +57,9 @@ def _assert_signature_is_set(method: Callable) -> None:
         # Based on empirical observation, the call to inspect fails with a ValueError
         # with exactly one argument: "invalid method signature"
         if e.args and len(e.args) == 1 and e.args[0] == "invalid method signature":
-            # I couldn't figure out how to setattr on a "method" object to populate the signature. For now just kick
+            # TODO: Ideally we just do setattr(method, "__signature__", <..>) and automagically fix this
+            # but because method is a subclass of object, and you can't setattr on an object (https://stackoverflow.com/a/12839070/3237889)
+            # I couldn't figure out how to setattr on a "method" object to populate the signature. So for now just kick
             # it back to the developer and tell them to set the "self" variable
             raise Exception(f"Method {method.__name__} in class {type(method.__self__).__name__} must declare the variable 'self'. ")
         else:
