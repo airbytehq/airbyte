@@ -6,6 +6,8 @@ package io.airbyte.config.persistence;
 
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteProtocolVersionRange;
@@ -33,10 +35,14 @@ import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -104,6 +110,14 @@ class StandardSyncPersistenceE2ETest extends BaseDatabaseConfigPersistenceTest {
     assertEquals(Set.of(
         new StandardSyncProtocolVersionFlag(sync1.getConnectionId(), false),
         new StandardSyncProtocolVersionFlag(sync2.getConnectionId(), false)), getProtocolVersionFlagForSyncs(syncs));
+
+    // Making sure we updated the updated_at timestamp
+    final Optional<Pair<OffsetDateTime, OffsetDateTime>> datetimes = database.query(ctx -> ctx
+        .select(CONNECTION.CREATED_AT, CONNECTION.UPDATED_AT).from(CONNECTION).where(CONNECTION.ID.eq(sync2.getConnectionId()))
+        .stream().findFirst()
+        .map(r -> new ImmutablePair<>(r.get(CONNECTION.CREATED_AT), r.get(CONNECTION.UPDATED_AT))));
+    assertTrue(datetimes.isPresent());
+    assertNotEquals(datetimes.get().getLeft(), datetimes.get().getRight());
   }
 
   @Test

@@ -285,6 +285,7 @@ public class StandardSyncPersistence {
   private void clearProtocolVersionFlag(final DSLContext ctx, final List<UUID> standardSyncIds) {
     ctx.update(CONNECTION)
         .set(CONNECTION.UNSUPPORTED_PROTOCOL_VERSION, false)
+        .set(CONNECTION.UPDATED_AT, OffsetDateTime.now())
         .where(CONNECTION.ID.in(standardSyncIds))
         .execute();
   }
