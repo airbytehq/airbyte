@@ -84,4 +84,8 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition {
     return true;
   }
 
+  @Override
+  public boolean reachedTargetPosition(final Long value) {
+    return false; //TEMP
+  }
 }

@@ -197,7 +197,7 @@
         <Logger name="com.leansoft.bigqueue" level="INFO" />
         <Logger name="io.netty" level="INFO" />
         <Logger name="io.grpc" level="INFO" />
-        <Logger name="io.temporal" level="INFO" />
+        <Logger name="io.temporal" level="WARN" />
         <Logger name="org.apache" level="WARN" />
         <Logger name="httpclient" level="WARN" />
         <Logger name="com.amazonaws" level="WARN" />
@@ -207,7 +207,8 @@
         <Logger name="io.debezium.connector.mysql.MySqlValueConverters" level="OFF" />
         <!--MySQL Debezium connector generates a log whenever it comes across a DDL query to mention that it skipped it.
         If a database has tons of DDL queries, the logs would be filled with such messages-->
-        <Logger name="io.debezium.relational.history" level="OFF" />
+<!--        <Logger name="io.debezium.relational.history" level="OFF" />-->
+        <Logger name="io.debezium" level="DEBUG" />
 
     </Loggers>
 

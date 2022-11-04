@@ -12,10 +12,14 @@ import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.debezium.engine.ChangeEvent;
+import java.lang.reflect.Field;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import org.apache.kafka.connect.source.SourceRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +50,8 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   private boolean receivedFirstRecord;
   private boolean hasSnapshotFinished;
   private boolean signalledClose;
+  private LocalDateTime tsLastHeartbeatChangedLsn;
+  private Long lastHeartbeatLsn;
 
   public DebeziumRecordIterator(final LinkedBlockingQueue<ChangeEvent<String, String>> queue,
                                 final CdcTargetPosition targetPosition,
@@ -61,6 +67,8 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     this.receivedFirstRecord = false;
     this.hasSnapshotFinished = true;
     this.signalledClose = false;
+    this.tsLastHeartbeatChangedLsn = null;
+    this.lastHeartbeatLsn = null;
   }
 
   @Override
@@ -71,8 +79,12 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
       final ChangeEvent<String, String> next;
       try {
-        final Duration waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME : firstRecordWaitTime;
+        // final Duration waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME :
+        // firstRecordWaitTime; // TEMP
+        final Duration waitTime = SUBSEQUENT_RECORD_WAIT_TIME;
+        LOGGER.info("*** queue.poll({})", waitTime.toString());
         next = queue.poll(waitTime.getSeconds(), TimeUnit.SECONDS);
+        LOGGER.info("*** next = {}", next);
       } catch (final InterruptedException e) {
         throw new RuntimeException(e);
       }
@@ -87,16 +99,65 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       }
 
       final JsonNode eventAsJson = Jsons.deserialize(next.value());
+      LOGGER.info("eventAsJson: {}", eventAsJson.toString());
+
+      if (isHeartbeatEvent(eventAsJson)) {
+        try {
+          final Field f = next.getClass().getDeclaredField("sourceRecord");
+          f.setAccessible(true);
+          final SourceRecord sr = (SourceRecord) f.get(next);
+          LOGGER.info("SourceRecord: {}", sr);
+          LOGGER.info("pglsn {}", sr.sourceOffset().get("lsn"));
+          final Long currLsn = (Long) sr.sourceOffset().get("lsn");
+          if (targetPosition.reachedTargetPosition(currLsn)
+              || (noChangeInHeartbeatLSN(currLsn) && tooMuchTimePassed())) {
+            LOGGER.info("Closing cause target reached in heartbeat");
+            requestClose();
+          }
+          if (!currLsn.equals(this.lastHeartbeatLsn)) {
+            this.tsLastHeartbeatChangedLsn = LocalDateTime.now();
+            this.lastHeartbeatLsn = currLsn;
+          }
+
+        } catch (final NoSuchFieldException | IllegalAccessException e) {
+          LOGGER.warn("no sourceRecord");
+          continue;
+        }
+
+        LOGGER.info("*** heartbeat event. continuing");
+        continue;
+      }
+
       hasSnapshotFinished = hasSnapshotFinished(eventAsJson);
 
       // if the last record matches the target file position, it is time to tell the producer to shutdown.
       if (!signalledClose && shouldSignalClose(eventAsJson)) {
         requestClose();
       }
+      this.tsLastHeartbeatChangedLsn = null;
+      this.lastHeartbeatLsn = null;
       receivedFirstRecord = true;
+      LOGGER.info("*** return next");
       return next;
     }
+    LOGGER.info("*** return endOfData()");
     return endOfData();
+  }
+
+  private boolean tooMuchTimePassed() {
+    final Duration tbt = Duration.between(this.tsLastHeartbeatChangedLsn, LocalDateTime.now());
+    LOGGER.info("*** time since last hearbeat change {}s", tbt.toSeconds());
+    return tbt.compareTo(SUBSEQUENT_RECORD_WAIT_TIME) > 0;
+  }
+
+  private boolean noChangeInHeartbeatLSN(final Long currLsn) {
+    LOGGER.info("*** last hb {}. new hb {}. same {}", this.lastHeartbeatLsn, currLsn, currLsn.equals(this.lastHeartbeatLsn));
+    return (currLsn.equals(this.lastHeartbeatLsn));
+
+  }
+
+  private boolean isHeartbeatEvent(final JsonNode event) {
+    return Objects.isNull(event) ? false : !event.has("source"); // TODO: find better way to identify heartbeat
   }
 
   private boolean hasSnapshotFinished(final JsonNode eventAsJson) {

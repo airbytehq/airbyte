@@ -20,9 +20,11 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcTargetPosition.class);
   private final PgLsn targetLsn;
+  private final JdbcDatabase db;
 
-  public PostgresCdcTargetPosition(final PgLsn targetLsn) {
+  public PostgresCdcTargetPosition(final PgLsn targetLsn, final JdbcDatabase db) {
     this.targetLsn = targetLsn;
+    this.db = db;
   }
 
   @Override
@@ -43,7 +45,7 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
     try {
       final PgLsn lsn = PostgresUtils.getLsn(database);
       LOGGER.info("identified target lsn: " + lsn);
-      return new PostgresCdcTargetPosition(lsn);
+      return new PostgresCdcTargetPosition(lsn, database);
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
@@ -52,7 +54,12 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
   @Override
   public boolean reachedTargetPosition(final JsonNode valueAsJson) {
     final PgLsn eventLsn = extractLsn(valueAsJson);
-
+    LOGGER.info("Comparing target {} with {}", targetLsn, eventLsn);
+    try {
+      LOGGER.info("current lsn: {}", PostgresUtils.getLsn(this.db));
+    } catch (final SQLException e) {
+      throw new RuntimeException(e);
+    }
     if (targetLsn.compareTo(eventLsn) > 0) {
       return false;
     } else {
@@ -70,4 +77,8 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
         .orElseThrow(() -> new IllegalStateException("Could not find LSN"));
   }
 
+  @Override
+  public boolean reachedTargetPosition(final Long value) {
+    return value >= targetLsn.asLong();
+  }
 }

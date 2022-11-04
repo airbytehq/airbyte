@@ -17,4 +17,6 @@ public interface CdcTargetPosition {
 
   boolean reachedTargetPosition(JsonNode valueAsJson);
 
+  boolean reachedTargetPosition(Long value);
+
 }

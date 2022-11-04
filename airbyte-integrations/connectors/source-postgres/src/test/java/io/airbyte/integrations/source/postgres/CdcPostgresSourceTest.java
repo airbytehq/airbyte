@@ -208,8 +208,10 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   @Override
   protected CdcTargetPosition extractPosition(final JsonNode record) {
-    return new PostgresCdcTargetPosition(PgLsn.fromLong(record.get(CDC_LSN).asLong()));
+//    return new PostgresCdcTargetPosition(PgLsn.fromLong(record.get(CDC_LSN).asLong()));
+    return null; //TEMP
   }
+
 
   @Override
   protected void assertNullCdcMetaData(final JsonNode data) {

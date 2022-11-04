@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
+import io.debezium.engine.DebeziumEngine.ConnectorCallback;
 import io.debezium.engine.format.Json;
 import io.debezium.engine.spi.OffsetCommitPolicy;
 import java.util.Optional;
@@ -52,6 +53,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   }
 
   public void start(final BlockingQueue<ChangeEvent<String, String>> queue) {
+    LOGGER.info("------------------------- engine start -------------------------");
     engine = DebeziumEngine.create(Json.class)
         .using(debeziumPropertiesManager.getDebeziumProperties())
         .using(new OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
@@ -63,7 +65,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
           if (e.value() != null) {
             try {
               queue.put(e);
-            } catch (InterruptedException ex) {
+            } catch (final InterruptedException ex) {
               Thread.currentThread().interrupt();
               throw new RuntimeException(ex);
             }
@@ -73,6 +75,29 @@ public class DebeziumRecordPublisher implements AutoCloseable {
           LOGGER.info("Debezium engine shutdown.");
           thrownError.set(error);
           engineLatch.countDown();
+        })
+        .using(new ConnectorCallback() {
+
+          @Override
+          public void connectorStarted() {
+            LOGGER.info("-- connectorStarted() --");
+          }
+
+          @Override
+          public void connectorStopped() {
+            LOGGER.info("-- connectorStopped() --");
+          }
+
+          @Override
+          public void taskStarted() {
+            LOGGER.info("-- taskStarted() --");
+          }
+
+          @Override
+          public void taskStopped() {
+            LOGGER.info("-- taskStopped() --");
+          }
+
         })
         .build();
 
@@ -85,22 +110,27 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   }
 
   public void close() throws Exception {
+    LOGGER.info("------------------------- engine close request (isClosing: {}, hasClosed: {}) -------------------------", isClosing.get(),
+        hasClosed);
     if (isClosing.compareAndSet(false, true)) {
+      LOGGER.info("------------------------- engine closing -------------------------", isClosing.get());
       // consumers should assume records can be produced until engine has closed.
       if (engine != null) {
+        LOGGER.info("engine.close()");
         engine.close();
       }
-
+      LOGGER.info("latch wait");
       // wait for closure before shutting down executor service
       engineLatch.await(5, TimeUnit.MINUTES);
-
+      LOGGER.info("executor shutdown");
       // shut down and await for thread to actually go down
       executor.shutdown();
+      LOGGER.info("executor awaitTermination");
       executor.awaitTermination(5, TimeUnit.MINUTES);
-
+      LOGGER.info("executor done");
       // after the engine is completely off, we can mark this as closed
       hasClosed.set(true);
-
+      LOGGER.info("error Thrown: {}", thrownError.get());
       if (thrownError.get() != null) {
         throw new RuntimeException(thrownError.get());
       }
