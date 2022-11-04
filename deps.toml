@@ -79,7 +79,11 @@ log4j-over-slf4j = { module = "org.slf4j:log4j-over-slf4j", version.ref = "slf4j
 appender-log4j2 = { module = "com.therealvan:appender-log4j2", version = "3.6.0" }
 aws-java-sdk-s3 = { module = "com.amazonaws:aws-java-sdk-s3", version = "1.12.6" }
 google-cloud-storage = { module = "com.google.cloud:google-cloud-storage", version = "2.2.2" }
-s3 = { module = "software.amazon.awssdk:s3", version = "2.16.84" }
+aws-bom = "software.amazon.awssdk:bom:2.16.84"
+aws-s3 = { module = "software.amazon.awssdk:s3" }
+aws-sts = { module = "software.amazon.awssdk:sts" }
+aws-auth = { module = "software.amazon.awssdk:auth" }
+aws-iam = { module = "software.amazon.awssdk:iam" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
@@ -128,6 +132,7 @@ micronaut-validation = { module = "io.micronaut:micronaut-validation" }
 jackson = ["jackson-databind", "jackson-annotations", "jackson-dataformat", "jackson-datatype"]
 apache = ["apache-commons", "apache-commons-lang"]
 datadog = ["datadog-trace-api", "datadog-trace-ot"]
+aws = ["aws-s3","aws-sts","aws-auth","aws-iam"]
 log4j = ["log4j-api", "log4j-core", "log4j-impl", "log4j-web"]
 slf4j = ["jul-to-slf4j", "jcl-over-slf4j", "log4j-over-slf4j"]
 junit = ["junit-jupiter-api", "junit-jupiter-params", "mockito-junit-jupiter"]

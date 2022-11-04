@@ -93,7 +93,8 @@ log4j-over-slf4j = { module = "org.slf4j:log4j-over-slf4j", version.ref = "slf4j
 appender-log4j2 = { module = "com.therealvan:appender-log4j2", version = "3.6.0" }
 aws-java-sdk-s3 = { module = "com.amazonaws:aws-java-sdk-s3", version = "1.12.6" }
 google-cloud-storage = { module = "com.google.cloud:google-cloud-storage", version = "2.2.2" }
-s3 = { module = "software.amazon.awssdk:s3", version = "2.16.84" }
+s3 = { module = "software.amazon.awssdk:bom", version = "2.16.84" }
+aws = { module = "software.amazon.awssdk:bom", version = "2.16.84" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
