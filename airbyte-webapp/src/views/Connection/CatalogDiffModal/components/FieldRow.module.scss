@@ -26,6 +26,16 @@
   }
 }
 
+tr:first-child .content {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+tr:last-child .content {
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
 .icon {
   &.plus {
     color: colors.$green;

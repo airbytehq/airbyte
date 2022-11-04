@@ -2,9 +2,10 @@ import { faArrowRight, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 
+import { ModificationIcon } from "components/icons/ModificationIcon";
+
 import { FieldTransform } from "core/request/AirbyteClient";
 
-import { ModificationIcon } from "../../../../components/icons/ModificationIcon";
 import styles from "./FieldRow.module.scss";
 
 interface FieldRowProps {

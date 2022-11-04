@@ -11,11 +11,7 @@
 .fieldSubHeader {
   @extend %sectionSubHeader;
 
-  padding: 0 variables.$spacing-sm 0 35px;
-
-  .padLeft {
-    padding-left: variables.$spacing-xl;
-  }
+  padding: 0 variables.$spacing-sm 0 40px;
 
   > div {
     @extend %nameCell;
@@ -25,7 +21,6 @@
     font-size: 10px;
     color: colors.$grey;
     line-height: 12px;
-    padding-left: variables.$spacing-md;
   }
 }
 

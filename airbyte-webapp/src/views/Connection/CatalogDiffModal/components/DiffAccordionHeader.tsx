@@ -36,10 +36,10 @@ export const DiffAccordionHeader: React.FC<DiffAccordionHeaderProps> = ({
       <ModificationIcon />
       <div className={namespaceCellStyles} aria-labelledby={formatMessage({ id: "connection.updateSchema.namespace" })}>
         {open ? <FontAwesomeIcon icon={faAngleDown} /> : <FontAwesomeIcon icon={faAngleRight} />}
-        <div className={styles.headerAdjust}>{streamDescriptor.namespace}</div>
+        <div>{streamDescriptor.namespace}</div>
       </div>
       <div className={nameCellStyle} aria-labelledby={formatMessage({ id: "connection.updateSchema.streamName" })}>
-        <div className={styles.headerAdjust}>{streamDescriptor.name}</div>
+        <div>{streamDescriptor.name}</div>
       </div>
       <DiffIconBlock removedCount={removedCount} newCount={newCount} changedCount={changedCount} />
     </>
