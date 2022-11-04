@@ -32,6 +32,7 @@ import io.airbyte.server.apis.SchedulerApiController;
 import io.airbyte.server.apis.SourceApiController;
 import io.airbyte.server.apis.SourceDefinitionApiController;
 import io.airbyte.server.apis.WebBackendApiController;
+import io.airbyte.server.apis.WorkspaceApiController;
 import io.airbyte.server.apis.binders.AttemptApiBinder;
 import io.airbyte.server.apis.binders.ConnectionApiBinder;
 import io.airbyte.server.apis.binders.DbMigrationBinder;
@@ -50,6 +51,7 @@ import io.airbyte.server.apis.binders.SourceApiBinder;
 import io.airbyte.server.apis.binders.SourceDefinitionApiBinder;
 import io.airbyte.server.apis.binders.SourceOauthApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
+import io.airbyte.server.apis.binders.WorkspaceApiBinder;
 import io.airbyte.server.apis.factories.AttemptApiFactory;
 import io.airbyte.server.apis.factories.ConnectionApiFactory;
 import io.airbyte.server.apis.factories.DbMigrationApiFactory;
@@ -69,6 +71,7 @@ import io.airbyte.server.apis.factories.SourceDefinitionApiFactory;
 import io.airbyte.server.apis.factories.SourceOauthApiFactory;
 import io.airbyte.server.apis.factories.StateApiFactory;
 import io.airbyte.server.apis.factories.WebBackendApiFactory;
+import io.airbyte.server.apis.factories.WorkspaceApiFactory;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DbMigrationHandler;
@@ -235,6 +238,8 @@ public interface ServerFactory {
 
       WebBackendApiFactory.setValues(webBackendConnectionsHandler, webBackendGeographiesHandler);
 
+      WorkspaceApiFactory.setValues(workspacesHandler);
+
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(
           ConfigurationApi.class,
@@ -255,7 +260,8 @@ public interface ServerFactory {
           SourceApiController.class,
           SourceDefinitionApiController.class,
           SourceOauthApiFactory.class,
-          WebBackendApiController.class);
+          WebBackendApiController.class,
+          WorkspaceApiController.class);
 
       final Set<Object> components = Set.of(
           new CorsFilter(),
@@ -277,7 +283,8 @@ public interface ServerFactory {
           new SourceApiBinder(),
           new SourceDefinitionApiBinder(),
           new SourceOauthApiBinder(),
-          new WebBackendApiBinder());
+          new WebBackendApiBinder(),
+          new WorkspaceApiBinder());
 
       // construct server
       return new ServerApp(airbyteVersion, componentClasses, components);
