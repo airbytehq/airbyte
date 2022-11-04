@@ -222,6 +222,10 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private void updateJobStatus(final DSLContext ctx, final long jobId, final JobStatus newStatus, final LocalDateTime now) {
     final Job job = getJob(ctx, jobId);
+    if (job.isJobInTerminalState()) {
+      // If the job is already terminal, no need to set a new status
+      return;
+    }
     job.validateStatusTransition(newStatus);
     ctx.execute(
         "UPDATE jobs SET status = CAST(? as JOB_STATUS), updated_at = ? WHERE id = ?",
