@@ -26,7 +26,6 @@ definitions:
   retriever:
     type: SimpleRetriever
     name: "{{ options['name'] }}"
-    primary_key: "{{ options['primary_key'] }}"
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
