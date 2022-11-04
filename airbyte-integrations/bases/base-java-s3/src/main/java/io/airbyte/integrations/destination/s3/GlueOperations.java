@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 //TODO (itaseski) implement wrapper for retry logic on transient errors
@@ -48,7 +47,6 @@ public class GlueOperations implements MetastoreOperations {
 
             UpdateTableRequest updateTableRequest = new UpdateTableRequest()
                 .withDatabaseName(databaseName)
-                //TODO (itaseski) do we need to send all table inputs or the ones that are going to be changed?
                 .withTableInput(
                     new TableInput()
                         .withName(tableName)
@@ -66,7 +64,7 @@ public class GlueOperations implements MetastoreOperations {
                 .withTableInput(
                     new TableInput()
                         .withName(tableName)
-                        .withTableType("GOVERNED")
+                        //.withTableType("GOVERNED")
                         .withStorageDescriptor(
                             new StorageDescriptor()
                                 .withLocation(location)
@@ -98,46 +96,49 @@ public class GlueOperations implements MetastoreOperations {
 
     }
 
-    public Collection<Column> transformSchema(JsonNode jsonSchema) {
+    private Collection<Column> transformSchema(JsonNode jsonSchema) {
+        Map<String, JsonNode> properties = objectMapper.convertValue(jsonSchema.get("properties"), new TypeReference<>() {});
+        return properties.entrySet().stream()
+            .map(es -> new Column().withName(es.getKey()).withType(transformSchemaRecursive(es.getValue())))
+            .collect(Collectors.toSet());
+    }
 
-        UnaryOperator<String> typeMapper = type -> switch (type) {
+    private String transformSchemaRecursive(JsonNode jsonNode) {
+        String type = filterTypes(jsonNode.get("type")).iterator().next();
+        return switch (type) {
+            // TODO(itaseski) support date-time and timestamp airbyte types
             case "string" -> "string";
-            case "number" -> "float";
-            // TODO (itaseski) does the airbyte schema support integers as first class types or as airbyte_types?
-            case "integer" -> "int";
+            case "number" -> {
+                if (jsonNode.has("airbyte_type") && jsonNode.get("airbyte_type").asText().equals("integer")) {
+                    yield "int";
+                }
+                yield "float";
+            }
             case "boolean" -> "boolean";
-            // TODO (itaseski) throw exception on unknown types or set as received?
+            case "integer" -> "int";
+            case "array" -> {
+                String arrayType = "array<";
+                Set<String> itemTypes = filterTypes(jsonNode.get("items").get("type"));
+                if (itemTypes.size() > 1) {
+                    // TODO(itaseski) use union instead of array when having multiple types (rare occurrence)?
+                    arrayType += "string>";
+                } else {
+                    String subtype = transformSchemaRecursive(jsonNode.get("items"));
+                    arrayType += (subtype + ">");
+                }
+                yield arrayType;
+            }
+            case "object" -> {
+                String objectType = "struct<";
+                Map<String, JsonNode> properties = objectMapper.convertValue(jsonNode.get("properties"), new TypeReference<>() {});
+                String columnTypes = properties.entrySet().stream()
+                    .map(p -> p.getKey() + " : " + transformSchemaRecursive(p.getValue()))
+                    .collect(Collectors.joining(","));
+                objectType += (columnTypes + ">");
+                yield objectType;
+            }
             default -> type;
         };
-
-        Map<String, JsonNode> properties = objectMapper.convertValue(jsonSchema.get("properties"), new TypeReference<>() {});
-
-        return properties.entrySet().stream()
-            .map(es -> {
-                String type = filterTypes(es.getValue().get("type")).iterator().next();
-                return switch (type) {
-                    case "array" -> {
-                        Set<String> types = filterTypes(es.getValue().get("items").get("type"));
-                        if (types.size() > 1) {
-                            yield new Column().withName(es.getKey()).withType("array<string>");
-                        } else {
-                            yield new Column().withName(es.getKey())
-                                .withType("array<" + typeMapper.apply(types.iterator().next()) + ">");
-                        }
-                    }
-                    case "object" -> {
-                        //TODO (itaseski) should we take into account nested objects and generate nested structs i.e struct<col_name : struct<col_name : string>>
-                        Map<String, JsonNode> objProperties = objectMapper.convertValue(es.getValue().get("properties"), new TypeReference<>() {});
-                        String columns = objProperties.entrySet().stream()
-                            .map(ens -> ens.getKey() + " : " + typeMapper.apply(filterTypes(ens.getValue().get("type")).iterator().next()))
-                            .collect(Collectors.joining(","));
-
-                        yield new Column().withName(es.getKey()).withType("struct<" + columns  + ">");
-                    }
-                    default -> new Column().withName(es.getKey()).withType(typeMapper.apply(type));
-                };
-            })
-            .toList();
     }
 
     private Set<String> filterTypes(JsonNode type) {
