@@ -1062,7 +1062,7 @@
 - name: Redshift
   sourceDefinitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
   dockerRepository: airbyte/source-redshift
-  dockerImageTag: 0.3.14
+  dockerImageTag: 0.3.15
   documentationUrl: https://docs.airbyte.com/integrations/sources/redshift
   icon: redshift.svg
   sourceType: database
