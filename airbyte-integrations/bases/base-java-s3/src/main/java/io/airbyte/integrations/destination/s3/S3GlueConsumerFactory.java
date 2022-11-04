@@ -66,8 +66,9 @@ public class S3GlueConsumerFactory {
             .collect(Collectors.toList());
     }
 
-    private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(final BlobStorageOperations storageOperations,
-                                                                                final S3DestinationConfig s3Config) {
+    private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(
+        final BlobStorageOperations storageOperations,
+        final S3DestinationConfig s3Config) {
         return stream -> {
             Preconditions.checkNotNull(stream.getDestinationSyncMode(), "Undefined destination sync mode");
             final AirbyteStream abStream = stream.getStream();
@@ -78,7 +79,11 @@ public class S3GlueConsumerFactory {
             final String fullOutputPath = storageOperations.getBucketObjectPath(namespace, streamName, SYNC_DATETIME, customOutputFormat);
             final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
             final JsonNode jsonSchema = abStream.getJsonSchema();
-            final WriteConfig writeConfig = new WriteConfig(namespace, streamName, bucketPath, customOutputFormat, fullOutputPath, syncMode, jsonSchema);
+            final String location = "s3://" + s3Config.getBucketName() + "/" +
+                fullOutputPath.substring(0, fullOutputPath.lastIndexOf("/") + 1);
+            final WriteConfig writeConfig =
+                new WriteConfig(namespace, streamName, bucketPath, customOutputFormat, fullOutputPath, syncMode,
+                    jsonSchema, location);
             LOGGER.info("Write config: {}", writeConfig);
             return writeConfig;
         };
@@ -152,12 +157,10 @@ public class S3GlueConsumerFactory {
                 }
                 LOGGER.info("Cleaning up destination completed.");
             } else {
-                //TODO (itaseski) include s3 path format in location?
-                String tableLocation = "s3://" + s3DestinationConfig.getBucketName() + "/" + s3DestinationConfig.getBucketPath() + "/";
                 if (s3DestinationConfig.getFormatConfig().getFormat() == S3Format.JSONL) {
                     for (final WriteConfig writeConfig : writeConfigs) {
                         metastoreOperations.upsertTable(glueDestinationConfig.getDatabase(),
-                            writeConfig.getStreamName(), tableLocation, writeConfig.getJsonSchema(),
+                            writeConfig.getStreamName(), writeConfig.getLocation(), writeConfig.getJsonSchema(),
                             glueDestinationConfig.getSerializationLibrary());
                     }
                 }
