@@ -12,7 +12,7 @@ tests:
     - config_path: "integration_tests/invalid_config_oauth.json"
       status: "failed"
     - config_path: "integration_tests/invalid_config_wrong_title.json"
-      status: "exception"
+      status: "failed"
   discovery:
     - config_path: "secrets/config.json"
       backward_compatibility_tests_config:

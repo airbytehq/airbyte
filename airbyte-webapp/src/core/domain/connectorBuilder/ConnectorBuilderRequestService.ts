@@ -7,6 +7,61 @@ import {
 
 import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 
+function mockRecord(streamName: string, recordNum: number, pageNum: number, sliceDay: number) {
+  return {
+    id: `day_${sliceDay}_page_${pageNum}_record_${recordNum}`,
+    object: streamName,
+    amount: recordNum * 1000,
+  };
+}
+
+function mockPage(streamName: string, pageNum: number, sliceDay: number, numRecords: number) {
+  const records = Array.from(Array(numRecords).keys()).map((i) => mockRecord(streamName, i, pageNum, sliceDay));
+
+  return {
+    records,
+    request: {
+      url: `https://api.com/${streamName}?page=${pageNum}`,
+      headers: {
+        Accept: "*/*",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
+      parameters: {
+        page: pageNum,
+      },
+    },
+    response: {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": "2626",
+        Connection: "keep-alive",
+        "cache-control": "no-cache, no-store",
+      },
+      body: {
+        data: records,
+      },
+    },
+  };
+}
+
+function mockSlice(streamName: string, day: number, numPages: number, numRecords: number) {
+  const pages = Array.from(Array(numPages).keys()).map((i) => mockPage(streamName, i + 1, day, numRecords));
+
+  return {
+    sliceDescriptor: { startDatetime: `${day} Jan 2022`, listItem: "airbyte-cloud" },
+    state: {
+      type: "STREAM",
+      stream: { stream_descriptor: { name: streamName }, stream_state: { date: `2022-01-0${day}` } },
+      data: { [streamName]: { date: `2022-01-0${day}` } },
+    },
+    pages,
+  };
+}
+
 export class ConnectorBuilderRequestService extends AirbyteRequestService {
   public readStream(readParams: StreamReadRequestBody): Promise<StreamRead> {
     // TODO: uncomment this and remove mock responses once there is a real API to call
@@ -16,42 +71,14 @@ export class ConnectorBuilderRequestService extends AirbyteRequestService {
     console.log(`Connector manifest:\n${JSON.stringify(readParams.manifest)}`);
     console.log(`Config:\n${JSON.stringify(readParams.config)}`);
     return new Promise((resolve) => setTimeout(resolve, 200)).then(() => {
+      const slices = Array.from(Array(4).keys()).map((i) => mockSlice(readParams.stream, i + 1, 20, 20));
+
       return {
         logs: [
-          { level: "INFO", message: "Syncing stream: rates " },
-          { level: "INFO", message: "Setting state of rates stream to {'date': '2022-09-25'}" },
+          { level: "INFO", message: `Syncing stream: ${readParams.stream}` },
+          { level: "INFO", message: `Setting state of ${readParams.stream} to {'date': '2022-09-25'}` },
         ],
-        slices: [
-          {
-            sliceDescriptor: { start: "Jan 1, 2022", end: "Jan 2, 2022" },
-            state: {
-              type: "STREAM",
-              stream: { stream_descriptor: { name: readParams.stream }, stream_state: { date: "2022-09-26" } },
-              data: { rates: { date: "2022-09-26" } },
-            },
-            pages: [
-              {
-                records: [
-                  {
-                    stream: readParams.stream,
-                    data: {
-                      id: "dp_123",
-                      object: readParams.stream,
-                      amount: 2000,
-                      balance_transaction: "txn_123",
-                    },
-                  },
-                ],
-                request: {
-                  url: "https://api.com/path",
-                },
-                response: {
-                  status: 200,
-                },
-              },
-            ],
-          },
-        ],
+        slices,
       };
     });
   }

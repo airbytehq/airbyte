@@ -109,6 +109,12 @@
         },
         "streams": {
           "type": ["null", "string"]
+        },
+        "user_defined_message_subscriptions": {
+          "type": ["null", "string"]
+        },
+        "user_defined_messages": {
+          "type": ["null", "string"]
         }
       }
     }
