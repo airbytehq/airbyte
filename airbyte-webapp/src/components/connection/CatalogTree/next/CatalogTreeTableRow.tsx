@@ -100,6 +100,8 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             {syncSchema.syncMode}
           </HeaderCell>
         ) : (
+          // todo: SyncModeSelect flex items should fill the entire pill width
+          // todo: SyncModeSelect should probably have a Tooltip
           <SyncModeSelect options={availableSyncModes} onChange={onSelectSyncMode} value={syncSchema} />
         )}
       </Cell>
@@ -131,18 +133,6 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
       <HeaderCell ellipsis title={destName} className={styles.streamRowItem}>
         {destName}
       </HeaderCell>
-      <Cell className={styles.streamRowItem}>
-        {disabled ? (
-          <HeaderCell ellipsis title={syncSchema.destinationSyncMode}>
-            {syncSchema.destinationSyncMode}
-          </HeaderCell>
-        ) : (
-          // TODO: Replace with Dropdown/Popout
-          <HeaderCell ellipsis title={syncSchema.destinationSyncMode} className={styles.streamRowItem}>
-            {syncSchema.destinationSyncMode}
-          </HeaderCell>
-        )}
-      </Cell>
     </Row>
   );
 };
