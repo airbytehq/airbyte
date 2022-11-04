@@ -69,8 +69,12 @@ openssl x509 -req -in broker1.csr -CA snakeoil-ca-1.crt -CAkey snakeoil-ca-1.key
 keytool -keystore kafka.broker1.keystore.jks -alias CARoot -import -file snakeoil-ca-1.crt -storepass confluent -keypass confluent -noprompt
 keytool -keystore kafka.broker1.keystore.jks -alias broker1 -import -file broker1-ca1-signed.crt -storepass confluent -keypass confluent
 
+# the broker should trust itself
+keytool -keystore kafka.broker1.truststore.jks -alias CARoot -import -file snakeoil-ca-1.crt -storepass confluent -keypass confluent -noprompt
+
 echo "confluent" > broker1_sslkey_creds
 echo "confluent" > broker1_keystore_creds
+echo "confluent" > broker1_truststore_creds
 
 # Create truststore for the producer and import the CA cert
 keytool -keystore kafka.producer.truststore.jks -alias CARoot -import -file snakeoil-ca-1.crt -storepass confluent -keypass confluent -noprompt
