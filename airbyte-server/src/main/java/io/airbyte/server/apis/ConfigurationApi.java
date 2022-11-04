@@ -116,7 +116,6 @@ import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
-import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
 import io.airbyte.server.scheduler.EventRunner;
@@ -138,7 +137,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   private final DestinationDefinitionsHandler destinationDefinitionsHandler;
   private final DestinationHandler destinationHandler;
   private final ConnectionsHandler connectionsHandler;
-  private final SchedulerHandler schedulerHandler;
   private final JobHistoryHandler jobHistoryHandler;
 
   public ConfigurationApi(final ConfigRepository configRepository,
@@ -161,17 +159,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         workspaceHelper,
         trackingClient,
         eventRunner);
-
-    schedulerHandler = new SchedulerHandler(
-        configRepository,
-        secretsRepositoryReader,
-        secretsRepositoryWriter,
-        synchronousSchedulerClient,
-        jobPersistence,
-        workerEnvironment,
-        logConfigs,
-        eventRunner,
-        connectionsHandler);
 
     sourceHandler = new SourceHandler(
         configRepository,
@@ -390,9 +377,14 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   // SOURCE SPECIFICATION
 
+  /**
+   * This implementation has been moved to {@link SourceDefinitionSpecificationApiController}. Since
+   * the path of {@link SourceDefinitionSpecificationApiController} is more granular, it will override
+   * this implementation
+   */
   @Override
   public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
-    return execute(() -> schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdWithWorkspaceId));
+    throw new NotImplementedException();
   }
 
   // OAUTH
