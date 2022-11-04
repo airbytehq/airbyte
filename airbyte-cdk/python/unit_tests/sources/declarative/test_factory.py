@@ -34,7 +34,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.declarative.schema import EmptySchemaLoader
+from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
@@ -603,7 +603,7 @@ def test_config_with_defaults():
     assert type(stream) == DeclarativeStream
     assert stream.primary_key == "id"
     assert stream.name == "lists"
-    assert type(stream.schema_loader) == EmptySchemaLoader
+    assert type(stream.schema_loader) == DefaultSchemaLoader
     assert type(stream.retriever) == SimpleRetriever
     assert stream.retriever.requester.http_method == HttpMethod.GET
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.3
+Low-code: Replace EmptySchemaLoader with DefaultSchemaLoader to retain backwards compatibility
+Low-code: Evaluate backoff strategies at runtime
+
 ## 0.5.2
 Low-code: Allow for read even when schemas are not defined for a connector yet
 
