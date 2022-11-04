@@ -12,9 +12,9 @@ import org.jooq.impl.SQLDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class V0_40_15_001__AddActorDefinitionNormalizationAndDbtColumns extends BaseJavaMigration {
+public class V0_40_18_002__AddActorDefinitionNormalizationAndDbtColumns extends BaseJavaMigration {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(V0_40_15_001__AddActorDefinitionNormalizationAndDbtColumns.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(V0_40_18_002__AddActorDefinitionNormalizationAndDbtColumns.class);
 
   @Override
   public void migrate(final Context context) throws Exception {
