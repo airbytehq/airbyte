@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.s3.jsonl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.functional.CheckedBiFunction;
@@ -21,6 +23,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
@@ -46,7 +49,8 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
     final ObjectNode json = MAPPER.createObjectNode();
     json.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
     json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
-    json.set(JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getData());
+    Map<String, JsonNode> data = MAPPER.convertValue(recordMessage.getData(), new TypeReference<>() {});
+    json.setAll(data);
     printWriter.println(Jsons.serialize(json));
   }
 
