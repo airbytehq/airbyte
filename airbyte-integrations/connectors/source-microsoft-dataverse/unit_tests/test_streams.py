@@ -6,56 +6,87 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_microsoft_dataverse.source import IncrementalMicrosoftDataverseStream
+from pytest import fixture
+
+from source_microsoft_dataverse.source import MicrosoftDataverseStream
 
 
-@pytest.fixture
-def patch_base_class(mocker):
-    # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(IncrementalMicrosoftDataverseStream, "path", "v0/example_endpoint")
-    mocker.patch.object(IncrementalMicrosoftDataverseStream, "primary_key", "test_primary_key")
-    mocker.patch.object(IncrementalMicrosoftDataverseStream, "__abstractmethods__", set())
+@fixture
+def incremental_config():
+    return {
+        "url": "http://test-url",
+        "stream_name": "test_stream",
+        "stream_path": "test_path",
+        "primary_key": [["test_primary_key"]],
+        "schema": {
+
+        },
+        "odata_maxpagesize": 100,
+        "authenticator": MagicMock()
+    }
 
 
-def test_request_params(patch_base_class):
-    stream = IncrementalMicrosoftDataverseStream()
-    # TODO: replace this with your input parameters
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request parameters
-    expected_params = {}
+@pytest.mark.parametrize(
+    ("inputs", "expected_params"),
+    [
+        ({"stream_slice": None, "stream_state": {}, "next_page_token": None}, {}),
+        ({"stream_slice": None, "stream_state": {}, "next_page_token": {"$skiptoken": "skiptoken"}}, {"$skiptoken": "skiptoken"}),
+        ({"stream_slice": None, "stream_state": {"$deltatoken": "delta"}, "next_page_token": None}, {"$deltatoken": "delta"})
+    ],
+)
+def test_request_params(inputs, expected_params, incremental_config):
+    stream = MicrosoftDataverseStream(**incremental_config)
     assert stream.request_params(**inputs) == expected_params
 
 
-def test_next_page_token(patch_base_class):
-    stream = IncrementalMicrosoftDataverseStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
-    expected_token = None
+@pytest.mark.parametrize(
+    ("response_json", "next_page_token"),
+    [
+        ({"@odata.nextLink": "https://url?$skiptoken=oEBwdSP6uehIAxQOWq_3Ksh_TLol6KIm3stvdc6hGhZRi1hQ7Spe__dpvm3U4zReE4CYXC2zOtaKdi7KHlUtC2CbRiBIUwOxPKLa"},
+         {"$skiptoken": "oEBwdSP6uehIAxQOWq_3Ksh_TLol6KIm3stvdc6hGhZRi1hQ7Spe__dpvm3U4zReE4CYXC2zOtaKdi7KHlUtC2CbRiBIUwOxPKLa"}),
+        ({"value": []}, None),
+    ],
+)
+def test_next_page_token(response_json, next_page_token, incremental_config):
+    stream = MicrosoftDataverseStream(**incremental_config)
+    response = MagicMock()
+    response.json.return_value = response_json
+    inputs = {"response": response}
+    expected_token = next_page_token
     assert stream.next_page_token(**inputs) == expected_token
 
 
-def test_parse_response(patch_base_class):
-    stream = IncrementalMicrosoftDataverseStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected parced object
-    expected_parsed_object = {}
+def test_parse_response(incremental_config):
+    stream = MicrosoftDataverseStream(**incremental_config)
+    response = MagicMock()
+    response.json.return_value = {
+        "value": [
+            {
+                "test-key": "test-value"
+            }
+        ]
+    }
+    inputs = {"response": response}
+    expected_parsed_object = {
+        "test-key": "test-value"
+    }
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
-def test_request_headers(patch_base_class):
-    stream = IncrementalMicrosoftDataverseStream()
-    # TODO: replace this with your input parameters
+def test_request_headers(incremental_config):
+    stream = MicrosoftDataverseStream(**incremental_config)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
-    expected_headers = {}
+    expected_headers = {
+        "Cache-Control": "no-cache",
+        "OData-Version": "4.0",
+        "Content-Type": "application/json",
+        "Prefer": "odata.maxpagesize=100"
+    }
     assert stream.request_headers(**inputs) == expected_headers
 
 
-def test_http_method(patch_base_class):
-    stream = IncrementalMicrosoftDataverseStream()
-    # TODO: replace this with your expected http request method
+def test_http_method(incremental_config):
+    stream = MicrosoftDataverseStream(**incremental_config)
     expected_method = "GET"
     assert stream.http_method == expected_method
 
@@ -69,15 +100,15 @@ def test_http_method(patch_base_class):
         (HTTPStatus.INTERNAL_SERVER_ERROR, True),
     ],
 )
-def test_should_retry(patch_base_class, http_status, should_retry):
+def test_should_retry(incremental_config, http_status, should_retry):
     response_mock = MagicMock()
     response_mock.status_code = http_status
-    stream = IncrementalMicrosoftDataverseStream()
+    stream = MicrosoftDataverseStream(**incremental_config)
     assert stream.should_retry(response_mock) == should_retry
 
 
-def test_backoff_time(patch_base_class):
+def test_backoff_time(incremental_config):
     response_mock = MagicMock()
-    stream = IncrementalMicrosoftDataverseStream()
+    stream = MicrosoftDataverseStream(**incremental_config)
     expected_backoff_time = None
     assert stream.backoff_time(response_mock) == expected_backoff_time

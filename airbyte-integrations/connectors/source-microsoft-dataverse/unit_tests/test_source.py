@@ -5,7 +5,7 @@ import json
 from unittest import mock
 from unittest.mock import MagicMock
 
-from airbyte_cdk.models import SyncMode, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, AirbyteStream
+from airbyte_cdk.models import SyncMode
 
 from source_microsoft_dataverse.dataverse import AirbyteType
 from source_microsoft_dataverse.source import SourceMicrosoftDataverse
@@ -82,6 +82,10 @@ def test_discover_incremental(mock_request):
                         {
                             "LogicalName": "test",
                             "AttributeType": "String"
+                        },
+                        {
+                            "LogicalName": "modifiedon",
+                            "AttributeType": "DateTime"
                         }
                     ]
                 }

@@ -12,4 +12,3 @@ from source_microsoft_dataverse.dataverse import convert_dataverse_type, Airbyte
 def test_convert_dataverse_type(dataverse_type, expected_result):
     result = convert_dataverse_type(dataverse_type)
     assert result == expected_result
-
