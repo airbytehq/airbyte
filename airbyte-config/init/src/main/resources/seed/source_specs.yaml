@@ -1626,7 +1626,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-bigquery:0.2.2"
+- dockerImage: "airbyte/source-bigquery:0.2.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/bigquery"
     connectionSpecification:
