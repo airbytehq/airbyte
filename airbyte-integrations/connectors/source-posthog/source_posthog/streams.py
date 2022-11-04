@@ -54,8 +54,25 @@ class PosthogStream(HttpStream, ABC):
             params.update(next_page_token)
         return params
 
+class Projects(PosthogStream):
+    """
+    Docs: https://posthog.com/docs/api/projects
+    """
+    def path(self, **kwargs) -> str:
+        return "projects"
 
-class IncrementalPosthogStream(PosthogStream, ABC):
+
+class PosthogStreamSlices(PosthogStream):
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+
+        project_stream = Projects(authenticator=self._authenticator, base_url=self.url_base[:-5])
+        projects = project_stream.read_records(sync_mode=SyncMode.full_refresh)
+        return [{'id': project['id'] for project in projects}]
+
+
+class IncrementalPosthogStream(PosthogStreamSlices, ABC):
     """
     Because endpoints has descending order we need to save initial state value to know when to stop pagination.
     start_date is used to as a min date to filter on.
@@ -120,30 +137,25 @@ class IncrementalPosthogStream(PosthogStream, ABC):
         return super().read_records(sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
 
 
-class Annotations(IncrementalPosthogStream):
+class Annotations(PosthogStreamSlices):
     """
     Docs: https://posthog.com/docs/api/annotations
     """
 
     cursor_field = "updated_at"
 
-    def path(self, **kwargs) -> str:
-        return "annotation"
-
-    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        params["order"] = f"-{self.cursor_field}"  # sort descending
-        return params
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"projects/{stream_slice['id']}/annotations"
 
 
-class Cohorts(PosthogStream):
+class Cohorts(PosthogStreamSlices):
     """
     Docs: https://posthog.com/docs/api/cohorts
     normal ASC sorting. But without filters like `since`
     """
 
-    def path(self, **kwargs) -> str:
-        return "cohort"
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"projects/{stream_slice['id']}/cohorts"
 
 
 class Events(IncrementalPosthogStream):
@@ -154,7 +166,7 @@ class Events(IncrementalPosthogStream):
     cursor_field = "timestamp"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return "event"
+        return f"projects/{stream_slice['id']}/events"
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
@@ -164,22 +176,21 @@ class Events(IncrementalPosthogStream):
         return params
 
 
-class FeatureFlags(PosthogStream):
+class FeatureFlags(PosthogStreamSlices):
     """
     Docs: https://posthog.com/docs/api/feature-flags
     """
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"projects/{stream_slice['id']}/feature_flags"
 
-    def path(self, **kwargs) -> str:
-        return "feature_flag"
 
-
-class Persons(PosthogStream):
+class Persons(PosthogStreamSlices):
     """
     Docs: https://posthog.com/docs/api/people
     """
 
-    def path(self, **kwargs) -> str:
-        return "person"
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"projects/{stream_slice['id']}/persons"
 
 
 class PingMe(PosthogStream):
