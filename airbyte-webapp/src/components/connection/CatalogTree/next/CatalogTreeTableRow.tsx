@@ -63,6 +63,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
     [styles.disabledChange]: changedSelected && !isStreamEnabled,
     [styles.selected]: isSelected,
     [styles.error]: hasError,
+    [styles.disabled]: !isStreamEnabled,
   });
 
   const checkboxCellCustomStyle = classnames(styles.checkboxCell, styles.streamRowCheckboxCell);
