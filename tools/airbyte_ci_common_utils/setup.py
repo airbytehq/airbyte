@@ -11,7 +11,7 @@ TEST_REQUIREMENTS = ["requests-mock"]
 
 setup(
     version="0.0.0",
-    name="ci_common_utils",
+    name="airbyte_ci_common_utils",
     description="Suite of all often used classes and common functions",
     author="Airbyte",
     author_email="contact@airbyte.io",

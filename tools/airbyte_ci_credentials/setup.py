@@ -5,13 +5,13 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["requests", "ci_common_utils"]
+MAIN_REQUIREMENTS = ["requests", "airbyte_ci_common_utils"]
 
 TEST_REQUIREMENTS = ["requests-mock"]
 
 setup(
     version="0.0.0",
-    name="ci_credentials",
+    name="airbyte_ci_credentials",
     description="Load and extract CI secrets for test suites",
     author="Airbyte",
     author_email="contact@airbyte.io",
@@ -23,7 +23,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "ci_credentials = ci_credentials.main:main",
+            "airbyte_ci_credentials = airbyte_ci_credentials.main:main",
         ],
     },
 )

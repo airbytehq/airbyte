@@ -4,8 +4,8 @@
 from typing import List, Set
 
 import pytest
-from ci_changes_detection.main import list_changed_modules
-from ci_sonar_qube import ROOT_DIR
+from airbyte_ci_changes_detection.main import list_changed_modules
+from airbyte_ci_sonar_qube import ROOT_DIR
 
 
 @pytest.mark.parametrize(
@@ -42,7 +42,7 @@ from ci_sonar_qube import ROOT_DIR
                 [
                     "airbyte-integrations/connectors/source-s3/Dockerfile",
                     "airbyte-integrations/connectors/destination-s3/Dockerfile",
-                    "tools/ci_code_validator"
+                    "tools/airbyte_ci_code_validator"
                 ],
                 [
                     {"folder": str(ROOT_DIR / "airbyte-integrations/connectors/source-s3"), "lang": "py",
@@ -55,7 +55,7 @@ from ci_sonar_qube import ROOT_DIR
                 [
                     "airbyte-integrations/connectors/source-s3/Dockerfile",
                     "airbyte-integrations/connectors/destination-s3/Dockerfile",
-                    "tools/ci_code_validator"
+                    "tools/airbyte_ci_code_validator"
                 ],
                 [
                     {"folder": str(ROOT_DIR / "airbyte-integrations/connectors/source-s3"), "lang": "py",

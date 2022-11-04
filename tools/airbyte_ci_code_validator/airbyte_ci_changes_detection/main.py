@@ -6,8 +6,8 @@ import sys
 from pathlib import Path
 from typing import Dict, List
 
-from ci_common_utils import Logger
-from ci_sonar_qube import ROOT_DIR
+from airbyte_ci_common_utils import Logger
+from airbyte_ci_sonar_qube import ROOT_DIR
 
 LOGGER = Logger()
 
@@ -49,7 +49,7 @@ def get_module_type(dir_path: Path) -> Path:
 def list_changed_modules(changed_files: List[str]) -> List[Dict[str, str]]:
     """
     changed_filed are the list of files which were modified in current branch.
-    E.g. changed_files = ["tools/ci_static_check_reports/__init__.py", "tools/ci_static_check_reports/setup.py", ...]
+    E.g. changed_files = ["tools/airbyte_ci_static_check_reports/__init__.py", "tools/airbyte_ci_static_check_reports/setup.py", ...]
     """
     module_folders = {}
     for file_path in changed_files:

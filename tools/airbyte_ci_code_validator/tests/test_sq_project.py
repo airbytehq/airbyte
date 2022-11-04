@@ -1,13 +1,13 @@
 import pytest
 import requests_mock
-from ci_sonar_qube.sonar_qube_api import SonarQubeApi
+from airbyte_ci_sonar_qube.sonar_qube_api import SonarQubeApi
 
 
 @pytest.mark.parametrize(
     "module_name,pr, expected_title, expected_key",
     [
         ("connectors/source-s3", "airbyte/1234", "Airbyte Connectors Source S3(#1234)", "pr:1234:airbyte:connectors:source-s3"),
-        ("tools/ci_code_validator", "airbyte/1111", "Airbyte Tools Ci Code Validator(#1111)", "pr:1111:airbyte:tools:ci-code-validator"),
+        ("tools/airbyte_ci_code_validator", "airbyte/1111", "Airbyte Tools Ci Code Validator(#1111)", "pr:1111:airbyte:tools:ci-code-validator"),
         ("airbyte-cdk/python", "0", "Airbyte Airbyte Cdk Python", "master:airbyte:airbyte-cdk:python"),
     ]
 )

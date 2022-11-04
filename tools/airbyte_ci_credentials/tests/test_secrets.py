@@ -8,10 +8,10 @@ from unittest.mock import patch
 
 import pytest
 import requests_mock
-from ci_credentials.main import ENV_GCP_GSM_CREDENTIALS
-from ci_credentials.main import main
+from airbyte_ci_credentials.main import ENV_GCP_GSM_CREDENTIALS
+from airbyte_ci_credentials.main import main
 
-from ci_credentials import SecretsLoader
+from airbyte_ci_credentials import SecretsLoader
 
 HERE = Path(__file__).resolve().parent
 TEST_CONNECTOR_NAME = "source-test"
@@ -94,8 +94,8 @@ def test_main(capfd, monkeypatch):
     ids=["gsm_only", ]
 
 )
-@patch('ci_common_utils.GoogleApi.get_access_token', lambda *args: ("fake_token", None))
-@patch('ci_common_utils.GoogleApi.project_id', "fake_id")
+@patch('airbyte_ci_common_utils.GoogleApi.get_access_token', lambda *args: ("fake_token", None))
+@patch('airbyte_ci_common_utils.GoogleApi.project_id', "fake_id")
 def test_read(connector_name, gsm_secrets, expected_secrets):
     matcher_gsm_list = re.compile("https://secretmanager.googleapis.com/v1/projects/.+/secrets")
     secrets_list = {"secrets": [{

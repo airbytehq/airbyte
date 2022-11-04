@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 import requests_mock
 
-from ci_code_validator.ci_sonar_qube.log_parsers import LogParser
+from airbyte_ci_code_validator.airbyte_ci_sonar_qube.log_parsers import LogParser
 
 HERE = Path(__file__).parent
 PACKAGE_DIR = HERE / "simple_package"

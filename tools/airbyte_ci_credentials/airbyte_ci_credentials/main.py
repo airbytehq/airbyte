@@ -3,7 +3,7 @@ import os
 import sys
 from json.decoder import JSONDecodeError
 
-from ci_common_utils import Logger
+from airbyte_ci_common_utils import Logger
 from . import SecretsLoader
 
 logger = Logger()

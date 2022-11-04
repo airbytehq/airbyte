@@ -8,7 +8,7 @@ import requests
 from mdutils.mdutils import MdUtils
 from requests.auth import HTTPBasicAuth
 
-from ci_common_utils import Logger
+from airbyte_ci_common_utils import Logger
 
 AIRBYTE_PROJECT_PREFIX = "airbyte"
 RE_RULE_NAME = re.compile(r"(.+):[A-Za-z]+(\d+)")

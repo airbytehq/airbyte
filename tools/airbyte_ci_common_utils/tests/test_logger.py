@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from ci_common_utils import Logger
+from airbyte_ci_common_utils import Logger
 
 LOG_RE = re.compile(
     r'^\[(\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{6})\] -'
