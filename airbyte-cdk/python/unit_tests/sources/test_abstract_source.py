@@ -5,10 +5,12 @@
 import copy
 import logging
 from collections import defaultdict
-from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, \
+    Optional, Tuple, Union
 from unittest.mock import call
 
 import pytest
+
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -41,10 +43,10 @@ logger = logging.getLogger("airbyte")
 
 class MockSource(AbstractSource):
     def __init__(
-        self,
-        check_lambda: Callable[[], Tuple[bool, Optional[Any]]] = None,
-        streams: List[Stream] = None,
-        per_stream: bool = True,
+            self,
+            check_lambda: Callable[[], Tuple[bool, Optional[Any]]] = None,
+            streams: List[Stream] = None,
+            per_stream: bool = True,
     ):
         self._streams = streams
         self.check_lambda = check_lambda
@@ -112,9 +114,9 @@ def test_raising_check():
 
 class MockStream(Stream):
     def __init__(
-        self,
-        inputs_and_mocked_outputs: List[Tuple[Mapping[str, Any], Iterable[Mapping[str, Any]]]] = None,
-        name: str = None,
+            self,
+            inputs_and_mocked_outputs: List[Tuple[Mapping[str, Any], Iterable[Mapping[str, Any]]]] = None,
+            name: str = None,
     ):
         self._inputs_and_mocked_outputs = inputs_and_mocked_outputs
         self._name = name
@@ -156,7 +158,7 @@ class MockStreamWithState(MockStream):
 
 class MockStreamEmittingAirbyteMessages(MockStreamWithState):
     def __init__(
-        self, inputs_and_mocked_outputs: List[Tuple[Mapping[str, Any], Iterable[AirbyteMessage]]] = None, name: str = None, state=None
+            self, inputs_and_mocked_outputs: List[Tuple[Mapping[str, Any], Iterable[AirbyteMessage]]] = None, name: str = None, state=None
     ):
         super().__init__(inputs_and_mocked_outputs, name, state)
         self._inputs_and_mocked_outputs = inputs_and_mocked_outputs
@@ -165,20 +167,7 @@ class MockStreamEmittingAirbyteMessages(MockStreamWithState):
     @property
     def name(self):
         return self._name
-
-    def read_records_as_messages(self, **kwargs) -> Iterable[AirbyteMessage]:  # type: ignore
-        # Remove None values
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        if self._inputs_and_mocked_outputs:
-            for _input, output in self._inputs_and_mocked_outputs:
-                if kwargs == _input:
-                    return output
-
-        raise Exception(f"No mocked output supplied for input: {kwargs}. Mocked inputs/outputs: {self._inputs_and_mocked_outputs}")
-
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:  # type: ignore
-        raise RuntimeError("Not implemented!")
-
+    
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         return "pk"
@@ -931,6 +920,10 @@ class TestIncrementalRead:
 
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
+        print(f"0: {messages[0]}")
+        print(f"1: {messages[1]}")
+        print(f"2: {messages[2]}")
+        print(f"3: {messages[3]}")
         assert expected == messages
 
 
