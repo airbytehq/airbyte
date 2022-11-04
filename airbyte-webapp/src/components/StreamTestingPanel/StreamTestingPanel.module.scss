@@ -16,9 +16,12 @@
   flex: 0 0 auto;
 }
 
-.resultDisplay {
+.resizablePanelsContainer {
   flex: 1;
   min-height: 0;
+
+  // required to hide the connector logs splitter underneath the resizable panel overlay
+  z-index: 0;
 }
 
 .placeholder {
