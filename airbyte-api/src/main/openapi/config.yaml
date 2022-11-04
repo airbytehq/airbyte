@@ -2266,6 +2266,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalOperationResult"
+  /v1/attempt/save_stats:
+    post:
+      tags:
+        - attempt
+        - internal
+      summary: For worker to set sync stats of a running attempt.
+      operationId: saveStats
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveStatsRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful Operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalOperationResult"
 
 components:
   securitySchemes:
@@ -4049,6 +4069,12 @@ components:
         recordsCommitted:
           type: integer
           format: int64
+        estimatedRecords:
+          type: integer
+          format: int64
+        estimatedBytes:
+          type: integer
+          format: int64
     AttemptStreamStats:
       type: object
       required:
@@ -4892,6 +4918,23 @@ components:
         processingTaskQueue:
           type: string
           default: ""
+    SaveStatsRequestBody:
+      type: object
+      required:
+        - jobId
+        - attemptNumber
+        - stats
+      properties:
+        jobId:
+          $ref: "#/components/schemas/JobId"
+        attemptNumber:
+          $ref: "#/components/schemas/AttemptNumber"
+        stats:
+          $ref: "#/components/schemas/AttemptStats"
+        streamStats:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptStreamStats"
     InternalOperationResult:
       type: object
       required:

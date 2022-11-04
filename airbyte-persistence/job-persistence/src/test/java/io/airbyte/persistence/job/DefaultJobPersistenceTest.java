@@ -567,15 +567,6 @@ class DefaultJobPersistenceTest {
   }
 
   @Test
-  void testSchedulerMigrationMetadata() throws IOException {
-    boolean isMigrated = jobPersistence.isSchedulerMigrated();
-    assertFalse(isMigrated);
-    jobPersistence.setSchedulerMigrationDone();
-    isMigrated = jobPersistence.isSchedulerMigrated();
-    assertTrue(isMigrated);
-  }
-
-  @Test
   void testAirbyteProtocolVersionMaxMetadata() throws IOException {
     assertTrue(jobPersistence.getAirbyteProtocolVersionMax().isEmpty());
 
