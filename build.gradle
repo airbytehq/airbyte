@@ -426,7 +426,7 @@ subprojects { subproj ->
         implementation libs.aws.java.sdk.s3
         implementation libs.google.cloud.storage
 
-        implementation(platform(libs.aws-bom))
+        implementation(platform(libs.aws.bom))
         implementation libs.bundles.aws
 
         // Lombok dependencies
