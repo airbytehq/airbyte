@@ -6,7 +6,8 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1",
+    "airbyte-cdk~=0.5.4",
+    "dataclasses-jsonschema==2.15.1"
 ]
 
 TEST_REQUIREMENTS = [
@@ -21,6 +22,6 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json"]},
+    package_data={"": ["*.json", "*.yaml", "schemas/*.json"]},
     extras_require={"tests": TEST_REQUIREMENTS},
 )
