@@ -415,31 +415,31 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
         (
             "test_option_in_selector",
             """
-          extractor:
-            type: DpathExtractor
-            field_pointer: ["{{ options['name'] }}"]
-          selector:
-            class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
-            $options:
-              name: "selector"
-            extractor: "*ref(extractor)"
-        """,
+                      extractor:
+                        type: DpathExtractor
+                        field_pointer: ["{{ options['name'] }}"]
+                      selector:
+                        class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+                        $options:
+                          name: "selector"
+                        extractor: "*ref(extractor)"
+                    """,
             "selector",
         ),
         (
             "test_option_in_extractor",
             """
-          extractor:
-            type: DpathExtractor
-            $options:
-              name: "extractor"
-            field_pointer: ["{{ options['name'] }}"]
-          selector:
-            class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
-            $options:
-              name: "selector"
-            extractor: "*ref(extractor)"
-        """,
+                      extractor:
+                        type: DpathExtractor
+                        $options:
+                          name: "extractor"
+                        field_pointer: ["{{ options['name'] }}"]
+                      selector:
+                        class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+                        $options:
+                          name: "selector"
+                        extractor: "*ref(extractor)"
+                    """,
             "extractor",
         ),
     ],
@@ -451,8 +451,53 @@ def test_options_propagation(test_name, content, expected_field_pointer_value):
     assert selector.extractor.field_pointer[0].eval(input_config) == expected_field_pointer_value
 
 
-def test_create_requester():
-    content = """
+@pytest.mark.parametrize(
+    "test_name, error_handler",
+    [
+        (
+            "test_create_requester_constant_error_handler",
+            """
+  error_handler:
+    backoff_strategies:
+      - type: "ConstantBackoffStrategy"
+        backoff_time_in_seconds: 5
+            """,
+        ),
+        (
+            "test_create_requester_exponential_error_handler",
+            """
+  error_handler:
+    backoff_strategies:
+      - type: "ExponentialBackoffStrategy"
+        factor: 5
+            """,
+        ),
+        (
+            "test_create_requester_wait_time_from_header_error_handler",
+            """
+  error_handler:
+    backoff_strategies:
+      - type: "WaitTimeFromHeader"
+        header: "a_header"
+            """,
+        ),
+        (
+            "test_create_requester_wait_time_until_from_header_error_handler",
+            """
+  error_handler:
+    backoff_strategies:
+      - type: "WaitUntilTimeFromHeader"
+        header: "a_header"
+            """,
+        ),
+        (
+            "test_create_requester_no_error_handler",
+            """""",
+        ),
+    ],
+)
+def test_create_requester(test_name, error_handler):
+    content = f"""
   requester:
     type: HttpRequester
     path: "/v3/marketing/lists"
@@ -461,13 +506,14 @@ def test_create_requester():
     url_base: "https://api.sendgrid.com"
     authenticator:
       type: "BasicHttpAuthenticator"
-      username: "{{ options.name }}"
-      password: "{{ config.apikey }}"
+      username: "{{{{ options.name}}}}"
+      password: "{{{{ config.apikey }}}}"
     request_options_provider:
       request_parameters:
         a_parameter: "something_here"
       request_headers:
         header: header_value
+    {error_handler}
     """
     config = parser.parse(content)
 
@@ -498,7 +544,6 @@ def test_create_composite_error_handler():
             - response_filters:
                 - http_codes: [ 403 ]
                   action: RETRY
-                  error_message: "Retryable error received: {{ response.message }}"
     """
     config = parser.parse(content)
 
@@ -510,7 +555,6 @@ def test_create_composite_error_handler():
     assert isinstance(component.error_handlers[0].response_filters[0], HttpResponseFilter)
     assert component.error_handlers[0].response_filters[0].predicate.condition == "{{ 'code' in response }}"
     assert component.error_handlers[1].response_filters[0].http_codes == [403]
-    assert component.error_handlers[1].response_filters[0].error_message.string == "Retryable error received: {{ response.message }}"
     assert isinstance(component, CompositeErrorHandler)
 
 
@@ -661,37 +705,6 @@ class TestCreateTransformations:
             class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
             $options:
                 {self.base_options}
-                transformations:
-                    - type: AddFields
-                      fields:
-                        - path: ["field1"]
-                          value: "static_value"
-        """
-        config = parser.parse(content)
-
-        factory.create_component(config["the_stream"], input_config, False)
-
-        component = factory.create_component(config["the_stream"], input_config)()
-        assert isinstance(component, DeclarativeStream)
-        expected = [
-            AddFields(
-                fields=[
-                    AddedFieldDefinition(
-                        path=["field1"], value=InterpolatedString(string="static_value", default="static_value", options={}), options={}
-                    )
-                ],
-                options={},
-            )
-        ]
-        assert expected == component.transformations
-
-    def test_add_fields_path_in_options(self):
-        content = f"""
-        the_stream:
-            class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
-            $options:
-                {self.base_options}
-                path: "/wrong_path"
                 transformations:
                     - type: AddFields
                       fields:
