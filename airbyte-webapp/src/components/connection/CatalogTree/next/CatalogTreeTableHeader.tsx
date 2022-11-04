@@ -28,7 +28,7 @@ export const CatalogTreeTableHeader: React.FC = () => {
 
   return (
     <Header className={styles.headerContainer}>
-      <Cell className={styles.checkboxCell}>
+      <div className={styles.checkboxCell}>
         {mode !== "readonly" && (
           <CheckBox
             onChange={onCheckAll}
@@ -36,40 +36,40 @@ export const CatalogTreeTableHeader: React.FC = () => {
             checked={allChecked}
           />
         )}
-      </Cell>
-      <TextCell flex={0.4}>
+      </div>
+      <TextCell flex={0.5}>
         <FormattedMessage id="sources.sync" />
       </TextCell>
       {/* <TextCell>
         <FormattedMessage id="form.fields" />
       </TextCell> */}
-      <TextCell>
+      <TextCell flex={1}>
         <FormattedMessage id="form.namespace" />
       </TextCell>
-      <TextCell>
+      <TextCell flex={1}>
         <FormattedMessage id="form.streamName" />
       </TextCell>
-      <TextCell>
+      <TextCell flex={2}>
         <FormattedMessage id="form.syncMode" />
         <InfoTooltip>
           <FormattedMessage id="connectionForm.syncType.info" />
           <TooltipLearnMoreLink url={links.syncModeLink} />
         </InfoTooltip>
       </TextCell>
-      <TextCell>
+      <TextCell flex={1}>
         <FormattedMessage id="form.cursorField" />
         <InfoTooltip>
           <FormattedMessage id="connectionForm.cursor.info" />
         </InfoTooltip>
       </TextCell>
-      <TextCell>
+      <TextCell flex={1}>
         <FormattedMessage id="form.primaryKey" />
       </TextCell>
-      <Cell />
-      <TextCell>
+      <div className={styles.arrowPlaceholder} />
+      <TextCell flex={1}>
         <FormattedMessage id="form.namespace" />
       </TextCell>
-      <TextCell>
+      <TextCell flex={1}>
         <FormattedMessage id="form.streamName" />
       </TextCell>
     </Header>

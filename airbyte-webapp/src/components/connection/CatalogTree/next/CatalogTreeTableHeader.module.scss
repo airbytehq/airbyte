@@ -6,12 +6,22 @@
 }
 
 .headerContainer {
-  margin-top: variables.$spacing-xl;
-  margin-bottom: variables.$spacing-lg;
-  margin-left: variables.$spacing-xl;
+  margin: variables.$spacing-xl calc(variables.$spacing-xl + variables.$spacing-sm) variables.$spacing-lg
+    variables.$spacing-sm;
+  gap: variables.$spacing-sm;
 }
 
 .checkboxCell {
+  margin-right: variables.$spacing-sm;
   max-width: 43px;
-  text-align: center;
+  font-size: 10px;
+  line-height: 13px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding-left: calc(variables.$spacing-xl + 5px);
+}
+
+.arrowPlaceholder {
+  width: 20px;
 }

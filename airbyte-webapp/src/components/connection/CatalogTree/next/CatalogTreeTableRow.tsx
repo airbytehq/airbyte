@@ -66,12 +66,10 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
     [styles.disabled]: !isStreamEnabled,
   });
 
-  const checkboxCellCustomStyle = classnames(styles.checkboxCell, styles.streamRowCheckboxCell);
-
   return (
     <Row onClick={onRowClick} className={streamHeaderContentStyle}>
       {!disabled && (
-        <div className={checkboxCellCustomStyle}>
+        <div className={styles.streamRowCheckboxCell}>
           {changedSelected && (
             <div>
               {isStreamEnabled ? (
@@ -84,18 +82,18 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
         </div>
       )}
-      <Cell flex={0.4} className={styles.streamRowItem}>
+      <Cell flex={0.5} className={styles.streamRowItem}>
         <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
       </Cell>
       {/* <Cell>{fieldCount}</Cell> */}
-      <HeaderCell ellipsis title={stream.stream?.namespace || ""} className={styles.streamRowItem}>
+      <HeaderCell flex={1} ellipsis title={stream.stream?.namespace || ""} className={styles.streamRowItem}>
         {stream.stream?.namespace || <FormattedMessage id="form.noNamespace" />}
       </HeaderCell>
-      <HeaderCell ellipsis title={stream.stream?.name || ""} className={styles.streamRowItem}>
+      <HeaderCell flex={1} ellipsis title={stream.stream?.name || ""} className={styles.streamRowItem}>
         {stream.stream?.name}
       </HeaderCell>
       {/* todo: this is weird, we have a cell nested inside a cell */}
-      <Cell>
+      <Cell flex={2}>
         {disabled ? (
           <HeaderCell ellipsis title={syncSchema.syncMode}>
             {syncSchema.syncMode}
@@ -106,7 +104,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           <SyncModeSelect options={availableSyncModes} onChange={onSelectSyncMode} value={syncSchema} />
         )}
       </Cell>
-      <HeaderCell className={styles.streamRowItem}>
+      <HeaderCell flex={1} className={styles.streamRowItem}>
         {cursorType && (
           <StreamPathSelect
             pathType={cursorType}
@@ -116,7 +114,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           />
         )}
       </HeaderCell>
-      <HeaderCell ellipsis className={styles.streamRowItem}>
+      <HeaderCell flex={1} ellipsis className={styles.streamRowItem}>
         {pkType && (
           <StreamPathSelect
             pathType={pkType}
@@ -128,10 +126,10 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
         )}
       </HeaderCell>
       <FontAwesomeIcon icon={faArrowRight} className={styles.arrowCell} />
-      <HeaderCell ellipsis title={destNamespace} className={styles.streamRowItem}>
+      <HeaderCell flex={1} ellipsis title={destNamespace} className={styles.streamRowItem}>
         {destNamespace}
       </HeaderCell>
-      <HeaderCell ellipsis title={destName} className={styles.streamRowItem}>
+      <HeaderCell flex={1} ellipsis title={destName} className={styles.streamRowItem}>
         {destName}
       </HeaderCell>
     </Row>

@@ -19,11 +19,6 @@
   border-bottom: 1px solid colors.$grey-50;
   padding: variables.$spacing-xl variables.$spacing-md variables.$spacing-xl variables.$spacing-sm;
   gap: variables.$spacing-sm;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
 
   &:hover {
     background: colors.$grey-30;
@@ -60,15 +55,9 @@
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
-  padding-left: calc(variables.$spacing-xl + 4px);
-}
-
-.streamRowItem {
-  min-width: 0;
-  padding-left: variables.$spacing-xs;
+  padding-left: calc(variables.$spacing-xl + 5px);
 }
 
 .arrowCell {
   width: 20px;
-  padding: 0;
 }
