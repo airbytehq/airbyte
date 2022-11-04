@@ -3,6 +3,7 @@ tests:
   spec:
     - spec_path: "source_hubspot/spec.yaml"
       backward_compatibility_tests_config:
+        # API Key authentication is deleted from authorization choices so it is not backward compatible with previous spec
         disable_for_version: "0.2.2"
   connection:
     - config_path: "secrets/config.json"
@@ -16,6 +17,7 @@ tests:
   discovery:
     - config_path: "secrets/config.json"
       backward_compatibility_tests_config:
+        # Quote stream is deleted so it is not backward compatible with previous discovery
         disable_for_version: "0.2.2"
   basic_read:
     - config_path: "secrets/config.json"
