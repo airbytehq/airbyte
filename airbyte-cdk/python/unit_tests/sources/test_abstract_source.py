@@ -1,13 +1,16 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import copy
 import logging
 from collections import defaultdict
-from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, \
+    Optional, Tuple, Union
 from unittest.mock import call
 
 import pytest
+
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -28,11 +31,11 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.models import Type
-from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
-from airbyte_cdk.sources.utils.record_helper import data_to_airbyte_record
+from airbyte_cdk.sources.utils.record_helper import \
+    stream_data_to_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 logger = logging.getLogger("airbyte")
@@ -40,10 +43,10 @@ logger = logging.getLogger("airbyte")
 
 class MockSource(AbstractSource):
     def __init__(
-        self,
-        check_lambda: Callable[[], Tuple[bool, Optional[Any]]] = None,
-        streams: List[Stream] = None,
-        per_stream: bool = True,
+            self,
+            check_lambda: Callable[[], Tuple[bool, Optional[Any]]] = None,
+            streams: List[Stream] = None,
+            per_stream: bool = True,
     ):
         self._streams = streams
         self.check_lambda = check_lambda
@@ -111,9 +114,9 @@ def test_raising_check():
 
 class MockStream(Stream):
     def __init__(
-        self,
-        inputs_and_mocked_outputs: List[Tuple[Mapping[str, Any], Iterable[Mapping[str, Any]]]] = None,
-        name: str = None,
+            self,
+            inputs_and_mocked_outputs: List[Tuple[Mapping[str, Any], Iterable[Mapping[str, Any]]]] = None,
+            name: str = None,
     ):
         self._inputs_and_mocked_outputs = inputs_and_mocked_outputs
         self._name = name
@@ -155,7 +158,7 @@ class MockStreamWithState(MockStream):
 
 class MockStreamEmittingAirbyteMessages(MockStreamWithState):
     def __init__(
-        self, inputs_and_mocked_outputs: List[Tuple[Mapping[str, Any], Iterable[AirbyteMessage]]] = None, name: str = None, state=None
+            self, inputs_and_mocked_outputs: List[Tuple[Mapping[str, Any], Iterable[AirbyteMessage]]] = None, name: str = None, state=None
     ):
         super().__init__(inputs_and_mocked_outputs, name, state)
         self._inputs_and_mocked_outputs = inputs_and_mocked_outputs
@@ -164,19 +167,6 @@ class MockStreamEmittingAirbyteMessages(MockStreamWithState):
     @property
     def name(self):
         return self._name
-
-    def read_records_as_messages(self, **kwargs) -> Iterable[AirbyteMessage]:  # type: ignore
-        # Remove None values
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        if self._inputs_and_mocked_outputs:
-            for _input, output in self._inputs_and_mocked_outputs:
-                if kwargs == _input:
-                    return output
-
-        raise Exception(f"No mocked output supplied for input: {kwargs}. Mocked inputs/outputs: {self._inputs_and_mocked_outputs}")
-
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:  # type: ignore
-        raise RuntimeError("Not implemented!")
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -842,10 +832,10 @@ class TestIncrementalRead:
         input_state = []
         slices = [{"1": "1"}, {"2": "2"}]
         stream_output = [
-            data_to_airbyte_record("s1", {"k1": "v1"}),
-            AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message="HELLO")),
-            data_to_airbyte_record("s1", {"k2": "v2"}),
-            data_to_airbyte_record("s1", {"k3": "v3"}),
+            {"k1": "v1"},
+            AirbyteLogMessage(level=Level.INFO, message="HELLO"),
+            {"k2": "v2"},
+            {"k3": "v3"},
         ]
         stream_1 = MockStreamEmittingAirbyteMessages(
             [
@@ -897,36 +887,40 @@ class TestIncrementalRead:
             ]
         )
 
-        expected = [
+        expected = _fix_emitted_at([
             # stream 1 slice 1
-            stream_output[0],
-            stream_output[1],
-            stream_output[2],
+            stream_data_to_airbyte_message("s1", stream_output[0]),
+            stream_data_to_airbyte_message("s1", stream_output[1]),
+            stream_data_to_airbyte_message("s1", stream_output[2]),
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
-            stream_output[3],
+            stream_data_to_airbyte_message("s1", stream_output[3]),
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
             # stream 1 slice 2
-            stream_output[0],
-            stream_output[1],
-            stream_output[2],
+            stream_data_to_airbyte_message("s1", stream_output[0]),
+            stream_data_to_airbyte_message("s1", stream_output[1]),
+            stream_data_to_airbyte_message("s1", stream_output[2]),
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
-            stream_output[3],
+            stream_data_to_airbyte_message("s1", stream_output[3]),
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
             # stream 2 slice 1
-            stream_output[0],
-            stream_output[1],
-            stream_output[2],
-            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
-            stream_output[3],
-            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+            stream_data_to_airbyte_message("s2", stream_output[0]),
+            stream_data_to_airbyte_message("s2", stream_output[1]),
+            stream_data_to_airbyte_message("s2", stream_output[2]),
+            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state(
+                {"s1": state, "s2": state}),
+            stream_data_to_airbyte_message("s2", stream_output[3]),
+            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state(
+                {"s1": state, "s2": state}),
             # stream 2 slice 2
-            stream_output[0],
-            stream_output[1],
-            stream_output[2],
-            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
-            stream_output[3],
-            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
-        ]
+            stream_data_to_airbyte_message("s2", stream_output[0]),
+            stream_data_to_airbyte_message("s2", stream_output[1]),
+            stream_data_to_airbyte_message("s2", stream_output[2]),
+            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state(
+                {"s1": state, "s2": state}),
+            stream_data_to_airbyte_message("s2", stream_output[3]),
+            _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state(
+                {"s1": state, "s2": state}),
+        ])
 
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 

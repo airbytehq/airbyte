@@ -9,14 +9,21 @@ from abc import ABC, abstractmethod
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-import airbyte_cdk.sources.utils.casing as casing
-from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode
+from deprecated.classic import deprecated
 
+import airbyte_cdk.sources.utils.casing as casing
+from airbyte_cdk.models import AirbyteStream, SyncMode, \
+    AirbyteTraceMessage, AirbyteLogMessage, AirbyteRecordMessage
 # list of all possible HTTP methods which can be used for sending of request bodies
-from airbyte_cdk.sources.utils.record_helper import data_to_airbyte_record
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from deprecated.classic import deprecated
+
+# A stream's read method can return one of the following types:
+# Mapping[str, Any]: The content of an AirbyteRecordMessage
+# AirbyteRecordMessage: An AirbyteRecordMessage
+# AirbyteLogMessage: A log message
+# AirbyteTraceMessage: A trace message
+StreamData = Union[Mapping[str, Any], AirbyteRecordMessage, AirbyteLogMessage, AirbyteTraceMessage]
 
 
 def package_name_from_class(cls: object) -> str:
@@ -91,27 +98,14 @@ class Stream(ABC):
         """
         return None
 
-    def read_records_as_messages(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[AirbyteMessage]:
-        """ """
-        for record_mapping in self.read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-        ):
-            yield data_to_airbyte_record(self.name, record_mapping, self.transformer, self.get_json_schema())
-
     @abstractmethod
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[StreamData]:
         """
         This method should be overridden by subclasses to read records based on the inputs
         """
@@ -186,7 +180,7 @@ class Stream(ABC):
         """
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+            self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Override to define the slices for this stream. See the stream slicing section of the docs for more information.

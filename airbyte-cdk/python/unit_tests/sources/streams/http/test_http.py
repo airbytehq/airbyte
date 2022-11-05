@@ -12,12 +12,16 @@ from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 import requests
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, SyncMode, Type
+
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator as HttpTokenAuthenticator
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import \
+    TokenAuthenticator as HttpTokenAuthenticator
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, \
+    RequestBodyException, UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.requests_native_auth import \
+    TokenAuthenticator
 
 datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 FAKE_NOW = datetime.datetime(2022, 1, 1, tzinfo=datetime.timezone.utc)
@@ -95,20 +99,6 @@ def test_stub_basic_read_http_stream_read_records(mocker):
     records = list(stream.read_records(SyncMode.full_refresh))
 
     assert [{"data": 1}] == records
-
-
-def test_stub_basic_read_http_stream_read_records_as_messages(mocker, mock_datetime_now):
-    stream = StubBasicReadHttpStream()
-    blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
-    mocker.patch.object(StubBasicReadHttpStream, "_send_request", return_value=blank_response)
-
-    records = list(stream.read_records_as_messages(SyncMode.full_refresh))
-
-    assert [
-        AirbyteMessage(
-            type=Type.RECORD, record=AirbyteRecordMessage(stream="stub_basic_read_http_stream", data={"data": 1}, emitted_at=1640995200000)
-        )
-    ] == records
 
 
 class StubNextPageTokenHttpStream(StubBasicReadHttpStream):
@@ -284,10 +274,10 @@ def test_raise_on_http_errors_off_non_retryable_4xx(mocker, status_code):
 @pytest.mark.parametrize(
     "error",
     (
-        requests.exceptions.ConnectTimeout,
-        requests.exceptions.ConnectionError,
-        requests.exceptions.ChunkedEncodingError,
-        requests.exceptions.ReadTimeout,
+            requests.exceptions.ConnectTimeout,
+            requests.exceptions.ConnectionError,
+            requests.exceptions.ChunkedEncodingError,
+            requests.exceptions.ReadTimeout,
     ),
 )
 def test_raise_on_http_errors(mocker, error):

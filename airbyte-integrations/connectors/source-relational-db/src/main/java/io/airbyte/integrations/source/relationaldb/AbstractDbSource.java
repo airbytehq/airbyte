@@ -9,13 +9,13 @@ import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getError
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.commons.type.Types;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.config.StateWrapper;
@@ -27,7 +27,7 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.relationaldb.InvalidCursorException.InvalidCursorInfo;
+import io.airbyte.integrations.source.relationaldb.InvalidCursorInfoUtil.InvalidCursorInfo;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
@@ -87,7 +87,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
-      final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
+      final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(),
+          ex.getExceptionMessage(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, message);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
@@ -107,13 +108,21 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     try {
       final Database database = createDatabaseInternal(config);
       final List<AirbyteStream> streams = getTables(database).stream()
-          .map(tableInfo -> CatalogHelpers
-              .createAirbyteStream(tableInfo.getName(), tableInfo.getNameSpace(),
-                  tableInfo.getFields())
-              .withSupportedSyncModes(
-                  tableInfo.getCursorFields() != null && tableInfo.getCursorFields().isEmpty() ? Lists.newArrayList(SyncMode.FULL_REFRESH)
-                      : Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-              .withSourceDefinedPrimaryKey(Types.boxToListofList(tableInfo.getPrimaryKeys())))
+          .map(tableInfo -> {
+            final var primaryKeys = tableInfo.getPrimaryKeys().stream()
+                .filter(Objects::nonNull)
+                .map(Collections::singletonList)
+                .collect(Collectors.toList());
+
+            return CatalogHelpers
+                .createAirbyteStream(tableInfo.getName(), tableInfo.getNameSpace(),
+                    tableInfo.getFields())
+                .withSupportedSyncModes(
+                    tableInfo.getCursorFields() != null && tableInfo.getCursorFields().isEmpty()
+                        ? Lists.newArrayList(SyncMode.FULL_REFRESH)
+                        : Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(primaryKeys);
+          })
           .collect(Collectors.toList());
       return new AirbyteCatalog().withStreams(streams);
     } finally {
@@ -122,75 +131,69 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   /**
-   * Creates a list of AirbyteMessageIterators with all the streams selected in a configured catalog
+   * Creates a list of AirbyteMessageIterators with all the streams selected in a configured
+   * catalog
    *
-   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
-   *        "password": "super secure" }
+   * @param config  - integration-specific configuration object as json. e.g. { "username":
+   *                "airbyte", "password": "super secure" }
    * @param catalog - schema of the incoming messages.
-   * @param state - state of the incoming messages.
+   * @param state   - state of the incoming messages.
    * @return AirbyteMessageIterator with all the streams that are to be synced
    * @throws Exception
    */
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
-                                                    final ConfiguredAirbyteCatalog catalog,
-                                                    final JsonNode state)
-      throws Exception {
-    try {
-      final StateManager stateManager =
-          StateManagerFactory.createStateManager(getSupportedStateType(config), deserializeInitialState(state, config), catalog);
-      final Instant emittedAt = Instant.now();
+    final ConfiguredAirbyteCatalog catalog,
+    final JsonNode state)
+    throws Exception {
+    final StateManager stateManager =
+        StateManagerFactory.createStateManager(getSupportedStateType(config),
+            deserializeInitialState(state, config), catalog);
+    final Instant emittedAt = Instant.now();
 
-      final Database database = createDatabaseInternal(config);
+    final Database database = createDatabaseInternal(config);
 
-      final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo =
-          discoverWithoutSystemTables(database)
-              .stream()
-              .collect(Collectors.toMap(t -> String.format("%s.%s", t.getNameSpace(), t.getName()), Function
-                  .identity()));
+    final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo =
+        discoverWithoutSystemTables(database)
+            .stream()
+            .collect(Collectors.toMap(t -> String.format("%s.%s", t.getNameSpace(), t.getName()),
+                Function
+                    .identity()));
 
-      validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog);
+    validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog);
 
-      final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
-          getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager, emittedAt);
-      final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators =
-          getFullRefreshIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager, emittedAt);
-      final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = Stream
-          .of(incrementalIterators, fullRefreshIterators)
-          .flatMap(Collection::stream)
-          .collect(Collectors.toList());
+    final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
+        getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
+            emittedAt);
+    final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators =
+        getFullRefreshIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
+            emittedAt);
+    final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = Stream
+        .of(incrementalIterators, fullRefreshIterators)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toList());
 
-      return AutoCloseableIterators
-          .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList), () -> {
-            LOGGER.info("Closing database connection pool.");
-            Exceptions.toRuntime(this::close);
-            LOGGER.info("Closed database connection pool.");
-          });
-    } catch (final Exception exception) {
-      if (isConfigError(exception)) {
-        AirbyteTraceMessageUtility.emitConfigErrorTrace(exception, exception.getMessage());
-      }
-      throw exception;
-    }
+    return AutoCloseableIterators
+        .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList), () -> {
+          LOGGER.info("Closing database connection pool.");
+          Exceptions.toRuntime(this::close);
+          LOGGER.info("Closed database connection pool.");
+        });
   }
 
-  private boolean isConfigError(final Exception exception) {
-    // For now, enhanced error details should only be shown for InvalidCursorException. In the future,
-    // enhanced error messages will exist for
-    // additional error types.
-    return exception instanceof InvalidCursorException;
-  }
-
-  private void validateCursorFieldForIncrementalTables(final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
-                                                       final ConfiguredAirbyteCatalog catalog) {
+  private void validateCursorFieldForIncrementalTables(
+      final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
+      final ConfiguredAirbyteCatalog catalog) {
     final List<InvalidCursorInfo> tablesWithInvalidCursor = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
       final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
           stream.getName());
       final boolean hasSourceDefinedCursor =
-          !Objects.isNull(airbyteStream.getStream().getSourceDefinedCursor()) && airbyteStream.getStream().getSourceDefinedCursor();
-      if (!tableNameToTable.containsKey(fullyQualifiedTableName) || airbyteStream.getSyncMode() != SyncMode.INCREMENTAL || hasSourceDefinedCursor) {
+          !Objects.isNull(airbyteStream.getStream().getSourceDefinedCursor())
+              && airbyteStream.getStream().getSourceDefinedCursor();
+      if (!tableNameToTable.containsKey(fullyQualifiedTableName)
+          || airbyteStream.getSyncMode() != SyncMode.INCREMENTAL || hasSourceDefinedCursor) {
         continue;
       }
 
@@ -207,28 +210,34 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           .orElseThrow();
 
       if (!isCursorType(cursorType)) {
-        tablesWithInvalidCursor.add(new InvalidCursorInfo(fullyQualifiedTableName, cursorField.get(), cursorType.toString()));
+        tablesWithInvalidCursor.add(
+            new InvalidCursorInfo(fullyQualifiedTableName, cursorField.get(),
+                cursorType.toString()));
       }
     }
 
     if (!tablesWithInvalidCursor.isEmpty()) {
-      throw new InvalidCursorException(tablesWithInvalidCursor);
+      throw new ConfigErrorException(
+          InvalidCursorInfoUtil.getInvalidCursorConfigMessage(tablesWithInvalidCursor)) ;
     }
   }
 
-  protected List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(final Database database) throws Exception {
+  private List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(
+      final Database database) throws Exception {
     final Set<String> systemNameSpaces = getExcludedInternalNameSpaces();
     final List<TableInfo<CommonField<DataType>>> discoveredTables = discoverInternal(database);
     return (systemNameSpaces == null || systemNameSpaces.isEmpty() ? discoveredTables
-        : discoveredTables.stream().filter(table -> !systemNameSpaces.contains(table.getNameSpace())).collect(
-            Collectors.toList()));
+        : discoveredTables.stream()
+            .filter(table -> !systemNameSpaces.contains(table.getNameSpace())).collect(
+                Collectors.toList()));
   }
 
-  protected List<AutoCloseableIterator<AirbyteMessage>> getFullRefreshIterators(final Database database,
-                                                                                final ConfiguredAirbyteCatalog catalog,
-                                                                                final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
-                                                                                final StateManager stateManager,
-                                                                                final Instant emittedAt) {
+  private List<AutoCloseableIterator<AirbyteMessage>> getFullRefreshIterators(
+      final Database database,
+      final ConfiguredAirbyteCatalog catalog,
+      final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
+      final StateManager stateManager,
+      final Instant emittedAt) {
     return getSelectedIterators(
         database,
         catalog,
@@ -238,11 +247,12 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         configuredStream -> configuredStream.getSyncMode().equals(SyncMode.FULL_REFRESH));
   }
 
-  protected List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final Database database,
-                                                                                final ConfiguredAirbyteCatalog catalog,
-                                                                                final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
-                                                                                final StateManager stateManager,
-                                                                                final Instant emittedAt) {
+  protected List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
+      final Database database,
+      final ConfiguredAirbyteCatalog catalog,
+      final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
+      final StateManager stateManager,
+      final Instant emittedAt) {
     return getSelectedIterators(
         database,
         catalog,
@@ -255,20 +265,23 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   /**
    * Creates a list of read iterators for each stream within an ConfiguredAirbyteCatalog
    *
-   * @param database Source Database
-   * @param catalog List of streams (e.g. database tables or API endpoints) with settings on sync mode
+   * @param database         Source Database
+   * @param catalog          List of streams (e.g. database tables or API endpoints) with settings
+   *                         on sync mode
    * @param tableNameToTable Mapping of table name to table
-   * @param stateManager Manager used to track the state of data synced by the connector
-   * @param emittedAt Time when data was emitted from the Source database
-   * @param selector essentially a boolean that verifies if configuredStream has selected a sync mode
+   * @param stateManager     Manager used to track the state of data synced by the connector
+   * @param emittedAt        Time when data was emitted from the Source database
+   * @param selector         essentially a boolean that verifies if configuredStream has selected a
+   *                         sync mode
    * @return List of AirbyteMessageIterators containing all iterators for a catalog
    */
-  protected List<AutoCloseableIterator<AirbyteMessage>> getSelectedIterators(final Database database,
-                                                                             final ConfiguredAirbyteCatalog catalog,
-                                                                             final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
-                                                                             final StateManager stateManager,
-                                                                             final Instant emittedAt,
-                                                                             final Predicate<ConfiguredAirbyteStream> selector) {
+  private List<AutoCloseableIterator<AirbyteMessage>> getSelectedIterators(
+      final Database database,
+      final ConfiguredAirbyteCatalog catalog,
+      final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
+      final StateManager stateManager,
+      final Instant emittedAt,
+      final Predicate<ConfiguredAirbyteStream> selector) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       if (selector.test(airbyteStream)) {
@@ -299,21 +312,22 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   /**
    * ReadIterator is used to retrieve records from a source connector
    *
-   * @param database Source Database
+   * @param database      Source Database
    * @param airbyteStream represents an ingestion source (e.g. API endpoint or database table)
-   * @param table information in tabular format
-   * @param stateManager Manager used to track the state of data synced by the connector
-   * @param emittedAt Time when data was emitted from the Source database
+   * @param table         information in tabular format
+   * @param stateManager  Manager used to track the state of data synced by the connector
+   * @param emittedAt     Time when data was emitted from the Source database
    * @return
    */
-  protected AutoCloseableIterator<AirbyteMessage> createReadIterator(final Database database,
-                                                                     final ConfiguredAirbyteStream airbyteStream,
-                                                                     final TableInfo<CommonField<DataType>> table,
-                                                                     final StateManager stateManager,
-                                                                     final Instant emittedAt) {
+  private AutoCloseableIterator<AirbyteMessage> createReadIterator(final Database database,
+      final ConfiguredAirbyteStream airbyteStream,
+      final TableInfo<CommonField<DataType>> table,
+      final StateManager stateManager,
+      final Instant emittedAt) {
     final String streamName = airbyteStream.getStream().getName();
     final String namespace = airbyteStream.getStream().getNamespace();
-    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName, namespace);
+    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName,
+        namespace);
     final Set<String> selectedFieldsInCatalog = CatalogHelpers.getTopLevelFieldNames(airbyteStream);
     final List<String> selectedDatabaseFields = table.getFields()
         .stream()
@@ -339,26 +353,33 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
             emittedAt);
       } else {
         // if no cursor is present then this is the first read for is the same as doing a full refresh read.
-        airbyteMessageIterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields, table, emittedAt);
+        airbyteMessageIterator = getFullRefreshStream(database, streamName, namespace,
+            selectedDatabaseFields, table, emittedAt);
       }
 
-      final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream, cursorField);
+      final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream,
+          cursorField);
 
-      iterator = AutoCloseableIterators.transform(autoCloseableIterator -> new StateDecoratingIterator(
-          autoCloseableIterator,
-          stateManager,
-          pair,
-          cursorField,
-          cursorInfo.map(CursorInfo::getCursor).orElse(null),
-          cursorType,
-          getStateEmissionFrequency()),
+      iterator = AutoCloseableIterators.transform(
+          autoCloseableIterator -> new StateDecoratingIterator(
+              autoCloseableIterator,
+              stateManager,
+              pair,
+              cursorField,
+              cursorInfo.map(CursorInfo::getCursor).orElse(null),
+              cursorType,
+              getStateEmissionFrequency()),
           airbyteMessageIterator);
     } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
-      iterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields, table, emittedAt);
+      iterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields,
+          table, emittedAt);
     } else if (airbyteStream.getSyncMode() == null) {
-      throw new IllegalArgumentException(String.format("%s requires a source sync mode", this.getClass()));
+      throw new IllegalArgumentException(
+          String.format("%s requires a source sync mode", this.getClass()));
     } else {
-      throw new IllegalArgumentException(String.format("%s does not support sync mode: %s.", this.getClass(), airbyteStream.getSyncMode()));
+      throw new IllegalArgumentException(
+          String.format("%s does not support sync mode: %s.", this.getClass(),
+              airbyteStream.getSyncMode()));
     }
 
     final AtomicLong recordCount = new AtomicLong();
@@ -372,20 +393,21 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   /**
-   * @param database Source Database
-   * @param airbyteStream represents an ingestion source (e.g. API endpoint or database table)
+   * @param database               Source Database
+   * @param airbyteStream          represents an ingestion source (e.g. API endpoint or database
+   *                               table)
    * @param selectedDatabaseFields subset of database fields selected for replication
-   * @param table information in tabular format
-   * @param cursorInfo state of where to start the sync from
-   * @param emittedAt Time when data was emitted from the Source database
+   * @param table                  information in tabular format
+   * @param cursorInfo             state of where to start the sync from
+   * @param emittedAt              Time when data was emitted from the Source database
    * @return AirbyteMessage Iterator that
    */
-  protected AutoCloseableIterator<AirbyteMessage> getIncrementalStream(final Database database,
-                                                                       final ConfiguredAirbyteStream airbyteStream,
-                                                                       final List<String> selectedDatabaseFields,
-                                                                       final TableInfo<CommonField<DataType>> table,
-                                                                       final CursorInfo cursorInfo,
-                                                                       final Instant emittedAt) {
+  private AutoCloseableIterator<AirbyteMessage> getIncrementalStream(final Database database,
+      final ConfiguredAirbyteStream airbyteStream,
+      final List<String> selectedDatabaseFields,
+      final TableInfo<CommonField<DataType>> table,
+      final CursorInfo cursorInfo,
+      final Instant emittedAt) {
     final String streamName = airbyteStream.getStream().getName();
     final String namespace = airbyteStream.getStream().getNamespace();
     final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
@@ -395,7 +417,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         .findFirst()
         .orElseThrow();
 
-    Preconditions.checkState(table.getFields().stream().anyMatch(f -> f.getName().equals(cursorField)),
+    Preconditions.checkState(
+        table.getFields().stream().anyMatch(f -> f.getName().equals(cursorField)),
         String.format("Could not find cursor field %s in table %s", cursorField, table.getName()));
 
     final AutoCloseableIterator<JsonNode> queryIterator = queryTableIncremental(
@@ -412,34 +435,36 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   /**
    * Creates a AirbyteMessageIterator that contains all records for a database source connection
    *
-   * @param database Source Database
-   * @param streamName name of an individual stream in which a stream represents a source (e.g. API
-   *        endpoint or database table)
-   * @param namespace Namespace of the database (e.g. public)
+   * @param database               Source Database
+   * @param streamName             name of an individual stream in which a stream represents a
+   *                               source (e.g. API endpoint or database table)
+   * @param namespace              Namespace of the database (e.g. public)
    * @param selectedDatabaseFields List of all interested database column names
-   * @param table information in tabular format
-   * @param emittedAt Time when data was emitted from the Source database
+   * @param table                  information in tabular format
+   * @param emittedAt              Time when data was emitted from the Source database
    * @return AirbyteMessageIterator with all records for a database source
    */
-  protected AutoCloseableIterator<AirbyteMessage> getFullRefreshStream(final Database database,
-                                                                       final String streamName,
-                                                                       final String namespace,
-                                                                       final List<String> selectedDatabaseFields,
-                                                                       final TableInfo<CommonField<DataType>> table,
-                                                                       final Instant emittedAt) {
+  private AutoCloseableIterator<AirbyteMessage> getFullRefreshStream(final Database database,
+      final String streamName,
+      final String namespace,
+      final List<String> selectedDatabaseFields,
+      final TableInfo<CommonField<DataType>> table,
+      final Instant emittedAt) {
     final AutoCloseableIterator<JsonNode> queryStream =
-        queryTableFullRefresh(database, selectedDatabaseFields, table.getNameSpace(), table.getName());
+        queryTableFullRefresh(database, selectedDatabaseFields, table.getNameSpace(),
+            table.getName());
     return getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
   }
 
-  protected String getFullyQualifiedTableName(final String nameSpace, final String tableName) {
+  private String getFullyQualifiedTableName(final String nameSpace, final String tableName) {
     return nameSpace != null ? nameSpace + "." + tableName : tableName;
   }
 
-  public AutoCloseableIterator<AirbyteMessage> getMessageIterator(final AutoCloseableIterator<JsonNode> recordIterator,
-                                                                  final String streamName,
-                                                                  final String namespace,
-                                                                  final long emittedAt) {
+  private AutoCloseableIterator<AirbyteMessage> getMessageIterator(
+      final AutoCloseableIterator<JsonNode> recordIterator,
+      final String streamName,
+      final String namespace,
+      final long emittedAt) {
     return AutoCloseableIterators.transform(recordIterator, r -> new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
@@ -456,9 +481,10 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return list of table/data structure info
    * @throws Exception might throw an error during connection to database
    */
-  protected List<TableInfo<Field>> getTables(final Database database) throws Exception {
+  private List<TableInfo<Field>> getTables(final Database database) throws Exception {
     final List<TableInfo<CommonField<DataType>>> tableInfos = discoverWithoutSystemTables(database);
-    final Map<String, List<String>> fullyQualifiedTableNameToPrimaryKeys = discoverPrimaryKeys(database, tableInfos);
+    final Map<String, List<String>> fullyQualifiedTableNameToPrimaryKeys = discoverPrimaryKeys(
+        database, tableInfos);
 
     return tableInfos.stream()
         .map(t -> {
@@ -471,18 +497,22 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
               .map(this::toField)
               .distinct()
               .collect(Collectors.toList());
-          final String fullyQualifiedTableName = getFullyQualifiedTableName(t.getNameSpace(), t.getName());
-          final List<String> primaryKeys = fullyQualifiedTableNameToPrimaryKeys.getOrDefault(fullyQualifiedTableName, Collections
-              .emptyList());
-          return TableInfo.<Field>builder().nameSpace(t.getNameSpace()).name(t.getName()).fields(fields).primaryKeys(primaryKeys)
+          final String fullyQualifiedTableName = getFullyQualifiedTableName(t.getNameSpace(),
+              t.getName());
+          final List<String> primaryKeys = fullyQualifiedTableNameToPrimaryKeys.getOrDefault(
+              fullyQualifiedTableName, Collections
+                  .emptyList());
+          return TableInfo.<Field>builder().nameSpace(t.getNameSpace()).name(t.getName())
+              .fields(fields).primaryKeys(primaryKeys)
               .cursorFields(t.getCursorFields())
               .build();
         })
         .collect(Collectors.toList());
   }
 
-  protected Field toField(final CommonField<DataType> field) {
-    if (getType(field.getType()) == JsonSchemaType.OBJECT && field.getProperties() != null && !field.getProperties().isEmpty()) {
+  private Field toField(final CommonField<DataType> field) {
+    if (getType(field.getType()) == JsonSchemaType.OBJECT && field.getProperties() != null
+        && !field.getProperties().isEmpty()) {
       final var properties = field.getProperties().stream().map(this::toField).toList();
       return Field.of(field.getName(), getType(field.getType()), properties);
     } else {
@@ -490,7 +520,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     }
   }
 
-  protected void assertColumnsWithSameNameAreSame(final String nameSpace, final String tableName, final List<CommonField<DataType>> columns) {
+  private void assertColumnsWithSameNameAreSame(final String nameSpace, final String tableName,
+      final List<CommonField<DataType>> columns) {
     columns.stream()
         .collect(Collectors.groupingBy(CommonField<DataType>::getName))
         .values()
@@ -499,7 +530,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           columnsWithSameName.forEach(column -> {
             if (!column.equals(comparisonColumn)) {
               throw new RuntimeException(
-                  String.format("Found multiple columns with same name: %s in table: %s.%s but the columns are not the same. columns: %s",
+                  String.format(
+                      "Found multiple columns with same name: %s in table: %s.%s but the columns are not the same. columns: %s",
                       comparisonColumn.getName(), nameSpace, tableName, columns));
             }
           });
@@ -508,19 +540,19 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
   /**
    * @param database - The database where from privileges for tables will be consumed
-   * @param schema - The schema where from privileges for tables will be consumed
-   * @return Set with privileges for tables for current DB-session user The method is responsible for
-   *         SELECT-ing the table with privileges. In some cases such SELECT doesn't require (e.g. in
-   *         Oracle DB - the schema is the user, you cannot REVOKE a privilege on a table from its
-   *         owner).
+   * @param schema   - The schema where from privileges for tables will be consumed
+   * @return Set with privileges for tables for current DB-session user The method is responsible
+   * for SELECT-ing the table with privileges. In some cases such SELECT doesn't require (e.g. in
+   * Oracle DB - the schema is the user, you cannot REVOKE a privilege on a table from its owner).
    */
-  public <T> Set<T> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
+  protected <T> Set<T> getPrivilegesTableForCurrentUser(final JdbcDatabase database,
+      final String schema) throws SQLException {
     return Collections.emptySet();
   }
 
   /**
-   * Map a database implementation-specific configuration to json object that adheres to the database
-   * config spec. See resources/spec.json.
+   * Map a database implementation-specific configuration to json object that adheres to the
+   * database config spec. See resources/spec.json.
    *
    * @param config database implementation-specific configuration.
    * @return database spec config
@@ -541,7 +573,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    *
    * @return list of consumers that run queries for the check command.
    */
-  public abstract List<CheckedConsumer<Database, Exception>> getCheckOperations(JsonNode config)
+  protected abstract List<CheckedConsumer<Database, Exception>> getCheckOperations(JsonNode config)
       throws Exception;
 
   /**
@@ -557,7 +589,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    *
    * @return set of system namespaces(schemas) to be excluded
    */
-  public abstract Set<String> getExcludedInternalNameSpaces();
+  protected abstract Set<String> getExcludedInternalNameSpaces();
 
   /**
    * Discover all available tables in the source database.
@@ -567,30 +599,31 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @throws Exception access to the database might lead to an exceptions.
    */
   protected abstract List<TableInfo<CommonField<DataType>>> discoverInternal(
-                                                                             final Database database)
+      final Database database)
       throws Exception;
 
   /**
    * Discovers all available tables within a schema in the source database.
    *
    * @param database - source database
-   * @param schema - source schema
+   * @param schema   - source schema
    * @return list of source tables
    * @throws Exception - access to the database might lead to exceptions.
    */
-  protected abstract List<TableInfo<CommonField<DataType>>> discoverInternal(final Database database, String schema)
+  protected abstract List<TableInfo<CommonField<DataType>>> discoverInternal(
+      final Database database, String schema)
       throws Exception;
 
   /**
    * Discover Primary keys for each table and @return a map of namespace.table name to their
    * associated list of primary key fields.
    *
-   * @param database source database
+   * @param database   source database
    * @param tableInfos list of tables
    * @return map of namespace.table and primary key fields.
    */
   protected abstract Map<String, List<String>> discoverPrimaryKeys(Database database,
-                                                                   List<TableInfo<CommonField<DataType>>> tableInfos);
+      List<TableInfo<CommonField<DataType>>> tableInfos);
 
   /**
    * Returns quote symbol of the database
@@ -602,16 +635,16 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   /**
    * Read all data from a table.
    *
-   * @param database source database
+   * @param database    source database
    * @param columnNames interested column names
-   * @param schemaName table namespace
-   * @param tableName target table
+   * @param schemaName  table namespace
+   * @param tableName   target table
    * @return iterator with read data
    */
-  public abstract AutoCloseableIterator<JsonNode> queryTableFullRefresh(final Database database,
-                                                                        final List<String> columnNames,
-                                                                        final String schemaName,
-                                                                        final String tableName);
+  protected abstract AutoCloseableIterator<JsonNode> queryTableFullRefresh(final Database database,
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName);
 
   /**
    * Read incremental data from a table. Incremental read should return only records where cursor
@@ -621,27 +654,26 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    *
    * @return iterator with read data
    */
-  public abstract AutoCloseableIterator<JsonNode> queryTableIncremental(Database database,
-                                                                        List<String> columnNames,
-                                                                        String schemaName,
-                                                                        String tableName,
-                                                                        CursorInfo cursorInfo,
-                                                                        DataType cursorFieldType);
+  protected abstract AutoCloseableIterator<JsonNode> queryTableIncremental(Database database,
+      List<String> columnNames,
+      String schemaName,
+      String tableName,
+      CursorInfo cursorInfo,
+      DataType cursorFieldType);
 
   /**
    * When larger than 0, the incremental iterator will emit intermediate state for every N records.
-   * Please note that if intermediate state emission is enabled, the incremental query must be ordered
-   * by the cursor field.
+   * Please note that if intermediate state emission is enabled, the incremental query must be
+   * ordered by the cursor field.
    */
   protected int getStateEmissionFrequency() {
     return 0;
   }
 
   /**
-   *
    * @return list of fields that could be used as cursors
    */
-  public abstract boolean isCursorType(DataType type);
+  protected abstract boolean isCursorType(DataType type);
 
   private Database createDatabaseInternal(final JsonNode sourceConfig) throws Exception {
     final Database database = createDatabase(sourceConfig);
@@ -654,11 +686,13 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * Deserializes the state represented as JSON into an object representation.
    *
    * @param initialStateJson The state as JSON.
-   * @param config The connector configuration.
+   * @param config           The connector configuration.
    * @return The deserialized object representation of the state.
    */
-  protected List<AirbyteStateMessage> deserializeInitialState(final JsonNode initialStateJson, final JsonNode config) {
-    final Optional<StateWrapper> typedState = StateMessageHelper.getTypedState(initialStateJson, featureFlags.useStreamCapableState());
+  protected List<AirbyteStateMessage> deserializeInitialState(final JsonNode initialStateJson,
+      final JsonNode config) {
+    final Optional<StateWrapper> typedState = StateMessageHelper.getTypedState(initialStateJson,
+        featureFlags.useStreamCapableState());
     return typedState.map((state) -> {
       switch (state.getStateType()) {
         case GLOBAL:
@@ -667,7 +701,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           return state.getStateMessages();
         case LEGACY:
         default:
-          return List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(state.getLegacyState()));
+          return List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
+              .withData(state.getLegacyState()));
       }
     }).orElse(generateEmptyInitialState(config));
   }
@@ -680,7 +715,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    */
   protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
     // For backwards compatibility with existing connectors
-    return List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(new DbState())));
+    return List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
+        .withData(Jsons.jsonNode(new DbState())));
   }
 
   /**

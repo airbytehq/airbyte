@@ -8,10 +8,6 @@ airbytePython {
     moduleDirectory 'source_greenhouse'
 }
 
-airbyteDocker {
-    runFromPath "."
-}
-
 dependencies {
     implementation files(project(':airbyte-integrations:bases:source-acceptance-test').airbyteDocker.outputs)
 }
