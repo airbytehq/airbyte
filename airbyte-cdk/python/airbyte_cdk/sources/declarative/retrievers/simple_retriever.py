@@ -412,6 +412,8 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
     def parse_records_and_emit_request_and_responses(self, request, response, stream_slice, stream_state) -> Iterable[AirbyteMessage]:
         yield self._create_trace_message_from_request(request)
         yield self._create_trace_message_from_response(response)
+        # Not great to need to call _read_pages which is a private method
+        # A better approach would be to extract the HTTP client from the HttpStream and call it directly from the HttpRequester
         for record_mapping in self._read_pages(
                 lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice,
                 stream_state
