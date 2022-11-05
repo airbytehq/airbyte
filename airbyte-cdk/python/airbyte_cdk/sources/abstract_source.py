@@ -3,7 +3,8 @@
 #
 
 import logging
-from abc import ABC, abstractmethod
+
+
 from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, \
     Tuple, Union
 
@@ -29,6 +30,7 @@ from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, \
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
+from abc import ABC, abstractmethod
 
 class AbstractSource(Source, ABC):
     """
