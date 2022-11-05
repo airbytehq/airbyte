@@ -58,7 +58,7 @@ class AbstractSource(Source, ABC):
         """
 
     # Stream name to instance map for applying output object transformation
-    _stream_to_instance_map: Dict[str, Stream] = {""}
+    _stream_to_instance_map: Dict[str, Stream] = {}
 
     @property
     def name(self) -> str:
