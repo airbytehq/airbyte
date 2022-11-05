@@ -10,6 +10,7 @@ import { useListStreams } from "./ConnectorBuilderApiService";
 
 interface Context {
   jsonManifest: StreamsListRequestBodyManifest;
+  yamlIsValid: boolean;
   streams: StreamsListReadStreamsItem[];
   selectedStream: StreamsListReadStreamsItem;
   selectedSlice: number;
@@ -17,6 +18,7 @@ interface Context {
   configString: string;
   configJson: StreamReadRequestBodyConfig;
   setJsonManifest: (jsonValue: StreamsListRequestBodyManifest) => void;
+  setYamlIsValid: (value: boolean) => void;
   setSelectedStream: (streamName: string) => void;
   setSelectedSlice: (sliceIndex: number) => void;
   setSelectedPage: (pageIndex: number) => void;
@@ -27,7 +29,9 @@ export const ConnectorBuilderStateContext = React.createContext<Context | null>(
 
 const useJsonManifest = () => {
   const [jsonManifest, setJsonManifest] = useState<StreamsListRequestBodyManifest>({});
-  return { jsonManifest, setJsonManifest };
+  const [yamlIsValid, setYamlIsValid] = useState(true);
+
+  return { jsonManifest, yamlIsValid, setJsonManifest, setYamlIsValid };
 };
 
 const useSelected = () => {

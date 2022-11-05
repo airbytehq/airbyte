@@ -20,7 +20,7 @@ export const YamlEditor: React.FC = () => {
   const [yamlValue, setYamlValue] = useState(locallyStoredYaml ?? template);
   useDebounce(() => setLocallyStoredYaml(yamlValue), 500, [yamlValue]);
 
-  const { setJsonManifest } = useConnectorBuilderState();
+  const { yamlIsValid, setYamlIsValid, setJsonManifest } = useConnectorBuilderState();
 
   const monaco = useMonaco();
 
@@ -33,6 +33,7 @@ export const YamlEditor: React.FC = () => {
       try {
         const json = load(yamlValue) as StreamsListRequestBodyManifest;
         setJsonManifest(json);
+        setYamlIsValid(true);
 
         // clear editor errors
         if (yamlEditorModel) {
@@ -41,6 +42,7 @@ export const YamlEditor: React.FC = () => {
       } catch (err) {
         console.log(err.message);
         if (err instanceof YAMLException) {
+          setYamlIsValid(false);
           const mark = err.mark;
           if (yamlEditorModel) {
             monaco.editor.setModelMarkers(yamlEditorModel, errOwner, [
@@ -57,12 +59,12 @@ export const YamlEditor: React.FC = () => {
         }
       }
     }
-  }, [yamlValue, monaco, setJsonManifest]);
+  }, [yamlValue, monaco, setJsonManifest, setYamlIsValid]);
 
   return (
     <div className={styles.container}>
       <div className={styles.control}>
-        <DownloadYamlButton yaml={yamlValue} />
+        <DownloadYamlButton yaml={yamlValue} yamlIsValid={yamlIsValid} />
       </div>
       <div className={styles.editorContainer}>
         <CodeEditor
