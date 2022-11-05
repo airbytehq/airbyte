@@ -99,6 +99,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     final JsonNode replicationConfig = Jsons.jsonNode(Map.of(
         "method", "CDC",
         "data_to_sync", "Existing and New",
+        "initial_waiting_seconds", 5,
         "snapshot_isolation", "Snapshot"));
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -108,6 +109,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .put(JdbcUtils.USERNAME_KEY, TEST_USER_NAME)
         .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
         .put("replication_method", replicationConfig)
+        .put("is_test", true)
         .build());
 
     dslContext = DSLContextFactory.create(
