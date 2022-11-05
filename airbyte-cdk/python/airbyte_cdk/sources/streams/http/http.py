@@ -411,6 +411,9 @@ class HttpStream(Stream, ABC):
             stream_slice: Mapping[str, Any] = None,
             stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:
+        yield from self._read_and_parse_pages(stream_slice, stream_state)
+
+    def _read_and_parse_pages(self, stream_slice: Mapping[str, Any], stream_state: Mapping[str, Any]):
         yield from self._read_pages(
             lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice, stream_state
         )
