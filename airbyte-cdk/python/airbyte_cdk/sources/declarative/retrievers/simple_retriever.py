@@ -378,9 +378,9 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         for r in records_generator:
             message = stream_data_to_airbyte_message(self.name, r, self.transformer, self.get_json_schema())
             if message.type == MessageType.RECORD:
-                self.stream_slicer.update_cursor(stream_slice, last_record=r.record.data)
-            if r.type == MessageType.RECORD or self.logger.isEnabledFor(logging.DEBUG):
-                yield r
+                self.stream_slicer.update_cursor(stream_slice, last_record=message.record.data)
+            if message.type == MessageType.RECORD or self.logger.isEnabledFor(logging.DEBUG):
+                yield message
         else:
             last_record = self._last_records[-1] if self._last_records else None
             self.stream_slicer.update_cursor(stream_slice, last_record=last_record)
