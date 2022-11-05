@@ -7,11 +7,6 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, \
     Tuple, Union
 
-
-
-
-
-
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
