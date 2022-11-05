@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 # coding: utf-8
 
 from __future__ import annotations
