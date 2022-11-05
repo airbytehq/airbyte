@@ -153,63 +153,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       final WorkerSourceConfig sourceConfig = WorkerUtils.syncToWorkerSourceConfig(syncInput);
 
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
-
       ApmTraceUtils.addTagsToTrace(generateTraceTags(destinationConfig, jobRoot));
 
-      // note: resources are closed in the opposite order in which they are declared. thus source will be
-      // closed first (which is what we want).
-      try (destination; source) {
-        destination.start(destinationConfig, jobRoot);
-        timeTracker.trackSourceReadStartTime();
-        source.start(sourceConfig, jobRoot);
-        timeTracker.trackDestinationWriteStartTime();
-
-        // note: `whenComplete` is used instead of `exceptionally` so that the original exception is still
-        // thrown
-        final CompletableFuture<?> destinationOutputThreadFuture = CompletableFuture.runAsync(
-            getDestinationOutputRunnable(destination, cancelled, messageTracker, mdc, timeTracker),
-            executors)
-            .whenComplete((msg, ex) -> {
-              if (ex != null) {
-                if (ex.getCause() instanceof DestinationException) {
-                  destinationRunnableFailureRef.set(FailureHelper.destinationFailure(ex, Long.valueOf(jobId), attempt));
-                } else {
-                  destinationRunnableFailureRef.set(FailureHelper.replicationFailure(ex, Long.valueOf(jobId), attempt));
-                }
-              }
-            });
-
-        final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
-            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, metricReporter, timeTracker),
-            executors)
-            .whenComplete((msg, ex) -> {
-              if (ex != null) {
-                if (ex.getCause() instanceof SourceException) {
-                  replicationRunnableFailureRef.set(FailureHelper.sourceFailure(ex, Long.valueOf(jobId), attempt));
-                } else if (ex.getCause() instanceof DestinationException) {
-                  replicationRunnableFailureRef.set(FailureHelper.destinationFailure(ex, Long.valueOf(jobId), attempt));
-                } else {
-                  replicationRunnableFailureRef.set(FailureHelper.replicationFailure(ex, Long.valueOf(jobId), attempt));
-                }
-              }
-            });
-
-        LOGGER.info("Waiting for source and destination threads to complete.");
-        // CompletableFuture#allOf waits until all futures finish before returning, even if one throws an
-        // exception. So in order to handle exceptions from a future immediately without needing to wait for
-        // the other future to finish, we first call CompletableFuture#anyOf.
-        CompletableFuture.anyOf(replicationThreadFuture, destinationOutputThreadFuture).get();
-        LOGGER.info("One of source or destination thread complete. Waiting on the other.");
-        CompletableFuture.allOf(replicationThreadFuture, destinationOutputThreadFuture).get();
-        LOGGER.info("Source and destination threads complete.");
-
-      } catch (final Exception e) {
-        hasFailed.set(true);
-        ApmTraceUtils.addExceptionToTrace(e);
-        LOGGER.error("Sync worker failed.", e);
-      } finally {
-        executors.shutdownNow();
-      }
+      replicate(jobRoot, destinationConfig, timeTracker, replicationRunnableFailureRef, destinationRunnableFailureRef, sourceConfig, mdc);
 
       final ReplicationStatus outputStatus;
       // First check if the process was cancelled. Cancellation takes precedence over failures.
@@ -338,16 +284,124 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   }
 
+  private void replicate(Path jobRoot,
+                         WorkerDestinationConfig destinationConfig,
+                         ThreadedTimeTracker timeTracker,
+                         AtomicReference<FailureReason> replicationRunnableFailureRef,
+                         AtomicReference<FailureReason> destinationRunnableFailureRef,
+                         WorkerSourceConfig sourceConfig,
+                         Map<String, String> mdc) {
+    // note: resources are closed in the opposite order in which they are declared. thus source will be
+    // closed first (which is what we want).
+    try (destination; source) {
+      destination.start(destinationConfig, jobRoot);
+      timeTracker.trackSourceReadStartTime();
+      source.start(sourceConfig, jobRoot);
+      timeTracker.trackDestinationWriteStartTime();
+
+      // note: `whenComplete` is used instead of `exceptionally` so that the original exception is still
+      // thrown
+      final CompletableFuture<?> readFromDstThread = CompletableFuture.runAsync(
+          readFromDstRunnable(destination, cancelled, messageTracker, mdc, timeTracker),
+          executors)
+          .whenComplete((msg, ex) -> {
+            if (ex != null) {
+              if (ex.getCause() instanceof DestinationException) {
+                destinationRunnableFailureRef.set(FailureHelper.destinationFailure(ex, Long.valueOf(jobId), attempt));
+              } else {
+                destinationRunnableFailureRef.set(FailureHelper.replicationFailure(ex, Long.valueOf(jobId), attempt));
+              }
+            }
+          });
+
+      final CompletableFuture<?> readSrcAndWriteDstThread = CompletableFuture.runAsync(
+          readFromSrcAndWriteToDstRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, metricReporter,
+              timeTracker),
+          executors)
+          .whenComplete((msg, ex) -> {
+            if (ex != null) {
+              if (ex.getCause() instanceof SourceException) {
+                replicationRunnableFailureRef.set(FailureHelper.sourceFailure(ex, Long.valueOf(jobId), attempt));
+              } else if (ex.getCause() instanceof DestinationException) {
+                replicationRunnableFailureRef.set(FailureHelper.destinationFailure(ex, Long.valueOf(jobId), attempt));
+              } else {
+                replicationRunnableFailureRef.set(FailureHelper.replicationFailure(ex, Long.valueOf(jobId), attempt));
+              }
+            }
+          });
+
+      LOGGER.info("Waiting for source and destination threads to complete.");
+      // CompletableFuture#allOf waits until all futures finish before returning, even if one throws an
+      // exception. So in order to handle exceptions from a future immediately without needing to wait for
+      // the other future to finish, we first call CompletableFuture#anyOf.
+      CompletableFuture.anyOf(readSrcAndWriteDstThread, readFromDstThread).get();
+      LOGGER.info("One of source or destination thread complete. Waiting on the other.");
+      CompletableFuture.allOf(readSrcAndWriteDstThread, readFromDstThread).get();
+      LOGGER.info("Source and destination threads complete.");
+
+    } catch (final Exception e) {
+      hasFailed.set(true);
+      ApmTraceUtils.addExceptionToTrace(e);
+      LOGGER.error("Sync worker failed.", e);
+    } finally {
+      executors.shutdownNow();
+    }
+  }
+
   @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
-  private static Runnable getReplicationRunnable(final AirbyteSource source,
-                                                 final AirbyteDestination destination,
-                                                 final AtomicBoolean cancelled,
-                                                 final AirbyteMapper mapper,
-                                                 final MessageTracker messageTracker,
-                                                 final Map<String, String> mdc,
-                                                 final RecordSchemaValidator recordSchemaValidator,
-                                                 final WorkerMetricReporter metricReporter,
-                                                 final ThreadedTimeTracker timeHolder) {
+  private static Runnable readFromDstRunnable(final AirbyteDestination destination,
+                                              final AtomicBoolean cancelled,
+                                              final MessageTracker messageTracker,
+                                              final Map<String, String> mdc,
+                                              final ThreadedTimeTracker timeHolder) {
+    return () -> {
+      MDC.setContextMap(mdc);
+      LOGGER.info("Destination output thread started.");
+      try {
+        while (!cancelled.get() && !destination.isFinished()) {
+          final Optional<AirbyteMessage> messageOptional;
+          try {
+            messageOptional = destination.attemptRead();
+          } catch (final Exception e) {
+            throw new DestinationException("Destination process read attempt failed", e);
+          }
+          if (messageOptional.isPresent()) {
+            LOGGER.info("State in DefaultReplicationWorker from destination: {}", messageOptional.get());
+            messageTracker.acceptFromDestination(messageOptional.get());
+          }
+        }
+        timeHolder.trackDestinationWriteEndTime();
+        if (!cancelled.get() && destination.getExitValue() != 0) {
+          throw new DestinationException("Destination process exited with non-zero exit code " + destination.getExitValue());
+        }
+      } catch (final Exception e) {
+        if (!cancelled.get()) {
+          // Although this thread is closed first, it races with the destination's closure and can attempt one
+          // final read after the destination is closed before it's terminated.
+          // This read will fail and throw an exception. Because of this, throw exceptions only if the worker
+          // was not cancelled.
+
+          if (e instanceof DestinationException) {
+            // Surface Destination exceptions directly so that they can be classified properly by the worker
+            throw e;
+          } else {
+            throw new RuntimeException(e);
+          }
+        }
+      }
+    };
+  }
+
+  @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
+  private static Runnable readFromSrcAndWriteToDstRunnable(final AirbyteSource source,
+                                                           final AirbyteDestination destination,
+                                                           final AtomicBoolean cancelled,
+                                                           final AirbyteMapper mapper,
+                                                           final MessageTracker messageTracker,
+                                                           final Map<String, String> mdc,
+                                                           final RecordSchemaValidator recordSchemaValidator,
+                                                           final WorkerMetricReporter metricReporter,
+                                                           final ThreadedTimeTracker timeHolder) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -455,50 +509,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       }
 
     }
-  }
-
-  @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
-  private static Runnable getDestinationOutputRunnable(final AirbyteDestination destination,
-                                                       final AtomicBoolean cancelled,
-                                                       final MessageTracker messageTracker,
-                                                       final Map<String, String> mdc,
-                                                       final ThreadedTimeTracker timeHolder) {
-    return () -> {
-      MDC.setContextMap(mdc);
-      LOGGER.info("Destination output thread started.");
-      try {
-        while (!cancelled.get() && !destination.isFinished()) {
-          final Optional<AirbyteMessage> messageOptional;
-          try {
-            messageOptional = destination.attemptRead();
-          } catch (final Exception e) {
-            throw new DestinationException("Destination process read attempt failed", e);
-          }
-          if (messageOptional.isPresent()) {
-            LOGGER.info("State in DefaultReplicationWorker from destination: {}", messageOptional.get());
-            messageTracker.acceptFromDestination(messageOptional.get());
-          }
-        }
-        timeHolder.trackDestinationWriteEndTime();
-        if (!cancelled.get() && destination.getExitValue() != 0) {
-          throw new DestinationException("Destination process exited with non-zero exit code " + destination.getExitValue());
-        }
-      } catch (final Exception e) {
-        if (!cancelled.get()) {
-          // Although this thread is closed first, it races with the destination's closure and can attempt one
-          // final read after the destination is closed before it's terminated.
-          // This read will fail and throw an exception. Because of this, throw exceptions only if the worker
-          // was not cancelled.
-
-          if (e instanceof DestinationException) {
-            // Surface Destination exceptions directly so that they can be classified properly by the worker
-            throw e;
-          } else {
-            throw new RuntimeException(e);
-          }
-        }
-      }
-    };
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
