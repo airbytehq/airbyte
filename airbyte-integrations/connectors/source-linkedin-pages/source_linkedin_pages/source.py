@@ -144,9 +144,4 @@ class SourceLinkedinPages(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config["authenticator"] = self.get_authenticator(config)
-        return [
-            OrganizationLookup(config),
-            FollowerStatistics(config),
-            ShareStatistics(config),
-            TotalFollowerCount(config)
-        ]
+        return [OrganizationLookup(config), FollowerStatistics(config), ShareStatistics(config), TotalFollowerCount(config)]
