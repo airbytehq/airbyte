@@ -33,36 +33,36 @@ definitions:
       record_selector:
         extractor:
           field_pointer: ["workspaces"]
-  workspaces_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
-      name: "workspaces"
-      primary_key: "sid"
-      path: "/v1/Workspaces/{{config['sid']}}"
-  workers_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
-      name: "workers"
-      primary_key: "sid"
-      path: "/v1/Workspaces/{{config['sid']}}/Workers"
-    retriever:
-      $ref: "*ref(definitions.base_stream.retriever)"
-      record_selector:
-        extractor:
-          field_pointer: ["workers"]
       paginator:
         type: "DefaultPaginator"
         page_size_option:
           inject_into: "request_parameter"
           field_name: "page_size"
         pagination_strategy:
-          type: "PageIncrement"
+          type: "CursorPagination"
+          cursor_value: "{{ headers['url']['next'] }}"
           page_size: 2
+          stop_condition: "null" 
         page_token_option:
-          inject_into: "request_parameter"
-          field_name: "page"
+          inject_into: "path"
         url_base: "https://taskrouter.twilio.com"
-   
+  workspaces_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "workspaces"
+      primary_key: "sid"
+      path: "/v1/Workspaces/{{config['workspaceId']}}"
+  workers_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "workers"
+      primary_key: "sid"
+      path: "/v1/Workspaces/{{config['workspaceId']}}/Workers"
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      record_selector:
+        extractor:
+          field_pointer: ["workers"]
 streams:
   - "*ref(definitions.workspaces_stream)"
   - "*ref(definitions.allworkspaces_stream)"
@@ -72,5 +72,3 @@ streams:
 check:
   stream_names:
     - "allworkspaces"
-    - "workspaces"
-    - "workers"

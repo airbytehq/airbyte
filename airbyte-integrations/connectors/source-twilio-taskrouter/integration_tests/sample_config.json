@@ -1,5 +1,5 @@
 {
   "account_sid": "Your Account ID",
   "auth_token": "Your Auth Token",
-  "sid": "Your Workspace ID"
+  "workspaceId": "Your Workspace ID"
 }

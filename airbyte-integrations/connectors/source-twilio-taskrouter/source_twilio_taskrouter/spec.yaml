@@ -17,7 +17,7 @@ connectionSpecification:
       type: string
       description: Twilio Auth Token
       airbyte_secret: true
-    sid:
+    workspaceid:
       type: string
       description: Workspace ID
     page_size:
