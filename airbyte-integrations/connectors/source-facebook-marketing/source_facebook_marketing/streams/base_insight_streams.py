@@ -5,16 +5,14 @@
 import logging
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.utils import AirbyteTracedException
-from facebook_business.exceptions import FacebookBadObjectError
-
 import airbyte_cdk.sources.utils.casing as casing
 import pendulum
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.utils import AirbyteTracedException
 from cached_property import cached_property
+from facebook_business.exceptions import FacebookBadObjectError
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 
@@ -122,7 +120,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         except FacebookBadObjectError as e:
             raise AirbyteTracedException(
                 message=f"API error occurs on Facebook side during job: {job}, wrong (empty) response received with errors: {e} "
-                        f"Please try again later",
+                f"Please try again later",
                 failure_type=FailureType.system_error,
             ) from e
 
