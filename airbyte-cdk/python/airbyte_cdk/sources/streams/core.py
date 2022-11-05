@@ -13,12 +13,12 @@ from deprecated.classic import deprecated
 
 import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import AirbyteStream, SyncMode, \
-    AirbyteTraceMessage, AirbyteLogMessage
+    AirbyteTraceMessage, AirbyteLogMessage, AirbyteRecordMessage
 # list of all possible HTTP methods which can be used for sending of request bodies
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
-RecordDataOrLogOrTraceMessage = Union[Mapping[str, Any], AirbyteLogMessage, AirbyteTraceMessage]
+RecordDataOrLogOrTraceMessage = Union[Mapping[str, Any], AirbyteRecordMessage, AirbyteLogMessage, AirbyteTraceMessage]
 
 
 def package_name_from_class(cls: object) -> str:

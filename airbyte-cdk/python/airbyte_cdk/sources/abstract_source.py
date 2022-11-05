@@ -242,12 +242,8 @@ class AbstractSource(Source, ABC):
             )
             record_counter = 0
             for message_counter, record_data_or_message in enumerate(records, start=1):
-                # yield record_data_or_message
-                if isinstance(record_data_or_message, dict):
-                    message = data_to_airbyte_record(stream_name, record_data_or_message, stream_instance.transformer,
-                                                     stream_instance.get_json_schema())
-                else:
-                    message = record_data_or_message
+                message = data_to_airbyte_record(stream_name, record_data_or_message, stream_instance.transformer,
+                                                 stream_instance.get_json_schema())
                 yield message
                 if message.type == MessageType.RECORD:
                     record = message.record
@@ -292,11 +288,8 @@ class AbstractSource(Source, ABC):
                 cursor_field=configured_stream.cursor_field,
             )
             for record_data_or_message in record_data_or_messages:
-                if isinstance(record_data_or_message, dict):
-                    message = data_to_airbyte_record(stream_instance.name, record_data_or_message, stream_instance.transformer,
-                                                     stream_instance.get_json_schema())
-                else:
-                    message = data_to_airbyte_record
+                message = data_to_airbyte_record(stream_instance.name, record_data_or_message, stream_instance.transformer,
+                                                 stream_instance.get_json_schema())
                 yield message
                 if message.type == MessageType.RECORD:
                     total_records_counter += 1
