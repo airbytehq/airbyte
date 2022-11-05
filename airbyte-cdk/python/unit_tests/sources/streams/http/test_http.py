@@ -3,31 +3,19 @@
 #
 
 
-import datetime
 import json
-import unittest
 from http import HTTPStatus
 from typing import Any, Iterable, Mapping, Optional
 from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 import requests
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-from airbyte_cdk.sources.streams.http.auth import \
-    TokenAuthenticator as HttpTokenAuthenticator
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, \
-    RequestBodyException, UserDefinedBackoffException
-from airbyte_cdk.sources.streams.http.requests_native_auth import \
-    TokenAuthenticator
-
-datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
-FAKE_NOW = datetime.datetime(2022, 1, 1, tzinfo=datetime.timezone.utc)
-
-config = {"start_date": "2021-01-01T00:00:00.000000+0000", "start_date_ymd": "2021-01-01"}
-timezone = datetime.timezone.utc
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator as HttpTokenAuthenticator
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
 class StubBasicReadHttpStream(HttpStream):
@@ -48,16 +36,6 @@ class StubBasicReadHttpStream(HttpStream):
         stubResp = {"data": self.resp_counter}
         self.resp_counter += 1
         yield stubResp
-
-    def get_json_schema(self) -> Mapping[str, Any]:
-        return {}
-
-
-@pytest.fixture()
-def mock_datetime_now(monkeypatch):
-    datetime_mock = unittest.mock.MagicMock(wraps=datetime.datetime)
-    datetime_mock.now.return_value = FAKE_NOW
-    monkeypatch.setattr(datetime, "datetime", datetime_mock)
 
 
 def test_default_authenticator():
@@ -274,10 +252,10 @@ def test_raise_on_http_errors_off_non_retryable_4xx(mocker, status_code):
 @pytest.mark.parametrize(
     "error",
     (
-            requests.exceptions.ConnectTimeout,
-            requests.exceptions.ConnectionError,
-            requests.exceptions.ChunkedEncodingError,
-            requests.exceptions.ReadTimeout,
+        requests.exceptions.ConnectTimeout,
+        requests.exceptions.ConnectionError,
+        requests.exceptions.ChunkedEncodingError,
+        requests.exceptions.ReadTimeout,
     ),
 )
 def test_raise_on_http_errors(mocker, error):
