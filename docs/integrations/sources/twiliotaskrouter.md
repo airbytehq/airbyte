@@ -6,8 +6,8 @@ This page contains the setup guide and reference information for the Twilio Task
 
 Twilio Taskroute HTTP requests to the REST API are protected with HTTP Basic authentication. You will use your Twilio Account SID as the username and your Auth Token as the password for HTTP Basic authentication. You will also have to use your Workspace ID as the sid if you wish to access a particular workspace or it's subresources.
 
-You can find your Account SID and Auth Token on your [dashboard](https://www.twilio.com/user/account).
-You can find the Workspace ID's from the taskrouter [box](https://console.twilio.com/develop/explore) in the list.
+You can find your Account SID and Auth Token on your [dashboard](https://www.twilio.com/user/account) by scrolling down the console once you have created a Twilio account.
+You can find [Taskrouter](https://console.twilio.com/develop/explore) in the Explore Products page under Solutions in the list. Click on it to expand a panel in the sidebar and click on Workspaces to be taken to your created workspaces. Each workspace has it's unique ID as SID with which you can access the streams.
 
 See [docs](https://www.twilio.com/docs/taskrouter/api) for more details.
 
@@ -21,8 +21,7 @@ See [docs](https://www.twilio.com/docs/taskrouter/api) for more details.
 3. On the Set up the source page, enter the name for the Twilio connector and select **Twilio Taskrouter** from the <Source/Destination> type dropdown. 
 4. Enter your `account_sid`.
 5. Enter your `auth_token`.
-6. Enter your `sid`.
-7. Click **Set up source**.
+6. Click **Set up source**.
 
 ### For Airbyte OSS:
 
@@ -30,8 +29,7 @@ See [docs](https://www.twilio.com/docs/taskrouter/api) for more details.
 2. Set the name for your source.
 3. Enter your `account_sid`.
 4. Enter your `auth_token`.
-5. Enter your `sid`.
-6. Click **Set up source**.
+5. Click **Set up source**.
 
 ## Supported sync modes
 
