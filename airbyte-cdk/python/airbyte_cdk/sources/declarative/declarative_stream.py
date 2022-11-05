@@ -5,8 +5,6 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from dataclasses_jsonschema import JsonSchemaMixin
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
@@ -15,6 +13,7 @@ from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice
 from airbyte_cdk.sources.streams.core import Stream, StreamData
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
@@ -108,11 +107,11 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
         return self.stream_cursor_field
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:
         # Set the log level on the retriever if it has a logger
         if hasattr(self.logger, "level") and hasattr(self.retriever, "logger"):
@@ -140,7 +139,7 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
         return self._schema_loader.get_json_schema()
 
     def stream_slices(
-            self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Override to define the slices for this stream. See the stream slicing section of the docs for more information.

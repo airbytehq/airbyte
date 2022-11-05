@@ -12,16 +12,12 @@ from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 import requests
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-from airbyte_cdk.sources.streams.http.auth import \
-    TokenAuthenticator as HttpTokenAuthenticator
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, \
-    RequestBodyException, UserDefinedBackoffException
-from airbyte_cdk.sources.streams.http.requests_native_auth import \
-    TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator as HttpTokenAuthenticator
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 FAKE_NOW = datetime.datetime(2022, 1, 1, tzinfo=datetime.timezone.utc)
@@ -274,10 +270,10 @@ def test_raise_on_http_errors_off_non_retryable_4xx(mocker, status_code):
 @pytest.mark.parametrize(
     "error",
     (
-            requests.exceptions.ConnectTimeout,
-            requests.exceptions.ConnectionError,
-            requests.exceptions.ChunkedEncodingError,
-            requests.exceptions.ReadTimeout,
+        requests.exceptions.ConnectTimeout,
+        requests.exceptions.ConnectionError,
+        requests.exceptions.ChunkedEncodingError,
+        requests.exceptions.ReadTimeout,
     ),
 )
 def test_raise_on_http_errors(mocker, error):

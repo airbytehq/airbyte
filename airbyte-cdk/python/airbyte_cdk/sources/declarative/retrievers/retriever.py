@@ -6,11 +6,10 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
-from dataclasses_jsonschema import JsonSchemaMixin
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import StreamData
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
@@ -21,11 +20,11 @@ class Retriever(JsonSchemaMixin):
 
     @abstractmethod
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: Optional[List[str]] = None,
-            stream_slice: Optional[StreamSlice] = None,
-            stream_state: Optional[StreamState] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        stream_state: Optional[StreamState] = None,
     ) -> Iterable[StreamData]:
         """
         Fetch a stream's records from an HTTP API source
