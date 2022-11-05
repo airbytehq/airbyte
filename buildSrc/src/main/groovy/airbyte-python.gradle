@@ -104,7 +104,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
 
         project.task('isortReport', type: PythonTask) {
             module = "isort"
-            command = "--settings-file=${project.rootProject.file('pyproject.toml').absolutePath} --diff --quiet ./"
+            command = "--settings-file=${project.rootProject.file('pyproject.toml').absolutePath} --diff -v ./"
             outputPrefix = ''
         }
 
