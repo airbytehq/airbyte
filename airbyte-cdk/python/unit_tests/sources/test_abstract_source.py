@@ -924,9 +924,6 @@ class TestIncrementalRead:
 
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
-        print(f"messages[0]: {messages[0]}")
-        print(f"expected[0]: {expected[0]}")
-
         assert expected == messages
 
 
