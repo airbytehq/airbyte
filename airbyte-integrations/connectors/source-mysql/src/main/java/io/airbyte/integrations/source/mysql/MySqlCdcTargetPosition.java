@@ -84,4 +84,14 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition {
     return true;
   }
 
+  @Override
+  public boolean reachedTargetPosition(final Long lsn) {
+    return false;
+  }
+
+  @Override
+  public Long getHeartbeatPosition(final io.debezium.engine.ChangeEvent<String, String> heartbeatEvent) {
+    return null;
+  }
+
 }

@@ -13,6 +13,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.debezium.engine.ChangeEvent;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -46,6 +47,8 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   private boolean receivedFirstRecord;
   private boolean hasSnapshotFinished;
   private boolean signalledClose;
+  private LocalDateTime tsLastHeartbeat;
+  private Long lastHeartbeatValue;
 
   public DebeziumRecordIterator(final LinkedBlockingQueue<ChangeEvent<String, String>> queue,
                                 final CdcTargetPosition targetPosition,
@@ -61,6 +64,8 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     this.receivedFirstRecord = false;
     this.hasSnapshotFinished = true;
     this.signalledClose = false;
+    tsLastHeartbeat = null;
+    lastHeartbeatValue = null;
   }
 
   @Override
@@ -71,7 +76,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
       final ChangeEvent<String, String> next;
       try {
-        final Duration waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME : firstRecordWaitTime;
+        final Duration waitTime = SUBSEQUENT_RECORD_WAIT_TIME;
         next = queue.poll(waitTime.getSeconds(), TimeUnit.SECONDS);
       } catch (final InterruptedException e) {
         throw new RuntimeException(e);
@@ -80,9 +85,23 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       // if within the timeout, the consumer could not get a record, it is time to tell the producer to
       // shutdown.
       if (next == null) {
-        LOGGER.info("Closing cause next is returned as null");
+        LOGGER.info("Closing: queue returned null event");
         requestClose();
         LOGGER.info("no record found. polling again.");
+        continue;
+      }
+      LOGGER.info("*** checking heartbeat lsn for: {}", next);
+      final Long hbCurr = targetPosition.getHeartbeatPosition(next);
+      if (hbCurr != null) {
+        if (targetPosition.reachedTargetPosition(hbCurr)
+            || (noChangeInHeartbeatLSN(hbCurr) && tooMuchTimePassed())) {
+          LOGGER.info("Closing: Heartbeat indicate sync is done");
+          requestClose();
+        }
+        if (!hbCurr.equals(this.lastHeartbeatValue)) {
+          this.tsLastHeartbeat = LocalDateTime.now();
+          this.lastHeartbeatValue = hbCurr;
+        }
         continue;
       }
 
@@ -93,10 +112,24 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       if (!signalledClose && shouldSignalClose(eventAsJson)) {
         requestClose();
       }
+      this.tsLastHeartbeat = null;
+      this.lastHeartbeatValue = null;
       receivedFirstRecord = true;
       return next;
     }
     return endOfData();
+  }
+
+  private boolean tooMuchTimePassed() {
+    final Duration tbt = Duration.between(this.tsLastHeartbeat, LocalDateTime.now());
+    LOGGER.info("*** time since last hb change {}s", tbt.toSeconds());
+    return tbt.compareTo(SUBSEQUENT_RECORD_WAIT_TIME) > 0;
+  }
+
+  private boolean noChangeInHeartbeatLSN(final Long currLsn) {
+    LOGGER.info("*** last hb {}. new hb {}. same {}", this.lastHeartbeatValue, currLsn, currLsn.equals(this.lastHeartbeatValue));
+    return (currLsn.equals(this.lastHeartbeatValue));
+
   }
 
   private boolean hasSnapshotFinished(final JsonNode eventAsJson) {
