@@ -1483,7 +1483,7 @@ class Contacts(CRMSearchStream):
     last_modified_field = "lastmodifieddate"
     associations = ["contacts", "companies"]
     primary_key = "id"
-    scopes = {"crm.objects.contacts.read", "crm.objects.contacts.read"}
+    scopes = {"crm.objects.contacts.read", "crm.objects.companies.read"}
 
 
 class EngagementsCalls(CRMSearchStream):
@@ -1499,7 +1499,7 @@ class EngagementsEmails(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
-    scopes = {"sales-email-read"}
+    scopes = {"crm.objects.contacts.read", "sales-email-read"}
 
 
 class EngagementsMeetings(CRMSearchStream):
