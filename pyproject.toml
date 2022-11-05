@@ -47,7 +47,7 @@ multi_line_output = 3
 include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
-skip_glob = ["connector_builder/generated"]
+skip_glob = ["**/connector_builder/generated/**"]
 
 
 [tool.mypy]
