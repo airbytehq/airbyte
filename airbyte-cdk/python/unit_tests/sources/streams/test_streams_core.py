@@ -4,8 +4,10 @@
 
 
 from typing import Any, Iterable, List, Mapping
+from unittest import mock
 
 import pytest
+
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams import Stream
 
@@ -16,11 +18,11 @@ class StreamStubFullRefresh(Stream):
     """
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         pass
 
@@ -47,11 +49,11 @@ class StreamStubIncremental(Stream):
     """
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         pass
 
@@ -66,11 +68,11 @@ class StreamStubIncrementalEmptyNamespace(Stream):
     """
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         pass
 
@@ -173,3 +175,11 @@ def test_wrapped_primary_key_various_argument(test_input, expected):
     wrapped = Stream._wrapped_primary_key(test_input)
 
     assert wrapped == expected
+
+
+@mock.patch("airbyte_cdk.sources.utils.schema_helpers.ResourceSchemaLoader.get_schema")
+def test_get_json_schema_is_cached(mocked_method):
+    stream = StreamStubFullRefresh()
+    for i in range(5):
+        stream.get_json_schema()
+    assert mocked_method.call_count == 1
