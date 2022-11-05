@@ -27,6 +27,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -125,7 +126,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       checkOperations.addAll(CdcConfigurationHelper.getCheckOperations());
 
       checkOperations.add(database -> {
-        CdcConfigurationHelper.checkFirstRecordWaitTime(config);
+        FirstRecordWaitTimeUtil.checkFirstRecordWaitTime(config);
         CdcConfigurationHelper.checkServerTimeZoneConfig(config);
       });
     }
@@ -237,7 +238,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
-      final Duration firstRecordWaitTime = CdcConfigurationHelper.getFirstRecordWaitTime(sourceConfig);
+      final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
       LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
       final AirbyteDebeziumHandler handler =
           new AirbyteDebeziumHandler(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, firstRecordWaitTime);

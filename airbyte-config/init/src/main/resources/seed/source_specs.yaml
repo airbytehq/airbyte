@@ -4369,7 +4369,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.31"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.32"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics"
     connectionSpecification:
@@ -6897,7 +6897,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.4.24"
+- dockerImage: "airbyte/source-mssql:0.4.25"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -7071,6 +7071,18 @@
                   \ the \"Snapshot\" level, you must enable the <a href=\"https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server\"\
                   >snapshot isolation mode</a> on the database."
                 order: 2
+              initial_waiting_seconds:
+                type: "integer"
+                title: "Initial Waiting Time in Seconds (Advanced)"
+                description: "The amount of time the connector will wait when it launches\
+                  \ to determine if there is new data to sync or not. Defaults to\
+                  \ 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about\
+                  \ <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\"\
+                  >initial waiting time</a>."
+                default: 300
+                min: 120
+                max: 1200
+                order: 3
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"

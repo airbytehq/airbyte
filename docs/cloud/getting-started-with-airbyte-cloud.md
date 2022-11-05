@@ -183,20 +183,21 @@ Verify the sync by checking the logs:
 3. Check the data at your destination. If you added a Destination Stream Prefix while setting up the connection, make sure to search for the stream name with the prefix.
 
 ## Allowlist IP address
-
-Depending on your data residency location, you may need to allowlist the following IP addresses to enable access to Airbyte:
+Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud#choose-your-default-data-residency) location, you may need to allowlist the following IP addresses to enable access to Airbyte:
 
 ### United States and Airbyte Default
-#### GCP region: us-west2
+#### GCP region: us-west3
 * 34.106.109.131
 * 34.106.196.165
 * 34.106.60.246
 
 ### European Union
-#### AWS region: eu-west-3
+#### GCP region: us-west3
 * 34.106.109.131
 * 34.106.196.165
 * 34.106.60.246
+
+#### AWS region: eu-west-3
 * 13.37.4.46
 * 13.37.142.60
 * 35.181.124.238
