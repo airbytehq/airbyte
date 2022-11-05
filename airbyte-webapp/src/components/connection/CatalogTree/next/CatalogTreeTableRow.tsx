@@ -63,7 +63,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
     [styles.disabledChange]: changedSelected && !isStreamEnabled,
     [styles.selected]: isSelected,
     [styles.error]: hasError,
-    [styles.disabled]: !isStreamEnabled,
+    [styles.disabled]: !changedSelected && !isStreamEnabled,
   });
 
   return (
