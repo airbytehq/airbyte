@@ -5,26 +5,21 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
-    "backoff",
-    "requests",
-]
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "requests==2.25.1"]
 
 TEST_REQUIREMENTS = [
-    "pytest~=6.1",
+    "pytest==6.1.2",
     "source-acceptance-test",
-    "requests-mock",
 ]
 
 setup(
-    name="source_sendgrid",
-    description="Source implementation for Sendgrid.",
+    name="source_datadog",
+    description="Source implementation for Datadog.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    package_data={"": ["*.json", "schemas/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },

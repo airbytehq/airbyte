@@ -5,7 +5,7 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_greenhouse'
+    moduleDirectory 'source_datadog'
 }
 
 dependencies {

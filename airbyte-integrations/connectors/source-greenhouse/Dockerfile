@@ -4,14 +4,10 @@ FROM python:3.9-slim
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /airbyte/integration_code
-
-ENV AIRBYTE_ROOT "/airbyte/integration_code"
-COPY ./airbyte-cdk/ ./airbyte-cdk
-
-COPY ./airbyte-integrations/connectors/source-greenhouse/source_greenhouse ./source_greenhouse
-COPY ./airbyte-integrations/connectors/source-greenhouse/main.py .
-COPY ./airbyte-integrations/connectors/source-greenhouse/setup.py .
+COPY setup.py ./
 RUN pip install .
+COPY source_greenhouse ./source_greenhouse
+COPY main.py ./
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
