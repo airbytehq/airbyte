@@ -7,6 +7,8 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1.56",
+    "bigquery_schema_generator~=1.5",
+    "gbqschema_converter~=1.2.0"
 ]
 
 TEST_REQUIREMENTS = [
