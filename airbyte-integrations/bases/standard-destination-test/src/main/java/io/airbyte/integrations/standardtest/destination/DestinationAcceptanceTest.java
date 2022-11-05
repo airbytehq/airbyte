@@ -1217,7 +1217,6 @@ public abstract class DestinationAcceptanceTest {
     final List<AirbyteMessage> destinationOutput = runSync(config, messages, catalog,
         runNormalization);
 
-
     final AirbyteMessage expectedStateMessage = reversed(messages)
         .stream()
         .filter(m -> m.getType() == Type.STATE)
