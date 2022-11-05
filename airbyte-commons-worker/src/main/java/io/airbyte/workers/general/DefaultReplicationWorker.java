@@ -404,8 +404,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     final ObjectMapper mapper = new ObjectMapper();
     LOGGER.info("sync summary: {}", mapper.writerWithDefaultPrettyPrinter().writeValueAsString(summary));
     LOGGER.info("failures: {}", mapper.writerWithDefaultPrettyPrinter().writeValueAsString(failures));
-
     LineGobbler.endSection("REPLICATION");
+
     return output;
   }
 
