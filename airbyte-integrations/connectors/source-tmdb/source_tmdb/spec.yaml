@@ -20,3 +20,7 @@ connectionSpecification:
       title: Optional Query for search streams 
       type: string
       description: Target movie ID, Default would be Marvel for required streams
+    language:
+      title: Optional language for filtering
+      type: string
+      description: Language expressed in ISO 639-1 scheme, Default would be en-US for required streams

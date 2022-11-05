@@ -22,7 +22,7 @@ Just pass the generated API key and Movie ID for establishing the connection.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Google-webfonts connector and select **TMDb** from the Source type dropdown.
 4. Enter your `api_key`.
-5. Enter optional params `movie_id, query` (if needed).
+5. Enter optional params `movie_id, query, language` (if needed).
 6. Click **Set up source**.
 
 ### For Airbyte OSS:
@@ -30,7 +30,7 @@ Just pass the generated API key and Movie ID for establishing the connection.
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 4. Enter your `api_key`.
-5. Enter optional params `movie_id, query` (if needed).
+5. Enter optional params `movie_id, query, language` (if needed).
 6. Click **Set up source**.
 
 ## Supported sync modes

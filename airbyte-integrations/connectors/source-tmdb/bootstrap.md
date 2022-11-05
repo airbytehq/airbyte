@@ -28,7 +28,7 @@ Api key is mandate for this connector to work. It could be generated using a fre
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. Enter your `api_key`.
-5. Enter optional params `movie_id, query` (if needed).
+5. Enter optional params `movie_id, query, language` (if needed).
 6. Click **Set up source**.
 
  * We use only GET methods, all streams are straightforward.

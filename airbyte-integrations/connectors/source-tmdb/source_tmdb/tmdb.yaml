@@ -191,7 +191,7 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "search_collections"
-      path: "/search/collection?query={{ config['api_key'] or 'Marvel'}}&api_key={{ config['api_key'] }}&language=en-US&page=1"
+      path: "/search/collection?query={{ config['api_key'] or 'Marvel'}}&api_key={{ config['api_key'] }}&language={{ config['language'] or 'en-US' }}&page=1"
 
   search_keywords_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -203,25 +203,25 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "search_movies"
-      path: "/search/movie?query={{ config['api_key'] or 'Marvel'}}&api_key={{ config['api_key'] }}&language=en-US&page=1&include_adult=false"
+      path: "/search/movie?query={{ config['api_key'] or 'Marvel'}}&api_key={{ config['api_key'] }}&language={{ config['language'] or 'en-US' }}&page=1&include_adult=false"
 
   search_multi_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "search_multi"
-      path: "/search/multi?query={{ config['api_key'] or 'Marvel'}}&api_key={{ config['api_key'] }}&language=en-US&page=1&include_adult=false"
+      path: "/search/multi?query={{ config['api_key'] or 'Marvel'}}&api_key={{ config['api_key'] }}&language={{ config['language'] or 'en-US' }}&page=1&include_adult=false"
 
   search_people_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "search_people"
-      path: "/search/person?query={{ config['api_key'] or 'Marvel'}}&api_key={{ config['api_key'] }}&language=en-US&page=1&include_adult=false"
+      path: "/search/person?query={{ config['api_key'] or 'Marvel'}}&api_key={{ config['api_key'] }}&language={{ config['language'] or 'en-US' }}&page=1&include_adult=false"
 
   search_tv_shows_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "search_tv_shows"
-      path: "/search/tv?query={{ config['api_key'] or 'Marvel'}}&api_key={{ config['api_key'] }}&language=en-US&page=1&include_adult=false"
+      path: "/search/tv?query={{ config['api_key'] or 'Marvel'}}&api_key={{ config['api_key'] }}&language={{ config['language'] or 'en-US' }}&page=1&include_adult=false"
 
 
 streams:

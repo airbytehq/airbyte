@@ -1,5 +1,6 @@
 {
   "api_key": "<API_FROM_TMDB>",
   "movie_id": "550",
-  "query": "Marvel"
+  "query": "Marvel",
+  "language": "<SUPPORTED_ISO_639-1_VALUE>"
 }
