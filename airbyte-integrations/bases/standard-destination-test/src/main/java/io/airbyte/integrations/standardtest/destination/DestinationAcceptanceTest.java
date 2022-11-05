@@ -1225,7 +1225,8 @@ public abstract class DestinationAcceptanceTest {
         .orElseThrow(() -> new IllegalArgumentException(
             "All message sets used for testing should include a state record"));
 
-    final AirbyteMessage actualStateMessage = reversed(destinationOutput)
+    Collections.reverse(destinationOutput);
+    final AirbyteMessage actualStateMessage = destinationOutput
         .stream()
         .filter(m -> m.getType() == Type.STATE)
         .findFirst()
