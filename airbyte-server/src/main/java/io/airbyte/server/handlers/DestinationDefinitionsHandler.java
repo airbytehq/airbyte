@@ -24,8 +24,11 @@ import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreLists;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
+import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -34,6 +37,7 @@ import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.errors.InternalServerKnownException;
+import io.airbyte.server.errors.UnsupportedProtocolVersionException;
 import io.airbyte.server.scheduler.SynchronousResponse;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.server.services.AirbyteGithubStore;
@@ -56,6 +60,7 @@ public class DestinationDefinitionsHandler {
   private final SynchronousSchedulerClient schedulerSynchronousClient;
   private final AirbyteGithubStore githubStore;
   private final DestinationHandler destinationHandler;
+  private final AirbyteProtocolVersionRange protocolVersionRange;
 
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
                                        final SynchronousSchedulerClient schedulerSynchronousClient,
@@ -74,6 +79,10 @@ public class DestinationDefinitionsHandler {
     this.schedulerSynchronousClient = schedulerSynchronousClient;
     this.githubStore = githubStore;
     this.destinationHandler = destinationHandler;
+
+    // TODO inject protocol min and max once this handler is being converted to micronaut
+    final Configs configs = new EnvConfigs();
+    protocolVersionRange = new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(), configs.getAirbyteProtocolVersionMax());
   }
 
   @VisibleForTesting
@@ -179,6 +188,10 @@ public class DestinationDefinitionsHandler {
     final StandardDestinationDefinition destinationDefinition = destinationDefinitionFromCreate(destinationDefCreate)
         .withPublic(false)
         .withCustom(false);
+    if (!protocolVersionRange.isSupported(new Version(destinationDefinition.getProtocolVersion()))) {
+      throw new UnsupportedProtocolVersionException(destinationDefinition.getProtocolVersion(), protocolVersionRange.min(),
+          protocolVersionRange.max());
+    }
     configRepository.writeStandardDestinationDefinition(destinationDefinition);
 
     return buildDestinationDefinitionRead(destinationDefinition);
@@ -190,6 +203,10 @@ public class DestinationDefinitionsHandler {
         customDestinationDefinitionCreate.getDestinationDefinition())
             .withPublic(false)
             .withCustom(true);
+    if (!protocolVersionRange.isSupported(new Version(destinationDefinition.getProtocolVersion()))) {
+      throw new UnsupportedProtocolVersionException(destinationDefinition.getProtocolVersion(), protocolVersionRange.min(),
+          protocolVersionRange.max());
+    }
     configRepository.writeCustomDestinationDefinition(destinationDefinition, customDestinationDefinitionCreate.getWorkspaceId());
 
     return buildDestinationDefinitionRead(destinationDefinition);
@@ -235,6 +252,9 @@ public class DestinationDefinitionsHandler {
         : currentDestination.getResourceRequirements();
 
     final Version airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(spec.getProtocolVersion());
+    if (!protocolVersionRange.isSupported(airbyteProtocolVersion)) {
+      throw new UnsupportedProtocolVersionException(airbyteProtocolVersion, protocolVersionRange.min(), protocolVersionRange.max());
+    }
 
     final StandardDestinationDefinition newDestination = new StandardDestinationDefinition()
         .withDestinationDefinitionId(currentDestination.getDestinationDefinitionId())
