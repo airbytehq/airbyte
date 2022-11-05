@@ -114,6 +114,7 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
             stream_slice: Mapping[str, Any] = None,
             stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:
+        # Set the log level on the retriever if it has a logger
         if hasattr(self.logger, "level") and hasattr(self.retriever, "logger"):
             self.retriever.logger.setLevel(self.logger.level)
 
