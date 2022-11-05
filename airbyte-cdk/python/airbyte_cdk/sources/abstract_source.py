@@ -22,7 +22,8 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.http import HttpStream
-from airbyte_cdk.sources.utils.record_helper import data_to_airbyte_record
+from airbyte_cdk.sources.utils.record_helper import \
+    stream_data_to_airbyte_message
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, \
     split_config
 from airbyte_cdk.utils.event_timing import create_timer
@@ -242,8 +243,8 @@ class AbstractSource(Source, ABC):
             )
             record_counter = 0
             for message_counter, record_data_or_message in enumerate(records, start=1):
-                message = data_to_airbyte_record(stream_name, record_data_or_message, stream_instance.transformer,
-                                                 stream_instance.get_json_schema())
+                message = stream_data_to_airbyte_message(stream_name, record_data_or_message, stream_instance.transformer,
+                                                         stream_instance.get_json_schema())
                 yield message
                 if message.type == MessageType.RECORD:
                     record = message.record
@@ -288,8 +289,8 @@ class AbstractSource(Source, ABC):
                 cursor_field=configured_stream.cursor_field,
             )
             for record_data_or_message in record_data_or_messages:
-                message = data_to_airbyte_record(stream_instance.name, record_data_or_message, stream_instance.transformer,
-                                                 stream_instance.get_json_schema())
+                message = stream_data_to_airbyte_message(stream_instance.name, record_data_or_message, stream_instance.transformer,
+                                                         stream_instance.get_json_schema())
                 yield message
                 if message.type == MessageType.RECORD:
                     total_records_counter += 1

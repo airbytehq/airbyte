@@ -10,7 +10,8 @@ from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, \
     AirbyteLogMessage, Level, AirbyteTraceMessage, TraceType, AirbyteStateMessage, \
     AirbyteStateType
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.sources.utils.record_helper import data_to_airbyte_record
+from airbyte_cdk.sources.utils.record_helper import \
+    stream_data_to_airbyte_message
 
 NOW = 1234567
 STREAM_NAME = "my_stream"
@@ -36,7 +37,7 @@ STREAM_NAME = "my_stream"
 def test_data_or_record_to_airbyte_record(test_name, data, expected_message):
     transformer = MagicMock()
     schema = {}
-    message = data_to_airbyte_record(STREAM_NAME, data, transformer, schema)
+    message = stream_data_to_airbyte_message(STREAM_NAME, data, transformer, schema)
     message.record.emitted_at = NOW
 
     if isinstance(data, dict):
@@ -64,7 +65,7 @@ def test_data_or_record_to_airbyte_record(test_name, data, expected_message):
 def test_log_or_trace_to_message(test_name, data, expected_message):
     transformer = MagicMock()
     schema = {}
-    message = data_to_airbyte_record(STREAM_NAME, data, transformer, schema)
+    message = stream_data_to_airbyte_message(STREAM_NAME, data, transformer, schema)
 
     assert not transformer.transform.called
     assert expected_message == message
@@ -82,4 +83,4 @@ def test_state_message_to_message(test_name, data):
     transformer = MagicMock()
     schema = {}
     with pytest.raises(ValueError):
-        data_to_airbyte_record(STREAM_NAME, data, transformer, schema)
+        stream_data_to_airbyte_message(STREAM_NAME, data, transformer, schema)

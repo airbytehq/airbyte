@@ -18,7 +18,12 @@ from airbyte_cdk.models import AirbyteStream, SyncMode, \
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
-RecordDataOrLogOrTraceMessage = Union[Mapping[str, Any], AirbyteRecordMessage, AirbyteLogMessage, AirbyteTraceMessage]
+# A stream's read method can return one of the following types:
+# Mapping[str, Any]: The content of an AirbyteRecordMessage
+# AirbyteRecordMessage: An AirbyteRecordMessage
+# AirbyteLogMessage: A log message
+# AirbyteTraceMessage: A trace message
+StreamData = Union[Mapping[str, Any], AirbyteRecordMessage, AirbyteLogMessage, AirbyteTraceMessage]
 
 
 def package_name_from_class(cls: object) -> str:
@@ -100,7 +105,7 @@ class Stream(ABC):
             cursor_field: List[str] = None,
             stream_slice: Mapping[str, Any] = None,
             stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[RecordDataOrLogOrTraceMessage]:
+    ) -> Iterable[StreamData]:
         """
         This method should be overridden by subclasses to read records based on the inputs
         """

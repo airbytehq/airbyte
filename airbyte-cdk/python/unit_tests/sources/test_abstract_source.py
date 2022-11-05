@@ -34,7 +34,8 @@ from airbyte_cdk.models import Type
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
-from airbyte_cdk.sources.utils.record_helper import data_to_airbyte_record
+from airbyte_cdk.sources.utils.record_helper import \
+    stream_data_to_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 logger = logging.getLogger("airbyte")
@@ -888,35 +889,35 @@ class TestIncrementalRead:
 
         expected = _fix_emitted_at([
             # stream 1 slice 1
-            data_to_airbyte_record("s1", stream_output[0]),
-            data_to_airbyte_record("s1", stream_output[1]),
-            data_to_airbyte_record("s1", stream_output[2]),
+            stream_data_to_airbyte_message("s1", stream_output[0]),
+            stream_data_to_airbyte_message("s1", stream_output[1]),
+            stream_data_to_airbyte_message("s1", stream_output[2]),
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
-            data_to_airbyte_record("s1", stream_output[3]),
+            stream_data_to_airbyte_message("s1", stream_output[3]),
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
             # stream 1 slice 2
-            data_to_airbyte_record("s1", stream_output[0]),
-            data_to_airbyte_record("s1", stream_output[1]),
-            data_to_airbyte_record("s1", stream_output[2]),
+            stream_data_to_airbyte_message("s1", stream_output[0]),
+            stream_data_to_airbyte_message("s1", stream_output[1]),
+            stream_data_to_airbyte_message("s1", stream_output[2]),
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
-            data_to_airbyte_record("s1", stream_output[3]),
+            stream_data_to_airbyte_message("s1", stream_output[3]),
             _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
             # stream 2 slice 1
-            data_to_airbyte_record("s2", stream_output[0]),
-            data_to_airbyte_record("s2", stream_output[1]),
-            data_to_airbyte_record("s2", stream_output[2]),
+            stream_data_to_airbyte_message("s2", stream_output[0]),
+            stream_data_to_airbyte_message("s2", stream_output[1]),
+            stream_data_to_airbyte_message("s2", stream_output[2]),
             _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state(
                 {"s1": state, "s2": state}),
-            data_to_airbyte_record("s2", stream_output[3]),
+            stream_data_to_airbyte_message("s2", stream_output[3]),
             _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state(
                 {"s1": state, "s2": state}),
             # stream 2 slice 2
-            data_to_airbyte_record("s2", stream_output[0]),
-            data_to_airbyte_record("s2", stream_output[1]),
-            data_to_airbyte_record("s2", stream_output[2]),
+            stream_data_to_airbyte_message("s2", stream_output[0]),
+            stream_data_to_airbyte_message("s2", stream_output[1]),
+            stream_data_to_airbyte_message("s2", stream_output[2]),
             _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state(
                 {"s1": state, "s2": state}),
-            data_to_airbyte_record("s2", stream_output[3]),
+            stream_data_to_airbyte_message("s2", stream_output[3]),
             _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state(
                 {"s1": state, "s2": state}),
         ])
