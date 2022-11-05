@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { AuthSpecification } from "core/request/AirbyteClient";
 import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
+import { useAuthentication } from "views/Connector/ServiceForm/useAuthentication";
 
 import { useServiceForm } from "../../../serviceFormContext";
 import { ServiceFormValues } from "../../../types";
@@ -51,13 +52,12 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
 
   const { run, loading, done } = useRunOauthFlow(connector, onDone);
   const preparedValues = useMemo(() => getValues<Credentials>(values), [getValues, values]);
-  const connectionObjectEmpty = preparedValues?.connectionConfiguration?.credentials
-    ? Object.keys(preparedValues.connectionConfiguration?.credentials).length <= 1
-    : true;
+
+  const { hasAuthFieldValues } = useAuthentication();
 
   return {
     loading,
-    done: done || !connectionObjectEmpty,
+    done: done || hasAuthFieldValues,
     hasRun,
     run: async () => {
       const oauthInputProperties =
