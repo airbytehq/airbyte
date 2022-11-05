@@ -88,6 +88,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     final JsonNode replicationConfig = Jsons.jsonNode(Map.of(
         "method", "CDC",
         "data_to_sync", "Existing and New",
+        "initial_waiting_seconds", INITIAL_WAITING_SECONDS,
         "snapshot_isolation", "Snapshot"));
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
@@ -97,6 +98,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         .put(JdbcUtils.USERNAME_KEY, TEST_USER_NAME)
         .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
         .put("replication_method", replicationConfig)
+        .put("is_test", true)
         .build());
 
     dataSource = DataSourceFactory.create(
@@ -157,6 +159,17 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   @Override
   public String createSchemaQuery(final String schemaName) {
     return "CREATE SCHEMA " + schemaName;
+  }
+
+  //TODO : Delete this Override when MSSQL supports individual table snapshot
+  @Override
+  public void newTableSnapshotTest() throws Exception {
+    // Do nothing
+  }
+
+  @Override
+  protected String randomTableSchema() {
+    return MODELS_SCHEMA + "_random";
   }
 
   private void switchCdcOnDatabase(final Boolean enable, final String db) {
