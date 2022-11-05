@@ -107,7 +107,6 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
      */
     @Override
     protected void acceptTracked(AirbyteMessage msg) throws Exception {
-        log.info("Receive record message type:{}", msg.getType());
         if (msg.getType() != Type.RECORD) {
             return;
         }
