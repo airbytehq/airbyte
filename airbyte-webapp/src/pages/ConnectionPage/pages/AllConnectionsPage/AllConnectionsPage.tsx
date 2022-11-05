@@ -12,8 +12,10 @@ import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
+import { links } from "utils/links";
 
 import { RoutePaths } from "../../../routePaths";
+import styles from "./AllConnectionsPage.module.scss";
 import ConnectionsTable from "./components/ConnectionsTable";
 
 const AllConnectionsPage: React.FC = () => {
@@ -48,6 +50,18 @@ const AllConnectionsPage: React.FC = () => {
           resourceType="connections"
           onCreateClick={onCreateClick}
           buttonLabel={formatMessage({ id: "connection.createFirst" })}
+          footer={
+            <FormattedMessage
+              id="connection.emptyStateFooter"
+              values={{
+                demoLnk: (children: React.ReactNode) => (
+                  <a href={links.demoLink} target="_blank" rel="noreferrer noopener" className={styles.link}>
+                    {children}
+                  </a>
+                ),
+              }}
+            />
+          }
         />
       )}
     </Suspense>
