@@ -5,15 +5,16 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.models import AirbyteMessage, SyncMode
+from dataclasses_jsonschema import JsonSchemaMixin
+
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice
-from airbyte_cdk.sources.streams.core import Stream
-from dataclasses_jsonschema import JsonSchemaMixin
+from airbyte_cdk.sources.streams.core import Stream, StreamData
 
 
 @dataclass
@@ -106,28 +107,20 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
         """
         return self.stream_cursor_field
 
-    def read_records_as_messages(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[AirbyteMessage]:
-        if hasattr(self.logger, "level"):
+    def read_records(
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[StreamData]:
+        if hasattr(self.logger, "level") and hasattr(self.retriever, "logger"):
             self.retriever.logger.setLevel(self.logger.level)
-        for message in self.retriever.read_records_as_message(sync_mode, cursor_field, stream_slice, stream_state):
+
+        for message in self.retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state):
             if message.type == MessageType.RECORD:
                 message.record.data = self._apply_transformations(message.record.data, self.config, stream_slice)
             yield message
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        raise RuntimeError("deprecated")
 
     def _apply_transformations(self, record: Mapping[str, Any], config: Config, stream_slice: StreamSlice):
         output_record = record
@@ -146,7 +139,7 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
         return self._schema_loader.get_json_schema()
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+            self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Override to define the slices for this stream. See the stream slicing section of the docs for more information.

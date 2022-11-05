@@ -4,16 +4,22 @@
 
 from unittest.mock import MagicMock, patch
 
-import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import pytest
 import requests
+
+import \
+    airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.exceptions import ReadException
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
-from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import \
+    ResponseAction
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import \
+    ResponseStatus
+from airbyte_cdk.sources.declarative.requesters.request_option import \
+    RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
-from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import \
+    SimpleRetriever
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.streams.http.http import HttpStream
 
@@ -102,7 +108,7 @@ def test_simple_retriever_full(mock_http_stream):
     assert retriever.cache_filename == cache_filename
     assert retriever.use_cache == use_cache
 
-    [r for r in retriever.read_records_as_message(SyncMode.full_refresh)]
+    [r for r in retriever.read_records(SyncMode.full_refresh)]
     paginator.reset.assert_called()
 
 
@@ -127,20 +133,20 @@ def test_should_retry(test_name, requester_response, expected_should_retry, expe
     "test_name, status_code, response_status, len_expected_records, expected_error",
     [
         (
-            "test_parse_response_fails_if_should_retry_is_fail",
-            404,
-            response_status.FAIL,
-            None,
-            ReadException("Request None failed with response <Response [404]>"),
+                "test_parse_response_fails_if_should_retry_is_fail",
+                404,
+                response_status.FAIL,
+                None,
+                ReadException("Request None failed with response <Response [404]>"),
         ),
         ("test_parse_response_succeeds_if_should_retry_is_ok", 200, response_status.SUCCESS, 1, None),
         ("test_parse_response_succeeds_if_should_retry_is_ignore", 404, response_status.IGNORE, 0, None),
         (
-            "test_parse_response_fails_with_custom_error_message",
-            404,
-            ResponseStatus(response_action=ResponseAction.FAIL, error_message="Custom error message override"),
-            None,
-            ReadException("Custom error message override"),
+                "test_parse_response_fails_with_custom_error_message",
+                404,
+                ResponseStatus(response_action=ResponseAction.FAIL, error_message="Custom error message override"),
+                None,
+                ReadException("Custom error message override"),
         ),
     ],
 )
