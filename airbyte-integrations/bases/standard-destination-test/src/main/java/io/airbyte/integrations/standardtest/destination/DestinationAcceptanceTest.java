@@ -1217,8 +1217,9 @@ public abstract class DestinationAcceptanceTest {
     final List<AirbyteMessage> destinationOutput = runSync(config, messages, catalog,
         runNormalization);
 
-    Collections.reverse(messages);
-    final AirbyteMessage expectedStateMessage = messages
+    List<AirbyteMessage> copiedMessages = new ArrayList<>(messages);
+    Collections.reverse(copiedMessages);
+    final AirbyteMessage expectedStateMessage = copiedMessages
         .stream()
         .filter(m -> m.getType() == Type.STATE)
         .findFirst()
