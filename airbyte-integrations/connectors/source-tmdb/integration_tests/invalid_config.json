@@ -1,3 +1,5 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "api_key": "<WRONG_API_FROM>",
+  "movie_id": "<NON_SUPPORTED_ID>",
+  "query": "<GIBBERISH_QUERY>"
 }

@@ -12,13 +12,7 @@ Just pass the generated API key and Movie ID for establishing the connection.
 ### Step 1: Set up TMDb connection
 
 - Generate an API key (Example: 12345)
-- Give a Movie ID (Target Movie)
-- Streams doesn't require movie_id to work is listed. Just pass 550 as movie_id to connect
-    - movies_latest
-    - movies_now_playing
-    - movies_popular
-    - movies_top_rated
-    - movies_upcoming
+- Give a Movie ID & Query (Target Movie, Query for search, Optional)
 
 ## Step 2: Set up the TMDb connector in Airbyte
 
@@ -28,7 +22,7 @@ Just pass the generated API key and Movie ID for establishing the connection.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Google-webfonts connector and select **TMDb** from the Source type dropdown.
 4. Enter your `api_key`.
-5. Enter your `movie_id`
+5. Enter optional params `movie_id, query` (if needed).
 6. Click **Set up source**.
 
 ### For Airbyte OSS:
@@ -36,7 +30,7 @@ Just pass the generated API key and Movie ID for establishing the connection.
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 4. Enter your `api_key`.
-5. Enter your `movie_id`
+5. Enter optional params `movie_id, query` (if needed).
 6. Click **Set up source**.
 
 ## Supported sync modes
@@ -53,6 +47,11 @@ The Google-webfonts source connector supports the following [sync modes](https:/
 
 ## Supported Streams
 
+- Certification_movie
+- Certification_tv
+- Changes_movie
+- Changes_tv
+- Changes_person
 - Movies_alternative_titles
 - Movies_changes
 - Movies_credits
@@ -73,6 +72,14 @@ The Google-webfonts source connector supports the following [sync modes](https:/
 - Movies_upcoming
 - Movies_videos
 - Movies_watch_providers
+- Trending
+- Search_collections
+- Search_companies
+- Search_keywords
+- Search_movies
+- Search_multi
+- Search_people
+- Search_tv_shows
 
 
 ## API method example

@@ -1,17 +1,22 @@
-documentationUrl: https://docsurl.com
+documentationUrl: https://docs.airbyte.com/integrations/sources/tmdb.md
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Tmdb Spec
   type: object
   required:
     - api_key
-    - movie_id
   additionalProperties: true
   properties:
     api_key:
+      title: Unique key for establishing connection
       type: string
-      description: API Key
+      description: API Key from tmdb account
       airbyte_secret: true
     movie_id:
+      title: Optional movie ID for targeting movies 
       type: string
-      description: Target movie ID
+      description: Target movie ID, Default would be '550' for required streams
+    query:
+      title: Optional Query for search streams 
+      type: string
+      description: Target movie ID, Default would be Marvel for required streams
