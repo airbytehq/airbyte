@@ -1,3 +1,10 @@
 {
-  "fix-me": "TODO"
+  "client_id": "<your_client_id.apps.googleusercontent.com>",
+  "client_secret": "<your client secret>",
+  "refresh_token": "<your refresh token here",
+  "developer_token": "<Developer token>",
+  "customer_id": "<customer_id here>",
+  "login_customer_id": "<your login id>",
+  "start_date": "2022-10-11",
+  "end_date": "optional end date Y%-m%-d%"
 }
