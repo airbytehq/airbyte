@@ -36,7 +36,6 @@ class SurveyStream(HttpStream, ABC):
         user_name_password = f"{config['username']}:{config['password']}"
         self.auth_token = self._base64_encode(user_name_password)
 
-
     @property
     def url_base(self) -> str:
          return f"https://{self.server_name}.surveycto.com/api/v2/forms/data/wide/json/"
@@ -50,13 +49,15 @@ class SurveyStream(HttpStream, ABC):
         
         return {}
 
-class SurveyctoStream(SurveyStream):
+class SurveyctoStream(SurveyStream, IncrementalMixin):
 
     primary_key = 'KEY'
     date_format = '%b %d, %Y %H:%M:%S %p'
     dateformat =  '%Y-%m-%dT%H:%M:%S'
     cursor_field = 'CompletionDate'
     _cursor_value = None
+    schema_json_properties = None
+
 
     @property
     def name(self) -> str:
@@ -68,24 +69,24 @@ class SurveyctoStream(SurveyStream):
     # def _base64_encode(self,string:str) -> str:
     #     return base64.b64encode(string.encode("ascii")).decode("ascii")
 
+
     def get_json_schema(self):
+
         generator = SchemaGenerator(input_format='dict', infer_mode='NULLABLE',preserve_input_sort_order='true')
 
-        data = self.response_json
-        print(f'====================>{data}')
-        schema_map, error_logs = generator.deduce_schema(input_data=data)
-        schema = generator.flatten_schema(schema_map)     
-        schema_json = converter(schema)
+        if hasattr(self, 'response_json'):
+            data = self.response_json
+            schema_map, error_logs = generator.deduce_schema(input_data=data)
+            schema = generator.flatten_schema(schema_map)     
+            schema_json = converter(schema)
    
-        schema_json_properties=schema_json['definitions']['element']['properties']
-        # print(f'===--------=====================>{schema_json_properties}')
-
+            self.schema_json_properties=schema_json['definitions']['element']['properties']
 
         return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "additionalProperties": True,
             "type": "object",
-            "properties": schema_json_properties
+            "properties": self.schema_json_properties
         }
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -130,6 +131,11 @@ class SurveyctoStream(SurveyStream):
                 msg = f"""Encountered an exception parsing schema"""
                 self.logger.exception(msg)
                 raise e
+
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(*args, **kwargs):
+            self._cursor_value = datetime.strptime(record[self.cursor_field], self.date_format)
+            yield record
 
 # Source
 class SourceSurveycto(AbstractSource):
