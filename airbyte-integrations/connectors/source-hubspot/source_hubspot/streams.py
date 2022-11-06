@@ -1084,7 +1084,7 @@ class Campaigns(Stream):
     limit = 500
     updated_at_field = "lastUpdatedTime"
     primary_key = "id"
-    scopes = {"crm.lists.read", "sales-email-read", "content"}
+    scopes = {"content"}
 
     def read_records(
         self,
@@ -1176,7 +1176,7 @@ class DealPipelines(Stream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     primary_key = "pipelineId"
-    scopes = {"contacts", "tickets"}
+    scopes = {"contacts"}
 
 
 class TicketPipelines(Stream):
@@ -1190,23 +1190,14 @@ class TicketPipelines(Stream):
     created_at_field = "createdAt"
     primary_key = "id"
     scopes = {
-        "media_bridge.read",
-        "tickets",
-        "crm.schemas.custom.read",
-        "e-commerce",
-        "timeline",
-        "contacts",
         "crm.schemas.contacts.read",
         "crm.objects.contacts.read",
-        "crm.objects.contacts.write",
         "crm.objects.deals.read",
         "crm.schemas.quotes.read",
-        "crm.objects.deals.write",
         "crm.objects.companies.read",
         "crm.schemas.companies.read",
         "crm.schemas.deals.read",
         "crm.schemas.line_items.read",
-        "crm.objects.companies.write",
     }
 
 
@@ -1498,7 +1489,7 @@ class Contacts(CRMSearchStream):
     last_modified_field = "lastmodifieddate"
     associations = ["contacts", "companies"]
     primary_key = "id"
-    scopes = {"crm.objects.contacts.read"}
+    scopes = {"crm.objects.contacts.read", "crm.objects.companies.read"}
 
 
 class EngagementsCalls(CRMSearchStream):
@@ -1552,7 +1543,7 @@ class FeedbackSubmissions(CRMObjectIncrementalStream):
 class LineItems(CRMObjectIncrementalStream):
     entity = "line_item"
     primary_key = "id"
-    scopes = {"e-commerce"}
+    scopes = {"crm.objects.line_items.read"}
 
 
 class Products(CRMObjectIncrementalStream):
@@ -1573,4 +1564,4 @@ class Quotes(CRMObjectIncrementalStream):
     entity = "quote"
     associations = ["deals"]
     primary_key = "id"
-    scopes = {"e-commerce"}
+    scopes = {"crm.objects.quotes.read", "crm.objects.deals.read"}
