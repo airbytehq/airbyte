@@ -65,9 +65,17 @@ def _assert_signature_is_set(method: Callable) -> None:
     by running inspect.signature(method) under the hood. 
 
     In the case that an instance method does not declare "self" as an input parameter (due to developer error 
-    for example), then the call to inspect.signature() fails. 
+    for example), then the call to inspect.signature() raises a ValueError and fails.
 
-    This method is sort of a workaround. It tells the developer how to fix the problem if it's detected.
+    Ideally, we'd automatically detect & correct this problem. To do that, we'd need to do
+    setattr(method, "__signature__", <correct_signature>) but that's not possible because instance
+    methods (i.e the input to this function) are object subclasses, and you can't use setattr on objects
+    (https://stackoverflow.com/a/12839070/3237889)
+
+    The workaround this method implements is to raise an exception at runtime if the input method fails
+    when inspect.signature() is called. This is good enough because the error will be detected
+    immediately when the developer tries to run the server, so builds should very quickly fail and this
+    will practically never make it to a production scenario.
     """
     try:
         inspect.signature(method)
