@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { useMutation } from "react-query";
 import styled from "styled-components";
 
-import { Button } from "components";
+import { Button } from "components/ui/Button";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";

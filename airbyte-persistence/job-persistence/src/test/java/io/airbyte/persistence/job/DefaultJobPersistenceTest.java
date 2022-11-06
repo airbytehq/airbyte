@@ -8,6 +8,7 @@ import static io.airbyte.db.instance.jobs.jooq.generated.Tables.AIRBYTE_METADATA
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.SYNC_STATS;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -257,7 +258,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   @DisplayName("Should be able to read what is written")
-  void testWriteOutput() throws IOException, SQLException {
+  void testWriteOutput() throws IOException {
     final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
     final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
     final Job created = jobPersistence.getJob(jobId);
@@ -278,21 +279,14 @@ class DefaultJobPersistenceTest {
     final JobOutput jobOutput = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_CATALOG).withSync(standardSyncOutput);
 
     when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
-    jobPersistence.writeOutput(jobId, attemptNumber, jobOutput,
-        jobOutput.getSync().getStandardSyncSummary().getTotalStats(), jobOutput.getSync().getNormalizationSummary());
+    jobPersistence.writeOutput(jobId, attemptNumber, jobOutput);
 
     final Job updated = jobPersistence.getJob(jobId);
 
     assertEquals(Optional.of(jobOutput), updated.getAttempts().get(0).getOutput());
     assertNotEquals(created.getAttempts().get(0).getUpdatedAtInSecond(), updated.getAttempts().get(0).getUpdatedAtInSecond());
 
-    final Optional<Record> record =
-        jobDatabase.query(ctx -> ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
-            attemptNumber).stream().findFirst());
-
-    final Long attemptId = record.get().get("id", Long.class);
-
-    final SyncStats storedSyncStats = jobPersistence.getSyncStats(attemptId).stream().findFirst().get();
+    final SyncStats storedSyncStats = jobPersistence.getSyncStats(jobId, attemptNumber).stream().findFirst().get();
     assertEquals(100L, storedSyncStats.getBytesEmitted());
     assertEquals(9L, storedSyncStats.getRecordsEmitted());
     assertEquals(10L, storedSyncStats.getRecordsCommitted());
@@ -303,7 +297,7 @@ class DefaultJobPersistenceTest {
     assertEquals(10L, storedSyncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted());
     assertEquals(3L, storedSyncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted());
 
-    final NormalizationSummary storedNormalizationSummary = jobPersistence.getNormalizationSummary(attemptId).stream().findFirst().get();
+    final NormalizationSummary storedNormalizationSummary = jobPersistence.getNormalizationSummary(jobId, attemptNumber).stream().findFirst().get();
     assertEquals(10L, storedNormalizationSummary.getStartTime());
     assertEquals(500L, storedNormalizationSummary.getEndTime());
     assertEquals(List.of(failureReason1, failureReason2), storedNormalizationSummary.getFailures());
@@ -573,15 +567,6 @@ class DefaultJobPersistenceTest {
   }
 
   @Test
-  void testSchedulerMigrationMetadata() throws IOException {
-    boolean isMigrated = jobPersistence.isSchedulerMigrated();
-    assertFalse(isMigrated);
-    jobPersistence.setSchedulerMigrationDone();
-    isMigrated = jobPersistence.isSchedulerMigrated();
-    assertTrue(isMigrated);
-  }
-
-  @Test
   void testAirbyteProtocolVersionMaxMetadata() throws IOException {
     assertTrue(jobPersistence.getAirbyteProtocolVersionMax().isEmpty());
 
@@ -617,7 +602,7 @@ class DefaultJobPersistenceTest {
   }
 
   @Nested
-  class TemporalWorkflowId {
+  class TemporalWorkflowInfo {
 
     @Test
     void testSuccessfulGet() throws IOException, SQLException {
@@ -640,15 +625,21 @@ class DefaultJobPersistenceTest {
     }
 
     @Test
-    void testSuccessfulSet() throws IOException {
+    void testSuccessfulSet() throws IOException, SQLException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final var attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
       final var temporalWorkflowId = "test-id-usually-uuid";
+      final var syncQueue = "SYNC";
 
-      jobPersistence.setAttemptTemporalWorkflowId(jobId, attemptNumber, temporalWorkflowId);
+      jobPersistence.setAttemptTemporalWorkflowInfo(jobId, attemptNumber, temporalWorkflowId, syncQueue);
 
       final var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber).get();
       assertEquals(workflowId, temporalWorkflowId);
+
+      final var taskQueue = jobDatabase.query(ctx -> ctx.fetch(
+          "SELECT processing_task_queue FROM attempts WHERE job_id = ? AND attempt_number =?", jobId,
+          attemptNumber)).stream().findFirst().get().get("processing_task_queue", String.class);
+      assertEquals(syncQueue, taskQueue);
     }
 
   }
@@ -714,13 +705,13 @@ class DefaultJobPersistenceTest {
     }
 
     @Test
-    @DisplayName("Should raise an exception if job is already succeeded")
+    @DisplayName("Should not raise an exception if job is already succeeded")
     void testCancelJobAlreadySuccessful() throws IOException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
       jobPersistence.succeedAttempt(jobId, attemptNumber);
 
-      assertThrows(IllegalStateException.class, () -> jobPersistence.cancelJob(jobId));
+      assertDoesNotThrow(() -> jobPersistence.cancelJob(jobId));
 
       final Job updated = jobPersistence.getJob(jobId);
       assertEquals(JobStatus.SUCCEEDED, updated.getStatus());
@@ -868,13 +859,13 @@ class DefaultJobPersistenceTest {
     }
 
     @Test
-    @DisplayName("Should raise an exception if job is already succeeded")
+    @DisplayName("Should not raise an exception if job is already succeeded")
     void testFailJobAlreadySucceeded() throws IOException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
       jobPersistence.succeedAttempt(jobId, attemptNumber);
 
-      assertThrows(IllegalStateException.class, () -> jobPersistence.failJob(jobId));
+      assertDoesNotThrow(() -> jobPersistence.failJob(jobId));
 
       final Job updated = jobPersistence.getJob(jobId);
       assertEquals(JobStatus.SUCCEEDED, updated.getStatus());
@@ -972,6 +963,146 @@ class DefaultJobPersistenceTest {
       when(timeSupplier.get()).thenReturn(afterNow);
 
       final Optional<Job> actual = jobPersistence.getLastSyncJob(CONNECTION_ID);
+
+      assertTrue(actual.isEmpty());
+    }
+
+  }
+
+  @Nested
+  @DisplayName("When getting the last sync job for multiple connections")
+  class GetLastSyncJobForConnections {
+
+    private static final UUID CONNECTION_ID_1 = UUID.randomUUID();
+    private static final UUID CONNECTION_ID_2 = UUID.randomUUID();
+    private static final UUID CONNECTION_ID_3 = UUID.randomUUID();
+    private static final String SCOPE_1 = CONNECTION_ID_1.toString();
+    private static final String SCOPE_2 = CONNECTION_ID_2.toString();
+    private static final String SCOPE_3 = CONNECTION_ID_3.toString();
+    private static final List<UUID> CONNECTION_IDS = List.of(CONNECTION_ID_1, CONNECTION_ID_2, CONNECTION_ID_3);
+
+    @Test
+    @DisplayName("Should return nothing if no sync job exists")
+    void testGetLastSyncJobsForConnectionsEmpty() throws IOException {
+      final List<Job> actual = jobPersistence.getLastSyncJobForConnections(CONNECTION_IDS);
+
+      assertTrue(actual.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Should return the last enqueued sync job for each connection")
+    void testGetLastSyncJobForConnections() throws IOException {
+      final long scope1Job1 = jobPersistence.enqueueJob(SCOPE_1, SYNC_JOB_CONFIG).orElseThrow();
+      jobPersistence.succeedAttempt(scope1Job1, jobPersistence.createAttempt(scope1Job1, LOG_PATH));
+
+      final long scope2Job1 = jobPersistence.enqueueJob(SCOPE_2, SYNC_JOB_CONFIG).orElseThrow();
+      jobPersistence.succeedAttempt(scope2Job1, jobPersistence.createAttempt(scope2Job1, LOG_PATH));
+
+      final long scope3Job1 = jobPersistence.enqueueJob(SCOPE_3, SYNC_JOB_CONFIG).orElseThrow();
+
+      final Instant afterNow = NOW.plusSeconds(1000);
+      when(timeSupplier.get()).thenReturn(afterNow);
+
+      final long scope1Job2 = jobPersistence.enqueueJob(SCOPE_1, SYNC_JOB_CONFIG).orElseThrow();
+      final int scope1Job2AttemptNumber = jobPersistence.createAttempt(scope1Job2, LOG_PATH);
+
+      // should return the latest sync job even if failed
+      jobPersistence.failAttempt(scope1Job2, scope1Job2AttemptNumber);
+      final Attempt scope1Job2attempt = jobPersistence.getJob(scope1Job2).getAttempts().stream().findFirst().orElseThrow();
+      jobPersistence.failJob(scope1Job2);
+
+      // will leave this job running
+      final long scope2Job2 = jobPersistence.enqueueJob(SCOPE_2, SYNC_JOB_CONFIG).orElseThrow();
+      jobPersistence.createAttempt(scope2Job2, LOG_PATH);
+      final Attempt scope2Job2attempt = jobPersistence.getJob(scope2Job2).getAttempts().stream().findFirst().orElseThrow();
+
+      final List<Job> actual = jobPersistence.getLastSyncJobForConnections(CONNECTION_IDS);
+      final List<Job> expected = new ArrayList<>();
+      expected.add(createJob(scope1Job2, SYNC_JOB_CONFIG, JobStatus.FAILED, List.of(scope1Job2attempt), afterNow.getEpochSecond(), SCOPE_1));
+      expected.add(createJob(scope2Job2, SYNC_JOB_CONFIG, JobStatus.RUNNING, List.of(scope2Job2attempt), afterNow.getEpochSecond(), SCOPE_2));
+      expected.add(createJob(scope3Job1, SYNC_JOB_CONFIG, JobStatus.PENDING, Collections.emptyList(), NOW.getEpochSecond(), SCOPE_3));
+
+      assertTrue(expected.size() == actual.size() && expected.containsAll(actual) && actual.containsAll(expected));
+    }
+
+    @Test
+    @DisplayName("Should return nothing if only reset job exists")
+    void testGetLastSyncJobsForConnectionsEmptyBecauseOnlyReset() throws IOException {
+      final long jobId = jobPersistence.enqueueJob(SCOPE_1, RESET_JOB_CONFIG).orElseThrow();
+      jobPersistence.succeedAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
+
+      final Instant afterNow = NOW.plusSeconds(1000);
+      when(timeSupplier.get()).thenReturn(afterNow);
+
+      final List<Job> actual = jobPersistence.getLastSyncJobForConnections(CONNECTION_IDS);
+
+      assertTrue(actual.isEmpty());
+    }
+
+  }
+
+  @Nested
+  @DisplayName("When getting the last running sync job for multiple connections")
+  class GetRunningSyncJobForConnections {
+
+    private static final UUID CONNECTION_ID_1 = UUID.randomUUID();
+    private static final UUID CONNECTION_ID_2 = UUID.randomUUID();
+    private static final UUID CONNECTION_ID_3 = UUID.randomUUID();
+    private static final String SCOPE_1 = CONNECTION_ID_1.toString();
+    private static final String SCOPE_2 = CONNECTION_ID_2.toString();
+    private static final String SCOPE_3 = CONNECTION_ID_3.toString();
+    private static final List<UUID> CONNECTION_IDS = List.of(CONNECTION_ID_1, CONNECTION_ID_2, CONNECTION_ID_3);
+
+    @Test
+    @DisplayName("Should return nothing if no sync job exists")
+    void testGetRunningSyncJobsForConnectionsEmpty() throws IOException {
+      final List<Job> actual = jobPersistence.getRunningSyncJobForConnections(CONNECTION_IDS);
+
+      assertTrue(actual.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Should return the last running sync job for each connection")
+    void testGetRunningSyncJobsForConnections() throws IOException {
+      // succeeded jobs should not be present in the result
+      final long scope1Job1 = jobPersistence.enqueueJob(SCOPE_1, SYNC_JOB_CONFIG).orElseThrow();
+      jobPersistence.succeedAttempt(scope1Job1, jobPersistence.createAttempt(scope1Job1, LOG_PATH));
+
+      // fail scope2's first job, but later start a running job that should show up in the result
+      final long scope2Job1 = jobPersistence.enqueueJob(SCOPE_2, SYNC_JOB_CONFIG).orElseThrow();
+      final int scope2Job1AttemptNumber = jobPersistence.createAttempt(scope2Job1, LOG_PATH);
+      jobPersistence.failAttempt(scope2Job1, scope2Job1AttemptNumber);
+      jobPersistence.failJob(scope2Job1);
+
+      // pending jobs should be present in the result
+      final long scope3Job1 = jobPersistence.enqueueJob(SCOPE_3, SYNC_JOB_CONFIG).orElseThrow();
+
+      final Instant afterNow = NOW.plusSeconds(1000);
+      when(timeSupplier.get()).thenReturn(afterNow);
+
+      // create a running job/attempt for scope2
+      final long scope2Job2 = jobPersistence.enqueueJob(SCOPE_2, SYNC_JOB_CONFIG).orElseThrow();
+      jobPersistence.createAttempt(scope2Job2, LOG_PATH);
+      final Attempt scope2Job2attempt = jobPersistence.getJob(scope2Job2).getAttempts().stream().findFirst().orElseThrow();
+
+      final List<Job> expected = new ArrayList<>();
+      expected.add(createJob(scope2Job2, SYNC_JOB_CONFIG, JobStatus.RUNNING, List.of(scope2Job2attempt), afterNow.getEpochSecond(), SCOPE_2));
+      expected.add(createJob(scope3Job1, SYNC_JOB_CONFIG, JobStatus.PENDING, Collections.emptyList(), NOW.getEpochSecond(), SCOPE_3));
+
+      final List<Job> actual = jobPersistence.getRunningSyncJobForConnections(CONNECTION_IDS);
+      assertTrue(expected.size() == actual.size() && expected.containsAll(actual) && actual.containsAll(expected));
+    }
+
+    @Test
+    @DisplayName("Should return nothing if only a running reset job exists")
+    void testGetRunningSyncJobsForConnectionsEmptyBecauseOnlyReset() throws IOException {
+      final long jobId = jobPersistence.enqueueJob(SCOPE_1, RESET_JOB_CONFIG).orElseThrow();
+      jobPersistence.createAttempt(jobId, LOG_PATH);
+
+      final Instant afterNow = NOW.plusSeconds(1000);
+      when(timeSupplier.get()).thenReturn(afterNow);
+
+      final List<Job> actual = jobPersistence.getRunningSyncJobForConnections(CONNECTION_IDS);
 
       assertTrue(actual.isEmpty());
     }
@@ -1514,7 +1645,7 @@ class DefaultJobPersistenceTest {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
 
       jobPersistence.cancelJob(jobId);
-      assertThrows(IllegalStateException.class, () -> jobPersistence.resetJob(jobId));
+      assertDoesNotThrow(() -> jobPersistence.resetJob(jobId));
 
       final Job updated = jobPersistence.getJob(jobId);
       assertEquals(JobStatus.CANCELLED, updated.getStatus());

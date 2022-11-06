@@ -4,9 +4,10 @@
 
 import json
 
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+
 # import pytest
 # from airbyte_cdk.sources.declarative.exceptions import InvalidConnectorDefinitionException
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
 # import os
 # import tempfile
@@ -266,8 +267,9 @@ def test_generate_schema():
     assert check_stream["properties"]["stream_names"]["items"]["type"] == "string"
 
     declarative_stream = schema["definitions"]["DeclarativeStream"]
-    assert {"schema_loader", "retriever", "config"}.issubset(declarative_stream["required"])
-    assert declarative_stream["properties"]["schema_loader"]["$ref"] == "#/definitions/JsonSchema"
+    assert {"retriever", "config"}.issubset(declarative_stream["required"])
+    assert {"$ref": "#/definitions/DefaultSchemaLoader"} in declarative_stream["properties"]["schema_loader"]["anyOf"]
+    assert {"$ref": "#/definitions/JsonFileSchemaLoader"} in declarative_stream["properties"]["schema_loader"]["anyOf"]
     assert declarative_stream["properties"]["retriever"]["$ref"] == "#/definitions/SimpleRetriever"
     assert declarative_stream["properties"]["name"]["type"] == "string"
     assert {"type": "array", "items": {"type": "string"}} in declarative_stream["properties"]["primary_key"]["anyOf"]

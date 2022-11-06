@@ -3,20 +3,22 @@ import { faRocket } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import React from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { NavLink, useLocation } from "react-router-dom";
 
 import { Link } from "components";
+import { Version } from "components/common/Version";
 import { Text } from "components/ui/Text";
-import Version from "components/Version";
 
 import { useConfig } from "config";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { links } from "utils/links";
 
+import { DocsIcon } from "../../../components/icons/DocsIcon";
 import { RoutePaths } from "../../../pages/routePaths";
+import { ReactComponent as AirbyteLogo } from "./airbyteLogo.svg";
 import ConnectionsIcon from "./components/ConnectionsIcon";
 import DestinationIcon from "./components/DestinationIcon";
-import DocsIcon from "./components/DocsIcon";
 import OnboardingIcon from "./components/OnboardingIcon";
 import RecipesIcon from "./components/RecipesIcon";
 import SettingsIcon from "./components/SettingsIcon";
@@ -40,12 +42,16 @@ const SideBar: React.FC = () => {
   const config = useConfig();
   const workspace = useCurrentWorkspace();
   const navLinkClassName = useCalculateSidebarStyles();
+  const { formatMessage } = useIntl();
 
   return (
     <nav className={styles.nav}>
       <div>
-        <Link to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}>
-          <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
+        <Link
+          to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}
+          aria-label={formatMessage({ id: "sidebar.homepage" })}
+        >
+          <AirbyteLogo height={33} width={33} />
         </Link>
         <ul className={styles.menu}>
           {workspace.displaySetupWizard ? (
@@ -86,7 +92,7 @@ const SideBar: React.FC = () => {
       </div>
       <ul className={styles.menu}>
         <li>
-          <a href={config.links.updateLink} target="_blank" rel="noreferrer" className={styles.menuItem}>
+          <a href={links.updateLink} target="_blank" rel="noreferrer" className={styles.menuItem}>
             <FontAwesomeIcon className={styles.helpIcon} icon={faRocket} />
             <Text className={styles.text} size="sm">
               <FormattedMessage id="sidebar.update" />
@@ -102,19 +108,19 @@ const SideBar: React.FC = () => {
             options={[
               {
                 type: SidebarDropdownMenuItemType.LINK,
-                href: config.links.docsLink,
+                href: links.docsLink,
                 icon: <DocsIcon />,
                 displayName: <FormattedMessage id="sidebar.documentation" />,
               },
               {
                 type: SidebarDropdownMenuItemType.LINK,
-                href: config.links.slackLink,
+                href: links.slackLink,
                 icon: <FontAwesomeIcon icon={faSlack} />,
                 displayName: <FormattedMessage id="sidebar.joinSlack" />,
               },
               {
                 type: SidebarDropdownMenuItemType.LINK,
-                href: config.links.recipesLink,
+                href: links.tutorialLink,
                 icon: <RecipesIcon />,
                 displayName: <FormattedMessage id="sidebar.recipes" />,
               },

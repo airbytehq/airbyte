@@ -6,9 +6,9 @@ import Select from "react-select/dist/declarations/src/Select";
 import { equal, naturalComparatorBy } from "utils/objects";
 
 import { DropdownIndicator } from "./components/DropdownIndicator";
-import Menu from "./components/Menu";
-import Option, { IDataItem } from "./components/Option";
-import SingleValue from "./components/SingleValue";
+import { Menu } from "./components/Menu";
+import { DropDownOption, DropDownOptionDataItem } from "./components/Option";
+import { SingleValue } from "./components/SingleValue";
 import { CustomSelect } from "./CustomSelect";
 import { SelectContainer } from "./SelectContainer";
 
@@ -36,7 +36,7 @@ function DropDownInner<T = unknown>(
         DropdownIndicator,
         SelectContainer,
         Menu,
-        Option,
+        Option: DropDownOption,
         SingleValue,
         IndicatorSeparator: null,
         ClearIndicator: null,
@@ -84,6 +84,6 @@ function DropDownInner<T = unknown>(
   );
 }
 
-export const defaultDataItemSort = naturalComparatorBy<IDataItem>((dataItem) => dataItem.label || "");
+export const defaultDataItemSort = naturalComparatorBy<DropDownOptionDataItem>((dataItem) => dataItem.label || "");
 
 export const DropDown = React.forwardRef(DropDownInner);

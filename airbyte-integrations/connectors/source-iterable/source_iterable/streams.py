@@ -16,6 +16,7 @@ from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from pendulum.datetime import DateTime
+from requests import codes
 from requests.exceptions import ChunkedEncodingError
 from source_iterable.slice_generators import AdjustableSliceGenerator, RangeSliceGenerator, StreamSlice
 
@@ -24,7 +25,10 @@ CAMPAIGNS_PER_REQUEST = 20
 
 
 class IterableStream(HttpStream, ABC):
-
+    raise_on_http_errors = True
+    # in case we get a 401 error (api token disabled or deleted) on a stream slice, do not make further requests within the current stream
+    # to prevent 429 error on other streams
+    ignore_further_slices = False
     # Hardcode the value because it is not returned from the API
     BACKOFF_TIME_CONSTANT = 10.0
     # define date-time fields with potential wrong format
@@ -43,6 +47,14 @@ class IterableStream(HttpStream, ABC):
         :return: Default field name to get data from response
         """
 
+    def check_unauthorized_key(self, response: requests.Response) -> bool:
+        if response.status_code == codes.UNAUTHORIZED:
+            self.logger.warn(f"Provided API Key has not sufficient permissions to read from stream: {self.data_field}")
+            self.ignore_further_slices = True
+            setattr(self, "raise_on_http_errors", False)
+            return False
+        return True
+
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         return self.BACKOFF_TIME_CONSTANT
 
@@ -53,11 +65,29 @@ class IterableStream(HttpStream, ABC):
         return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if not self.check_unauthorized_key(response):
+            return []
         response_json = response.json()
         records = response_json.get(self.data_field, [])
 
         for record in records:
             yield record
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if not self.check_unauthorized_key(response):
+            return False
+        return super().should_retry(response)
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        if self.ignore_further_slices:
+            return []
+        yield from super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
 
 
 class IterableExportStream(IterableStream, ABC):
@@ -75,9 +105,10 @@ class IterableExportStream(IterableStream, ABC):
     cursor_field = "createdAt"
     primary_key = None
 
-    def __init__(self, start_date=None, **kwargs):
+    def __init__(self, start_date=None, end_date=None, **kwargs):
         super().__init__(**kwargs)
         self._start_date = pendulum.parse(start_date)
+        self._end_date = end_date and pendulum.parse(end_date)
         self.stream_params = {"dataTypeName": self.data_field}
 
     def path(self, **kwargs) -> str:
@@ -150,6 +181,8 @@ class IterableExportStream(IterableStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if not self.check_unauthorized_key(response):
+            return []
         for obj in response.iter_lines():
             record = json.loads(obj)
             record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
@@ -185,7 +218,7 @@ class IterableExportStream(IterableStream, ABC):
     ) -> Iterable[Optional[StreamSlice]]:
 
         start_datetime = self.get_start_date(stream_state)
-        return [StreamSlice(start_datetime, pendulum.now("UTC"))]
+        return [StreamSlice(start_datetime, self._end_date or pendulum.now("UTC"))]
 
 
 class IterableExportStreamRanged(IterableExportStream, ABC):
@@ -204,7 +237,7 @@ class IterableExportStreamRanged(IterableExportStream, ABC):
 
         start_datetime = self.get_start_date(stream_state)
 
-        return RangeSliceGenerator(start_datetime)
+        return RangeSliceGenerator(start_datetime, self._end_date)
 
 
 class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
@@ -238,7 +271,7 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
     ) -> Iterable[Optional[StreamSlice]]:
 
         start_datetime = self.get_start_date(stream_state)
-        self._adjustable_generator = AdjustableSliceGenerator(start_datetime)
+        self._adjustable_generator = AdjustableSliceGenerator(start_datetime, self._end_date)
         return self._adjustable_generator
 
     def read_records(
@@ -300,6 +333,8 @@ class ListUsers(IterableStream):
             yield {"list_id": list_record["id"]}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if not self.check_unauthorized_key(response):
+            return []
         list_id = self._get_list_id(response.url)
         for user in response.iter_lines():
             yield {"email": user.decode(), "listId": list_id}
@@ -325,12 +360,13 @@ class CampaignsMetrics(IterableStream):
     primary_key = None
     data_field = None
 
-    def __init__(self, start_date: str, **kwargs):
+    def __init__(self, start_date: str, end_date: Optional[str] = None, **kwargs):
         """
         https://api.iterable.com/api/docs#campaigns_metrics
         """
         super().__init__(**kwargs)
         self.start_date = start_date
+        self.end_date = end_date
 
     def path(self, **kwargs) -> str:
         return "campaigns/metrics"
@@ -339,7 +375,8 @@ class CampaignsMetrics(IterableStream):
         params = super().request_params(**kwargs)
         params["campaignId"] = stream_slice.get("campaign_ids")
         params["startDateTime"] = self.start_date
-
+        if self.end_date:
+            params["endDateTime"] = self.end_date
         return params
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
@@ -356,6 +393,8 @@ class CampaignsMetrics(IterableStream):
             yield {"campaign_ids": campaign_ids}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if not self.check_unauthorized_key(response):
+            return []
         content = response.content.decode()
         records = self._parse_csv_string_to_dict(content)
 
@@ -453,7 +492,8 @@ class Events(IterableStream):
         Put common event fields at the top level.
         Put the rest of the fields in the `data` subobject.
         """
-
+        if not self.check_unauthorized_key(response):
+            return []
         jsonl_records = StringIO(response.text)
         for record in jsonl_records:
             record_dict = json.loads(record)
@@ -615,6 +655,8 @@ class Templates(IterableExportStreamRanged):
                 yield from super().read_records(stream_slice=stream_slice, **kwargs)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if not self.check_unauthorized_key(response):
+            return []
         response_json = response.json()
         records = response_json.get(self.data_field, [])
 
@@ -626,3 +668,11 @@ class Templates(IterableExportStreamRanged):
 class Users(IterableExportStreamRanged):
     data_field = "user"
     cursor_field = "profileUpdatedAt"
+
+
+class AccessCheck(ListUsers):
+    # since 401 error is failed silently in all the streams,
+    # we need another class to distinguish an empty stream from 401 response
+    def check_unauthorized_key(self, response: requests.Response) -> bool:
+        # this allows not retrying 401 and raising the error upstream
+        return response.status_code != codes.UNAUTHORIZED

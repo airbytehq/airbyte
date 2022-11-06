@@ -10,7 +10,7 @@ import { JobInfo } from "core/domain/job";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
-import { SourceRead, SynchronousJobRead, WebBackendConnectionListItem } from "../../core/request/AirbyteClient";
+import { SourceRead, WebBackendConnectionListItem } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
@@ -149,13 +149,15 @@ const useUpdateSource = () => {
   );
 };
 
+export type SchemaError = (Error & { status: number; response: JobInfo }) | null;
+
 const useDiscoverSchema = (
   sourceId: string,
   disableCache?: boolean
 ): {
   isLoading: boolean;
   schema: SyncSchema;
-  schemaErrorStatus: { status: number; response: SynchronousJobRead } | null;
+  schemaErrorStatus: SchemaError;
   catalogId: string | undefined;
   onDiscoverSchema: () => Promise<void>;
 } => {
@@ -163,10 +165,7 @@ const useDiscoverSchema = (
   const [schema, setSchema] = useState<SyncSchema>({ streams: [] });
   const [catalogId, setCatalogId] = useState<string | undefined>("");
   const [isLoading, setIsLoading] = useState(false);
-  const [schemaErrorStatus, setSchemaErrorStatus] = useState<{
-    status: number;
-    response: JobInfo;
-  } | null>(null);
+  const [schemaErrorStatus, setSchemaErrorStatus] = useState<SchemaError>(null);
 
   const onDiscoverSchema = useCallback(async () => {
     setIsLoading(true);

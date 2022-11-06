@@ -2,8 +2,8 @@ import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { Button } from "components";
 import { LabeledInput } from "components/LabeledInput";
+import { Button } from "components/ui/Button";
 
 import { FieldItem } from "packages/cloud/views/auth/components/FormComponents";
 import FeedbackBlock from "pages/SettingsPage/components/FeedbackBlock";

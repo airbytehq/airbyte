@@ -2,11 +2,11 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button } from "components";
+import { Button } from "components/ui/Button";
 
 import styles from "./CreateControls.module.scss";
 import { TestingConnectionError, FetchingConnectorError } from "./TestingConnectionError";
-import TestingConnectionSpinner from "./TestingConnectionSpinner";
+import { TestingConnectionSpinner } from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
 
 interface CreateControlProps {

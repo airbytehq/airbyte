@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.relationaldb.state;
 
 import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.CURSOR_FIELD_FUNCTION;
 import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.CURSOR_FUNCTION;
+import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.CURSOR_RECORD_COUNT_FUNCTION;
 import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.NAME_NAMESPACE_PAIR_FUNCTION;
 
 import io.airbyte.commons.json.Jsons;
@@ -55,6 +56,7 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
         getStreamsSupplier(airbyteStateMessage),
         CURSOR_FUNCTION,
         CURSOR_FIELD_FUNCTION,
+        CURSOR_RECORD_COUNT_FUNCTION,
         NAME_NAMESPACE_PAIR_FUNCTION);
 
     this.cdcStateManager = new CdcStateManager(extractCdcState(airbyteStateMessage), extractStreams(airbyteStateMessage));

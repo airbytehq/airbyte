@@ -1,19 +1,10 @@
 import React, { ReactNode, useMemo } from "react";
 import { ActionMeta, ControlProps, StylesConfig } from "react-select";
 import { useToggle } from "react-use";
-import styled from "styled-components";
 
-import { DropDown } from "components";
-import { DropdownProps } from "components/ui/DropDown";
+import { DropDown, DropdownProps } from "components/ui/DropDown";
 
-const OutsideClickListener = styled.div`
-  bottom: 0;
-  left: 0;
-  top: 0;
-  right: 0;
-  position: fixed;
-  z-index: 1;
-`;
+import { Overlay } from "../Overlay";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Value = any;
@@ -28,7 +19,7 @@ const ControlComponent = (props: ControlProps & { selectProps: Value }) => (
   </div>
 );
 
-interface PopoutProps extends DropdownProps {
+export interface PopoutProps extends DropdownProps {
   targetComponent: (props: { onOpen: () => void; isOpen?: boolean; value: Value }) => ReactNode;
   title?: string;
 }
@@ -84,7 +75,15 @@ export const Popout: React.FC<PopoutProps> = ({ onChange, targetComponent, ...pr
         onChange={onSelectChange}
         components={components}
       />
-      {isOpen ? <OutsideClickListener onClick={toggleOpen} /> : null}
+      {isOpen && (
+        <Overlay
+          variant="transparent"
+          onClick={(event) => {
+            event.stopPropagation();
+            toggleOpen();
+          }}
+        />
+      )}
     </>
   );
 };

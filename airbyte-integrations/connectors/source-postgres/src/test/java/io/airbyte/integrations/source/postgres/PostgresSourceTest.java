@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -26,7 +27,6 @@ import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.source.relationaldb.InvalidCursorException;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -514,7 +514,6 @@ class PostgresSourceTest {
     assertEquals(username, PostgresSource.getUsername(azureConfig));
   }
 
-
   @Test
   public void tableWithInvalidCursorShouldThrowException() throws Exception {
     try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
@@ -523,10 +522,11 @@ class PostgresSourceTest {
       try (final DSLContext dslContext = getDslContext(config)) {
         final Database database = new Database(dslContext);
         final ConfiguredAirbyteStream tableWithInvalidCursorType = createTableWithInvalidCursorType(database);
-        final ConfiguredAirbyteCatalog configuredAirbyteCatalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(tableWithInvalidCursorType));
+        final ConfiguredAirbyteCatalog configuredAirbyteCatalog =
+            new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(tableWithInvalidCursorType));
 
         final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new PostgresSource().read(config, configuredAirbyteCatalog, null)));
-        assertThat(throwable).isInstanceOf(InvalidCursorException.class)
+        assertThat(throwable).isInstanceOf(ConfigErrorException.class)
             .hasMessageContaining(
                 "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering as a cursor. {tableName='public.test_table', cursorColumnName='id', cursorSqlType=OTHER}");
       } finally {
@@ -547,12 +547,28 @@ class PostgresSourceTest {
         .withDestinationSyncMode(DestinationSyncMode.APPEND)
         .withSyncMode(SyncMode.INCREMENTAL)
         .withStream(CatalogHelpers.createAirbyteStream(
-                "test_table",
-                "public",
-                Field.of("id", JsonSchemaType.STRING))
+            "test_table",
+            "public",
+            Field.of("id", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
 
+  }
+
+  @Test
+  void testJdbcUrlWithEscapedDatabaseName() {
+    final JsonNode jdbcConfig = new PostgresSource().toDatabaseConfig(buildConfigEscapingNeeded());
+    assertEquals(EXPECTED_JDBC_ESCAPED_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+  }
+
+  private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:postgresql://localhost:1111/db%2Ffoo?";
+
+  private JsonNode buildConfigEscapingNeeded() {
+    return Jsons.jsonNode(ImmutableMap.of(
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1111,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db/foo"));
   }
 
 }

@@ -51,7 +51,6 @@ import org.testcontainers.containers.MySQLContainer;
 public class CdcMysqlSourceTest extends CdcSourceTest {
 
   private static final String DB_NAME = MODELS_SCHEMA;
-  protected static final int INITIAL_WAITING_SECONDS = 5;
   private MySQLContainer<?> container;
   private Database database;
   private MySqlSource source;
@@ -82,6 +81,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "CDC")
         .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
+        .put("time_zone", "America/Los_Angeles")
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()

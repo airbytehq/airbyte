@@ -3,7 +3,8 @@ import { FormattedMessage } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
-import { Button, Card } from "components";
+import { Button } from "components/ui/Button";
+import { Card } from "components/ui/Card";
 
 import CreateWorkspaceForm from "./CreateWorkspaceForm";
 import styles from "./WorkspaceControl.module.scss";

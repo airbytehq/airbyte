@@ -1,5 +1,10 @@
 import { SyncSchema, SyncSchemaStream } from "core/domain/catalog";
-import { DestinationSyncMode, SyncMode, AirbyteStreamConfiguration } from "core/request/AirbyteClient";
+import {
+  DestinationSyncMode,
+  SyncMode,
+  AirbyteStreamConfiguration,
+  StreamDescriptor,
+} from "core/request/AirbyteClient";
 
 const getDefaultCursorField = (streamNode: SyncSchemaStream): string[] => {
   if (streamNode.stream?.defaultCursorField?.length) {
@@ -119,18 +124,24 @@ const getOptimalSyncMode = (
 const calculateInitialCatalog = (
   schema: SyncSchema,
   supportedDestinationSyncModes: DestinationSyncMode[],
-  isEditMode?: boolean
-): SyncSchema => ({
-  streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
-    const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
-    const nodeStream = verifySourceDefinedProperties(verifySupportedSyncModes(nodeWithId), isEditMode || false);
+  isNotCreateMode?: boolean,
+  newStreamDescriptors?: StreamDescriptor[]
+): SyncSchema => {
+  return {
+    streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
+      const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
+      const nodeStream = verifySourceDefinedProperties(verifySupportedSyncModes(nodeWithId), isNotCreateMode || false);
 
-    if (isEditMode) {
-      return nodeStream;
-    }
-
-    return getOptimalSyncMode(verifyConfigCursorField(nodeStream), supportedDestinationSyncModes);
-  }),
-});
+      // if the stream is new since a refresh, we want to verify cursor and get optimal sync modes
+      const matches = newStreamDescriptors?.some(
+        (streamId) => streamId.name === nodeStream?.stream?.name && streamId.namespace === nodeStream.stream?.namespace
+      );
+      if (isNotCreateMode && !matches) {
+        return nodeStream;
+      }
+      return getOptimalSyncMode(verifyConfigCursorField(nodeStream), supportedDestinationSyncModes);
+    }),
+  };
+};
 
 export default calculateInitialCatalog;

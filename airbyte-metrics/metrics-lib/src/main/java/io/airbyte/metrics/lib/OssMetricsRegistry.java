@@ -9,15 +9,15 @@ import com.google.api.client.util.Preconditions;
 /**
  * Enum source of truth of all Airbyte metrics. Each enum value represent a metric and is linked to
  * an application and contains a description to make it easier to understand.
- *
+ * <p>
  * Each object of the enum actually represent a metric, so the Registry name is misleading. The
  * reason 'Registry' is in the name is to emphasize this enum's purpose as a source of truth for all
  * metrics. This also helps code readability i.e. AirbyteMetricsRegistry.metricA.
- *
+ * <p>
  * Metric Name Convention (adapted from
  * https://docs.datadoghq.com/developers/guide/what-best-practices-are-recommended-for-naming-metrics-and-tags/):
  * <p>
- * - Use lowercase. Metric names are case sensitive.
+ * - Use lowercase. Metric names are case-sensitive.
  * <p>
  * - Use underscore to delimit names with multiple words.
  * <p>
@@ -67,34 +67,47 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       MetricEmittingApps.WORKER,
       "job_succeeded_by_release_stage",
       "increments when a job succeeds. jobs are double counted as this is tagged by release stage."),
+  JSON_STRING_LENGTH(
+      MetricEmittingApps.WORKER,
+      "json_string_length",
+      "string length of a raw json string"),
   KUBE_POD_PROCESS_CREATE_TIME_MILLISECS(
       MetricEmittingApps.WORKER,
       "kube_pod_process_create_time_millisecs",
       "time taken to create a new kube pod process"),
-  NUM_PENDING_JOBS(
-      MetricEmittingApps.METRICS_REPORTER,
-      "num_pending_jobs",
-      "number of pending jobs"),
-  NUM_RUNNING_JOBS(
-      MetricEmittingApps.METRICS_REPORTER,
-      "num_running_jobs",
-      "number of running jobs"),
-  NUM_ORPHAN_RUNNING_JOBS(
-      MetricEmittingApps.METRICS_REPORTER,
-      "num_orphan_running_jobs",
-      "number of jobs reported as running that as associated to connection inactive or deprecated"),
-  NUM_ACTIVE_CONN_PER_WORKSPACE(
-      MetricEmittingApps.METRICS_REPORTER,
-      "num_active_conn_per_workspace",
-      "number of active connections per workspace"),
   NUM_ABNORMAL_SCHEDULED_SYNCS_IN_LAST_DAY(
       MetricEmittingApps.METRICS_REPORTER,
       "num_abnormal_scheduled_syncs_last_day",
       "number of abnormal syncs that have skipped at least 1 scheduled run in last day."),
+  NUM_ACTIVE_CONN_PER_WORKSPACE(
+      MetricEmittingApps.METRICS_REPORTER,
+      "num_active_conn_per_workspace",
+      "number of active connections per workspace"),
+  NUM_PENDING_JOBS(
+      MetricEmittingApps.METRICS_REPORTER,
+      "num_pending_jobs",
+      "number of pending jobs"),
+  NUM_ORPHAN_RUNNING_JOBS(
+      MetricEmittingApps.METRICS_REPORTER,
+      "num_orphan_running_jobs",
+      "number of jobs reported as running that as associated to connection inactive or deprecated"),
+  NUM_RUNNING_JOBS(
+      MetricEmittingApps.METRICS_REPORTER,
+      "num_running_jobs",
+      "number of running jobs"),
+  NUM_SOURCE_STREAMS_WITH_RECORD_SCHEMA_VALIDATION_ERRORS(MetricEmittingApps.WORKER,
+      "record_schema_validation_error",
+      "number of record schema validation errors"),
   NUM_TOTAL_SCHEDULED_SYNCS_IN_LAST_DAY(
       MetricEmittingApps.METRICS_REPORTER,
       "num_total_scheduled_syncs_last_day",
       "number of total syncs runs in last day."),
+
+  NUM_UNUSUALLY_LONG_SYNCS(
+      MetricEmittingApps.METRICS_REPORTER,
+      "num_unusually_long_syncs",
+      "number of unusual long syncs compared to their historic performance."),
+
   OLDEST_PENDING_JOB_AGE_SECS(MetricEmittingApps.METRICS_REPORTER,
       "oldest_pending_job_age_secs",
       "oldest pending job in seconds"),
@@ -104,6 +117,9 @@ public enum OssMetricsRegistry implements MetricsRegistry {
   OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS(MetricEmittingApps.METRICS_REPORTER,
       "overall_job_runtime_in_last_hour_by_terminal_state_secs",
       "overall job runtime - scheduling and execution for all attempts - for jobs that reach terminal states in the last hour. tagged by terminal states."),
+  STATE_METRIC_TRACKER_ERROR(MetricEmittingApps.WORKER,
+      "state_timestamp_metric_tracker_error",
+      "number of syncs where the state timestamp metric tracker ran out of memory or was unable to match destination state message to source state message"),
   TEMPORAL_WORKFLOW_ATTEMPT(MetricEmittingApps.WORKER,
       "temporal_workflow_attempt",
       "count of the number of workflow attempts"),
@@ -113,18 +129,20 @@ public enum OssMetricsRegistry implements MetricsRegistry {
   TEMPORAL_WORKFLOW_FAILURE(MetricEmittingApps.WORKER,
       "temporal_workflow_failure",
       "count of the number of workflow failures"),
-  NUM_SOURCE_STREAMS_WITH_RECORD_SCHEMA_VALIDATION_ERRORS(MetricEmittingApps.WORKER,
-      "record_schema_validation_error",
-      "number of record schema validation errors"),
-  STATE_METRIC_TRACKER_ERROR(MetricEmittingApps.WORKER,
-      "state_timestamp_metric_tracker_error",
-      "number of syncs where the state timestamp metric tracker ran out of memory or was unable to match destination state message to source state message");
+  REPLICATION_BYTES_SYNCED(MetricEmittingApps.WORKER,
+      "replication_bytes_synced",
+      "number of bytes synced during replication"),
+  REPLICATION_RECORDS_SYNCED(MetricEmittingApps.WORKER,
+      "replication_records_synced",
+      "number of records synced during replication");
 
   private final MetricEmittingApp application;
   private final String metricName;
   private final String metricDescription;
 
-  OssMetricsRegistry(final MetricEmittingApp application, final String metricName, final String metricDescription) {
+  OssMetricsRegistry(final MetricEmittingApp application,
+                     final String metricName,
+                     final String metricDescription) {
     Preconditions.checkNotNull(metricDescription);
     Preconditions.checkNotNull(application);
 

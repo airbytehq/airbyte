@@ -1,12 +1,12 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/amazon-seller-partner",
-  "changelogUrl": "https://docs.airbyte.io/integrations/sources/amazon-seller-partner",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/amazon-seller-partner",
+  "changelogUrl": "https://docs.airbyte.com/integrations/sources/amazon-seller-partner",
   "connectionSpecification": {
     "title": "Amazon Seller Partner Spec",
     "type": "object",
     "properties": {
       "app_id": {
-        "title": "App Id *",
+        "title": "App Id",
         "description": "Your Amazon App ID",
         "airbyte_secret": true,
         "order": 0,

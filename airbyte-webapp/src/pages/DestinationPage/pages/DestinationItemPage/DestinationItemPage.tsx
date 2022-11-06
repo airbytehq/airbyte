@@ -1,14 +1,15 @@
 import React, { Suspense, useMemo } from "react";
-import { FormattedMessage } from "react-intl";
+import { useIntl } from "react-intl";
 import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 
-import { DropDownRow, LoadingPage } from "components";
-import ApiErrorBoundary from "components/ApiErrorBoundary";
+import { LoadingPage } from "components";
+import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
+import { ConnectorIcon } from "components/common/ConnectorIcon";
+import { HeadTitle } from "components/common/HeadTitle";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
-import { ConnectorIcon } from "components/ConnectorIcon";
-import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import { Breadcrumbs } from "components/ui/Breadcrumbs";
+import { DropDownOptionDataItem } from "components/ui/DropDown";
 import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -28,6 +29,7 @@ const DestinationItemPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.DESTINATION_ITEM);
   const params = useParams() as { "*": StepsTypes | ""; id: string };
   const navigate = useNavigate();
+  const { formatMessage } = useIntl();
   const currentStep = useMemo<string>(() => (params["*"] === "" ? StepsTypes.OVERVIEW : params["*"]), [params]);
 
   const { sources } = useSourceList();
@@ -40,8 +42,6 @@ const DestinationItemPage: React.FC = () => {
 
   const { connections } = useConnectionList();
 
-  const onClickBack = () => navigate("..");
-
   const onSelectStep = (id: string) => {
     const path = id === StepsTypes.OVERVIEW ? "." : id.toLowerCase();
     navigate(path);
@@ -49,10 +49,10 @@ const DestinationItemPage: React.FC = () => {
 
   const breadcrumbsData = [
     {
-      name: <FormattedMessage id="admin.destinations" />,
-      onClick: onClickBack,
+      label: formatMessage({ id: "admin.destinations" }),
+      to: "..",
     },
-    { name: destination.name },
+    { label: destination.name },
   ];
 
   const connectionsWithDestination = connections.filter(
@@ -72,7 +72,7 @@ const DestinationItemPage: React.FC = () => {
     [sources, sourceDefinitions]
   );
 
-  const onSelect = (data: DropDownRow.IDataItem) => {
+  const onSelect = (data: DropDownOptionDataItem) => {
     const path = `../${RoutePaths.ConnectionNew}`;
     const state =
       data.value === "create-new-item"

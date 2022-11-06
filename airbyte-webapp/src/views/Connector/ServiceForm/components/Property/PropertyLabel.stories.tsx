@@ -1,6 +1,7 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import { Card, Input } from "components";
+import { Card } from "components/ui/Card";
+import { Input } from "components/ui/Input";
 
 import { PropertyLabel } from "./PropertyLabel";
 

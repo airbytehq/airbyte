@@ -17,6 +17,7 @@ import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.db.util.SSLCertificateUtils;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import jakarta.json.JsonValue;
 import java.io.IOException;
@@ -28,6 +29,7 @@ import org.apache.http.HttpHost;
 import org.apache.http.message.BasicHeader;
 import org.elasticsearch.client.Node;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +58,17 @@ public class ElasticsearchConnection {
 
     // Create the low-level client
     httpHost = HttpHost.create(config.getEndpoint());
-    restClient = RestClient.builder(httpHost)
+    final RestClientBuilder builder = RestClient.builder(httpHost);
+
+    // Set custom user's certificate if provided
+    if (config.getCaCertificate() != null && !config.getCaCertificate().isEmpty()) {
+      builder.setHttpClientConfigCallback(clientBuilder -> {
+        clientBuilder.setSSLContext(SSLCertificateUtils.createContextFromCaCert(config.getCaCertificate()));
+        return clientBuilder;
+      });
+    }
+
+    restClient = builder
         .setDefaultHeaders(configureHeaders(config))
         .setFailureListener(new FailureListener())
         .build();

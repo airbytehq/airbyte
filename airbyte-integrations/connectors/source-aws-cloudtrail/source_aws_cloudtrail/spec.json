@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/aws-cloudtrail",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/aws-cloudtrail",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Aws CloudTrail Spec",
@@ -15,13 +15,13 @@
       "aws_key_id": {
         "type": "string",
         "title": "Key ID",
-        "description": "AWS CloudTrail Access Key ID. See the <a href=\"https://docs.airbyte.io/integrations/sources/aws-cloudtrail\">docs</a> for more information on how to obtain this key.",
+        "description": "AWS CloudTrail Access Key ID. See the <a href=\"https://docs.airbyte.com/integrations/sources/aws-cloudtrail\">docs</a> for more information on how to obtain this key.",
         "airbyte_secret": true
       },
       "aws_secret_key": {
         "type": "string",
         "title": "Secret Key",
-        "description": "AWS CloudTrail Access Key ID. See the <a href=\"https://docs.airbyte.io/integrations/sources/aws-cloudtrail\">docs</a> for more information on how to obtain this key.",
+        "description": "AWS CloudTrail Access Key ID. See the <a href=\"https://docs.airbyte.com/integrations/sources/aws-cloudtrail\">docs</a> for more information on how to obtain this key.",
         "airbyte_secret": true
       },
       "aws_region_name": {

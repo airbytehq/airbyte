@@ -4,7 +4,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button } from "components";
+import { Button } from "components/ui/Button";
 
 import styles from "./UpgradeAllButton.module.scss";
 

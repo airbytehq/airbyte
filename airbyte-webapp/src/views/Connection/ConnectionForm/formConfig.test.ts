@@ -1,6 +1,7 @@
 import { renderHook } from "@testing-library/react-hooks";
-import mockDestinationDefinition from "test-utils/mock-data//mockDestinationDefinition.json";
 import mockConnection from "test-utils/mock-data/mockConnection.json";
+import mockDestinationDefinition from "test-utils/mock-data/mockDestinationDefinition.json";
+import mockWorkspace from "test-utils/mock-data/mockWorkspace.json";
 import { TestWrapper as wrapper } from "test-utils/testutils";
 
 import { frequencyConfig } from "config/frequencyConfig";
@@ -13,6 +14,10 @@ import {
 } from "core/request/AirbyteClient";
 
 import { mapFormPropsToOperation, useFrequencyDropdownData, useInitialValues } from "./formConfig";
+
+jest.mock("services/workspaces/WorkspacesService", () => ({
+  useCurrentWorkspace: () => mockWorkspace,
+}));
 
 describe("#useFrequencyDropdownData", () => {
   it("should return only default frequencies when no additional frequency is provided", () => {
@@ -170,17 +175,18 @@ describe("#mapFormPropsToOperation", () => {
 });
 
 describe("#useInitialValues", () => {
-  it("should generate initial values w/ no edit mode", () => {
+  it("should generate initial values w/ no 'not create' mode", () => {
     const { result } = renderHook(() =>
       useInitialValues(
         mockConnection as WebBackendConnectionRead,
         mockDestinationDefinition as DestinationDefinitionSpecificationRead
       )
     );
-    expect(result).toMatchSnapshot();
+    expect(result.current).toMatchSnapshot();
+    expect(result.current.name).toBeDefined();
   });
 
-  it("should generate initial values w/ edit mode: false", () => {
+  it("should generate initial values w/ 'not create' mode: false", () => {
     const { result } = renderHook(() =>
       useInitialValues(
         mockConnection as WebBackendConnectionRead,
@@ -188,10 +194,11 @@ describe("#useInitialValues", () => {
         false
       )
     );
-    expect(result).toMatchSnapshot();
+    expect(result.current).toMatchSnapshot();
+    expect(result.current.name).toBeDefined();
   });
 
-  it("should generate initial values w/ edit mode: true", () => {
+  it("should generate initial values w/ 'not create' mode: true", () => {
     const { result } = renderHook(() =>
       useInitialValues(
         mockConnection as WebBackendConnectionRead,
@@ -199,7 +206,8 @@ describe("#useInitialValues", () => {
         true
       )
     );
-    expect(result).toMatchSnapshot();
+    expect(result.current).toMatchSnapshot();
+    expect(result.current.name).toBeUndefined();
   });
 
   // This is a low-priority test

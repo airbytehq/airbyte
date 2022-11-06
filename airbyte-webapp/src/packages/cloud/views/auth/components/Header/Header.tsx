@@ -2,9 +2,10 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
-import { Button } from "components";
+import { Button } from "components/ui/Button";
 
-import { CloudRoutes } from "../../../../cloudRoutes";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
+
 import styles from "./Header.module.scss";
 
 interface HeaderProps {
