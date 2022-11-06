@@ -78,6 +78,7 @@ platform-testcontainers-postgresql = { module = "org.testcontainers:postgresql",
 log4j-over-slf4j = { module = "org.slf4j:log4j-over-slf4j", version.ref = "slf4j" }
 appender-log4j2 = { module = "com.therealvan:appender-log4j2", version = "3.6.0" }
 aws-java-sdk-s3 = { module = "com.amazonaws:aws-java-sdk-s3", version = "1.12.6" }
+aws-java-sdk-sts = {module = "com.amazonaws:aws-java-sdk-sts", version = "1.12.6"}
 google-cloud-storage = { module = "com.google.cloud:google-cloud-storage", version = "2.2.2" }
 aws-bom = "software.amazon.awssdk:bom:2.16.84"
 aws-s3 = { module = "software.amazon.awssdk:s3" }

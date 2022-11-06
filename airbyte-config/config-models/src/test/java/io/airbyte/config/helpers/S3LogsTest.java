@@ -30,8 +30,8 @@ class S3LogsTest {
 
   private static final LogConfigs LOG_CONFIGS = new LogConfigs(Optional.of(CloudStorageConfigs.s3(new CloudStorageConfigs.S3Config(
       System.getenv(LogClientSingleton.S3_LOG_BUCKET),
-      System.getenv(LogClientSingleton.AWS_ACCESS_KEY_ID),
-      System.getenv(LogClientSingleton.AWS_SECRET_ACCESS_KEY),
+      null,
+      null,
       System.getenv(LogClientSingleton.S3_LOG_BUCKET_REGION)))));
 
   private S3Client s3Client;
