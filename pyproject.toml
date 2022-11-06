@@ -52,7 +52,7 @@ skip_glob = ["**/connector_builder/generated/**"]
 
 [tool.mypy]
 platform = "linux"
-exclude = "(build|integration_tests|unit_tests|**/generated/*)"
+exclude = "(build|integration_tests|unit_tests|generated)"
 
 # Optionals
 ignore_missing_imports = true
