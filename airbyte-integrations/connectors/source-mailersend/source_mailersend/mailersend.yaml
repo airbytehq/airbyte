@@ -13,25 +13,44 @@ definitions:
     request_options_provider:
       request_parameters:
         limit: "100"
-        date_from: "{{ config['date_from'] }}"
-        date_to: "{{ config['date_to'] }}"
+  stream_slicer:
+    type: "DatetimeStreamSlicer"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%s"
+    end_datetime:
+      datetime: "{{ now_utc() }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
+    step: "1d"
+    cursor_field: "{{ options['stream_cursor_field'] }}"
+    start_time_option:
+      field_name: "date_from"
+      inject_into: "request_parameter"
+    end_time_option:
+      field_name: "date_to"
+      inject_into: "request_parameter"
+    datetime_format: "%s"
+  paginator:
+    type: "DefaultPaginator"
+    page_size_option:
+      inject_into: "request_parameter"
+      field_name: "page_size"
+    pagination_strategy:
+      type: "PageIncrement"
+      page_size: 100
+    page_token_option:
+      inject_into: "request_parameter"
+      field_name: "page"
+    url_base: "*ref(definitions.requester.url_base)"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
-      type: "DefaultPaginator"
-      page_size_option:
-        inject_into: "request_parameter"
-        field_name: "page_size"
-      pagination_strategy:
-        type: "PageIncrement"
-        page_size: 100
-      page_token_option:
-        inject_into: "request_parameter"
-        field_name: "page"
-      url_base: "*ref(definitions.requester.url_base)"
+      $ref: "*ref(definitions.paginator)"
     requester:
       $ref: "*ref(definitions.requester)"
+    stream_slicer:
+      $ref: "*ref(definitions.stream_slicer)"
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
@@ -41,6 +60,7 @@ definitions:
       name: "activity"
       primary_key: "id"
       path: "/activity/{{ config['domain_id'] }}"
+      stream_cursor_field: "created_at"
 
 streams:
   - "*ref(definitions.activity_stream)"

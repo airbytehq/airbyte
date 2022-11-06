@@ -17,13 +17,8 @@ connectionSpecification:
       examples:
         - airbyte.com
         - linkana.com
-    date_from:
+    start_date:
       type: string
       description: Timestamp is assumed to be UTC. Must be lower than date_to.
-      examples:
-        - "1443651141"
-    date_to:
-      type: string
-      description: Timestamp is assumed to be UTC. Must be higher than date_from.
       examples:
         - "1443651141"
