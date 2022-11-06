@@ -7,7 +7,6 @@ import { QueryClientProvider, QueryClient } from "react-query";
 
 // TODO: theme was not working correctly so imported directly
 import { theme } from "../src/theme";
-import GlobalStyle from "../src/global-styles";
 import messages from "../src/locales/en.json";
 import { FeatureService } from "../src/hooks/services/Feature";
 import { ConfigServiceProvider, defaultConfig } from "../src/config";
@@ -45,7 +44,6 @@ export const withProviders = (getStory) => (
                 <ConfigServiceProvider defaultConfig={defaultConfig} providers={[]}>
                   <DocumentationPanelProvider>
                     <FeatureService features={[]}>
-                      <GlobalStyle />
                       {getStory()}
                     </FeatureService>
                   </DocumentationPanelProvider>
