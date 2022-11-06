@@ -81,6 +81,7 @@ class SurveyctoStream(SurveyStream, IncrementalMixin):
             schema_json = converter(schema)
    
             self.schema_json_properties=schema_json['definitions']['element']['properties']
+            print(f'{self.schema_json_properties}')
 
         return {
             "$schema": "http://json-schema.org/draft-07/schema#",
