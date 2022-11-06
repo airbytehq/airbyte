@@ -11,14 +11,14 @@
   height: 100%;
   width: 100px;
   min-width: 65px;
-  background-color: colors.$dark-blue;
+  background-color: colors.$white;
   padding: 23px 4px 15px;
   text-align: center;
+  box-shadow: 0 2px 4px 0 rgba(colors.$dark-blue, 5%);
 }
 
 .text {
   margin-top: 7px;
-  color: colors.$white;
 }
 
 .helpIcon {
@@ -40,7 +40,7 @@
   background-color: transparent;
   appearance: none;
   border: none;
-  color: colors.$grey-30;
+  color: colors.$dark-blue;
   width: 100%;
   cursor: pointer;
   border-radius: 12px;
@@ -54,34 +54,28 @@
   line-height: 15px;
   text-decoration: none;
   position: relative;
+  transition: all variables.$transition-out;
 
   &:hover,
   &:focus-visible {
-    background: colors.$dark-blue-800;
-    transition: all variables.$transition-out;
+    background: colors.$grey-50;
   }
 
   &.active {
-    color: colors.$white;
-    background: colors.$blue-400;
-    transition: all variables.$transition-out;
+    background: colors.$blue-100;
 
     &:hover,
     &:focus-visible {
-      color: colors.$white;
-      background: colors.$blue-300;
-      transition: all variables.$transition-out;
+      background: colors.$blue-100;
     }
   }
 
   &.activeChild {
-    color: colors.$white;
-    background: colors.$dark-blue-600;
+    background: colors.$blue-30;
 
     &:hover,
     &:focus-visible {
-      color: colors.$white;
-      background: colors.$dark-blue-400;
+      background: colors.$blue-100;
     }
   }
 }
