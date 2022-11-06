@@ -21,4 +21,4 @@ connectionSpecification:
       type: string
       description: Timestamp is assumed to be UTC. Must be lower than date_to.
       examples:
-        - "1443651141"
+        - "2022-11-06"
