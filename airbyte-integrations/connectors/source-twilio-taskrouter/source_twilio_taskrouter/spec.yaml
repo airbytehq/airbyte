@@ -17,9 +17,6 @@ connectionSpecification:
       type: string
       description: Twilio Auth Token
       airbyte_secret: true
-    workspaceid:
+    workspaceId:
       type: string
       description: Workspace ID
-    page_size:
-      type: integer
-      description: Number for Pagination
