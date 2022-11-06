@@ -1,4 +1,4 @@
-documentationUrl: https://docs.airbyte.io/integrations/sources/emailoctopus
+documentationUrl: https://docs.airbyte.com/integrations/sources/emailoctopus
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: EmailOctopus Spec
@@ -9,6 +9,7 @@ connectionSpecification:
   properties:
     api_key:
       type: string
+      title: EmailOctopus API key
       description: >-
         EmailOctopus API Key. See the <a
         href="https://help.emailoctopus.com/article/165-how-to-create-and-delete-api-keys">docs</a>
