@@ -3,7 +3,7 @@ import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
 import { faDesktop, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import { FormattedMessage, FormattedNumber } from "react-intl";
+import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import { NavLink } from "react-router-dom";
 
 import { Link } from "components";
@@ -19,6 +19,7 @@ import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
 import { links } from "utils/links";
+import { ReactComponent as AirbyteLogo } from "views/layout/SideBar/airbyteLogo.svg";
 import ChatIcon from "views/layout/SideBar/components/ChatIcon";
 import ConnectionsIcon from "views/layout/SideBar/components/ConnectionsIcon";
 import DestinationIcon from "views/layout/SideBar/components/DestinationIcon";
@@ -40,6 +41,7 @@ const SideBar: React.FC = () => {
   const { show } = useIntercom();
   const handleChatUs = () => show();
   const hideOnboardingExperiment = useExperiment("onboarding.hideOnboarding", false);
+  const { formatMessage } = useIntl();
 
   return (
     <nav className={styles.nav}>
@@ -48,8 +50,9 @@ const SideBar: React.FC = () => {
           to={
             workspace.displaySetupWizard && !hideOnboardingExperiment ? RoutePaths.Onboarding : RoutePaths.Connections
           }
+          aria-label={formatMessage({ id: "sidebar.homepage" })}
         >
-          <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
+          <AirbyteLogo height={33} width={33} />
         </Link>
         <WorkspacePopout>
           {({ onOpen, value }) => (

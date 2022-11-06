@@ -26,7 +26,9 @@ public final class DatabaseConstants {
   /**
    * Path to the script that contains the initial schema definition for the Configurations database.
    */
-  public static final String CONFIGS_SCHEMA_PATH = "configs_database/schema.sql";
+  public static final String CONFIGS_INITIAL_SCHEMA_PATH = "configs_database/schema.sql";
+
+  public static final String CONFIGS_SCHEMA_DUMP_PATH = "src/main/resources/configs_database/schema_dump.txt";
 
   /**
    * Logical name of the Jobs database.
@@ -41,7 +43,9 @@ public final class DatabaseConstants {
   /**
    * Path to the script that contains the initial schema definition for the Jobs database.
    */
-  public static final String JOBS_SCHEMA_PATH = "jobs_database/schema.sql";
+  public static final String JOBS_INITIAL_SCHEMA_PATH = "jobs_database/schema.sql";
+
+  public static final String JOBS_SCHEMA_DUMP_PATH = "src/main/resources/jobs_database/schema_dump.txt";
 
   /**
    * Default database connection timeout in milliseconds.
