@@ -4,6 +4,7 @@
   "notifications.error.somethingWentWrong": "Something went wrong",
   "notifications.error.noMessage": "No error message",
 
+  "sidebar.homepage": "Homepage",
   "sidebar.sources": "Sources",
   "sidebar.destinations": "Destinations",
   "sidebar.admin": "Admin",
