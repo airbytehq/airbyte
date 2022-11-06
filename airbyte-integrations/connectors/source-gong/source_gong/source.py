@@ -227,7 +227,7 @@ class Calls(IncrementalGongStream):
                 }
             },
             "filter": {
-                    "fromDateTime": date
+                   
             }
 }
         else:
@@ -258,7 +258,7 @@ class Calls(IncrementalGongStream):
                     }
                 },
                 "filter": {
-                        "fromDateTime": (date).strftime("%Y-%m-%dT%H:%M:%SZ")
+       
 
                 }
                 }
