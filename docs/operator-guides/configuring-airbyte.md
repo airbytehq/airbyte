@@ -156,7 +156,21 @@ Please see [here](https://docs.airbyte.com/deploying-airbyte/on-kubernetes#confi
 1. `GCS_LOG_BUCKET` - Define the GCS bucket to store logs.
 2. `S3_BUCKET` - Define the S3 bucket to store logs.
 3. `S3_RREGION` - Define the S3 region the S3 log bucket is in.
-4. `S3_AWS_KEY` - Define the key used to access the S3 log bucket.
-5. `S3_AWS_SECRET` - Define the secret used to access the S3 log bucket.
+4. `S3_AWS_KEY` - Define the key used to access the S3 log bucket unless using IAM or IRSA.
+5. `S3_AWS_SECRET` - Define the secret used to access the S3 log bucket unless using IAM or IRSA.
 6. `S3_MINIO_ENDPOINT` - Define the url Minio is hosted at so Airbyte can use Minio to store logs.
 7. `S3_PATH_STYLE_ACCESS` - Set to `true` if using Minio to store logs. Empty otherwise.
+
+##### AWS
+
+The Airbyte server makes use of the AWS Java SDK's [DefaultCredentialsProvider](https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/auth/credentials/DefaultCredentialsProvider.html) to utilise AWS credentials.
+
+From the [AWS documentation](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html):
+
+> AWS credentials provider chain that looks for credentials in this order:
+> * Java System Properties - aws.accessKeyId and aws.secretAccessKey
+> * Environment Variables - AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
+> * Web Identity Token credentials from system properties or environment variables
+> * Credential profiles file at the default location (~/.aws/credentials) shared by all AWS SDKs and the AWS CLI
+> * Credentials delivered through the Amazon EC2 container service if AWS_CONTAINER_CREDENTIALS_RELATIVE_URI" environment variable is set and security manager has permission to access the variable,
+> * Instance profile credentials delivered through the Amazon EC2 metadata service

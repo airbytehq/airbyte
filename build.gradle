@@ -411,6 +411,7 @@ subprojects { subproj ->
         // Dependencies for logging to cloud storage, as well as the various clients used to do so.
         implementation libs.appender.log4j2
         implementation libs.aws.java.sdk.s3
+        implementation libs.aws.java.sdk.sts
         implementation libs.google.cloud.storage
 
         implementation libs.s3
