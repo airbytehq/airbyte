@@ -387,6 +387,7 @@ font-style: italic;
   <li><a href="#createWorkspace"><code><span class="http-method">post</span> /v1/workspaces/create</code></a></li>
   <li><a href="#deleteWorkspace"><code><span class="http-method">post</span> /v1/workspaces/delete</code></a></li>
   <li><a href="#getWorkspace"><code><span class="http-method">post</span> /v1/workspaces/get</code></a></li>
+  <li><a href="#getWorkspaceByConnectionId"><code><span class="http-method">post</span> /v1/workspaces/get_by_connection_id</code></a></li>
   <li><a href="#getWorkspaceBySlug"><code><span class="http-method">post</span> /v1/workspaces/get_by_slug</code></a></li>
   <li><a href="#listWorkspaces"><code><span class="http-method">post</span> /v1/workspaces/list</code></a></li>
   <li><a href="#updateWorkspace"><code><span class="http-method">post</span> /v1/workspaces/update</code></a></li>
@@ -9750,6 +9751,97 @@ containing the updated stream needs to be sent.</div>
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
       <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#WorkspaceRead">WorkspaceRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "news" : true,
+  "webhookConfigs" : [ {
+    "name" : "name",
+    "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "name" : "name",
+    "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ],
+  "displaySetupWizard" : true,
+  "initialSetupComplete" : true,
+  "anonymousDataCollection" : true,
+  "customerId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "name" : "name",
+  "firstCompletedSync" : true,
+  "feedbackDone" : true,
+  "email" : "email",
+  "slug" : "slug",
+  "securityUpdates" : true,
+  "notifications" : [ {
+    "slackConfiguration" : {
+      "webhook" : "webhook"
+    },
+    "sendOnSuccess" : false,
+    "sendOnFailure" : true,
+    "customerioConfiguration" : "{}"
+  }, {
+    "slackConfiguration" : {
+      "webhook" : "webhook"
+    },
+    "sendOnSuccess" : false,
+    "sendOnFailure" : true,
+    "customerioConfiguration" : "{}"
+  } ],
+  "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#WorkspaceRead">WorkspaceRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="getWorkspaceByConnectionId"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/workspaces/get_by_connection_id</code></pre></div>
+    <div class="method-summary">Find workspace by connection id (<span class="nickname">getWorkspaceByConnectionId</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">ConnectionIdRequestBody <a href="#ConnectionIdRequestBody">ConnectionIdRequestBody</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
