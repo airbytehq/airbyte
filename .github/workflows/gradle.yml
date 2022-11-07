@@ -259,7 +259,7 @@ jobs:
       - name: Prep Test Results For GCS
         if: always()
         run: |
-          python tools/bin/prep_test_results_for_gcs.py --json connectors_base_results.json
+          python tools/bin/prep_test_results_for_gcs.py --json connectors_base_results.json  --jobid $GITHUB_JOB --runid $GITHUB_RUN_ID
         
       - name: Upload Test Results to GCS
         if: always()
@@ -582,7 +582,7 @@ jobs:
       - name: Prep Test Results For GCS
         if: always()
         run: |
-          python tools/bin/prep_test_results_for_gcs.py --json platform_results.json
+          python tools/bin/prep_test_results_for_gcs.py --json platform_results.json  --jobid $GITHUB_JOB --runid $GITHUB_RUN_ID
         
       - name: Upload Test Results to GCS
         if: always()
@@ -768,7 +768,7 @@ jobs:
       - name: Prep Test Results For GCS
         if: always()
         run: |
-          python tools/bin/prep_test_results_for_gcs.py --json kube_results.json
+          python tools/bin/prep_test_results_for_gcs.py --json kube_results.json  --jobid $GITHUB_JOB --runid $GITHUB_RUN_ID
         
       - name: Upload Test Results to GCS
         if: always()

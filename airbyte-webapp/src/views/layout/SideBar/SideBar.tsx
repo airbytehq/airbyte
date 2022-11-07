@@ -3,7 +3,7 @@ import { faRocket } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import React from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { NavLink, useLocation } from "react-router-dom";
 
 import { Link } from "components";
@@ -16,6 +16,7 @@ import { links } from "utils/links";
 
 import { DocsIcon } from "../../../components/icons/DocsIcon";
 import { RoutePaths } from "../../../pages/routePaths";
+import { ReactComponent as AirbyteLogo } from "./airbyteLogo.svg";
 import ConnectionsIcon from "./components/ConnectionsIcon";
 import DestinationIcon from "./components/DestinationIcon";
 import OnboardingIcon from "./components/OnboardingIcon";
@@ -41,12 +42,16 @@ const SideBar: React.FC = () => {
   const config = useConfig();
   const workspace = useCurrentWorkspace();
   const navLinkClassName = useCalculateSidebarStyles();
+  const { formatMessage } = useIntl();
 
   return (
     <nav className={styles.nav}>
       <div>
-        <Link to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}>
-          <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
+        <Link
+          to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}
+          aria-label={formatMessage({ id: "sidebar.homepage" })}
+        >
+          <AirbyteLogo height={33} width={33} />
         </Link>
         <ul className={styles.menu}>
           {workspace.displaySetupWizard ? (

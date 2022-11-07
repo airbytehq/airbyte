@@ -24,15 +24,11 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.Geography;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.init.DefinitionProviderToConfigPersistenceAdapter;
 import io.airbyte.config.init.DefinitionsProvider;
 import io.airbyte.config.init.LocalDefinitionsProvider;
-import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.LocalTestingSecretPersistence;
 import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
@@ -145,7 +141,7 @@ class BootloaderAppTest {
       val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
       // this line should change with every new migration
       // to show that you meant to make a new migration to the prod database
-      assertEquals("0.40.12.001", configsMigrator.getLatestMigration().getVersion().getVersion());
+      assertEquals("0.40.18.002", configsMigrator.getLatestMigration().getVersion().getVersion());
 
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
       assertEquals(VERSION_0330_ALPHA, jobsPersistence.getVersion().get());
@@ -175,10 +171,6 @@ class BootloaderAppTest {
 
     val mockedFeatureFlags = mock(FeatureFlags.class);
 
-    final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
-        .copySecrets(true)
-        .build();
-
     try (val configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
         val jobsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES)) {
 
@@ -188,8 +180,7 @@ class BootloaderAppTest {
       val configDatabase = new ConfigsDatabaseTestProvider(configsDslContext, configsFlyway).create(false);
       val jobDatabase = new JobsDatabaseTestProvider(jobsDslContext, jobsFlyway).create(false);
 
-      val configPersistence = new DatabaseConfigPersistence(configDatabase, jsonSecretsProcessor);
-      val configRepository = new ConfigRepository(configPersistence, configDatabase);
+      val configRepository = new ConfigRepository(configDatabase);
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
 
       val secretsPersistence = SecretPersistence.getLongLived(configsDslContext, mockedConfigs);
@@ -213,8 +204,7 @@ class BootloaderAppTest {
       initBootloader.load();
 
       final DefinitionsProvider localDefinitions = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
-      final ConfigPersistence localConfigPersistence = new DefinitionProviderToConfigPersistenceAdapter(localDefinitions);
-      configRepository.loadDataNoSecrets(localConfigPersistence);
+      configRepository.seedActorDefinitions(localDefinitions.getSourceDefinitions(), localDefinitions.getDestinationDefinitions());
 
       final String sourceSpecs = """
                                  {
@@ -244,6 +234,7 @@ class BootloaderAppTest {
           .withSourceId(sourceId)
           .withName("test source")
           .withWorkspaceId(workspaceId)
+          .withTombstone(false)
           .withConfiguration(mapper.readTree(sourceSpecs)));
 
       when(mockedFeatureFlags.forceSecretMigration()).thenReturn(false);

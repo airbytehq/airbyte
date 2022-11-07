@@ -18,12 +18,9 @@ import io.airbyte.config.init.ApplyDefinitionsHelper;
 import io.airbyte.config.init.DefinitionsProvider;
 import io.airbyte.config.init.LocalDefinitionsProvider;
 import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
@@ -151,10 +148,10 @@ public class BootloaderApp {
   public void load() throws Exception {
     LOGGER.info("Initializing databases...");
     DatabaseCheckFactory.createConfigsDatabaseInitializer(configsDslContext,
-        configs.getConfigsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH)).initialize();
+        configs.getConfigsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.CONFIGS_INITIAL_SCHEMA_PATH)).initialize();
 
     DatabaseCheckFactory.createJobsDatabaseInitializer(jobsDslContext,
-        configs.getJobsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH)).initialize();
+        configs.getJobsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.JOBS_INITIAL_SCHEMA_PATH)).initialize();
     LOGGER.info("Databases initialized.");
 
     LOGGER.info("Setting up config database and default workspace...");
@@ -194,14 +191,6 @@ public class BootloaderApp {
     return new Database(dslContext);
   }
 
-  private static ConfigPersistence getConfigPersistence(final Database configDatabase) throws IOException {
-    final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
-        .copySecrets(true)
-        .build();
-
-    return DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
-  }
-
   private static DefinitionsProvider getLocalDefinitionsProvider() throws IOException {
     return new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
   }
@@ -217,7 +206,7 @@ public class BootloaderApp {
   private void initPersistences(final DSLContext configsDslContext, final DSLContext jobsDslContext) {
     try {
       configDatabase = getConfigDatabase(configsDslContext);
-      configRepository = new ConfigRepository(getConfigPersistence(configDatabase), configDatabase);
+      configRepository = new ConfigRepository(configDatabase);
       localDefinitionsProvider = getLocalDefinitionsProvider();
       jobDatabase = getJobDatabase(jobsDslContext);
       jobPersistence = getJobPersistence(jobDatabase);
@@ -241,8 +230,7 @@ public class BootloaderApp {
 
       // TODO Will be converted to an injected singleton during DI migration
       final Database configDatabase = getConfigDatabase(configsDslContext);
-      final ConfigPersistence configPersistence = getConfigPersistence(configDatabase);
-      final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
+      final ConfigRepository configRepository = new ConfigRepository(configDatabase);
       final Database jobDatabase = getJobDatabase(jobsDslContext);
       final JobPersistence jobPersistence = getJobPersistence(jobDatabase);
 
