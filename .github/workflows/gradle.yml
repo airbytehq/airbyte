@@ -859,7 +859,7 @@ jobs:
         uses: ./.github/actions/start-aws-runner
         with:
           # github-self-hosted-runner-ubuntu-20-with-150gdisk-docker-20.10.7-and-socat
-          ec2-image-id: ami-0c1a9bc22624339d8
+          ec2-image-id: ami-03ba6c40a876f6ed6
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
@@ -914,9 +914,9 @@ jobs:
       - name: Try the cluster !
         run: kubectl get pods -A
 
-      - name: Fix EC-2 Runner
-        run: |
-          mkdir -p /home/runner
+      # - name: Fix EC-2 Runner
+      #   run: |
+      #     mkdir -p /home/runner
       
 
       - name: Set up CI Gradle Properties
