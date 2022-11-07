@@ -27,7 +27,7 @@
           "adult": {
             "$id": "#root/results/items/adult",
             "title": "Adult",
-            "type": ["null","boolean"],
+            "type": ["null", "boolean"],
             "examples": [false],
             "default": true
           }

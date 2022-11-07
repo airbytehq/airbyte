@@ -96,13 +96,13 @@ definitions:
     $options:
       name: "movies_keywords"
       path: "/movie/{{ config['movie_id'] or '550' }}/keywords?api_key={{ config['api_key'] }}"
-  
+
   movies_lists_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_lists"
       path: "/movie/{{ config['movie_id'] or '550' }}/lists?api_key={{ config['api_key'] }}"
-      
+
   movies_recommendations_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -114,7 +114,7 @@ definitions:
     $options:
       name: "movies_releases_dates"
       path: "/movie/{{ config['movie_id'] or '550' }}/release_dates?api_key={{ config['api_key'] }}"
-      
+
   movies_reviews_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -126,7 +126,7 @@ definitions:
     $options:
       name: "movies_similar_movies"
       path: "/movie/{{ config['movie_id'] or '550' }}/similar?api_key={{ config['api_key'] }}"
-  
+
   movies_translations_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -162,7 +162,7 @@ definitions:
     $options:
       name: "movies_popular"
       path: "/movie/popular?api_key={{ config['api_key'] }}"
-      
+
   movies_top_rated_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -222,7 +222,6 @@ definitions:
     $options:
       name: "search_tv_shows"
       path: "/search/tv?query={{ config['api_key'] or 'Marvel'}}&api_key={{ config['api_key'] }}&language={{ config['language'] or 'en-US' }}&page=1&include_adult=false"
-
 
 streams:
   - "*ref(definitions.certification_movie_stream)"

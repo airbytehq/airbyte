@@ -13,11 +13,11 @@ connectionSpecification:
       description: API Key from tmdb account
       airbyte_secret: true
     movie_id:
-      title: Optional movie ID for targeting movies 
+      title: Optional movie ID for targeting movies
       type: string
       description: Target movie ID, Default would be '550' for required streams
     query:
-      title: Optional Query for search streams 
+      title: Optional Query for search streams
       type: string
       description: Target movie ID, Default would be Marvel for required streams
     language:

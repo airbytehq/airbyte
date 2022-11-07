@@ -43,13 +43,13 @@
           "iso_639_1": {
             "$id": "#root/backdrops/items/iso_639_1",
             "title": "Iso_639_1",
-            "type": ["string","null"],
+            "type": ["string", "null"],
             "default": null
           },
           "vote_average": {
             "$id": "#root/backdrops/items/vote_average",
             "title": "Vote_average",
-            "type": ["number","integer","string"],
+            "type": ["number", "integer", "string"],
             "default": 0
           },
           "vote_count": {
@@ -99,14 +99,14 @@
           "iso_639_1": {
             "$id": "#root/posters/items/iso_639_1",
             "title": "Iso_639_1",
-            "type": ["null","string"],
+            "type": ["null", "string"],
             "default": "",
             "pattern": "^.*$"
           },
           "vote_average": {
             "$id": "#root/posters/items/vote_average",
             "title": "Vote_average",
-            "type": ["number","integer","string"],
+            "type": ["number", "integer", "string"],
             "default": 0
           },
           "vote_count": {
