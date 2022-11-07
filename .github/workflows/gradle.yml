@@ -905,7 +905,7 @@ jobs:
         id: install
       - name: Remove docker.io package
         shell: bash
-        run: sudo apt-get uninstall docker.io || sudo apt-get uninstall docker
+        run: sudo apt-get remove docker.io || sudo apt-get remove docker
       - name: Start minikube
         uses: medyagh/setup-minikube@master
       - name: Try the cluster !
