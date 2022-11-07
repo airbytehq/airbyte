@@ -917,7 +917,7 @@ jobs:
       - uses: AbsaOSS/k3d-action@v2
         name: "Create Single Cluster"
         with:
-          cluster-name: "test-cluster-1"
+          cluster-name: "helm-testing"
           args: --agents 1 -p "30080:30080@server:0" -i docker.io/rancher/k3s:v1.21.2-k3s1
       - name: Try the cluster !
         run: kubectl get pods -A
