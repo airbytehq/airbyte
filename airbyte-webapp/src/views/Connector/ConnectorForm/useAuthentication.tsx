@@ -122,6 +122,11 @@ interface AuthenticationHook {
    * the passed in field, and false otherwise.
    */
   shouldShowAuthButton: (fieldPath: string) => boolean;
+  /**
+   * This will return true if any of the hidden auth fields have values.  This determines
+   * whether we will render "authenticate" or "re-authenticate" on the OAuth button text
+   */
+  hasAuthFieldValues: boolean;
 }
 
 export const useAuthentication = (): AuthenticationHook => {
@@ -202,9 +207,14 @@ export const useAuthentication = (): AuthenticationHook => {
     [advancedAuth, isAuthButtonVisible, legacyOauthSpec]
   );
 
+  const hasAuthFieldValues: boolean = useMemo(() => {
+    return implicitAuthFieldPaths.some((path) => getIn(values, path) !== undefined);
+  }, [implicitAuthFieldPaths, values]);
+
   return {
     isHiddenAuthField,
     hiddenAuthFieldErrors,
     shouldShowAuthButton,
+    hasAuthFieldValues,
   };
 };
