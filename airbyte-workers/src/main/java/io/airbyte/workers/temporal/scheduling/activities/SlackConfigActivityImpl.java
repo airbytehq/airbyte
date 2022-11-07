@@ -21,6 +21,7 @@ public class SlackConfigActivityImpl implements SlackConfigActivity {
     this.airbyteApiClient = airbyteApiClient;
   }
 
+  @Override
   public Optional<SlackNotificationConfiguration> fetchSlackConfiguration(UUID connectionId) throws ApiException {
     final io.airbyte.api.client.model.generated.ConnectionIdRequestBody requestBody =
         new io.airbyte.api.client.model.generated.ConnectionIdRequestBody().connectionId(connectionId);

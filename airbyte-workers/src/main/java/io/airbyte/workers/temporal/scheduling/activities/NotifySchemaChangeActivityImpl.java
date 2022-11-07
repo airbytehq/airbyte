@@ -10,6 +10,7 @@ import java.util.UUID;
 
 public class NotifySchemaChangeActivityImpl implements NotifySchemaChangeActivity {
 
+  @Override
   public boolean notifySchemaChange(SlackNotificationClient notificationClient, UUID connectionId, boolean isBreaking)
       throws IOException, InterruptedException {
     return notificationClient.notifySchemaChange(connectionId, isBreaking);
