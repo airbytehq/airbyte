@@ -11,70 +11,70 @@ from source_freshdesk.streams import Tickets
 def responses_fixtures():
     return [
         {
-            "url": "/api/tickets?per_page=1&updated_since=2002-02-10T22%3A21%3A44Z",
+            "url": "/api/v2/tickets?per_page=1&updated_since=2002-02-10T22%3A21%3A44Z",
             "json": [{"id": 1, "updated_at": "2018-01-02T00:00:00Z"}],
             "headers": {
-                "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2002-02-10T22%3A21%3A44Z>; rel="next"'
+                "Link": '<https://test.freshdesk.com/api/v2/tickets?per_page=1&page=2&updated_since=2002-02-10T22%3A21%3A44Z>; rel="next"'
             },
         },
         {
-            "url": "/api/tickets?per_page=1&page=2&updated_since=2002-02-10T22%3A21%3A44Z",
+            "url": "/api/v2/tickets?per_page=1&page=2&updated_since=2002-02-10T22%3A21%3A44Z",
             "json": [{"id": 2, "updated_at": "2018-02-02T00:00:00Z"}],
             "headers": {
-                "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=3&updated_since=2002-02-10T22%3A21%3A44Z>; rel="next"'
+                "Link": '<https://test.freshdesk.com/api/v2/tickets?per_page=1&page=3&updated_since=2002-02-10T22%3A21%3A44Z>; rel="next"'
             },
         },
         {
-            "url": "/api/tickets?per_page=1&updated_since=2018-02-02T00%3A00%3A00Z",
+            "url": "/api/v2/tickets?per_page=1&updated_since=2018-02-02T00%3A00%3A00Z",
             "json": [{"id": 2, "updated_at": "2018-02-02T00:00:00Z"}],
             "headers": {
-                "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2018-02-02T00%3A00%3A00Z>; rel="next"'
+                "Link": '<https://test.freshdesk.com/api/v2/tickets?per_page=1&page=2&updated_since=2018-02-02T00%3A00%3A00Z>; rel="next"'
             },
         },
         {
-            "url": "/api/tickets?per_page=1&page=2&updated_since=2018-02-02T00%3A00%3A00Z",
+            "url": "/api/v2/tickets?per_page=1&page=2&updated_since=2018-02-02T00%3A00%3A00Z",
             "json": [{"id": 3, "updated_at": "2018-03-02T00:00:00Z"}],
             "headers": {
-                "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=3&updated_since=2018-02-02T00%3A00%3A00Z>; rel="next"'
+                "Link": '<https://test.freshdesk.com/api/v2/tickets?per_page=1&page=3&updated_since=2018-02-02T00%3A00%3A00Z>; rel="next"'
             },
         },
         {
-            "url": "/api/tickets?per_page=1&updated_since=2018-03-02T00%3A00%3A00Z",
+            "url": "/api/v2/tickets?per_page=1&updated_since=2018-03-02T00%3A00%3A00Z",
             "json": [{"id": 3, "updated_at": "2018-03-02T00:00:00Z"}],
             "headers": {
-                "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2018-03-02T00%3A00%3A00Z>; rel="next"'
+                "Link": '<https://test.freshdesk.com/api/v2/tickets?per_page=1&page=2&updated_since=2018-03-02T00%3A00%3A00Z>; rel="next"'
             },
         },
         {
-            "url": "/api/tickets?per_page=1&page=2&updated_since=2018-03-02T00%3A00%3A00Z",
+            "url": "/api/v2/tickets?per_page=1&page=2&updated_since=2018-03-02T00%3A00%3A00Z",
             "json": [{"id": 4, "updated_at": "2019-01-03T00:00:00Z"}],
             "headers": {
-                "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=3&updated_since=2018-03-02T00%3A00%3A00Z>; rel="next"'
+                "Link": '<https://test.freshdesk.com/api/v2/tickets?per_page=1&page=3&updated_since=2018-03-02T00%3A00%3A00Z>; rel="next"'
             },
         },
         {
-            "url": "/api/tickets?per_page=1&updated_since=2019-01-03T00%3A00%3A00Z",
+            "url": "/api/v2/tickets?per_page=1&updated_since=2019-01-03T00%3A00%3A00Z",
             "json": [{"id": 4, "updated_at": "2019-01-03T00:00:00Z"}],
             "headers": {
                 "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2019-01-03T00%3A00%3A00Z>; rel="next"'
             },
         },
         {
-            "url": "/api/tickets?per_page=1&page=2&updated_since=2019-01-03T00%3A00%3A00Z",
+            "url": "/api/v2/tickets?per_page=1&page=2&updated_since=2019-01-03T00%3A00%3A00Z",
             "json": [{"id": 5, "updated_at": "2019-02-03T00:00:00Z"}],
             "headers": {
                 "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=3&updated_since=2019-01-03T00%3A00%3A00Z>; rel="next"'
             },
         },
         {
-            "url": "/api/tickets?per_page=1&updated_since=2019-02-03T00%3A00%3A00Z",
+            "url": "/api/v2/tickets?per_page=1&updated_since=2019-02-03T00%3A00%3A00Z",
             "json": [{"id": 5, "updated_at": "2019-02-03T00:00:00Z"}],
             "headers": {
                 "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2019-02-03T00%3A00%3A00Z>; rel="next"'
             },
         },
         {
-            "url": "/api/tickets?per_page=1&page=2&updated_since=2019-02-03T00%3A00%3A00Z",
+            "url": "/api/v2/tickets?per_page=1&page=2&updated_since=2019-02-03T00%3A00%3A00Z",
             "json": [{"id": 6, "updated_at": "2019-03-03T00:00:00Z"}],
         },
     ]
