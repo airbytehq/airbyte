@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
+    "airbyte-cdk @ file://./airbyte-cdk#egg=airbyte_cdk",
     "backoff",
     "requests",
 ]

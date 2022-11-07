@@ -9,7 +9,7 @@ airbytePython {
 }
 
 airbyteDocker {
-    runFromPath "."
+    followSymlinks true
 }
 
 dependencies {
