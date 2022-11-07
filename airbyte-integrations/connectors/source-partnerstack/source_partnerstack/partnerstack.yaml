@@ -13,7 +13,18 @@ definitions:
       password: "{{ config['private_key'] }}"
     request_options_provider:
       request_parameters:
-        min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+        min_created: "{{ timestamp(stream_slice['start_time']) * 1000 }}"
+  stream_slicer:
+    type: "DatetimeStreamSlicer"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    end_datetime:
+      datetime: "{{ now_utc() }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
+    step: "30d"
+    cursor_field: "{{ options.stream_cursor_field }}"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -34,6 +45,8 @@ definitions:
         $ref: "*ref(definitions.requester.url_base)"
     requester:
       $ref: "*ref(definitions.requester)"
+    stream_slicer:
+      $ref: "*ref(definitions.stream_slicer)"
 
   # base stream
   base_stream:
@@ -47,6 +60,7 @@ definitions:
       name: "customers"
       primary_key: "key"
       path: "/customers"
+      stream_cursor_field: "updated_at"
   deals_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
