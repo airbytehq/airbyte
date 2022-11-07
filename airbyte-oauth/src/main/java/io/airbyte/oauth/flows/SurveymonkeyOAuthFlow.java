@@ -56,7 +56,7 @@ public class SurveymonkeyOAuthFlow extends BaseOAuth2Flow {
     } else if (USA.equals(origin)) {
       return API_ACCESS_URL_USA + AUTHORIZE_URL;
     } else {
-      throw new Error("Unkown Origin");
+      throw new Error("Unknown Origin: " + origin);
     }
   }
 
