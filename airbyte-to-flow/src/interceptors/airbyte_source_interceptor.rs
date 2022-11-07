@@ -44,6 +44,8 @@ const SPEC_MAP_FILE_NAME: &str = "spec.map.json";
 const OAUTH2_PATCH_FILE_NAME: &str = "oauth2.patch.json";
 const DOC_URL_PATCH_FILE_NAME: &str = "documentation_url.patch.json";
 const STREAM_PATCH_DIR_NAME: &str = "streams";
+const STREAM_PK_SUFFIX: &str = ".pk.json";
+const STREAM_PATCH_SUFFIX: &str = ".patch.json";
 
 pub struct AirbyteSourceInterceptor {
     validate_request: Arc<Mutex<Option<ValidateRequest>>>,
@@ -159,18 +161,29 @@ impl AirbyteSourceInterceptor {
                 };
 
                 let source_defined_primary_key = stream.source_defined_primary_key.unwrap_or(Vec::new());
-                let key_ptrs = source_defined_primary_key.iter()
+                let mut key_ptrs = source_defined_primary_key.iter()
                         .map(|k| doc::Pointer::from_vec(k).to_string())
                         .collect();
                 let recommended_name = stream_to_recommended_name(&stream.name);
 
 
                 let mut doc_schema = sj::from_str::<sj::Value>(stream.json_schema.get())?;
-                let doc_schema_patch = std::fs::read_to_string(format!("{}/{}.patch.json", STREAM_PATCH_DIR_NAME, recommended_name))
+                let doc_schema_patch = std::fs::read_to_string(format!("{}/{}{}", STREAM_PATCH_DIR_NAME, recommended_name, STREAM_PATCH_SUFFIX))
+                    .ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
+
+                let doc_pk = std::fs::read_to_string(format!("{}/{}{}", STREAM_PATCH_DIR_NAME, recommended_name, STREAM_PK_SUFFIX))
                     .ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
 
                 if let Some(p) = doc_schema_patch {
                     merge(&mut doc_schema, &p);
+                }
+
+                if let Some(p) = doc_pk {
+                    key_ptrs = p.as_array()
+                        .ok_or(Error::InvalidPKPatch("expected an array".to_string()))?
+                        .into_iter()
+                        .map(|s| s.as_str().unwrap().to_owned())
+                        .collect();
                 }
 
                 resp.bindings.push(discover_response::Binding {

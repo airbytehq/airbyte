@@ -80,6 +80,9 @@ pub enum Error {
 
     #[error("go.estuary.dev/E035: Adapting airbyte schema to flow: {0}")]
     InvalidMapping(String),
+
+    #[error("go.estuary.dev/E036: Invalid primary key patch file: {0}")]
+    InvalidPKPatch(String),
 }
 
 pub fn raise_err<T>(message: &str) -> Result<T, std::io::Error> {

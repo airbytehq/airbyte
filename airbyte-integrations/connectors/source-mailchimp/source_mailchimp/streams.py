@@ -111,7 +111,7 @@ class Campaigns(IncrementalMailChimpStream):
 class EmailActivity(IncrementalMailChimpStream):
     cursor_field = "timestamp"
     data_field = "emails"
-    primary_key = ["timestamp", "email_id", "action"]
+    primary_key = None
 
     def stream_slices(self, **kwargs):
         campaign_stream = Campaigns(authenticator=self.authenticator)
