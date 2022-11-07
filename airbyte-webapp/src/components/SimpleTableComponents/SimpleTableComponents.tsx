@@ -28,7 +28,7 @@ export const Cell = styled.div<{
   lighter?: boolean;
   ellipsis?: boolean;
 }>`
-  flex: ${({ flex }) => flex || 1} 0 0;
+  flex: ${({ flex }) => (flex !== undefined ? flex : 1)} 0 0;
   padding-right: 10px;
   word-break: break-word;
   color: ${({ theme, light, lighter }) => (light ? theme.greyColor40 : lighter ? theme.greyColor60 : "inherit")};

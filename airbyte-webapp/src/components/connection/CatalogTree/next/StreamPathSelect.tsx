@@ -1,10 +1,12 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { PillSelect } from "components/ui/PillSelect";
+import { PillButtonVariant, PillSelect } from "components/ui/PillSelect";
 import { Tooltip } from "components/ui/Tooltip";
 
 import { Path } from "core/domain/catalog";
+
+import styles from "./StreamPathSelect.module.scss";
 
 export const pathDisplayName = (path: Path): string => path.join(".");
 
@@ -14,6 +16,7 @@ interface StreamPathSelectBaseProps {
   paths: Path[];
   pathType: "required" | "sourceDefined";
   placeholder?: React.ReactNode;
+  variant?: PillButtonVariant;
 }
 
 interface StreamPathSelectMultiProps {
@@ -52,6 +55,8 @@ export const StreamPathSelect: React.FC<PathPopoutProps> = (props) => {
 
   return (
     <PillSelect
+      variant={props.variant}
+      className={styles.pillSelect}
       options={options}
       value={props.path}
       isMulti={props.isMulti}

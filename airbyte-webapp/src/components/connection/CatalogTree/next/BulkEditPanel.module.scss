@@ -2,7 +2,7 @@
 @use "../../../../scss/variables";
 
 .headerCell {
-  margin-right: variables.$spacing-md;
+  margin-right: variables.$spacing-xl;
   padding-right: 0 !important;
   display: flex;
   flex-direction: column;
@@ -30,6 +30,7 @@
 .text {
   color: colors.$white;
   margin: 0;
+  white-space: nowrap;
 
   &.streamsCountNumber {
     font-size: 21px;
@@ -41,7 +42,6 @@
     font-size: 9px;
     font-weight: 500;
     line-height: 17px;
-    white-space: nowrap;
   }
 
   &.headerText {
@@ -55,12 +55,14 @@
   border-color: colors.$white !important;
   color: colors.$white !important;
   margin-right: variables.$spacing-md;
+  white-space: nowrap;
 }
 
 .applyButton {
   box-shadow: none !important;
   background-color: colors.$white !important;
   color: colors.$blue-500 !important;
+  white-space: nowrap;
 }
 
 .buttonCell {

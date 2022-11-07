@@ -1,5 +1,3 @@
-import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import intersection from "lodash/intersection";
 import React, { useMemo } from "react";
@@ -99,13 +97,13 @@ export const BulkEditPanel: React.FC = () => {
 
   return createPortal(
     <SchemaHeader isActive={isActive}>
-      <HeaderCell className={classNames(styles.headerCell, styles.streamsCounterCell)}>
+      <HeaderCell flex={0} className={classNames(styles.headerCell, styles.streamsCounterCell)}>
         <p className={classNames(styles.text, styles.streamsCountNumber)}>{numStreamsSelected}</p>
         <p className={classNames(styles.text, styles.streamsCountText)}>
           <FormattedMessage id="connection.streams" />
         </p>
       </HeaderCell>
-      <HeaderCell flex={0.4} className={classNames(styles.headerCell, styles.syncCell)}>
+      <HeaderCell flex={0} className={classNames(styles.headerCell, styles.syncCell)}>
         <p className={classNames(styles.text, styles.headerText)}>
           <FormattedMessage id="sources.sync" />
         </p>
@@ -113,12 +111,13 @@ export const BulkEditPanel: React.FC = () => {
           <Switch small checked={options.selected} onChange={() => onChangeOption({ selected: !options.selected })} />
         </div>
       </HeaderCell>
-      <HeaderCell flex={1.5}>
+      <HeaderCell flex={1}>
         <p className={classNames(styles.text, styles.headerText)}>
           <FormattedMessage id="form.syncMode" />
         </p>
         <div className={styles.syncCellContent}>
           <SyncModeSelect
+            variant="strong-blue"
             value={{
               syncMode: options.syncMode,
               destinationSyncMode: options.destinationSyncMode,
@@ -128,7 +127,7 @@ export const BulkEditPanel: React.FC = () => {
           />
         </div>
       </HeaderCell>
-      <HeaderCell>
+      <HeaderCell flex={1}>
         {cursorType && (
           <>
             <p className={classNames(styles.text, styles.headerText)}>
@@ -136,6 +135,7 @@ export const BulkEditPanel: React.FC = () => {
             </p>
             <div className={styles.syncCellContent}>
               <StreamPathSelect
+                variant="strong-blue"
                 isMulti={false}
                 onPathChange={(path) => onChangeOption({ cursorField: path })}
                 pathType={cursorType}
@@ -146,7 +146,7 @@ export const BulkEditPanel: React.FC = () => {
           </>
         )}
       </HeaderCell>
-      <HeaderCell>
+      <HeaderCell flex={1}>
         {pkType && (
           <>
             <p className={classNames(styles.text, styles.headerText)}>
@@ -154,6 +154,7 @@ export const BulkEditPanel: React.FC = () => {
             </p>
             <div className={styles.syncCellContent}>
               <StreamPathSelect
+                variant="strong-blue"
                 isMulti
                 onPathChange={(path) => onChangeOption({ primaryKey: path })}
                 pathType={pkType}
@@ -164,25 +165,7 @@ export const BulkEditPanel: React.FC = () => {
           </>
         )}
       </HeaderCell>
-      <HeaderCell>
-        <FontAwesomeIcon size="lg" color="white" icon={faArrowRight} />
-      </HeaderCell>
-      <HeaderCell>
-        <p className={classNames(styles.text, styles.headerText)}>
-          <FormattedMessage id="form.syncMode" />
-        </p>
-        <div className={styles.syncCellContent}>
-          <SyncModeSelect
-            value={{
-              syncMode: options.syncMode,
-              destinationSyncMode: options.destinationSyncMode,
-            }}
-            options={availableSyncModes}
-            onChange={({ value }) => onChangeOption({ ...value })}
-          />
-        </div>
-      </HeaderCell>
-      <HeaderCell className={styles.buttonCell}>
+      <HeaderCell flex={0} className={styles.buttonCell}>
         <Button className={styles.cancelButton} size="xs" variant="secondary" onClick={onCancel}>
           <FormattedMessage id="connectionForm.bulkEdit.cancel" />
         </Button>
