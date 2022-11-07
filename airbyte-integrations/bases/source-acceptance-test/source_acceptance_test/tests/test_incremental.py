@@ -18,7 +18,7 @@ from source_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, Secr
 @pytest.fixture(name="future_state_configuration")
 def future_state_configuration_fixture(inputs, base_path, test_strictness_level) -> Tuple[Path, List[EmptyStreamConfiguration]]:
     """Fixture with connector's future state path (relative to base_path)"""
-    if inputs.future_state.future_state_path:
+    if inputs.future_state and inputs.future_state.future_state_path:
         return Path(base_path) / inputs.future_state.future_state_path, inputs.future_state.missing_streams
     elif test_strictness_level is Config.TestStrictnessLevel.high:
         pytest.fail("High test strictness level error: a future state configuration must be provided in high test strictness level.")
