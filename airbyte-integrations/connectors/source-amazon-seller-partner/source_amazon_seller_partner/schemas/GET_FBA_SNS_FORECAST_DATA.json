@@ -1,0 +1,26 @@
+{
+  "title": "Subscribe and Save Forecast Report",
+  "description": "",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "offer-state": { "type": ["null", "string"] },
+    "snapshot-date": { "type": ["null", "string"] },
+    "sku": { "type": ["null", "string"] },
+    "fnsku": { "type": ["null", "string"] },
+    "asin": { "type": ["null", "string"] },
+    "estimated-avg-sns-discount-next-8-weeks": { "type": ["null", "string"] },
+    "product-name": { "type": ["null", "string"] },
+    "country": { "type": ["null", "string"] },
+    "active-subscriptions": { "type": ["null", "string"] },
+    "week-1-start-date": { "type": ["null", "string"] },
+    "scheduled-sns-units-week-1": { "type": ["null", "string"] },
+    "scheduled-sns-units-week-2": { "type": ["null", "string"] },
+    "scheduled-sns-units-week-3": { "type": ["null", "string"] },
+    "scheduled-sns-units-week-4": { "type": ["null", "string"] },
+    "scheduled-sns-units-week-5": { "type": ["null", "string"] },
+    "scheduled-sns-units-week-6": { "type": ["null", "string"] },
+    "scheduled-sns-units-week-7": { "type": ["null", "string"] },
+    "scheduled-sns-units-week-8": { "type": ["null", "string"] }
+  }
+}

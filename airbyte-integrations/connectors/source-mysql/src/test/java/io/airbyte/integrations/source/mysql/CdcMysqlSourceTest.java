@@ -51,7 +51,6 @@ import org.testcontainers.containers.MySQLContainer;
 public class CdcMysqlSourceTest extends CdcSourceTest {
 
   private static final String DB_NAME = MODELS_SCHEMA;
-  protected static final int INITIAL_WAITING_SECONDS = 5;
   private MySQLContainer<?> container;
   private Database database;
   private MySqlSource source;
