@@ -1,8 +1,6 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { DeleteBlock } from "components/common/DeleteBlock";
-
 import { DestinationRead, WebBackendConnectionListItem } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
@@ -58,8 +56,8 @@ const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
         selectedConnectorDefinitionSpecification={destinationSpecification}
         connector={currentDestination}
         onSubmit={onSubmitForm}
+        onDelete={onDelete}
       />
-      <DeleteBlock type="destination" onDelete={onDelete} />
     </div>
   );
 };

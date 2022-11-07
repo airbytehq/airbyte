@@ -1,7 +1,9 @@
 .buttonsContainer {
+  flex: 1;
   display: flex;
+  justify-content: flex-end;
 }
 
 .cancelButton {
-  margin-left: 10px;
+  margin-right: 10px;
 }

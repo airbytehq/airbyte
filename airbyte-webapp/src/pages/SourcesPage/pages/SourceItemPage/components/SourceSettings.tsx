@@ -1,8 +1,6 @@
 import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { DeleteBlock } from "components/common/DeleteBlock";
-
 import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceRead, WebBackendConnectionListItem } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -65,8 +63,8 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
         selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
         connector={currentSource}
         onSubmit={onSubmit}
+        onDelete={onDelete}
       />
-      <DeleteBlock type="source" onDelete={onDelete} />
     </div>
   );
 };

@@ -1,11 +1,12 @@
 import { Form, useFormikContext } from "formik";
 import React from "react";
 
+import { Card } from "components/ui/Card";
 import { Spinner } from "components/ui/Spinner";
 
-import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { FormBlock } from "core/form/types";
 
+import { ConnectorDefinitionSpecification } from "../../../core/domain/connector";
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
 import { FormSection } from "./components/Sections/FormSection";
@@ -22,6 +23,7 @@ interface FormRootProps {
   fetchingConnectorError?: Error | null;
   successMessage?: React.ReactNode;
   onRetest?: () => void;
+  onDelete?: () => Promise<void>;
   onStopTestingConnector?: () => void;
   selectedConnector: ConnectorDefinitionSpecification | undefined;
 }
@@ -35,30 +37,33 @@ export const FormRoot: React.FC<FormRootProps> = ({
   fetchingConnectorError,
   hasSuccess,
   onStopTestingConnector,
+  onDelete,
   selectedConnector,
 }) => {
-  const { dirty, isSubmitting, isValid } = useFormikContext<ConnectorFormValues>();
-  const { resetConnectorForm, isLoadingSchema, selectedService, isEditMode, formType } = useConnectorForm();
+  const { isSubmitting, isValid, dirty } = useFormikContext<ConnectorFormValues>();
+  const { resetConnectorForm, isLoadingSchema, isEditMode, selectedService, formType } = useConnectorForm();
 
   return (
     <Form>
-      <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
-      {isLoadingSchema && (
-        <div className={styles.loaderContainer}>
-          <Spinner />
-          <div className={styles.loadingMessage}>
-            <ShowLoadingMessage connector={selectedService?.name} />
+      <Card className={styles.cardContainer}>
+        <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
+        {isLoadingSchema && (
+          <div className={styles.loaderContainer}>
+            <Spinner />
+            <div className={styles.loadingMessage}>
+              <ShowLoadingMessage connector={selectedService?.name} />
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </Card>
 
       {isEditMode ? (
         <EditControls
+          onDelete={onDelete}
           isTestConnectionInProgress={isTestConnectionInProgress}
           onCancelTesting={onStopTestingConnector}
           isSubmitting={isSubmitting || isTestConnectionInProgress}
           errorMessage={errorMessage}
-          formType={formType}
           onRetestClick={onRetest}
           isValid={isValid}
           dirty={dirty}

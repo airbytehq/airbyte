@@ -47,6 +47,7 @@ interface ConnectorCardBaseProps {
   successMessage?: React.ReactNode;
   hasSuccess?: boolean;
   isLoading?: boolean;
+  onDelete?: () => Promise<void>;
 }
 
 interface ConnectorCardCreateProps extends ConnectorCardBaseProps {
@@ -64,6 +65,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   jobInfo,
   onSubmit,
   additionalSelectorComponent,
+  onDelete,
   ...props
 }) => {
   const [saved, setSaved] = useState(false);
@@ -152,39 +154,38 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   const formValues = isEditMode ? props.connector : { name: selectedConnectorDefinition?.name };
 
   return (
-    <Card title={title} fullWidth={full}>
-      <div className={styles.cardForm}>
-        <div className={styles.connectorSelectControl}>
-          <ConnectorDefinitionTypeControl
-            formType={props.formType}
-            isEditMode={isEditMode}
-            disabled={isFormSubmitting}
-            availableConnectorDefinitions={availableConnectorDefinitions}
-            selectedConnectorDefinition={selectedConnectorDefinition}
-            selectedConnectorDefinitionSpecificationId={selectedConnectorDefinitionSpecificationId}
-            onChangeConnectorDefinition={onConnectorDefinitionSelect}
-          />
-        </div>
-        {additionalSelectorComponent}
-        <div>
-          <ConnectorForm
-            {...props}
-            selectedConnectorDefinition={selectedConnectorDefinition}
-            selectedConnectorDefinitionSpecification={selectedConnectorDefinitionSpecification}
-            isTestConnectionInProgress={isTestConnectionInProgress}
-            onStopTesting={onStopTesting}
-            testConnector={testConnector}
-            onSubmit={onHandleSubmit}
-            formValues={formValues}
-            errorMessage={props.errorMessage || (error && generateMessageFromError(error))}
-            successMessage={
-              props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
-            }
-          />
-          {/* Show the job log only if advanced mode is turned on or the actual job failed (not the check inside the job) */}
-          {job && (advancedMode || !job.succeeded) && <JobItem job={job} />}
-        </div>
+    <div>
+      <Card className={styles.connectorSelectControl}>
+        <ConnectorDefinitionTypeControl
+          formType={props.formType}
+          isEditMode={isEditMode}
+          disabled={isFormSubmitting}
+          availableConnectorDefinitions={availableConnectorDefinitions}
+          selectedConnectorDefinition={selectedConnectorDefinition}
+          selectedConnectorDefinitionSpecificationId={selectedConnectorDefinitionSpecificationId}
+          onChangeConnectorDefinition={onConnectorDefinitionSelect}
+        />
+      </Card>
+      {additionalSelectorComponent}
+      <div>
+        <ConnectorForm
+          {...props}
+          onDelete={onDelete}
+          selectedConnectorDefinition={selectedConnectorDefinition}
+          selectedConnectorDefinitionSpecification={selectedConnectorDefinitionSpecification}
+          isTestConnectionInProgress={isTestConnectionInProgress}
+          onStopTesting={onStopTesting}
+          testConnector={testConnector}
+          onSubmit={onHandleSubmit}
+          formValues={formValues}
+          errorMessage={props.errorMessage || (error && generateMessageFromError(error))}
+          successMessage={
+            props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
+          }
+        />
+        {/* Show the job log only if advanced mode is turned on or the actual job failed (not the check inside the job) */}
+        {job && (advancedMode || !job.succeeded) && <JobItem job={job} />}
       </div>
-    </Card>
+    </div>
   );
 };

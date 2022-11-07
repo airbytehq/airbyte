@@ -1,4 +1,4 @@
-@use "scss/variables" as vars;
+@use "../../../scss/variables" as vars;
 
 .loaderContainer {
   display: flex;
@@ -10,4 +10,8 @@
 .loadingMessage {
   margin-top: vars.$spacing-md;
   margin-left: vars.$spacing-lg;
+}
+
+.cardContainer {
+  padding: 22px 27px 23px 24px;
 }

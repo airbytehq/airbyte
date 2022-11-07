@@ -97,6 +97,7 @@ export interface ConnectorFormProps {
   isTestConnectionInProgress?: boolean;
   onStopTesting?: () => void;
   testConnector?: (v?: ConnectorCardValues) => Promise<CheckConnectionRead>;
+  onDelete?: () => Promise<void>;
 }
 
 export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
@@ -115,6 +116,7 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     selectedConnectorDefinition,
     selectedConnectorDefinitionSpecification,
     errorMessage,
+    onDelete,
   } = props;
 
   const specifications = useBuildInitialSchema(selectedConnectorDefinitionSpecification);
@@ -202,6 +204,7 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
           <PatchInitialValuesWithWidgetConfig schema={jsonSchema} initialValues={initialValues} />
           <FormRoot
             {...props}
+            onDelete={onDelete}
             selectedConnector={selectedConnectorDefinitionSpecification}
             formFields={formFields}
             errorMessage={errorMessage}
