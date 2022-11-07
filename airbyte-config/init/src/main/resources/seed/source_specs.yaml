@@ -9334,7 +9334,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pinterest:0.1.8"
+- dockerImage: "airbyte/source-pinterest:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pinterest"
     connectionSpecification:
@@ -9352,6 +9352,20 @@
             \ it would be defaulted to latest allowed date by api (914 days from today)."
           examples:
           - "2022-07-28"
+        status:
+          title: "Status"
+          description: "Entity statuses based off of campaigns, ad_groups, and ads.\
+            \ If you do not have a status set, it will be ignored completely."
+          type:
+          - "array"
+          - "null"
+          items:
+            type: "string"
+            enum:
+            - "ACTIVE"
+            - "PAUSED"
+            - "ARCHIVED"
+          uniqueItems: true
         credentials:
           title: "Authorization Method"
           type: "object"
