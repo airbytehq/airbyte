@@ -38,7 +38,7 @@ export const FormRoot: React.FC<FormRootProps> = ({
   selectedConnector,
 }) => {
   const { dirty, isSubmitting, isValid } = useFormikContext<ConnectorFormValues>();
-  const { resetServiceForm, isLoadingSchema, selectedService, isEditMode, formType } = useConnectorForm();
+  const { resetConnectorForm, isLoadingSchema, selectedService, isEditMode, formType } = useConnectorForm();
 
   return (
     <Form>
@@ -63,7 +63,7 @@ export const FormRoot: React.FC<FormRootProps> = ({
           isValid={isValid}
           dirty={dirty}
           onCancelClick={() => {
-            resetServiceForm();
+            resetConnectorForm();
           }}
           successMessage={successMessage}
         />
