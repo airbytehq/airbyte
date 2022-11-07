@@ -72,8 +72,8 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     // emitted.
     while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
       final ChangeEvent<String, String> next;
+      final Duration waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME : firstRecordWaitTime;
       try {
-        final Duration waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME : firstRecordWaitTime;
         next = queue.poll(waitTime.getSeconds(), TimeUnit.SECONDS);
       } catch (final InterruptedException e) {
         throw new RuntimeException(e);
@@ -83,7 +83,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       // shutdown.
       if (next == null) {
         if ((!receivedFirstRecord || hasSnapshotFinished || maxInstanceOfNoRecordsFound >= 10) && !signalledClose) {
-          LOGGER.info("Closing cause next is returned as null");
+          LOGGER.info("No records were returned by Debezium in the timeout seconds {}, closing the engine and iterator", waitTime.getSeconds());
           requestClose();
         }
         LOGGER.info("no record found. polling again.");
