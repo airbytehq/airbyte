@@ -134,7 +134,7 @@ class SourceHubspot(AbstractSource):
             partially_available_streams = [stream for stream in streams if not stream.properties_scope_is_granted()]
             required_scoped = set(chain(*[x.properties_scopes for x in partially_available_streams]))
             self.logger.info(f"The following streams are partially available: {[s.name for s in partially_available_streams]}, "
-                             f"add listed scopes to download all available data: {required_scoped}")
+                             f"add the following scopes to download all available data: {required_scoped}")
         else:
             self.logger.info("No scopes to grant when authenticating with API key.")
             available_streams = streams
