@@ -39,10 +39,10 @@ import lombok.extern.slf4j.Slf4j;
  * application. Unlike {@link KubePodProcess} there is no heartbeat mechanism that requires the
  * launching pod and the launched pod to co-exist for the duration of execution for the launched
  * pod.
- *
+ * <p>
  * Instead, this process creates the pod and interacts with a document store on cloud storage to
  * understand the state of the created pod.
- *
+ * <p>
  * The document store is considered to be the truth when retrieving the status for an async pod
  * process. If the store isn't updated by the underlying pod, it will appear as failed.
  */
@@ -190,10 +190,12 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   public boolean waitFor(final long timeout, final TimeUnit unit) throws InterruptedException {
     // implementation copied from Process.java since this isn't a real Process
     long remainingNanos = unit.toNanos(timeout);
-    if (hasExited())
+    if (hasExited()) {
       return true;
-    if (timeout <= 0)
+    }
+    if (timeout <= 0) {
       return false;
+    }
 
     final long deadline = System.nanoTime() + remainingNanos;
     do {
@@ -202,8 +204,9 @@ public class AsyncOrchestratorPodProcess implements KubePod {
       // We are waiting polling every 500ms for status. The trade-off here is between how often
       // we poll our status storage (GCS) and how reactive we are to detect that a process is done.
       Thread.sleep(Math.min(TimeUnit.NANOSECONDS.toMillis(remainingNanos) + 1, 500));
-      if (hasExited())
+      if (hasExited()) {
         return true;
+      }
       remainingNanos = deadline - System.nanoTime();
     } while (remainingNanos > 0);
 
@@ -236,7 +239,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
   /**
    * Checks terminal states first, then running, then initialized. Defaults to not started.
-   *
+   * <p>
    * The order matters here!
    */
   public AsyncKubePodStatus getDocStoreStatus() {
@@ -298,6 +301,19 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     final List<ContainerPort> containerPorts = KubePodProcess.createContainerPortList(portMap);
     containerPorts.add(new ContainerPort(serverPort, null, null, null, null));
 
+    final var initContainer = new ContainerBuilder()
+        .withName(KubePodProcess.INIT_CONTAINER_NAME)
+        .withImage("busybox:1.35")
+        .withVolumeMounts(volumeMounts)
+        .withCommand(List.of(
+            "sh",
+            "-c",
+            String.format(
+                "i=0; until [ $i -gt 60 ]; do if [ -f \"%s/%s\" ]; then exit 0; fi; sleep 1; ((i++)); done; exit 1;",
+                KubePodProcess.CONFIG_DIR,
+                KubePodProcess.SUCCESS_FILE_NAME)))
+        .build();
+
     final var mainContainer = new ContainerBuilder()
         .withName(KubePodProcess.MAIN_CONTAINER_NAME)
         .withImage(kubePodInfo.mainContainerInfo().image())
@@ -316,9 +332,11 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .withLabels(allLabels)
         .endMetadata()
         .withNewSpec()
-        .withServiceAccount("airbyte-admin").withAutomountServiceAccountToken(true)
+        .withServiceAccount("airbyte-admin")
+        .withAutomountServiceAccountToken(true)
         .withRestartPolicy("Never")
         .withContainers(mainContainer)
+        .withInitContainers(initContainer)
         .withVolumes(volumes)
         .endSpec()
         .build();
