@@ -18,7 +18,7 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useModalService } from "hooks/services/Modal";
 import { useConnectionService, ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
-import { equal, naturalComparatorBy } from "utils/objects";
+import { equal } from "utils/objects";
 import { useConfirmCatalogDiff } from "views/Connection/CatalogDiffModal/useConfirmCatalogDiff";
 import EditControls from "views/Connection/ConnectionForm/components/EditControls";
 import { ConnectionFormFields } from "views/Connection/ConnectionForm/ConnectionFormFields";
@@ -90,12 +90,8 @@ export const ConnectionReplicationTab: React.FC = () => {
       // This could be due to user changes (e.g. in the sync mode) or due to new/removed
       // streams due to a "refreshed source schema".
       const catalogHasChanged = !equal(
-        formValues.syncCatalog.streams
-          .filter((s) => s.config?.selected)
-          .sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? "")),
-        connection.syncCatalog.streams
-          .filter((s) => s.config?.selected)
-          .sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? ""))
+        formValues.syncCatalog.streams.filter((s) => s.config?.selected),
+        connection.syncCatalog.streams.filter((s) => s.config?.selected)
       );
 
       setSubmitError(null);

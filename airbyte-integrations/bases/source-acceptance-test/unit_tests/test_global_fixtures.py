@@ -158,10 +158,24 @@ def test_expected_records_by_stream_fixture(
         for record in expected_records:
             expected_records_file.write(json.dumps(record) + "\n")
 
-    inputs = BasicReadTestConfig(config_path="", empty_streams=empty_streams, expect_records=expected_records_config)
-
-    conftest.expected_records_by_stream_fixture.__wrapped__(test_strictness_level, configured_catalog, empty_streams, inputs, base_path)
+    conftest.expected_records_by_stream_fixture.__wrapped__(
+        test_strictness_level, configured_catalog, empty_streams, expected_records_config, base_path
+    )
     if should_fail:
         conftest.pytest.fail.assert_called_once()
     else:
         conftest.pytest.fail.assert_not_called()
+
+
+@pytest.mark.parametrize("configured_catalog_path", [None, "my_path"])
+def test_configured_catalog_fixture(mocker, configured_catalog_path):
+    mock_discovered_catalog = mocker.Mock()
+    mocker.patch.object(conftest, "build_configured_catalog_from_custom_catalog")
+    mocker.patch.object(conftest, "build_configured_catalog_from_discovered_catalog_and_empty_streams")
+    configured_catalog = conftest.configured_catalog_fixture.__wrapped__(configured_catalog_path, mock_discovered_catalog)
+    if configured_catalog_path:
+        assert configured_catalog == conftest.build_configured_catalog_from_custom_catalog.return_value
+        conftest.build_configured_catalog_from_custom_catalog.assert_called_once_with(configured_catalog_path, mock_discovered_catalog)
+    else:
+        assert configured_catalog == conftest.build_configured_catalog_from_discovered_catalog_and_empty_streams.return_value
+        conftest.build_configured_catalog_from_discovered_catalog_and_empty_streams.assert_called_once_with(mock_discovered_catalog, set())
