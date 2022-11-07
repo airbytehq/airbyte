@@ -648,7 +648,7 @@ class Stream(HttpStream, ABC):
         return props
 
     def properties_scope_is_granted(self):
-        return not self.properties_scopes - self.granted_scopes if self.properties_scopes else True
+        return not self.properties_scopes - self.granted_scopes if self.properties_scopes and self.granted_scopes else True
 
     def _flat_associations(self, records: Iterable[MutableMapping]) -> Iterable[MutableMapping]:
         """When result has associations we prefer to have it flat, so we transform this:
