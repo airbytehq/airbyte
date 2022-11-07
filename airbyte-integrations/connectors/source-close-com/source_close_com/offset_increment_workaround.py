@@ -15,12 +15,12 @@ class OffsetIncrementWorkaround(PaginationStrategy, JsonSchemaMixin):
     This workaround makes `page_size` to be Interpolated optional string
 
     Attributes:
-        page_size Union[InterpolatedString, int]: the number of records to request
+        page_size Union[InterpolatedString, str]: the number of records to request
     """
 
     config: Config
 
-    page_size: Union[InterpolatedString, int]
+    page_size: Union[InterpolatedString, str]
     options: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, options: Mapping[str, Any]):
