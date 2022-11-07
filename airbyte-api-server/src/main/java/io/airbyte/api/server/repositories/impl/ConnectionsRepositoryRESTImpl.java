@@ -28,16 +28,16 @@ public class ConnectionsRepositoryRESTImpl implements ConnectionsRepository {
   @Override
   public HttpResponse<String> sync(@NotBlank final UUID connection, final String authorization) {
     final var syncDto = new SyncDto(connection.toString());
-    return client.sync(syncDto, authorization);
+    final HttpResponse<String> res = client.sync(syncDto, authorization);
+    log.debug("HttpResponse body: " + res.body());
+    return res;
   }
 
   @Override
   public HttpResponse<String> reset(@NotBlank final UUID connection) {
-    // POST to Config API
     final var syncDto = new SyncDto(connection.toString());
     final HttpResponse<String> res = client.reset(syncDto);
-    // log.info("HttpResponse body: " + res.body());
-    log.info("HttpResponse status: " + res.getStatus());
+    log.debug("HttpResponse body: " + res.body());
     return res;
   }
 

@@ -21,8 +21,6 @@ import io.micronaut.http.client.annotation.Client;
         value = "Micronaut HTTP Client")
 @Header(name = ACCEPT,
         value = "application/json")
-// @Header(name = "${airbyte.internal.api.auth-header.name}",
-// value = "${airbyte.internal.api.auth-header.value}")
 public interface ConfigApiClient {
 
   @Post(value = "/api/v1/connections/sync",
@@ -32,9 +30,6 @@ public interface ConfigApiClient {
   @Post(value = "/api/v1/connections/reset",
         processes = MediaType.APPLICATION_JSON)
   HttpResponse<String> reset(@Body SyncDto connectionId);
-
-  @Post("/api/v1/workspaces/list")
-  HttpResponse<String> workspaceList();
 
   @Get("/health")
   HttpResponse<String> healthCheck();

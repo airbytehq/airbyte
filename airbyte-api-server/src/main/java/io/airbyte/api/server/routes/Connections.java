@@ -42,7 +42,6 @@ public class Connections implements ConnectionApi {
   @Override
   public void syncConnection(final UUID connectionId, final String xEndpointAPIUserInfo) {
     connectionsRepository.sync(connectionId, xEndpointAPIUserInfo);
-
   }
 
 }
