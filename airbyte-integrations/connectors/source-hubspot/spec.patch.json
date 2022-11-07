@@ -27,6 +27,7 @@
                     "client_id": {
                         "title": "Client ID",
                         "description": "The Client ID of your HubSpot developer application. See the <a href=\"https://legacydocs.hubspot.com/docs/methods/oauth2/oauth2-quickstart\">Hubspot docs</a> if you need help finding this ID.",
+                        "airbyte_secret": true,
                         "type": "string",
                         "examples": [
                             "123456789000"
