@@ -997,6 +997,7 @@ tests:
 Then from the connector module directory run
 
 ```bash
+chmod 755 acceptance-test-docker.sh
 ./acceptance-test-docker.sh
 ```
 
