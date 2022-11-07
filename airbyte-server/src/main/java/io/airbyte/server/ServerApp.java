@@ -63,11 +63,8 @@ import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
 import io.airbyte.server.handlers.StateHandler;
-<<<<<<< HEAD
 import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendGeographiesHandler;
-=======
->>>>>>> a16ecd6097faa7fdfe0db793b3c84353ca06122a
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.server.scheduler.EventRunner;
@@ -331,7 +328,6 @@ public class ServerApp implements ServerRunnable {
 
     final StateHandler stateHandler = new StateHandler(statePersistence);
 
-<<<<<<< HEAD
     final WebBackendConnectionsHandler webBackendConnectionsHandler = new WebBackendConnectionsHandler(
         connectionsHandler,
         stateHandler,
@@ -345,8 +341,6 @@ public class ServerApp implements ServerRunnable {
 
     final WebBackendGeographiesHandler webBackendGeographiesHandler = new WebBackendGeographiesHandler();
 
-=======
->>>>>>> a16ecd6097faa7fdfe0db793b3c84353ca06122a
     LOGGER.info("Starting server...");
 
     return apiFactory.create(
@@ -381,13 +375,9 @@ public class ServerApp implements ServerRunnable {
         sourceHandler,
         sourceDefinitionsHandler,
         stateHandler,
-<<<<<<< HEAD
         workspacesHandler,
         webBackendConnectionsHandler,
         webBackendGeographiesHandler);
-=======
-        workspacesHandler);
->>>>>>> a16ecd6097faa7fdfe0db793b3c84353ca06122a
   }
 
   public static void main(final String[] args) {

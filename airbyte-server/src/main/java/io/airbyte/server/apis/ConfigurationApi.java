@@ -392,7 +392,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     throw new NotImplementedException();
   }
 
-  @Override public InternalOperationResult saveStats(final SaveStatsRequestBody saveStatsRequestBody) {
+  @Override
+  public InternalOperationResult saveStats(final SaveStatsRequestBody saveStatsRequestBody) {
     throw new NotImplementedException();
   }
 
