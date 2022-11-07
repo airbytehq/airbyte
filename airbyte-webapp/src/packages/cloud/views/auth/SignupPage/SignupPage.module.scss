@@ -1,6 +1,12 @@
 @use "../../../../../scss/colors";
 @use "../../../../../scss/variables";
 
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-xl;
+}
+
 .title {
   width: 250px;
   margin-bottom: variables.$spacing-md;
