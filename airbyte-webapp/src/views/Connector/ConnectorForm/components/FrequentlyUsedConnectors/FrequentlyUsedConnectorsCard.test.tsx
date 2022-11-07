@@ -4,7 +4,7 @@ import { IntlProvider } from "react-intl";
 import en from "locales/en.json";
 
 import { mockData } from "../../../../../test-utils/mock-data/mockFrequentlyUsedDestinations";
-import { FrequentlyUsedConnectorsCard, FrequentlyUsedConnectorsCardProps } from "./FrequentlyUsedDestinationsCard";
+import { FrequentlyUsedConnectorsCard, FrequentlyUsedConnectorsCardProps } from "./FrequentlyUsedConnectorsCard";
 
 const renderFrequentlyUsedConnectorsComponent = (props: FrequentlyUsedConnectorsCardProps) =>
   render(
@@ -13,7 +13,7 @@ const renderFrequentlyUsedConnectorsComponent = (props: FrequentlyUsedConnectors
     </IntlProvider>
   );
 
-describe("<FrequentlyUsedDestinations />", () => {
+describe("<mockFrequentlyUsedConnectors />", () => {
   it("should renders with mock data without crash", () => {
     const component = renderFrequentlyUsedConnectorsComponent({
       connectors: mockData,

@@ -2,11 +2,11 @@ import React from "react";
 
 import { ConnectorDefinition } from "core/domain/connector";
 
-import { FrequentlyUsedConnectorsCard } from "./FrequentlyUsedDestinationsCard";
+import { FrequentlyUsedConnectorsCard } from "./FrequentlyUsedConnectorsCard";
 import { useAnalyticsTrackFunctions } from "./useAnalyticsTrackFunctions";
 import { useSuggestedConnectors } from "./useSuggestedConnectors";
 
-export interface FrequentlyUsedConnectorsProps {
+interface FrequentlyUsedConnectorsProps {
   availableServices: ConnectorDefinition[];
   connectorType: "source" | "destination";
   connectorIds: string[];

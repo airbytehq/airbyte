@@ -1,10 +1,10 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
 import { mockData } from "../../../../../test-utils/mock-data/mockFrequentlyUsedDestinations";
-import { FrequentlyUsedConnectorsCard } from "./FrequentlyUsedDestinationsCard";
+import { FrequentlyUsedConnectorsCard } from "./FrequentlyUsedConnectorsCard";
 
 export default {
-  title: "Views/FrequentlyUsedDestinations",
+  title: "Views/FrequentlyUsedConnectors",
   component: FrequentlyUsedConnectorsCard,
   args: {
     destinations: mockData,

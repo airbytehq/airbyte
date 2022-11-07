@@ -5,7 +5,7 @@ import { ConnectorCard } from "components";
 import { SlickSlider } from "components/ui/SlickSlider";
 
 import { ConnectorCard as ConnectorCardType } from "../../types";
-import styles from "./FrequentlyUsedDestinationsCard.module.scss";
+import styles from "./FrequentlyUsedConnectorsCard.module.scss";
 
 export interface FrequentlyUsedConnectorsCardProps {
   connectors: ConnectorCardType[];
