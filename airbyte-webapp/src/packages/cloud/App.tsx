@@ -1,4 +1,3 @@
-import GlobalStyle from "global-styles";
 import React, { Suspense } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter as Router } from "react-router-dom";
@@ -28,10 +27,7 @@ import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvide
 const messages = { ...en, ...cloudLocales };
 
 const StyleProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
-  <ThemeProvider theme={theme}>
-    <GlobalStyle />
-    {children}
-  </ThemeProvider>
+  <ThemeProvider theme={theme}>{children}</ThemeProvider>
 );
 
 const Services: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (

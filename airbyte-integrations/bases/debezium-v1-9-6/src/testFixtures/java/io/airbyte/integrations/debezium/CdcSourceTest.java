@@ -64,6 +64,7 @@ public abstract class CdcSourceTest {
   protected static final String COL_ID = "id";
   protected static final String COL_MAKE_ID = "make_id";
   protected static final String COL_MODEL = "model";
+  protected static final int INITIAL_WAITING_SECONDS = 5;
 
   protected final List<JsonNode> MODEL_RECORDS_RANDOM = ImmutableList.of(
       Jsons
