@@ -18,11 +18,6 @@ import { links } from "utils/links";
 
 import styles from "./DataResidencyView.module.scss";
 
-interface SelectGeographyOption {
-  label: Geography;
-  value: Geography;
-}
-
 interface DefaultDataResidencyFormValues {
   defaultGeography: Geography | undefined;
 }
@@ -78,7 +73,7 @@ export const DataResidencyView: React.FC = () => {
           {({ isSubmitting, dirty, isValid, resetForm }) => (
             <Form>
               <Field name="defaultGeography">
-                {({ field, form }: FieldProps<SelectGeographyOption>) => (
+                {({ field, form }: FieldProps<Geography>) => (
                   <div className={styles.geographyRow}>
                     <ControlLabels
                       nextLine
