@@ -34,7 +34,6 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.Geography;
 import io.airbyte.config.Notification;
-import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -140,9 +139,10 @@ public class ConfigRepository {
   }
 
   public Optional<List<Notification>> getNotificationConfigurationsByConnectionId(final UUID connectionId) throws IOException {
-    Result<Record> result = database.query(ctx -> ctx.select(WORKSPACE.asterisk()).from(CONNECTION).join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID)).join(WORKSPACE).on(WORKSPACE.ID.eq(ACTOR.WORKSPACE_ID)).where(CONNECTION.ID.eq(connectionId)).fetch());
+    Result<Record> result = database.query(ctx -> ctx.select(WORKSPACE.asterisk()).from(CONNECTION).join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
+        .join(WORKSPACE).on(WORKSPACE.ID.eq(ACTOR.WORKSPACE_ID)).where(CONNECTION.ID.eq(connectionId)).fetch());
     Optional<StandardWorkspace> workspace = result.stream().findFirst().map(DbConverter::buildStandardWorkspace);
-    if(workspace.isPresent()){
+    if (workspace.isPresent()) {
       return Optional.ofNullable(workspace.get().getNotifications());
     } else {
       return Optional.ofNullable(null);

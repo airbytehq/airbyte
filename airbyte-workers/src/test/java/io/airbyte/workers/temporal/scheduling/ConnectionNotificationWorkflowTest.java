@@ -10,9 +10,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.commons.temporal.scheduling.ConnectionNotificationWorkflow;
-import io.airbyte.notification.NotificationClient;
+import io.airbyte.config.SlackNotificationConfiguration;
+import io.airbyte.notification.SlackNotificationClient;
 import io.airbyte.workers.temporal.scheduling.activities.NotifySchemaChangeActivityImpl;
+import io.airbyte.workers.temporal.scheduling.activities.SlackConfigActivityImpl;
 import io.airbyte.workers.temporal.support.TemporalProxyHelper;
 import io.micronaut.context.BeanRegistration;
 import io.micronaut.inject.BeanIdentifier;
@@ -25,6 +28,7 @@ import io.temporal.worker.Worker;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -43,9 +47,10 @@ public class ConnectionNotificationWorkflowTest {
   private TemporalProxyHelper temporalProxyHelper;
 
   private NotifySchemaChangeActivityImpl mNotifySchemaChangeActivity;
+  private SlackConfigActivityImpl mSlackConfigActivity;
 
   @BeforeEach
-  void setUp() throws IOException, InterruptedException {
+  void setUp() throws IOException, InterruptedException, ApiException {
     testEnv = TestWorkflowEnvironment.newInstance();
     notificationsWorker = testEnv.newWorker(NOTIFICATIONS_QUEUE);
     client = testEnv.getWorkflowClient();
@@ -63,7 +68,11 @@ public class ConnectionNotificationWorkflowTest {
         .build();
 
     mNotifySchemaChangeActivity = mock(NotifySchemaChangeActivityImpl.class);
-    when(mNotifySchemaChangeActivity.notifySchemaChange(any(NotificationClient.class), any(UUID.class), any(boolean.class))).thenReturn(true);
+    when(mNotifySchemaChangeActivity.notifySchemaChange(any(SlackNotificationClient.class), any(UUID.class), any(boolean.class))).thenReturn(true);
+
+    mSlackConfigActivity = mock(SlackConfigActivityImpl.class);
+    when(mSlackConfigActivity.fetchSlackConfiguration(any(UUID.class))).thenReturn(
+        Optional.ofNullable(new SlackNotificationConfiguration().withWebhook("webhook")));
 
     final BeanIdentifier activityOptionsBeanIdentifier = mock(BeanIdentifier.class);
     final BeanRegistration activityOptionsBeanRegistration = mock(BeanRegistration.class);
@@ -83,14 +92,13 @@ public class ConnectionNotificationWorkflowTest {
   }
 
   @Test
-  void sendSchemaChangeNotificationNonBreakingChangeTest() throws IOException, InterruptedException {
-    notificationsWorker.registerActivitiesImplementations(mNotifySchemaChangeActivity);
+  void sendSchemaChangeNotificationNonBreakingChangeTest() throws IOException, InterruptedException, ApiException {
+    notificationsWorker.registerActivitiesImplementations(mNotifySchemaChangeActivity, mSlackConfigActivity);
     testEnv.start();
 
     final ConnectionNotificationWorkflow workflow =
         client.newWorkflowStub(ConnectionNotificationWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(NOTIFICATIONS_QUEUE).build());
 
-    log.info("created workflow");
     final UUID connectionId = UUID.randomUUID();
     final boolean isBreaking = false;
 
@@ -98,7 +106,7 @@ public class ConnectionNotificationWorkflowTest {
 
     log.info("sent schema change notif");
 
-    verify(mNotifySchemaChangeActivity, times(1)).notifySchemaChange(any(NotificationClient.class), connectionId, isBreaking);
+    verify(mNotifySchemaChangeActivity, times(1)).notifySchemaChange(any(SlackNotificationClient.class), any(UUID.class), any(boolean.class));
   }
 
 }

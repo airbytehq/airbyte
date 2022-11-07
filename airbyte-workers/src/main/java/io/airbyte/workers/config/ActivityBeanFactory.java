@@ -17,6 +17,7 @@ import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpd
 import io.airbyte.workers.temporal.scheduling.activities.NotifySchemaChangeActivity;
 import io.airbyte.workers.temporal.scheduling.activities.RecordMetricActivity;
 import io.airbyte.workers.temporal.scheduling.activities.RouteToSyncTaskQueueActivity;
+import io.airbyte.workers.temporal.scheduling.activities.SlackConfigActivity;
 import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity;
 import io.airbyte.workers.temporal.scheduling.activities.WorkflowConfigActivity;
 import io.airbyte.workers.temporal.spec.SpecActivity;
@@ -56,8 +57,8 @@ public class ActivityBeanFactory {
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("notifyActivities")
-  public List<Object> notifyActivities(final NotifySchemaChangeActivity notifySchemaChangeActivity) {
-    return List.of(notifySchemaChangeActivity);
+  public List<Object> notifyActivities(final NotifySchemaChangeActivity notifySchemaChangeActivity, SlackConfigActivity slackConfigActivity) {
+    return List.of(notifySchemaChangeActivity, slackConfigActivity);
   }
 
   @Singleton

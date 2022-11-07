@@ -4,6 +4,7 @@
 
 package io.airbyte.notification;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.commons.json.Jsons;
@@ -35,6 +36,7 @@ public class SlackNotificationClient extends NotificationClient {
 
   private final SlackNotificationConfiguration config;
 
+  @JsonCreator
   public SlackNotificationClient(final Notification notification) {
     super(notification);
     this.config = notification.getSlackConfiguration();

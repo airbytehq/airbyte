@@ -4,15 +4,17 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
+import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.commons.temporal.scheduling.ConnectionNotificationWorkflow;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.SlackNotificationConfiguration;
-import io.airbyte.notification.NotificationClient;
+import io.airbyte.notification.SlackNotificationClient;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
 import io.airbyte.workers.temporal.scheduling.activities.NotifySchemaChangeActivity;
 import io.airbyte.workers.temporal.scheduling.activities.SlackConfigActivity;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,13 +27,18 @@ public class ConnectionNotificationWorkflowImpl implements ConnectionNotificatio
   private SlackConfigActivity slackConfigActivity;
 
   @Override
-  public boolean sendSchemaChangeNotification(UUID connectionId, boolean isBreaking) throws IOException, InterruptedException {
-    log.info("inside sending schema change notification");
-    SlackNotificationConfiguration slackConfig = slackConfigActivity.fetchSlackConfiguration(connectionId);
-    Notification notification = new Notification().withNotificationType(NotificationType.SLACK).withSendOnFailure(false).withSendOnSuccess(false).withSlackConfiguration(slackConfig);
-    NotificationClient notificationClient = NotificationClient.createNotificationClient(notification);
-    log.info("notification client is: " + notificationClient);
-    return notifySchemaChangeActivity.notifySchemaChange(notificationClient, connectionId, isBreaking);
+  public boolean sendSchemaChangeNotification(UUID connectionId, boolean isBreaking) throws IOException, InterruptedException, ApiException {
+    Optional<SlackNotificationConfiguration> slackConfig = slackConfigActivity.fetchSlackConfiguration(connectionId);
+    if (slackConfig.isPresent()) {
+      Notification notification = new Notification().withNotificationType(NotificationType.SLACK).withSendOnFailure(false).withSendOnSuccess(false)
+          .withSlackConfiguration(slackConfig.get());
+      SlackNotificationClient notificationClient = new SlackNotificationClient(notification);
+      log.info("created notification client");
+      log.info("notification client is: " + notificationClient);
+      return notifySchemaChangeActivity.notifySchemaChange(notificationClient, connectionId, isBreaking);
+    } else {
+      return false;
+    }
   }
 
 }
