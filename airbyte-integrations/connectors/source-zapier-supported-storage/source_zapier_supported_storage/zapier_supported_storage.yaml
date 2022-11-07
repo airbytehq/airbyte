@@ -24,7 +24,6 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "zapier_supported_storage"
-      primary_key: "data"
       path: "/records"
 
 streams:

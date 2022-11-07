@@ -8,8 +8,7 @@ connectionSpecification:
   additionalProperties: true
   properties:
     secret:
-      title: secret key for zapier storage,
+      title: Secret Key
       type: string
-      description: secret key supplied by zapier
+      description: Secret key supplied by zapier
       airbyte_secret: true
-
