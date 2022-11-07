@@ -33,7 +33,7 @@ COPY pytest.ini setup.py ./
 COPY source_acceptance_test ./source_acceptance_test
 RUN pip install .
 
-LABEL io.airbyte.version=0.2.15
+LABEL io.airbyte.version=0.2.16
 LABEL io.airbyte.name=airbyte/source-acceptance-test
 
 ENTRYPOINT ["python", "-m", "pytest", "-p", "source_acceptance_test.plugin", "-r", "fEsx"]
