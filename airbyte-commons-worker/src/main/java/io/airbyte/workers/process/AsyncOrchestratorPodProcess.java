@@ -361,7 +361,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .getStatus();
 
     final var containerState = podStatus
-        .getContainerStatuses()
+        .getInitContainerStatuses()
         .get(0)
         .getState();
 
