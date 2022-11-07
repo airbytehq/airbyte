@@ -2,14 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import datetime
 from dataclasses import InitVar, dataclass
-from typing import Any, ClassVar, Iterable, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
-from airbyte_cdk.sources.streams.core import Stream
 
 
 @dataclass
