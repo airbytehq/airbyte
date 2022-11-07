@@ -4,6 +4,10 @@ plugins {
     id 'airbyte-source-acceptance-test'
 }
 
+airbyteDocker {
+    followSymlinks true
+}
+
 airbytePython {
     moduleDirectory 'source_greenhouse'
 }
