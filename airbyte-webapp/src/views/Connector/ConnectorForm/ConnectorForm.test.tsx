@@ -377,7 +377,7 @@ describe("Service Form", () => {
   });
 
   describe("conditionally render form submit button", () => {
-    const renderServiceForm = (props: ConnectorFormProps) =>
+    const renderConnectorForm = (props: ConnectorFormProps) =>
       render(<ConnectorForm {...props} formValues={{ name: "test-name" }} />);
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     const onSubmitClb = () => {};
@@ -388,7 +388,7 @@ describe("Service Form", () => {
     };
 
     it("should render <CreateControls /> if connector is selected", async () => {
-      const { getByText } = await renderServiceForm({
+      const { getByText } = await renderConnectorForm({
         selectedConnectorDefinitionSpecification:
           // @ts-expect-error Partial objects for testing
           connectorDefSpec as DestinationDefinitionSpecificationRead,
@@ -399,7 +399,7 @@ describe("Service Form", () => {
     });
 
     it("should not render <CreateControls /> if connector is not selected", async () => {
-      const { container } = await renderServiceForm({
+      const { container } = await renderConnectorForm({
         selectedConnectorDefinitionSpecification: undefined,
         formType: "destination",
         onSubmit: onSubmitClb,
@@ -411,7 +411,7 @@ describe("Service Form", () => {
     });
 
     it("should render <EditControls /> if connector is selected", async () => {
-      const { getByText } = await renderServiceForm({
+      const { getByText } = await renderConnectorForm({
         selectedConnectorDefinitionSpecification:
           // @ts-expect-error Partial objects for testing
           connectorDefSpec as DestinationDefinitionSpecificationRead,
@@ -424,7 +424,7 @@ describe("Service Form", () => {
     });
 
     it("should render <EditControls /> if connector is not selected", async () => {
-      const { container } = await renderServiceForm({
+      const { container } = await renderConnectorForm({
         selectedConnectorDefinitionSpecification: undefined,
         formType: "destination",
         onSubmit: onSubmitClb,
