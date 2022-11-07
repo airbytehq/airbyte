@@ -13,6 +13,7 @@ Airbyte uses a grading system for connectors to help you understand what to expe
 For more information about the grading system, see [Product Release Stages](https://docs.airbyte.com/project-overview/product-release-stages)
 
 ## Sources
+
 <iframe
     src="https://airbyte.metabaseapp.com/public/question/9af21fd5-ff87-4809-8e04-966207490e0b#titled=false&hide_download_button=true"
     frameborder="0"
@@ -20,6 +21,7 @@ For more information about the grading system, see [Product Release Stages](http
     height="2000"
     allowtransparency
 ></iframe>
+
 ## Destinations
 
 <iframe
