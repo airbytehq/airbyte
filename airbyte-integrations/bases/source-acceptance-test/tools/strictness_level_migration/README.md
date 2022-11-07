@@ -16,7 +16,7 @@ This script will create one issue per GA connectors to migrate to `high` test st
 ### What it does:
 1. Find all GA connectors in `../../../../../airbyte-config/init/src/main/resources/seed/source_definitions.yaml`
 2. Generate an issue content (title, body, labels, project), using `./templates/issue.md.j2`
-3. Find and already existing issue with the same title.
+3. Find an already existing issue with the same title.
 4. Create the issue and return its url if it does not exist.
 
 Issues get created with the following labels:
