@@ -10,7 +10,8 @@ assert_root
 # Since KIND does not have access to the local docker agent, manually load the minimum images required for the Kubernetes Acceptance Tests.
 # See https://kind.sigs.k8s.io/docs/user/quick-start/#loading-an-image-into-your-cluster.
 if [ -n "$CI" ]; then
-  eval $(minikube -p minikube docker-env)
+  echo "Loading images into k3d..."
+  k3d image load airbyte/server:dev airbyte/webapp:dev airbyte/worker:dev airbyte/db:dev airbyte/container-orchestrator:dev airbyte/bootloader:dev airbyte/cron:dev -c helm-testing 
 fi
 
 # eval $(minikube docker-env)
@@ -66,9 +67,7 @@ if [ -n "$CI" ]; then
 #  trap "mkdir -p /tmp/kubernetes_logs && write_all_logs" EXIT
 fi
 
-MINIKUBE_IP=$(minikube ip)
-kubectl expose $(kubectl get po -l app.kubernetes.io/name=server -o name) --port 8001 --target-port 8001 --name exposed-server-svc --type NodePort
-AIRBYTE_PORT=$(kubectl get svc exposed-server-svc -o=jsonpath='{.spec.ports[0].nodePort}')
+kubectl expose $(kubectl get po -l app.kubernetes.io/name=server -o name) --name exposed-server-svc --type NodePort --overrides '{ "apiVersion": "v1","spec":{"ports": [{"port":8001,"protocol":"TCP","targetPort":8001,"nodePort":30080}]}}'
 # kubectl port-forward svc/airbyte-server-svc 8001:8001 &
 # ./tools/bin/health_check.sh &
 
@@ -93,7 +92,7 @@ SUB_BUILD=PLATFORM LOG_LEVEL=DEBUG  ./gradlew :airbyte-workers:integrationTest -
 #fi
 
 echo "Running e2e tests via gradle..."
-AIRBYTE_HOST=${MINIKUBE_IP} AIRBYTE_PORT=${AIRBYTE_PORT} KUBE=true LOG_LEVEL=DEBUG SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan
+AIRBYTE_PORT=30080 KUBE=true LOG_LEVEL=DEBUG SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan
 
 echo "Reverting changes back"
 mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.test

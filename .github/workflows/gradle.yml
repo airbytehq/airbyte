@@ -903,14 +903,11 @@ jobs:
           version: 'latest'
           token: ${{ secrets.GITHUB_TOKEN }}
         id: install
-      - name: Remove docker.io package
-        shell: bash
-        run: sudo apt-get remove docker.io || sudo apt-get remove docker
-      - name: Start minikube
-        uses: medyagh/setup-minikube@master
+      - uses: AbsaOSS/k3d-action@v2
+        name: "Create Single Cluster"
         with:
-          driver: none
-          kubernetes-version: v1.21.14
+          cluster-name: "test-cluster-1"
+          args: --agents 1 -p "30080:30080@server:0" -i docker.io/rancher/k3s:v1.21.2-k3s1
       - name: Try the cluster !
         run: kubectl get pods -A
 
