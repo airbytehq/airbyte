@@ -213,19 +213,19 @@ class TestJdbcUtils {
   @Test
   void testUseSslWithEmptySslKeyAndSslModeVerifyFull() {
     final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
-            .put("host", PSQL_DB.getHost())
-            .put("port", PSQL_DB.getFirstMappedPort())
-            .put("database", dbName)
-            .put("username", PSQL_DB.getUsername())
-            .put("password", PSQL_DB.getPassword())
-            .put("ssl_mode", ImmutableMap.builder()
-                    .put("mode", "verify-full")
-                    .put("ca_certificate", "test_ca_cert")
-                    .put("client_certificate", "test_client_cert")
-                    .put("client_key", "test_client_key")
-                    .put("client_key_password", "test_pass")
-                    .build())
-            .build());
+        .put("host", PSQL_DB.getHost())
+        .put("port", PSQL_DB.getFirstMappedPort())
+        .put("database", dbName)
+        .put("username", PSQL_DB.getUsername())
+        .put("password", PSQL_DB.getPassword())
+        .put("ssl_mode", ImmutableMap.builder()
+            .put("mode", "verify-full")
+            .put("ca_certificate", "test_ca_cert")
+            .put("client_certificate", "test_client_cert")
+            .put("client_key", "test_client_key")
+            .put("client_key_password", "test_pass")
+            .build())
+        .build());
     final boolean sslSet = JdbcUtils.useSsl(config);
     assertTrue(sslSet);
   }
@@ -233,15 +233,15 @@ class TestJdbcUtils {
   @Test
   void testUseSslWithEmptySslKeyAndSslModeDisable() {
     final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
-            .put("host", PSQL_DB.getHost())
-            .put("port", PSQL_DB.getFirstMappedPort())
-            .put("database", dbName)
-            .put("username", PSQL_DB.getUsername())
-            .put("password", PSQL_DB.getPassword())
-            .put("ssl_mode", ImmutableMap.builder()
-                    .put("mode", "disable")
-                    .build())
-            .build());
+        .put("host", PSQL_DB.getHost())
+        .put("port", PSQL_DB.getFirstMappedPort())
+        .put("database", dbName)
+        .put("username", PSQL_DB.getUsername())
+        .put("password", PSQL_DB.getPassword())
+        .put("ssl_mode", ImmutableMap.builder()
+            .put("mode", "disable")
+            .build())
+        .build());
     final boolean sslSet = JdbcUtils.useSsl(config);
     assertFalse(sslSet);
   }

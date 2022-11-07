@@ -115,11 +115,13 @@ public class JdbcUtils {
    * @return true: if ssl has not been set or it has been set with true, false: in all other cases
    */
   public static boolean useSsl(final JsonNode config) {
-    if(!config.has(SSL_KEY)){
+    if (!config.has(SSL_KEY)) {
       if (config.has(SSL_MODE_KEY) && config.get(SSL_MODE_KEY).has(MODE_KEY)) {
         return !SSL_MODE_DISABLE.contains(config.get(SSL_MODE_KEY).get(MODE_KEY).asText());
-      } else return true;
-    } else return config.get(SSL_KEY).asBoolean();
+      } else
+        return true;
+    } else
+      return config.get(SSL_KEY).asBoolean();
   }
 
 }
