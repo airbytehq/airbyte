@@ -104,7 +104,6 @@ definitions:
     $ref: "*ref(definitions.incremental_stream)"
     stream_cursor_field: "date_created"
     $options:
-      primary_key: "id"
       items_per_page: 100
       cursor_field_name: "date_created"
   tasks_base_stream:
@@ -200,7 +199,6 @@ definitions:
     $ref: "*ref(definitions.full_refresh_stream)"
     $options:
       name: "lead_custom_fields"
-      primary_key: "id"
       path: "custom_field/lead"
       items_per_page: 1000
   contact_custom_fields_stream:
@@ -242,7 +240,6 @@ definitions:
     $ref: "*ref(definitions.full_refresh_stream)"
     $options:
       name: "lead_statuses"
-      primary_key: "id"
       path: "status/lead"
       items_per_page: 100
   opportunity_statuses_stream:

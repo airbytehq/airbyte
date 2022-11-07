@@ -12,14 +12,15 @@ from dataclasses_jsonschema import JsonSchemaMixin
 class OffsetIncrementWorkaround(PaginationStrategy, JsonSchemaMixin):
     """
     Pagination strategy that returns the number of records reads so far and returns it as the next page token
+    This workaround makes `page_size` to be Interpolated optional string
 
     Attributes:
-        page_size (int): the number of records to request
+        page_size Union[InterpolatedString, int]: the number of records to request
     """
 
     config: Config
 
-    page_size: Union[InterpolatedString, str]
+    page_size: Union[InterpolatedString, int]
     options: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, options: Mapping[str, Any]):
