@@ -3,8 +3,8 @@
 #
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
-from urllib.parse import urlparse, parse_qs
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from urllib.parse import parse_qs, urlparse
 
 import requests
 from airbyte_cdk.models import SyncMode
@@ -24,29 +24,24 @@ class VismaEconomicStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_json = response.json()
-        if 'nextPage' in response_json.get('pagination', {}).keys():
-            parsed_url = urlparse(response_json['pagination']['nextPage'])
+        if "nextPage" in response_json.get("pagination", {}).keys():
+            parsed_url = urlparse(response_json["pagination"]["nextPage"])
             query_params = parse_qs(parsed_url.query)
             return query_params
         else:
             return None
 
-    def request_params(
-            self, next_page_token: Mapping[str, Any] = None,  **kwargs
-    ) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         if next_page_token:
             return dict(next_page_token)
         else:
             return {"skippages": 0, "pagesize": self.page_size}
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        return {
-            "X-AppSecretToken": self.app_secret_token,
-            "X-AgreementGrantToken": self.agreement_grant_token
-        }
+        return {"X-AppSecretToken": self.app_secret_token, "X-AgreementGrantToken": self.agreement_grant_token}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json().get('collection', [])
+        yield from response.json().get("collection", [])
 
 
 class Accounts(VismaEconomicStream):
@@ -98,7 +93,7 @@ class InvoicesBookedDocument(HttpSubStream, VismaEconomicStream):
         super().__init__(InvoicesBooked(**kwargs), **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        booked_invoice_number = stream_slice['parent']['bookedInvoiceNumber']
+        booked_invoice_number = stream_slice["parent"]["bookedInvoiceNumber"]
         return f"invoices/booked/{booked_invoice_number}"
 
     def __is_missing_booked_invoice_number(self, response: requests.Response) -> bool:
@@ -106,7 +101,7 @@ class InvoicesBookedDocument(HttpSubStream, VismaEconomicStream):
             response.raise_for_status()
         except requests.HTTPError as exc:
             response_json = response.json()
-            if 'error_code' in response_json and response_json.get('error_code') == 'NO_SUCH_BOOKED_INVOICE_NUMBER':
+            if "error_code" in response_json and response_json.get("error_code") == "NO_SUCH_BOOKED_INVOICE_NUMBER":
                 self.logger.info(response.text)
                 return True
             else:
@@ -139,12 +134,14 @@ class SourceVismaEconomic(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        stream_list = [Accounts(**config),
-                       Customers(**config),
-                       InvoicesBooked(**config),
-                       InvoicesPaid(**config),
-                       InvoicesTotal(**config),
-                       Products(**config),
-                       InvoicesBookedDocument(**config)]
+        stream_list = [
+            Accounts(**config),
+            Customers(**config),
+            InvoicesBooked(**config),
+            InvoicesPaid(**config),
+            InvoicesTotal(**config),
+            Products(**config),
+            InvoicesBookedDocument(**config),
+        ]
 
         return stream_list

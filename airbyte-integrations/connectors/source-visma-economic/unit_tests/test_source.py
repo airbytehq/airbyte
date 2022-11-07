@@ -1,12 +1,12 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock
 
 import responses
-
 from source_visma_economic.source import SourceVismaEconomic
+
 
 @responses.activate
 def test_check_connection(mocker):
