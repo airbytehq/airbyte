@@ -59,6 +59,9 @@ class MigrationAcceptanceTest {
   private static final String TEST_LOCAL_ROOT = "/tmp/airbyte_local_migration_test";
   private static final String TEST_LOCAL_DOCKER_MOUNT = "/tmp/airbyte_local_migration_test";
 
+  private static final String AIRBYTE_HOST = System.getenv().getOrDefault("AIRBYTE_HOST", "localhost");
+  private static final int AIRBYTE_PORT = Integer.parseInt(System.getenv().getOrDefault("AIRBYTE_PORT", "8001"));
+
   private static WorkspaceIdRequestBody workspaceIdRequestBody = null;
 
   @Test
@@ -221,8 +224,8 @@ class MigrationAcceptanceTest {
 
   private static ApiClient getApiClient() {
     return new ApiClient().setScheme("http")
-        .setHost("localhost")
-        .setPort(8001)
+        .setHost(AIRBYTE_HOST)
+        .setPort(AIRBYTE_PORT)
         .setBasePath("/api");
   }
 

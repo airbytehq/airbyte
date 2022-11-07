@@ -90,14 +90,18 @@ class AdvancedAcceptanceTests {
   private static AirbyteAcceptanceTestHarness testHarness;
   private static AirbyteApiClient apiClient;
   private static UUID workspaceId;
+  private static final String AIRBYTE_HOST = System.getenv().getOrDefault("AIRBYTE_HOST", "localhost");
+  private static final int AIRBYTE_PORT = Integer.parseInt(System.getenv().getOrDefault("AIRBYTE_PORT", "8001"));
 
   @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
   static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
+    LOGGER.info("Passed AIRBYTE_HOST and AIRBYTE_PORT vars = " + AIRBYTE_HOST);
+    LOGGER.info("Passed AIRBYTE_HOST and AIRBYTE_PORT vars = " + AIRBYTE_PORT);
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
-            .setHost("localhost")
-            .setPort(8001)
+            .setHost(AIRBYTE_HOST)
+            .setPort(AIRBYTE_PORT)
             .setBasePath("/api"));
     // work in whatever default workspace is present.
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();

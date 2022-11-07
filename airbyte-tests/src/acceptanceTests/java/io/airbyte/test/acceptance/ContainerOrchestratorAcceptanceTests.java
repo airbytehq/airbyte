@@ -59,6 +59,8 @@ class ContainerOrchestratorAcceptanceTests {
   private static final Logger LOGGER = LoggerFactory.getLogger(ContainerOrchestratorAcceptanceTests.class);
   private static final String AIRBYTE_WORKER = "airbyte-worker";
   private static final String DEFAULT = "default";
+  private static final String AIRBYTE_HOST = System.getenv().getOrDefault("AIRBYTE_HOST", "localhost");
+  private static final int AIRBYTE_PORT = Integer.parseInt(System.getenv().getOrDefault("AIRBYTE_PORT", "8001"));
 
   private static AirbyteAcceptanceTestHarness testHarness;
   private static AirbyteApiClient apiClient;
@@ -70,8 +72,8 @@ class ContainerOrchestratorAcceptanceTests {
   static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
-            .setHost("localhost")
-            .setPort(8001)
+            .setHost(AIRBYTE_HOST)
+            .setPort(AIRBYTE_PORT)
             .setBasePath("/api"));
     // work in whatever default workspace is present.
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();

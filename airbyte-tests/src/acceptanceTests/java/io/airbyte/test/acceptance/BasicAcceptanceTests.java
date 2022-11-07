@@ -160,6 +160,9 @@ class BasicAcceptanceTests {
 
   private static final int MAX_SCHEDULED_JOB_RETRIES = 10;
 
+  private static final String AIRBYTE_HOST = System.getenv().getOrDefault("AIRBYTE_HOST", "localhost");
+  private static final int AIRBYTE_PORT = Integer.parseInt(System.getenv().getOrDefault("AIRBYTE_PORT", "8001"));
+
   private static final ConnectionScheduleData BASIC_SCHEDULE_DATA = new ConnectionScheduleData().basicSchedule(
       new ConnectionScheduleDataBasicSchedule().units(1L).timeUnit(TimeUnitEnum.HOURS));
 
@@ -167,13 +170,13 @@ class BasicAcceptanceTests {
   static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
-            .setHost("localhost")
-            .setPort(8001)
+            .setHost(AIRBYTE_HOST)
+            .setPort(AIRBYTE_PORT)
             .setBasePath("/api"));
     webBackendApi = new WebBackendApi(
         new ApiClient().setScheme("http")
-            .setHost("localhost")
-            .setPort(8001)
+            .setHost(AIRBYTE_HOST)
+            .setPort(AIRBYTE_PORT)
             .setBasePath("/api"));
     // work in whatever default workspace is present.
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();

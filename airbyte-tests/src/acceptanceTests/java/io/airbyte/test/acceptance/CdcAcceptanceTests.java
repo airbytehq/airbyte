@@ -108,6 +108,9 @@ class CdcAcceptanceTests {
   private static final String STARTING = "Starting {}";
   private static final String STARTING_SYNC_ONE = "Starting {} sync 1";
 
+  private static final String AIRBYTE_HOST = System.getenv().getOrDefault("AIRBYTE_HOST", "localhost");
+  private static final int AIRBYTE_PORT = Integer.parseInt(System.getenv().getOrDefault("AIRBYTE_PORT", "8001"));
+
   // version of the postgres destination connector that was built with the
   // old Airbyte protocol that does not contain any per-stream logic/fields
   private static final String POSTGRES_DESTINATION_LEGACY_CONNECTOR_VERSION = "0.3.19";
@@ -123,13 +126,13 @@ class CdcAcceptanceTests {
   static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
-            .setHost("localhost")
-            .setPort(8001)
+            .setHost(AIRBYTE_HOST)
+            .setPort(AIRBYTE_PORT)
             .setBasePath("/api"));
     webBackendApi = new WebBackendApi(
         new ApiClient().setScheme("http")
-            .setHost("localhost")
-            .setPort(8001)
+            .setHost(AIRBYTE_HOST)
+            .setPort(AIRBYTE_PORT)
             .setBasePath("/api"));
     // work in whatever default workspace is present.
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();

@@ -10,15 +10,7 @@ assert_root
 # Since KIND does not have access to the local docker agent, manually load the minimum images required for the Kubernetes Acceptance Tests.
 # See https://kind.sigs.k8s.io/docs/user/quick-start/#loading-an-image-into-your-cluster.
 if [ -n "$CI" ]; then
-  echo "Loading images into KIND..."
-  kind load docker-image airbyte/server:dev --name helm-testing &
-  kind load docker-image airbyte/webapp:dev --name helm-testing &
-  kind load docker-image airbyte/worker:dev --name helm-testing &
-  kind load docker-image airbyte/db:dev --name helm-testing &
-  kind load docker-image airbyte/container-orchestrator:dev --name helm-testing &
-  kind load docker-image airbyte/bootloader:dev --name helm-testing &
-  kind load docker-image airbyte/cron:dev --name helm-testing &
-  wait
+  eval $(minikube -p minikube docker-env)
 fi
 
 # eval $(minikube docker-env)
@@ -49,6 +41,7 @@ kubectl scale --replicas=2 deployment airbyte-worker
 echo "Listing nodes scheduled for pods..."
 kubectl describe pods | grep "Name\|Node"
 
+
 # allocates a lot of time to start kube. takes a while for postgres+temporal to work things out
 sleep 120
 
@@ -73,8 +66,9 @@ if [ -n "$CI" ]; then
 #  trap "mkdir -p /tmp/kubernetes_logs && write_all_logs" EXIT
 fi
 
-kubectl expose $(kubectl get po -l app.kubernetes.io/name=server -o name) --port 8001 --target-port 8001 --name exposed-server-svc --type NodePort --overrides '{ "apiVersion": "v1","spec":{"ports": [{"port":8001,"protocol":"TCP","targetPort":8001,"nodePort":8001}]}}'
-
+MINIKUBE_IP=$(minikube ip)
+kubectl expose $(kubectl get po -l app.kubernetes.io/name=server -o name) --port 8001 --target-port 8001 --name exposed-server-svc --type NodePort
+AIRBYTE_PORT=$(kubectl get svc exposed-server-svc -o=jsonpath='{.spec.ports[0].nodePort}')
 # kubectl port-forward svc/airbyte-server-svc 8001:8001 &
 # ./tools/bin/health_check.sh &
 
@@ -99,7 +93,7 @@ SUB_BUILD=PLATFORM LOG_LEVEL=DEBUG  ./gradlew :airbyte-workers:integrationTest -
 #fi
 
 echo "Running e2e tests via gradle..."
-KUBE=true LOG_LEVEL=DEBUG SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan
+AIRBYTE_HOST=${MINIKUBE_IP} AIRBYTE_PORT=${AIRBYTE_PORT} KUBE=true LOG_LEVEL=DEBUG SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan
 
 echo "Reverting changes back"
 mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.test

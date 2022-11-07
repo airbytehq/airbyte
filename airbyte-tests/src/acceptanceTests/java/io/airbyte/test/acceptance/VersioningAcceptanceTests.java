@@ -35,12 +35,15 @@ class VersioningAcceptanceTests {
 
   private static AirbyteAcceptanceTestHarness testHarness;
 
+  private static final String AIRBYTE_HOST = System.getenv().getOrDefault("AIRBYTE_HOST", "localhost");
+  private static final int AIRBYTE_PORT = Integer.parseInt(System.getenv().getOrDefault("AIRBYTE_PORT", "8001"));
+
   @BeforeAll
   static void init() throws ApiException, URISyntaxException, IOException, InterruptedException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
-            .setHost("localhost")
-            .setPort(8001)
+            .setHost(AIRBYTE_HOST)
+            .setPort(AIRBYTE_PORT)
             .setBasePath("/api"));
 
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
