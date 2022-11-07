@@ -163,10 +163,9 @@ impl AirbyteSourceInterceptor {
                 let mut source_defined_primary_key = stream.source_defined_primary_key.unwrap_or(Vec::new());
 
                 let recommended_name = stream_to_recommended_name(&stream.name);
-                eprintln!("{}", format!("{}/{}{}", STREAM_PATCH_DIR_NAME, recommended_name, STREAM_PK_SUFFIX));
+
                 let doc_pk = std::fs::read_to_string(format!("{}/{}{}", STREAM_PATCH_DIR_NAME, recommended_name, STREAM_PK_SUFFIX))
                     .ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
-                eprintln!("{:?}", doc_pk);
                 if let Some(p) = doc_pk {
                     source_defined_primary_key = p.as_array()
                         .ok_or(Error::InvalidPKPatch("expected an array".to_string()))?
@@ -181,7 +180,6 @@ impl AirbyteSourceInterceptor {
 
 
                 let mut doc_schema = sj::from_str::<sj::Value>(stream.json_schema.get())?;
-                eprintln!("{}", format!("{}/{}{}", STREAM_PATCH_DIR_NAME, recommended_name, STREAM_PATCH_SUFFIX));
                 let doc_schema_patch = std::fs::read_to_string(format!("{}/{}{}", STREAM_PATCH_DIR_NAME, recommended_name, STREAM_PATCH_SUFFIX))
                     .ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
 
