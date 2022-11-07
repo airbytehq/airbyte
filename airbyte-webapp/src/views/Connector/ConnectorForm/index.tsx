@@ -1,5 +1,5 @@
 export * from "./types";
-export * from "./ServiceForm";
+export * from "./ConnectorForm";
 
 export { StartWithDestination } from "./components/StartWithDestination";
 export { FrequentlyUsedDestinations } from "./components/FrequentlyUsedDestinations";

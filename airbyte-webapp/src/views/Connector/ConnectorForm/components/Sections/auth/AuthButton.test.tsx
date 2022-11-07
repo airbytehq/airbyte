@@ -1,9 +1,9 @@
 import { screen, render } from "@testing-library/react";
 import { TestWrapper } from "test-utils/testutils";
 
-import { useFormikOauthAdapter } from "views/Connector/ServiceForm/components/Sections/auth/useOauthFlowAdapter";
-import { useServiceForm } from "views/Connector/ServiceForm/serviceFormContext";
-import { useAuthentication } from "views/Connector/ServiceForm/useAuthentication";
+import { useFormikOauthAdapter } from "views/Connector/ConnectorForm/components/Sections/auth/useOauthFlowAdapter";
+import { useConnectorForm } from "views/Connector/ConnectorForm/connectorFormContext";
+import { useAuthentication } from "views/Connector/ConnectorForm/useAuthentication";
 
 import { AuthButton } from "./AuthButton";
 jest.setTimeout(10000);
@@ -27,22 +27,22 @@ jest.mock("formik", () => {
  * Then, can implement in tests using useWhateverServiceYouMocked.mockImplementationOnce or useWhateverServiceYouMocked.mockImplementation
  */
 
-jest.mock("views/Connector/ServiceForm/components/Sections/auth/useOauthFlowAdapter");
+jest.mock("views/Connector/ConnectorForm/components/Sections/auth/useOauthFlowAdapter");
 const mockUseFormikOauthAdapter = useFormikOauthAdapter as unknown as jest.Mock<Partial<typeof useFormikOauthAdapter>>;
 const baseUseFormikOauthAdapterValues = {
   run: jest.fn(),
   loading: false,
 };
 
-jest.mock("views/Connector/ServiceForm/serviceFormContext");
-const mockUseServiceForm = useServiceForm as unknown as jest.Mock<Partial<typeof useServiceForm>>;
-const baseUseServiceFormValues = {
+jest.mock("views/Connector/ConnectorForm/connectorFormContext");
+const mockUseConnectorForm = useConnectorForm as unknown as jest.Mock<Partial<typeof useConnectorForm>>;
+const baseUseConnectorFormValues = {
   selectedConnector: "abcde",
   allowOAuthConnector: true,
   selectedService: undefined,
 };
 
-jest.mock("views/Connector/ServiceForm/useAuthentication");
+jest.mock("views/Connector/ConnectorForm/useAuthentication");
 const mockUseAuthentication = useAuthentication as unknown as jest.Mock<Partial<typeof useAuthentication>>;
 
 describe("auth button", () => {
@@ -54,8 +54,8 @@ describe("auth button", () => {
 
   it("initially renders with correct message and no status message", () => {
     // no auth errors
-    mockUseServiceForm.mockImplementationOnce(() => {
-      const { selectedConnector, selectedService } = baseUseServiceFormValues;
+    mockUseConnectorForm.mockImplementationOnce(() => {
+      const { selectedConnector, selectedService } = baseUseConnectorFormValues;
 
       return { selectedConnector, selectedService };
     });
@@ -89,8 +89,8 @@ describe("auth button", () => {
 
   it("after successful authentication, it renders with correct message and success message", () => {
     // no auth errors
-    mockUseServiceForm.mockImplementationOnce(() => {
-      const { selectedConnector, selectedService } = baseUseServiceFormValues;
+    mockUseConnectorForm.mockImplementationOnce(() => {
+      const { selectedConnector, selectedService } = baseUseConnectorFormValues;
 
       return { selectedConnector, selectedService };
     });
@@ -122,8 +122,8 @@ describe("auth button", () => {
     // auth errors
     mockUseAuthentication.mockReturnValue({ hiddenAuthFieldErrors: { field: "form.empty.error" } });
 
-    mockUseServiceForm.mockImplementationOnce(() => {
-      const { selectedConnector, selectedService } = baseUseServiceFormValues;
+    mockUseConnectorForm.mockImplementationOnce(() => {
+      const { selectedConnector, selectedService } = baseUseConnectorFormValues;
 
       return { selectedConnector, selectedService };
     });

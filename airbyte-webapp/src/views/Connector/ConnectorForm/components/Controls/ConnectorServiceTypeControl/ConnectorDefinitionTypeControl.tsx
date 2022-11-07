@@ -18,7 +18,7 @@ import {
 } from "components/ui/DropDown";
 import { Text } from "components/ui/Text";
 
-import { Connector, ConnectorDefinition } from "core/domain/connector";
+import { ConnectorDefinition } from "core/domain/connector";
 import { ReleaseStage } from "core/request/AirbyteClient";
 import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
 import { useExperiment } from "hooks/services/Experiment";
@@ -100,24 +100,26 @@ const SingleValue: React.FC<SingleValueProps<any>> = (props) => {
   );
 };
 
-interface ConnectorServiceTypeControlProps {
+interface ConnectorDefinitionTypeControlProps {
   formType: "source" | "destination";
-  availableServices: ConnectorDefinition[];
   isEditMode?: boolean;
-  documentationUrl?: string;
-  onChangeServiceType?: (id: string) => void;
   disabled?: boolean;
-  selectedServiceId?: string;
+  availableConnectorDefinitions: ConnectorDefinition[];
+  selectedConnectorDefinition?: ConnectorDefinition;
+  selectedConnectorDefinitionSpecificationId?: string;
+  onChangeConnectorDefinition?: (id: string) => void;
+  documentationUrl?: string;
 }
 
-const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = ({
+export const ConnectorDefinitionTypeControl: React.FC<ConnectorDefinitionTypeControlProps> = ({
   formType,
   isEditMode,
-  onChangeServiceType,
-  availableServices,
-  documentationUrl,
   disabled,
-  selectedServiceId,
+  availableConnectorDefinitions,
+  selectedConnectorDefinition,
+  selectedConnectorDefinitionSpecificationId,
+  onChangeConnectorDefinition,
+  documentationUrl,
 }) => {
   const { formatMessage } = useIntl();
   const { openModal, closeModal } = useModalService();
@@ -125,10 +127,10 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
 
   const workspace = useCurrentWorkspace();
   const orderOverwrite = useExperiment("connector.orderOverwrite", {});
-  const availableConnectorDefinitions = useAvailableConnectorDefinitions(availableServices, workspace);
+  const connectorDefinitions = useAvailableConnectorDefinitions(availableConnectorDefinitions, workspace);
   const sortedDropDownData = useMemo(
-    () => getSortedDropdownDataUsingExperiment(availableConnectorDefinitions, orderOverwrite),
-    [availableConnectorDefinitions, orderOverwrite]
+    () => getSortedDropdownDataUsingExperiment(connectorDefinitions, orderOverwrite),
+    [connectorDefinitions, orderOverwrite]
   );
 
   const { setDocumentationUrl } = useDocumentationPanelContext();
@@ -142,19 +144,14 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
     [formatMessage, trackNoOptionMessage]
   );
 
-  const selectedService = React.useMemo(
-    () => availableServices.find((s) => Connector.id(s) === selectedServiceId),
-    [selectedServiceId, availableServices]
-  );
-
   const handleSelect = useCallback(
     (item: DropDownOptionDataItem | null) => {
-      if (item && onChangeServiceType) {
-        onChangeServiceType(item.value);
+      if (item && onChangeConnectorDefinition) {
+        onChangeConnectorDefinition(item.value);
         trackConnectorSelection(item.value, item.label || "");
       }
     },
-    [onChangeServiceType, trackConnectorSelection]
+    [onChangeConnectorDefinition, trackConnectorSelection]
   );
 
   const selectProps = useMemo(
@@ -183,7 +180,7 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
         })}
       >
         <DropDown
-          value={selectedServiceId}
+          value={selectedConnectorDefinitionSpecificationId}
           components={{
             MenuList: ConnectorList,
             Option,
@@ -202,12 +199,11 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
           data-testid="serviceType"
         />
       </ControlLabels>
-      {selectedService &&
-        (selectedService.releaseStage === ReleaseStage.alpha || selectedService.releaseStage === ReleaseStage.beta) && (
-          <WarningMessage stage={selectedService.releaseStage} />
+      {selectedConnectorDefinition &&
+        (selectedConnectorDefinition.releaseStage === ReleaseStage.alpha ||
+          selectedConnectorDefinition.releaseStage === ReleaseStage.beta) && (
+          <WarningMessage stage={selectedConnectorDefinition.releaseStage} />
         )}
     </>
   );
 };
-
-export { ConnectorServiceTypeControl };
