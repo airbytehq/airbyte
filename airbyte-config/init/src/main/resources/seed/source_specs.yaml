@@ -219,6 +219,63 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-alpha-vantage:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/alpha-vantage"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Alpha Vantage Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "symbol"
+      properties:
+        api_key:
+          title: "API Key"
+          type: "string"
+          description: "API Key"
+          airbyte_secret: true
+          order: 0
+        symbol:
+          title: "Symbol"
+          type: "string"
+          description: "Stock symbol (with exchange code)"
+          examples:
+          - "AAPL"
+          - "TSCO.LON"
+          order: 1
+        interval:
+          title: "Interval"
+          type: "string"
+          description: "Time-series data point interval. Required for intraday endpoints.\n"
+          enum:
+          - "1min"
+          - "5min"
+          - "15min"
+          - "30min"
+          - "60min"
+          default: "1min"
+          order: 2
+        adjusted:
+          title: "Adjusted?"
+          type: "boolean"
+          description: "Whether to return adjusted data. Only applicable to intraday\
+            \ endpoints.\n"
+          default: false
+          order: 4
+        outputsize:
+          title: "Output Size"
+          type: "string"
+          description: "Whether to return full or compact data (the last 100 data\
+            \ points).\n"
+          enum:
+          - "compact"
+          - "full"
+          default: "compact"
+          order: 5
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-alloydb:1.0.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
@@ -806,7 +863,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-amazon-seller-partner:0.2.27"
+- dockerImage: "airbyte/source-amazon-seller-partner:0.2.28"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-seller-partner"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/amazon-seller-partner"
@@ -1569,7 +1626,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-bigquery:0.2.2"
+- dockerImage: "airbyte/source-bigquery:0.2.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/bigquery"
     connectionSpecification:
@@ -2485,6 +2542,68 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-datadog:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/datadog"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Datadog Source Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "application_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API Key"
+          description: "Datadog API key"
+          type: "string"
+          airbyte_secret: true
+          order: 1
+        application_key:
+          title: "Application Key"
+          description: "Datadog application key"
+          type: "string"
+          airbyte_secret: true
+          order: 2
+        query:
+          title: "Query"
+          description: "The search query. This just applies to Incremental syncs.\
+            \ If empty, it'll collect all logs."
+          type: "string"
+          order: 3
+        max_records_per_request:
+          type: "integer"
+          title: "Max records per requests"
+          default: 5000
+          minimum: 1
+          maximum: 5000
+          description: "Maximum number of records to collect per request."
+          order: 4
+        start_date:
+          title: "Start date"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
+            \ data before this date will not be replicated. This just applies to Incremental\
+            \ syncs."
+          type: "string"
+          examples:
+          - "2022-10-01T00:00:00Z"
+          order: 5
+        end_date:
+          title: "End date"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          description: "UTC date and time in the format 2017-01-25T00:00:00Z. Data\
+            \ after this date will  not be replicated. An empty value will represent\
+            \ the current datetime for each  execution. This just applies to Incremental\
+            \ syncs."
+          examples:
+          - "2022-10-01T00:00:00Z"
+          type: "string"
+          order: 6
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-delighted:0.1.4"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -2873,7 +2992,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.71"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.72"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -3712,7 +3831,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-freshdesk:0.3.6"
+- dockerImage: "airbyte/source-freshdesk:0.3.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/freshdesk"
     connectionSpecification:
@@ -3815,6 +3934,27 @@
           examples:
           - "2020-10-01T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-gridly:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/gridly"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Gridly Spec"
+      type: "object"
+      required:
+      - "api_key"
+      properties:
+        api_key:
+          type: "string"
+          title: "API Key"
+          airbyte_secret: true
+        grid_id:
+          type: "string"
+          title: "Grid ID"
+          description: "ID of a grid, or can be ID of a branch"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -4229,7 +4369,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.31"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.32"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics"
     connectionSpecification:
@@ -5582,7 +5722,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-jira:0.2.22"
+- dockerImage: "airbyte/source-jira:0.2.23"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/jira"
     connectionSpecification:
@@ -5613,7 +5753,7 @@
           title: "Email"
           description: "The user email for your Jira account."
         max_results:
-          type: "number"
+          type: "integer"
           title: "Max Results"
           description: "Pagination max results (only for users stream)"
           default: 50
@@ -5666,7 +5806,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-kafka:0.2.0"
+- dockerImage: "airbyte/source-kafka:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/kafka"
     connectionSpecification:
@@ -6757,7 +6897,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.4.24"
+- dockerImage: "airbyte/source-mssql:0.4.25"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -6931,6 +7071,18 @@
                   \ the \"Snapshot\" level, you must enable the <a href=\"https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server\"\
                   >snapshot isolation mode</a> on the database."
                 order: 2
+              initial_waiting_seconds:
+                type: "integer"
+                title: "Initial Waiting Time in Seconds (Advanced)"
+                description: "The amount of time the connector will wait when it launches\
+                  \ to determine if there is new data to sync or not. Defaults to\
+                  \ 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about\
+                  \ <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\"\
+                  >initial waiting time</a>."
+                default: 300
+                min: 120
+                max: 1200
+                order: 3
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
@@ -7182,7 +7334,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mixpanel:0.1.28"
+- dockerImage: "airbyte/source-mixpanel:0.1.29"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mixpanel"
     connectionSpecification:
@@ -7191,7 +7343,7 @@
       type: "object"
       properties:
         credentials:
-          title: "Authentication"
+          title: "Authentication *"
           description: "Choose how to authenticate to Mixpanel"
           type: "object"
           order: 0
@@ -7587,7 +7739,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.10"
+- dockerImage: "airbyte/source-mysql:1.0.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -10160,7 +10312,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-redshift:0.3.14"
+- dockerImage: "airbyte/source-redshift:0.3.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/redshift"
     connectionSpecification:
@@ -10751,7 +10903,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.23"
+- dockerImage: "airbyte/source-salesforce:1.0.24"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -11634,6 +11786,27 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-spacex-api:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/spacex-api"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Spacex Api Spec"
+      type: "object"
+      additionalProperties: true
+      properties:
+        id:
+          title: "Unique ID for specific source target"
+          type: "string"
+          desciption: "Optional, For a specific ID"
+        options:
+          title: "Configuration options for endpoints"
+          type: "string"
+          desciption: "Optional, Possible values for an endpoint. Example values for\
+            \ launches-latest, upcoming, past"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-square:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/square"
@@ -11983,6 +12156,28 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
+- dockerImage: "airbyte/source-survey-sparrow:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/surveysparrow"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Survey Sparrow Spec"
+      type: "object"
+      required:
+      - "access_token"
+      additionalProperties: true
+      properties:
+        access_token:
+          type: "string"
+          description: "Your access token. See <a href=\"https://developers.surveysparrow.com/rest-apis#authentication\"\
+            >here</a>. The key is case sensitive."
+          airbyte_secret: true
+        survey_id:
+          type: "array"
+          description: "A List of your survey ids for survey-specific stream"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-talkdesk-explore:0.1.0"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -14020,6 +14215,83 @@
           type: "string"
           description: "Your WaiterAid restaurant id from API request to getRestaurants"
           airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-wikipedia-pageviews:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Wikipedia Pageviews Spec"
+      type: "object"
+      required:
+      - "project"
+      - "access"
+      - "agent"
+      - "article"
+      - "start"
+      - "end"
+      - "country"
+      additionalProperties: true
+      properties:
+        project:
+          type: "string"
+          title: "Project"
+          description: "If you want to filter by project, use the domain of any Wikimedia\
+            \ project."
+          examples:
+          - "en.wikipedia.org"
+          - "www.mediawiki.org"
+          - "commons.wikimedia.org"
+        access:
+          type: "string"
+          title: "Access"
+          description: "If you want to filter by access method, use one of desktop,\
+            \ mobile-app or mobile-web. If you are interested in pageviews regardless\
+            \ of access method, use all-access."
+          examples:
+          - "all-access"
+          - "desktop"
+          - "mobile-app"
+          - "mobile-web"
+        agent:
+          type: "string"
+          title: "Agent"
+          description: "If you want to filter by agent type, use one of user, automated\
+            \ or spider. If you are interested in pageviews regardless of agent type,\
+            \ use all-agents."
+          examples:
+          - "all-agents"
+          - "user"
+          - "spider"
+          - "automated"
+        article:
+          type: "string"
+          title: "Article"
+          description: "The title of any article in the specified project. Any spaces\
+            \ should be replaced with underscores. It also should be URI-encoded,\
+            \ so that non-URI-safe characters like %, / or ? are accepted."
+          examples:
+          - "Are_You_the_One%3F"
+        start:
+          type: "string"
+          title: "Start"
+          description: "The date of the first day to include, in YYYYMMDD or YYYYMMDDHH\
+            \ format."
+        end:
+          type: "string"
+          title: "End"
+          description: "The date of the last day to include, in YYYYMMDD or YYYYMMDDHH\
+            \ format."
+        country:
+          type: "string"
+          title: "Country"
+          description: "The ISO 3166-1 alpha-2 code of a country for which to retrieve\
+            \ top articles."
+          examples:
+          - "FR"
+          - "IN"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
