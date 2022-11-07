@@ -34,7 +34,7 @@ definitions:
 #  shopping_performance_report_query: |
 #    {"query": "SELECT customer.descriptive_name, ad_group.id, ad_group.name, ad_group.status, segments.ad_network_type, segments.product_aggregator_id, metrics.all_conversions_from_interactions_rate, metrics.all_conversions_value, metrics.all_conversions, metrics.average_cpc, segments.product_brand, campaign.id, campaign.name, campaign.status, segments.product_bidding_category_level1, segments.product_bidding_category_level2, segments.product_bidding_category_level3, segments.product_bidding_category_level4, segments.product_bidding_category_level5, segments.product_channel, segments.product_channel_exclusivity, segments.click_type, metrics.clicks, metrics.conversions_from_interactions_rate, metrics.conversions_value, metrics.conversions, metrics.cost_micros, metrics.cost_per_all_conversions, metrics.cost_per_conversion, segments.product_country, metrics.cross_device_conversions, metrics.ctr, segments.product_custom_attribute0, segments.product_custom_attribute1, segments.product_custom_attribute2, segments.product_custom_attribute3, segments.product_custom_attribute4, segments.date, segments.day_of_week, segments.device, customer.id, metrics.impressions, segments.product_language, segments.product_merchant_id, segments.month, segments.product_item_id, segments.product_condition, segments.product_title, segments.product_type_l1, segments.product_type_l2, segments.product_type_l3, segments.product_type_l4, segments.product_type_l5, segments.quarter, segments.product_store_id, metrics.value_per_all_conversions, metrics.value_per_conversion, segments.week, segments.year FROM shopping_performance_view WHERE segments.date BETWEEN \'{{config['start_date']}}\' AND \'{{ config.get('end_date') or now_utc().strftime('%Y-%m-%d') }}\'"}
   user_location_report_query: |
-    {"query": "SELECT customer.auto_tagging_enabled, customer.call_reporting_setting.call_conversion_action, customer.call_reporting_setting.call_conversion_reporting_enabled, customer.call_reporting_setting.call_reporting_enabled, customer.conversion_tracking_setting.conversion_tracking_id, customer.conversion_tracking_setting.cross_account_conversion_tracking_id, customer.currency_code, customer.descriptive_name, customer.final_url_suffix, customer.has_partners_badge, customer.id, customer.manager, customer.optimization_score, customer.optimization_score_weight, customer.pay_per_conversion_eligibility_failure_reasons, customer.remarketing_setting.google_global_site_tag, customer.resource_name, customer.test_account, customer.time_zone, customer.tracking_url_template FROM user_location_view, segments.date WHERE segments.date BETWEEN \'{{config['start_date']}}\' AND \'{{ config.get('end_date') or now_utc().strftime('%Y-%m-%d') }}\'"}
+    {"query": "SELECT customer.auto_tagging_enabled, customer.call_reporting_setting.call_conversion_action, customer.call_reporting_setting.call_conversion_reporting_enabled, customer.call_reporting_setting.call_reporting_enabled, customer.conversion_tracking_setting.conversion_tracking_id, customer.conversion_tracking_setting.cross_account_conversion_tracking_id, customer.currency_code, customer.descriptive_name, customer.final_url_suffix, customer.has_partners_badge, customer.id, customer.manager, customer.optimization_score, customer.optimization_score_weight, customer.pay_per_conversion_eligibility_failure_reasons, customer.remarketing_setting.google_global_site_tag, customer.resource_name, customer.test_account, customer.time_zone, customer.tracking_url_template FROM user_location_view WHERE segments.date BETWEEN \'{{config['start_date']}}\' AND \'{{ config.get('end_date') or now_utc().strftime('%Y-%m-%d') }}\'"}
   selector:
     extractor: 
       field_pointer: []
@@ -184,6 +184,7 @@ definitions:
             $ref: "*ref(definitions.ad_group_labels_query)"
     $options:
       name: "ad_group_labels"
+      primary_key: "label.name"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   campaign_labels_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -197,7 +198,7 @@ definitions:
             $ref: "*ref(definitions.campaign_labels_query)"
     $options:
       name: "campaign_labels"
-      primary_key: ["campaign_label.resource_name"]
+      primary_key: ["label.name"]
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   click_view_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -306,6 +307,10 @@ definitions:
             $ref: "*ref(definitions.display_topics_performance_report_query)"
     $options:
       name: "display_topics_performance_report"
+      primary_key: [
+          ["ad_group.id"],
+          ["segments.date"],
+        ]
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
       stream_cursor_field: "segments.date"
   # shopping_performance_report_stream:
@@ -334,6 +339,10 @@ definitions:
             $ref: "*ref(definitions.user_location_report_query)"
     $options:
       name: "user_location_report"
+      primary_key: [
+          ["ad_group.id"],
+          ["segments.date"],
+        ]
       stream_cursor_field: "segments.date"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
 streams:

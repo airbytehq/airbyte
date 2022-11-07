@@ -144,6 +144,26 @@
           ["segments.hour"]
         ]
       },
+
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["segments.date"],
+      "primary_key": [["campaign.id"], ["segments.date"]]
+    },
+    {
+      "stream": {
+        "name": "conversions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["segments.date", "segemts.hour"],
+        "source_defined_primary_key": [
+          ["campaign.id"],
+          ["segments.date"],
+          ["segments.hour"]
+        ]
+      },
+
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["segments.date"],
