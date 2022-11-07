@@ -27,7 +27,6 @@ export const YamlEditor: React.FC = () => {
   useEffect(() => {
     if (monaco && yamlEditorRef.current && yamlValue) {
       const errOwner = "yaml";
-      console.log(yamlValue);
       const yamlEditorModel = yamlEditorRef.current.getModel();
 
       try {
@@ -35,15 +34,16 @@ export const YamlEditor: React.FC = () => {
         setJsonManifest(json);
         setYamlIsValid(true);
 
-        // clear editor errors
+        // clear editor error markers
         if (yamlEditorModel) {
           monaco.editor.setModelMarkers(yamlEditorModel, errOwner, []);
         }
       } catch (err) {
-        console.log(err.message);
         if (err instanceof YAMLException) {
           setYamlIsValid(false);
           const mark = err.mark;
+
+          // set editor error markers
           if (yamlEditorModel) {
             monaco.editor.setModelMarkers(yamlEditorModel, errOwner, [
               {
