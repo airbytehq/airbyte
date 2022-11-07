@@ -60,7 +60,11 @@ definitions:
       primary_key: "id"
       path: "/people"
   templates_stream:
-    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      record_selector:
+        extractor:
+          field_pointer: ["userTemplates"]
     $options:
       name: "templates"
       primary_key: "id"

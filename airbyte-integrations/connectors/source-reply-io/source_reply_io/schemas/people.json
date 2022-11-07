@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "email": {
       "type": ["null", "string"]
