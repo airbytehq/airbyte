@@ -185,17 +185,15 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       final int dontDeleteInTemporal =
           Workflow.getVersion(DONT_DELETE_IN_TEMPORAL_TAG, Workflow.DEFAULT_VERSION, DONT_DELETE_IN_TEMPORAL_TAG_CURRENT_VERSION);
 
-      if (dontDeleteInTemporal < DONT_DELETE_IN_TEMPORAL_TAG_CURRENT_VERSION) {
-        if (workflowState.isDeleted()) {
-          if (workflowState.isRunning()) {
-            log.info("Cancelling the current running job because a connection deletion was requested");
-            // This call is not needed anymore since this will be cancel using the the cancellation state
-            reportCancelled(connectionUpdaterInput.getConnectionId());
-          }
-          log.info("Workflow deletion was requested. Calling deleteConnection activity before terminating the workflow.");
-          deleteConnectionBeforeTerminatingTheWorkflow();
-          return;
+      if (dontDeleteInTemporal < DONT_DELETE_IN_TEMPORAL_TAG_CURRENT_VERSION && workflowState.isDeleted()) {
+        if (workflowState.isRunning()) {
+          log.info("Cancelling the current running job because a connection deletion was requested");
+          // This call is not needed anymore since this will be cancel using the the cancellation state
+          reportCancelled(connectionUpdaterInput.getConnectionId());
         }
+        log.info("Workflow deletion was requested. Calling deleteConnection activity before terminating the workflow.");
+        deleteConnectionBeforeTerminatingTheWorkflow();
+        return;
       }
 
       // this means that the current workflow is being cancelled so that a reset can be run instead.
