@@ -906,10 +906,12 @@ jobs:
       - name: Remove docker.io package
         shell: bash
         run: sudo apt-get remove docker.io || sudo apt-get remove docker
-      - name: Start minikube
-        uses: medyagh/setup-minikube@master
+      - name: Setup Minikube
+        uses: manusa/actions-setup-minikube@v2.7.1
         with:
-          driver: none
+          minikube version: 'v1.26.1'
+          kubernetes version: 'v1.21.14'
+          driver: docker
       - name: Try the cluster !
         run: kubectl get pods -A
 
