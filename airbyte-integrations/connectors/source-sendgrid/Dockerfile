@@ -5,8 +5,8 @@ RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /airbyte/integration_code
 ENV AIRBYTE_ROOT "/airbyte/integration_code"
-COPY ./airbyte-cdk/ ./airbyte-cdk
 
+COPY ./airbyte-cdk/ ./airbyte-cdk
 COPY source_sendgrid ./source_sendgrid
 COPY main.py ./
 COPY setup.py ./
