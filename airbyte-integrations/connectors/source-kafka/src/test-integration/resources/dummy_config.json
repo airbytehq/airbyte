@@ -5,6 +5,6 @@
     "topic_partitions": "default"
   },
   "protocol": {
-    "security_protocol" : "PLAINTEXT"
+    "security_protocol": "PLAINTEXT"
   }
 }

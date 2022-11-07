@@ -3,5 +3,5 @@
   "port": 5555,
   "database": "default",
   "username": "default",
-  "replication_method" : { "method": "STANDARD" }
+  "replication_method": { "method": "STANDARD" }
 }
