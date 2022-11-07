@@ -7,9 +7,9 @@ WORKDIR /airbyte/integration_code
 ENV AIRBYTE_ROOT "/airbyte/integration_code"
 COPY ./airbyte-cdk/ ./airbyte-cdk
 
-COPY ./airbyte-integrations/connectors/source-sendgrid/source_sendgrid ./source_sendgrid
-COPY ./airbyte-integrations/connectors/source-sendgrid/main.py .
-COPY ./airbyte-integrations/connectors/source-sendgrid/setup.py .
+COPY source_sendgrid ./source_sendgrid
+COPY main.py ./
+COPY setup.py ./
 RUN pip install .
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
