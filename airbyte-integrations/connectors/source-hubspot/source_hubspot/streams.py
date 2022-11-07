@@ -638,8 +638,10 @@ class Stream(HttpStream, ABC):
         if not self.entity:
             return props
         if not self.properties_scope_is_granted():
-            logger.warning(f"Check your API key has the following permissions granted: {self.properties_scopes}, "
-                           f"to be able to fetch all properties available.")
+            logger.warning(
+                f"Check your API key has the following permissions granted: {self.properties_scopes}, "
+                f"to be able to fetch all properties available."
+            )
             return props
         data, response = self._api.get(f"/properties/v2/{self.entity}/properties")
         for row in data:
