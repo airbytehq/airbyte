@@ -105,6 +105,18 @@ impl AirbyteSourceInterceptor {
         }))
     }
 
+    fn adapt_endpoint_spec(
+        endpoint_spec_json: &str
+    ) -> Result<sj::Value, Error> {
+        let spec_map = std::fs::read_to_string(SPEC_MAP_FILE_NAME).ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
+        let mut spec = sj::from_str::<sj::Value>(endpoint_spec_json)?;
+        if let Some(mapping) = spec_map.as_ref() {
+            remap(&mut spec, &mapping)?;
+        }
+
+        Ok(spec)
+    }
+
     fn adapt_discover_request(
         &mut self,
         config_file_path: String,
@@ -112,11 +124,7 @@ impl AirbyteSourceInterceptor {
     ) -> InterceptorStream {
         Box::pin(stream::once(async move {
             let request = get_decoded_message::<DiscoverRequest>(in_stream).await?;
-            let spec_map = std::fs::read_to_string(SPEC_MAP_FILE_NAME).ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
-            let mut endpoint_spec_json = sj::from_str::<sj::Value>(&request.endpoint_spec_json)?;
-            if let Some(mapping) = spec_map.as_ref() {
-                remap(&mut endpoint_spec_json, &mapping)?;
-            }
+            let endpoint_spec_json = AirbyteSourceInterceptor::adapt_endpoint_spec(&request.endpoint_spec_json)?;
 
             File::create(config_file_path)?.write_all(endpoint_spec_json.to_string().as_bytes())?;
 
@@ -187,11 +195,7 @@ impl AirbyteSourceInterceptor {
             let request = get_decoded_message::<ValidateRequest>(in_stream).await?;
             *validate_request.lock().await = Some(request.clone());
 
-            let spec_map = std::fs::read_to_string(SPEC_MAP_FILE_NAME).ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
-            let mut endpoint_spec_json = sj::from_str::<sj::Value>(&request.endpoint_spec_json)?;
-            if let Some(mapping) = spec_map.as_ref() {
-                remap(&mut endpoint_spec_json, &mapping)?;
-            }
+            let endpoint_spec_json = AirbyteSourceInterceptor::adapt_endpoint_spec(&request.endpoint_spec_json)?;
 
             File::create(config_file_path)?.write_all(endpoint_spec_json.to_string().as_bytes())?;
 
@@ -270,11 +274,7 @@ impl AirbyteSourceInterceptor {
                     File::create(state_file_path.clone())?.write_all(&o.driver_checkpoint_json)?;
 
                     if let Some(ref mut c) = o.capture {
-                        let spec_map = std::fs::read_to_string(SPEC_MAP_FILE_NAME).ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
-                        let mut endpoint_spec_json = sj::from_str::<sj::Value>(&c.endpoint_spec_json)?;
-                        if let Some(mapping) = spec_map.as_ref() {
-                            remap(&mut endpoint_spec_json, &mapping)?;
-                        }
+                        let endpoint_spec_json = AirbyteSourceInterceptor::adapt_endpoint_spec(&c.endpoint_spec_json)?;
 
                         File::create(config_file_path.clone())?.write_all(endpoint_spec_json.to_string().as_bytes())?;
 
