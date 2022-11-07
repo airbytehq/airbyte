@@ -23,18 +23,12 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream, IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, NoAuth
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.sources.streams.core import Stream
-
 
 
 class SurveyStream(HttpStream, ABC):
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, config: Mapping[str, Any], form_id, **kwargs):
         super().__init__()
-
-        self.config = config
         self.server_name = config['server_name']
         self.form_id = form_id
         self.start_date = config['start_date']
@@ -55,9 +49,13 @@ class SurveyStream(HttpStream, ABC):
         
         return {}
 
-class CollectionSchema(SurveyStream):
+class SurveyctoStream(SurveyStream, IncrementalMixin):
 
-    primary_key = None
+    primary_key = 'KEY'
+    date_format = '%b %d, %Y %H:%M:%S %p'
+    dateformat =  '%Y-%m-%dT%H:%M:%S'
+    cursor_field = 'CompletionDate'
+    _cursor_value = None
 
 
     @property
@@ -67,88 +65,52 @@ class CollectionSchema(SurveyStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    def _base64_encode(self,string:str) -> str:
-        return base64.b64encode(string.encode("ascii")).decode("ascii")
+    def get_json_schema(self):
+        if hasattr(self, 'response_json'):
+            generator = SchemaGenerator(input_format='dict', infer_mode='NULLABLE',preserve_input_sort_order='true')
+            data = self.response_json
+            schema_map, error_logs = generator.deduce_schema(input_data=data)
+            schema = generator.flatten_schema(schema_map)     
+            schema_json = converter(schema)
+            dump_schema=schema_json['definitions']['element']['properties']
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-         return {'date': self.start_date}
-
-    def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
-        return {'Authorization': 'Basic ' + self.auth_token }
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-         return self.form_id
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        self.response_json = response.json()
-       
-        return self.response_json
-
-
-class SurveyctoStream(SurveyStream):
-
-    primary_key = None
-
-    @property
-    def name(self) -> str:
-        return self.form_id
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
-
-    def _base64_encode(self,string:str) -> str:
-        return base64.b64encode(string.encode("ascii")).decode("ascii")
-
-    # def list_data_one(self):
-    #     schema = CollectionSchema(config = self.config, form_id = self.form_id)
-    #     schema_records = schema.read_records(sync_mode="full_refresh")
-    #     print(f'------------>>>>>>{schema_records}')
-    #     list_data = []
-    #     for i in schema_records:
-    #         list_data.append(i)
-    #     return list_data
+        else:
+            dump_schema = {} 
+            print(f'---------empty------------------{dump_schema}')
         
+        return {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "additionalProperties": True,
+            "type": "object",
+            "properties": dump_schema,
+        }
 
-    # def get_json_schema(self):
-    #     data = self.list_data_one()
-    #     generator = SchemaGenerator(input_format='dict', infer_mode='NULLABLE',preserve_input_sort_order='true')
+       
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+         return self.form_id
 
-    #     schema_map, error_logs = generator.deduce_schema(input_data=data)
-    #     schema = generator.flatten_schema(schema_map)
-    #     schema_json = converter(schema)
-    #     schema_json_properties=schema_json['definitions']['element']['properties']
-    #     b = json.dumps(schema_json_properties)
-    #     print(f'==============================================>>>>{b}')
-  
-    #     return {
-    #         "$schema": "http://json-schema.org/draft-07/schema#",
-    #         "additionalProperties": True,
-    #         "type": "object",
-    #         "properties": b
-    #     }
+    @property
+    def state(self) -> Mapping[str, Any]:
+        initial_date = datetime.strptime(self.start_date, self.date_format)
+        if self._cursor_value:
+            return {self.cursor_field: self._cursor_value}
+        else:
+            return {self.cursor_field: initial_date}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._cursor_value = datetime.strptime(value[self.cursor_field], self.dateformat)
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-         return {'date': self.start_date}
+         ix = self.state[self.cursor_field] 
+         return {'date': ix.strftime(self.date_format)}
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         return {'Authorization': 'Basic ' + self.auth_token }
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-         return self.form_id
 
     def parse_response(
         self,
@@ -166,6 +128,11 @@ class SurveyctoStream(SurveyStream):
                 msg = f"""Encountered an exception parsing schema"""
                 self.logger.exception(msg)
                 raise e
+
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(*args, **kwargs):
+            self._cursor_value = datetime.strptime(record[self.cursor_field], self.date_format)
+            yield record
 
 # Source
 class SourceSurveycto(AbstractSource):

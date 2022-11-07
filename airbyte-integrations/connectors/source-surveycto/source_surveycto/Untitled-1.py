@@ -23,13 +23,9 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream, IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, NoAuth
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.sources.streams.core import Stream
-
 
 
 class SurveyStream(HttpStream, ABC):
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, config: Mapping[str, Any], form_id, **kwargs):
         super().__init__()
@@ -58,7 +54,6 @@ class SurveyStream(HttpStream, ABC):
 class CollectionSchema(SurveyStream):
 
     primary_key = None
-
 
     @property
     def name(self) -> str:
@@ -109,33 +104,33 @@ class SurveyctoStream(SurveyStream):
     def _base64_encode(self,string:str) -> str:
         return base64.b64encode(string.encode("ascii")).decode("ascii")
 
-    # def list_data_one(self):
-    #     schema = CollectionSchema(config = self.config, form_id = self.form_id)
-    #     schema_records = schema.read_records(sync_mode="full_refresh")
-    #     print(f'------------>>>>>>{schema_records}')
-    #     list_data = []
-    #     for i in schema_records:
-    #         list_data.append(i)
-    #     return list_data
+    def list_data_one(self):
+        schema = CollectionSchema(config = self.config, form_id = self.form_id)
+        schema_records = schema.read_records(sync_mode="full_refresh")
+        print(f'------------>>>>>>{schema_records}')
+        list_data = []
+        for i in schema_records:
+            list_data.append(i)
+        return list_data
         
 
-    # def get_json_schema(self):
-    #     data = self.list_data_one()
-    #     generator = SchemaGenerator(input_format='dict', infer_mode='NULLABLE',preserve_input_sort_order='true')
+    def get_json_schema(self):
+        data = self.list_data_one()
+        generator = SchemaGenerator(input_format='dict', infer_mode='NULLABLE',preserve_input_sort_order='true')
 
-    #     schema_map, error_logs = generator.deduce_schema(input_data=data)
-    #     schema = generator.flatten_schema(schema_map)
-    #     schema_json = converter(schema)
-    #     schema_json_properties=schema_json['definitions']['element']['properties']
-    #     b = json.dumps(schema_json_properties)
-    #     print(f'==============================================>>>>{b}')
+        schema_map, error_logs = generator.deduce_schema(input_data=data)
+        schema = generator.flatten_schema(schema_map)
+        schema_json = converter(schema)
+        schema_json_properties=schema_json['definitions']['element']['properties']
+        b = json.dumps(schema_json_properties)
+        print(f'==============================================>>>>{b}')
   
-    #     return {
-    #         "$schema": "http://json-schema.org/draft-07/schema#",
-    #         "additionalProperties": True,
-    #         "type": "object",
-    #         "properties": b
-    #     }
+        return {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "additionalProperties": True,
+            "type": "object",
+            "properties": b
+        }
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None

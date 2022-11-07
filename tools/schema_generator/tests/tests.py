@@ -17,7 +17,7 @@ from airbyte_cdk.models import (
 dummy_catalog = ConfiguredAirbyteCatalog(
     streams=[
         ConfiguredAirbyteStream(
-            stream=AirbyteStream(name="mystream", json_schema={"type": "object"}),
+            stream=AirbyteStream(name="mystream",_schema={"type": "object"}),
             sync_mode=SyncMode.full_refresh,
             destination_sync_mode=DestinationSyncMode.overwrite,
         )
