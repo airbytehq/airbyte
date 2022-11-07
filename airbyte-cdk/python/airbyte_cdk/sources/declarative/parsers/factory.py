@@ -246,7 +246,11 @@ class DeclarativeComponentFactory:
 
     @staticmethod
     def is_object_definition_with_type(definition):
-        return isinstance(definition, dict) and "type" in definition
+        # The `type` field is an overloaded term in the context of the low-code manifest. As part of the language, `type` is shorthand
+        # for convenience to avoid defining the entire classpath. For the connector specification, `type` is a part of the spec schema.
+        # For spec parsing, as part of this check, when the type is set to object, we want it to remain a mapping. But when type is
+        # defined any other way, then it should be parsed as a declarative component in the manifest.
+        return isinstance(definition, dict) and "type" in definition and definition["type"] != "object"
 
     @staticmethod
     def get_default_type(parameter_name, parent_class):
