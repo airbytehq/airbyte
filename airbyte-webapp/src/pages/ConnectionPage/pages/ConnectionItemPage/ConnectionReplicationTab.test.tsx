@@ -5,7 +5,7 @@ import { render as tlr, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React, { Suspense } from "react";
 import selectEvent from "react-select-event";
-import mockConnection from "test-utils/mock-data/mockConnection.json";
+import { mockConnection } from "test-utils/mock-data/mockConnection";
 import mockDest from "test-utils/mock-data/mockDestinationDefinition.json";
 import mockWorkspace from "test-utils/mock-data/mockWorkspace.json";
 import { mockWorkspaceId } from "test-utils/mock-data/mockWorkspaceId";

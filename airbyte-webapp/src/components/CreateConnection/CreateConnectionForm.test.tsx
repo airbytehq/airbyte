@@ -3,11 +3,10 @@ import { act, render as tlr } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import selectEvent from "react-select-event";
-import mockConnection from "test-utils/mock-data/mockConnection.json";
+import { mockConnection } from "test-utils/mock-data/mockConnection";
 import mockDest from "test-utils/mock-data/mockDestinationDefinition.json";
 import { TestWrapper } from "test-utils/testutils";
 
-import { AirbyteCatalog } from "core/request/AirbyteClient";
 import { defaultFeatures, FeatureItem } from "hooks/services/Feature";
 import * as sourceHook from "hooks/services/useSourceHook";
 
@@ -40,7 +39,7 @@ describe("CreateConnectionForm", () => {
   const baseUseDiscoverSchema = {
     schemaErrorStatus: null,
     isLoading: false,
-    schema: mockConnection.syncCatalog as AirbyteCatalog,
+    schema: mockConnection.syncCatalog,
     catalogId: "",
     onDiscoverSchema: () => Promise.resolve(),
   };

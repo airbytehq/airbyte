@@ -1,5 +1,5 @@
 import { renderHook } from "@testing-library/react-hooks";
-import mockConnection from "test-utils/mock-data/mockConnection.json";
+import { mockConnection } from "test-utils/mock-data/mockConnection";
 import mockDestinationDefinition from "test-utils/mock-data/mockDestinationDefinition.json";
 import mockWorkspace from "test-utils/mock-data/mockWorkspace.json";
 import { TestWrapper as wrapper } from "test-utils/testutils";
@@ -10,7 +10,6 @@ import {
   ConnectionScheduleTimeUnit,
   DestinationDefinitionSpecificationRead,
   OperationRead,
-  WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
 
 import { mapFormPropsToOperation, useFrequencyDropdownData, useInitialValues } from "./formConfig";
@@ -177,10 +176,7 @@ describe("#mapFormPropsToOperation", () => {
 describe("#useInitialValues", () => {
   it("should generate initial values w/ no 'not create' mode", () => {
     const { result } = renderHook(() =>
-      useInitialValues(
-        mockConnection as WebBackendConnectionRead,
-        mockDestinationDefinition as DestinationDefinitionSpecificationRead
-      )
+      useInitialValues(mockConnection, mockDestinationDefinition as DestinationDefinitionSpecificationRead)
     );
     expect(result.current).toMatchSnapshot();
     expect(result.current.name).toBeDefined();
@@ -188,11 +184,7 @@ describe("#useInitialValues", () => {
 
   it("should generate initial values w/ 'not create' mode: false", () => {
     const { result } = renderHook(() =>
-      useInitialValues(
-        mockConnection as WebBackendConnectionRead,
-        mockDestinationDefinition as DestinationDefinitionSpecificationRead,
-        false
-      )
+      useInitialValues(mockConnection, mockDestinationDefinition as DestinationDefinitionSpecificationRead, false)
     );
     expect(result.current).toMatchSnapshot();
     expect(result.current.name).toBeDefined();
@@ -200,11 +192,7 @@ describe("#useInitialValues", () => {
 
   it("should generate initial values w/ 'not create' mode: true", () => {
     const { result } = renderHook(() =>
-      useInitialValues(
-        mockConnection as WebBackendConnectionRead,
-        mockDestinationDefinition as DestinationDefinitionSpecificationRead,
-        true
-      )
+      useInitialValues(mockConnection, mockDestinationDefinition as DestinationDefinitionSpecificationRead, true)
     );
     expect(result.current).toMatchSnapshot();
     expect(result.current.name).toBeUndefined();
