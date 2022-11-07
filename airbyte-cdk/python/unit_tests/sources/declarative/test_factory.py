@@ -3,6 +3,7 @@
 #
 
 import datetime
+from dateutil.relativedelta import relativedelta
 from typing import List, Optional, Union
 
 import pytest
@@ -261,7 +262,7 @@ def test_datetime_stream_slicer():
     assert stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
     assert stream_slicer.start_datetime.min_datetime.string == "{{ config['start_time'] + day_delta(2) }}"
     assert stream_slicer.end_datetime.datetime.string == "{{ config['end_time'] }}"
-    assert stream_slicer._step == datetime.timedelta(days=10)
+    assert stream_slicer._step == relativedelta(days=10)
     assert stream_slicer.cursor_field.string == "created"
     assert stream_slicer.lookback_window.string == "5d"
     assert stream_slicer.start_time_option.inject_into == RequestOptionType.request_parameter
