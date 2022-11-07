@@ -289,7 +289,7 @@ class CallTranscripts(IncrementalGongStream):
             print("Start date is: ")
             print(date)
             return {"filter": {
-                "fromDateTime": date
+            
 
                 }}
         else:
@@ -297,7 +297,7 @@ class CallTranscripts(IncrementalGongStream):
             print(stream_state)
             date = datetime.datetime.fromtimestamp(stream_state[self.cursor_field])
             return {"filter": {
-                "fromDateTime": (date).strftime("%Y-%m-%dT%H:%M:%SZ")
+               
                 }}
 
 
