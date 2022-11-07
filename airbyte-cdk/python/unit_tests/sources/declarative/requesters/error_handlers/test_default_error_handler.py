@@ -30,7 +30,7 @@ SOME_BACKOFF_TIME = 60
             None,
             {},
             ResponseStatus.retry(SOME_BACKOFF_TIME),
-            [ConstantBackoffStrategy(SOME_BACKOFF_TIME)],
+            [ConstantBackoffStrategy(options={}, backoff_time_in_seconds=SOME_BACKOFF_TIME, config={})],
         ),
         ("test_exponential_backoff", HTTPStatus.BAD_GATEWAY, None, None, {}, ResponseStatus.retry(10), None),
         (
@@ -40,7 +40,7 @@ SOME_BACKOFF_TIME = 60
             None,
             {},
             ResponseStatus.retry(10),
-            [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY()],
+            [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY(options={}, config={})],
         ),
         ("test_chain_backoff_strategy", HTTPStatus.BAD_GATEWAY, None, None, {}, ResponseStatus.retry(10), None),
         (
@@ -50,7 +50,10 @@ SOME_BACKOFF_TIME = 60
             None,
             {},
             ResponseStatus.retry(10),
-            [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY(), ConstantBackoffStrategy(SOME_BACKOFF_TIME)],
+            [
+                DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY(options={}, config={}),
+                ConstantBackoffStrategy(options={}, backoff_time_in_seconds=SOME_BACKOFF_TIME, config={}),
+            ],
         ),
         ("test_200", HTTPStatus.OK, None, None, {}, response_status.SUCCESS, None),
         ("test_3XX", HTTPStatus.PERMANENT_REDIRECT, None, None, {}, response_status.SUCCESS, None),

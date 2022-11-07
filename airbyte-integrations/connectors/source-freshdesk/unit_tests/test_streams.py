@@ -84,7 +84,7 @@ def _read_incremental(stream_instance: Stream, stream_state: MutableMapping[str,
     ],
 )
 def test_full_refresh(stream, resource, authenticator, config, requests_mock):
-    requests_mock.register_uri("GET", f"/api/{resource}", json=[{"id": x, "updated_at": "2022-05-05T00:00:00Z"} for x in range(25)])
+    requests_mock.register_uri("GET", f"/api/v2/{resource}", json=[{"id": x, "updated_at": "2022-05-05T00:00:00Z"} for x in range(25)])
 
     stream = stream(authenticator=authenticator, config=config)
     records = _read_full_refresh(stream)
@@ -93,9 +93,9 @@ def test_full_refresh(stream, resource, authenticator, config, requests_mock):
 
 
 def test_full_refresh_conversations(authenticator, config, requests_mock):
-    requests_mock.register_uri("GET", "/api/tickets", json=[{"id": x, "updated_at": "2022-05-05T00:00:00Z"} for x in range(5)])
+    requests_mock.register_uri("GET", "/api/v2/tickets", json=[{"id": x, "updated_at": "2022-05-05T00:00:00Z"} for x in range(5)])
     for i in range(5):
-        requests_mock.register_uri("GET", f"/api/tickets/{i}/conversations", json=[{"id": x} for x in range(10)])
+        requests_mock.register_uri("GET", f"/api/v2/tickets/{i}/conversations", json=[{"id": x} for x in range(10)])
 
     stream = Conversations(authenticator=authenticator, config=config)
     records = _read_full_refresh(stream)
@@ -105,7 +105,7 @@ def test_full_refresh_conversations(authenticator, config, requests_mock):
 
 def test_full_refresh_settings(authenticator, config, requests_mock):
     json_resp = {"primary_language": "en", "supported_languages": [], "portal_languages": []}
-    requests_mock.register_uri("GET", "/api/settings/helpdesk", json=json_resp)
+    requests_mock.register_uri("GET", "/api/v2/settings/helpdesk", json=json_resp)
 
     stream = Settings(authenticator=authenticator, config=config)
     records = _read_full_refresh(stream)
@@ -129,7 +129,7 @@ def test_incremental(stream, resource, authenticator, config, requests_mock):
     with patch(f"source_freshdesk.streams.{stream.__name__}.use_cache", new_callable=PropertyMock, return_value=False):
         requests_mock.register_uri(
             "GET",
-            f"/api/{resource}",
+            f"/api/v2/{resource}",
             json=[{"id": x, "updated_at": highest_updated_at if x == highest_index else other_updated_at} for x in range(25)],
         )
 
@@ -151,9 +151,9 @@ def test_incremental(stream, resource, authenticator, config, requests_mock):
     ],
 )
 def test_substream_full_refresh(requests_mock, stream_class, parent_path, sub_paths, authenticator, config):
-    requests_mock.register_uri("GET", "/api/" + parent_path, json=[{"id": x, "updated_at": "2022-05-05T00:00:00Z"} for x in range(5)])
+    requests_mock.register_uri("GET", "/api/v2/" + parent_path, json=[{"id": x, "updated_at": "2022-05-05T00:00:00Z"} for x in range(5)])
     for sub_path in sub_paths:
-        requests_mock.register_uri("GET", "/api/" + sub_path, json=[{"id": x, "updated_at": "2022-05-05T00:00:00Z"} for x in range(10)])
+        requests_mock.register_uri("GET", "/api/v2/" + sub_path, json=[{"id": x, "updated_at": "2022-05-05T00:00:00Z"} for x in range(10)])
 
     stream = stream_class(authenticator=authenticator, config=config)
     records = _read_full_refresh(stream)
@@ -179,11 +179,11 @@ def test_substream_full_refresh(requests_mock, stream_class, parent_path, sub_pa
     ],
 )
 def test_full_refresh_with_two_sub_levels(requests_mock, stream_class, parent_path, sub_paths, sub_sub_paths, authenticator, config):
-    requests_mock.register_uri("GET", f"/api/{parent_path}", json=[{"id": x} for x in range(5)])
+    requests_mock.register_uri("GET", f"/api/v2/{parent_path}", json=[{"id": x} for x in range(5)])
     for sub_path in sub_paths:
-        requests_mock.register_uri("GET", f"/api/{sub_path}", json=[{"id": x} for x in range(5)])
+        requests_mock.register_uri("GET", f"/api/v2/{sub_path}", json=[{"id": x} for x in range(5)])
         for sub_sub_path in sub_sub_paths:
-            requests_mock.register_uri("GET", f"/api/{sub_sub_path}", json=[{"id": x} for x in range(10)])
+            requests_mock.register_uri("GET", f"/api/v2/{sub_sub_path}", json=[{"id": x} for x in range(10)])
 
     stream = stream_class(authenticator=authenticator, config=config)
     records = _read_full_refresh(stream)
@@ -192,13 +192,13 @@ def test_full_refresh_with_two_sub_levels(requests_mock, stream_class, parent_pa
 
 
 def test_full_refresh_discussion_comments(requests_mock, authenticator, config):
-    requests_mock.register_uri("GET", "/api/discussions/categories", json=[{"id": x} for x in range(2)])
+    requests_mock.register_uri("GET", "/api/v2/discussions/categories", json=[{"id": x} for x in range(2)])
     for i in range(2):
-        requests_mock.register_uri("GET", f"/api/discussions/categories/{i}/forums", json=[{"id": x} for x in range(3)])
+        requests_mock.register_uri("GET", f"/api/v2/discussions/categories/{i}/forums", json=[{"id": x} for x in range(3)])
         for j in range(3):
-            requests_mock.register_uri("GET", f"/api/discussions/forums/{j}/topics", json=[{"id": x} for x in range(4)])
+            requests_mock.register_uri("GET", f"/api/v2/discussions/forums/{j}/topics", json=[{"id": x} for x in range(4)])
             for k in range(4):
-                requests_mock.register_uri("GET", f"/api/discussions/topics/{k}/comments", json=[{"id": x} for x in range(5)])
+                requests_mock.register_uri("GET", f"/api/v2/discussions/topics/{k}/comments", json=[{"id": x} for x in range(5)])
 
     stream = DiscussionComments(authenticator=authenticator, config=config)
     records = _read_full_refresh(stream)
