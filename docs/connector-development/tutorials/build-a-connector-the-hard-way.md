@@ -156,6 +156,7 @@ README.md
 acceptance-test-config.yml
 acceptance-test-docker.sh
 build.gradle
+source.py
 spec.json
 ```
 
@@ -261,6 +262,9 @@ Then we'll add the `check_method`:
 
 ```python
 import requests
+import datetime
+from datetime import date
+from datetime import timedelta
 
 def _call_api(ticker, token):
     today = date.today()
@@ -283,6 +287,8 @@ def check(config):
     output_message = {"type": "CONNECTION_STATUS", "connectionStatus": result}
     print(json.dumps(output_message))
 ```
+
+In order to run this code later, be sure to `pip install requests` in your local virtual environment. `datetime` should already be included in your Python installation. 
 
 Lastly we'll extend the `run` method to accept the `check` command and call the `check` method. First we'll add a helper method for reading input:
 
@@ -312,6 +318,12 @@ elif command == "check":
     config_file_path = get_input_file_path(parsed_args.config)
     config = read_json(config_file_path)
     check(config)
+```
+
+Then we need to update our list of available commands:
+
+```python
+        log("Invalid command. Allowable commands: [spec, check]")
 ```
 
 This results in the following `run` method.
@@ -349,7 +361,9 @@ def run(args):
     sys.exit(0)
 ```
 
-and that should be it. Let's test our new method:
+and that should be it.
+
+Let's test our new method:
 
 ```bash
 $ python source.py check --config secrets/valid_config.json
@@ -414,6 +428,12 @@ and
 ```python
 elif command == "discover":
     discover()
+```
+
+We need to update our list of available commands:
+
+```python
+        log("Invalid command. Allowable commands: [spec, check, discover]")
 ```
 
 You may be wondering why `config` is a required input to `discover` if it's not used. This is done for consistency: the Airbyte Specification requires `--config` as an input to `discover` because many sources require it \(e.g: to discover the tables available in a Postgres database, you must supply a password\). So instead of guessing whether the flag is required depending on the connector, we always assume it is required, and the connector can choose whether to use it.
@@ -526,10 +546,6 @@ First, let's create a configured catalog `fullrefresh_configured_catalog.json` t
 Then we'll define the `read` method in `source.py`:
 
 ```python
-import datetime
-from datetime import date
-from datetime import timedelta
-
 def read(config, catalog):
     # Assert required configuration was provided
     if "api_key" not in config or "stock_ticker" not in config:
@@ -588,6 +604,12 @@ elif command == "read":
     config = read_json(get_input_file_path(parsed_args.config))
     configured_catalog = read_json(get_input_file_path(parsed_args.catalog))
     read(config, configured_catalog)
+```
+
+and: 
+
+```python
+        log("Invalid command. Allowable commands: [spec, check, discover, read]")
 ```
 
 this yields the following `run` method:
@@ -915,7 +937,7 @@ Then we can run the image using:
 docker run airbyte/source-stock-ticker-api:dev
 ```
 
-to run any of our commands, we'll need to mount all the inputs into the Docker container first, then refer to their _mounted_ paths when invoking the connector. For example, we'd run `check` or `read` as follows:
+To run any of our commands, we'll need to mount all the inputs into the Docker container first, then refer to their _mounted_ paths when invoking the connector. This allows the connector to access your secrets without having to build them into the container. For example, we'd run `check` or `read` as follows:
 
 ```bash
 $ docker run airbyte/source-stock-ticker-api:dev spec
@@ -1058,7 +1080,7 @@ airbyte-server      | Version: dev
 airbyte-server      | 
 ```
 
-After you see the above banner printed out in the terminal window where you are running `docker-compose up`, visit [http://localhost:8000](http://localhost:8000) in your browser. 
+After you see the above banner printed out in the terminal window where you are running `docker-compose up`, visit [http://localhost:8000](http://localhost:8000) in your browser and log in with the default credentials: username `airbyte` and password `password`. 
 
 If this is the first time using the Airbyte UI, then you will be prompted to go through a first-time wizard. To skip it, click the "Skip Onboarding" button.
 
