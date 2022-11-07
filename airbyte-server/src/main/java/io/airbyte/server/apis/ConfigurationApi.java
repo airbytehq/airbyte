@@ -130,6 +130,7 @@ import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.helper.ConnectionHelper;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -169,11 +170,14 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
 
+    final ConnectionHelper connectionHelper = new ConnectionHelper(configRepository, workspaceHelper);
+
     connectionsHandler = new ConnectionsHandler(
         configRepository,
         workspaceHelper,
         trackingClient,
-        eventRunner);
+        eventRunner,
+        connectionHelper);
 
     schedulerHandler = new SchedulerHandler(
         configRepository,
@@ -369,7 +373,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
-  public InternalOperationResult saveStats(SaveStatsRequestBody saveStatsRequestBody) {
+  public InternalOperationResult saveStats(final SaveStatsRequestBody saveStatsRequestBody) {
     throw new UnsupportedOperationException();
   }
 

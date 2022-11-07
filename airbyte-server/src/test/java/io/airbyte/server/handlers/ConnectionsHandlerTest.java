@@ -66,6 +66,7 @@ import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.helper.ConnectionHelper;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -98,6 +99,7 @@ class ConnectionsHandlerTest {
   private WorkspaceHelper workspaceHelper;
   private TrackingClient trackingClient;
   private EventRunner eventRunner;
+  private ConnectionHelper connectionHelper;
 
   private static final String PRESTO_TO_HUDI = "presto to hudi";
   private static final String PRESTO_TO_HUDI_PREFIX = "presto_to_hudi";
@@ -173,7 +175,7 @@ class ConnectionsHandlerTest {
     workspaceHelper = mock(WorkspaceHelper.class);
     trackingClient = mock(TrackingClient.class);
     eventRunner = mock(EventRunner.class);
-
+    connectionHelper = mock(ConnectionHelper.class);
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(operationId)).thenReturn(workspaceId);
@@ -190,7 +192,8 @@ class ConnectionsHandlerTest {
           uuidGenerator,
           workspaceHelper,
           trackingClient,
-          eventRunner);
+          eventRunner,
+          connectionHelper);
 
       when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
       final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
@@ -831,10 +834,11 @@ class ConnectionsHandlerTest {
     }
 
     @Test
-    void testDeleteConnection() {
+    void testDeleteConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
       connectionsHandler.deleteConnection(connectionId);
 
-      verify(eventRunner).deleteConnection(connectionId);
+      verify(connectionHelper).deleteConnection(connectionId);
+      verify(eventRunner).startNewCancellation(connectionId);
     }
 
     @Test
@@ -904,7 +908,8 @@ class ConnectionsHandlerTest {
           uuidGenerator,
           workspaceHelper,
           trackingClient,
-          eventRunner);
+          eventRunner,
+          connectionHelper);
     }
 
     @Test
