@@ -14,7 +14,7 @@ COPY oauth2.patch.json ./
 COPY streams/email_activity.pk.json ./streams/email_activity.pk.json
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
-COPY --from=ghcr.io/estuary/airbyte-to-flow:mahdi-test /airbyte-to-flow ./
+COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./
 ENTRYPOINT ["/airbyte/integration_code/airbyte-to-flow", "--connector-entrypoint", "python /airbyte/integration_code/main.py"]
 
 LABEL io.airbyte.version=v1
