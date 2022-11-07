@@ -5,7 +5,6 @@
 from unittest.mock import MagicMock
 
 import responses
-
 from source_klarna.source import SourceKlarna
 
 

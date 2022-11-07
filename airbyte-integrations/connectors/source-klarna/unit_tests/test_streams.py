@@ -1,12 +1,12 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
-
 from source_klarna.source import KlarnaStream, Payouts, Transactions
 
 
@@ -28,7 +28,7 @@ def test_request_params(patch_base_class, klarna_stream):
     "total,count,offset,next_,expected_params",
     [
         (9, 4, 0, "https://api.playground.klarna.com/settlements/v1/payouts?offset=4&size=4", {"offset": ["4"], "size": ["4"]}),
-        (9, 4, 4, "https://api.playground.klarna.com/settlements/v1/payouts?offset=48&size=4", {"offset": ["8"], "size": ["4"]}),
+        (9, 4, 4, "https://api.playground.klarna.com/settlements/v1/payouts?offset=48&size=4", {"offset": ["48"], "size": ["4"]}),
     ],
 )
 def test_next_page_token(patch_base_class, klarna_stream, total, count, offset, next_, expected_params):
