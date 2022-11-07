@@ -116,6 +116,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private static final String CHECK_JOB_OUTPUT_TAG = "check_job_output";
   private static final int CHECK_JOB_OUTPUT_TAG_CURRENT_VERSION = 1;
 
+  private static final String DONT_DELETE_IN_TEMPORAL_TAG = "dont_delete_in_temporal";
+  private static final int DONT_DELETE_IN_TEMPORAL_TAG_CURRENT_VERSION = 1;
+
   private static final String DELETE_RESET_JOB_STREAMS_TAG = "delete_reset_job_streams";
   private static final int DELETE_RESET_JOB_STREAMS_CURRENT_VERSION = 1;
   private static final String RECORD_METRIC_TAG = "record_metric";
@@ -179,14 +182,20 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
             new RecordMetricInput(connectionUpdaterInput, Optional.of(FailureCause.CANCELED), OssMetricsRegistry.TEMPORAL_WORKFLOW_FAILURE, null));
       }
 
-      if (workflowState.isDeleted()) {
-        if (workflowState.isRunning()) {
-          log.info("Cancelling the current running job because a connection deletion was requested");
-          reportCancelled(connectionUpdaterInput.getConnectionId());
+      final int dontDeleteInTemporal =
+          Workflow.getVersion(DONT_DELETE_IN_TEMPORAL_TAG, Workflow.DEFAULT_VERSION, DONT_DELETE_IN_TEMPORAL_TAG_CURRENT_VERSION);
+
+      if (dontDeleteInTemporal < DONT_DELETE_IN_TEMPORAL_TAG_CURRENT_VERSION) {
+        if (workflowState.isDeleted()) {
+          if (workflowState.isRunning()) {
+            log.info("Cancelling the current running job because a connection deletion was requested");
+            // This call is not needed anymore since this will be cancel using the the cancellation state
+            reportCancelled(connectionUpdaterInput.getConnectionId());
+          }
+          log.info("Workflow deletion was requested. Calling deleteConnection activity before terminating the workflow.");
+          deleteConnectionBeforeTerminatingTheWorkflow();
+          return;
         }
-        log.info("Workflow deletion was requested. Calling deleteConnection activity before terminating the workflow.");
-        deleteConnectionBeforeTerminatingTheWorkflow();
-        return;
       }
 
       // this means that the current workflow is being cancelled so that a reset can be run instead.
@@ -503,6 +512,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     cancellableSyncWorkflow.cancel();
   }
 
+  // TODO: Delete when the don't delete in temporal is removed
   @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
   public void deleteConnection() {
