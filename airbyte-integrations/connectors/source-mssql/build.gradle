@@ -15,15 +15,16 @@ dependencies {
 
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:bases:debezium-v1-4-2')
+    implementation project(':airbyte-integrations:bases:debezium-v1-9-6')
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
-    implementation 'io.debezium:debezium-connector-sqlserver:1.4.2.Final'
+    implementation 'io.debezium:debezium-connector-sqlserver:1.9.6.Final'
     implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
+    implementation 'org.codehaus.plexus:plexus-utils:3.4.2'
 
-    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium-v1-4-2'))
+    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium-v1-9-6'))
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
