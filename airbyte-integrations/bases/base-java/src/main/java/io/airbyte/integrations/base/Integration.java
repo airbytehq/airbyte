@@ -21,8 +21,7 @@ public interface Integration {
   /**
    * Check whether, given the current configuration, the integration can connect to the integration.
    *
-   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
-   *        "password": "super secure" }
+   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte", "password": "super secure" }
    * @return Whether or not the connection was successful. Optional message if it was not.
    * @throws Exception - any exception.
    */

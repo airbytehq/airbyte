@@ -11,9 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Minimal abstract class intended to handle the case where the destination can commit records every
- * time a state message appears. This class does that commit and then immediately emits the state
- * message. This should only be used in cases when the commit is relatively cheap. immediately.
+ * Minimal abstract class intended to handle the case where the destination can commit records every time a state message appears. This class does
+ * that commit and then immediately emits the state message. This should only be used in cases when the commit is relatively cheap. immediately.
  */
 public abstract class CommitOnStateAirbyteMessageConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
 

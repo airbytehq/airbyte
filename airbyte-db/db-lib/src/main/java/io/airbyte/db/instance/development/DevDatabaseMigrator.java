@@ -21,8 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This migrator can prepare the database with previous migrations, and only run the latest
- * migration for testing. It is used in {@link MigrationDevHelper#runLastMigration}.
+ * This migrator can prepare the database with previous migrations, and only run the latest migration for testing. It is used in
+ * {@link MigrationDevHelper#runLastMigration}.
  */
 public class DevDatabaseMigrator implements DatabaseMigrator {
 
@@ -87,8 +87,8 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
   }
 
   /**
-   * Create a baseline migration from a full migrator. The baseline migrator does not run the last
-   * migration, which will be usually the migration to be tested.
+   * Create a baseline migration from a full migrator. The baseline migrator does not run the last migration, which will be usually the migration to
+   * be tested.
    */
   private static DatabaseMigrator getBaselineMigrator(final FlywayDatabaseMigrator fullMigrator) {
     final FluentConfiguration baselineConfig = getBaselineConfig(fullMigrator);

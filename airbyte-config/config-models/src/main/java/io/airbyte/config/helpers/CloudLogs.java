@@ -16,9 +16,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Interface for various Cloud Storage clients supporting Cloud log retrieval.
  *
- * The underlying assumption 1) each file at the path is part of the entire log file represented by
- * that path 2) log files names start with timestamps, making it possible extract the time the file
- * was written from it's name.
+ * The underlying assumption 1) each file at the path is part of the entire log file represented by that path 2) log files names start with
+ * timestamps, making it possible extract the time the file was written from it's name.
  */
 @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public interface CloudLogs {
@@ -26,14 +25,12 @@ public interface CloudLogs {
   Logger LOGGER = LoggerFactory.getLogger(CloudLogs.class);
 
   /**
-   * Retrieve all objects at the given path in lexicographical order, and return their contents as one
-   * file.
+   * Retrieve all objects at the given path in lexicographical order, and return their contents as one file.
    */
   File downloadCloudLog(LogConfigs configs, String logPath) throws IOException;
 
   /**
-   * Assume all the lexicographically ordered objects at the given path form one giant log file,
-   * return the last numLines lines.
+   * Assume all the lexicographically ordered objects at the given path form one giant log file, return the last numLines lines.
    */
   List<String> tailCloudLog(LogConfigs configs, String logPath, int numLines) throws IOException;
 

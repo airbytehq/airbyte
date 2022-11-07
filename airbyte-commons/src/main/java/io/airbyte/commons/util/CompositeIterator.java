@@ -13,21 +13,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Composes multiple {@link AutoCloseableIterator}s. For each internal iterator, after the first
- * time its {@link Iterator#hasNext} function returns false, the composite iterator will call
- * {@link AutoCloseableIterator#close()} on that internal iterator.
+ * Composes multiple {@link AutoCloseableIterator}s. For each internal iterator, after the first time its {@link Iterator#hasNext} function returns
+ * false, the composite iterator will call {@link AutoCloseableIterator#close()} on that internal iterator.
  *
  * <p>
- * {@link CompositeIterator}s should be closed. Calling {@link CompositeIterator#close()} will
- * attempt to close each internal iterator as well. Thus the close method on each internal iterator
- * should be idempotent as it is will likely be called multiple times.
+ * {@link CompositeIterator}s should be closed. Calling {@link CompositeIterator#close()} will attempt to close each internal iterator as well. Thus
+ * the close method on each internal iterator should be idempotent as it is will likely be called multiple times.
  * </p>
  * <p>
- * {@link CompositeIterator#close()} gives the guarantee that it will call close on each internal
- * iterator once (even if any of the iterators throw an exception). After it has attempted to close
- * each one once, {@link CompositeIterator} will rethrow the _first_ exception that it encountered
- * while closing internal iterators. If multiple internal iterators throw exceptions, only the first
- * exception will be rethrown, though the others will be logged.
+ * {@link CompositeIterator#close()} gives the guarantee that it will call close on each internal iterator once (even if any of the iterators throw an
+ * exception). After it has attempted to close each one once, {@link CompositeIterator} will rethrow the _first_ exception that it encountered while
+ * closing internal iterators. If multiple internal iterators throw exceptions, only the first exception will be rethrown, though the others will be
+ * logged.
  * </p>
  *
  * @param <T> type

@@ -71,12 +71,10 @@ public class ApiClientBeanFactory {
   }
 
   /**
-   * Generate an auth token based on configs. This is called by the Api Client's requestInterceptor
-   * for each request. Using Prototype annotation here to make sure each time it's used it will
-   * generate a new JWT Signature if it's on data plane.
+   * Generate an auth token based on configs. This is called by the Api Client's requestInterceptor for each request. Using Prototype annotation here
+   * to make sure each time it's used it will generate a new JWT Signature if it's on data plane.
    * <p>
-   * For Data Plane workers, generate a signed JWT as described here:
-   * https://cloud.google.com/endpoints/docs/openapi/service-account-authentication
+   * For Data Plane workers, generate a signed JWT as described here: https://cloud.google.com/endpoints/docs/openapi/service-account-authentication
    * <p>
    * Otherwise, use the AIRBYTE_API_AUTH_HEADER_VALUE from EnvConfigs.
    */

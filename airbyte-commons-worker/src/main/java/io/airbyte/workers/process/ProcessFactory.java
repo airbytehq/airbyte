@@ -26,14 +26,11 @@ public interface ProcessFactory {
    * @param attempt attempt Id
    * @param jobPath Workspace directory to run the process from.
    * @param imageName Docker image name to start the process from.
-   * @param files File name to contents map that will be written into the working dir of the process
-   *        prior to execution.
-   * @param entrypoint If not null, the default entrypoint program of the docker image can be changed
-   *        by this argument.
+   * @param files File name to contents map that will be written into the working dir of the process prior to execution.
+   * @param entrypoint If not null, the default entrypoint program of the docker image can be changed by this argument.
    * @param resourceRequirements CPU and RAM to assign to the created process.
    * @param labels Labels to assign to the created Kube pod, if any. Ignore for docker.
-   * @param jobMetadata Job metadata that will be passed to the created process as environment
-   *        variables.
+   * @param jobMetadata Job metadata that will be passed to the created process as environment variables.
    * @param args Arguments to pass to the docker image being run in the new process.
    * @return ProcessBuilder object to run the process.
    * @throws WorkerException
@@ -54,12 +51,11 @@ public interface ProcessFactory {
       throws WorkerException;
 
   /**
-   * Docker image names are by convention separated by slashes. The last portion is the image's name.
-   * This is followed by a colon and a version number. e.g. airbyte/scheduler:v1 or
-   * gcr.io/my-project/image-name:v2.
+   * Docker image names are by convention separated by slashes. The last portion is the image's name. This is followed by a colon and a version
+   * number. e.g. airbyte/scheduler:v1 or gcr.io/my-project/image-name:v2.
    *
-   * With these two facts, attempt to construct a unique process name with the image name present that
-   * can be used by the factories implementing this interface for easier operations.
+   * With these two facts, attempt to construct a unique process name with the image name present that can be used by the factories implementing this
+   * interface for easier operations.
    */
   static String createProcessName(final String fullImagePath, final String jobType, final String jobId, final int attempt, final int lenLimit) {
     final var noVersion = fullImagePath.split(VERSION_DELIMITER)[0];

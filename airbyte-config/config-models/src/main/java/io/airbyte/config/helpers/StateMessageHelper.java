@@ -22,8 +22,8 @@ public class StateMessageHelper {
   public static class AirbyteStateMessageListTypeReference extends TypeReference<List<AirbyteStateMessage>> {}
 
   /**
-   * This a takes a json blob state and tries return either a legacy state in the format of a json
-   * object or a state message with the new format which is a list of airbyte state message.
+   * This a takes a json blob state and tries return either a legacy state in the format of a json object or a state message with the new format which
+   * is a list of airbyte state message.
    *
    * @param state - a blob representing the state
    * @return An optional state wrapper, if there is no state an empty optional will be returned
@@ -80,8 +80,8 @@ public class StateMessageHelper {
   /**
    * Converts a StateWrapper to a State
    *
-   * LegacyStates are directly serialized into the state. GlobalStates and StreamStates are serialized
-   * as a list of AirbyteStateMessage in the state attribute.
+   * LegacyStates are directly serialized into the state. GlobalStates and StreamStates are serialized as a list of AirbyteStateMessage in the state
+   * attribute.
    *
    * @param stateWrapper the StateWrapper to convert
    * @return the Converted State

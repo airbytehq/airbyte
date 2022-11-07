@@ -89,8 +89,8 @@ public class CatalogConverter {
   }
 
   /**
-   * Converts the API catalog model into a protocol catalog. Note: returns all streams, regardless of
-   * selected status. See {@link CatalogConverter#toProtocol(AirbyteStream)} for context.
+   * Converts the API catalog model into a protocol catalog. Note: returns all streams, regardless of selected status. See
+   * {@link CatalogConverter#toProtocol(AirbyteStream)} for context.
    *
    * @param catalog api catalog
    * @return protocol catalog
@@ -102,11 +102,9 @@ public class CatalogConverter {
   }
 
   /**
-   * Converts the API catalog model into a protocol catalog. Note: only streams marked as selected
-   * will be returned. This is included in this converter as the API model always carries all the
-   * streams it has access to and then marks the ones that should not be used as not selected, while
-   * the protocol version just uses the presence of the streams as evidence that it should be
-   * included.
+   * Converts the API catalog model into a protocol catalog. Note: only streams marked as selected will be returned. This is included in this
+   * converter as the API model always carries all the streams it has access to and then marks the ones that should not be used as not selected, while
+   * the protocol version just uses the presence of the streams as evidence that it should be included.
    *
    * @param catalog api catalog
    * @return protocol catalog

@@ -110,10 +110,9 @@ class TestStreamingJdbcDatabase {
   }
 
   /**
-   * Test stream querying a table with 20 rows. Each row is 10 MB large. The table in this test must
-   * contain more than {@code
-   * FetchSizeConstants.INITIAL_SAMPLE_SIZE} rows. Otherwise, all rows will be fetched in the first
-   * fetch, the fetch size won't be adjusted, and the test will fail.
+   * Test stream querying a table with 20 rows. Each row is 10 MB large. The table in this test must contain more than {@code
+   * FetchSizeConstants.INITIAL_SAMPLE_SIZE} rows. Otherwise, all rows will be fetched in the first fetch, the fetch size won't be adjusted, and the
+   * test will fail.
    */
   @Order(2)
   @Test

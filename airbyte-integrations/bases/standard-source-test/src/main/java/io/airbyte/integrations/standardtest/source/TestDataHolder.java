@@ -68,10 +68,9 @@ public class TestDataHolder {
     }
 
     /**
-     * The name of the source data type. Duplicates by name will be tested independently from each
-     * others. Note that this name will be used for connector setup and table creation. If source syntax
-     * requires more details (E.g. "varchar" type requires length "varchar(50)"), you can additionally
-     * set custom data type syntax by {@link TestDataHolderBuilder#fullSourceDataType(String)} method.
+     * The name of the source data type. Duplicates by name will be tested independently from each others. Note that this name will be used for
+     * connector setup and table creation. If source syntax requires more details (E.g. "varchar" type requires length "varchar(50)"), you can
+     * additionally set custom data type syntax by {@link TestDataHolderBuilder#fullSourceDataType(String)} method.
      *
      * @param sourceType source data type name
      * @return builder
@@ -84,8 +83,7 @@ public class TestDataHolder {
     }
 
     /**
-     * corresponding Airbyte data type. It requires for proper configuration
-     * {@link ConfiguredAirbyteStream}
+     * corresponding Airbyte data type. It requires for proper configuration {@link ConfiguredAirbyteStream}
      *
      * @param airbyteType Airbyte data type
      * @return builder
@@ -96,10 +94,9 @@ public class TestDataHolder {
     }
 
     /**
-     * Set custom the create table script pattern. Use it if you source uses untypical table creation
-     * sql. Default patter described {@link #DEFAULT_CREATE_TABLE_SQL} Note! The patter should contain
-     * four String place holders for the: - namespace.table name (as one placeholder together) - id
-     * column name - test column name - test column data type
+     * Set custom the create table script pattern. Use it if you source uses untypical table creation sql. Default patter described
+     * {@link #DEFAULT_CREATE_TABLE_SQL} Note! The patter should contain four String place holders for the: - namespace.table name (as one placeholder
+     * together) - id column name - test column name - test column data type
      *
      * @param createTablePatternSql creation table sql pattern
      * @return builder
@@ -110,9 +107,8 @@ public class TestDataHolder {
     }
 
     /**
-     * Set custom the insert record script pattern. Use it if you source uses untypical insert record
-     * sql. Default patter described {@link #DEFAULT_INSERT_SQL} Note! The patter should contains two
-     * String place holders for the table name and value.
+     * Set custom the insert record script pattern. Use it if you source uses untypical insert record sql. Default patter described
+     * {@link #DEFAULT_INSERT_SQL} Note! The patter should contains two String place holders for the table name and value.
      *
      * @param insertPatternSql creation table sql pattern
      * @return builder
@@ -123,8 +119,8 @@ public class TestDataHolder {
     }
 
     /**
-     * Allows to set extended data type for the table creation. E.g. The "varchar" type requires in
-     * MySQL requires length. In this case fullSourceDataType will be "varchar(50)".
+     * Allows to set extended data type for the table creation. E.g. The "varchar" type requires in MySQL requires length. In this case
+     * fullSourceDataType will be "varchar(50)".
      *
      * @param fullSourceDataType actual string for the column data type description
      * @return builder
@@ -135,9 +131,8 @@ public class TestDataHolder {
     }
 
     /**
-     * Adds value(s) to the scope of a corresponding test. The values will be inserted into the created
-     * table. Note! The value will be inserted into the insert script without any transformations. Make
-     * sure that the value is in line with the source syntax.
+     * Adds value(s) to the scope of a corresponding test. The values will be inserted into the created table. Note! The value will be inserted into
+     * the insert script without any transformations. Make sure that the value is in line with the source syntax.
      *
      * @param insertValue test value
      * @return builder
@@ -148,8 +143,7 @@ public class TestDataHolder {
     }
 
     /**
-     * Adds expected value(s) to the test scope. If you add at least one value, it will check that all
-     * values are provided by corresponding streamer.
+     * Adds expected value(s) to the test scope. If you add at least one value, it will check that all values are provided by corresponding streamer.
      *
      * @param expectedValue value which should be provided by a streamer
      * @return builder
@@ -160,8 +154,8 @@ public class TestDataHolder {
     }
 
     /**
-     * Add NULL value to the expected value list. If you need to add only one value and it's NULL, you
-     * have to use this method instead of {@link #addExpectedValues(String...)}
+     * Add NULL value to the expected value list. If you need to add only one value and it's NULL, you have to use this method instead of
+     * {@link #addExpectedValues(String...)}
      *
      * @return builder
      */

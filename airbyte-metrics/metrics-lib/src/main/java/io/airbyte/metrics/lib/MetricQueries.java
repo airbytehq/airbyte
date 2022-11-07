@@ -14,8 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 
 /**
- * This class centralises metrics queries. These queries power metrics that require some sort of
- * data access or calculation.
+ * This class centralises metrics queries. These queries power metrics that require some sort of data access or calculation.
  * <p>
  * Simple metrics that require no calculation need not be tracked here.
  */

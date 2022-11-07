@@ -68,19 +68,16 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
     } else if (streamBuffer.getByteCount() >= streamBuffer.getMaxPerStreamBufferSizeInBytes()) {
       flushWriter(stream, streamBuffer);
       /*
-       * Note: We intentionally do not mark didFlush as true in the branch of this conditional. Because
-       * this branch flushes individual streams, there is no guaranteee that it will flush records in the
-       * same order that state messages were received. The outcome here is that records get flushed but
-       * our updating of which state messages have been flushed falls behind.
+       * Note: We intentionally do not mark didFlush as true in the branch of this conditional. Because this branch flushes individual streams, there
+       * is no guaranteee that it will flush records in the same order that state messages were received. The outcome here is that records get flushed
+       * but our updating of which state messages have been flushed falls behind.
        *
-       * This is not ideal from a checkpoint point of view, because it means in the case where there is a
-       * failure, we will not be able to report that those records that were flushed and committed were
-       * committed because there corresponding state messages weren't marked as flushed. Thus, it weakens
-       * checkpointing, but it does not cause a correctness issue.
+       * This is not ideal from a checkpoint point of view, because it means in the case where there is a failure, we will not be able to report that
+       * those records that were flushed and committed were committed because there corresponding state messages weren't marked as flushed. Thus, it
+       * weakens checkpointing, but it does not cause a correctness issue.
        *
-       * In non-failure cases, using this conditional branch relies on the state messages getting flushed
-       * by some other means. That can be caused by the previous branch in this conditional. It is
-       * guaranteed by the fact that we always flush all state messages at the end of a sync.
+       * In non-failure cases, using this conditional branch relies on the state messages getting flushed by some other means. That can be caused by
+       * the previous branch in this conditional. It is guaranteed by the fact that we always flush all state messages at the end of a sync.
        */
     }
 

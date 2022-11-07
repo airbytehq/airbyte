@@ -5,8 +5,7 @@
 package io.airbyte.db.check;
 
 /**
- * Custom exception that represents a failure that occurs during an attempt to check the
- * availability or migration status of a database.
+ * Custom exception that represents a failure that occurs during an attempt to check the availability or migration status of a database.
  */
 public class DatabaseCheckException extends Exception {
 

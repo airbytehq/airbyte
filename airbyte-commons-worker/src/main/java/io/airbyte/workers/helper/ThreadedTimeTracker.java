@@ -5,8 +5,8 @@
 package io.airbyte.workers.helper;
 
 /**
- * This class exists to track timing information for the sync. It needs to be thread-safe as
- * multiple threads (source, destination, and worker) will be accessing it.
+ * This class exists to track timing information for the sync. It needs to be thread-safe as multiple threads (source, destination, and worker) will
+ * be accessing it.
  */
 public class ThreadedTimeTracker {
 

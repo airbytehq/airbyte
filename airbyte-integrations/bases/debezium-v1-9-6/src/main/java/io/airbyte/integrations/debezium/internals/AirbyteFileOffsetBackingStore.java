@@ -26,12 +26,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class handles reading and writing a debezium offset file. In many cases it is duplicating
- * logic in debezium because that logic is not exposed in the public API. We mostly treat the
- * contents of this state file like a black box. We know it is a Map&lt;ByteBuffer, Bytebuffer&gt;.
- * We deserialize it to a Map&lt;String, String&gt; so that the state file can be human readable. If
- * we ever discover that any of the contents of these offset files is not string serializable we
- * will likely have to drop the human readability support and just base64 encode it.
+ * This class handles reading and writing a debezium offset file. In many cases it is duplicating logic in debezium because that logic is not exposed
+ * in the public API. We mostly treat the contents of this state file like a black box. We know it is a Map&lt;ByteBuffer, Bytebuffer&gt;. We
+ * deserialize it to a Map&lt;String, String&gt; so that the state file can be human readable. If we ever discover that any of the contents of these
+ * offset files is not string serializable we will likely have to drop the human readability support and just base64 encode it.
  */
 public class AirbyteFileOffsetBackingStore {
 
@@ -78,8 +76,7 @@ public class AirbyteFileOffsetBackingStore {
   }
 
   /**
-   * See FileOffsetBackingStore#load - logic is mostly borrowed from here. duplicated because this
-   * method is not public.
+   * See FileOffsetBackingStore#load - logic is mostly borrowed from here. duplicated because this method is not public.
    */
   @SuppressWarnings("unchecked")
   private Map<ByteBuffer, ByteBuffer> load() {
@@ -110,8 +107,7 @@ public class AirbyteFileOffsetBackingStore {
   }
 
   /**
-   * See FileOffsetBackingStore#save - logic is mostly borrowed from here. duplicated because this
-   * method is not public.
+   * See FileOffsetBackingStore#save - logic is mostly borrowed from here. duplicated because this method is not public.
    */
   private void save(final Map<ByteBuffer, ByteBuffer> data) {
     try (final ObjectOutputStream os = new ObjectOutputStream(Files.newOutputStream(offsetFilePath))) {

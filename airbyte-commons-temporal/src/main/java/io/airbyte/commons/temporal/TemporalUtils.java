@@ -144,9 +144,8 @@ public class TemporalUtils {
   }
 
   /**
-   * Modifies the retention period for on-premise deployment of Temporal at the default namespace.
-   * This should not be called when using Temporal Cloud, because Temporal Cloud does not allow
-   * programmatic modification of workflow execution retention TTL.
+   * Modifies the retention period for on-premise deployment of Temporal at the default namespace. This should not be called when using Temporal
+   * Cloud, because Temporal Cloud does not allow programmatic modification of workflow execution retention TTL.
    */
   public void configureTemporalNamespace(final WorkflowServiceStubs temporalService) {
     if (temporalCloudEnabled) {
@@ -183,9 +182,8 @@ public class TemporalUtils {
   }
 
   /**
-   * Allows running a given temporal workflow stub asynchronously. This method only works for
-   * workflows that take one argument. Because of the iface that Temporal supplies, in order to handle
-   * other method signatures, if we need to support them, we will need to add another helper with that
+   * Allows running a given temporal workflow stub asynchronously. This method only works for workflows that take one argument. Because of the iface
+   * that Temporal supplies, in order to handle other method signatures, if we need to support them, we will need to add another helper with that
    * number of args. For a reference on how Temporal recommends to do this see their docs:
    * https://docs.temporal.io/docs/java/workflows#asynchronous-start
    *
@@ -196,8 +194,8 @@ public class TemporalUtils {
    * @param <STUB> - type of the workflow stub
    * @param <A1> - type of the argument of the workflow stub
    * @param <R> - type of the return of the workflow stub
-   * @return pair of the workflow execution (contains metadata on the asynchronously running job) and
-   *         future that can be used to await the result of the workflow stub's function
+   * @return pair of the workflow execution (contains metadata on the asynchronously running job) and future that can be used to await the result of
+   *         the workflow stub's function
    */
   public <STUB, A1, R> ImmutablePair<WorkflowExecution, CompletableFuture<R>> asyncExecute(final STUB workflowStub,
                                                                                            final Functions.Func1<A1, R> function,
@@ -212,8 +210,7 @@ public class TemporalUtils {
   /**
    * Loops and waits for the Temporal service to become available and returns a client.
    * <p>
-   * This function uses a supplier as input since the creation of a WorkflowServiceStubs can result in
-   * connection exceptions as well.
+   * This function uses a supplier as input since the creation of a WorkflowServiceStubs can result in connection exceptions as well.
    */
   public WorkflowServiceStubs getTemporalClientWhenConnected(
                                                              final Duration waitInterval,
@@ -261,8 +258,7 @@ public class TemporalUtils {
   }
 
   /**
-   * Runs the code within the supplier while heartbeating in the backgroud. Also makes sure to shut
-   * down the heartbeat server after the fact.
+   * Runs the code within the supplier while heartbeating in the backgroud. Also makes sure to shut down the heartbeat server after the fact.
    */
   public <T> T withBackgroundHeartbeat(final Callable<T> callable,
                                        final Supplier<ActivityExecutionContext> activityContext) {

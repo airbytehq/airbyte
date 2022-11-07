@@ -15,16 +15,15 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Light wrapper around the DogsStatsD client to make using the client slightly more ergonomic.
  * <p>
- * This class mainly exists to help Airbyte instrument/debug application on Airbyte Cloud. The
- * methods here do not fail loudly to prevent application disruption.
+ * This class mainly exists to help Airbyte instrument/debug application on Airbyte Cloud. The methods here do not fail loudly to prevent application
+ * disruption.
  * <p>
  * Open source users are free to turn this on and consume the same metrics.
  * <p>
  * This class is intended to be used in conjunction with {@link Configs#getPublishMetrics()}.
  * <p>
- * Any {@link MetricAttribute}s provided with the metric data are sent as tags created by joining
- * the {@code key} and {@code value} property of each {@link MetricAttribute} with a
- * {@link #TAG_DELIMITER} delimiter.
+ * Any {@link MetricAttribute}s provided with the metric data are sent as tags created by joining the {@code key} and {@code value} property of each
+ * {@link MetricAttribute} with a {@link #TAG_DELIMITER} delimiter.
  */
 @Slf4j
 public class DogStatsDMetricClient implements MetricClient {
@@ -35,8 +34,8 @@ public class DogStatsDMetricClient implements MetricClient {
   private StatsDClient statsDClient;
 
   /**
-   * Traditional singleton initialize call. Please invoke this before using any methods in this class.
-   * Usually called in the main class of the application attempting to publish metrics.
+   * Traditional singleton initialize call. Please invoke this before using any methods in this class. Usually called in the main class of the
+   * application attempting to publish metrics.
    */
 
   public void initialize(final MetricEmittingApp app, final DatadogClientConfiguration config) {

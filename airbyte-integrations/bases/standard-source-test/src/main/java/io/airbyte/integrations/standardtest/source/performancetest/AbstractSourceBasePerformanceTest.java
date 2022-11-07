@@ -8,8 +8,7 @@ import io.airbyte.integrations.standardtest.source.AbstractSourceConnectorTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 
 /**
- * This abstract class contains common methods for both steams - Fill Db scripts and Performance
- * tests.
+ * This abstract class contains common methods for both steams - Fill Db scripts and Performance tests.
  */
 public abstract class AbstractSourceBasePerformanceTest extends AbstractSourceConnectorTest {
 
@@ -17,8 +16,7 @@ public abstract class AbstractSourceBasePerformanceTest extends AbstractSourceCo
   private static final String TEST_STREAM_NAME_TEMPLATE = "test_%S";
 
   /**
-   * The column name will be used for a test column in the test tables. Override it if default name is
-   * not valid for your source.
+   * The column name will be used for a test column in the test tables. Override it if default name is not valid for your source.
    *
    * @return Test column name
    */
@@ -27,8 +25,7 @@ public abstract class AbstractSourceBasePerformanceTest extends AbstractSourceCo
   }
 
   /**
-   * The stream name template will be used for a test tables. Override it if default name is not valid
-   * for your source.
+   * The stream name template will be used for a test tables. Override it if default name is not valid for your source.
    *
    * @return Test steam name template
    */

@@ -123,8 +123,8 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
   }
 
   /**
-   * Merges the corresponding spec JSON into the definition JSON. This is necessary because specs are
-   * stored in a separate resource file from definitions.
+   * Merges the corresponding spec JSON into the definition JSON. This is necessary because specs are stored in a separate resource file from
+   * definitions.
    *
    * @param definitionJson JSON of connector definition that is missing a spec
    * @param specConfigs map of docker image to JSON of docker image/connector spec pair

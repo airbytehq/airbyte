@@ -11,8 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class launches different variants of a destination connector based on where Airbyte is
- * deployed.
+ * This class launches different variants of a destination connector based on where Airbyte is deployed.
  */
 public class AdaptiveDestinationRunner {
 

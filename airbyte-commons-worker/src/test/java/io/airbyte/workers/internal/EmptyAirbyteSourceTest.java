@@ -113,18 +113,14 @@ class EmptyAirbyteSourceTest {
     Assertions.assertThat(message.getType()).isEqualTo(Type.STATE);
 
     /*
-     * The comparison could be what it is below but it makes it hard to see what is the diff. It has
-     * been break dow into multiples assertions. (same comment in the other tests)
+     * The comparison could be what it is below but it makes it hard to see what is the diff. It has been break dow into multiples assertions. (same
+     * comment in the other tests)
      *
-     * AirbyteStateMessage expectedState = new AirbyteStateMessage()
-     * .withStateType(AirbyteStateType.GLOBAL) .withGlobal( new AirbyteGlobalState()
+     * AirbyteStateMessage expectedState = new AirbyteStateMessage() .withStateType(AirbyteStateType.GLOBAL) .withGlobal( new AirbyteGlobalState()
      * .withSharedState(Jsons.emptyObject()) .withStreamStates( Lists.newArrayList( new
-     * AirbyteStreamState().withStreamState(null).withStreamDescriptor(new
-     * StreamDescriptor().withName("a")), new
-     * AirbyteStreamState().withStreamState(null).withStreamDescriptor(new
-     * StreamDescriptor().withName("b")), new
-     * AirbyteStreamState().withStreamState(null).withStreamDescriptor(new
-     * StreamDescriptor().withName("c")) ) ) );
+     * AirbyteStreamState().withStreamState(null).withStreamDescriptor(new StreamDescriptor().withName("a")), new
+     * AirbyteStreamState().withStreamState(null).withStreamDescriptor(new StreamDescriptor().withName("b")), new
+     * AirbyteStreamState().withStreamState(null).withStreamDescriptor(new StreamDescriptor().withName("c")) ) ) );
      *
      * Assertions.assertThat(stateMessage).isEqualTo(expectedState);
      */

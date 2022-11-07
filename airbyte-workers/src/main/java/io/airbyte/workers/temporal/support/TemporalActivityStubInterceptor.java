@@ -20,9 +20,8 @@ import net.bytebuddy.implementation.bind.annotation.This;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * Custom interceptor that handles invocations of Temporal workflow implementations to ensure that
- * any and all Temporal activity stubs are created prior to the first execution of the workflow.
- * This class is used in conjunction with {@link TemporalProxyHelper}. This approach is inspired by
+ * Custom interceptor that handles invocations of Temporal workflow implementations to ensure that any and all Temporal activity stubs are created
+ * prior to the first execution of the workflow. This class is used in conjunction with {@link TemporalProxyHelper}. This approach is inspired by
  * https://github.com/applicaai/spring-boot-starter-temporal.
  *
  * @param <T> The type of the Temporal workflow.
@@ -51,8 +50,7 @@ public class TemporalActivityStubInterceptor<T> {
    * Constructs a new interceptor for the provided workflow implementation class.
    *
    * @param workflowImplClass The Temporal workflow implementation class that will be intercepted.
-   * @param availableActivityOptions The collection of configured {@link ActivityOptions} beans
-   *        provided by the application framework.
+   * @param availableActivityOptions The collection of configured {@link ActivityOptions} beans provided by the application framework.
    */
   public TemporalActivityStubInterceptor(final Class<T> workflowImplClass,
                                          final Collection<BeanRegistration<ActivityOptions>> availableActivityOptions) {
@@ -63,13 +61,11 @@ public class TemporalActivityStubInterceptor<T> {
   /**
    * Main interceptor method that will be invoked by the proxy.
    *
-   * @param workflowImplInstance The actual workflow implementation object invoked on the proxy
-   *        Temporal workflow instance.
+   * @param workflowImplInstance The actual workflow implementation object invoked on the proxy Temporal workflow instance.
    * @param call A {@link Callable} used to invoke the proxied method.
    * @return The result of the proxied method execution.
    * @throws Exception if the proxied method throws a checked exception
-   * @throws IllegalStateException if the Temporal activity stubs associated with the workflow cannot
-   *         be initialized.
+   * @throws IllegalStateException if the Temporal activity stubs associated with the workflow cannot be initialized.
    */
   @RuntimeType
   public Object execute(@This final T workflowImplInstance, @SuperCall final Callable<Object> call)
@@ -80,8 +76,8 @@ public class TemporalActivityStubInterceptor<T> {
   }
 
   /**
-   * Initializes all Temporal activity stubs present on the provided workflow instance. A Temporal
-   * activity stub is denoted by the use of the {@link TemporalActivityStub} annotation on the field.
+   * Initializes all Temporal activity stubs present on the provided workflow instance. A Temporal activity stub is denoted by the use of the
+   * {@link TemporalActivityStub} annotation on the field.
    *
    * @param workflowImplClass The target class of the proxy.
    * @param workflowInstance The workflow instance that may contain Temporal activity stub fields.
@@ -96,11 +92,9 @@ public class TemporalActivityStubInterceptor<T> {
   }
 
   /**
-   * Initializes the Temporal activity stub represented by the provided field on the provided object,
-   * if not already set.
+   * Initializes the Temporal activity stub represented by the provided field on the provided object, if not already set.
    *
-   * @param workflowInstance The Temporal workflow instance that contains the Temporal activity stub
-   *        field.
+   * @param workflowInstance The Temporal workflow instance that contains the Temporal activity stub field.
    * @param activityStubField The field that represents the Temporal activity stub.
    */
   private void initializeActivityStub(final T workflowInstance,
@@ -128,14 +122,11 @@ public class TemporalActivityStubInterceptor<T> {
   }
 
   /**
-   * Extracts the Temporal {@link ActivityOptions} from the {@link Field} on the provided target
-   * instance object.
+   * Extracts the Temporal {@link ActivityOptions} from the {@link Field} on the provided target instance object.
    *
    * @param activityStubField The field that represents the Temporal activity stub.
-   * @return The Temporal {@link ActivityOptions} from the {@link Field} on the provided Temporal
-   *         workflow instance object.
-   * @throws IllegalStateException if the referenced Temporal {@link ActivityOptions} bean cannot be
-   *         located.
+   * @return The Temporal {@link ActivityOptions} from the {@link Field} on the provided Temporal workflow instance object.
+   * @throws IllegalStateException if the referenced Temporal {@link ActivityOptions} bean cannot be located.
    */
   private ActivityOptions getActivityOptions(final Field activityStubField) {
     final TemporalActivityStub annotation = activityStubField.getAnnotation(TemporalActivityStub.class);
@@ -154,10 +145,8 @@ public class TemporalActivityStubInterceptor<T> {
    * Retrieve the activity stub generator function associated with the Temporal activity stub.
    *
    * @param activityStubField The field that represents the Temporal activity stub.
-   * @return The {@link TemporalActivityStubGeneratorFunction} associated with the Temporal activity
-   *         stub.
-   * @throws IllegalStateException if the referenced {@link TemporalActivityStubGeneratorFunction}
-   *         bean cannot be located.
+   * @return The {@link TemporalActivityStubGeneratorFunction} associated with the Temporal activity stub.
+   * @throws IllegalStateException if the referenced {@link TemporalActivityStubGeneratorFunction} bean cannot be located.
    */
   private Object generateActivityStub(final Field activityStubField, final ActivityOptions activityOptions) {
     return activityStubGenerator.apply(activityStubField.getType(), activityOptions);

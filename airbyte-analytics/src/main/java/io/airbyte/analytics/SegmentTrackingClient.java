@@ -24,21 +24,16 @@ import org.slf4j.LoggerFactory;
 /**
  * This class is a wrapper around the Segment backend Java SDK.
  * <p>
- * In general, the Segment SDK events have two pieces to them, a top-level userId field and a map of
- * properties.
+ * In general, the Segment SDK events have two pieces to them, a top-level userId field and a map of properties.
  * <p>
- * As of 2021/11/03, the top level userId field is standardised on the
- * {@link StandardWorkspace#getCustomerId()} field. This field is a random UUID generated when a
- * workspace model is created. This standardisation is through OSS Airbyte and Cloud Airbyte. This
- * join key now underpins Airbyte OSS Segment tracking. Although the id is meaningless and the name
- * confusing, it is not worth performing a migration at this time. Interested parties can look at
- * https://github.com/airbytehq/airbyte/issues/7456 for more context.
+ * As of 2021/11/03, the top level userId field is standardised on the {@link StandardWorkspace#getCustomerId()} field. This field is a random UUID
+ * generated when a workspace model is created. This standardisation is through OSS Airbyte and Cloud Airbyte. This join key now underpins Airbyte OSS
+ * Segment tracking. Although the id is meaningless and the name confusing, it is not worth performing a migration at this time. Interested parties
+ * can look at https://github.com/airbytehq/airbyte/issues/7456 for more context.
  * <p>
- * Consumers utilising this class must understand that the top-level userId field is subject to this
- * constraint.
+ * Consumers utilising this class must understand that the top-level userId field is subject to this constraint.
  * <p>
- * See the following document for details on tracked events. Please update this document if tracked
- * events change.
+ * See the following document for details on tracked events. Please update this document if tracked events change.
  * https://docs.google.com/spreadsheets/d/1lGLmLIhiSPt_-oaEf3CpK-IxXnCO0NRHurvmWldoA2w/edit#gid=1567609168
  */
 public class SegmentTrackingClient implements TrackingClient {

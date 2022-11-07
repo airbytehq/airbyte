@@ -9,24 +9,19 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
 
 /**
- * Interface for the destination's consumption of incoming records wrapped in an
- * {@link io.airbyte.protocol.models.AirbyteMessage}.
+ * Interface for the destination's consumption of incoming records wrapped in an {@link io.airbyte.protocol.models.AirbyteMessage}.
  *
- * This is via the accept method, which commonly handles parsing, validation, batching and writing
- * of the transformed data to the final destination i.e. the technical system data is being written
- * to.
+ * This is via the accept method, which commonly handles parsing, validation, batching and writing of the transformed data to the final destination
+ * i.e. the technical system data is being written to.
  *
  * Lifecycle:
  * <ul>
  * <li>1. Instantiate consumer.</li>
- * <li>2. start() to initialize any resources that need to be created BEFORE the consumer consumes
- * any messages.</li>
+ * <li>2. start() to initialize any resources that need to be created BEFORE the consumer consumes any messages.</li>
  * <li>3. Consumes ALL records via {@link AirbyteMessageConsumer#accept(AirbyteMessage)}</li>
- * <li>4. Always (on success or failure) finalize by calling
- * {@link AirbyteMessageConsumer#close()}</li>
+ * <li>4. Always (on success or failure) finalize by calling {@link AirbyteMessageConsumer#close()}</li>
  * </ul>
- * We encourage implementing this interface using the {@link FailureTrackingAirbyteMessageConsumer}
- * class.
+ * We encourage implementing this interface using the {@link FailureTrackingAirbyteMessageConsumer} class.
  */
 public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
 

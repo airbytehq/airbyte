@@ -44,8 +44,7 @@ public class StreamResetPersistence {
   }
 
   /*
-   * Delete stream resets for a given connection. This is called to delete stream reset records for
-   * resets that are successfully completed.
+   * Delete stream resets for a given connection. This is called to delete stream reset records for resets that are successfully completed.
    */
   public void deleteStreamResets(final UUID connectionId, final List<StreamDescriptor> streamsToDelete) throws IOException {
     Condition condition = noCondition();
@@ -60,11 +59,9 @@ public class StreamResetPersistence {
   }
 
   /**
-   * Create stream resets for a given connection. This is called to create stream reset records for
-   * resets that are going to be run.
+   * Create stream resets for a given connection. This is called to create stream reset records for resets that are going to be run.
    *
-   * It will not attempt to create entries for any stream that already exists in the stream_reset
-   * table.
+   * It will not attempt to create entries for any stream that already exists in the stream_reset table.
    */
   public void createStreamResets(final UUID connectionId, final List<StreamDescriptor> streamsToCreate) throws IOException {
     final OffsetDateTime timestamp = OffsetDateTime.now();

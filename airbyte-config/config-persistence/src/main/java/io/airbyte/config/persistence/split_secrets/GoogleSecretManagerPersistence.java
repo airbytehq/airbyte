@@ -27,20 +27,18 @@ import javax.annotation.Nullable;
 import org.joda.time.Days;
 
 /**
- * Uses Google Secret Manager (https://cloud.google.com/secret-manager) as a K/V store to access
- * secrets. In the future we will likely want to introduce more granular permission handling here.
+ * Uses Google Secret Manager (https://cloud.google.com/secret-manager) as a K/V store to access secrets. In the future we will likely want to
+ * introduce more granular permission handling here.
  *
- * It's important to note that we are not making use of the versioning feature of Google Secret
- * Manager. This is for a few reasons: 1. There isn't a clean interface for getting the most recent
- * version. 2. Version writes must be sequential. This means that if we wanted to move between
- * secrets management platforms such as Hashicorp Vault and GSM, we would need to create secrets in
- * order (or depending on our retention for the secrets pretend to insert earlier versions).
+ * It's important to note that we are not making use of the versioning feature of Google Secret Manager. This is for a few reasons: 1. There isn't a
+ * clean interface for getting the most recent version. 2. Version writes must be sequential. This means that if we wanted to move between secrets
+ * management platforms such as Hashicorp Vault and GSM, we would need to create secrets in order (or depending on our retention for the secrets
+ * pretend to insert earlier versions).
  */
 final public class GoogleSecretManagerPersistence implements SecretPersistence {
 
   /**
-   * The "latest" alias is a magic string that gives you access to the latest secret without
-   * explicitly specifying the version. For more info see:
+   * The "latest" alias is a magic string that gives you access to the latest secret without explicitly specifying the version. For more info see:
    * https://cloud.google.com/secret-manager/docs/creating-and-accessing-secrets#access
    */
   private static final String LATEST = "latest";
@@ -59,17 +57,15 @@ final public class GoogleSecretManagerPersistence implements SecretPersistence {
   private final @Nullable Duration ttl;
 
   /**
-   * Creates a persistence with an infinite TTL for stored secrets. Used for source/destination config
-   * secret storage.
+   * Creates a persistence with an infinite TTL for stored secrets. Used for source/destination config secret storage.
    */
   public static GoogleSecretManagerPersistence getLongLived(final String gcpProjectId, final String gcpCredentialsJson) {
     return new GoogleSecretManagerPersistence(gcpProjectId, gcpCredentialsJson, null);
   }
 
   /**
-   * Creates a persistence with a relatively short TTL for stored secrets. Used for temporary
-   * operations such as check/discover operations where we need to use secret storage to communicate
-   * from the server to Temporal, but where we don't want to maintain the secrets indefinitely.
+   * Creates a persistence with a relatively short TTL for stored secrets. Used for temporary operations such as check/discover operations where we
+   * need to use secret storage to communicate from the server to Temporal, but where we don't want to maintain the secrets indefinitely.
    */
   public static GoogleSecretManagerPersistence getEphemeral(final String gcpProjectId, final String gcpCredentialsJson) {
     return new GoogleSecretManagerPersistence(gcpProjectId, gcpCredentialsJson, EPHEMERAL_TTL);

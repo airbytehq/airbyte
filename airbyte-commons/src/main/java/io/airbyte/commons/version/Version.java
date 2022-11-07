@@ -141,9 +141,8 @@ public class Version {
   }
 
   /**
-   * Version string needs to be converted to integer for comparison, because string comparison does
-   * not handle version string with different digits correctly. For example:
-   * {@code "11".compare("3") < 0}, while {@code Integer.compare(11, 3) > 0}.
+   * Version string needs to be converted to integer for comparison, because string comparison does not handle version string with different digits
+   * correctly. For example: {@code "11".compare("3") < 0}, while {@code Integer.compare(11, 3) > 0}.
    */
   private static int compareVersion(final String v1, final String v2) {
     return Integer.compare(Integer.parseInt(v1), Integer.parseInt(v2));

@@ -35,15 +35,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class contains an e2e test simulating what a user encounter when trying to upgrade Airybte.
- * - upgrading from 0.32.0 to the latest version should work. - This test previously tested
- * upgrading from even older versions, which has since been removed
+ * This class contains an e2e test simulating what a user encounter when trying to upgrade Airybte. - upgrading from 0.32.0 to the latest version
+ * should work. - This test previously tested upgrading from even older versions, which has since been removed
  * <p>
- * This test runs on the current code version and expects local images with the `dev` tag to be
- * available. To do so, run SUB_BUILD=PLATFORM ./gradlew build.
+ * This test runs on the current code version and expects local images with the `dev` tag to be available. To do so, run SUB_BUILD=PLATFORM ./gradlew
+ * build.
  * <p>
- * When running this test consecutively locally, it might be necessary to run `docker volume prune`
- * to remove hanging volumes.
+ * When running this test consecutively locally, it might be necessary to run `docker volume prune` to remove hanging volumes.
  */
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class MigrationAcceptanceTest {
@@ -113,8 +111,7 @@ class MigrationAcceptanceTest {
   }
 
   /**
-   * Allows the test to listen for a specific log line so that the test can end as soon as that log
-   * line has been encountered.
+   * Allows the test to listen for a specific log line so that the test can end as soon as that log line has been encountered.
    */
   private static class WaitForLogLine {
 

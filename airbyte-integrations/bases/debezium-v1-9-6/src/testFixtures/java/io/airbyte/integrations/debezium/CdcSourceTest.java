@@ -177,8 +177,8 @@ public abstract class CdcSourceTest {
   }
 
   /**
-   * This database and table is not part of Airbyte sync. It is being created just to make sure the
-   * databases not being synced by Airbyte are not causing issues with our debezium logic
+   * This database and table is not part of Airbyte sync. It is being created just to make sure the databases not being synced by Airbyte are not
+   * causing issues with our debezium logic
    */
   private void createAndPopulateRandomTable() {
     if (!randomTableSchema().equals(MODELS_SCHEMA)) {

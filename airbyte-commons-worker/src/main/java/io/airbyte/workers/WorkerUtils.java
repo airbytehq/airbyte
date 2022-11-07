@@ -87,8 +87,7 @@ public class WorkerUtils {
   }
 
   /**
-   * Translates a StandardSyncInput into a WorkerSourceConfig. WorkerSourceConfig is a subset of
-   * StandardSyncInput.
+   * Translates a StandardSyncInput into a WorkerSourceConfig. WorkerSourceConfig is a subset of StandardSyncInput.
    */
   public static WorkerSourceConfig syncToWorkerSourceConfig(final StandardSyncInput sync) {
     return new WorkerSourceConfig()
@@ -98,8 +97,7 @@ public class WorkerUtils {
   }
 
   /**
-   * Translates a StandardSyncInput into a WorkerDestinationConfig. WorkerDestinationConfig is a
-   * subset of StandardSyncInput.
+   * Translates a StandardSyncInput into a WorkerDestinationConfig. WorkerDestinationConfig is a subset of StandardSyncInput.
    */
   public static WorkerDestinationConfig syncToWorkerDestinationConfig(final StandardSyncInput sync) {
     return new WorkerDestinationConfig()

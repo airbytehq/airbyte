@@ -15,8 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Implementation of the {@link DatabaseInitializer} for the Jobs database that creates the schema
- * if it does not currently exist.
+ * Implementation of the {@link DatabaseInitializer} for the Jobs database that creates the schema if it does not currently exist.
  */
 public class JobsDatabaseInitializer implements DatabaseInitializer {
 

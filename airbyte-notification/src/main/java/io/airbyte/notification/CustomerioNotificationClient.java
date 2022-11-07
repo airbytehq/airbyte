@@ -20,13 +20,11 @@ import org.slf4j.LoggerFactory;
 /**
  * Notification client that uses customer.io API send emails.
  *
- * These notifications rely on `TRANSACTION_MESSAGE_ID`, which are basically templates you create
- * through customer.io. These IDs are specific to a user's account on customer.io, so they will be
- * different for every user. For now they are stored as variables here, but in the future they may
- * be stored in as a notification config in the database.
+ * These notifications rely on `TRANSACTION_MESSAGE_ID`, which are basically templates you create through customer.io. These IDs are specific to a
+ * user's account on customer.io, so they will be different for every user. For now they are stored as variables here, but in the future they may be
+ * stored in as a notification config in the database.
  *
- * For Airbyte Cloud, Airbyte engineers may use `DEFAULT_TRANSACTION_MESSAGE_ID = "6"` as a generic
- * template for notifications.
+ * For Airbyte Cloud, Airbyte engineers may use `DEFAULT_TRANSACTION_MESSAGE_ID = "6"` as a generic template for notifications.
  */
 public class CustomerioNotificationClient extends NotificationClient {
 
@@ -140,8 +138,8 @@ public class CustomerioNotificationClient extends NotificationClient {
   }
 
   /**
-   * Use an integer division to check successful HTTP status codes (i.e., those from 200-299), not
-   * just 200. https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+   * Use an integer division to check successful HTTP status codes (i.e., those from 200-299), not just 200.
+   * https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
    */
   private static boolean isSuccessfulHttpResponse(final int httpStatusCode) {
     return httpStatusCode / 100 == 2;

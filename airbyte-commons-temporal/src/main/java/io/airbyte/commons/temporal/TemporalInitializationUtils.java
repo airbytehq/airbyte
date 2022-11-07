@@ -24,8 +24,7 @@ public class TemporalInitializationUtils {
   private String temporalCloudNamespace;
 
   /**
-   * Blocks until the Temporal {@link TemporalUtils#DEFAULT_NAMESPACE} has been created. This is
-   * necessary to avoid issues related to
+   * Blocks until the Temporal {@link TemporalUtils#DEFAULT_NAMESPACE} has been created. This is necessary to avoid issues related to
    * https://community.temporal.io/t/running-into-an-issue-when-creating-namespace-programmatically/2783/8.
    */
   public void waitForTemporalNamespace() {

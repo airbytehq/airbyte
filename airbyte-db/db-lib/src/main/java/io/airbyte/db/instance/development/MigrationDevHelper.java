@@ -40,8 +40,7 @@ public class MigrationDevHelper {
   private static final Logger LOGGER = LoggerFactory.getLogger(MigrationDevHelper.class);
 
   /**
-   * This method is used for migration development. Run it to see how your migration changes the
-   * database schema.
+   * This method is used for migration development. Run it to see how your migration changes the database schema.
    */
   public static void runLastMigration(final DevDatabaseMigrator migrator) throws IOException {
     migrator.createBaseline();
@@ -106,8 +105,7 @@ public class MigrationDevHelper {
   }
 
   /**
-   * This method is for migration development and testing purposes. So it is not exposed on the
-   * interface. Reference:
+   * This method is for migration development and testing purposes. So it is not exposed on the interface. Reference:
    * https://github.com/flyway/flyway/blob/master/flyway-core/src/main/java/org/flywaydb/core/Flyway.java#L621.
    */
   private static List<ResolvedMigration> getAllMigrations(final FlywayDatabaseMigrator migrator) {
@@ -156,8 +154,7 @@ public class MigrationDevHelper {
   }
 
   /**
-   * Turn a migration version to airbyte version and drop the migration id. E.g. "0.29.10.004" ->
-   * "0.29.10".
+   * Turn a migration version to airbyte version and drop the migration id. E.g. "0.29.10.004" -> "0.29.10".
    */
   @VisibleForTesting
   static AirbyteVersion getAirbyteVersion(final MigrationVersion version) {
@@ -166,8 +163,7 @@ public class MigrationDevHelper {
   }
 
   /**
-   * Extract the major, minor, and patch version and join them with underscore. E.g. "0.29.10-alpha"
-   * -> "0_29_10",
+   * Extract the major, minor, and patch version and join them with underscore. E.g. "0.29.10-alpha" -> "0_29_10",
    */
   @VisibleForTesting
   static String formatAirbyteVersion(final AirbyteVersion version) {

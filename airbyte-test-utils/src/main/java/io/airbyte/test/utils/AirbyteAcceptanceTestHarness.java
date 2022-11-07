@@ -99,12 +99,10 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 /**
- * This class contains containers used for acceptance tests. Some of those containers/states are
- * only used when the test are run without GKE. Specific environmental variables govern what types
- * of containers are run.
+ * This class contains containers used for acceptance tests. Some of those containers/states are only used when the test are run without GKE. Specific
+ * environmental variables govern what types of containers are run.
  * <p>
- * This class is put in a separate module to be easily pulled in as a dependency for Airbyte Cloud
- * Acceptance Tests.
+ * This class is put in a separate module to be easily pulled in as a dependency for Airbyte Cloud Acceptance Tests.
  * <p>
  * Containers and states include:
  * <li>source postgres SQL</li>
@@ -158,9 +156,8 @@ public class AirbyteAcceptanceTestHarness {
   private static boolean useExternalDeployment;
 
   /**
-   * When the acceptance tests are run against a local instance of docker-compose or KUBE then these
-   * test containers are used. When we run these tests in GKE, we spawn a source and destination
-   * postgres database ane use them for testing.
+   * When the acceptance tests are run against a local instance of docker-compose or KUBE then these test containers are used. When we run these tests
+   * in GKE, we spawn a source and destination postgres database ane use them for testing.
    */
   private PostgreSQLContainer sourcePsql;
   private PostgreSQLContainer destinationPsql;

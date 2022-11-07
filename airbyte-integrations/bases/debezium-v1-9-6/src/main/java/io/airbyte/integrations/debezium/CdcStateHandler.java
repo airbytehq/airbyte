@@ -8,8 +8,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import java.util.Map;
 
 /**
- * This interface is used to allow connectors to save the offset and schema history in the manner
- * which suits them
+ * This interface is used to allow connectors to save the offset and schema history in the manner which suits them
  */
 public interface CdcStateHandler {
 

@@ -35,10 +35,9 @@ import org.testcontainers.containers.SocatContainer;
 import org.testcontainers.containers.output.OutputFrame;
 
 /**
- * The goal of this class is to make it easy to run the Airbyte docker-compose configuration from
- * test containers. This helps make it easy to stop the test container without deleting the volumes
- * { @link AirbyteTestContainer#stopRetainVolumes() }. It waits for Airbyte to be ready. It also
- * handles the nuances of configuring the Airbyte docker-compose configuration in test containers.
+ * The goal of this class is to make it easy to run the Airbyte docker-compose configuration from test containers. This helps make it easy to stop the
+ * test container without deleting the volumes { @link AirbyteTestContainer#stopRetainVolumes() }. It waits for Airbyte to be ready. It also handles
+ * the nuances of configuring the Airbyte docker-compose configuration in test containers.
  */
 @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
 public class AirbyteTestContainer {
@@ -60,8 +59,7 @@ public class AirbyteTestContainer {
   }
 
   /**
-   * Starts Airbyte docker-compose configuration. Will block until the server is reachable or it times
-   * outs.
+   * Starts Airbyte docker-compose configuration. Will block until the server is reachable or it times outs.
    */
   public void startBlocking() throws IOException, InterruptedException {
     startAsync();
@@ -143,8 +141,7 @@ public class AirbyteTestContainer {
    *
    *
    * @param service - name of docker container from which log is emitted.
-   * @param customConsumer - each line output by the service in docker compose will be passed ot the
-   *        consumer. if null do nothing.
+   * @param customConsumer - each line output by the service in docker compose will be passed ot the consumer. if null do nothing.
    * @return log consumer
    */
   private Consumer<OutputFrame> logConsumer(final String service, final Consumer<String> customConsumer) {
@@ -182,9 +179,8 @@ public class AirbyteTestContainer {
   }
 
   /**
-   * This method is hacked from {@link org.testcontainers.containers.DockerComposeContainer#stop()} We
-   * needed to do this to avoid removing the volumes when the container is stopped so that the data
-   * persists and can be tested against in the second run
+   * This method is hacked from {@link org.testcontainers.containers.DockerComposeContainer#stop()} We needed to do this to avoid removing the volumes
+   * when the container is stopped so that the data persists and can be tested against in the second run
    */
   public void stopRetainVolumes() {
     if (dockerComposeContainer == null) {

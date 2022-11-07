@@ -14,8 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Parse command line arguments and inject them into the test class before running the test. Then
- * runs the tests.
+ * Parse command line arguments and inject them into the test class before running the test. Then runs the tests.
  */
 public class TestSourceMain {
 

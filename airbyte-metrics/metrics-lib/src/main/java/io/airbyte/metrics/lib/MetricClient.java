@@ -28,8 +28,8 @@ public interface MetricClient {
   void gauge(MetricsRegistry metric, double val, final MetricAttribute... attributes);
 
   /*
-   * Accepts value on the metrics, and report the distribution of these values. Useful to analysis how
-   * much time have elapsed, and percentile of a series of records.
+   * Accepts value on the metrics, and report the distribution of these values. Useful to analysis how much time have elapsed, and percentile of a
+   * series of records.
    *
    * @param metric
    *

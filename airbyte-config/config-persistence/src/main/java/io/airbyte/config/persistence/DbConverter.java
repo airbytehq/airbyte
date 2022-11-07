@@ -47,8 +47,7 @@ import java.util.UUID;
 import org.jooq.Record;
 
 /**
- * Provides static methods for converting from repository layer results (often in the form of a jooq
- * {@link Record}) to config models.
+ * Provides static methods for converting from repository layer results (often in the form of a jooq {@link Record}) to config models.
  */
 public class DbConverter {
 

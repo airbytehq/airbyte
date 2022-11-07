@@ -12,14 +12,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 /**
- * Generates a set of property names from the provided connection spec properties object that are
- * marked as secret.
+ * Generates a set of property names from the provided connection spec properties object that are marked as secret.
  */
 public class SpecMaskPropertyGenerator {
 
   /**
-   * Builds a set of property names from the provided connection spec properties object that are
-   * marked as secret.
+   * Builds a set of property names from the provided connection spec properties object that are marked as secret.
    *
    * @param properties The connection spec properties.
    * @return A set of property names that have been marked as secret.
@@ -32,12 +30,10 @@ public class SpecMaskPropertyGenerator {
         final Entry<String, JsonNode> field = fields.next();
 
         /*
-         * If the current field is an object, check if it represents a secret. If it does, add it to the set
-         * of property names. If not, recursively call this method again with the field value to see if it
-         * contains any secrets.
+         * If the current field is an object, check if it represents a secret. If it does, add it to the set of property names. If not, recursively
+         * call this method again with the field value to see if it contains any secrets.
          *
-         * If the current field is an array, recursively call this method for each field within the value to
-         * see if any of those contain any secrets.
+         * If the current field is an array, recursively call this method for each field within the value to see if any of those contain any secrets.
          */
         if (field.getValue().isObject()) {
           if (field.getValue().has(AirbyteSecretConstants.AIRBYTE_SECRET_FIELD)) {

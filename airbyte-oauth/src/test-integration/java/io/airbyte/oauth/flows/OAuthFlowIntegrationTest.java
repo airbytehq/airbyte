@@ -29,8 +29,7 @@ import org.slf4j.LoggerFactory;
 public abstract class OAuthFlowIntegrationTest {
 
   /**
-   * Convenience base class for OAuthFlow tests. Those tests right now are meant to be run manually,
-   * due to the consent flow in the browser
+   * Convenience base class for OAuthFlow tests. Those tests right now are meant to be run manually, due to the consent flow in the browser
    */
   protected static final Logger LOGGER = LoggerFactory.getLogger(OAuthFlowIntegrationTest.class);
   protected static final String REDIRECT_URL = "http://localhost/auth_flow";

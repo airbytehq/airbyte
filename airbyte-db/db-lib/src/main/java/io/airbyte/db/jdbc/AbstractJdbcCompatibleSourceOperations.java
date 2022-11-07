@@ -78,9 +78,8 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   /**
-   * In some sources Short might have value larger than {@link Short#MAX_VALUE}. E.q. MySQL has
-   * unsigned smallint type, which can contain value 65535. If we fail to cast Short value, we will
-   * try to cast Integer.
+   * In some sources Short might have value larger than {@link Short#MAX_VALUE}. E.q. MySQL has unsigned smallint type, which can contain value 65535.
+   * If we fail to cast Short value, we will try to cast Integer.
    */
   protected void putShortInt(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     try {
@@ -91,9 +90,8 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   /**
-   * In some sources Integer might have value larger than {@link Integer#MAX_VALUE}. E.q. MySQL has
-   * unsigned Integer type, which can contain value 3428724653. If we fail to cast Integer value, we
-   * will try to cast Long.
+   * In some sources Integer might have value larger than {@link Integer#MAX_VALUE}. E.q. MySQL has unsigned Integer type, which can contain value
+   * 3428724653. If we fail to cast Integer value, we will try to cast Long.
    */
   protected void putInteger(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     try {
@@ -275,8 +273,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   /**
-   * Modifies a string representation of a date/timestamp and normalizes its era indicator.
-   * Specifically, if this is a BCE value:
+   * Modifies a string representation of a date/timestamp and normalizes its era indicator. Specifically, if this is a BCE value:
    * <ul>
    * <li>The leading negative sign will be removed if present</li>
    * <li>The "BC" suffix will be appended, if not already present</li>
@@ -306,11 +303,11 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   /**
-   * java.sql.Date objects don't properly represent their era (for example, using toLocalDate() always
-   * returns an object in CE). So to determine the era, we just check whether the date is before 1 AD.
+   * java.sql.Date objects don't properly represent their era (for example, using toLocalDate() always returns an object in CE). So to determine the
+   * era, we just check whether the date is before 1 AD.
    *
-   * This is technically kind of sketchy due to ancient timestamps being weird (leap years, etc.), but
-   * my understanding is that {@link #ONE_CE} has the same weirdness, so it cancels out.
+   * This is technically kind of sketchy due to ancient timestamps being weird (leap years, etc.), but my understanding is that {@link #ONE_CE} has
+   * the same weirdness, so it cancels out.
    */
   public static String resolveEra(final Date date, final String value) {
     return resolveEra(date.before(ONE_CE), value);

@@ -71,8 +71,7 @@ public class DefaultAsyncStateManager implements AsyncStateManager {
   }
 
   /**
-   * IMPORTANT: Changing the storage location will orphan already existing kube pods when the new
-   * version is deployed!
+   * IMPORTANT: Changing the storage location will orphan already existing kube pods when the new version is deployed!
    */
   public static String getDocumentStoreKey(final KubePodInfo kubePodInfo, final AsyncKubePodStatus status) {
     return kubePodInfo.namespace() + "/" + kubePodInfo.name() + "/" + status.name();

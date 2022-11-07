@@ -59,8 +59,8 @@ public abstract class JdbcDatabase extends SqlDatabase {
   }
 
   /**
-   * Map records returned in a result set. It is an "unsafe" stream because the stream must be
-   * manually closed. Otherwise, there will be a database connection leak.
+   * Map records returned in a result set. It is an "unsafe" stream because the stream must be manually closed. Otherwise, there will be a database
+   * connection leak.
    *
    * @param resultSet the result set
    * @param mapper function to make each record of the result set
@@ -89,14 +89,12 @@ public abstract class JdbcDatabase extends SqlDatabase {
   }
 
   /**
-   * Use a connection to create a {@link ResultSet} and map it into a list. The entire
-   * {@link ResultSet} will be buffered in memory before the list is returned. The caller does not
-   * need to worry about closing any database resources.
+   * Use a connection to create a {@link ResultSet} and map it into a list. The entire {@link ResultSet} will be buffered in memory before the list is
+   * returned. The caller does not need to worry about closing any database resources.
    *
    * @param query execute a query using a {@link Connection} to get a {@link ResultSet}.
-   * @param recordTransform transform each record of that result set into the desired type. do NOT
-   *        just pass the {@link ResultSet} through. it is a stateful object will not be accessible if
-   *        returned from recordTransform.
+   * @param recordTransform transform each record of that result set into the desired type. do NOT just pass the {@link ResultSet} through. it is a
+   *        stateful object will not be accessible if returned from recordTransform.
    * @param <T> type that each record will be mapped to.
    * @return Result of the query mapped to a list.
    * @throws SQLException SQL related exceptions.
@@ -106,16 +104,14 @@ public abstract class JdbcDatabase extends SqlDatabase {
       throws SQLException;
 
   /**
-   * Use a connection to create a {@link ResultSet} and map it into a stream. You CANNOT assume that
-   * data will be returned from this method before the entire {@link ResultSet} is buffered in memory.
-   * Review the implementation of the database's JDBC driver or use the StreamingJdbcDriver if you
-   * need this guarantee. It is "unsafe" because the caller should close the returned stream to
-   * release the database connection. Otherwise, there will be a connection leak.
+   * Use a connection to create a {@link ResultSet} and map it into a stream. You CANNOT assume that data will be returned from this method before the
+   * entire {@link ResultSet} is buffered in memory. Review the implementation of the database's JDBC driver or use the StreamingJdbcDriver if you
+   * need this guarantee. It is "unsafe" because the caller should close the returned stream to release the database connection. Otherwise, there will
+   * be a connection leak.
    *
    * @param query execute a query using a {@link Connection} to get a {@link ResultSet}.
-   * @param recordTransform transform each record of that result set into the desired type. do NOT
-   *        just pass the {@link ResultSet} through. it is a stateful object will not be accessible if
-   *        returned from recordTransform.
+   * @param recordTransform transform each record of that result set into the desired type. do NOT just pass the {@link ResultSet} through. it is a
+   *        stateful object will not be accessible if returned from recordTransform.
    * @param <T> type that each record will be mapped to.
    * @return Result of the query mapped to a stream.
    * @throws SQLException SQL related exceptions.
@@ -126,8 +122,7 @@ public abstract class JdbcDatabase extends SqlDatabase {
       throws SQLException;
 
   /**
-   * String query is a common use case for {@link JdbcDatabase#unsafeResultSetQuery}. So this method
-   * is created as syntactic sugar.
+   * String query is a common use case for {@link JdbcDatabase#unsafeResultSetQuery}. So this method is created as syntactic sugar.
    */
   public List<String> queryStrings(final CheckedFunction<Connection, ResultSet, SQLException> query,
                                    final CheckedFunction<ResultSet, String, SQLException> recordTransform)
@@ -138,17 +133,14 @@ public abstract class JdbcDatabase extends SqlDatabase {
   }
 
   /**
-   * Use a connection to create a {@link PreparedStatement} and map it into a stream. You CANNOT
-   * assume that data will be returned from this method before the entire {@link ResultSet} is
-   * buffered in memory. Review the implementation of the database's JDBC driver or use the
-   * StreamingJdbcDriver if you need this guarantee. It is "unsafe" because the caller should close
-   * the returned stream to release the database connection. Otherwise, there will be a connection
-   * leak.
+   * Use a connection to create a {@link PreparedStatement} and map it into a stream. You CANNOT assume that data will be returned from this method
+   * before the entire {@link ResultSet} is buffered in memory. Review the implementation of the database's JDBC driver or use the StreamingJdbcDriver
+   * if you need this guarantee. It is "unsafe" because the caller should close the returned stream to release the database connection. Otherwise,
+   * there will be a connection leak.
    *
    * @param statementCreator create a {@link PreparedStatement} from a {@link Connection}.
-   * @param recordTransform transform each record of that result set into the desired type. do NOT
-   *        just pass the {@link ResultSet} through. it is a stateful object will not be accessible if
-   *        returned from recordTransform.
+   * @param recordTransform transform each record of that result set into the desired type. do NOT just pass the {@link ResultSet} through. it is a
+   *        stateful object will not be accessible if returned from recordTransform.
    * @param <T> type that each record will be mapped to.
    * @return Result of the query mapped to a stream.void execute(String sql)
    * @throws SQLException SQL related exceptions.
@@ -159,9 +151,8 @@ public abstract class JdbcDatabase extends SqlDatabase {
       throws SQLException;
 
   /**
-   * Json query is a common use case for
-   * {@link JdbcDatabase#unsafeQuery(CheckedFunction, CheckedFunction)}. So this method is created as
-   * syntactic sugar.
+   * Json query is a common use case for {@link JdbcDatabase#unsafeQuery(CheckedFunction, CheckedFunction)}. So this method is created as syntactic
+   * sugar.
    */
   public List<JsonNode> queryJsons(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
                                    final CheckedFunction<ResultSet, JsonNode, SQLException> recordTransform)
@@ -186,8 +177,7 @@ public abstract class JdbcDatabase extends SqlDatabase {
   }
 
   /**
-   * It is "unsafe" because the caller must manually close the returned stream. Otherwise, there will
-   * be a database connection leak.
+   * It is "unsafe" because the caller must manually close the returned stream. Otherwise, there will be a database connection leak.
    */
   @MustBeClosed
   @Override
@@ -204,8 +194,7 @@ public abstract class JdbcDatabase extends SqlDatabase {
   }
 
   /**
-   * Json query is a common use case for {@link JdbcDatabase#unsafeQuery(String, String...)}. So this
-   * method is created as syntactic sugar.
+   * Json query is a common use case for {@link JdbcDatabase#unsafeQuery(String, String...)}. So this method is created as syntactic sugar.
    */
   public List<JsonNode> queryJsons(final String sql, final String... params) throws SQLException {
     try (final Stream<JsonNode> stream = unsafeQuery(sql, params)) {

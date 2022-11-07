@@ -10,8 +10,8 @@ import jakarta.inject.Singleton;
 import java.util.Optional;
 
 /**
- * Describes logging configuration. For now it just contains configuration around storage medium,
- * but in the future will have other configuration options (e.g. json logging, etc).
+ * Describes logging configuration. For now it just contains configuration around storage medium, but in the future will have other configuration
+ * options (e.g. json logging, etc).
  */
 @Singleton
 public class LogConfigs {

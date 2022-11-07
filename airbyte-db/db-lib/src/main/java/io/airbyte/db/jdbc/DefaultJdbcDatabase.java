@@ -90,15 +90,13 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
   }
 
   /**
-   * You CANNOT assume that data will be returned from this method before the entire {@link ResultSet}
-   * is buffered in memory. Review the implementation of the database's JDBC driver or use the
-   * StreamingJdbcDriver if you need this guarantee. The caller should close the returned stream to
-   * release the database connection.
+   * You CANNOT assume that data will be returned from this method before the entire {@link ResultSet} is buffered in memory. Review the
+   * implementation of the database's JDBC driver or use the StreamingJdbcDriver if you need this guarantee. The caller should close the returned
+   * stream to release the database connection.
    *
    * @param statementCreator create a {@link PreparedStatement} from a {@link Connection}.
-   * @param recordTransform transform each record of that result set into the desired type. do NOT
-   *        just pass the {@link ResultSet} through. it is a stateful object will not be accessible if
-   *        returned from recordTransform.
+   * @param recordTransform transform each record of that result set into the desired type. do NOT just pass the {@link ResultSet} through. it is a
+   *        stateful object will not be accessible if returned from recordTransform.
    * @param <T> type that each record will be mapped to.
    * @return Result of the query mapped to a stream.
    * @throws SQLException SQL related exceptions.

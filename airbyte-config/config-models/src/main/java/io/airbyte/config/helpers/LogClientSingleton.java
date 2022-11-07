@@ -20,12 +20,10 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 /**
- * Airbyte's logging layer entrypoint. Handles logs written to local disk as well as logs written to
- * cloud storages.
+ * Airbyte's logging layer entrypoint. Handles logs written to local disk as well as logs written to cloud storages.
  * <p>
- * Although the configuration is passed in as {@link Configs}, it is transformed to
- * {@link LogConfigs} within this class. Beyond this class, all configuration consumption is via the
- * {@link LogConfigs} interface via the {@link CloudLogs} interface.
+ * Although the configuration is passed in as {@link Configs}, it is transformed to {@link LogConfigs} within this class. Beyond this class, all
+ * configuration consumption is via the {@link LogConfigs} interface via the {@link CloudLogs} interface.
  */
 @SuppressWarnings({"PMD.AvoidThrowingRawExceptionTypes", "PMD.AvoidSynchronizedAtMethodLevel"})
 public class LogClientSingleton {

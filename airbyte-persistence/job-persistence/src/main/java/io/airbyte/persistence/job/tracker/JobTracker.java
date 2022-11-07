@@ -213,15 +213,12 @@ public class JobTracker {
   }
 
   /**
-   * Flattens a config into a map. Uses the schema to determine which fields are const (i.e.
-   * non-sensitive). Non-const, non-boolean values are replaced with {@link #SET} to avoid leaking
-   * potentially-sensitive information.
+   * Flattens a config into a map. Uses the schema to determine which fields are const (i.e. non-sensitive). Non-const, non-boolean values are
+   * replaced with {@link #SET} to avoid leaking potentially-sensitive information.
    * <p>
-   * anyOf/allOf schemas are treated as non-const values. These aren't (currently) used in config
-   * schemas anyway.
+   * anyOf/allOf schemas are treated as non-const values. These aren't (currently) used in config schemas anyway.
    *
-   * @param jsonPath A prefix to add to all the keys in the returned map, with a period (`.`)
-   *        separator
+   * @param jsonPath A prefix to add to all the keys in the returned map, with a period (`.`) separator
    * @param schema The JSON schema that {@code config} conforms to
    */
   protected static Map<String, Object> configToMetadata(final String jsonPath, final JsonNode config, final JsonNode schema) {
@@ -234,9 +231,8 @@ public class JobTracker {
   }
 
   /**
-   * Does the actually interesting bits of configToMetadata. If config is an object, returns a
-   * flattened map. If config is _not_ an object (i.e. it's a primitive string/number/etc, or it's an
-   * array) then returns a map of {null: toMetadataValue(config)}.
+   * Does the actually interesting bits of configToMetadata. If config is an object, returns a flattened map. If config is _not_ an object (i.e. it's
+   * a primitive string/number/etc, or it's an array) then returns a map of {null: toMetadataValue(config)}.
    */
   @SuppressWarnings("PMD.ForLoopCanBeForeach")
   private static Map<String, Object> configToMetadata(final JsonNode config, final JsonNode schema) {
@@ -336,10 +332,9 @@ public class JobTracker {
   }
 
   /**
-   * The CheckConnection jobs (both source and destination) of the
-   * {@link io.airbyte.scheduler.client.SynchronousSchedulerClient} interface can have a successful
-   * job with a failed check. Because of this, tracking just the job attempt status does not capture
-   * the whole picture. The `check_connection_outcome` field tracks this.
+   * The CheckConnection jobs (both source and destination) of the {@link io.airbyte.scheduler.client.SynchronousSchedulerClient} interface can have a
+   * successful job with a failed check. Because of this, tracking just the job attempt status does not capture the whole picture. The
+   * `check_connection_outcome` field tracks this.
    */
   private Map<String, Object> generateCheckConnectionMetadata(final StandardCheckConnectionOutput output) {
     if (output == null) {

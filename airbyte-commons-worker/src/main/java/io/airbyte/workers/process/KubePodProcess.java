@@ -63,34 +63,27 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 /**
- * A Process abstraction backed by a Kube Pod running in a Kubernetes cluster 'somewhere'. The
- * parent process starting a Kube Pod Process needs to exist within the Kube networking space. This
- * is so the parent process can forward data into the child's stdin and read the child's stdout and
+ * A Process abstraction backed by a Kube Pod running in a Kubernetes cluster 'somewhere'. The parent process starting a Kube Pod Process needs to
+ * exist within the Kube networking space. This is so the parent process can forward data into the child's stdin and read the child's stdout and
  * stderr streams and copy configuration files over.
  *
  * This is made possible by:
  * <ul>
- * <li>1) An init container that creates 3 named pipes corresponding to stdin, stdout and std err on
- * a shared volume.</li>
- * <li>2) Config files (e.g. config.json, catalog.json etc) are copied from the parent process into
- * a shared volume.</li>
- * <li>3) Redirecting the stdin named pipe to the original image's entrypoint and it's output into
- * the respective named pipes for stdout and stderr.</li>
- * <li>4) Each named pipe has a corresponding side car. Each side car forwards its stream
- * accordingly using socat. e.g. stderr/stdout is forwarded to parent process while input from the
- * parent process is forwarded into stdin.</li>
- * <li>5) The parent process listens on the stdout and stederr sockets for an incoming TCP
- * connection. It also initiates a TCP connection to the child process aka the Kube pod on the
- * specified stdin socket.</li>
- * <li>6) The child process is able to access configuration data via the shared volume. It's inputs
- * and outputs - stdin, stdout and stderr - are forwarded the parent process via the sidecars.</li>
- * <li>7) The main process has its entrypoint wrapped to perform IO redirection and better error
- * handling.</li>
- * <li>8) A heartbeat sidecar checks if the worker that launched the pod is still alive. If not, the
- * pod will fail.</li>
+ * <li>1) An init container that creates 3 named pipes corresponding to stdin, stdout and std err on a shared volume.</li>
+ * <li>2) Config files (e.g. config.json, catalog.json etc) are copied from the parent process into a shared volume.</li>
+ * <li>3) Redirecting the stdin named pipe to the original image's entrypoint and it's output into the respective named pipes for stdout and
+ * stderr.</li>
+ * <li>4) Each named pipe has a corresponding side car. Each side car forwards its stream accordingly using socat. e.g. stderr/stdout is forwarded to
+ * parent process while input from the parent process is forwarded into stdin.</li>
+ * <li>5) The parent process listens on the stdout and stederr sockets for an incoming TCP connection. It also initiates a TCP connection to the child
+ * process aka the Kube pod on the specified stdin socket.</li>
+ * <li>6) The child process is able to access configuration data via the shared volume. It's inputs and outputs - stdin, stdout and stderr - are
+ * forwarded the parent process via the sidecars.</li>
+ * <li>7) The main process has its entrypoint wrapped to perform IO redirection and better error handling.</li>
+ * <li>8) A heartbeat sidecar checks if the worker that launched the pod is still alive. If not, the pod will fail.</li>
  * </ul>
- * The docker image used for this pod process must expose a AIRBYTE_ENTRYPOINT which contains the
- * entrypoint we will wrap when creating the main container in the pod.
+ * The docker image used for this pod process must expose a AIRBYTE_ENTRYPOINT which contains the entrypoint we will wrap when creating the main
+ * container in the pod.
  *
  * See the constructor for more information.
  */
@@ -299,9 +292,8 @@ public class KubePodProcess extends Process implements KubePod {
   }
 
   /**
-   * The calls in this function aren't straight-forward due to api limitations. There is no proper way
-   * to directly look for containers within a pod or query if a container is in a running state beside
-   * checking if the getRunning field is set. We could put this behind an interface, but that seems
+   * The calls in this function aren't straight-forward due to api limitations. There is no proper way to directly look for containers within a pod or
+   * query if a container is in a running state beside checking if the getRunning field is set. We could put this behind an interface, but that seems
    * heavy-handed compared to the 10 lines here.
    */
   private static void waitForInitPodToRun(final KubernetesClient client, final Pod podDefinition) throws InterruptedException {
@@ -645,8 +637,8 @@ public class KubePodProcess extends Process implements KubePod {
   }
 
   /**
-   * Waits for the Kube Pod backing this process and returns the exit value until a timeout. Closes
-   * resources if and only if the timeout is not reached.
+   * Waits for the Kube Pod backing this process and returns the exit value until a timeout. Closes resources if and only if the timeout is not
+   * reached.
    */
   @Override
   public boolean waitFor(final long timeout, final TimeUnit unit) throws InterruptedException {
@@ -702,8 +694,8 @@ public class KubePodProcess extends Process implements KubePod {
   /**
    * Close all open resource in the opposite order of resource creation.
    *
-   * Null checks exist because certain local Kube clusters (e.g. Docker for Desktop) back this
-   * implementation with OS processes and resources, which are automatically reaped by the OS.
+   * Null checks exist because certain local Kube clusters (e.g. Docker for Desktop) back this implementation with OS processes and resources, which
+   * are automatically reaped by the OS.
    */
   private void close() {
     final boolean previouslyClosed = wasClosed.getAndSet(true);

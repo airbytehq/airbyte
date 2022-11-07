@@ -10,9 +10,8 @@ import io.airbyte.config.JobConfig.ConfigType;
 public class AttemptWithJobInfo {
 
   /**
-   * This {@link JobInfo} class contains pieces of information about the parent job that may be
-   * useful. This approach was taken as opposed to using the actual {@link Job} class here to avoid
-   * confusion around the fact that the Job instance would not have its `attempts` field populated.
+   * This {@link JobInfo} class contains pieces of information about the parent job that may be useful. This approach was taken as opposed to using
+   * the actual {@link Job} class here to avoid confusion around the fact that the Job instance would not have its `attempts` field populated.
    */
   public static class JobInfo {
 

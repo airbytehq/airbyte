@@ -25,8 +25,7 @@ import javax.annotation.Nullable;
 /**
  * Contains most of the core logic surrounding secret coordinate extraction and insertion.
  *
- * These are the three main helpers provided by this class:
- * {@link SecretsHelpers#splitConfig(UUID, JsonNode, JsonNode)}
+ * These are the three main helpers provided by this class: {@link SecretsHelpers#splitConfig(UUID, JsonNode, JsonNode)}
  * {@link SecretsHelpers#splitAndUpdateConfig(UUID, JsonNode, JsonNode, JsonNode, ReadOnlySecretPersistence)}
  * {@link SecretsHelpers#combineConfig(JsonNode, ReadOnlySecretPersistence)}
  *
@@ -34,15 +33,12 @@ import javax.annotation.Nullable;
  *
  * A "full config" represents an entire config as specified by an end user.
  *
- * A "partial config" represents a config where any string that was specified as an airbyte_secret
- * in the specification is replaced by a JSON object {"_secret": "secret coordinate"} that can later
- * be used to reconstruct the "full config".
+ * A "partial config" represents a config where any string that was specified as an airbyte_secret in the specification is replaced by a JSON object
+ * {"_secret": "secret coordinate"} that can later be used to reconstruct the "full config".
  *
- * A {@link SecretPersistence} provides the ability to read and write secrets to a backing store
- * such as Google Secrets Manager.
+ * A {@link SecretPersistence} provides the ability to read and write secrets to a backing store such as Google Secrets Manager.
  *
- * A {@link SecretCoordinate} is a reference to a specific secret at a specific version in a
- * {@link SecretPersistence}.
+ * A {@link SecretCoordinate} is a reference to a specific secret at a specific version in a {@link SecretPersistence}.
  */
 @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public class SecretsHelpers {
@@ -50,9 +46,8 @@ public class SecretsHelpers {
   public static final String COORDINATE_FIELD = "_secret";
 
   /**
-   * Used to separate secrets out of some configuration. This will output a partial config that
-   * includes pointers to secrets instead of actual secret values and a map that can be used to update
-   * a {@link SecretPersistence} at coordinates with values from the full config.
+   * Used to separate secrets out of some configuration. This will output a partial config that includes pointers to secrets instead of actual secret
+   * values and a map that can be used to update a {@link SecretPersistence} at coordinates with values from the full config.
    *
    * @param workspaceId workspace used for this config
    * @param fullConfig config including secrets
@@ -72,19 +67,16 @@ public class SecretsHelpers {
   }
 
   /**
-   * Used to separate secrets out of a configuration and output a partial config that includes
-   * pointers to secrets instead of actual secret values and a map that can be used to update a
-   * {@link SecretPersistence} at coordinates with values from the full config. If a previous config
-   * for this configuration is provided, this method attempts to use the same base coordinates to
-   * refer to the same secret and increment the version of the coordinate used to reference a secret.
+   * Used to separate secrets out of a configuration and output a partial config that includes pointers to secrets instead of actual secret values and
+   * a map that can be used to update a {@link SecretPersistence} at coordinates with values from the full config. If a previous config for this
+   * configuration is provided, this method attempts to use the same base coordinates to refer to the same secret and increment the version of the
+   * coordinate used to reference a secret.
    *
    * @param workspaceId workspace used for this config
    * @param oldPartialConfig previous partial config for this specific configuration
    * @param newFullConfig new config containing secrets that will be used to update the partial config
-   * @param spec specification that should match both the previous partial config after filling in
-   *        coordinates and the new full config.
-   * @param secretReader provides a way to determine if a secret is the same or updated at a specific
-   *        location in a config
+   * @param spec specification that should match both the previous partial config after filling in coordinates and the new full config.
+   * @param secretReader provides a way to determine if a secret is the same or updated at a specific location in a config
    * @return a partial config + a map of coordinates to secret payloads
    */
   public static SplitSecretConfig splitAndUpdateConfig(final UUID workspaceId,
@@ -102,8 +94,8 @@ public class SecretsHelpers {
   }
 
   /**
-   * Replaces {"_secret": "full_coordinate"} objects in the partial config with the string secret
-   * payloads loaded from the secret persistence at those coordinates.
+   * Replaces {"_secret": "full_coordinate"} objects in the partial config with the string secret payloads loaded from the secret persistence at those
+   * coordinates.
    *
    * @param partialConfig configuration containing secret coordinates (references to secrets)
    * @param secretPersistence secret storage mechanism
@@ -137,8 +129,7 @@ public class SecretsHelpers {
   }
 
   /**
-   * @param uuidSupplier provided to allow a test case to produce known UUIDs in order for easy
-   *        fixture creation.
+   * @param uuidSupplier provided to allow a test case to produce known UUIDs in order for easy fixture creation.
    */
   @VisibleForTesting
   public static SplitSecretConfig splitConfig(final Supplier<UUID> uuidSupplier,
@@ -150,8 +141,7 @@ public class SecretsHelpers {
   }
 
   /**
-   * @param uuidSupplier provided to allow a test case to produce known UUIDs in order for easy
-   *        fixture creation.
+   * @param uuidSupplier provided to allow a test case to produce known UUIDs in order for easy fixture creation.
    */
   @VisibleForTesting
   public static SplitSecretConfig splitAndUpdateConfig(final Supplier<UUID> uuidSupplier,
@@ -164,8 +154,7 @@ public class SecretsHelpers {
   }
 
   /**
-   * This returns all the unique path to the airbyte secrets based on a schema spec. The path will be
-   * return in an ascending alphabetical order.
+   * This returns all the unique path to the airbyte secrets based on a schema spec. The path will be return in an ascending alphabetical order.
    */
   public static List<String> getSortedSecretPaths(final JsonNode spec) {
     return JsonSchemas.collectPathsThatMeetCondition(
@@ -201,19 +190,15 @@ public class SecretsHelpers {
   /**
    * Internal method used to support both "split config" and "split and update config" operations.
    *
-   * For splits that don't have a prior partial config (such as when a connector is created for a
-   * source or destination for the first time), the secret reader and old partial config can be set to
-   * empty (see {@link SecretsHelpers#splitConfig(UUID, JsonNode, JsonNode)}).
+   * For splits that don't have a prior partial config (such as when a connector is created for a source or destination for the first time), the
+   * secret reader and old partial config can be set to empty (see {@link SecretsHelpers#splitConfig(UUID, JsonNode, JsonNode)}).
    *
-   * IMPORTANT: This is used recursively. In the process, the partial config, full config, and spec
-   * inputs will represent internal json structures, not the entire configs/specs.
+   * IMPORTANT: This is used recursively. In the process, the partial config, full config, and spec inputs will represent internal json structures,
+   * not the entire configs/specs.
    *
-   * @param uuidSupplier provided to allow a test case to produce known UUIDs in order for easy
-   *        fixture creation
-   * @param workspaceId workspace that will contain the source or destination this config will be
-   *        stored for
-   * @param secretReader provides a way to determine if a secret is the same or updated at a specific
-   *        location in a config
+   * @param uuidSupplier provided to allow a test case to produce known UUIDs in order for easy fixture creation
+   * @param workspaceId workspace that will contain the source or destination this config will be stored for
+   * @param secretReader provides a way to determine if a secret is the same or updated at a specific location in a config
    * @param persistedPartialConfig previous partial config for this specific configuration
    * @param newFullConfig new config containing secrets that will be used to update the partial config
    * @param spec config specification
@@ -251,8 +236,7 @@ public class SecretsHelpers {
   }
 
   /**
-   * Extracts a secret value from the persistence and throws an exception if the secret is not
-   * available.
+   * Extracts a secret value from the persistence and throws an exception if the secret is not available.
    *
    * @param secretPersistence storage layer for secrets
    * @param coordinate reference to a secret in the persistence
@@ -274,24 +258,19 @@ public class SecretsHelpers {
   }
 
   /**
-   * Determines which coordinate base and version to use based off of an old version that may exist in
-   * the secret persistence.
+   * Determines which coordinate base and version to use based off of an old version that may exist in the secret persistence.
    *
    * If the secret does not exist in the persistence, version 1 will be used.
    *
-   * If the new secret value is the same as the old version stored in the persistence, the returned
-   * coordinate will be the same as the previous version.
+   * If the new secret value is the same as the old version stored in the persistence, the returned coordinate will be the same as the previous
+   * version.
    *
-   * If the new secret value is different from the old version stored in the persistence, the returned
-   * coordinate will increase the version.
+   * If the new secret value is different from the old version stored in the persistence, the returned coordinate will increase the version.
    *
-   * @param newSecret new value of a secret provides a way to determine if a secret is the same or
-   *        updated at a specific location in a config
+   * @param newSecret new value of a secret provides a way to determine if a secret is the same or updated at a specific location in a config
    * @param workspaceId workspace used for this config
-   * @param uuidSupplier provided to allow a test case to produce known UUIDs in order for easy
-   *        fixture creation.
-   * @param oldSecretFullCoordinate a nullable full coordinate (base+version) retrieved from the
-   *        previous config
+   * @param uuidSupplier provided to allow a test case to produce known UUIDs in order for easy fixture creation.
+   * @param oldSecretFullCoordinate a nullable full coordinate (base+version) retrieved from the previous config
    * @return a coordinate (versioned reference to where the secret is stored in the persistence)
    */
   protected static SecretCoordinate getCoordinate(
@@ -343,17 +322,14 @@ public class SecretsHelpers {
   }
 
   /**
-   * This method takes in the key (JSON key or HMAC key) of a workspace service account as a secret
-   * and generates a co-ordinate for the secret so that the secret can be written in secret
-   * persistence at the generated co-ordinate
+   * This method takes in the key (JSON key or HMAC key) of a workspace service account as a secret and generates a co-ordinate for the secret so that
+   * the secret can be written in secret persistence at the generated co-ordinate
    *
    * @param newSecret The JSON key or HMAC key value
    * @param secretReader To read the value from secret persistence for comparison with the new value
    * @param workspaceId of the service account
-   * @param uuidSupplier provided to allow a test case to produce known UUIDs in order for easy *
-   *        fixture creation.
-   * @param oldSecretCoordinate a nullable full coordinate (base+version) retrieved from the *
-   *        previous config
+   * @param uuidSupplier provided to allow a test case to produce known UUIDs in order for easy * fixture creation.
+   * @param oldSecretCoordinate a nullable full coordinate (base+version) retrieved from the * previous config
    * @param keyType HMAC ot JSON key
    * @return a coordinate (versioned reference to where the secret is stored in the persistence)
    */
@@ -381,8 +357,7 @@ public class SecretsHelpers {
   /**
    * Takes in the secret coordinate in form of a JSON and fetches the secret from the store
    *
-   * @param secretCoordinateAsJson The co-ordinate at which we expect the secret value to be present
-   *        in the secret persistence
+   * @param secretCoordinateAsJson The co-ordinate at which we expect the secret value to be present in the secret persistence
    * @param readOnlySecretPersistence The secret persistence
    * @return Original secret value as JsonNode
    */

@@ -39,9 +39,8 @@ class DockerProcessFactoryTest {
   private static final String BUSYBOX = "busybox";
 
   /**
-   * {@link DockerProcessFactoryTest#testImageExists()} will fail if jq is not installed. The logs get
-   * swallowed when run from gradle. This test exists to explicitly fail with a clear error message
-   * when jq is not installed.
+   * {@link DockerProcessFactoryTest#testImageExists()} will fail if jq is not installed. The logs get swallowed when run from gradle. This test
+   * exists to explicitly fail with a clear error message when jq is not installed.
    */
   @Test
   void testJqExists() throws IOException {
@@ -58,9 +57,8 @@ class DockerProcessFactoryTest {
   }
 
   /**
-   * This test will fail if jq is not installed. If run from gradle the log line that mentions the jq
-   * issue will be swallowed. The exception is visible if run from intellij or with STDERR logging
-   * turned on in gradle.
+   * This test will fail if jq is not installed. If run from gradle the log line that mentions the jq issue will be swallowed. The exception is
+   * visible if run from intellij or with STDERR logging turned on in gradle.
    */
   @Test
   void testImageExists() throws IOException, WorkerException {

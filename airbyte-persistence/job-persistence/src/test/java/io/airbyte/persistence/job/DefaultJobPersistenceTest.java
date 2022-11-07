@@ -1705,43 +1705,36 @@ class DefaultJobPersistenceTest {
     }
 
     /**
-     * Testing job history deletion is sensitive to exactly how the constants are configured for
-     * controlling deletion logic. Thus, the test case injects overrides for those constants, testing a
-     * comprehensive set of combinations to make sure that the logic is robust to reasonable
+     * Testing job history deletion is sensitive to exactly how the constants are configured for controlling deletion logic. Thus, the test case
+     * injects overrides for those constants, testing a comprehensive set of combinations to make sure that the logic is robust to reasonable
      * configurations. Extreme configurations such as zero-day retention period are not covered.
      *
-     * Business rules for deletions. 1. Job must be older than X days or its conn has excessive number
-     * of jobs 2. Job cannot be one of the last N jobs on that conn (last N jobs are always kept). 3.
-     * Job cannot be holding the most recent saved state (most recent saved state is always kept).
+     * Business rules for deletions. 1. Job must be older than X days or its conn has excessive number of jobs 2. Job cannot be one of the last N jobs
+     * on that conn (last N jobs are always kept). 3. Job cannot be holding the most recent saved state (most recent saved state is always kept).
      *
-     * Testing Goal: Set up jobs according to the parameters passed in. Then delete according to the
-     * rules, and make sure the right number of jobs are left. Against one connection/scope,
+     * Testing Goal: Set up jobs according to the parameters passed in. Then delete according to the rules, and make sure the right number of jobs are
+     * left. Against one connection/scope,
      * <ol>
-     * <li>Setup: create a history of jobs that goes back many days (but produces no more than one job a
-     * day)</li>
+     * <li>Setup: create a history of jobs that goes back many days (but produces no more than one job a day)</li>
      * <li>Setup: the most recent job with state in it should be at least N jobs back</li>
-     * <li>Assert: ensure that after purging, there are the right number of jobs left (and at least min
-     * recency), including the one with the most recent state.</li>
-     * <li>Assert: ensure that after purging, there are the right number of jobs left (and at least min
-     * recency), including the X most recent</li>
+     * <li>Assert: ensure that after purging, there are the right number of jobs left (and at least min recency), including the one with the most
+     * recent state.</li>
+     * <li>Assert: ensure that after purging, there are the right number of jobs left (and at least min recency), including the X most recent</li>
      * <li>Assert: ensure that after purging, all other job history has been deleted.</li>
      * </ol>
      *
-     * @param numJobs How many test jobs to generate; make this enough that all other parameters are
-     *        fully included, for predictable results.
-     * @param tooManyJobs Takes the place of DefaultJobPersistence.JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS
-     *        - how many jobs are needed before it ignores date-based age of job when doing deletions.
-     * @param ageCutoff Takes the place of DefaultJobPersistence.JOB_HISTORY_MINIMUM_AGE_IN_DAYS -
-     *        retention period in days for the most recent jobs; older than this gets deleted.
-     * @param recencyCutoff Takes the place of DefaultJobPersistence.JOB_HISTORY_MINIMUM_RECENCY -
-     *        retention period in number of jobs; at least this many jobs will be retained after
-     *        deletion (provided enough existed in the first place).
-     * @param lastStatePosition How far back in the list is the job with the latest saved state. This
-     *        can be manipulated to have the saved-state job inside or prior to the retention period.
-     * @param expectedAfterPurge How many matching jobs are expected after deletion, given the input
-     *        parameters. This was calculated by a human based on understanding the requirements.
-     * @param goalOfTestScenario Description of the purpose of that test scenario, so it's easier to
-     *        maintain and understand failures.
+     * @param numJobs How many test jobs to generate; make this enough that all other parameters are fully included, for predictable results.
+     * @param tooManyJobs Takes the place of DefaultJobPersistence.JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS - how many jobs are needed before it ignores
+     *        date-based age of job when doing deletions.
+     * @param ageCutoff Takes the place of DefaultJobPersistence.JOB_HISTORY_MINIMUM_AGE_IN_DAYS - retention period in days for the most recent jobs;
+     *        older than this gets deleted.
+     * @param recencyCutoff Takes the place of DefaultJobPersistence.JOB_HISTORY_MINIMUM_RECENCY - retention period in number of jobs; at least this
+     *        many jobs will be retained after deletion (provided enough existed in the first place).
+     * @param lastStatePosition How far back in the list is the job with the latest saved state. This can be manipulated to have the saved-state job
+     *        inside or prior to the retention period.
+     * @param expectedAfterPurge How many matching jobs are expected after deletion, given the input parameters. This was calculated by a human based
+     *        on understanding the requirements.
+     * @param goalOfTestScenario Description of the purpose of that test scenario, so it's easier to maintain and understand failures.
      *
      */
     @DisplayName("Should purge older job history but maintain certain more recent ones")

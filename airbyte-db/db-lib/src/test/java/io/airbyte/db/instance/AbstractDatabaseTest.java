@@ -55,8 +55,7 @@ public abstract class AbstractDatabaseTest {
   }
 
   /**
-   * Create a {@link Database}. The downstream implementation should call
-   * {@link DatabaseMigrator#migrate} if necessary.
+   * Create a {@link Database}. The downstream implementation should call {@link DatabaseMigrator#migrate} if necessary.
    *
    * @param dataSource The {@link DataSource} used to access the database.
    * @param dslContext The {@link DSLContext} used to execute queries.

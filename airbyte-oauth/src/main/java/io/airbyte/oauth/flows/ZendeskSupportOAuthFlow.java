@@ -19,8 +19,7 @@ import java.util.function.Supplier;
 import org.apache.http.client.utils.URIBuilder;
 
 /**
- * Following docs from
- * https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application
+ * Following docs from https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application
  */
 public class ZendeskSupportOAuthFlow extends BaseOAuth2Flow {
 

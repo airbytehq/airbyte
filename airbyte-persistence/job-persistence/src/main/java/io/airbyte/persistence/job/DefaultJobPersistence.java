@@ -607,8 +607,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   /**
-   * For each connection ID in the input, find that connection's latest sync job and return it if one
-   * exists.
+   * For each connection ID in the input, find that connection's latest sync job and return it if one exists.
    */
   @Override
   public List<Job> getLastSyncJobForConnections(final List<UUID> connectionIds) throws IOException {
@@ -628,8 +627,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   /**
-   * For each connection ID in the input, find that connection's most recent non-terminal sync job and
-   * return it if one exists.
+   * For each connection ID in the input, find that connection's most recent non-terminal sync job and return it if one exists.
    */
   @Override
   public List<Job> getRunningSyncJobForConnections(final List<UUID> connectionIds) throws IOException {
@@ -998,8 +996,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   /**
-   * In a single transaction, truncate all @param tables from @param schema, making backup copies
-   * in @param backupSchema
+   * In a single transaction, truncate all @param tables from @param schema, making backup copies in @param backupSchema
    */
   private static void truncateTable(final DSLContext ctx, final String schema, final String tableName, final String backupSchema) {
     final Table<Record> tableSql = getTable(schema, tableName);
@@ -1050,10 +1047,9 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   /**
-   * In schema.sql, we create tables with IDENTITY PRIMARY KEY columns named 'id' that will generate
-   * auto-incremented ID for each new record. When importing batch of records from outside of the DB,
-   * we need to update Postgres Internal state to continue auto-incrementing from the latest value or
-   * we would risk to violate primary key constraints by inserting new records with duplicate ids.
+   * In schema.sql, we create tables with IDENTITY PRIMARY KEY columns named 'id' that will generate auto-incremented ID for each new record. When
+   * importing batch of records from outside of the DB, we need to update Postgres Internal state to continue auto-incrementing from the latest value
+   * or we would risk to violate primary key constraints by inserting new records with duplicate ids.
    *
    * This function reset such Identity states (called SQL Sequence objects).
    */
@@ -1070,8 +1066,8 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   /**
-   * Insert records into the metadata table to keep track of import Events that were applied on the
-   * database. Update and overwrite the corresponding @param airbyteVersion.
+   * Insert records into the metadata table to keep track of import Events that were applied on the database. Update and overwrite the
+   * corresponding @param airbyteVersion.
    */
   private static void registerImportMetadata(final DSLContext ctx, final String airbyteVersion) {
     ctx.execute(String.format("INSERT INTO %s VALUES('%s_import_db', '%s');", AIRBYTE_METADATA_TABLE, current_timestamp(), airbyteVersion));

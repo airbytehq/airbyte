@@ -15,8 +15,7 @@ import java.util.Collection;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Custom {@link TraceInterceptor} to handle Temporal SDK traces that include a non-error used to
- * exit Workflows.
+ * Custom {@link TraceInterceptor} to handle Temporal SDK traces that include a non-error used to exit Workflows.
  */
 @Slf4j
 public class TemporalSdkInterceptor implements TraceInterceptor {
@@ -68,8 +67,7 @@ public class TemporalSdkInterceptor implements TraceInterceptor {
    * Test whether the provided {@link MutableSpan} contains a Temporal workflow exit error.
    *
    * @param trace The {@link MutableSpan} to be tested.
-   * @return {@code true} if the {@link MutableSpan} contains a Temporal workflow exit error or
-   *         {@code false} otherwise.
+   * @return {@code true} if the {@link MutableSpan} contains a Temporal workflow exit error or {@code false} otherwise.
    */
   @VisibleForTesting
   boolean isExitTrace(final MutableSpan trace) {

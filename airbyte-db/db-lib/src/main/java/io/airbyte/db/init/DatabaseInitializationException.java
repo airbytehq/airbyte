@@ -5,8 +5,7 @@
 package io.airbyte.db.init;
 
 /**
- * Custom exception that represents a failure that occurs during an attempt to initialize a
- * database.
+ * Custom exception that represents a failure that occurs during an attempt to initialize a database.
  */
 public class DatabaseInitializationException extends Exception {
 

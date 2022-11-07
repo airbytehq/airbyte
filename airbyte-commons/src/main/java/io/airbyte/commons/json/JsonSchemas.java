@@ -51,9 +51,8 @@ public class JsonSchemas {
       ANY_OF_TYPE);
 
   /**
-   * JsonSchema supports to ways of declaring type. `type: "string"` and `type: ["null", "string"]`.
-   * This method will mutate a JsonNode with a type field so that the output type is the array
-   * version.
+   * JsonSchema supports to ways of declaring type. `type: "string"` and `type: ["null", "string"]`. This method will mutate a JsonNode with a type
+   * field so that the output type is the array version.
    *
    * @param jsonNode - a json object with children that contain types.
    */
@@ -65,9 +64,8 @@ public class JsonSchemas {
   }
 
   /*
-   * JsonReferenceProcessor relies on all the json in consumes being in a file system (not in a jar).
-   * This method copies all the json configs out of the jar into a temporary directory so that
-   * JsonReferenceProcessor can find them.
+   * JsonReferenceProcessor relies on all the json in consumes being in a file system (not in a jar). This method copies all the json configs out of
+   * the jar into a temporary directory so that JsonReferenceProcessor can find them.
    */
   public static <T> Path prepareSchemas(final String resourceDir, final Class<T> klass) {
     try {
@@ -93,8 +91,7 @@ public class JsonSchemas {
   }
 
   /**
-   * Traverse a JsonSchema object. The provided consumer will be called at each node with the node and
-   * the path to the node.
+   * Traverse a JsonSchema object. The provided consumer will be called at each node with the node and the path to the node.
    *
    * @param jsonSchema - JsonSchema object to traverse
    * @param consumer - accepts the current node and the path to that node.
@@ -107,12 +104,10 @@ public class JsonSchemas {
    * Traverse a JsonSchema object. At each node, map a value.
    *
    * @param jsonSchema - JsonSchema object to traverse
-   * @param mapper - accepts the current node and the path to that node. whatever is returned will be
-   *        collected and returned by the final collection.
+   * @param mapper - accepts the current node and the path to that node. whatever is returned will be collected and returned by the final collection.
    * @param <T> - type of objects being collected
-   * @return - collection of all items that were collected during the traversal. Returns a { @link
-   *         Collection } because there is no order or uniqueness guarantee so neither List nor Set
-   *         make sense.
+   * @return - collection of all items that were collected during the traversal. Returns a { @link Collection } because there is no order or
+   *         uniqueness guarantee so neither List nor Set make sense.
    */
   public static <T> List<T> traverseJsonSchemaWithCollector(final JsonNode jsonSchema, final BiFunction<JsonNode, List<FieldNameOrList>, T> mapper) {
     // for the sake of code reuse, use the filtered collector method but makes sure the filter always
@@ -125,12 +120,10 @@ public class JsonSchemas {
    * Traverse a JsonSchema object. At each node, optionally map a value.
    *
    * @param jsonSchema - JsonSchema object to traverse
-   * @param mapper - accepts the current node and the path to that node. if it returns an empty
-   *        optional, nothing will be collected, otherwise, whatever is returned will be collected and
-   *        returned by the final collection.
+   * @param mapper - accepts the current node and the path to that node. if it returns an empty optional, nothing will be collected, otherwise,
+   *        whatever is returned will be collected and returned by the final collection.
    * @param <T> - type of objects being collected
-   * @return - collection of all items that were collected during the traversal. Returns values in
-   *         preoorder traversal order.
+   * @return - collection of all items that were collected during the traversal. Returns values in preoorder traversal order.
    */
   public static <T> List<T> traverseJsonSchemaWithFilteredCollector(final JsonNode jsonSchema,
                                                                     final BiFunction<JsonNode, List<FieldNameOrList>, Optional<T>> mapper) {
@@ -141,9 +134,8 @@ public class JsonSchemas {
   }
 
   /**
-   * Traverses a JsonSchema object. It returns the path to each node that meet the provided condition.
-   * The paths are return in JsonPath format. The traversal is depth-first search preoorder and values
-   * are returned in that order.
+   * Traverses a JsonSchema object. It returns the path to each node that meet the provided condition. The paths are return in JsonPath format. The
+   * traversal is depth-first search preoorder and values are returned in that order.
    *
    * @param obj - JsonSchema object to traverse
    * @param predicate - predicate to determine if the path for a node should be collected.
@@ -160,13 +152,12 @@ public class JsonSchemas {
   }
 
   /**
-   * Recursive, depth-first implementation of { @link JsonSchemas#traverseJsonSchema(final JsonNode
-   * jsonNode, final BiConsumer<JsonNode, List<String>> consumer) }. Takes path as argument so that
-   * the path can be passed to the consumer.
+   * Recursive, depth-first implementation of { @link JsonSchemas#traverseJsonSchema(final JsonNode jsonNode, final BiConsumer<JsonNode, List<String>>
+   * consumer) }. Takes path as argument so that the path can be passed to the consumer.
    *
    * @param jsonSchemaNode - jsonschema object to traverse.
-   * @param consumer - consumer to be called at each node. it accepts the current node and the path to
-   *        the node from the root of the object passed at the root level invocation
+   * @param consumer - consumer to be called at each node. it accepts the current node and the path to the node from the root of the object passed at
+   *        the root level invocation
    */
   @SuppressWarnings("PMD.ForLoopCanBeForeach")
   private static void traverseJsonSchemaInternal(final JsonNode jsonSchemaNode,
@@ -217,8 +208,7 @@ public class JsonSchemas {
   }
 
   /**
-   * If the object uses JSONSchema composite functionality (e.g. oneOf, anyOf, allOf), detect it and
-   * return which one it is using.
+   * If the object uses JSONSchema composite functionality (e.g. oneOf, anyOf, allOf), detect it and return which one it is using.
    *
    * @param node - object to detect use of composite functionality.
    * @return the composite functionality being used, if not using composite functionality, empty.
@@ -233,8 +223,7 @@ public class JsonSchemas {
   }
 
   /**
-   * Same logic as {@link #getType(JsonNode)} except when no type is found, it defaults to type:
-   * Object.
+   * Same logic as {@link #getType(JsonNode)} except when no type is found, it defaults to type: Object.
    *
    * @param jsonSchema - JSONSchema object
    * @return type of the node.
@@ -249,9 +238,8 @@ public class JsonSchemas {
   }
 
   /**
-   * Get the type of JSONSchema node. Uses JSONSchema types. Only returns the type of the "top-level"
-   * node. e.g. if more nodes are nested underneath because it is an object or an array, only the top
-   * level type is returned.
+   * Get the type of JSONSchema node. Uses JSONSchema types. Only returns the type of the "top-level" node. e.g. if more nodes are nested underneath
+   * because it is an object or an array, only the top level type is returned.
    *
    * @param jsonSchema - JSONSchema object
    * @return type of the node.
@@ -274,17 +262,14 @@ public class JsonSchemas {
   }
 
   /**
-   * Provides a basic scheme for describing the path into a JSON object. Each element in the path is
-   * either a field name or a list.
+   * Provides a basic scheme for describing the path into a JSON object. Each element in the path is either a field name or a list.
    * <p>
-   * This class is helpful in the case where fields can be any UTF-8 string, so the only simple way to
-   * keep track of the different parts of a path without going crazy with escape characters is to keep
-   * it in a list with list set aside as a special case.
+   * This class is helpful in the case where fields can be any UTF-8 string, so the only simple way to keep track of the different parts of a path
+   * without going crazy with escape characters is to keep it in a list with list set aside as a special case.
    * <p>
-   * We prefer using this scheme instead of JSONPath in the tree traversal because, it is easier to
-   * decompose a path in this scheme than it is in JSONPath. Some callers of the traversal logic want
-   * to isolate parts of the path easily without the need for complex regex (that would be required if
-   * we used JSONPath).
+   * We prefer using this scheme instead of JSONPath in the tree traversal because, it is easier to decompose a path in this scheme than it is in
+   * JSONPath. Some callers of the traversal logic want to isolate parts of the path easily without the need for complex regex (that would be required
+   * if we used JSONPath).
    */
   public static class FieldNameOrList {
 

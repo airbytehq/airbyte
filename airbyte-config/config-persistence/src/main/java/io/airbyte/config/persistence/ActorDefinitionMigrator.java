@@ -41,8 +41,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Takes in most up-to-date source and destination definitions from the Airbyte connector catalog
- * and merges them with those already present in the database. See javadocs on methods for rules.
+ * Takes in most up-to-date source and destination definitions from the Airbyte connector catalog and merges them with those already present in the
+ * database. See javadocs on methods for rules.
  */
 public class ActorDefinitionMigrator {
 
@@ -98,10 +98,9 @@ public class ActorDefinitionMigrator {
   }
 
   /**
-   * @return A set of connectors (both source and destination) that are already used in standard
-   *         syncs. We identify connectors by its repository name instead of definition id because
-   *         connectors can be added manually by users, and their config ids are not always the same
-   *         as those in the seed.
+   * @return A set of connectors (both source and destination) that are already used in standard syncs. We identify connectors by its repository name
+   *         instead of definition id because connectors can be added manually by users, and their config ids are not always the same as those in the
+   *         seed.
    */
   private Set<String> getConnectorRepositoriesInUse(final DSLContext ctx) {
     final Set<UUID> usedConnectorDefinitionIds = ctx
@@ -121,10 +120,9 @@ public class ActorDefinitionMigrator {
   }
 
   /**
-   * @return A map about current connectors (both source and destination). It maps from connector
-   *         repository to its definition id and docker image tag. We identify a connector by its
-   *         repository name instead of definition id because connectors can be added manually by
-   *         users, and are not always the same as those in the seed.
+   * @return A map about current connectors (both source and destination). It maps from connector repository to its definition id and docker image
+   *         tag. We identify a connector by its repository name instead of definition id because connectors can be added manually by users, and are
+   *         not always the same as those in the seed.
    */
   @VisibleForTesting
   Map<String, ConnectorInfo> getConnectorRepositoryToInfoMap(final DSLContext ctx) {
@@ -182,8 +180,8 @@ public class ActorDefinitionMigrator {
   }
 
   /**
-   * The custom connector are not present in the seed and thus it is not relevant to validate their
-   * latest version. This method allows to filter them out.
+   * The custom connector are not present in the seed and thus it is not relevant to validate their latest version. This method allows to filter them
+   * out.
    *
    * @param connectorRepositoryToIdVersionMap
    * @param configType
@@ -209,9 +207,8 @@ public class ActorDefinitionMigrator {
   }
 
   /**
-   * @param connectorRepositoriesInUse when a connector is used in any standard sync, its definition
-   *        will not be updated. This is necessary because the new connector version may not be
-   *        backward compatible.
+   * @param connectorRepositoriesInUse when a connector is used in any standard sync, its definition will not be updated. This is necessary because
+   *        the new connector version may not be backward compatible.
    */
   @VisibleForTesting
   <T> ConnectorCounter updateConnectorDefinitions(final DSLContext ctx,

@@ -58,16 +58,13 @@ import org.slf4j.LoggerFactory;
 /**
  * requires kube running locally to run. If using Minikube it requires MINIKUBE=true
  * <p>
- * Must have a timeout on this class because it tests child processes that may misbehave; otherwise
- * this can hang forever during failures.
+ * Must have a timeout on this class because it tests child processes that may misbehave; otherwise this can hang forever during failures.
  * <p>
- * Many of the tests here use the {@link RetryingTest} annotation instead of the more common
- * {@link Test} to allow multiple tries for a test to pass. This is because these tests sometimes
- * fail transiently, and we haven't been able to fix that yet.
+ * Many of the tests here use the {@link RetryingTest} annotation instead of the more common {@link Test} to allow multiple tries for a test to pass.
+ * This is because these tests sometimes fail transiently, and we haven't been able to fix that yet.
  * <p>
- * However, in general we should prefer using {@code @Test} instead and only resort to using
- * {@code @RetryingTest} for tests that we can't get to pass reliably. New tests should thus default
- * to using {@code @Test} if possible.
+ * However, in general we should prefer using {@code @Test} instead and only resort to using {@code @RetryingTest} for tests that we can't get to pass
+ * reliably. New tests should thus default to using {@code @Test} if possible.
  */
 @Timeout(value = 6,
          unit = TimeUnit.MINUTES)
@@ -109,8 +106,7 @@ public class KubePodProcessIntegrationTest {
   @RetryingTest(3)
   public void testInitKubePortManagerSingletonTwice() throws Exception {
     /**
-     * Test init KubePortManagerSingleton twice: 1. with same ports should succeed 2. with different
-     * port should fail
+     * Test init KubePortManagerSingleton twice: 1. with same ports should succeed 2. with different port should fail
      *
      * Every test has been init once in BeforeAll with getOpenPorts(30)
      */
@@ -130,9 +126,8 @@ public class KubePodProcessIntegrationTest {
   }
 
   /**
-   * In the past we've had some issues with transient / stuck pods. The idea here is to run a few at
-   * once, and check that they are all running in hopes of identifying regressions that introduce
-   * flakiness.
+   * In the past we've had some issues with transient / stuck pods. The idea here is to run a few at once, and check that they are all running in
+   * hopes of identifying regressions that introduce flakiness.
    */
   @RetryingTest(3)
   public void testConcurrentRunning() throws Exception {

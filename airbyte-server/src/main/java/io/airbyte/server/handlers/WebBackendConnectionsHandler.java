@@ -231,12 +231,10 @@ public class WebBackendConnectionsHandler {
   }
 
   /*
-   * A breakingChange boolean is stored on the connectionRead object and corresponds to the boolean
-   * breakingChange field on the connection table. If there is not a breaking change, we still have to
-   * check whether there is a non-breaking schema change by fetching the most recent
-   * ActorCatalogFetchEvent. A new ActorCatalogFetchEvent is stored each time there is a source schema
-   * refresh, so if the most recent ActorCatalogFetchEvent has a different actor catalog than the
-   * existing actor catalog, there is a schema change.
+   * A breakingChange boolean is stored on the connectionRead object and corresponds to the boolean breakingChange field on the connection table. If
+   * there is not a breaking change, we still have to check whether there is a non-breaking schema change by fetching the most recent
+   * ActorCatalogFetchEvent. A new ActorCatalogFetchEvent is stored each time there is a source schema refresh, so if the most recent
+   * ActorCatalogFetchEvent has a different actor catalog than the existing actor catalog, there is a schema change.
    */
   @VisibleForTesting
   SchemaChange getSchemaChange(
@@ -316,15 +314,14 @@ public class WebBackendConnectionsHandler {
      */
     final AirbyteCatalog configuredCatalog = connection.getSyncCatalog();
     /*
-     * This catalog represents the full catalog that was used to create the configured catalog. It will
-     * have all streams that were present at the time. It will have no configuration set.
+     * This catalog represents the full catalog that was used to create the configured catalog. It will have all streams that were present at the
+     * time. It will have no configuration set.
      */
     final Optional<AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
         .getConnectionAirbyteCatalog(webBackendConnectionRequestBody.getConnectionId());
 
     /*
-     * This catalog represents the full catalog that exists now for the source. It will have no
-     * configuration set.
+     * This catalog represents the full catalog that exists now for the source. It will have no configuration set.
      */
     final Optional<SourceDiscoverSchemaRead> refreshedCatalog;
     if (MoreBooleans.isTruthy(webBackendConnectionRequestBody.getWithRefreshedCatalog())) {
@@ -339,17 +336,14 @@ public class WebBackendConnectionsHandler {
     if (refreshedCatalog.isPresent()) {
       connection.sourceCatalogId(refreshedCatalog.get().getCatalogId());
       /*
-       * constructs a full picture of all existing configured + all new / updated streams in the newest
-       * catalog.
+       * constructs a full picture of all existing configured + all new / updated streams in the newest catalog.
        */
       syncCatalog = updateSchemaWithDiscovery(configuredCatalog, refreshedCatalog.get().getCatalog());
       /*
-       * Diffing the catalog used to make the configured catalog gives us the clearest diff between the
-       * schema when the configured catalog was made and now. In the case where we do not have the
-       * original catalog used to make the configured catalog, we make due, but using the configured
-       * catalog itself. The drawback is that any stream that was not selected in the configured catalog
-       * but was present at time of configuration will appear in the diff as an added stream which is
-       * confusing. We need to figure out why source_catalog_id is not always populated in the db.
+       * Diffing the catalog used to make the configured catalog gives us the clearest diff between the schema when the configured catalog was made
+       * and now. In the case where we do not have the original catalog used to make the configured catalog, we make due, but using the configured
+       * catalog itself. The drawback is that any stream that was not selected in the configured catalog but was present at time of configuration will
+       * appear in the diff as an added stream which is confusing. We need to figure out why source_catalog_id is not always populated in the db.
        */
       diff = refreshedCatalog.get().getCatalogDiff();
       connection.setBreakingChange(refreshedCatalog.get().getBreakingChange());
@@ -380,20 +374,17 @@ public class WebBackendConnectionsHandler {
   }
 
   /**
-   * Applies existing configurations to a newly discovered catalog. For example, if the users stream
-   * is in the old and new catalog, any configuration that was previously set for users, we add to the
-   * new catalog.
+   * Applies existing configurations to a newly discovered catalog. For example, if the users stream is in the old and new catalog, any configuration
+   * that was previously set for users, we add to the new catalog.
    *
    * @param original fully configured, original catalog
    * @param discovered newly discovered catalog, no configurations set
-   * @return merged catalog, most up-to-date schema with most up-to-date configurations from old
-   *         catalog
+   * @return merged catalog, most up-to-date schema with most up-to-date configurations from old catalog
    */
   @VisibleForTesting
   protected static AirbyteCatalog updateSchemaWithDiscovery(final AirbyteCatalog original, final AirbyteCatalog discovered) {
     /*
-     * We can't directly use s.getStream() as the key, because it contains a bunch of other fields, so
-     * we just define a quick-and-dirty record class.
+     * We can't directly use s.getStream() as the key, because it contains a bunch of other fields, so we just define a quick-and-dirty record class.
      */
     final Map<Stream, AirbyteStreamAndConfiguration> streamDescriptorToOriginalStream = original.getStreams()
         .stream()
@@ -454,11 +445,10 @@ public class WebBackendConnectionsHandler {
   }
 
   /**
-   * Given a WebBackendConnectionUpdate, patch the connection by applying any non-null properties from
-   * the patch to the connection.
+   * Given a WebBackendConnectionUpdate, patch the connection by applying any non-null properties from the patch to the connection.
    *
-   * As a convenience to the front-end, this endpoint also creates new operations present in the
-   * request, and bundles those newly-created operationIds into the connection update.
+   * As a convenience to the front-end, this endpoint also creates new operations present in the request, and bundles those newly-created operationIds
+   * into the connection update.
    */
   public WebBackendConnectionRead webBackendUpdateConnection(final WebBackendConnectionUpdate webBackendConnectionPatch)
       throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -483,8 +473,8 @@ public class WebBackendConnectionsHandler {
     // detect if any streams need to be reset based on the patch and initial catalog, if so, reset them
     resetStreamsIfNeeded(webBackendConnectionPatch, oldConfiguredCatalog, connectionRead);
     /*
-     * This catalog represents the full catalog that was used to create the configured catalog. It will
-     * have all streams that were present at the time. It will have no configuration set.
+     * This catalog represents the full catalog that was used to create the configured catalog. It will have all streams that were present at the
+     * time. It will have no configuration set.
      */
     final Optional<AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
         .getConnectionAirbyteCatalog(connectionId);
@@ -499,8 +489,7 @@ public class WebBackendConnectionsHandler {
   }
 
   /**
-   * Given a fully updated connection, check for a diff between the old catalog and the updated
-   * catalog to see if any streams need to be reset.
+   * Given a fully updated connection, check for a diff between the old catalog and the updated catalog to see if any streams need to be reset.
    */
   private void resetStreamsIfNeeded(final WebBackendConnectionUpdate webBackendConnectionPatch,
                                     final ConfiguredAirbyteCatalog oldConfiguredCatalog,
@@ -626,10 +615,9 @@ public class WebBackendConnectionsHandler {
   }
 
   /**
-   * Take in a WebBackendConnectionUpdate and convert it into a ConnectionUpdate. OperationIds are
-   * handled as a special case because the WebBackendConnectionUpdate handler allows for on-the-fly
-   * creation of new operations. So, the brand-new IDs are passed in because they aren't present in
-   * the WebBackendConnectionUpdate itself.
+   * Take in a WebBackendConnectionUpdate and convert it into a ConnectionUpdate. OperationIds are handled as a special case because the
+   * WebBackendConnectionUpdate handler allows for on-the-fly creation of new operations. So, the brand-new IDs are passed in because they aren't
+   * present in the WebBackendConnectionUpdate itself.
    *
    * The return value is used as a patch -- a field set to null means that it should not be modified.
    */
@@ -665,9 +653,8 @@ public class WebBackendConnectionsHandler {
   }
 
   /**
-   * Equivalent to {@see io.airbyte.integrations.base.AirbyteStreamNameNamespacePair}. Intentionally
-   * not using that class because it doesn't make sense for airbyte-server to depend on
-   * base-java-integration.
+   * Equivalent to {@see io.airbyte.integrations.base.AirbyteStreamNameNamespacePair}. Intentionally not using that class because it doesn't make
+   * sense for airbyte-server to depend on base-java-integration.
    */
   private record Stream(String name, String namespace) {
 

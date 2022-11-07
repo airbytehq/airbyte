@@ -107,8 +107,7 @@ public class JobConverter {
   }
 
   /**
-   * If the job is of type RESET, extracts the part of the reset config that we expose in the API.
-   * Otherwise, returns empty optional.
+   * If the job is of type RESET, extracts the part of the reset config that we expose in the API. Otherwise, returns empty optional.
    *
    * @param job - job
    * @return api representation of reset config

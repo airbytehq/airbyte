@@ -7,8 +7,7 @@ package io.airbyte.metrics.lib;
 import lombok.AllArgsConstructor;
 
 /**
- * Enum containing all applications metrics are emitted for. Used to initialize
- * {@link MetricClientFactory.initialize(MetricEmittingApp)}.
+ * Enum containing all applications metrics are emitted for. Used to initialize {@link MetricClientFactory.initialize(MetricEmittingApp)}.
  *
  * Application Name Conventions:
  * <p>

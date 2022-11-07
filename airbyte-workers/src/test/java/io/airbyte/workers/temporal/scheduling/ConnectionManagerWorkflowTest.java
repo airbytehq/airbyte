@@ -96,8 +96,8 @@ import org.mockito.Mockito;
 /**
  * Tests the core state machine of the connection manager workflow.
  *
- * We've had race conditions in this in the past which is why (after addressing them) we have
- * repeated cases, just in case there's a regression where a race condition is added back to a test.
+ * We've had race conditions in this in the past which is why (after addressing them) we have repeated cases, just in case there's a regression where
+ * a race condition is added back to a test.
  */
 @Slf4j
 class ConnectionManagerWorkflowTest {

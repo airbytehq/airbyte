@@ -20,14 +20,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Creates a stream from an input stream. The produced stream attempts to parse each line of the
- * InputStream into a AirbyteMessage. If the line cannot be parsed into a AirbyteMessage it is
- * assumed to be from dbt. dbt [error] messages are also parsed
+ * Creates a stream from an input stream. The produced stream attempts to parse each line of the InputStream into a AirbyteMessage. If the line cannot
+ * be parsed into a AirbyteMessage it is assumed to be from dbt. dbt [error] messages are also parsed
  *
  * <p>
- * If a line starts with a AirbyteMessage and then has other characters after it, that
- * AirbyteMessage will still be parsed. If there are multiple AirbyteMessage records on the same
- * line, only the first will be parsed.
+ * If a line starts with a AirbyteMessage and then has other characters after it, that AirbyteMessage will still be parsed. If there are multiple
+ * AirbyteMessage records on the same line, only the first will be parsed.
  */
 @SuppressWarnings("PMD.MoreThanOneLogger")
 public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {

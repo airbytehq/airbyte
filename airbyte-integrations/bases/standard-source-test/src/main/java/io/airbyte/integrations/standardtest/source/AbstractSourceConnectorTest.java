@@ -52,8 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This abstract class contains helpful functionality and boilerplate for testing a source
- * connector.
+ * This abstract class contains helpful functionality and boilerplate for testing a source connector.
  */
 public abstract class AbstractSourceConnectorTest {
 
@@ -81,16 +80,15 @@ public abstract class AbstractSourceConnectorTest {
   protected abstract String getImageName();
 
   /**
-   * Configuration specific to the integration. Will be passed to integration where appropriate in
-   * each test. Should be valid.
+   * Configuration specific to the integration. Will be passed to integration where appropriate in each test. Should be valid.
    *
    * @return integration-specific configuration
    */
   protected abstract JsonNode getConfig() throws Exception;
 
   /**
-   * Function that performs any setup of external resources required for the test. e.g. instantiate a
-   * postgres database. This function will be called before EACH test.
+   * Function that performs any setup of external resources required for the test. e.g. instantiate a postgres database. This function will be called
+   * before EACH test.
    *
    * @param environment - information about the test environment.
    * @throws Exception - can throw any exception, test framework will handle.
@@ -98,9 +96,8 @@ public abstract class AbstractSourceConnectorTest {
   protected abstract void setupEnvironment(TestDestinationEnv environment) throws Exception;
 
   /**
-   * Function that performs any clean up of external resources required for the test. e.g. delete a
-   * postgres database. This function will be called after EACH test. It MUST remove all data in the
-   * destination so that there is no contamination across tests.
+   * Function that performs any clean up of external resources required for the test. e.g. delete a postgres database. This function will be called
+   * after EACH test. It MUST remove all data in the destination so that there is no contamination across tests.
    *
    * @param testEnv - information about the test environment.
    * @throws Exception - can throw any exception, test framework will handle.

@@ -32,8 +32,7 @@ class DestSingleStateLifecycleManagerTest {
   }
 
   /**
-   * Demonstrates expected lifecycle of a state object for documentation purposes. Subsequent test get
-   * into the details.
+   * Demonstrates expected lifecycle of a state object for documentation purposes. Subsequent test get into the details.
    */
   @Test
   void testBasicLifeCycle() {

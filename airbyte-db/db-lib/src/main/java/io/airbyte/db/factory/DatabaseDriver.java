@@ -41,8 +41,7 @@ public enum DatabaseDriver {
    * Finds the {@link DatabaseDriver} enumerated value that matches the provided driver class name.
    *
    * @param driverClassName The driver class name.
-   * @return The matching {@link DatabaseDriver} enumerated value or {@code null} if no match is
-   *         found.
+   * @return The matching {@link DatabaseDriver} enumerated value or {@code null} if no match is found.
    */
   public static DatabaseDriver findByDriverClassName(final String driverClassName) {
     DatabaseDriver selected = null;

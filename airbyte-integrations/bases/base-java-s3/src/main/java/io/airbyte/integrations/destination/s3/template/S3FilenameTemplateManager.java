@@ -22,8 +22,8 @@ import org.apache.commons.text.StringSubstitutor;
 import org.apache.commons.text.lookup.StringLookupFactory;
 
 /**
- * This class is responsible for building the filename template based on user input, see
- * file_name_pattern in the specification of connector currently supported only S3 staging.
+ * This class is responsible for building the filename template based on user input, see file_name_pattern in the specification of connector currently
+ * supported only S3 staging.
  */
 public class S3FilenameTemplateManager {
 
@@ -70,11 +70,10 @@ public class S3FilenameTemplateManager {
   }
 
   /**
-   * By extended placeholders we assume next types: {date:yyyy_MM}, {timestamp:millis},
-   * {timestamp:micro}, etc Limited combinations are supported by the method see the method body.
+   * By extended placeholders we assume next types: {date:yyyy_MM}, {timestamp:millis}, {timestamp:micro}, etc Limited combinations are supported by
+   * the method see the method body.
    *
-   * @param stringToReplaceWithPlaceholder - string where the method will search for extended
-   *        placeholders
+   * @param stringToReplaceWithPlaceholder - string where the method will search for extended placeholders
    * @return map with prepared placeholders.
    */
   private Map<String, String> processExtendedPlaceholder(final long currentTimeMillis, final String stringToReplaceWithPlaceholder) {

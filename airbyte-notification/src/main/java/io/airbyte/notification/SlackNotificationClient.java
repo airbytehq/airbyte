@@ -24,8 +24,8 @@ import org.slf4j.LoggerFactory;
  *
  * This class also reads a resource YAML file that defines the template message to send.
  *
- * It is stored as a YAML so that we can easily change the structure of the JSON data expected by
- * the API that we are posting to (and we can write multi-line strings more easily).
+ * It is stored as a YAML so that we can easily change the structure of the JSON data expected by the API that we are posting to (and we can write
+ * multi-line strings more easily).
  *
  * For example, slack API expects some text message in the { "text" : "Hello World" } field...
  */
@@ -159,8 +159,8 @@ public class SlackNotificationClient extends NotificationClient {
   }
 
   /**
-   * Use an integer division to check successful HTTP status codes (i.e., those from 200-299), not
-   * just 200. https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+   * Use an integer division to check successful HTTP status codes (i.e., those from 200-299), not just 200.
+   * https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
    */
   private static boolean isSuccessfulHttpResponse(final int httpStatusCode) {
     return httpStatusCode / 100 == 2;

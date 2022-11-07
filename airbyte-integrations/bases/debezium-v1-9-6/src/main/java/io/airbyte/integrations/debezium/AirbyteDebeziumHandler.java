@@ -30,8 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class acts as the bridge between Airbyte DB connectors and debezium. If a DB connector wants
- * to use debezium for CDC, it should use this class
+ * This class acts as the bridge between Airbyte DB connectors and debezium. If a DB connector wants to use debezium for CDC, it should use this class
  */
 public class AirbyteDebeziumHandler {
 

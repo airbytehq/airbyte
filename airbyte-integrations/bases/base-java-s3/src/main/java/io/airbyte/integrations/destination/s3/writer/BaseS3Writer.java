@@ -140,10 +140,9 @@ public abstract class BaseS3Writer implements DestinationFileWriter {
   }
 
   /**
-   * @param parameterObject - an object which holds all necessary parameters required for default
-   *        filename creation.
-   * @return A string in the format "{upload-date}_{upload-millis}_{suffix}.{format-extension}". For
-   *         example, "2021_12_09_1639077474000_customSuffix.csv"
+   * @param parameterObject - an object which holds all necessary parameters required for default filename creation.
+   * @return A string in the format "{upload-date}_{upload-millis}_{suffix}.{format-extension}". For example,
+   *         "2021_12_09_1639077474000_customSuffix.csv"
    */
   private static String getDefaultOutputFilename(final S3FilenameTemplateParameterObject parameterObject) {
     final DateFormat formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);

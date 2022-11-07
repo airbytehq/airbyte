@@ -37,11 +37,9 @@ public class WorkspaceWebhookConfigsConverter {
   /**
    * Extract the read-only properties from a set of persisted webhook operation configs.
    * <p>
-   * Specifically, returns the id and name but excludes the secret auth token. Note that we "manually"
-   * deserialize the JSON tree instead of deserializing to our internal schema --
-   * WebhookOperationConfigs -- because the persisted JSON doesn't conform to that schema until we
-   * hydrate the secrets. Since we don't want to unnecessarily hydrate the secrets to read from the
-   * API, we do this instead.
+   * Specifically, returns the id and name but excludes the secret auth token. Note that we "manually" deserialize the JSON tree instead of
+   * deserializing to our internal schema -- WebhookOperationConfigs -- because the persisted JSON doesn't conform to that schema until we hydrate the
+   * secrets. Since we don't want to unnecessarily hydrate the secrets to read from the API, we do this instead.
    * <p>
    * TODO(mfsiega-airbyte): try find a cleaner way to handle this situation.
    *

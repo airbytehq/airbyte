@@ -65,9 +65,8 @@ import org.apache.commons.lang3.time.StopWatch;
 public class TemporalClient {
 
   /**
-   * This is used to sleep between 2 temporal queries. The query is needed to ensure that the cancel
-   * and start manual sync methods wait before returning. Since temporal signals are async, we need to
-   * use the queries to make sure that we are in a state in which we want to continue with.
+   * This is used to sleep between 2 temporal queries. The query is needed to ensure that the cancel and start manual sync methods wait before
+   * returning. Since temporal signals are async, we need to use the queries to make sure that we are in a state in which we want to continue with.
    */
   private static final int DELAY_BETWEEN_QUERY_MS = 10;
 
@@ -510,8 +509,8 @@ public class TemporalClient {
   }
 
   /**
-   * Check if a workflow is reachable for signal calls by attempting to query for current state. If
-   * the query succeeds, and the workflow is not marked as deleted, the workflow is reachable.
+   * Check if a workflow is reachable for signal calls by attempting to query for current state. If the query succeeds, and the workflow is not marked
+   * as deleted, the workflow is reachable.
    */
   @VisibleForTesting
   boolean isWorkflowReachable(final UUID connectionId) {

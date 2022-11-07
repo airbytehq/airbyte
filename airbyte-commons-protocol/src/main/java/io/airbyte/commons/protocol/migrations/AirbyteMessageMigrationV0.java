@@ -10,8 +10,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import jakarta.inject.Singleton;
 
 /**
- * Demo migration to illustrate the template. This should be deleted once we added the v0 to v1
- * migration.
+ * Demo migration to illustrate the template. This should be deleted once we added the v0 to v1 migration.
  */
 @Singleton
 public class AirbyteMessageMigrationV0

@@ -19,8 +19,7 @@ import java.util.function.Supplier;
 import org.apache.http.client.utils.URIBuilder;
 
 /**
- * Following docs from
- * https://ads.tiktok.com/marketing_api/docs?id=1701890912382977&is_new_connect=0&is_new_user=0&rid=sta6fe2yww
+ * Following docs from https://ads.tiktok.com/marketing_api/docs?id=1701890912382977&is_new_connect=0&is_new_user=0&rid=sta6fe2yww
  */
 public class TikTokMarketingOAuthFlow extends BaseOAuth2Flow {
 

@@ -15,8 +15,7 @@ import java.util.stream.Stream;
 public class AutoCloseableIterators {
 
   /**
-   * Coerces a vanilla {@link Iterator} into a {@link AutoCloseableIterator} by adding a no op close
-   * function.
+   * Coerces a vanilla {@link Iterator} into a {@link AutoCloseableIterator} by adding a no op close function.
    *
    * @param iterator iterator to convert
    * @param <T> type
@@ -27,8 +26,7 @@ public class AutoCloseableIterators {
   }
 
   /**
-   * Coerces a vanilla {@link Iterator} into a {@link AutoCloseableIterator}. The provided onClose
-   * function will be called at most one time.
+   * Coerces a vanilla {@link Iterator} into a {@link AutoCloseableIterator}. The provided onClose function will be called at most one time.
    *
    * @param iterator autocloseable iterator to add another close to
    * @param onClose the function that will be called on close
@@ -40,9 +38,8 @@ public class AutoCloseableIterators {
   }
 
   /**
-   * Wraps a {@link Stream} in a {@link AutoCloseableIterator}. The first time
-   * {@link AutoCloseableIterator#close()} is called, {@link Stream#close()} will be called. It will
-   * not be called again subsequently.
+   * Wraps a {@link Stream} in a {@link AutoCloseableIterator}. The first time {@link AutoCloseableIterator#close()} is called, {@link Stream#close()}
+   * will be called. It will not be called again subsequently.
    *
    * @param stream stream to wrap
    * @param <T> type
@@ -62,12 +59,10 @@ public class AutoCloseableIterators {
   }
 
   /**
-   * Returns a {@link AutoCloseableIterator} that will call the provided supplier ONE time when
-   * {@link AutoCloseableIterator#hasNext()} is called the first time. The supplier returns a stream
-   * that will be exposed as an iterator.
+   * Returns a {@link AutoCloseableIterator} that will call the provided supplier ONE time when {@link AutoCloseableIterator#hasNext()} is called the
+   * first time. The supplier returns a stream that will be exposed as an iterator.
    *
-   * @param iteratorSupplier supplier that provides a autocloseable iterator that will be invoked
-   *        lazily
+   * @param iteratorSupplier supplier that provides a autocloseable iterator that will be invoked lazily
    * @param <T> type
    * @return autocloseable iterator
    */
@@ -91,8 +86,7 @@ public class AutoCloseableIterators {
   }
 
   /**
-   * Lift and shift of Guava's {@link Iterators#transform} using the {@link AutoCloseableIterator}
-   * interface.
+   * Lift and shift of Guava's {@link Iterators#transform} using the {@link AutoCloseableIterator} interface.
    *
    * @param fromIterator input autocloseable iterator
    * @param function map function
@@ -106,15 +100,14 @@ public class AutoCloseableIterators {
   }
 
   /**
-   * Map over a {@link AutoCloseableIterator} using a vanilla {@link Iterator} while retaining all of
-   * the Resource behavior of the input {@link AutoCloseableIterator}.
+   * Map over a {@link AutoCloseableIterator} using a vanilla {@link Iterator} while retaining all of the Resource behavior of the input
+   * {@link AutoCloseableIterator}.
    *
-   * @param iteratorCreator function that takes in a autocloseable iterator and uses it to create a
-   *        vanilla iterator
+   * @param iteratorCreator function that takes in a autocloseable iterator and uses it to create a vanilla iterator
    * @param autoCloseableIterator input autocloseable iterator
    * @param <T> type
-   * @return autocloseable iterator that still has the close functionality of the original input
-   *         iterator but is transformed by the iterator output by the iteratorCreator
+   * @return autocloseable iterator that still has the close functionality of the original input iterator but is transformed by the iterator output by
+   *         the iteratorCreator
    */
   public static <T> AutoCloseableIterator<T> transform(final Function<AutoCloseableIterator<T>, Iterator<T>> iteratorCreator,
                                                        final AutoCloseableIterator<T> autoCloseableIterator) {

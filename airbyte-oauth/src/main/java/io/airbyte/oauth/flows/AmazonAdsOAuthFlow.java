@@ -30,9 +30,8 @@ public class AmazonAdsOAuthFlow extends BaseOAuth2Flow {
   }
 
   /**
-   * Depending on the OAuth flow implementation, the URL to grant user's consent may differ,
-   * especially in the query parameters to be provided. This function should generate such consent URL
-   * accordingly.
+   * Depending on the OAuth flow implementation, the URL to grant user's consent may differ, especially in the query parameters to be provided. This
+   * function should generate such consent URL accordingly.
    *
    * @param definitionId The configured definition ID of this client
    * @param clientId The configured client ID

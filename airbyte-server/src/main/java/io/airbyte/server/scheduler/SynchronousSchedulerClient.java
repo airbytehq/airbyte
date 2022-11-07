@@ -13,8 +13,8 @@ import java.io.IOException;
 import java.util.UUID;
 
 /**
- * Exposes a way of executing short-lived jobs as RPC calls. Blocks until the job completes. No
- * metadata will be stored in the Jobs table for jobs triggered via this client.
+ * Exposes a way of executing short-lived jobs as RPC calls. Blocks until the job completes. No metadata will be stored in the Jobs table for jobs
+ * triggered via this client.
  */
 public interface SynchronousSchedulerClient {
 

@@ -16,13 +16,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Base implementation of a {@link SerializableBuffer}. It is composed of a {@link BufferStorage}
- * where the actual data is being stored in a serialized format.
+ * Base implementation of a {@link SerializableBuffer}. It is composed of a {@link BufferStorage} where the actual data is being stored in a
+ * serialized format.
  *
- * Such data format is defined by concrete implementation inheriting from this base abstract class.
- * To do so, necessary methods on handling "writer" methods should be defined. This writer would
- * take care of converting {@link AirbyteRecordMessage} into the serialized form of the data such as
- * it can be stored in the outputStream of the {@link BufferStorage}.
+ * Such data format is defined by concrete implementation inheriting from this base abstract class. To do so, necessary methods on handling "writer"
+ * methods should be defined. This writer would take care of converting {@link AirbyteRecordMessage} into the serialized form of the data such as it
+ * can be stored in the outputStream of the {@link BufferStorage}.
  */
 public abstract class BaseSerializedBuffer implements SerializableBuffer {
 
@@ -54,15 +53,14 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
   protected abstract void createWriter(OutputStream outputStream) throws Exception;
 
   /**
-   * Transform the @param recordMessage into a serialized form of the data and writes it to the
-   * registered OutputStream provided when {@link BaseSerializedBuffer#createWriter} was called.
+   * Transform the @param recordMessage into a serialized form of the data and writes it to the registered OutputStream provided when
+   * {@link BaseSerializedBuffer#createWriter} was called.
    */
   protected abstract void writeRecord(AirbyteRecordMessage recordMessage) throws IOException;
 
   /**
-   * Stops the writer from receiving new data and prepares it for being finalized and converted into
-   * an InputStream to read from instead. This is used when flushing the buffer into some other
-   * destination.
+   * Stops the writer from receiving new data and prepares it for being finalized and converted into an InputStream to read from instead. This is used
+   * when flushing the buffer into some other destination.
    */
   protected abstract void flushWriter() throws IOException;
 

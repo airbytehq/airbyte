@@ -19,11 +19,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This is the default implementation of a {@link BufferStorage} to be backward compatible. Data is
- * being buffered in a {@link List<AirbyteRecordMessage>} as they are being consumed.
+ * This is the default implementation of a {@link BufferStorage} to be backward compatible. Data is being buffered in a
+ * {@link List<AirbyteRecordMessage>} as they are being consumed.
  *
- * This should be deprecated as we slowly move towards using {@link SerializedBufferingStrategy}
- * instead.
+ * This should be deprecated as we slowly move towards using {@link SerializedBufferingStrategy} instead.
  */
 public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
 

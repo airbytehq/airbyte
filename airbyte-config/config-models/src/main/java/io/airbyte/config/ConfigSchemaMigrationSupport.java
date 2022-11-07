@@ -10,9 +10,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * When migrating configs, it is possible that some of the old config types have been removed from
- * the codebase. So we cannot rely on the latest {@link ConfigSchema} to migrate them. This class
- * provides backward compatibility for those legacy config types during migration.
+ * When migrating configs, it is possible that some of the old config types have been removed from the codebase. So we cannot rely on the latest
+ * {@link ConfigSchema} to migrate them. This class provides backward compatibility for those legacy config types during migration.
  */
 public class ConfigSchemaMigrationSupport {
 

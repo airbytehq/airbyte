@@ -142,20 +142,16 @@ class WorkerUtilsTest {
   }
 
   /**
-   * As long as the the heartbeatMonitor detects a heartbeat, the process will be allowed to continue.
-   * This method checks the heartbeat once every minute. Once there is no heartbeat detected, if the
-   * process has ended, then the method returns. If the process is still running it is given a grace
-   * period of the timeout arguments passed into the method. Once those expire the process is killed
-   * forcibly. If the process cannot be killed, this method will log that this is the case, but then
-   * returns.
+   * As long as the the heartbeatMonitor detects a heartbeat, the process will be allowed to continue. This method checks the heartbeat once every
+   * minute. Once there is no heartbeat detected, if the process has ended, then the method returns. If the process is still running it is given a
+   * grace period of the timeout arguments passed into the method. Once those expire the process is killed forcibly. If the process cannot be killed,
+   * this method will log that this is the case, but then returns.
    *
    * @param process - process to monitor.
    * @param heartbeatMonitor - tracks if the heart is still beating for the given process.
-   * @param gracefulShutdownDuration - grace period to give the process to die after its heart stops
-   *        beating.
+   * @param gracefulShutdownDuration - grace period to give the process to die after its heart stops beating.
    * @param checkHeartbeatDuration - frequency with which the heartbeat of the process is checked.
-   * @param forcedShutdownDuration - amount of time to wait if a process needs to be destroyed
-   *        forcibly.
+   * @param forcedShutdownDuration - amount of time to wait if a process needs to be destroyed forcibly.
    */
   static void gentleCloseWithHeartbeat(final WorkerConfigs workerConfigs,
                                        final Process process,

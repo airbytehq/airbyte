@@ -13,8 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Light wrapper around the DogsStatsD client to make using the client slightly more ergonomic.
  * <p>
- * This class mainly exists to help Airbyte instrument/debug application on Airbyte Cloud. The
- * methods here do not fail loudly to prevent application disruption.
+ * This class mainly exists to help Airbyte instrument/debug application on Airbyte Cloud. The methods here do not fail loudly to prevent application
+ * disruption.
  * <p>
  * Open source users are free to turn this on and consume the same metrics.
  * <p>
@@ -27,8 +27,8 @@ public class DogStatsDMetricSingleton {
   private static StatsDClient statsDClient;
 
   /**
-   * Traditional singleton initialize call. Please invoke this before using any methods in this class.
-   * Usually called in the main class of the application attempting to publish metrics.
+   * Traditional singleton initialize call. Please invoke this before using any methods in this class. Usually called in the main class of the
+   * application attempting to publish metrics.
    */
   public synchronized static void initialize(final MetricEmittingApp app, final DatadogClientConfiguration config) {
     if (statsDClient != null) {
@@ -97,9 +97,8 @@ public class DogStatsDMetricSingleton {
   }
 
   /**
-   * Submit a single execution time aggregated locally by the Agent - all metric related statistics
-   * are calculated agent-side. Be careful using this if there will be multiple agents emitting this
-   * metric as this will cause inaccuracy in non-additive metrics e.g. average, median, percentiles
+   * Submit a single execution time aggregated locally by the Agent - all metric related statistics are calculated agent-side. Be careful using this
+   * if there will be multiple agents emitting this metric as this will cause inaccuracy in non-additive metrics e.g. average, median, percentiles
    * etc.
    *
    * The upside of this is this metric is cheaper to calculate than the Distribution type.
@@ -124,8 +123,8 @@ public class DogStatsDMetricSingleton {
   }
 
   /**
-   * Submit a single execution time aggregated globally by Datadog - all metric related statistics are
-   * calculated in Datadog. Use this for precise stats.
+   * Submit a single execution time aggregated globally by Datadog - all metric related statistics are calculated in Datadog. Use this for precise
+   * stats.
    *
    * @param metric
    * @param val of time to record.
@@ -145,8 +144,7 @@ public class DogStatsDMetricSingleton {
   }
 
   /**
-   * Wrapper of {@link #recordTimeGlobal(MetricsRegistry, double, String...)} with a runnable for
-   * convenience.
+   * Wrapper of {@link #recordTimeGlobal(MetricsRegistry, double, String...)} with a runnable for convenience.
    *
    * @param metric
    * @param runnable to time
@@ -161,8 +159,7 @@ public class DogStatsDMetricSingleton {
   }
 
   /**
-   * Wrapper around {@link #recordTimeGlobal(MetricsRegistry, double, String...)} with a different
-   * name to better represent what this function does.
+   * Wrapper around {@link #recordTimeGlobal(MetricsRegistry, double, String...)} with a different name to better represent what this function does.
    *
    * @param metric
    * @param val

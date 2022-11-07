@@ -89,8 +89,8 @@ class SshTunnelTest {
           + "\",\"tunnel_host\":\"faketunnel.com\",\"tunnel_port\":22,\"tunnel_user\":\"ec2-user\",\"tunnel_method\":\"SSH_KEY_AUTH\"}}";
 
   /**
-   * This test verifies that OpenSsh correctly replaces values in connector configuration in a spec
-   * with host/port config and in a spec with endpoint URL config
+   * This test verifies that OpenSsh correctly replaces values in connector configuration in a spec with host/port config and in a spec with endpoint
+   * URL config
    *
    * @param configString
    * @throws Exception
@@ -139,8 +139,7 @@ class SshTunnelTest {
   }
 
   /**
-   * This test verifies that SshTunnel correctly extracts private key pairs from keys formatted as
-   * EdDSA and OpenSSH
+   * This test verifies that SshTunnel correctly extracts private key pairs from keys formatted as EdDSA and OpenSSH
    *
    * @param privateKey
    * @throws Exception
@@ -176,9 +175,8 @@ class SshTunnelTest {
   }
 
   /**
-   * This test verifies that 'net.i2p.crypto:eddsa' is present and EdDSA is supported. If
-   * net.i2p.crypto:eddsa will be removed from project, then will be thrown: generator not correctly
-   * initialized
+   * This test verifies that 'net.i2p.crypto:eddsa' is present and EdDSA is supported. If net.i2p.crypto:eddsa will be removed from project, then will
+   * be thrown: generator not correctly initialized
    *
    * @throws Exception
    */

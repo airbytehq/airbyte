@@ -11,9 +11,8 @@ import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 
 /**
- * Temporary factory class that provides convenience methods for creating a {@link DSLContext}
- * instances. This class will be removed once the project has been converted to leverage an
- * application framework to manage the creation and injection of {@link DSLContext} objects.
+ * Temporary factory class that provides convenience methods for creating a {@link DSLContext} instances. This class will be removed once the project
+ * has been converted to leverage an application framework to manage the creation and injection of {@link DSLContext} objects.
  */
 public class DSLContextFactory {
 

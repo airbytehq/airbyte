@@ -7,8 +7,7 @@ package io.airbyte.db.jdbc.streaming;
 import java.util.Optional;
 
 /**
- * This class estimates the max row byte size by measuring the first consecutive
- * {@code initialSampleSize} rows.
+ * This class estimates the max row byte size by measuring the first consecutive {@code initialSampleSize} rows.
  */
 public class InitialSizeEstimator extends BaseSizeEstimator implements FetchSizeEstimator {
 

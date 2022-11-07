@@ -28,8 +28,8 @@ public class WorkerConfigs {
   private final Map<String, String> envMap;
 
   /**
-   * Constructs a job-type-agnostic WorkerConfigs. For WorkerConfigs customized for specific
-   * job-types, use static `build*JOBTYPE*WorkerConfigs` method if one exists.
+   * Constructs a job-type-agnostic WorkerConfigs. For WorkerConfigs customized for specific job-types, use static `build*JOBTYPE*WorkerConfigs`
+   * method if one exists.
    */
   public WorkerConfigs(final Configs configs) {
     this(

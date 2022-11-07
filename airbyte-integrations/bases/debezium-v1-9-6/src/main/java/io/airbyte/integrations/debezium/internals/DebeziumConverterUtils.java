@@ -28,12 +28,11 @@ public final class DebeziumConverterUtils {
    */
   public static String convertDate(final Object input) {
     /**
-     * While building this custom converter we were not sure what type debezium could return cause there
-     * is no mention of it in the documentation. Secondly if you take a look at
+     * While building this custom converter we were not sure what type debezium could return cause there is no mention of it in the documentation.
+     * Secondly if you take a look at
      * {@link io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter#converterFor(io.debezium.spi.converter.RelationalColumn, io.debezium.spi.converter.CustomConverter.ConverterRegistration)}
-     * method, even it is handling multiple data types but its not clear under what circumstances which
-     * data type would be returned. I just went ahead and handled the data types that made sense.
-     * Secondly, we use LocalDateTime to handle this cause it represents DATETIME datatype in JAVA
+     * method, even it is handling multiple data types but its not clear under what circumstances which data type would be returned. I just went ahead
+     * and handled the data types that made sense. Secondly, we use LocalDateTime to handle this cause it represents DATETIME datatype in JAVA
      */
     if (input instanceof LocalDateTime) {
       return DataTypeUtils.toISO8601String((LocalDateTime) input);

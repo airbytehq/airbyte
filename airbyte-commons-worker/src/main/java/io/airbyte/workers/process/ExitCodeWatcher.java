@@ -14,11 +14,9 @@ import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * The exit code watcher uses the Kubernetes watch API, which provides a subscription to events for
- * a pod. This subscription has better latency than polling at the expense of keeping a connection
- * open with the Kubernetes API server. Since it offers all events, it helps us handle cases like
- * where a pod is swept or deleted immediately after running on a Kubernetes cluster (we will still
- * be able to retrieve the exit code).
+ * The exit code watcher uses the Kubernetes watch API, which provides a subscription to events for a pod. This subscription has better latency than
+ * polling at the expense of keeping a connection open with the Kubernetes API server. Since it offers all events, it helps us handle cases like where
+ * a pod is swept or deleted immediately after running on a Kubernetes cluster (we will still be able to retrieve the exit code).
  */
 @Slf4j
 public class ExitCodeWatcher implements ResourceEventHandler<Pod> {
@@ -28,20 +26,17 @@ public class ExitCodeWatcher implements ResourceEventHandler<Pod> {
   private final Consumer<Integer> onExitCode;
   private final Runnable onWatchFailure;
   /**
-   * This flag is set to false when we either (a) find the pod's exit code, or (b) when the pod is
-   * deleted. This is so that we call exactly one of onExitCode and onWatchFailure, and we make that
-   * call exactly once.
+   * This flag is set to false when we either (a) find the pod's exit code, or (b) when the pod is deleted. This is so that we call exactly one of
+   * onExitCode and onWatchFailure, and we make that call exactly once.
    * <p>
-   * We rely on this class being side-effect-free, outside of persistExitCode() and persistFailure().
-   * Those two methods use compareAndSet to prevent race conditions. Everywhere else, we can be sloppy
-   * because we won't actually emit any output.
+   * We rely on this class being side-effect-free, outside of persistExitCode() and persistFailure(). Those two methods use compareAndSet to prevent
+   * race conditions. Everywhere else, we can be sloppy because we won't actually emit any output.
    */
   private final AtomicBoolean active = new AtomicBoolean(true);
 
   /**
    * @param onExitCode callback used to store the exit code
-   * @param onWatchFailure callback that's triggered when the watch fails. should be some failed exit
-   *        code.
+   * @param onWatchFailure callback that's triggered when the watch fails. should be some failed exit code.
    */
   public ExitCodeWatcher(final String podName,
                          final String podNamespace,
@@ -84,11 +79,10 @@ public class ExitCodeWatcher implements ResourceEventHandler<Pod> {
   }
 
   /**
-   * Informers without an OperationContext will monitor ALL pods in ALL namespaces; filter down to the
-   * one pod that we care about. If it's still running, then we obviously can't fetch its exit code.
+   * Informers without an OperationContext will monitor ALL pods in ALL namespaces; filter down to the one pod that we care about. If it's still
+   * running, then we obviously can't fetch its exit code.
    * <p>
-   * Also, if we've already found the exit code, or the pod has been deleted, then stop doing anything
-   * at all.
+   * Also, if we've already found the exit code, or the pod has been deleted, then stop doing anything at all.
    */
   private boolean shouldCheckPod(final Pod pod) {
     final boolean correctName = podName.equals(pod.getMetadata().getName());

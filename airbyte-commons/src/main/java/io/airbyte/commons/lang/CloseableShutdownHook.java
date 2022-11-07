@@ -12,12 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Registers a shutdown hook that calls the close method of the provided objects. If an object does
- * not support either the {@link AutoCloseable} or {@link Closeable} interface, it will be ignored.
+ * Registers a shutdown hook that calls the close method of the provided objects. If an object does not support either the {@link AutoCloseable} or
+ * {@link Closeable} interface, it will be ignored.
  * <p>
- * This is a temporary class that is being provided to ensure that resources created by each
- * application are properly closed on shutdown. This logic will no longer be necessary once an
- * application framework is introduced to the project that can provide object lifecycle management.
+ * This is a temporary class that is being provided to ensure that resources created by each application are properly closed on shutdown. This logic
+ * will no longer be necessary once an application framework is introduced to the project that can provide object lifecycle management.
  */
 public class CloseableShutdownHook {
 

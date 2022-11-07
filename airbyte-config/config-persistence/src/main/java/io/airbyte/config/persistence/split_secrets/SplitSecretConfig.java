@@ -8,13 +8,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Map;
 
 /**
- * Data class that provides a way to store the output of a {@link SecretsHelpers} "split" operation
- * which takes a "full config" (including secrets) and creates a "partial config" (secrets removed
- * and has coordinate pointers to a persistence layer).
+ * Data class that provides a way to store the output of a {@link SecretsHelpers} "split" operation which takes a "full config" (including secrets)
+ * and creates a "partial config" (secrets removed and has coordinate pointers to a persistence layer).
  *
- * The split methods don't actually update the persistence layer itself. The coordinate to secret
- * payload map in this class allows the system calling "split" to update the persistence with those
- * new coordinate values.
+ * The split methods don't actually update the persistence layer itself. The coordinate to secret payload map in this class allows the system calling
+ * "split" to update the persistence with those new coordinate values.
  */
 public class SplitSecretConfig {
 

@@ -13,8 +13,7 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Decides which Task Queue should be used for a given connection's sync operations, based on the
- * configured {@link Geography}
+ * Decides which Task Queue should be used for a given connection's sync operations, based on the configured {@link Geography}
  */
 @Singleton
 @Slf4j
@@ -29,8 +28,8 @@ public class RouterService {
   }
 
   /**
-   * Given a connectionId, look up the connection's configured {@link Geography} in the config DB and
-   * use it to determine which Task Queue should be used for this connection's sync.
+   * Given a connectionId, look up the connection's configured {@link Geography} in the config DB and use it to determine which Task Queue should be
+   * used for this connection's sync.
    */
   public String getTaskQueue(final UUID connectionId) throws IOException {
     final Geography geography = configRepository.getGeographyForConnection(connectionId);

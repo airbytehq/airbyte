@@ -27,8 +27,7 @@ import java.util.UUID;
 import java.util.function.BiConsumer;
 
 /**
- * Abstract Class implementing common base methods for managing oAuth config (instance-wide) and
- * oAuth specifications
+ * Abstract Class implementing common base methods for managing oAuth config (instance-wide) and oAuth specifications
  */
 public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
 
@@ -73,8 +72,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
   }
 
   /**
-   * Throws an exception if the client ID cannot be extracted. Subclasses should override this to
-   * parse the config differently.
+   * Throws an exception if the client ID cannot be extracted. Subclasses should override this to parse the config differently.
    *
    * @return The configured Client ID used for this oauth flow
    */
@@ -83,8 +81,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
   }
 
   /**
-   * Throws an exception if the client secret cannot be extracted. Subclasses should override this to
-   * parse the config differently.
+   * Throws an exception if the client secret cannot be extracted. Subclasses should override this to parse the config differently.
    *
    * @return The configured client secret for this OAuthFlow
    */
@@ -101,11 +98,9 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
   }
 
   /**
-   * completeOAuth calls should output a flat map of fields produced by the oauth flow to be forwarded
-   * back to the connector config. This @deprecated function is used when the connector's oauth
-   * specifications are unknown. So it ends up using hard-coded output path in the OAuth Flow
-   * implementation instead of relying on the connector's specification to determine where the outputs
-   * should be stored.
+   * completeOAuth calls should output a flat map of fields produced by the oauth flow to be forwarded back to the connector config. This @deprecated
+   * function is used when the connector's oauth specifications are unknown. So it ends up using hard-coded output path in the OAuth Flow
+   * implementation instead of relying on the connector's specification to determine where the outputs should be stored.
    */
   @Deprecated
   protected Map<String, Object> formatOAuthOutput(final JsonNode oAuthParamConfig,
@@ -122,9 +117,8 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
   }
 
   /**
-   * completeOAuth calls should output a flat map of fields produced by the oauth flow to be forwarded
-   * back to the connector config. This function follows the connector's oauth specifications of which
-   * outputs are expected and filters them accordingly.
+   * completeOAuth calls should output a flat map of fields produced by the oauth flow to be forwarded back to the connector config. This function
+   * follows the connector's oauth specifications of which outputs are expected and filters them accordingly.
    */
   protected Map<String, Object> formatOAuthOutput(final JsonNode oAuthParamConfig,
                                                   final Map<String, Object> completeOAuthFlow,
@@ -170,10 +164,8 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
   }
 
   /**
-   * This function should be redefined in each OAuthFlow implementation to isolate such "hardcoded"
-   * values. It is being @deprecated because the output path should not be "hard-coded" in the OAuth
-   * flow implementation classes anymore but will be specified as part of the OAuth Specification
-   * object
+   * This function should be redefined in each OAuthFlow implementation to isolate such "hardcoded" values. It is being @deprecated because the output
+   * path should not be "hard-coded" in the OAuth flow implementation classes anymore but will be specified as part of the OAuth Specification object
    */
   @Deprecated
   public abstract List<String> getDefaultOAuthOutputPath();

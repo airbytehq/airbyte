@@ -39,8 +39,7 @@ import org.jooq.impl.DSL;
  *
  * Handle persisting States to the Database.
  *
- * Supports migration from Legacy to Global or Stream. Other type migrations need to go through a
- * reset. (an exception will be thrown)
+ * Supports migration from Legacy to Global or Stream. Other type migrations need to go through a reset. (an exception will be thrown)
  */
 public class StatePersistence {
 
@@ -74,9 +73,8 @@ public class StatePersistence {
   /**
    * Create or update the states described in the StateWrapper. Null states will be deleted.
    *
-   * The only state migrations supported are going from a Legacy state to either a Global or Stream
-   * state. Other state type migrations should go through an explicit reset. An exception will be
-   * thrown to prevent the system from getting into a bad state.
+   * The only state migrations supported are going from a Legacy state to either a Global or Stream state. Other state type migrations should go
+   * through an explicit reset. An exception will be thrown to prevent the system from getting into a bad state.
    *
    * @param connectionId
    * @param state
@@ -211,8 +209,7 @@ public class StatePersistence {
   /**
    * Get the StateType for a given list of StateRecords
    *
-   * @param connectionId The connectionId of the records, used to add more debugging context if an
-   *        error is detected
+   * @param connectionId The connectionId of the records, used to add more debugging context if an error is detected
    * @param records The list of StateRecords to process, must not be empty
    * @return the StateType of the records
    * @throws IllegalStateException If StateRecords have inconsistent types
@@ -249,8 +246,8 @@ public class StatePersistence {
   /**
    * Build Global state
    *
-   * The list of records can contain one global shared state that is the state without streamName and
-   * without namespace The other records should be translated into AirbyteStreamState
+   * The list of records can contain one global shared state that is the state without streamName and without namespace The other records should be
+   * translated into AirbyteStreamState
    */
   private static StateWrapper buildGlobalState(final List<StateRecord> records) {
     // Split the global shared state from the other per stream records

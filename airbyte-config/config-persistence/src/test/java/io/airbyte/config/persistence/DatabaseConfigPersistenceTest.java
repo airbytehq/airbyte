@@ -46,8 +46,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * See {@link DatabaseConfigPersistenceUpdateConnectorDefinitionsTest} for testing of specific
- * methods.
+ * See {@link DatabaseConfigPersistenceUpdateConnectorDefinitionsTest} for testing of specific methods.
  */
 @SuppressWarnings({"PMD.SignatureDeclareThrowsException", "PMD.ShortVariable", "PMD.JUnitTestsShouldIncludeAssert"})
 class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {

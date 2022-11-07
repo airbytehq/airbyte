@@ -18,11 +18,9 @@ import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 
 /**
- * Performs the initialization of the configured database if the database is available and has not
- * yet been initialized.
+ * Performs the initialization of the configured database if the database is available and has not yet been initialized.
  *
- * In the future, this logic could be completely removed if the schema initialization script is
- * converted to a migration script.
+ * In the future, this logic could be completely removed if the schema initialization script is converted to a migration script.
  */
 public interface DatabaseInitializer {
 
@@ -31,8 +29,7 @@ public interface DatabaseInitializer {
    *
    * <ol>
    * <li>Verify that the database is available and accepting connections</li>
-   * <li>Verify that the database is populated with the initial schema. If not, create the initial
-   * schema.</li>
+   * <li>Verify that the database is populated with the initial schema. If not, create the initial schema.</li>
    * </ol>
    *
    * @throws DatabaseInitializationException if unable to verify the database availability.
@@ -75,8 +72,8 @@ public interface DatabaseInitializer {
   /**
    * Initializes the schema in the database represented by the provided {@link DSLContext} instance.
    *
-   * If the initial tables already exist in the database, initialization is skipped. Otherwise, the
-   * script provided by the {@link #getInitialSchema()} method is executed against the database.
+   * If the initial tables already exist in the database, initialization is skipped. Otherwise, the script provided by the {@link #getInitialSchema()}
+   * method is executed against the database.
    *
    * @param ctx The {@link DSLContext} used to execute the schema initialization.
    * @return {@code true} indicating that the operation ran
@@ -102,8 +99,7 @@ public interface DatabaseInitializer {
   }
 
   /**
-   * Retrieves the {@link DatabaseAvailabilityCheck} used to verify that the database is running and
-   * available.
+   * Retrieves the {@link DatabaseAvailabilityCheck} used to verify that the database is running and available.
    *
    * @return The {@link DatabaseAvailabilityCheck}.
    */
@@ -124,16 +120,14 @@ public interface DatabaseInitializer {
   Optional<DSLContext> getDslContext();
 
   /**
-   * Retrieve the initial schema to be applied to the database if the database is not already
-   * populated with the expected table(s).
+   * Retrieve the initial schema to be applied to the database if the database is not already populated with the expected table(s).
    *
    * @return The initial schema.
    */
   String getInitialSchema();
 
   /**
-   * Retrieves the configured {@link Logger} object to be used to record progress of the migration
-   * check.
+   * Retrieves the configured {@link Logger} object to be used to record progress of the migration check.
    *
    * @return The configured {@link Logger} object.
    */

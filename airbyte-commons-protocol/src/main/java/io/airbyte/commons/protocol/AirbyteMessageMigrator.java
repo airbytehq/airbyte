@@ -19,8 +19,7 @@ import java.util.TreeMap;
 /**
  * AirbyteProtocol Message Migrator
  *
- * This class is intended to apply the transformations required to go from one version of the
- * AirbyteProtocol to another.
+ * This class is intended to apply the transformations required to go from one version of the AirbyteProtocol to another.
  */
 @Singleton
 public class AirbyteMessageMigrator {
@@ -43,8 +42,7 @@ public class AirbyteMessageMigrator {
   }
 
   /**
-   * Downgrade a message from the most recent version to the target version by chaining all the
-   * required migrations
+   * Downgrade a message from the most recent version to the target version by chaining all the required migrations
    */
   public <PreviousVersion, CurrentVersion> PreviousVersion downgrade(final CurrentVersion message, final Version target) {
     if (target.getMajorVersion().equals(mostRecentMajorVersion)) {
@@ -60,8 +58,7 @@ public class AirbyteMessageMigrator {
   }
 
   /**
-   * Upgrade a message from the source version to the most recent version by chaining all the required
-   * migrations
+   * Upgrade a message from the source version to the most recent version by chaining all the required migrations
    */
   public <PreviousVersion, CurrentVersion> CurrentVersion upgrade(final PreviousVersion message, final Version source) {
     if (source.getMajorVersion().equals(mostRecentMajorVersion)) {
@@ -102,9 +99,8 @@ public class AirbyteMessageMigrator {
   /**
    * Store migration in a sorted map key by the major of the lower version of the migration.
    *
-   * The goal is to be able to retrieve the list of migrations to apply to get to/from a given
-   * version. We are only keying on the lower version because the right side (most recent version of
-   * the migration range) is always current version.
+   * The goal is to be able to retrieve the list of migrations to apply to get to/from a given version. We are only keying on the lower version
+   * because the right side (most recent version of the migration range) is always current version.
    */
   @VisibleForTesting
   void registerMigration(final AirbyteMessageMigration<?, ?> migration) {

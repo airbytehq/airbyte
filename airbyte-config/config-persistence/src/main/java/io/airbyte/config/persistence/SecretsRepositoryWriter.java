@@ -24,10 +24,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * This class takes secrets as arguments but never returns a secrets as return values (even the ones
- * that are passed in as arguments). It is responsible for writing connector secrets to the correct
- * secrets store and then making sure the remainder of the configuration is written to the Config
- * Database.
+ * This class takes secrets as arguments but never returns a secrets as return values (even the ones that are passed in as arguments). It is
+ * responsible for writing connector secrets to the correct secrets store and then making sure the remainder of the configuration is written to the
+ * Config Database.
  */
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "PMD.AvoidThrowingRawExceptionTypes"})
 public class SecretsRepositoryWriter {
@@ -107,8 +106,8 @@ public class SecretsRepositoryWriter {
   }
 
   /**
-   * Detects secrets in the configuration. Writes them to the secrets store. It returns the config
-   * stripped of secrets (replaced with pointers to the secrets store).
+   * Detects secrets in the configuration. Writes them to the secrets store. It returns the config stripped of secrets (replaced with pointers to the
+   * secrets store).
    *
    * @param workspaceId workspace id for the config
    * @param fullConfig full config
@@ -125,9 +124,8 @@ public class SecretsRepositoryWriter {
   // (i.e. used a separate db for secrets when the user didn't provide a store), this would be easier
   // to reason about.
   /**
-   * If a secrets store is present, this method attempts to fetch the existing config and merge its
-   * secrets with the passed in config. If there is no secrets store, it just returns the passed in
-   * config. Also validates the config.
+   * If a secrets store is present, this method attempts to fetch the existing config and merge its secrets with the passed in config. If there is no
+   * secrets store, it just returns the passed in config. Also validates the config.
    *
    * @param workspaceId workspace id for the config
    * @param oldConfig old full config
@@ -197,9 +195,8 @@ public class SecretsRepositoryWriter {
   }
 
   /**
-   * This method is to encrypt the secret JSON key and HMAC key of a GCP service account a associated
-   * with a workspace. If in future we build a similar feature i.e. an AWS account associated with a
-   * workspace, we will have to build new implementation for it
+   * This method is to encrypt the secret JSON key and HMAC key of a GCP service account a associated with a workspace. If in future we build a
+   * similar feature i.e. an AWS account associated with a workspace, we will have to build new implementation for it
    */
   private WorkspaceServiceAccount getWorkspaceServiceAccountWithSecretCoordinate(final WorkspaceServiceAccount workspaceServiceAccount)
       throws JsonValidationException, IOException {

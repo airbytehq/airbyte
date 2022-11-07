@@ -28,8 +28,7 @@ import java.util.Map;
 public class AirbyteIntegrationLauncher implements IntegrationLauncher {
 
   /**
-   * The following variables help, either via names or labels, add metadata to processes actually
-   * running operations. These are more readable forms of
+   * The following variables help, either via names or labels, add metadata to processes actually running operations. These are more readable forms of
    * {@link io.airbyte.config.JobTypeResourceLimit.JobType}.
    */
   public static final String JOB_TYPE = "job_type";
@@ -41,8 +40,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   private static final String CONFIG = "--config";
 
   /**
-   * A sync job can actually be broken down into the following steps. Try to be as precise as possible
-   * with naming/labels to help operations.
+   * A sync job can actually be broken down into the following steps. Try to be as precise as possible with naming/labels to help operations.
    */
   public static final String SYNC_STEP = "sync_step";
   public static final String READ_STEP = "read";

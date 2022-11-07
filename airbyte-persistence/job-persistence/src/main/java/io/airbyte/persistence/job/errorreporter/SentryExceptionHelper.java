@@ -34,8 +34,7 @@ public class SentryExceptionHelper {
 
   /**
    * Specifies the platform for a thrown exception. Values must be supported by Sentry as specified in
-   * https://develop.sentry.dev/sdk/event-payloads/#required-attributes. Currently, only java, python
-   * and dbt (other) exceptions are supported.
+   * https://develop.sentry.dev/sdk/event-payloads/#required-attributes. Currently, only java, python and dbt (other) exceptions are supported.
    */
   public enum SentryExceptionPlatform {
 
@@ -63,9 +62,8 @@ public class SentryExceptionHelper {
   /**
    * Processes a raw stacktrace string into structured SentryExceptions
    * <p>
-   * Currently, Java and Python stacktraces are supported. If an unsupported stacktrace format is
-   * encountered, an empty optional will be returned, in which case we can fall back to alternate
-   * grouping.
+   * Currently, Java and Python stacktraces are supported. If an unsupported stacktrace format is encountered, an empty optional will be returned, in
+   * which case we can fall back to alternate grouping.
    */
   public Optional<SentryParsedException> buildSentryExceptions(final String stacktrace) {
     return Exceptions.swallowWithDefault(() -> {

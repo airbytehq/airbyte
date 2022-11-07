@@ -20,8 +20,7 @@ import org.joda.time.DateTimeZone;
 import org.quartz.CronExpression;
 
 /**
- * Helper class to handle connection schedules, including validation and translating between API and
- * config.
+ * Helper class to handle connection schedules, including validation and translating between API and config.
  */
 public class ConnectionScheduleHelper {
 

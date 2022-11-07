@@ -45,8 +45,7 @@ public class ConnectionHelper {
   }
 
   /**
-   * Given a connection update, fetches an existing connection, applies the update, and then persists
-   * the update.
+   * Given a connection update, fetches an existing connection, applies the update, and then persists the update.
    *
    * @param update - updated sync info to be merged with original sync.
    * @return new sync object

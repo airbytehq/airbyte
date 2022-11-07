@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * CSV data row = ID column + timestamp column + record columns. This class takes care of the first
- * two columns, which is shared by downstream implementations.
+ * CSV data row = ID column + timestamp column + record columns. This class takes care of the first two columns, which is shared by downstream
+ * implementations.
  */
 public abstract class BaseSheetGenerator implements CsvSheetGenerator {
 

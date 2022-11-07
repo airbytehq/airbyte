@@ -247,8 +247,7 @@ public class FailureHelper {
   }
 
   /**
-   * Orders failures by putting errors from trace messages first, and then orders by timestamp, so
-   * that earlier failures come first.
+   * Orders failures by putting errors from trace messages first, and then orders by timestamp, so that earlier failures come first.
    */
   public static List<FailureReason> orderedFailures(final Set<FailureReason> failures) {
     final Comparator<FailureReason> compareByIsTrace = Comparator.comparing(failureReason -> {

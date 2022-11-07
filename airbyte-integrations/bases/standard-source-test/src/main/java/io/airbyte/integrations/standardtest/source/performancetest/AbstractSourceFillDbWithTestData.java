@@ -35,8 +35,8 @@ public abstract class AbstractSourceFillDbWithTestData extends AbstractSourceBas
   protected abstract Database setupDatabase(String dbName) throws Exception;
 
   /**
-   * The test added test data to a new DB. 1. Set DB creds in static variables above 2. Set desired
-   * number for streams, coolumns and records 3. Run the test
+   * The test added test data to a new DB. 1. Set DB creds in static variables above 2. Set desired number for streams, coolumns and records 3. Run
+   * the test
    */
   @Disabled
   @ParameterizedTest
@@ -71,14 +71,13 @@ public abstract class AbstractSourceFillDbWithTestData extends AbstractSourceBas
   }
 
   /**
-   * This is a data provider for fill DB script,, Each argument's group would be ran as a separate
-   * test. Set the "testArgs" in test class of your DB in @BeforeTest method.
+   * This is a data provider for fill DB script,, Each argument's group would be ran as a separate test. Set the "testArgs" in test class of your DB
+   * in @BeforeTest method.
    *
-   * 1st arg - a name of DB that will be used in jdbc connection string. 2nd arg - a schemaName that
-   * will be ised as a NameSpace in Configured Airbyte Catalog. 3rd arg - a number of expected records
-   * retrieved in each stream. 4th arg - a number of columns in each stream\table that will be use for
-   * Airbyte Cataloq configuration 5th arg - a number of streams to read in configured airbyte
-   * Catalog. Each stream\table in DB should be names like "test_0", "test_1",..., test_n.
+   * 1st arg - a name of DB that will be used in jdbc connection string. 2nd arg - a schemaName that will be ised as a NameSpace in Configured Airbyte
+   * Catalog. 3rd arg - a number of expected records retrieved in each stream. 4th arg - a number of columns in each stream\table that will be use for
+   * Airbyte Cataloq configuration 5th arg - a number of streams to read in configured airbyte Catalog. Each stream\table in DB should be names like
+   * "test_0", "test_1",..., test_n.
    *
    * Stream.of( Arguments.of("your_db_name", "your_schema_name", 100, 2, 240, 1000) );
    */

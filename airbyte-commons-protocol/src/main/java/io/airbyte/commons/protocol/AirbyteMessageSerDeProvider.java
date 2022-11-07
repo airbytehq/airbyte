@@ -20,8 +20,7 @@ import java.util.Set;
 /**
  * AirbyteProtocol Message Serializer/Deserializer provider
  *
- * This class is intended to help access the serializer/deserializer for a given version of the
- * Airbyte Protocol.
+ * This class is intended to help access the serializer/deserializer for a given version of the Airbyte Protocol.
  */
 @Singleton
 public class AirbyteMessageSerDeProvider {

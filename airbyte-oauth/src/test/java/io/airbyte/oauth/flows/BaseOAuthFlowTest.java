@@ -91,11 +91,10 @@ public abstract class BaseOAuthFlowTest {
   protected abstract String getExpectedConsentUrl();
 
   /**
-   * Redefine if the oauth flow implementation does not return `refresh_token`. (maybe for example
-   * using `access_token` like in the `GithubOAuthFlowTest` instead?)
+   * Redefine if the oauth flow implementation does not return `refresh_token`. (maybe for example using `access_token` like in the
+   * `GithubOAuthFlowTest` instead?)
    *
-   * @return the full output expected to be returned by this oauth flow + all its instance wide
-   *         variables
+   * @return the full output expected to be returned by this oauth flow + all its instance wide variables
    */
   protected Map<String, String> getExpectedOutput() {
     return Map.of(
@@ -105,8 +104,8 @@ public abstract class BaseOAuthFlowTest {
   }
 
   /**
-   * Redefine if the oauth flow implementation does not return `refresh_token`. (maybe for example
-   * using `access_token` like in the `GithubOAuthFlowTest` instead?)
+   * Redefine if the oauth flow implementation does not return `refresh_token`. (maybe for example using `access_token` like in the
+   * `GithubOAuthFlowTest` instead?)
    *
    * @return the output specification used to identify what the oauth flow should be returning
    */
@@ -115,8 +114,8 @@ public abstract class BaseOAuthFlowTest {
   }
 
   /**
-   * Redefine if the oauth flow implementation does not return `refresh_token`. (maybe for example
-   * using `access_token` like in the `GithubOAuthFlowTest` instead?)
+   * Redefine if the oauth flow implementation does not return `refresh_token`. (maybe for example using `access_token` like in the
+   * `GithubOAuthFlowTest` instead?)
    *
    * @return the filtered outputs once it is filtered by the output specifications
    */
@@ -150,8 +149,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   /**
-   * If the OAuth implementation flow has a dependency on input values from connector config, this
-   * method should be redefined.
+   * If the OAuth implementation flow has a dependency on input values from connector config, this method should be redefined.
    *
    * @return the input configuration sent to oauth flow (values from connector config)
    */
@@ -160,8 +158,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   /**
-   * If the OAuth implementation flow has a dependency on input values from connector config, this
-   * method should be redefined.
+   * If the OAuth implementation flow has a dependency on input values from connector config, this method should be redefined.
    *
    * @return the input configuration sent to oauth flow (values from connector config)
    */

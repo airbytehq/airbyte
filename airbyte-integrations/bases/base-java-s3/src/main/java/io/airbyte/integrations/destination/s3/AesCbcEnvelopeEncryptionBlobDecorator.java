@@ -25,26 +25,22 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * This class implements the envelope encryption that Redshift and Snowflake use when loading
- * encrypted files from S3 (or other blob stores):
+ * This class implements the envelope encryption that Redshift and Snowflake use when loading encrypted files from S3 (or other blob stores):
  * <ul>
  * <li>A content-encrypting-key (CEK) is used to encrypt the actual data (i.e. the CSV file)</li>
  * <li>A key-encrypting-key (KEK) is used to encrypt the CEK</li>
- * <li>The encrypted CEK is stored in the S3 object metadata, along with the plaintext
- * initialization vector</li>
- * <li>The COPY command includes the KEK (in plaintext). Redshift/Snowflake will use it to decrypt
- * the CEK, which it then uses to decrypt the CSV file.</li>
+ * <li>The encrypted CEK is stored in the S3 object metadata, along with the plaintext initialization vector</li>
+ * <li>The COPY command includes the KEK (in plaintext). Redshift/Snowflake will use it to decrypt the CEK, which it then uses to decrypt the CSV
+ * file.</li>
  * </ul>
  * <p>
- * A new CEK is generated for each S3 object, but each sync uses a single KEK. The KEK may be either
- * user-provided (if the user wants to keep the data for further use), or generated per-sync (if
- * they simply want to add additional security around their COPY operation).
+ * A new CEK is generated for each S3 object, but each sync uses a single KEK. The KEK may be either user-provided (if the user wants to keep the data
+ * for further use), or generated per-sync (if they simply want to add additional security around their COPY operation).
  * <p>
  * Redshift does not support loading directly from GCS or Azure Blob Storage.
  * <p>
- * Snowflake only supports client-side encryption in S3 and Azure Storage; it does not support this
- * feature in GCS (https://docs.snowflake.com/en/sql-reference/sql/copy-into-table.html). Azure
- * Storage uses a similar envelope encryption technique to S3
+ * Snowflake only supports client-side encryption in S3 and Azure Storage; it does not support this feature in GCS
+ * (https://docs.snowflake.com/en/sql-reference/sql/copy-into-table.html). Azure Storage uses a similar envelope encryption technique to S3
  * (https://docs.microsoft.com/en-us/azure/storage/common/storage-client-side-encryption?tabs=dotnet#encryption-via-the-envelope-technique).
  */
 public class AesCbcEnvelopeEncryptionBlobDecorator implements BlobDecorator {

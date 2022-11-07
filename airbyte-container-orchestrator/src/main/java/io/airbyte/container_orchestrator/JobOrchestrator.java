@@ -17,8 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * The job orchestrator helps abstract over container launcher application differences across
- * replication, normalization, and custom dbt operators.
+ * The job orchestrator helps abstract over container launcher application differences across replication, normalization, and custom dbt operators.
  *
  * @param <INPUT> job input type
  */

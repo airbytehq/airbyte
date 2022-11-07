@@ -28,11 +28,9 @@ import org.slf4j.LoggerFactory;
 import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
 
 /**
- * The main function of this class is to convert a JsonSchema to Avro schema. It can also
- * standardize schema names, and keep track of a mapping from the original names to the standardized
- * ones, which is needed for unit tests. <br/>
- * For limitations of this converter, see the README of this connector:
- * https://docs.airbyte.io/integrations/destinations/s3#avro
+ * The main function of this class is to convert a JsonSchema to Avro schema. It can also standardize schema names, and keep track of a mapping from
+ * the original names to the standardized ones, which is needed for unit tests. <br/>
+ * For limitations of this converter, see the README of this connector: https://docs.airbyte.io/integrations/destinations/s3#avro
  */
 public class JsonToAvroSchemaConverter {
 
@@ -111,8 +109,7 @@ public class JsonToAvroSchemaConverter {
   }
 
   /**
-   * @param appendAirbyteFields Add default airbyte fields (e.g. _airbyte_id) to the output Avro
-   *        schema.
+   * @param appendAirbyteFields Add default airbyte fields (e.g. _airbyte_id) to the output Avro schema.
    * @param appendExtraProps Add default additional property field to the output Avro schema.
    * @param addStringToLogicalTypes Default logical type field to string.
    * @param isRootNode Whether it is the root field in the input Json schema.
@@ -305,9 +302,8 @@ public class JsonToAvroSchemaConverter {
   }
 
   /**
-   * If there are multiple object fields, those fields are combined into one Avro record. This is
-   * because Avro does not allow specifying a tuple of types (i.e. the first element is type x, the
-   * second element is type y, and so on). For example, the following Json field types:
+   * If there are multiple object fields, those fields are combined into one Avro record. This is because Avro does not allow specifying a tuple of
+   * types (i.e. the first element is type x, the second element is type y, and so on). For example, the following Json field types:
    *
    * <pre>
    * [

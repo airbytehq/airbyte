@@ -21,9 +21,8 @@ import java.util.function.Consumer;
 import org.apache.commons.io.FileUtils;
 
 /**
- * This class is a copy of {@link io.airbyte.api.client.generated.LogsApi} except it allows Accept:
- * text/plain. Without this modification, {@link io.airbyte.api.client.generated.LogsApi} returns a
- * 406 because the generated code requests the wrong response type.
+ * This class is a copy of {@link io.airbyte.api.client.generated.LogsApi} except it allows Accept: text/plain. Without this modification,
+ * {@link io.airbyte.api.client.generated.LogsApi} returns a 406 because the generated code requests the wrong response type.
  */
 public class PatchedLogsApi {
 

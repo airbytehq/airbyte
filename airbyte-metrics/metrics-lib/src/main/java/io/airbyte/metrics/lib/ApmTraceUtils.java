@@ -36,8 +36,7 @@ public class ApmTraceUtils {
   }
 
   /**
-   * Adds all provided tags to the currently active span, if one exists, under the provided tag name
-   * namespace.
+   * Adds all provided tags to the currently active span, if one exists, under the provided tag name namespace.
    *
    * @param tags A map of tags to be added to the currently active span.
    * @param tagPrefix The prefix to be added to each custom tag name.

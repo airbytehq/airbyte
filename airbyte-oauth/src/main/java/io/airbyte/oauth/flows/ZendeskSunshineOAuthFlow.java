@@ -19,8 +19,7 @@ import java.util.function.Supplier;
 import org.apache.http.client.utils.URIBuilder;
 
 /**
- * Following docs from
- * https://developer.zendesk.com/api-reference/custom-data/introduction/#authentication
+ * Following docs from https://developer.zendesk.com/api-reference/custom-data/introduction/#authentication
  */
 public class ZendeskSunshineOAuthFlow extends BaseOAuth2Flow {
 

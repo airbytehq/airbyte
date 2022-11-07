@@ -117,13 +117,12 @@ import org.testcontainers.utility.MountableFile;
 /**
  * This class tests for api functionality and basic sync functionality.
  * <p>
- * Due to the number of tests here, this set runs only on the docker deployment for speed. The tests
- * here are disabled for Kubernetes as operations take much longer due to Kubernetes pod spin up
- * times and there is little value in re-running these tests since this part of the system does not
+ * Due to the number of tests here, this set runs only on the docker deployment for speed. The tests here are disabled for Kubernetes as operations
+ * take much longer due to Kubernetes pod spin up times and there is little value in re-running these tests since this part of the system does not
  * vary between deployments.
  * <p>
- * We order tests such that earlier tests test more basic behavior relied upon in later tests. e.g.
- * We test that we can create a destination before we test whether we can sync data to it.
+ * We order tests such that earlier tests test more basic behavior relied upon in later tests. e.g. We test that we can create a destination before we
+ * test whether we can sync data to it.
  */
 @DisabledIfEnvironmentVariable(named = "KUBE",
                                matches = "true")
@@ -1347,8 +1346,7 @@ class BasicAcceptanceTests {
     LOGGER.info("Remove done, now running an update with a stream being added.");
 
     /**
-     * Add a stream -- the value of in the table are different than the initial import to ensure that it
-     * is properly reset.
+     * Add a stream -- the value of in the table are different than the initial import to ensure that it is properly reset.
      */
     sourceDb.query(ctx -> {
       ctx.createTableIfNotExists(additionalTable)

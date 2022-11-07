@@ -29,9 +29,8 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * Generates proxy classes which can be registered with Temporal. These proxies delegate all methods
- * to the provided bean/singleton to allow for the dependency injection framework to manage the
- * lifecycle of a Temporal workflow implementation. This approach is inspired by
+ * Generates proxy classes which can be registered with Temporal. These proxies delegate all methods to the provided bean/singleton to allow for the
+ * dependency injection framework to manage the lifecycle of a Temporal workflow implementation. This approach is inspired by
  * https://github.com/applicaai/spring-boot-starter-temporal.
  */
 @Singleton
@@ -44,8 +43,8 @@ public class TemporalProxyHelper {
   private final TypeCache<Class<?>> WORKFLOW_PROXY_CACHE = new TypeCache<>();
 
   /**
-   * Collection of available {@link ActivityOptions} beans which will be used to initialize Temporal
-   * activity stubs in each registered Temporal workflow.
+   * Collection of available {@link ActivityOptions} beans which will be used to initialize Temporal activity stubs in each registered Temporal
+   * workflow.
    */
   private final Collection<BeanRegistration<ActivityOptions>> availableActivityOptions;
 
@@ -108,12 +107,11 @@ public class TemporalProxyHelper {
   }
 
   /**
-   * Generates a {@link TemporalActivityStubInterceptor} instance for use with the generated proxy
-   * workflow implementation.
+   * Generates a {@link TemporalActivityStubInterceptor} instance for use with the generated proxy workflow implementation.
    *
    * @param workflowImplClass The workflow implementation class.
-   * @param activityOptions The collection of available {@link ActivityOptions} beans which will be
-   *        used to initialize Temporal activity stubs in each registered Temporal workflow.
+   * @param activityOptions The collection of available {@link ActivityOptions} beans which will be used to initialize Temporal activity stubs in each
+   *        registered Temporal workflow.
    * @return The generated {@link TemporalActivityStubInterceptor} instance.
    * @param <T> The workflow implementation type.
    */

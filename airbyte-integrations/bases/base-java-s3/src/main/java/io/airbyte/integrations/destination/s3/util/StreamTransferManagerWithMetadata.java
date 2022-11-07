@@ -11,11 +11,9 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import java.util.Map;
 
 /**
- * A custom stream transfer manager which overwrites the metadata on the
- * InitiateMultipartUploadRequest.
+ * A custom stream transfer manager which overwrites the metadata on the InitiateMultipartUploadRequest.
  * <p>
- * This is, apparently, the correct way to implement this functionality.
- * https://github.com/alexmojaki/s3-stream-upload/issues/3
+ * This is, apparently, the correct way to implement this functionality. https://github.com/alexmojaki/s3-stream-upload/issues/3
  */
 public class StreamTransferManagerWithMetadata extends StreamTransferManager {
 

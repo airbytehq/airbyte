@@ -12,8 +12,8 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Helper class used to apply actor definitions from a DefinitionsProvider to the database. This is
- * here to enable easy reuse of definition application logic in bootloader and cron.
+ * Helper class used to apply actor definitions from a DefinitionsProvider to the database. This is here to enable easy reuse of definition
+ * application logic in bootloader and cron.
  */
 public class ApplyDefinitionsHelper {
 

@@ -12,8 +12,7 @@ import java.util.Optional;
 public interface DocumentStoreClient {
 
   /**
-   * Writes a document with a given id. If a document already exists at this id it will be
-   * overwritten.
+   * Writes a document with a given id. If a document already exists at this id it will be overwritten.
    *
    * @param id of the document to write
    * @param document to write

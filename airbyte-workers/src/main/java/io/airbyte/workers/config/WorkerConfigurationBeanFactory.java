@@ -110,16 +110,14 @@ public class WorkerConfigurationBeanFactory {
   }
 
   /**
-   * Returns worker pod tolerations parsed from its own environment variable. The value of the env is
-   * a string that represents one or more tolerations.
+   * Returns worker pod tolerations parsed from its own environment variable. The value of the env is a string that represents one or more
+   * tolerations.
    * <ul>
    * <li>Tolerations are separated by a `;`
-   * <li>Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and
-   * separated by `,`
+   * <li>Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and separated by `,`
    * </ul>
    * <p>
-   * For example:- The following represents two tolerations, one checking existence and another
-   * matching a value
+   * For example:- The following represents two tolerations, one checking existence and another matching a value
    * <p>
    * key=airbyte-server,operator=Exists,effect=NoSchedule;key=airbyte-server,operator=Equals,value=true,effect=NoSchedule
    *
@@ -352,8 +350,7 @@ public class WorkerConfigurationBeanFactory {
   }
 
   /**
-   * Splits key value pairs from the input string into a map. Each kv-pair is separated by a ','. The
-   * key and the value are separated by '='.
+   * Splits key value pairs from the input string into a map. Each kv-pair is separated by a ','. The key and the value are separated by '='.
    * <p>
    * For example:- The following represents two map entries
    * </p>

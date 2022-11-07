@@ -15,8 +15,8 @@ import org.junit.jupiter.api.Test;
 class JobsDatabaseMigrationDevCenterTest {
 
   /**
-   * This test ensures that the dev center is working correctly end-to-end. If it fails, it means
-   * either the migration is not run properly, or the database initialization is incorrect.
+   * This test ensures that the dev center is working correctly end-to-end. If it fails, it means either the migration is not run properly, or the
+   * database initialization is incorrect.
    */
   @Test
   void testSchemaDump() {

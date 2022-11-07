@@ -22,8 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Decorates a Destination with an SSH Tunnel using the standard configuration that Airbyte uses for
- * configuring SSH.
+ * Decorates a Destination with an SSH Tunnel using the standard configuration that Airbyte uses for configuring SSH.
  */
 public class SshWrappedDestination implements Destination {
 

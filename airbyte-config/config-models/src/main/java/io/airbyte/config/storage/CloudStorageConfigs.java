@@ -7,9 +7,8 @@ package io.airbyte.config.storage;
 import com.google.common.base.Preconditions;
 
 /**
- * Immutable configuration for configuring Cloud storage clients. We usually allow configuring one
- * of 3 type of cloud storage clients in our env variables. We then want to opaquely pass that to
- * wherever that cloud storage is used and then, based on the configuration, spin up the correct
+ * Immutable configuration for configuring Cloud storage clients. We usually allow configuring one of 3 type of cloud storage clients in our env
+ * variables. We then want to opaquely pass that to wherever that cloud storage is used and then, based on the configuration, spin up the correct
  * client. This configuration object allows us to do that.
  */
 @SuppressWarnings("PMD.ShortMethodName")

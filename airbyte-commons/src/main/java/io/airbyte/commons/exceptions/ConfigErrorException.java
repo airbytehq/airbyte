@@ -5,8 +5,8 @@
 package io.airbyte.commons.exceptions;
 
 /**
- * An exception that indicates that there is something wrong with the user's connector setup. This
- * exception is caught and emits an AirbyteTraceMessage.
+ * An exception that indicates that there is something wrong with the user's connector setup. This exception is caught and emits an
+ * AirbyteTraceMessage.
  */
 public class ConfigErrorException extends RuntimeException {
 

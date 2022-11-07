@@ -11,16 +11,13 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * A {@link SerializableBuffer} is designed to be used as part of a
- * {@link SerializedBufferingStrategy}.
+ * A {@link SerializableBuffer} is designed to be used as part of a {@link SerializedBufferingStrategy}.
  *
- * It encapsulates the actual implementation of a buffer: both the medium storage (usually defined
- * as part of {@link BufferStorage}. and the format of the serialized data when it is written to the
- * buffer.
+ * It encapsulates the actual implementation of a buffer: both the medium storage (usually defined as part of {@link BufferStorage}. and the format of
+ * the serialized data when it is written to the buffer.
  *
- * A {@link BaseSerializedBuffer} class is provided, and should be the expected class to derive from
- * when implementing a new format of buffer. The storage aspects are normally provided through
- * composition of {@link BufferStorage}.
+ * A {@link BaseSerializedBuffer} class is provided, and should be the expected class to derive from when implementing a new format of buffer. The
+ * storage aspects are normally provided through composition of {@link BufferStorage}.
  *
  */
 public interface SerializableBuffer extends AutoCloseable {
@@ -36,9 +33,8 @@ public interface SerializableBuffer extends AutoCloseable {
   void flush() throws Exception;
 
   /**
-   * The buffer implementation should be keeping track of how many bytes it accumulated so far. If any
-   * flush events were triggered, the amount of bytes accumulated would also have been decreased
-   * accordingly. This method @return such statistics.
+   * The buffer implementation should be keeping track of how many bytes it accumulated so far. If any flush events were triggered, the amount of
+   * bytes accumulated would also have been decreased accordingly. This method @return such statistics.
    */
   long getByteCount();
 
@@ -58,11 +54,10 @@ public interface SerializableBuffer extends AutoCloseable {
   InputStream getInputStream() throws FileNotFoundException;
 
   /*
-   * Depending on the implementation of the storage, methods below defined reasonable thresholds
-   * associated with using this kind of buffer implementation.
+   * Depending on the implementation of the storage, methods below defined reasonable thresholds associated with using this kind of buffer
+   * implementation.
    *
-   * These could also be dynamically configured/tuned at runtime if needed (from user input for
-   * example?)
+   * These could also be dynamically configured/tuned at runtime if needed (from user input for example?)
    */
 
   /**

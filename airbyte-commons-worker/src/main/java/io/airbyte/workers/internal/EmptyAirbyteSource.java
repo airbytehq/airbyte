@@ -32,8 +32,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This source will never emit any messages. It can be used in cases where that is helpful (hint:
- * reset connection jobs).
+ * This source will never emit any messages. It can be used in cases where that is helpful (hint: reset connection jobs).
  */
 @Slf4j
 public class EmptyAirbyteSource implements AirbyteSource {
@@ -62,11 +61,9 @@ public class EmptyAirbyteSource implements AirbyteSource {
       // us compatible with running a reset with
       // a null config
       /*
-       * This is a protection against reverting a commit that set the resetSourceConfiguration, it makes
-       * that there is not side effect of such a revert. The legacy behavior is to have the config as an
-       * empty jsonObject, this is an extra protection if the workerConfiguration is null. In the previous
-       * implementation it was unused so passing it as null should not result in a NPE or a parsing
-       * failure.
+       * This is a protection against reverting a commit that set the resetSourceConfiguration, it makes that there is not side effect of such a
+       * revert. The legacy behavior is to have the config as an empty jsonObject, this is an extra protection if the workerConfiguration is null. In
+       * the previous implementation it was unused so passing it as null should not result in a NPE or a parsing failure.
        */
       isResetBasedForConfig = false;
     } else {
@@ -79,11 +76,9 @@ public class EmptyAirbyteSource implements AirbyteSource {
         // pass to the configuration because the
         // logic of populating this list is not implemented
         /*
-         * This is a protection against reverting a commit that set the resetSourceConfiguration, it makes
-         * that there is not side effect of such a revert. The legacy behavior is to have the config as an
-         * empty object, it has been changed here:
-         * https://github.com/airbytehq/airbyte/pull/13696/files#diff-
-         * f51ff997b60a346c704608bb1cd7d22457eda2559b42987d5fa1281d568fc222L40
+         * This is a protection against reverting a commit that set the resetSourceConfiguration, it makes that there is not side effect of such a
+         * revert. The legacy behavior is to have the config as an empty object, it has been changed here:
+         * https://github.com/airbytehq/airbyte/pull/13696/files#diff- f51ff997b60a346c704608bb1cd7d22457eda2559b42987d5fa1281d568fc222L40
          */
         isResetBasedForConfig = false;
       } else {

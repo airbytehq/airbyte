@@ -37,8 +37,7 @@ public final class ApmTraceConstants {
   public static final class Tags {
 
     /**
-     * Name of the APM trace tag that holds the destination Docker image value associated with the
-     * trace.
+     * Name of the APM trace tag that holds the destination Docker image value associated with the trace.
      */
     public static final String CONNECTION_ID_KEY = "connection_id";
 
@@ -48,8 +47,7 @@ public final class ApmTraceConstants {
     public static final String CONNECTOR_VERSION_KEY = "connector_version";
 
     /**
-     * Name of the APM trace tag that holds the destination Docker image value associated with the
-     * trace.
+     * Name of the APM trace tag that holds the destination Docker image value associated with the trace.
      */
     public static final String DESTINATION_DOCKER_IMAGE_KEY = "destination.docker_image";
 
@@ -74,14 +72,12 @@ public final class ApmTraceConstants {
     public static final String PROCESS_EXIT_VALUE_KEY = "process.exit_value";
 
     /**
-     * Name of the APM trace tag that holds the replication bytes synced value associated with the
-     * trace.
+     * Name of the APM trace tag that holds the replication bytes synced value associated with the trace.
      */
     public static final String REPLICATION_BYTES_SYNCED_KEY = "replication.bytes_synced";
 
     /**
-     * Name of the APM trace tag that holds the replication records synced value associated with the
-     * trace.
+     * Name of the APM trace tag that holds the replication records synced value associated with the trace.
      */
     public static final String REPLICATION_RECORDS_SYNCED_KEY = "replication.records_synced";
 

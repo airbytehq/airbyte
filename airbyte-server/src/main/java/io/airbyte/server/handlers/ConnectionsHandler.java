@@ -289,8 +289,8 @@ public class ConnectionsHandler {
   }
 
   /**
-   * Modifies the given StandardSync by applying changes from a partially-filled ConnectionUpdate
-   * patch. Any fields that are null in the patch will be left unchanged.
+   * Modifies the given StandardSync by applying changes from a partially-filled ConnectionUpdate patch. Any fields that are null in the patch will be
+   * left unchanged.
    */
   private static void applyPatchToStandardSync(final StandardSync sync, final ConnectionUpdate patch) throws JsonValidationException {
     // update the sync's schedule using the patch's scheduleType and scheduleData. validations occur in

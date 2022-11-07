@@ -8,9 +8,8 @@ import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 
 /**
- * Temporary factory class that provides convenience methods for creating a {@link Flyway}
- * instances. This class will be removed once the project has been converted to leverage an
- * application framework to manage the creation and injection of {@link Flyway} objects.
+ * Temporary factory class that provides convenience methods for creating a {@link Flyway} instances. This class will be removed once the project has
+ * been converted to leverage an application framework to manage the creation and injection of {@link Flyway} objects.
  */
 @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 public class FlywayFactory {
@@ -28,8 +27,7 @@ public class FlywayFactory {
    *
    * @param dataSource The {@link DataSource} used to connect to the database.
    * @param installedBy The name of the module performing the migration.
-   * @param dbIdentifier The name of the database to be migrated. This is used to name the table to
-   *        hold the migration history for the database.
+   * @param dbIdentifier The name of the database to be migrated. This is used to name the table to hold the migration history for the database.
    * @param migrationFileLocations The array of migration files to be used.
    * @return The configured {@link Flyway} instance.
    */
@@ -51,13 +49,10 @@ public class FlywayFactory {
    *
    * @param dataSource The {@link DataSource} used to connect to the database.
    * @param installedBy The name of the module performing the migration.
-   * @param dbIdentifier The name of the database to be migrated. This is used to name the table to
-   *        hold the migration history for the database.
+   * @param dbIdentifier The name of the database to be migrated. This is used to name the table to hold the migration history for the database.
    * @param baselineVersion The version to tag an existing schema with when executing baseline.
-   * @param baselineDescription The description to tag an existing schema with when executing
-   *        baseline.
-   * @param baselineOnMigrate Whether to automatically call baseline when migrate is executed against
-   *        a non-empty schema with no schema history table.
+   * @param baselineDescription The description to tag an existing schema with when executing baseline.
+   * @param baselineOnMigrate Whether to automatically call baseline when migrate is executed against a non-empty schema with no schema history table.
    * @param migrationFileLocations The array of migration files to be used.
    * @return The configured {@link Flyway} instance.
    */

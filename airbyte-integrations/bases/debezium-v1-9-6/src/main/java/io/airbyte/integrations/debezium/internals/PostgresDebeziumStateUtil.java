@@ -33,8 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is inspired by Debezium's Postgres connector internal implementation on how it parses
- * the state
+ * This class is inspired by Debezium's Postgres connector internal implementation on how it parses the state
  */
 public class PostgresDebeziumStateUtil {
 
@@ -71,9 +70,8 @@ public class PostgresDebeziumStateUtil {
 
   /**
    *
-   * @param properties Properties should contain the relevant properties like path to the debezium
-   *        state file, etc. It's assumed that the state file is already initialised with the saved
-   *        state
+   * @param properties Properties should contain the relevant properties like path to the debezium state file, etc. It's assumed that the state file
+   *        is already initialised with the saved state
    * @return Returns the LSN that Airbyte has acknowledged in the source database server
    */
   private OptionalLong parseSavedOffset(final Properties properties) {

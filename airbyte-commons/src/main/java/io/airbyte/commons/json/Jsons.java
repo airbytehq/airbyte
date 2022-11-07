@@ -139,11 +139,10 @@ public class Jsons {
   }
 
   /**
-   * Use string length as an estimation for byte size, because all ASCII characters are one byte long
-   * in UTF-8, and ASCII characters cover most of the use cases. To be more precise, we can convert
-   * the string to byte[] and use the length of the byte[]. However, this conversion is expensive in
-   * memory consumption. Given that the byte size of the serialized JSON is already an estimation of
-   * the actual size of the JSON object, using a cheap operation seems an acceptable compromise.
+   * Use string length as an estimation for byte size, because all ASCII characters are one byte long in UTF-8, and ASCII characters cover most of the
+   * use cases. To be more precise, we can convert the string to byte[] and use the length of the byte[]. However, this conversion is expensive in
+   * memory consumption. Given that the byte size of the serialized JSON is already an estimation of the actual size of the JSON object, using a cheap
+   * operation seems an acceptable compromise.
    */
   public static int getEstimatedByteSize(final JsonNode jsonNode) {
     return serialize(jsonNode).length();
@@ -265,8 +264,8 @@ public class Jsons {
   /**
    * Prepend all keys in subMap with prefix, then merge that map into originalMap.
    * <p>
-   * If subMap contains a null key, then instead it is replaced with prefix. I.e. {null: value} is
-   * treated as {prefix: value} when merging into originalMap.
+   * If subMap contains a null key, then instead it is replaced with prefix. I.e. {null: value} is treated as {prefix: value} when merging into
+   * originalMap.
    */
   public static void mergeMaps(final Map<String, Object> originalMap, final String prefix, final Map<String, Object> subMap) {
     originalMap.putAll(subMap.entrySet().stream().collect(toMap(
@@ -282,8 +281,7 @@ public class Jsons {
   }
 
   /**
-   * By the Jackson DefaultPrettyPrinter prints objects with an extra space as follows: {"name" :
-   * "airbyte"}. We prefer {"name": "airbyte"}.
+   * By the Jackson DefaultPrettyPrinter prints objects with an extra space as follows: {"name" : "airbyte"}. We prefer {"name": "airbyte"}.
    */
   private static class JsonPrettyPrinter extends DefaultPrettyPrinter {
 

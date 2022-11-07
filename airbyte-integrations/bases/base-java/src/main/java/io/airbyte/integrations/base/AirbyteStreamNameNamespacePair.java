@@ -13,9 +13,8 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Wraps an {@link io.airbyte.protocol.models.AirbyteStream}'s name and namespace fields to simplify
- * comparison checks. This is helpful since these two fields are often used as an Airbyte Stream's
- * unique identifiers.
+ * Wraps an {@link io.airbyte.protocol.models.AirbyteStream}'s name and namespace fields to simplify comparison checks. This is helpful since these
+ * two fields are often used as an Airbyte Stream's unique identifiers.
  */
 public class AirbyteStreamNameNamespacePair implements Comparable<AirbyteStreamNameNamespacePair> {
 

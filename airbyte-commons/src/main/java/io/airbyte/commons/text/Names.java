@@ -12,8 +12,7 @@ public class Names {
   public static final String NON_ALPHANUMERIC_AND_UNDERSCORE_PATTERN = "[^\\p{Alnum}_]";
 
   /**
-   * Converts any UTF8 string to a string with only alphanumeric and _ characters without preserving
-   * accent characters.
+   * Converts any UTF8 string to a string with only alphanumeric and _ characters without preserving accent characters.
    *
    * @param s string to convert
    * @return cleaned string

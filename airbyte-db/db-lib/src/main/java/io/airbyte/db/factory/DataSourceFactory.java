@@ -13,9 +13,8 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 /**
- * Temporary factory class that provides convenience methods for creating a {@link DataSource}
- * instance. This class will be removed once the project has been converted to leverage an
- * application framework to manage the creation and injection of {@link DataSource} objects.
+ * Temporary factory class that provides convenience methods for creating a {@link DataSource} instance. This class will be removed once the project
+ * has been converted to leverage an application framework to manage the creation and injection of {@link DataSource} objects.
  */
 public class DataSourceFactory {
 
@@ -123,8 +122,7 @@ public class DataSourceFactory {
   }
 
   /**
-   * Convenience method that constructs a new {@link DataSource} for a PostgreSQL database using the
-   * provided configuration.
+   * Convenience method that constructs a new {@link DataSource} for a PostgreSQL database using the provided configuration.
    *
    * @param username The username of the database user.
    * @param password The password of the database user.
@@ -149,8 +147,7 @@ public class DataSourceFactory {
   }
 
   /**
-   * Utility method that attempts to close the provided {@link DataSource} if it implements
-   * {@link Closeable}.
+   * Utility method that attempts to close the provided {@link DataSource} if it implements {@link Closeable}.
    *
    * @param dataSource The {@link DataSource} to close.
    * @throws Exception if unable to close the data source.
@@ -185,17 +182,14 @@ public class DataSourceFactory {
     private DataSourceBuilder() {}
 
     /**
-     * Retrieves connectionTimeout value from connection properties in seconds, default minimum timeout
-     * is 60 seconds since Hikari default of 30 seconds is not enough for acceptance tests. In the case
-     * the value is 0, pass the value along as Hikari and Postgres use default max value for 0 timeout
-     * value
+     * Retrieves connectionTimeout value from connection properties in seconds, default minimum timeout is 60 seconds since Hikari default of 30
+     * seconds is not enough for acceptance tests. In the case the value is 0, pass the value along as Hikari and Postgres use default max value for 0
+     * timeout value
      *
-     * NOTE: HikariCP uses milliseconds for all time values:
-     * https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby whereas Postgres is
-     * measured in seconds: https://jdbc.postgresql.org/documentation/head/connect.html
+     * NOTE: HikariCP uses milliseconds for all time values: https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby whereas
+     * Postgres is measured in seconds: https://jdbc.postgresql.org/documentation/head/connect.html
      *
-     * @param connectionProperties custom jdbc_url_parameters containing information on connection
-     *        properties
+     * @param connectionProperties custom jdbc_url_parameters containing information on connection properties
      * @return DataSourceBuilder class used to create dynamic fields for DataSource
      */
     private static long getConnectionTimeoutMs(final Map<String, String> connectionProperties) {
@@ -293,9 +287,8 @@ public class DataSourceFactory {
       config.setUsername(username);
 
       /*
-       * Disable to prevent failing on startup. Applications may start prior to the database container
-       * being available. To avoid failing to create the connection pool, disable the fail check. This
-       * will preserve existing behavior that tests for the connection on first use, not on creation.
+       * Disable to prevent failing on startup. Applications may start prior to the database container being available. To avoid failing to create the
+       * connection pool, disable the fail check. This will preserve existing behavior that tests for the connection on first use, not on creation.
        */
       config.setInitializationFailTimeout(Integer.MIN_VALUE);
 

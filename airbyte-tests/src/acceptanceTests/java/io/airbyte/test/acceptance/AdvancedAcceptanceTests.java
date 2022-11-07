@@ -63,21 +63,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The class test for advanced platform functionality that can be affected by the networking
- * difference between the Kube and Docker deployments i.e. distributed vs local processes. All tests
- * in this class should pass when ran on either type of deployment.
+ * The class test for advanced platform functionality that can be affected by the networking difference between the Kube and Docker deployments i.e.
+ * distributed vs local processes. All tests in this class should pass when ran on either type of deployment.
  * <p>
- * Tests use the {@link RetryingTest} annotation instead of the more common {@link Test} to allow
- * multiple tries for a test to pass. This is because these tests sometimes fail transiently, and we
- * haven't been able to fix that yet.
+ * Tests use the {@link RetryingTest} annotation instead of the more common {@link Test} to allow multiple tries for a test to pass. This is because
+ * these tests sometimes fail transiently, and we haven't been able to fix that yet.
  * <p>
- * However, in general we should prefer using {@code @Test} instead and only resort to using
- * {@code @RetryingTest} for tests that we can't get to pass reliably. New tests should thus default
- * to using {@code @Test} if possible.
+ * However, in general we should prefer using {@code @Test} instead and only resort to using {@code @RetryingTest} for tests that we can't get to pass
+ * reliably. New tests should thus default to using {@code @Test} if possible.
  * <p>
- * We order tests such that earlier tests test more basic behavior that is relied upon in later
- * tests. e.g. We test that we can create a destination before we test whether we can sync data to
- * it.
+ * We order tests such that earlier tests test more basic behavior that is relied upon in later tests. e.g. We test that we can create a destination
+ * before we test whether we can sync data to it.
  */
 @SuppressWarnings({"rawtypes", "ConstantConditions"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)

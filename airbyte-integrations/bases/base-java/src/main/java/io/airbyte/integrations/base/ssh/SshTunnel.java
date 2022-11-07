@@ -34,8 +34,8 @@ import org.slf4j.LoggerFactory;
 // todo (cgardens) - this needs unit tests. it is currently tested transitively via source postgres
 // integration tests.
 /**
- * Encapsulates the connection configuration for an ssh tunnel port forward through a proxy/bastion
- * host plus the remote host and remote port to forward to a specified local port.
+ * Encapsulates the connection configuration for an ssh tunnel port forward through a proxy/bastion host plus the remote host and remote port to
+ * forward to a specified local port.
  */
 public class SshTunnel implements AutoCloseable {
 
@@ -72,28 +72,18 @@ public class SshTunnel implements AutoCloseable {
   /**
    *
    * @param config - the full config that was passed to the source.
-   * @param hostKey - a list of keys that point to the database host name. should be pointing to where
-   *        in the config remoteDatabaseHost is found.
-   * @param portKey - a list of keys that point to the database port. should be pointing to where in
-   *        the config remoteDatabasePort is found.
-   * @param endPointKey - key that points to the endpoint URL (this is commonly used for REST-based
-   *        services such as Elastic and MongoDB)
-   * @param remoteServiceUrl - URL of the remote endpoint (this is commonly used for REST-based *
-   *        services such as Elastic and MongoDB)
+   * @param hostKey - a list of keys that point to the database host name. should be pointing to where in the config remoteDatabaseHost is found.
+   * @param portKey - a list of keys that point to the database port. should be pointing to where in the config remoteDatabasePort is found.
+   * @param endPointKey - key that points to the endpoint URL (this is commonly used for REST-based services such as Elastic and MongoDB)
+   * @param remoteServiceUrl - URL of the remote endpoint (this is commonly used for REST-based * services such as Elastic and MongoDB)
    * @param tunnelMethod - the type of ssh method that should be used (includes not using SSH at all).
-   * @param tunnelHost - host name of the machine to which we will establish an ssh connection (e.g.
-   *        hostname of the bastion).
-   * @param tunnelPort - port of the machine to which we will establish an ssh connection. (e.g. port
-   *        of the bastion).
+   * @param tunnelHost - host name of the machine to which we will establish an ssh connection (e.g. hostname of the bastion).
+   * @param tunnelPort - port of the machine to which we will establish an ssh connection. (e.g. port of the bastion).
    * @param tunnelUser - user that is allowed to access the tunnelHost.
-   * @param sshKey - the ssh key that will be used to make the ssh connection. can be null if we are
-   *        using tunnelUserPassword instead.
-   * @param tunnelUserPassword - the password for the tunnelUser. can be null if we are using sshKey
-   *        instead.
-   * @param remoteServiceHost - the actual host name of the remote service (as it is known to the
-   *        tunnel host).
-   * @param remoteServicePort - the actual port of the remote service (as it is known to the tunnel
-   *        host).
+   * @param sshKey - the ssh key that will be used to make the ssh connection. can be null if we are using tunnelUserPassword instead.
+   * @param tunnelUserPassword - the password for the tunnelUser. can be null if we are using sshKey instead.
+   * @param remoteServiceHost - the actual host name of the remote service (as it is known to the tunnel host).
+   * @param remoteServicePort - the actual port of the remote service (as it is known to the tunnel host).
    */
   public SshTunnel(final JsonNode config,
                    final List<String> hostKey,
@@ -295,8 +285,8 @@ public class SshTunnel implements AutoCloseable {
   }
 
   /**
-   * From the OPENSSH private key string, use mina-sshd to deserialize the key pair, reconstruct the
-   * keys from the key info, and return the key pair for use in authentication.
+   * From the OPENSSH private key string, use mina-sshd to deserialize the key pair, reconstruct the keys from the key info, and return the key pair
+   * for use in authentication.
    *
    * @return The {@link KeyPair} to add - may not be {@code null}
    * @see <a href=
@@ -319,8 +309,7 @@ public class SshTunnel implements AutoCloseable {
   }
 
   /**
-   * Generates a new ssh client and returns it, with forwarding set to accept all types; use this
-   * before opening a tunnel.
+   * Generates a new ssh client and returns it, with forwarding set to accept all types; use this before opening a tunnel.
    */
   private SshClient createClient() {
     java.security.Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());

@@ -24,12 +24,11 @@ import lombok.extern.slf4j.Slf4j;
  *  [(state hash),(stream index),(record count)...] with the last two elements repeating per stream in the delta.
  * </pre>
  * <p>
- * This class also maintains a {@code Set} of {@code committedStateHashes} so that it can accumulate
- * both committed and total record counts per stream.
+ * This class also maintains a {@code Set} of {@code committedStateHashes} so that it can accumulate both committed and total record counts per
+ * stream.
  * <p>
- * The StateDeltaTracker is initialized with a memory limit. If this memory limit is exceeded, new
- * states deltas will not be added and per-stream record counts will not be able to be computed.
- * This is to prevent OutOfMemoryErrors from crashing the sync.
+ * The StateDeltaTracker is initialized with a memory limit. If this memory limit is exceeded, new states deltas will not be added and per-stream
+ * record counts will not be able to be computed. This is to prevent OutOfMemoryErrors from crashing the sync.
  */
 @Slf4j
 public class StateDeltaTracker {
@@ -43,11 +42,9 @@ public class StateDeltaTracker {
   private final Map<Short, Long> streamToCommittedRecords;
 
   /**
-   * Every time a state is added, a new byte[] containing the state hash and per-stream delta will be
-   * added to this list. Every time a state is committed, state deltas up to the committed state are
-   * removed from the head of the list and aggregated into the committed count map. The source thread
-   * adds while the destination thread removes, so synchronization is necessary to provide
-   * thread-safety.
+   * Every time a state is added, a new byte[] containing the state hash and per-stream delta will be added to this list. Every time a state is
+   * committed, state deltas up to the committed state are removed from the head of the list and aggregated into the committed count map. The source
+   * thread adds while the destination thread removes, so synchronization is necessary to provide thread-safety.
    */
   @VisibleForTesting
   protected final List<byte[]> stateDeltas;
@@ -66,14 +63,12 @@ public class StateDeltaTracker {
   }
 
   /**
-   * Converts the given state hash and per-stream record count map into a {@code byte[]} and stores
-   * it.
+   * Converts the given state hash and per-stream record count map into a {@code byte[]} and stores it.
    * <p>
-   * This method leverages a synchronized block to provide thread safety between the source thread
-   * calling addState while the destination thread calls commitStateHash.
+   * This method leverages a synchronized block to provide thread safety between the source thread calling addState while the destination thread calls
+   * commitStateHash.
    *
-   * @throws StateDeltaTrackerException thrown when the memory footprint of stateDeltas exceeds
-   *         available capacity.
+   * @throws StateDeltaTrackerException thrown when the memory footprint of stateDeltas exceeds available capacity.
    */
   @Trace(operationName = WORKER_OPERATION_NAME)
   public void addState(final int stateHash, final Map<Short, Long> streamIndexToRecordCount) throws StateDeltaTrackerException {
@@ -102,11 +97,10 @@ public class StateDeltaTracker {
   /**
    * Mark the given {@code stateHash} as committed.
    * <p>
-   * This method leverages a synchronized block to provide thread safety between the source thread
-   * calling addState while the destination thread calls commitStateHash.
+   * This method leverages a synchronized block to provide thread safety between the source thread calling addState while the destination thread calls
+   * commitStateHash.
    *
-   * @throws StateDeltaTrackerException thrown when committed counts can no longer be reliably
-   *         computed.
+   * @throws StateDeltaTrackerException thrown when committed counts can no longer be reliably computed.
    */
   @Trace(operationName = WORKER_OPERATION_NAME)
   public void commitStateHash(final int stateHash) throws StateDeltaTrackerException {
@@ -150,8 +144,7 @@ public class StateDeltaTracker {
   }
 
   /**
-   * Thrown when the StateDeltaTracker encounters an issue that prevents it from reliably computing
-   * committed record deltas.
+   * Thrown when the StateDeltaTracker encounters an issue that prevents it from reliably computing committed record deltas.
    */
   public static class StateDeltaTrackerException extends Exception {
 

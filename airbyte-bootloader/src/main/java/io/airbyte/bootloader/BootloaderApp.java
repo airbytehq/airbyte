@@ -47,8 +47,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Just like how the Linux bootloader paves the way for the OS to start, this class is responsible
- * for setting up the Airbyte environment so the rest of the Airbyte applications can safely start.
+ * Just like how the Linux bootloader paves the way for the OS to start, this class is responsible for setting up the Airbyte environment so the rest
+ * of the Airbyte applications can safely start.
  * <p>
  * This includes:
  * <p>
@@ -80,9 +80,8 @@ public class BootloaderApp {
   private final DSLContext jobsDslContext;
 
   /**
-   * This method is exposed for Airbyte Cloud consumption. This lets us override the seed loading
-   * logic and customise Cloud connector versions. Please check with the Platform team before making
-   * changes to this method.
+   * This method is exposed for Airbyte Cloud consumption. This lets us override the seed loading logic and customise Cloud connector versions. Please
+   * check with the Platform team before making changes to this method.
    *
    * @param configs
    * @param postLoadExecution

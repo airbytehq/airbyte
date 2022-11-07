@@ -11,9 +11,8 @@ import javax.annotation.Nullable;
 import org.jooq.DSLContext;
 
 /**
- * Provides the ability to read and write secrets to a backing store. Assumes that secret payloads
- * are always strings. See {@link SecretCoordinate} for more information on how secrets are
- * identified.
+ * Provides the ability to read and write secrets to a backing store. Assumes that secret payloads are always strings. See {@link SecretCoordinate}
+ * for more information on how secrets are identified.
  */
 @SuppressWarnings("PMD.MissingOverride")
 public interface SecretPersistence extends ReadOnlySecretPersistence {

@@ -35,8 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * General SSL utilities used for certificate and keystore operations related to secured db
- * connections.
+ * General SSL utilities used for certificate and keystore operations related to secured db connections.
  */
 public class SSLCertificateUtils {
 

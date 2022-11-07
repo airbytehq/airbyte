@@ -18,9 +18,8 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
- * Launches a container-orchestrator container/pod to manage the message passing for the replication
- * step. This step configs onto the container-orchestrator and retrieves logs and the output from
- * the container-orchestrator.
+ * Launches a container-orchestrator container/pod to manage the message passing for the replication step. This step configs onto the
+ * container-orchestrator and retrieves logs and the output from the container-orchestrator.
  */
 public class ReplicationLauncherWorker extends LauncherWorker<StandardSyncInput, ReplicationOutput> {
 

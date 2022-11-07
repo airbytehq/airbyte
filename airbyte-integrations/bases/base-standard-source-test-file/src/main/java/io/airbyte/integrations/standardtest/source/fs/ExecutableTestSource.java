@@ -15,8 +15,8 @@ import java.nio.file.Path;
 import javax.annotation.Nullable;
 
 /**
- * Extends TestSource such that it can be called using resources pulled from the file system. Will
- * also add the ability to execute arbitrary scripts in the next version.
+ * Extends TestSource such that it can be called using resources pulled from the file system. Will also add the ability to execute arbitrary scripts
+ * in the next version.
  */
 public class ExecutableTestSource extends SourceAcceptanceTest {
 

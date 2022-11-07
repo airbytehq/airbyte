@@ -31,8 +31,8 @@ public abstract class BaseSizeEstimator implements FetchSizeEstimator {
   }
 
   /**
-   * What we really want is to know how much memory each {@code rowData} takes. However, there is no
-   * easy way to measure that. So we use the byte size of the serialized row to approximate that.
+   * What we really want is to know how much memory each {@code rowData} takes. However, there is no easy way to measure that. So we use the byte size
+   * of the serialized row to approximate that.
    */
   @VisibleForTesting
   public static long getEstimatedByteSize(final Object rowData) {
@@ -49,8 +49,7 @@ public abstract class BaseSizeEstimator implements FetchSizeEstimator {
   }
 
   /**
-   * This method ensures that the fetch size is between {@code minFetchSize} and {@code maxFetchSize},
-   * inclusively.
+   * This method ensures that the fetch size is between {@code minFetchSize} and {@code maxFetchSize}, inclusively.
    */
   @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   protected int getBoundedFetchSize() {

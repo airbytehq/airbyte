@@ -60,8 +60,8 @@ class S3LogsTest {
   }
 
   /**
-   * The test files for this test have been pre-generated and uploaded into the bucket folder. The
-   * folder contains the following files with these contents:
+   * The test files for this test have been pre-generated and uploaded into the bucket folder. The folder contains the following files with these
+   * contents:
    * <li>first-file.txt - Line 1, Line 2, Line 3</li>
    * <li>second-file.txt - Line 4, Line 5, Line 6</li>
    * <li>third-file.txt - Line 7, Line 8, Line 9</li>

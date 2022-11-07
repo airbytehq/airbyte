@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * This class is responsible for fetching both connectors and their secrets (from separate secrets
- * stores). All methods in this class return secrets! Use it carefully.
+ * This class is responsible for fetching both connectors and their secrets (from separate secrets stores). All methods in this class return secrets!
+ * Use it carefully.
  */
 public class SecretsRepositoryReader {
 

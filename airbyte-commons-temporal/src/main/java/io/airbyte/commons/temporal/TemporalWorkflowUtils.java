@@ -19,8 +19,7 @@ import java.util.UUID;
 /**
  * Collection of Temporal workflow related utility methods.
  *
- * <b>N.B</b>: These methods should not store any state or depend on any other objects/singletons
- * managed by the application framework.
+ * <b>N.B</b>: These methods should not store any state or depend on any other objects/singletons managed by the application framework.
  */
 public class TemporalWorkflowUtils {
 

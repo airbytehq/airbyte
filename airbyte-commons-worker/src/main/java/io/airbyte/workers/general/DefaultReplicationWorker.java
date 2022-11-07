@@ -59,20 +59,17 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 /**
- * This worker is the "data shovel" of ETL. It is responsible for moving data from the Source
- * container to the Destination container. It manages the full lifecycle of this process. This
- * includes:
+ * This worker is the "data shovel" of ETL. It is responsible for moving data from the Source container to the Destination container. It manages the
+ * full lifecycle of this process. This includes:
  * <ul>
  * <li>Starting the Source and Destination containers</li>
  * <li>Passing data from Source to Destination</li>
- * <li>Executing any configured map-only operations (Mappers) in between the Source and
- * Destination</li>
+ * <li>Executing any configured map-only operations (Mappers) in between the Source and Destination</li>
  * <li>Collecting metadata about the data that is passing from Source to Destination</li>
- * <li>Listening for state messages emitted from the Destination to keep track of what data has been
- * replicated.</li>
+ * <li>Listening for state messages emitted from the Destination to keep track of what data has been replicated.</li>
  * <li>Handling shutdown of the Source and Destination</li>
- * <li>Handling failure cases and returning state for partially completed replications (so that the
- * next replication can pick up where it left off instead of starting from the beginning)</li>
+ * <li>Handling failure cases and returning state for partially completed replications (so that the next replication can pick up where it left off
+ * instead of starting from the beginning)</li>
  * </ul>
  */
 @SuppressWarnings("PMD.AvoidPrintStackTrace")
@@ -116,11 +113,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   }
 
   /**
-   * Run executes two threads. The first pipes data from STDOUT of the source to STDIN of the
-   * destination. The second listen on STDOUT of the destination. The goal of this second thread is to
-   * detect when the destination emits state messages. Only state messages emitted by the destination
-   * should be treated as state that is safe to return from run. In the case when the destination
-   * emits no state, we fall back on whatever state is pass in as an argument to this method.
+   * Run executes two threads. The first pipes data from STDOUT of the source to STDIN of the destination. The second listen on STDOUT of the
+   * destination. The goal of this second thread is to detect when the destination emits state messages. Only state messages emitted by the
+   * destination should be treated as state that is safe to return from run. In the case when the destination emits no state, we fall back on whatever
+   * state is pass in as an argument to this method.
    *
    * @param syncInput all configuration for running replication
    * @param jobRoot file root that worker is allowed to use

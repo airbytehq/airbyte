@@ -93,9 +93,8 @@ class ConnectionSchedulerHelperTest {
   @Test
   void testAvailableCronTimeZonesStayTheSame() {
     /**
-     * NOTE: this test exists to make sure that the server stays in sync with the frontend. The list of
-     * supported timezones is copied from airbyte-webapp/src/config/availableCronTimeZones.json. If this
-     * test fails, then THAT file must be updated with the new timezones.
+     * NOTE: this test exists to make sure that the server stays in sync with the frontend. The list of supported timezones is copied from
+     * airbyte-webapp/src/config/availableCronTimeZones.json. If this test fails, then THAT file must be updated with the new timezones.
      */
     String[] timezoneStrings = {
       "Africa/Abidjan",

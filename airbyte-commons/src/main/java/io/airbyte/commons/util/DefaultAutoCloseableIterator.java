@@ -10,8 +10,8 @@ import io.airbyte.commons.concurrency.VoidCallable;
 import java.util.Iterator;
 
 /**
- * The canonical {@link AutoCloseableIterator}. The default behavior guarantees that the provided
- * close functional will be called no more than one time.
+ * The canonical {@link AutoCloseableIterator}. The default behavior guarantees that the provided close functional will be called no more than one
+ * time.
  *
  * @param <T> type
  */

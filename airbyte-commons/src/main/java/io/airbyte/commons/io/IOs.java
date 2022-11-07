@@ -47,8 +47,7 @@ public class IOs {
   }
 
   /**
-   * Writes a file to a random directory in the /tmp folder. Useful as a staging group for test
-   * resources.
+   * Writes a file to a random directory in the /tmp folder. Useful as a staging group for test resources.
    */
   public static String writeFileToRandomTmpDir(final String filename, final String contents) {
     final Path source = Paths.get("/tmp", UUID.randomUUID().toString());

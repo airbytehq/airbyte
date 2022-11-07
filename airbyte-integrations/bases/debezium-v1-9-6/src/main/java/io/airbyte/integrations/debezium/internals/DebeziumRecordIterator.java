@@ -20,15 +20,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The record iterator is the consumer (in the producer / consumer relationship with debezium)
- * responsible for 1. making sure every record produced by the record publisher is processed 2.
- * signalling to the record publisher when it is time for it to stop producing records. It emits
- * this signal either when the publisher had not produced a new record for a long time or when it
- * has processed at least all of the records that were present in the database when the source was
- * started. Because the publisher might publish more records between the consumer sending this
- * signal and the publisher actually shutting down, the consumer must stay alive as long as the
- * publisher is not closed. Even after the publisher is closed, the consumer will finish processing
- * any produced records before closing.
+ * The record iterator is the consumer (in the producer / consumer relationship with debezium) responsible for 1. making sure every record produced by
+ * the record publisher is processed 2. signalling to the record publisher when it is time for it to stop producing records. It emits this signal
+ * either when the publisher had not produced a new record for a long time or when it has processed at least all of the records that were present in
+ * the database when the source was started. Because the publisher might publish more records between the consumer sending this signal and the
+ * publisher actually shutting down, the consumer must stay alive as long as the publisher is not closed. Even after the publisher is closed, the
+ * consumer will finish processing any produced records before closing.
  */
 public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String, String>>
     implements AutoCloseableIterator<ChangeEvent<String, String>> {
@@ -105,20 +102,15 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   }
 
   /**
-   * Debezium was built as an ever running process which keeps on listening for new changes on DB and
-   * immediately processing them. Airbyte needs debezium to work as a start stop mechanism. In order
-   * to determine when to stop debezium engine we rely on few factors 1. TargetPosition logic. At the
-   * beginning of the sync we define a target position in the logs of the DB. This can be an LSN or
-   * anything specific to the DB which can help us identify that we have reached a specific position
-   * in the log based replication When we start processing records from debezium, we extract the the
-   * log position from the metadata of the record and compare it with our target that we defined at
-   * the beginning of the sync. If we have reached the target position, we shutdown the debezium
-   * engine 2. The TargetPosition logic might not always work and in order to tackle that we have
-   * another logic where if we do not receive records from debezium for a given duration, we ask
-   * debezium engine to shutdown 3. We also take the Snapshot into consideration, when a connector is
-   * running for the first time, we let it complete the snapshot and only after the completion of
-   * snapshot we should shutdown the engine. If we are closing the engine before completion of
-   * snapshot, we throw an exception
+   * Debezium was built as an ever running process which keeps on listening for new changes on DB and immediately processing them. Airbyte needs
+   * debezium to work as a start stop mechanism. In order to determine when to stop debezium engine we rely on few factors 1. TargetPosition logic. At
+   * the beginning of the sync we define a target position in the logs of the DB. This can be an LSN or anything specific to the DB which can help us
+   * identify that we have reached a specific position in the log based replication When we start processing records from debezium, we extract the the
+   * log position from the metadata of the record and compare it with our target that we defined at the beginning of the sync. If we have reached the
+   * target position, we shutdown the debezium engine 2. The TargetPosition logic might not always work and in order to tackle that we have another
+   * logic where if we do not receive records from debezium for a given duration, we ask debezium engine to shutdown 3. We also take the Snapshot into
+   * consideration, when a connector is running for the first time, we let it complete the snapshot and only after the completion of snapshot we
+   * should shutdown the engine. If we are closing the engine before completion of snapshot, we throw an exception
    */
   @Override
   public void close() throws Exception {

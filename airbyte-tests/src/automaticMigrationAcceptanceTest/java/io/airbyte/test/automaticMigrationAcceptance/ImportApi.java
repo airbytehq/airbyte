@@ -23,11 +23,9 @@ import java.time.Duration;
 import java.util.function.Consumer;
 
 /**
- * The reason we are using this class instead of
- * {@link io.airbyte.api.client.generated.DeploymentApi is cause there is a bug in the the method
- * {@link io.airbyte.api.client.generated.DeploymentApi#importArchiveRequestBuilder(File)}, The
- * method specifies the content type as `localVarRequestBuilder.header("Content-Type",
- * "application/json");` but its supposed to be localVarRequestBuilder.header("Content-Type",
+ * The reason we are using this class instead of {@link io.airbyte.api.client.generated.DeploymentApi is cause there is a bug in the the method
+ * {@link io.airbyte.api.client.generated.DeploymentApi#importArchiveRequestBuilder(File)}, The method specifies the content type as
+ * `localVarRequestBuilder.header("Content-Type", "application/json");` but its supposed to be localVarRequestBuilder.header("Content-Type",
  * "application/x-gzip");
  */
 public class ImportApi {

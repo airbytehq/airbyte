@@ -78,12 +78,10 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
   }
 
   /**
-   * This migration requires a connection to the job database, which may be a separate database from
-   * the config database. However, the job database only exists in production, not in development or
-   * test. We use the job database environment variables to determine how to connect to the job
-   * database. This approach is not 100% reliable. However, it is better than doing half of the
-   * migration here (creating the table), and the rest of the work during server start up (copying the
-   * data from the job database).
+   * This migration requires a connection to the job database, which may be a separate database from the config database. However, the job database
+   * only exists in production, not in development or test. We use the job database environment variables to determine how to connect to the job
+   * database. This approach is not 100% reliable. However, it is better than doing half of the migration here (creating the table), and the rest of
+   * the work during server start up (copying the data from the job database).
    */
   @VisibleForTesting
   @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")

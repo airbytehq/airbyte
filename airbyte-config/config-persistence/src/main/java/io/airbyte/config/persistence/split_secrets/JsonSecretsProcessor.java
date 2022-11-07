@@ -39,11 +39,9 @@ public class JsonSecretsProcessor {
   static final String ONE_OF_FIELD = "oneOf";
 
   /**
-   * Returns a copy of the input object wherein any fields annotated with "airbyte_secret" in the
-   * input schema are masked.
+   * Returns a copy of the input object wherein any fields annotated with "airbyte_secret" in the input schema are masked.
    * <p>
-   * This method masks secrets both at the top level of the configuration object and in nested
-   * properties in a oneOf.
+   * This method masks secrets both at the top level of the configuration object and in nested properties in a oneOf.
    *
    * @param schema Schema containing secret annotations
    * @param obj Object containing potentially secret fields
@@ -60,8 +58,7 @@ public class JsonSecretsProcessor {
   }
 
   /**
-   * Given a JSONSchema object and an object that conforms to that schema, obfuscate all fields in the
-   * object that are a secret.
+   * Given a JSONSchema object and an object that conforms to that schema, obfuscate all fields in the object that are a secret.
    *
    * @param json - json object that conforms to the schema
    * @param schema - jsonschema object
@@ -86,11 +83,9 @@ public class JsonSecretsProcessor {
   }
 
   /**
-   * Returns a copy of the destination object in which any secret fields (as denoted by the input
-   * schema) found in the source object are added.
+   * Returns a copy of the destination object in which any secret fields (as denoted by the input schema) found in the source object are added.
    * <p>
-   * This method absorbs secrets both at the top level of the configuration object and in nested
-   * properties in a oneOf.
+   * This method absorbs secrets both at the top level of the configuration object and in nested properties in a oneOf.
    *
    * @param src The object potentially containing secrets
    * @param dst The object to absorb secrets into
@@ -134,9 +129,8 @@ public class JsonSecretsProcessor {
             for (int i = 0; i < arrayNode.size(); i++) {
               final JsonNode childSchema = arrayNode.get(i);
               /*
-               * when traversing a oneOf or anyOf if multiple schema in the oneOf or anyOf have the SAME key, but
-               * a different type, then, without this test, we can try to apply the wrong schema to the object
-               * resulting in errors because of type mismatches.
+               * when traversing a oneOf or anyOf if multiple schema in the oneOf or anyOf have the SAME key, but a different type, then, without this
+               * test, we can try to apply the wrong schema to the object resulting in errors because of type mismatches.
                */
               if (VALIDATOR.test(childSchema, combinationCopy)) {
                 // Absorb field values if any of the combination option is declaring it as secrets

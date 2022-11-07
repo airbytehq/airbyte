@@ -213,8 +213,7 @@ class JsonPathsTest {
   }
 
   /**
-   * For all replacement functions, they should NOT mutate in place. Helper assertion to verify that
-   * invariant.
+   * For all replacement functions, they should NOT mutate in place. Helper assertion to verify that invariant.
    *
    * @param json - json object used for testing
    * @param runnable - the rest of the test code that does the replacement

@@ -11,8 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * This class takes case of the generation of the CSV data sheet, including the header row and the
- * data row.
+ * This class takes case of the generation of the CSV data sheet, including the header row and the data row.
  */
 public interface CsvSheetGenerator {
 

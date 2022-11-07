@@ -27,21 +27,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This script is responsible for ensuring that up-to-date {@link ConnectorSpecification}s for every
- * connector definition in the seed are stored in a corresponding resource file, for the purpose of
- * seeding the specs into the config database on server startup. See
- * ./airbyte-config/specs/readme.md for more details on how this class is run and how it fits into
- * the project.
+ * This script is responsible for ensuring that up-to-date {@link ConnectorSpecification}s for every connector definition in the seed are stored in a
+ * corresponding resource file, for the purpose of seeding the specs into the config database on server startup. See ./airbyte-config/specs/readme.md
+ * for more details on how this class is run and how it fits into the project.
  * <p>
- * Specs are stored in a separate file from the definitions in an effort to keep the definitions
- * yaml files human-readable and easily-editable, as specs can be rather large.
+ * Specs are stored in a separate file from the definitions in an effort to keep the definitions yaml files human-readable and easily-editable, as
+ * specs can be rather large.
  * <p>
- * Specs are fetched from the GCS spec cache bucket, so if any specs are missing from the bucket
- * then this will fail. Note that this script only pulls specs from the bucket cache; it never
- * pushes specs to the bucket. Since this script runs at build time, the decision was to depend on
- * the bucket cache rather than running a docker container to fetch the spec during the build which
- * could be slow and unwieldy. If there is a failure, check the bucket cache and figure out how to
- * get the correct spec in there.
+ * Specs are fetched from the GCS spec cache bucket, so if any specs are missing from the bucket then this will fail. Note that this script only pulls
+ * specs from the bucket cache; it never pushes specs to the bucket. Since this script runs at build time, the decision was to depend on the bucket
+ * cache rather than running a docker container to fetch the spec during the build which could be slow and unwieldy. If there is a failure, check the
+ * bucket cache and figure out how to get the correct spec in there.
  */
 @SuppressWarnings("PMD.SignatureDeclareThrowsException")
 public class SeedConnectorSpecGenerator {

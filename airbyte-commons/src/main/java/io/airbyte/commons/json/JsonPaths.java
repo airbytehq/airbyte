@@ -28,21 +28,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * JSONPath is specification for querying JSON objects. More information about the specification can
- * be found here: https://goessner.net/articles/JsonPath/. For those familiar with jq, JSONPath will
- * be most recognizable as "that DSL that jq uses".
+ * JSONPath is specification for querying JSON objects. More information about the specification can be found here:
+ * https://goessner.net/articles/JsonPath/. For those familiar with jq, JSONPath will be most recognizable as "that DSL that jq uses".
  *
- * We use a java implementation of this specification (repo: https://github.com/json-path/JsonPath).
- * This class wraps that implementation to make it easier to leverage this tool internally.
+ * We use a java implementation of this specification (repo: https://github.com/json-path/JsonPath). This class wraps that implementation to make it
+ * easier to leverage this tool internally.
  *
- * GOTCHA: Keep in mind with JSONPath, depending on the query, 0, 1, or N values may be returned.
- * The pattern for handling return values is very much like writing SQL queries. When using it, you
- * must consider what the number of return values for your query might be. e.g. for this object: {
- * "alpha": [1, 2, 3] }, this JSONPath "$.alpha[*]", would return: [1, 2, 3], but this one
- * "$.alpha[0]" would return: [1]. The Java interface we place over this query system defaults to
- * returning a list for query results. In addition, we provide helper functions that will just
- * return a single value (see: {@link JsonPaths#getSingleValue(JsonNode, String)}). These should
- * only be used if it is not possible for a query to return more than one value.
+ * GOTCHA: Keep in mind with JSONPath, depending on the query, 0, 1, or N values may be returned. The pattern for handling return values is very much
+ * like writing SQL queries. When using it, you must consider what the number of return values for your query might be. e.g. for this object: {
+ * "alpha": [1, 2, 3] }, this JSONPath "$.alpha[*]", would return: [1, 2, 3], but this one "$.alpha[0]" would return: [1]. The Java interface we place
+ * over this query system defaults to returning a list for query results. In addition, we provide helper functions that will just return a single
+ * value (see: {@link JsonPaths#getSingleValue(JsonNode, String)}). These should only be used if it is not possible for a query to return more than
+ * one value.
  */
 public class JsonPaths {
 
@@ -73,9 +70,8 @@ public class JsonPaths {
       @Override
       public Set<Option> options() {
         /*
-         * All JsonPath queries will return a list of values. This makes parsing the outputs much easier. In
-         * cases where it is not a list, helpers in this class can assert that. See
-         * https://github.com/json-path/JsonPath in the JsonPath documentation.
+         * All JsonPath queries will return a list of values. This makes parsing the outputs much easier. In cases where it is not a list, helpers in
+         * this class can assert that. See https://github.com/json-path/JsonPath in the JsonPath documentation.
          */
         return EnumSet.of(Option.ALWAYS_RETURN_LIST);
       }
@@ -110,14 +106,13 @@ public class JsonPaths {
   }
 
   /*
-   * This version of the JsonPath Configuration object allows queries to return to the path of values
-   * instead of the values that were found.
+   * This version of the JsonPath Configuration object allows queries to return to the path of values instead of the values that were found.
    */
   private static final Configuration GET_PATHS_CONFIGURATION = Configuration.defaultConfiguration().addOptions(Option.AS_PATH_LIST);
 
   /**
-   * Attempt to validate if a string is a valid JSONPath string. This assertion does NOT handle all
-   * cases, but at least a common on. We can add to it as we detect others.
+   * Attempt to validate if a string is a valid JSONPath string. This assertion does NOT handle all cases, but at least a common on. We can add to it
+   * as we detect others.
    *
    * @param jsonPath - path to validate
    */
@@ -126,8 +121,8 @@ public class JsonPaths {
   }
 
   /**
-   * Attempt to detect if a JSONPath query could return more than 1 value. This assertion does NOT
-   * handle all cases, but at least a common on. We can add to it as we detect others.
+   * Attempt to detect if a JSONPath query could return more than 1 value. This assertion does NOT handle all cases, but at least a common on. We can
+   * add to it as we detect others.
    *
    * @param jsonPath - path to validate
    */
@@ -138,8 +133,7 @@ public class JsonPaths {
   /**
    * Given a JSONPath, returns all the values that match that path.
    *
-   * e.g. for this object: { "alpha": [1, 2, 3] }, if the input JSONPath were "$.alpha[*]", this
-   * function would return: [1, 2, 3].
+   * e.g. for this object: { "alpha": [1, 2, 3] }, if the input JSONPath were "$.alpha[*]", this function would return: [1, 2, 3].
    *
    * @param json - json object
    * @param jsonPath - path into the json object. must be in the format of JSONPath.
@@ -152,18 +146,15 @@ public class JsonPaths {
   /**
    * Given a JSONPath, returns all the path of all values that match that path.
    *
-   * e.g. for this object: { "alpha": [1, 2, 3] }, if the input JSONPath were "$.alpha[*]", this
-   * function would return: ["$.alpha[0]", "$.alpha[1]", "$.alpha[2]"].
+   * e.g. for this object: { "alpha": [1, 2, 3] }, if the input JSONPath were "$.alpha[*]", this function would return: ["$.alpha[0]", "$.alpha[1]",
+   * "$.alpha[2]"].
    *
    * @param json - json object
    * @param jsonPath - path into the json object. must be in the format of JSONPath.
-   * @return all paths that are present that match the input query. returns a list (instead of a set),
-   *         because having a deterministic ordering is valuable for all downstream consumers (i.e. in
-   *         most cases if we returned a set, the downstream would then put it in a set and sort it so
-   *         that if they are doing replacements using the paths, the behavior is predictable e.g. if
-   *         you do replace $.alpha and $.alpha[*], the order you do those replacements in matters).
-   *         specifically that said, we do expect that there will be no duplicates in the returned
-   *         list.
+   * @return all paths that are present that match the input query. returns a list (instead of a set), because having a deterministic ordering is
+   *         valuable for all downstream consumers (i.e. in most cases if we returned a set, the downstream would then put it in a set and sort it so
+   *         that if they are doing replacements using the paths, the behavior is predictable e.g. if you do replace $.alpha and $.alpha[*], the order
+   *         you do those replacements in matters). specifically that said, we do expect that there will be no duplicates in the returned list.
    */
   public static List<String> getPaths(final JsonNode json, final String jsonPath) {
     return getInternal(GET_PATHS_CONFIGURATION, json, jsonPath)
@@ -173,11 +164,9 @@ public class JsonPaths {
   }
 
   /**
-   * Given a JSONPath, returns 1 or 0 values that match the path. Throws if more than 1 value is
-   * found.
+   * Given a JSONPath, returns 1 or 0 values that match the path. Throws if more than 1 value is found.
    *
-   * THIS SHOULD ONLY BE USED IF THE JSONPATH CAN ONLY EVER RETURN 0 OR 1 VALUES. e.g. don't do
-   * "$.alpha[*]"
+   * THIS SHOULD ONLY BE USED IF THE JSONPATH CAN ONLY EVER RETURN 0 OR 1 VALUES. e.g. don't do "$.alpha[*]"
    *
    * @param json - json object
    * @param jsonPath - path into the json object. must be in the format of JSONPath.
@@ -193,11 +182,9 @@ public class JsonPaths {
   }
 
   /**
-   * Given a JSONPath, true if path is present in the object, otherwise false. Throws is more than 1
-   * path is found.
+   * Given a JSONPath, true if path is present in the object, otherwise false. Throws is more than 1 path is found.
    *
-   * THIS SHOULD ONLY BE USED IF THE JSONPATH CAN ONLY EVER RETURN 0 OR 1 VALUES. e.g. don't do
-   * "$.alpha[*]"
+   * THIS SHOULD ONLY BE USED IF THE JSONPATH CAN ONLY EVER RETURN 0 OR 1 VALUES. e.g. don't do "$.alpha[*]"
    *
    * @param json - json object
    * @param jsonPath - path into the json object. must be in the format of JSONPath.
@@ -213,8 +200,8 @@ public class JsonPaths {
   }
 
   /**
-   * Traverses into a json object and replaces all values that match the input path with the provided
-   * string. Throws if no existing fields match the path.
+   * Traverses into a json object and replaces all values that match the input path with the provided string. Throws if no existing fields match the
+   * path.
    *
    * @param json - json object
    * @param jsonPath - path into the json object. must be in the format of JSONPath.
@@ -226,8 +213,8 @@ public class JsonPaths {
   }
 
   /**
-   * Traverses into a json object and replaces all values that match the input path with the provided
-   * string . Does nothing if no existing fields match the path.
+   * Traverses into a json object and replaces all values that match the input path with the provided string . Does nothing if no existing fields
+   * match the path.
    *
    * @param json - json object
    * @param jsonPath - path into the json object. must be in the format of JSONPath.
@@ -238,8 +225,8 @@ public class JsonPaths {
   }
 
   /**
-   * Traverses into a json object and replaces all values that match the input path with the provided
-   * json object. Does nothing if no existing fields match the path.
+   * Traverses into a json object and replaces all values that match the input path with the provided json object. Does nothing if no existing fields
+   * match the path.
    *
    * @param json - json object
    * @param jsonPath - path into the json object. must be in the format of JSONPath.
@@ -251,8 +238,8 @@ public class JsonPaths {
   }
 
   /**
-   * Traverses into a json object and replaces all values that match the input path with the provided
-   * json object. Does nothing if no existing fields match the path.
+   * Traverses into a json object and replaces all values that match the input path with the provided json object. Does nothing if no existing fields
+   * match the path.
    *
    * @param json - json object
    * @param jsonPath - path into the json object. must be in the format of JSONPath.
@@ -268,13 +255,13 @@ public class JsonPaths {
   }
 
   /**
-   * Traverses into a json object and replaces all values that match the input path with the output of
-   * the provided function. Does nothing if no existing fields match the path.
+   * Traverses into a json object and replaces all values that match the input path with the output of the provided function. Does nothing if no
+   * existing fields match the path.
    *
    * @param json - json object
    * @param jsonPath - path into the json object. must be in the format of JSONPath.
-   * @param replacementFunction - a function that takes in a node that matches the path as well as the
-   *        path to the node itself. the return of this function will replace the current node.
+   * @param replacementFunction - a function that takes in a node that matches the path as well as the path to the node itself. the return of this
+   *        function will replace the current node.
    */
   public static JsonNode replaceAt(final JsonNode json, final String jsonPath, final BiFunction<JsonNode, String, JsonNode> replacementFunction) {
     JsonNode clone = Jsons.clone(json);
@@ -292,12 +279,10 @@ public class JsonPaths {
 
   /**
    *
-   * @param conf - JsonPath configuration. Primarily used to reuse code to allow fetching values or
-   *        paths from a json object
+   * @param conf - JsonPath configuration. Primarily used to reuse code to allow fetching values or paths from a json object
    * @param json - json object
    * @param jsonPath - path into the json object. must be in the format of JSONPath.
-   * @return all values that match the input query (whether the values are paths or actual values in
-   *         the json object is determined by the conf)
+   * @return all values that match the input query (whether the values are paths or actual values in the json object is determined by the conf)
    */
   private static List<JsonNode> getInternal(final Configuration conf, final JsonNode json, final String jsonPath) {
     assertIsJsonPath(jsonPath);

@@ -9,8 +9,7 @@ import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 
 /**
- * Performs a check to verify that the configured database has been migrated to the appropriate
- * version.
+ * Performs a check to verify that the configured database has been migrated to the appropriate version.
  */
 public interface DatabaseMigrationCheck {
 
@@ -20,8 +19,8 @@ public interface DatabaseMigrationCheck {
   String UNAVAILABLE_VERSION = "0";
 
   /**
-   * The number of times to check if the database has been migrated to the required schema version.
-   * TODO replace with a default value in a value injection annotation
+   * The number of times to check if the database has been migrated to the required schema version. TODO replace with a default value in a value
+   * injection annotation
    */
   int NUM_POLL_TIMES = 10;
 
@@ -72,14 +71,12 @@ public interface DatabaseMigrationCheck {
    * Retrieves the current version of the migration schema.
    *
    * @param flyway A {@link Flyway} that can be used to retrieve the current version.
-   * @return The current version of the migrated schema or {@link #UNAVAILABLE_VERSION} if the version
-   *         cannot be discovered.
+   * @return The current version of the migrated schema or {@link #UNAVAILABLE_VERSION} if the version cannot be discovered.
    */
   default String getCurrentVersion(final Flyway flyway) {
     /**
-     * The database may be available, but not yet migrated. If this is the case, the Flyway object will
-     * not be able to retrieve the current version of the schema. If that happens, return a fake version
-     * so that the check will fail and try again.
+     * The database may be available, but not yet migrated. If this is the case, the Flyway object will not be able to retrieve the current version of
+     * the schema. If that happens, return a fake version so that the check will fail and try again.
      */
     if (flyway.info().current() != null) {
       return flyway.info().current().getVersion().getVersion();
@@ -89,24 +86,21 @@ public interface DatabaseMigrationCheck {
   }
 
   /**
-   * Retrieves the {@link DatabaseAvailabilityCheck} used to verify that the database is running and
-   * available.
+   * Retrieves the {@link DatabaseAvailabilityCheck} used to verify that the database is running and available.
    *
    * @return The {@link DatabaseAvailabilityCheck}.
    */
   Optional<DatabaseAvailabilityCheck> getDatabaseAvailabilityCheck();
 
   /**
-   * Retrieves the configured {@link Flyway} object to be used to check the migration status of the
-   * database.
+   * Retrieves the configured {@link Flyway} object to be used to check the migration status of the database.
    *
    * @return The configured {@link Flyway} object.
    */
   Optional<Flyway> getFlyway();
 
   /**
-   * Retrieves the configured {@link Logger} object to be used to record progress of the migration
-   * check.
+   * Retrieves the configured {@link Logger} object to be used to record progress of the migration check.
    *
    * @return The configured {@link Logger} object.
    */
@@ -120,8 +114,7 @@ public interface DatabaseMigrationCheck {
   String getMinimumFlywayVersion();
 
   /**
-   * Retrieves the timeout in milliseconds for the check. Once this timeout is exceeded, the check
-   * will fail with an {@link InterruptedException}.
+   * Retrieves the timeout in milliseconds for the check. Once this timeout is exceeded, the check will fail with an {@link InterruptedException}.
    *
    * @return The timeout in milliseconds for the check.
    */

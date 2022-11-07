@@ -15,8 +15,8 @@ import java.nio.file.Path;
 import java.util.function.Supplier;
 
 /**
- * Takes in the constructor our standard format for gcs configuration and provides a factory that
- * uses that configuration to create a GCS client (Storage).
+ * Takes in the constructor our standard format for gcs configuration and provides a factory that uses that configuration to create a GCS client
+ * (Storage).
  */
 @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public class DefaultGcsClientFactory implements Supplier<Storage> {

@@ -10,8 +10,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
- * The {@link JavaTimeModule} allows mappers to accommodate different varieties of serialised date
- * time strings.
+ * The {@link JavaTimeModule} allows mappers to accommodate different varieties of serialised date time strings.
  *
  * All jackson mapper creation should use the following methods for instantiation.
  */

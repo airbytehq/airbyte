@@ -16,10 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * We apply some transformations on the fly on the catalog (same should be done on records too) from
- * the source before it reaches the destination. One of the transformation is to define the
- * destination namespace where data will be stored and how to mirror (or not) the namespace used in
- * the source (if any). This is configured in the UI through the syncInput.
+ * We apply some transformations on the fly on the catalog (same should be done on records too) from the source before it reaches the destination. One
+ * of the transformation is to define the destination namespace where data will be stored and how to mirror (or not) the namespace used in the source
+ * (if any). This is configured in the UI through the syncInput.
  */
 public class NamespacingMapper implements AirbyteMapper {
 

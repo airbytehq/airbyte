@@ -26,8 +26,8 @@ import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Implementation of the {@link RecordMetricActivity} that is managed by the application framework
- * and therefore has access to other singletons managed by the framework.
+ * Implementation of the {@link RecordMetricActivity} that is managed by the application framework and therefore has access to other singletons
+ * managed by the framework.
  */
 @Slf4j
 @Singleton
@@ -60,8 +60,7 @@ public class RecordMetricActivityImpl implements RecordMetricActivity {
   /**
    * Generates the list of {@link MetricAttribute}s to be included when recording a metric.
    *
-   * @param connectionUpdaterInput The {@link ConnectionUpdaterInput} that represents the workflow to
-   *        be executed.
+   * @param connectionUpdaterInput The {@link ConnectionUpdaterInput} that represents the workflow to be executed.
    * @return The list of {@link MetricAttribute}s to be included when recording a metric.
    */
   private List<MetricAttribute> generateMetricAttributes(final ConnectionUpdaterInput connectionUpdaterInput) {

@@ -33,14 +33,12 @@ public class ConnectionManagerUtils {
   /**
    * Attempts to send a signal to the existing ConnectionManagerWorkflow for the provided connection.
    *
-   * If the workflow is unreachable, this will restart the workflow and send the signal in a single
-   * batched request. Batching is used to avoid race conditions between starting the workflow and
-   * executing the signal.
+   * If the workflow is unreachable, this will restart the workflow and send the signal in a single batched request. Batching is used to avoid race
+   * conditions between starting the workflow and executing the signal.
    *
    * @param client the WorkflowClient for interacting with temporal
    * @param connectionId the connection ID to execute this operation for
-   * @param signalMethod a function that takes in a connection manager workflow and executes a signal
-   *        method on it, with no arguments
+   * @param signalMethod a function that takes in a connection manager workflow and executes a signal method on it, with no arguments
    * @return the healthy connection manager workflow that was signaled
    * @throws DeletedWorkflowException if the connection manager workflow was deleted
    */
@@ -54,14 +52,12 @@ public class ConnectionManagerUtils {
   /**
    * Attempts to send a signal to the existing ConnectionManagerWorkflow for the provided connection.
    *
-   * If the workflow is unreachable, this will restart the workflow and send the signal in a single
-   * batched request. Batching is used to avoid race conditions between starting the workflow and
-   * executing the signal.
+   * If the workflow is unreachable, this will restart the workflow and send the signal in a single batched request. Batching is used to avoid race
+   * conditions between starting the workflow and executing the signal.
    *
    * @param client the WorkflowClient for interacting with temporal
    * @param connectionId the connection ID to execute this operation for
-   * @param signalMethod a function that takes in a connection manager workflow and executes a signal
-   *        method on it, with 1 argument
+   * @param signalMethod a function that takes in a connection manager workflow and executes a signal method on it, with 1 argument
    * @param signalArgument the single argument to be input to the signal
    * @return the healthy connection manager workflow that was signaled
    * @throws DeletedWorkflowException if the connection manager workflow was deleted

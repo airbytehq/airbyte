@@ -7,8 +7,7 @@ package io.airbyte.commons.lang;
 public class MoreBooleans {
 
   /**
-   * Safely handles converting boxed Booleans to booleans, even when they are null. Evaluates null as
-   * false.
+   * Safely handles converting boxed Booleans to booleans, even when they are null. Evaluates null as false.
    *
    * @param bool boxed
    * @return unboxed

@@ -86,8 +86,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   private static final String UNKNOWN_CONFIG_TYPE = "Unknown Config Type ";
 
   /**
-   * Entrypoint into DatabaseConfigPersistence. Except in testing, we should never be using it without
-   * it being decorated with validation classes.
+   * Entrypoint into DatabaseConfigPersistence. Except in testing, we should never be using it without it being decorated with validation classes.
    *
    * @param database - database where configs are stored
    * @return database config persistence wrapped in validation decorators
@@ -1223,10 +1222,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * @return A set of connectors (both source and destination) that are already used in standard
-   *         syncs. We identify connectors by its repository name instead of definition id because
-   *         connectors can be added manually by users, and their config ids are not always the same
-   *         as those in the seed.
+   * @return A set of connectors (both source and destination) that are already used in standard syncs. We identify connectors by its repository name
+   *         instead of definition id because connectors can be added manually by users, and their config ids are not always the same as those in the
+   *         seed.
    */
   private Set<String> getConnectorRepositoriesInUse(final DSLContext ctx) {
     final Set<UUID> usedConnectorDefinitionIds = ctx
@@ -1246,10 +1244,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * @return A map about current connectors (both source and destination). It maps from connector
-   *         repository to its definition id and docker image tag. We identify a connector by its
-   *         repository name instead of definition id because connectors can be added manually by
-   *         users, and are not always the same as those in the seed.
+   * @return A map about current connectors (both source and destination). It maps from connector repository to its definition id and docker image
+   *         tag. We identify a connector by its repository name instead of definition id because connectors can be added manually by users, and are
+   *         not always the same as those in the seed.
    */
   @VisibleForTesting
   Map<String, ConnectorInfo> getConnectorRepositoryToInfoMap(final DSLContext ctx) {
@@ -1307,8 +1304,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * The custom connector are not present in the seed and thus it is not relevant to validate their
-   * latest version. This method allows to filter them out.
+   * The custom connector are not present in the seed and thus it is not relevant to validate their latest version. This method allows to filter them
+   * out.
    *
    * @param connectorRepositoryToIdVersionMap
    * @param configType
@@ -1334,9 +1331,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * @param connectorRepositoriesInUse when a connector is used in any standard sync, its definition
-   *        will not be updated. This is necessary because the new connector version may not be
-   *        backward compatible.
+   * @param connectorRepositoriesInUse when a connector is used in any standard sync, its definition will not be updated. This is necessary because
+   *        the new connector version may not be backward compatible.
    */
   @VisibleForTesting
   <T> ConnectorCounter updateConnectorDefinitions(final DSLContext ctx,

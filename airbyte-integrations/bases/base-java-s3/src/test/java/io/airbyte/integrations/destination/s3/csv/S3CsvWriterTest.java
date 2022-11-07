@@ -240,9 +240,8 @@ class S3CsvWriterTest {
   }
 
   /**
-   * This test verifies that the S3StreamCopier usecase works. Specifically, the withHeader,
-   * csvSettings, and csvSheetGenerator options were all added solely to support S3StreamCopier; we
-   * want to verify that it outputs the exact same data as the previous implementation.
+   * This test verifies that the S3StreamCopier usecase works. Specifically, the withHeader, csvSettings, and csvSheetGenerator options were all added
+   * solely to support S3StreamCopier; we want to verify that it outputs the exact same data as the previous implementation.
    */
   @Test
   public void writesContentsCorrectly_when_stagingDatabaseConfig() throws IOException {
@@ -293,16 +292,14 @@ class S3CsvWriterTest {
   /**
    * This test really just wants to validate that:
    * <ul>
-   * <li>we're dumping into the correct directory (fake-bucketPath/fake_namespace/fake_stream) and
-   * that the filename contains the upload time</li>
-   * <li>each S3CsvWriter generates a unique filename suffix (the UUID) so that they don't overwrite
-   * each other</li>
+   * <li>we're dumping into the correct directory (fake-bucketPath/fake_namespace/fake_stream) and that the filename contains the upload time</li>
+   * <li>each S3CsvWriter generates a unique filename suffix (the UUID) so that they don't overwrite each other</li>
    * <li>we generate a .csv extension</li>
    * </ul>
    * So the UUID check isn't strictly necessary.
    * <p>
-   * Eventually the output path generator should probably be injected into the S3CsvWriter (and we
-   * would test the generator directly + test that the writer calls the generator)
+   * Eventually the output path generator should probably be injected into the S3CsvWriter (and we would test the generator directly + test that the
+   * writer calls the generator)
    */
   private static void checkObjectName(final String objectName) {
     final String errorMessage = "Object was actually " + objectName;

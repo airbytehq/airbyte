@@ -16,8 +16,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 /**
- * Provides an easy way of accessing a set of resource files in a specific directory when testing
- * secrets-related helpers.
+ * Provides an easy way of accessing a set of resource files in a specific directory when testing secrets-related helpers.
  */
 public interface SecretsTestCase {
 

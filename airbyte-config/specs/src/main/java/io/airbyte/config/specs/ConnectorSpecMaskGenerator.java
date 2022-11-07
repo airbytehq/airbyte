@@ -28,15 +28,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This script is responsible for generating a set of connection configuration properties that have
- * been marked as <code>secret</code> and therefore should be automatically masked if/when the
- * configuration object is logged.
+ * This script is responsible for generating a set of connection configuration properties that have been marked as <code>secret</code> and therefore
+ * should be automatically masked if/when the configuration object is logged.
  * <p>
- * Specs are stored in a separate file from the definitions in an effort to keep the definitions
- * yaml files human-readable and easily-editable, as specs can be rather large.
+ * Specs are stored in a separate file from the definitions in an effort to keep the definitions yaml files human-readable and easily-editable, as
+ * specs can be rather large.
  * <p>
- * The generated mask file is created in the same location as the spec files provided to this
- * script.
+ * The generated mask file is created in the same location as the spec files provided to this script.
  */
 public class ConnectorSpecMaskGenerator {
 

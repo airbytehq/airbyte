@@ -13,8 +13,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
 /**
- * Takes in the constructor our standard format for S3 configuration and provides a factory that
- * uses that configuration to create an S3Client.
+ * Takes in the constructor our standard format for S3 configuration and provides a factory that uses that configuration to create an S3Client.
  */
 public class DefaultS3ClientFactory implements Supplier<S3Client> {
 

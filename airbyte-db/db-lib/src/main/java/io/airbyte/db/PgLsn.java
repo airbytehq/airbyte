@@ -9,8 +9,7 @@ import com.google.common.base.Preconditions;
 import java.nio.ByteBuffer;
 
 /**
- * Doc on the structure of a Postgres LSN
- * https://www.postgresql.org/docs/current/datatype-pg-lsn.html
+ * Doc on the structure of a Postgres LSN https://www.postgresql.org/docs/current/datatype-pg-lsn.html
  */
 public class PgLsn implements Comparable<PgLsn> {
 
@@ -42,8 +41,8 @@ public class PgLsn implements Comparable<PgLsn> {
   }
 
   /**
-   * The LSN returned by Postgres is a 64-bit integer represented as hex encoded 32-bit integers
-   * separated by a /. reference: https://github.com/davecramer/LogicalDecode
+   * The LSN returned by Postgres is a 64-bit integer represented as hex encoded 32-bit integers separated by a /. reference:
+   * https://github.com/davecramer/LogicalDecode
    *
    * @param lsn string representation as returned by postgres
    * @return long representation of the lsn string.

@@ -91,8 +91,7 @@ public class CatalogHelpers {
   }
 
   /**
-   * Converts a {@link ConfiguredAirbyteCatalog} into an {@link AirbyteCatalog}. This is possible
-   * because the latter is a subset of the former.
+   * Converts a {@link ConfiguredAirbyteCatalog} into an {@link AirbyteCatalog}. This is possible because the latter is a subset of the former.
    *
    * @param configuredCatalog - catalog to convert
    * @return - airbyte catalog
@@ -139,8 +138,7 @@ public class CatalogHelpers {
   }
 
   /**
-   * Extracts {@link StreamDescriptor}s for each stream with an incremental {@link SyncMode} in a
-   * given {@link ConfiguredAirbyteCatalog}
+   * Extracts {@link StreamDescriptor}s for each stream with an incremental {@link SyncMode} in a given {@link ConfiguredAirbyteCatalog}
    *
    * @param configuredCatalog catalog
    * @return list of stream descriptors
@@ -168,8 +166,7 @@ public class CatalogHelpers {
   }
 
   /**
-   * Convert a Catalog into a ConfiguredCatalog. This applies minimum default to the Catalog to make
-   * it a valid ConfiguredCatalog.
+   * Convert a Catalog into a ConfiguredCatalog. This applies minimum default to the Catalog to make it a valid ConfiguredCatalog.
    *
    * @param catalog - Catalog to be converted.
    * @return - ConfiguredCatalog based of off the input catalog.
@@ -196,8 +193,7 @@ public class CatalogHelpers {
   }
 
   /**
-   * Maps a list of fields into a JsonSchema object with names and types. This method will throw if it
-   * receives multiple fields with the same name.
+   * Maps a list of fields into a JsonSchema object with names and types. This method will throw if it receives multiple fields with the same name.
    *
    * @param fields fields to map to JsonSchema
    * @return JsonSchema representation of the fields.
@@ -259,13 +255,11 @@ public class CatalogHelpers {
   }
 
   /**
-   * Extracts all fields and their schemas from a JSONSchema. This method returns values in
-   * depth-first search preorder. It short circuits at oneOfs--in other words, child fields of a oneOf
-   * are not returned.
+   * Extracts all fields and their schemas from a JSONSchema. This method returns values in depth-first search preorder. It short circuits at
+   * oneOfs--in other words, child fields of a oneOf are not returned.
    *
    * @param jsonSchema - a JSONSchema node
-   * @return a list of all keys for all objects within the node. ordered in depth-first search
-   *         preorder.
+   * @return a list of all keys for all objects within the node. ordered in depth-first search preorder.
    */
   @VisibleForTesting
   protected static List<Pair<List<String>, JsonNode>> getFullyQualifiedFieldNamesWithTypes(
@@ -289,11 +283,9 @@ public class CatalogHelpers {
   }
 
   /**
-   * Predicate that checks if a field is a CHILD of a oneOf field. If child of a oneOf, returns false.
-   * Otherwise, true. This method as side effects. It assumes that it will be run in order on field
-   * names returned in depth-first search preoorder. As it encounters oneOfs it adds them to a
-   * collection. It then checks if subsequent field names are prefix matches to the field that are
-   * oneOfs.
+   * Predicate that checks if a field is a CHILD of a oneOf field. If child of a oneOf, returns false. Otherwise, true. This method as side effects.
+   * It assumes that it will be run in order on field names returned in depth-first search preoorder. As it encounters oneOfs it adds them to a
+   * collection. It then checks if subsequent field names are prefix matches to the field that are oneOfs.
    *
    * @param fieldName - field to investigate
    * @param schema - schema of field

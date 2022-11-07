@@ -26,9 +26,8 @@ class DefaultTaskQueueMapperTest {
   }
 
   /**
-   * If this test fails, it likely means that a new value was added to the {@link Geography} enum. A
-   * new entry must be added to {@link DefaultTaskQueueMapper#GEOGRAPHY_TASK_QUEUE_MAP} to get this
-   * test to pass.
+   * If this test fails, it likely means that a new value was added to the {@link Geography} enum. A new entry must be added to
+   * {@link DefaultTaskQueueMapper#GEOGRAPHY_TASK_QUEUE_MAP} to get this test to pass.
    */
   @Test
   void testAllGeographiesHaveAMapping() {

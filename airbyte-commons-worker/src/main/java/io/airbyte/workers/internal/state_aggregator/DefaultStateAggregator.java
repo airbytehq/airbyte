@@ -47,8 +47,8 @@ public class DefaultStateAggregator implements StateAggregator {
   }
 
   /**
-   * We can not have 2 different state types given to the same instance of this class. This method set
-   * the type if it is not. If the state type doesn't exist in the message, it is set to LEGACY
+   * We can not have 2 different state types given to the same instance of this class. This method set the type if it is not. If the state type
+   * doesn't exist in the message, it is set to LEGACY
    */
   private void checkTypeOrSetType(final AirbyteStateType inputStateType) {
     final AirbyteStateType validatedStateType;

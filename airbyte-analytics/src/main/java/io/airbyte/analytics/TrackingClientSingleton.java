@@ -86,12 +86,10 @@ public class TrackingClientSingleton {
    * Creates a tracking client that uses the appropriate strategy from an identity supplier.
    *
    * @param trackingStrategy - what type of tracker we want to use.
-   * @param deployment - deployment tracking info. static because it should not change once the
-   *        instance is running.
+   * @param deployment - deployment tracking info. static because it should not change once the instance is running.
    * @param airbyteRole
-   * @param trackingIdentityFetcher - how we get the identity of the user. we have a function that
-   *        takes in workspaceId and returns the tracking identity. it does not have any caching as
-   *        email or other fields on the identity can change over time.
+   * @param trackingIdentityFetcher - how we get the identity of the user. we have a function that takes in workspaceId and returns the tracking
+   *        identity. it does not have any caching as email or other fields on the identity can change over time.
    * @return tracking client
    */
   @VisibleForTesting

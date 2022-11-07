@@ -53,8 +53,8 @@ public class SecretsHelpersTest {
   private static final String PROVIDE_TEST_CASES = "provideTestCases";
 
   /**
-   * This is a bit of a non-standard way of specifying test case paramaterization for Junit, but it's
-   * intended to let you treat most of the JSON involved in the tests as static files.
+   * This is a bit of a non-standard way of specifying test case paramaterization for Junit, but it's intended to let you treat most of the JSON
+   * involved in the tests as static files.
    */
   private static Stream<Arguments> provideTestCases() {
     return Stream.of(

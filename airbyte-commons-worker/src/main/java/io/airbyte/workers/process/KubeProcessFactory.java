@@ -57,10 +57,8 @@ public class KubeProcessFactory implements ProcessFactory {
   /**
    * @param namespace kubernetes namespace where spawned pods will live
    * @param fabricClient fabric8 kubernetes client
-   * @param kubeHeartbeatUrl a url where if the response is not 200 the spawned process will fail
-   *        itself
-   * @param processRunnerHost is the local host or ip of the machine running the process factory.
-   *        injectable for testing.
+   * @param kubeHeartbeatUrl a url where if the response is not 200 the spawned process will fail itself
+   * @param processRunnerHost is the local host or ip of the machine running the process factory. injectable for testing.
    * @param isOrchestrator determines if this should run as airbyte-admin
    */
   @VisibleForTesting

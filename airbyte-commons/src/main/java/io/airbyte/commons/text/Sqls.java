@@ -20,8 +20,7 @@ public class Sqls {
   }
 
   /**
-   * Generate a string fragment that can be put in the IN clause of a SQL statement. eg. column IN
-   * (value1, value2)
+   * Generate a string fragment that can be put in the IN clause of a SQL statement. eg. column IN (value1, value2)
    *
    * @param values to encode
    * @param <T> enum type

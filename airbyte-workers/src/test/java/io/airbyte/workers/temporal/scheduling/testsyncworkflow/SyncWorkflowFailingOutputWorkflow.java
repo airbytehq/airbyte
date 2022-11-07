@@ -14,8 +14,7 @@ import java.util.UUID;
 public class SyncWorkflowFailingOutputWorkflow implements SyncWorkflow {
 
   /**
-   * Return an output that report a failure without throwing an exception. This failure is not a
-   * partial success.
+   * Return an output that report a failure without throwing an exception. This failure is not a partial success.
    */
   @Override
   public StandardSyncOutput run(final JobRunConfig jobRunConfig,

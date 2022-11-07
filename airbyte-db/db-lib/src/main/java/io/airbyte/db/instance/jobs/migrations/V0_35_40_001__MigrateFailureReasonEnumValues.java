@@ -50,8 +50,7 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
   }
 
   /**
-   * Finds all attempt record that have a failure summary containing a deprecated enum value. For each
-   * record, calls method to fix and update.
+   * Finds all attempt record that have a failure summary containing a deprecated enum value. For each record, calls method to fix and update.
    */
   static void updateRecordsWithNewEnumValues(final DSLContext ctx) {
     final Result<Record> results =
@@ -68,8 +67,7 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
   }
 
   /**
-   * Takes in a single record from the above query and performs an UPDATE to set the failure summary
-   * to the fixed version.
+   * Takes in a single record from the above query and performs an UPDATE to set the failure summary to the fixed version.
    */
   private static void updateAttemptFailureReasons(final DSLContext ctx, final Record record) {
     final Field<Long> attemptIdField = DSL.field("id", SQLDataType.BIGINT);
@@ -132,11 +130,9 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
   }
 
   /**
-   * The following classes are essentially a copy of the FailureReason and AttemptFailureSummary
-   * classes at the time of this migration. They support both deprecated and new enum values and are
-   * used for record deserialization in this migration because in the future, the real FailureReason
-   * class will have those deprecated enum values removed, which would break deserialization within
-   * this migration.
+   * The following classes are essentially a copy of the FailureReason and AttemptFailureSummary classes at the time of this migration. They support
+   * both deprecated and new enum values and are used for record deserialization in this migration because in the future, the real FailureReason class
+   * will have those deprecated enum values removed, which would break deserialization within this migration.
    */
 
   static class FailureReasonForMigration implements Serializable {

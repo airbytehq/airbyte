@@ -151,8 +151,7 @@ public class JobErrorReporter {
   }
 
   /**
-   * Reports a FailureReason from a connector Check job for a Destination to the
-   * JobErrorReportingClient
+   * Reports a FailureReason from a connector Check job for a Destination to the JobErrorReportingClient
    *
    * @param workspaceId - workspace for which the check failed
    * @param failureReason - failure reason from the check connection job

@@ -224,8 +224,7 @@ public class EnvConfigs implements Configs {
   }
 
   /**
-   * Constructs {@link EnvConfigs} from a provided map. This can be used for testing or getting
-   * variables from a non-envvar source.
+   * Constructs {@link EnvConfigs} from a provided map. This can be used for testing or getting variables from a non-envvar source.
    */
   public EnvConfigs(final Map<String, String> envMap) {
     this.getEnv = envMap::get;
@@ -542,16 +541,14 @@ public class EnvConfigs implements Configs {
   }
 
   /**
-   * Returns worker pod tolerations parsed from its own environment variable. The value of the env is
-   * a string that represents one or more tolerations.
+   * Returns worker pod tolerations parsed from its own environment variable. The value of the env is a string that represents one or more
+   * tolerations.
    * <ul>
    * <li>Tolerations are separated by a `;`
-   * <li>Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and
-   * separated by `,`
+   * <li>Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and separated by `,`
    * </ul>
    * <p>
-   * For example:- The following represents two tolerations, one checking existence and another
-   * matching a value
+   * For example:- The following represents two tolerations, one checking existence and another matching a value
    * <p>
    * key=airbyte-server,operator=Exists,effect=NoSchedule;key=airbyte-server,operator=Equals,value=true,effect=NoSchedule
    *
@@ -593,8 +590,8 @@ public class EnvConfigs implements Configs {
   }
 
   /**
-   * Returns a map of node selectors for any job type. Used as a default if a particular job type does
-   * not define its own node selector environment variable.
+   * Returns a map of node selectors for any job type. Used as a default if a particular job type does not define its own node selector environment
+   * variable.
    *
    * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
@@ -634,8 +631,8 @@ public class EnvConfigs implements Configs {
   }
 
   /**
-   * Returns a map of annotations from its own environment variable. The value of the env is a string
-   * that represents one or more annotations. Each kv-pair is separated by a `,`
+   * Returns a map of annotations from its own environment variable. The value of the env is a string that represents one or more annotations. Each
+   * kv-pair is separated by a `,`
    * <p>
    * For example:- The following represents two annotations
    * <p>
@@ -679,8 +676,7 @@ public class EnvConfigs implements Configs {
   }
 
   /**
-   * Splits key value pairs from the input string into a map. Each kv-pair is separated by a ','. The
-   * key and the value are separated by '='.
+   * Splits key value pairs from the input string into a map. Each kv-pair is separated by a ','. The key and the value are separated by '='.
    * <p>
    * For example:- The following represents two map entries
    * </p>
@@ -712,9 +708,8 @@ public class EnvConfigs implements Configs {
   }
 
   /**
-   * Returns the name of the secret to be used when pulling down docker images for jobs. Automatically
-   * injected in the KubePodProcess class and used in the job pod templates. The empty string is a
-   * no-op value.
+   * Returns the name of the secret to be used when pulling down docker images for jobs. Automatically injected in the KubePodProcess class and used
+   * in the job pod templates. The empty string is a no-op value.
    */
   @Override
   public String getJobKubeMainContainerImagePullSecret() {

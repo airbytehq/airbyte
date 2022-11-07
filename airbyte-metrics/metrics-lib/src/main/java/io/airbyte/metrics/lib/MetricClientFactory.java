@@ -33,11 +33,9 @@ public class MetricClientFactory {
 
   /**
    *
-   * Retrieve previously created metric client. If metric client was not created before, returns a
-   * NotImplementedMetricClient instead.
+   * Retrieve previously created metric client. If metric client was not created before, returns a NotImplementedMetricClient instead.
    *
-   * @return previously created metric client which has been properly initialized, or an instance of
-   *         the empty NotImplementedMetricClient.
+   * @return previously created metric client which has been properly initialized, or an instance of the empty NotImplementedMetricClient.
    */
   public synchronized static MetricClient getMetricClient() {
     if (metricClient != null) {
@@ -77,8 +75,7 @@ public class MetricClientFactory {
   }
 
   /**
-   * A statsd config for micrometer. We override host to be the datadog agent address, while keeping
-   * other settings default.
+   * A statsd config for micrometer. We override host to be the datadog agent address, while keeping other settings default.
    */
   private static StatsdConfig getDatadogStatsDConfig() {
     return new StatsdConfig() {

@@ -33,9 +33,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 /*
- * This class represents a single run of a worker. It handles making sure the correct inputs and
- * outputs are passed to the selected worker. It also makes sures that the outputs of the worker are
- * persisted to the db.
+ * This class represents a single run of a worker. It handles making sure the correct inputs and outputs are passed to the selected worker. It also
+ * makes sures that the outputs of the worker are persisted to the db.
  */
 @SuppressWarnings({"PMD.UnusedFormalParameter", "PMD.AvoidCatchingThrowable"})
 public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT> {
@@ -197,13 +196,12 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   }
 
   /**
-   * Cancel is implementation in a slightly convoluted manner due to Temporal's semantics. Cancel
-   * requests are routed to the Temporal Scheduler via the cancelJob function in
-   * SchedulerHandler.java. This manifests as a {@link io.temporal.client.ActivityCompletionException}
-   * when the {@link CancellationHandler} heartbeats to the Temporal Scheduler.
+   * Cancel is implementation in a slightly convoluted manner due to Temporal's semantics. Cancel requests are routed to the Temporal Scheduler via
+   * the cancelJob function in SchedulerHandler.java. This manifests as a {@link io.temporal.client.ActivityCompletionException} when the
+   * {@link CancellationHandler} heartbeats to the Temporal Scheduler.
    * <p>
-   * The callback defined in this function is executed after the above exception is caught, and
-   * defines the clean up operations executed as part of cancel.
+   * The callback defined in this function is executed after the above exception is caught, and defines the clean up operations executed as part of
+   * cancel.
    * <p>
    * See {@link CancellationHandler} for more info.
    */

@@ -51,10 +51,9 @@ public class StandardNameTransformer implements NamingConventionTransformer {
   }
 
   /**
-   * Rebuild a JsonNode adding sanitized property names (a subset of special characters replaced by
-   * underscores) while keeping original property names too. This is needed by some destinations as
-   * their json extract functions have limitations on how such special characters are parsed. These
-   * naming rules may be different to schema/table/column naming conventions.
+   * Rebuild a JsonNode adding sanitized property names (a subset of special characters replaced by underscores) while keeping original property names
+   * too. This is needed by some destinations as their json extract functions have limitations on how such special characters are parsed. These naming
+   * rules may be different to schema/table/column naming conventions.
    */
   public static JsonNode formatJsonPath(final JsonNode root) {
     if (root.isObject()) {

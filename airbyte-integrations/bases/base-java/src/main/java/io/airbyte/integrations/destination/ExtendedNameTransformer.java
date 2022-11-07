@@ -5,11 +5,10 @@
 package io.airbyte.integrations.destination;
 
 /**
- * When choosing identifiers names in destinations, extended Names can handle more special
- * characters than standard Names by using the quoting characters: "..."
+ * When choosing identifiers names in destinations, extended Names can handle more special characters than standard Names by using the quoting
+ * characters: "..."
  *
- * This class detects when such special characters are used and adds the appropriate quoting when
- * necessary.
+ * This class detects when such special characters are used and adds the appropriate quoting when necessary.
  */
 public class ExtendedNameTransformer extends StandardNameTransformer {
 

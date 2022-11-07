@@ -20,8 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * DefinitionsUpdater
  *
- * Automatically updates connector definitions from a remote catalog at an interval (30s). This can
- * be enabled by setting a REMOTE_CATALOG_URL and UPDATE_DEFINITIONS_CRON_ENABLED=true.
+ * Automatically updates connector definitions from a remote catalog at an interval (30s). This can be enabled by setting a REMOTE_CATALOG_URL and
+ * UPDATE_DEFINITIONS_CRON_ENABLED=true.
  */
 @Singleton
 @Slf4j

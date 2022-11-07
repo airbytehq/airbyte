@@ -721,8 +721,8 @@ class JobTrackerTest {
   /**
    * Tests that the tracker emits the correct message for when the job starts, succeeds, and fails.
    *
-   * @param jobStateConsumer - consumer that takes in a job state and then calls the relevant method
-   *        on the job tracker with it. if testing discover, it calls trackDiscover, etc.
+   * @param jobStateConsumer - consumer that takes in a job state and then calls the relevant method on the job tracker with it. if testing discover,
+   *        it calls trackDiscover, etc.
    * @param expectedMetadata - expected metadata (except job state).
    */
   private void assertCorrectMessageForEachState(final Consumer<JobState> jobStateConsumer,

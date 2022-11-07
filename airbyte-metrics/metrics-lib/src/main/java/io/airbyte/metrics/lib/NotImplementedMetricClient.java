@@ -5,9 +5,8 @@
 package io.airbyte.metrics.lib;
 
 /**
- * A mock implementation of MetricClient. Useful for users who do not have any metric client set up
- * but still want to use the functionality of airbyte, or in a unit test where user calls the
- * testing function but did not initialize the metric client in the first place.
+ * A mock implementation of MetricClient. Useful for users who do not have any metric client set up but still want to use the functionality of
+ * airbyte, or in a unit test where user calls the testing function but did not initialize the metric client in the first place.
  */
 public class NotImplementedMetricClient implements MetricClient {
 

@@ -17,8 +17,7 @@ import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
 
 /**
- * Use this class to create mock databases in unit tests. This class takes care of database
- * initialization and migration.
+ * Use this class to create mock databases in unit tests. This class takes care of database initialization and migration.
  */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class TestDatabaseProviders {
@@ -33,8 +32,8 @@ public class TestDatabaseProviders {
   }
 
   /**
-   * When creating mock databases in unit tests, migration should be run by default. Call this method
-   * to turn migration off, which is needed when unit testing migration code.
+   * When creating mock databases in unit tests, migration should be run by default. Call this method to turn migration off, which is needed when unit
+   * testing migration code.
    */
   public TestDatabaseProviders turnOffMigration() {
     this.runMigration = false;

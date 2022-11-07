@@ -10,8 +10,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
- * Represents the addition of an {@link io.airbyte.protocol.models.AirbyteStream} to a
- * {@link io.airbyte.protocol.models.AirbyteCatalog}.
+ * Represents the addition of an {@link io.airbyte.protocol.models.AirbyteStream} to a {@link io.airbyte.protocol.models.AirbyteCatalog}.
  */
 @AllArgsConstructor
 @EqualsAndHashCode

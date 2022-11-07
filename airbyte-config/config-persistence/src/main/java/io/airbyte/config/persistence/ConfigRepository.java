@@ -111,9 +111,8 @@ public class ConfigRepository {
   }
 
   /**
-   * Conduct a health check by attempting to read from the database. Since there isn't an
-   * out-of-the-box call for this, mimic doing so by reading the ID column from the Workspace table's
-   * first row. This query needs to be fast as this call can be made multiple times a second.
+   * Conduct a health check by attempting to read from the database. Since there isn't an out-of-the-box call for this, mimic doing so by reading the
+   * ID column from the Workspace table's first row. This query needs to be fast as this call can be made multiple times a second.
    *
    * @return true if read succeeds, even if the table is empty, and false if any error happens.
    */
@@ -569,11 +568,10 @@ public class ConfigRepository {
   /**
    * MUST NOT ACCEPT SECRETS - Should only be called from { @link SecretsRepositoryWriter }
    *
-   * Write a SourceConnection to the database. The configuration of the Source will be a partial
-   * configuration (no secrets, just pointer to the secrets store).
+   * Write a SourceConnection to the database. The configuration of the Source will be a partial configuration (no secrets, just pointer to the
+   * secrets store).
    *
-   * @param partialSource - The configuration of the Source will be a partial configuration (no
-   *        secrets, just pointer to the secrets store)
+   * @param partialSource - The configuration of the Source will be a partial configuration (no secrets, just pointer to the secrets store)
    * @throws JsonValidationException - throws is the source is invalid
    * @throws IOException - you never know when you IO
    */
@@ -592,8 +590,8 @@ public class ConfigRepository {
   }
 
   /**
-   * Returns all sources in the database. Does not contain secrets. To hydrate with secrets see
-   * { @link SecretsRepositoryReader#listSourceConnectionWithSecrets() }.
+   * Returns all sources in the database. Does not contain secrets. To hydrate with secrets see { @link
+   * SecretsRepositoryReader#listSourceConnectionWithSecrets() }.
    *
    * @return sources
    * @throws JsonValidationException - throws if returned sources are invalid
@@ -621,8 +619,8 @@ public class ConfigRepository {
   }
 
   /**
-   * Returns destination with a given id. Does not contain secrets. To hydrate with secrets see
-   * { @link SecretsRepositoryReader#getDestinationConnectionWithSecrets(final UUID destinationId) }.
+   * Returns destination with a given id. Does not contain secrets. To hydrate with secrets see { @link
+   * SecretsRepositoryReader#getDestinationConnectionWithSecrets(final UUID destinationId) }.
    *
    * @param destinationId - id of destination to fetch.
    * @return destinations
@@ -638,11 +636,10 @@ public class ConfigRepository {
   /**
    * MUST NOT ACCEPT SECRETS - Should only be called from { @link SecretsRepositoryWriter }
    *
-   * Write a DestinationConnection to the database. The configuration of the Destination will be a
-   * partial configuration (no secrets, just pointer to the secrets store).
+   * Write a DestinationConnection to the database. The configuration of the Destination will be a partial configuration (no secrets, just pointer to
+   * the secrets store).
    *
-   * @param partialDestination - The configuration of the Destination will be a partial configuration
-   *        (no secrets, just pointer to the secrets store)
+   * @param partialDestination - The configuration of the Destination will be a partial configuration (no secrets, just pointer to the secrets store)
    * @throws JsonValidationException - throws is the destination is invalid
    * @throws IOException - you never know when you IO
    */
@@ -661,8 +658,8 @@ public class ConfigRepository {
   }
 
   /**
-   * Returns all destinations in the database. Does not contain secrets. To hydrate with secrets see
-   * { @link SecretsRepositoryReader#listDestinationConnectionWithSecrets() }.
+   * Returns all destinations in the database. Does not contain secrets. To hydrate with secrets see { @link
+   * SecretsRepositoryReader#listDestinationConnectionWithSecrets() }.
    *
    * @return destinations
    * @throws JsonValidationException - throws if returned destinations are invalid
@@ -811,8 +808,7 @@ public class ConfigRepository {
   }
 
   /**
-   * Updates {@link io.airbyte.db.instance.configs.jooq.generated.tables.ConnectionOperation} records
-   * for the given {@code connectionId}.
+   * Updates {@link io.airbyte.db.instance.configs.jooq.generated.tables.ConnectionOperation} records for the given {@code connectionId}.
    *
    * @param connectionId ID of the associated connection to update operations for
    * @param newOperationIds Set of all operationIds that should be associated to the connection
@@ -938,8 +934,7 @@ public class ConfigRepository {
   }
 
   /**
-   * Updates the database with the most up-to-date source and destination definitions in the connector
-   * catalog.
+   * Updates the database with the most up-to-date source and destination definitions in the connector catalog.
    *
    * @param seedSourceDefs - most up-to-date source definitions
    * @param seedDestDefs - most up-to-date destination definitions
@@ -1019,8 +1014,8 @@ public class ConfigRepository {
   /**
    * Store an Airbyte catalog in DB if it is not present already
    *
-   * Checks in the config DB if the catalog is present already, if so returns it identifier. It is not
-   * present, it is inserted in DB with a new identifier and that identifier is returned.
+   * Checks in the config DB if the catalog is present already, if so returns it identifier. It is not present, it is inserted in DB with a new
+   * identifier and that identifier is returned.
    *
    * @param airbyteCatalog An Airbyte catalog to cache
    * @param context
@@ -1094,12 +1089,10 @@ public class ConfigRepository {
   /**
    * Stores source catalog information.
    *
-   * This function is called each time the schema of a source is fetched. This can occur because the
-   * source is set up for the first time, because the configuration or version of the connector
-   * changed or because the user explicitly requested a schema refresh. Schemas are stored separately
-   * and de-duplicated upon insertion. Once a schema has been successfully stored, a call to
-   * getActorCatalog(actorId, connectionVersion, configurationHash) will return the most recent schema
-   * stored for those parameters.
+   * This function is called each time the schema of a source is fetched. This can occur because the source is set up for the first time, because the
+   * configuration or version of the connector changed or because the user explicitly requested a schema refresh. Schemas are stored separately and
+   * de-duplicated upon insertion. Once a schema has been successfully stored, a call to getActorCatalog(actorId, connectionVersion,
+   * configurationHash) will return the most recent schema stored for those parameters.
    *
    * @param catalog
    * @param actorId
@@ -1155,8 +1148,8 @@ public class ConfigRepository {
   }
 
   /**
-   * The following methods are present to allow the JobCreationAndStatusUpdateActivity class to emit
-   * metrics without exposing the underlying database connection.
+   * The following methods are present to allow the JobCreationAndStatusUpdateActivity class to emit metrics without exposing the underlying database
+   * connection.
    */
 
   public List<ReleaseStage> getSrcIdAndDestIdToReleaseStages(final UUID srcId, final UUID dstId) throws IOException {

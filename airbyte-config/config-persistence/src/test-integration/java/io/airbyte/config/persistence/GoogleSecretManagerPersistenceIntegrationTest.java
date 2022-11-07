@@ -20,8 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Triggered as part of integration tests in CI. It uses credentials in Github to connect to the
- * integration testing GCP project.
+ * Triggered as part of integration tests in CI. It uses credentials in Github to connect to the integration testing GCP project.
  */
 @SuppressWarnings("PMD.EmptyCatchBlock")
 class GoogleSecretManagerPersistenceIntegrationTest {

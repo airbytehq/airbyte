@@ -11,26 +11,23 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 /**
- * This interface provides a java interface over all interactions with a Destination from the POV of
- * the platform. It encapsulates the full lifecycle of the Destination as well as any inputs and
- * outputs.
+ * This interface provides a java interface over all interactions with a Destination from the POV of the platform. It encapsulates the full lifecycle
+ * of the Destination as well as any inputs and outputs.
  */
 public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
 
   /**
-   * Starts the Destination container. It instantiates a writer to write to STDIN on that container.
-   * It also instantiates a reader to listen on STDOUT.
+   * Starts the Destination container. It instantiates a writer to write to STDIN on that container. It also instantiates a reader to listen on
+   * STDOUT.
    *
-   * @param destinationConfig - contains the arguments that must be passed to the write method of the
-   *        Destination.
+   * @param destinationConfig - contains the arguments that must be passed to the write method of the Destination.
    * @param jobRoot - directory where the job can write data.
    * @throws Exception - throws if there is any failure in startup.
    */
   void start(WorkerDestinationConfig destinationConfig, Path jobRoot) throws Exception;
 
   /**
-   * Accepts an AirbyteMessage and writes it to STDIN of the Destination. Blocks if STDIN's buffer is
-   * full.
+   * Accepts an AirbyteMessage and writes it to STDIN of the Destination. Blocks if STDIN's buffer is full.
    *
    * @param message message to send to destination.
    * @throws Exception - throws if there is any failure in writing to Destination.
@@ -39,11 +36,9 @@ public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exce
   void accept(AirbyteMessage message) throws Exception;
 
   /**
-   * This method is a flush to make sure all data that should be written to the Destination is
-   * written. Any messages that have already been accepted
-   * ({@link AirbyteDestination#accept(AirbyteMessage)} ()}) will be flushed. Any additional messages
-   * sent to accept will not be flushed. In fact, flush should fail if the caller attempts to send it
-   * additional messages after calling this method.
+   * This method is a flush to make sure all data that should be written to the Destination is written. Any messages that have already been accepted
+   * ({@link AirbyteDestination#accept(AirbyteMessage)} ()}) will be flushed. Any additional messages sent to accept will not be flushed. In fact,
+   * flush should fail if the caller attempts to send it additional messages after calling this method.
    *
    * (Potentially should just rename it to flush)
    *
@@ -52,16 +47,15 @@ public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exce
   void notifyEndOfInput() throws Exception;
 
   /**
-   * Means no more data will be emitted by the Destination. This may be because all data has already
-   * been emitted or because the Destination container has exited.
+   * Means no more data will be emitted by the Destination. This may be because all data has already been emitted or because the Destination container
+   * has exited.
    *
    * @return true, if no more data will be emitted. otherwise, false.
    */
   boolean isFinished();
 
   /**
-   * Gets the exit value of the destination process. This should only be called after the destination
-   * process has finished.
+   * Gets the exit value of the destination process. This should only be called after the destination process has finished.
    *
    * @return exit code of the destination process
    * @throws IllegalStateException if the destination process has not exited
@@ -71,14 +65,13 @@ public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exce
   /**
    * Attempts to read an AirbyteMessage from the Destination.
    *
-   * @return returns an AirbyteMessage if the Destination emits one. Otherwise, empty. This method
-   *         BLOCKS on waiting for the Destination to emit data to STDOUT.
+   * @return returns an AirbyteMessage if the Destination emits one. Otherwise, empty. This method BLOCKS on waiting for the Destination to emit data
+   *         to STDOUT.
    */
   Optional<AirbyteMessage> attemptRead();
 
   /**
-   * Attempts to shut down the Destination's container. Waits for a graceful shutdown, capped by a
-   * timeout.
+   * Attempts to shut down the Destination's container. Waits for a graceful shutdown, capped by a timeout.
    *
    * @throws Exception - throws if there is any failure in shutdown.
    */

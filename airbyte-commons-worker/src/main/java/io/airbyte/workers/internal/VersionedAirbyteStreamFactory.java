@@ -29,8 +29,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Extends DefaultAirbyteStreamFactory to handle version specific conversions.
  *
- * A VersionedAirbyteStreamFactory handles parsing and validation from a specific version of the
- * Airbyte Protocol as well as upgrading messages to the current version.
+ * A VersionedAirbyteStreamFactory handles parsing and validation from a specific version of the Airbyte Protocol as well as upgrading messages to the
+ * current version.
  */
 public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactory {
 
@@ -74,8 +74,8 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
   /**
    * Create the AirbyteMessage stream.
    *
-   * If detectVersion is set to true, it will decide which protocol version to use from the content of
-   * the stream rather than the one passed from the constructor.
+   * If detectVersion is set to true, it will decide which protocol version to use from the content of the stream rather than the one passed from the
+   * constructor.
    */
   @Trace(operationName = WORKER_OPERATION_NAME)
   @SneakyThrows
@@ -104,8 +104,8 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
   /**
    * Attempt to detect the version by scanning the stream
    *
-   * Using the BufferedReader reset/mark feature to get a look-ahead. We will attempt to find the
-   * first SPEC message and decide on a protocol version from this message.
+   * Using the BufferedReader reset/mark feature to get a look-ahead. We will attempt to find the first SPEC message and decide on a protocol version
+   * from this message.
    *
    * @param bufferedReader the stream to read
    * @return The Version if found

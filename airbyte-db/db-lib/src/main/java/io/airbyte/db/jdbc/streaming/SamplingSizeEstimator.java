@@ -7,8 +7,7 @@ package io.airbyte.db.jdbc.streaming;
 import java.util.Optional;
 
 /**
- * This class adjusts the max row byte size by measuring one row out of every
- * {@code sampleFrequency} rows.
+ * This class adjusts the max row byte size by measuring one row out of every {@code sampleFrequency} rows.
  */
 public class SamplingSizeEstimator extends BaseSizeEstimator implements FetchSizeEstimator {
 

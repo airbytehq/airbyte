@@ -10,10 +10,8 @@ import java.util.Queue;
 /**
  * This class manages the lifecycle of state message. It tracks state messages that are in 3 states:
  * <ol>
- * <li>pending - associated records have been accepted by the connector but has NOT been pushed to
- * the destination</li>
- * <li>flushed - associated records have been flushed to tmp storage in the destination but have NOT
- * been committed</li>
+ * <li>pending - associated records have been accepted by the connector but has NOT been pushed to the destination</li>
+ * <li>flushed - associated records have been flushed to tmp storage in the destination but have NOT been committed</li>
  * <li>committed - associated records have been committed</li>
  * </ol>
  */

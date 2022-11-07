@@ -18,13 +18,11 @@ import java.util.Queue;
 import java.util.stream.Collectors;
 
 /**
- * This {@link DestStateLifecycleManager} handles any state where the state messages are scoped by
- * stream. In these cases, at each state of the process, it tracks the LAST state message for EACH
- * stream (no duplicates!).
+ * This {@link DestStateLifecycleManager} handles any state where the state messages are scoped by stream. In these cases, at each state of the
+ * process, it tracks the LAST state message for EACH stream (no duplicates!).
  *
- * Guaranteed to output state messages in order relative to other messages of the SAME state. Does
- * NOT guarantee that state messages of different streams will be output in the order in which they
- * were received. State messages across streams will be emitted in alphabetical order (primary sort
+ * Guaranteed to output state messages in order relative to other messages of the SAME state. Does NOT guarantee that state messages of different
+ * streams will be output in the order in which they were received. State messages across streams will be emitted in alphabetical order (primary sort
  * on namespace, secondary on name).
  */
 public class DestStreamStateLifecycleManager implements DestStateLifecycleManager {
@@ -71,10 +69,9 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
   }
 
   /**
-   * Lists out the states in the stream to state maps. Guarantees a deterministic sort order, which is
-   * handy because we are going from a map (unsorted) to a queue. The sort order primary sort on
-   * namespace (with null at the top) followed by secondary sort on name. This maps onto the pretty
-   * common order that we list streams elsewhere.
+   * Lists out the states in the stream to state maps. Guarantees a deterministic sort order, which is handy because we are going from a map
+   * (unsorted) to a queue. The sort order primary sort on namespace (with null at the top) followed by secondary sort on name. This maps onto the
+   * pretty common order that we list streams elsewhere.
    *
    * @param streamToState - map of stream descriptor to its last state
    * @return queue with the states ordered per the sort mentioned above
@@ -96,8 +93,8 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
   /**
    * Moves all state messages from previous phase into next phase.
    *
-   * @param prevPhase - map of stream to state messages for previous phase that will be moved to next
-   *        phase. when this method returns this map will be empty.
+   * @param prevPhase - map of stream to state messages for previous phase that will be moved to next phase. when this method returns this map will be
+   *        empty.
    * @param nextPhase - map into which state messages from prevPhase will be added.
    */
   private static void moveToNextPhase(final Map<StreamDescriptor, AirbyteMessage> prevPhase, final Map<StreamDescriptor, AirbyteMessage> nextPhase) {

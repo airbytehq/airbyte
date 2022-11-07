@@ -581,10 +581,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   /**
-   * return true if the workflow is in a state that require it to continue. If the state is to process
-   * an update or delete the workflow, it won't continue with a run of the {@link SyncWorkflow} but it
-   * will: - restart for an update - Update the connection status and terminate the workflow for a
-   * delete
+   * return true if the workflow is in a state that require it to continue. If the state is to process an update or delete the workflow, it won't
+   * continue with a run of the {@link SyncWorkflow} but it will: - restart for an update - Update the connection status and terminate the workflow
+   * for a delete
    */
   private Boolean skipScheduling() {
     return workflowState.isSkipScheduling() || workflowState.isDeleted() || workflowState.isUpdated();
@@ -605,11 +604,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   /**
-   * This is running a lambda function that takes {@param input} as an input. If the run of the lambda
-   * throws an exception, the workflow will retried after a short delay.
+   * This is running a lambda function that takes {@param input} as an input. If the run of the lambda throws an exception, the workflow will retried
+   * after a short delay.
    *
-   * Note that if the lambda activity is configured to have retries, the exception will only be caught
-   * after the activity has been retried the maximum number of times.
+   * Note that if the lambda activity is configured to have retries, the exception will only be caught after the activity has been retried the maximum
+   * number of times.
    *
    * This method is meant to be used for calling temporal activities.
    */
@@ -670,11 +669,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   /**
-   * Calculate the duration to wait so the workflow adheres to its schedule. This lets us 'schedule'
-   * the next run.
+   * Calculate the duration to wait so the workflow adheres to its schedule. This lets us 'schedule' the next run.
    *
-   * This is calculated by {@link ConfigFetchActivity#getTimeToWait(ScheduleRetrieverInput)} and
-   * depends on the last successful run and the schedule.
+   * This is calculated by {@link ConfigFetchActivity#getTimeToWait(ScheduleRetrieverInput)} and depends on the last successful run and the schedule.
    *
    * Wait time is infinite If the workflow is manual or disabled since we never want to schedule this.
    */
@@ -717,9 +714,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   /**
-   * Creates a new job if it is not present in the input. If the jobId is specified in the input of
-   * the connectionManagerWorkflow, we will return it. Otherwise we will create a job and return its
-   * id.
+   * Creates a new job if it is not present in the input. If the jobId is specified in the input of the connectionManagerWorkflow, we will return it.
+   * Otherwise we will create a job and return its id.
    */
   private Long getOrCreateJobId(final ConnectionUpdaterInput connectionUpdaterInput) {
     if (connectionUpdaterInput.getJobId() != null) {
@@ -765,8 +761,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   /**
-   * Generate the input that is needed by the job. It will generate the configuration needed by the
-   * job and will generate a different output if the job is a sync or a reset.
+   * Generate the input that is needed by the job. It will generate the configuration needed by the job and will generate a different output if the
+   * job is a sync or a reset.
    */
   private GeneratedJobInput getJobInput() {
     final Long jobId = workflowInternalState.getJobId();
@@ -820,8 +816,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   /**
-   * Report the job as started in the job tracker and set it as running in the workflow internal
-   * state.
+   * Report the job as started in the job tracker and set it as running in the workflow internal state.
    *
    * @param connectionId The connection ID associated with this execution of the workflow.
    */
@@ -837,13 +832,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   /**
    * Start the child {@link SyncWorkflow}. We are using a child workflow here for two main reason:
    * <p>
-   * - Originally the Sync workflow was living by himself and was launch by the scheduler. In order to
-   * limit the potential migration issues, we kept the {@link SyncWorkflow} as is and launch it as a
-   * child workflow.
+   * - Originally the Sync workflow was living by himself and was launch by the scheduler. In order to limit the potential migration issues, we kept
+   * the {@link SyncWorkflow} as is and launch it as a child workflow.
    * <p>
-   * - The {@link SyncWorkflow} has different requirements than the {@link ConnectionManagerWorkflow}
-   * since the latter is a long running workflow, in the future, using a different Node pool would
-   * make sense.
+   * - The {@link SyncWorkflow} has different requirements than the {@link ConnectionManagerWorkflow} since the latter is a long running workflow, in
+   * the future, using a different Node pool would make sense.
    */
   private StandardSyncOutput runChildWorkflow(final GeneratedJobInput jobInputs) {
     final String taskQueue = getSyncTaskQueue();

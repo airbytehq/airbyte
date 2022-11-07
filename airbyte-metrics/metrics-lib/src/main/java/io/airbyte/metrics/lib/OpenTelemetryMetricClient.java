@@ -28,11 +28,9 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
 /**
- * Implementation of the {@link MetricClient} that sends the provided metric data to an
- * OpenTelemetry compliant metrics store.
+ * Implementation of the {@link MetricClient} that sends the provided metric data to an OpenTelemetry compliant metrics store.
  * <p>
- * Any {@link MetricAttribute}s provided along with the metric data are passed as key/value pairs
- * annotating the metric.
+ * Any {@link MetricAttribute}s provided along with the metric data are passed as key/value pairs annotating the metric.
  */
 public class OpenTelemetryMetricClient implements MetricClient {
 

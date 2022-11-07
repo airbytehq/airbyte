@@ -103,9 +103,8 @@ public class WorkspaceHelper {
   }
 
   /**
-   * There are generally two kinds of helper methods present here. The first kind propagate exceptions
-   * for the method backing the cache. The second ignores them. The former is meant to be used with
-   * proper api calls, while the latter is meant to be use with asserts and precondtions checks.
+   * There are generally two kinds of helper methods present here. The first kind propagate exceptions for the method backing the cache. The second
+   * ignores them. The former is meant to be used with proper api calls, while the latter is meant to be use with asserts and precondtions checks.
    *
    * In API calls, distinguishing between various exceptions helps return the correct status code.
    */

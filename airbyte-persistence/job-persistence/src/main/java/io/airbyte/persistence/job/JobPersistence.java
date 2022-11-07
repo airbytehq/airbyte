@@ -29,9 +29,8 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 /**
- * General interface methods for persistence to the Jobs database. This database is separate from
- * the config database as job-related tables has an order of magnitude higher load and scale
- * differently from the config tables.
+ * General interface methods for persistence to the Jobs database. This database is separate from the config database as job-related tables has an
+ * order of magnitude higher load and scale differently from the config tables.
  */
 public interface JobPersistence {
 
@@ -48,8 +47,8 @@ public interface JobPersistence {
   /**
    * Enqueue a new job. Its initial status will be pending.
    *
-   * @param scope key that will be used to determine if two jobs should not be run at the same time;
-   *        it is the primary id of the standard sync (StandardSync#connectionId)
+   * @param scope key that will be used to determine if two jobs should not be run at the same time; it is the primary id of the standard sync
+   *        (StandardSync#connectionId)
    * @param jobConfig configuration for the job
    * @return job id
    * @throws IOException exception due to interaction with persistence
@@ -57,8 +56,7 @@ public interface JobPersistence {
   Optional<Long> enqueueJob(String scope, JobConfig jobConfig) throws IOException;
 
   /**
-   * Set job status from current status to PENDING. Throws {@link IllegalStateException} if the job is
-   * in a terminal state.
+   * Set job status from current status to PENDING. Throws {@link IllegalStateException} if the job is in a terminal state.
    *
    * @param jobId job to reset
    * @throws IOException exception due to interaction with persistence
@@ -86,8 +84,7 @@ public interface JobPersistence {
   //
 
   /**
-   * Create a new attempt for a job and return its attempt number. Throws
-   * {@link IllegalStateException} if the job is already in a terminal state.
+   * Create a new attempt for a job and return its attempt number. Throws {@link IllegalStateException} if the job is already in a terminal state.
    *
    * @param jobId job for which an attempt will be created
    * @param logPath path where logs should be written for the attempt
@@ -97,8 +94,8 @@ public interface JobPersistence {
   int createAttempt(long jobId, Path logPath) throws IOException;
 
   /**
-   * Sets an attempt to FAILED. Also attempts to set the parent job to INCOMPLETE. The job's status
-   * will not be changed if it is already in a terminal state.
+   * Sets an attempt to FAILED. Also attempts to set the parent job to INCOMPLETE. The job's status will not be changed if it is already in a terminal
+   * state.
    *
    * @param jobId job id
    * @param attemptNumber attempt id
@@ -107,8 +104,7 @@ public interface JobPersistence {
   void failAttempt(long jobId, int attemptNumber) throws IOException;
 
   /**
-   * Sets an attempt to SUCCEEDED. Also attempts to set the parent job to SUCCEEDED. The job's status
-   * is changed regardless of what state it is in.
+   * Sets an attempt to SUCCEEDED. Also attempts to set the parent job to SUCCEEDED. The job's status is changed regardless of what state it is in.
    *
    * @param jobId job id
    * @param attemptNumber attempt id
@@ -131,8 +127,7 @@ public interface JobPersistence {
   Optional<String> getAttemptTemporalWorkflowId(long jobId, int attemptNumber) throws IOException;
 
   /**
-   * When the output is a StandardSyncOutput, caller of this method should persiste
-   * StandardSyncOutput#state in the configs database by calling
+   * When the output is a StandardSyncOutput, caller of this method should persiste StandardSyncOutput#state in the configs database by calling
    * ConfigRepository#updateConnectionState, which takes care of persisting the connection state.
    */
   void writeOutput(long jobId, int attemptNumber, JobOutput output) throws IOException;
@@ -176,13 +171,10 @@ public interface JobPersistence {
   /**
    * @param configTypes - type of config, e.g. sync
    * @param connectionId - id of the connection for which jobs should be retrieved
-   * @param includingJobId - id of the job that should be the included in the list, if it exists in
-   *        the connection
-   * @param pagesize - the pagesize that should be used when building the list (response may include
-   *        multiple pages)
-   * @return List of jobs in descending created_at order including the specified job. Will include
-   *         multiple pages of jobs if required to include the specified job. If the specified job
-   *         does not exist in the connection, the returned list will be empty.
+   * @param includingJobId - id of the job that should be the included in the list, if it exists in the connection
+   * @param pagesize - the pagesize that should be used when building the list (response may include multiple pages)
+   * @return List of jobs in descending created_at order including the specified job. Will include multiple pages of jobs if required to include the
+   *         specified job. If the specified job does not exist in the connection, the returned list will be empty.
    * @throws IOException
    */
   List<Job> listJobsIncludingId(Set<JobConfig.ConfigType> configTypes, String connectionId, long includingJobId, int pagesize) throws IOException;
@@ -199,9 +191,8 @@ public interface JobPersistence {
    * @param connectionId The ID of the connection
    * @param configTypes The types of jobs
    * @param jobCreatedAtTimestamp The timestamp after which you want the jobs
-   * @return List of jobs that only include information regarding id, status, timestamps from a
-   *         specific connection that have attempts after the provided timestamp, sorted by jobs'
-   *         createAt in descending order
+   * @return List of jobs that only include information regarding id, status, timestamps from a specific connection that have attempts after the
+   *         provided timestamp, sorted by jobs' createAt in descending order
    * @throws IOException
    */
   List<JobWithStatusAndTimestamp> listJobStatusAndTimestampWithConnection(UUID connectionId,
@@ -224,8 +215,7 @@ public interface JobPersistence {
   /**
    * @param configType The type of job
    * @param attemptEndedAtTimestamp The timestamp after which you want the attempts
-   * @return List of attempts (with job attached) that ended after the provided timestamp, sorted by
-   *         attempts' endedAt in ascending order
+   * @return List of attempts (with job attached) that ended after the provided timestamp, sorted by attempts' endedAt in ascending order
    * @throws IOException
    */
   List<AttemptWithJobInfo> listAttemptsWithJobInfo(ConfigType configType, Instant attemptEndedAtTimestamp) throws IOException;
@@ -275,8 +265,8 @@ public interface JobPersistence {
   void setDeployment(UUID uuid) throws IOException;
 
   /**
-   * Export all SQL tables from @param schema into streams of JsonNode objects. This returns a Map of
-   * table schemas to the associated streams of records that is being exported.
+   * Export all SQL tables from @param schema into streams of JsonNode objects. This returns a Map of table schemas to the associated streams of
+   * records that is being exported.
    */
   Map<JobsDatabaseSchema, Stream<JsonNode>> exportDatabase() throws IOException;
 
@@ -284,8 +274,7 @@ public interface JobPersistence {
    * Import all SQL tables from streams of JsonNode objects.
    *
    * @param data is a Map of table schemas to the associated streams of records to import.
-   * @param airbyteVersion is the version of the files to be imported and should match the Airbyte
-   *        version in the Database.
+   * @param airbyteVersion is the version of the files to be imported and should match the Airbyte version in the Database.
    */
   void importDatabase(String airbyteVersion, Map<JobsDatabaseSchema, Stream<JsonNode>> data) throws IOException;
 

@@ -35,16 +35,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This process allows creating and managing a pod outside the lifecycle of the launching
- * application. Unlike {@link KubePodProcess} there is no heartbeat mechanism that requires the
- * launching pod and the launched pod to co-exist for the duration of execution for the launched
- * pod.
+ * This process allows creating and managing a pod outside the lifecycle of the launching application. Unlike {@link KubePodProcess} there is no
+ * heartbeat mechanism that requires the launching pod and the launched pod to co-exist for the duration of execution for the launched pod.
  *
- * Instead, this process creates the pod and interacts with a document store on cloud storage to
- * understand the state of the created pod.
+ * Instead, this process creates the pod and interacts with a document store on cloud storage to understand the state of the created pod.
  *
- * The document store is considered to be the truth when retrieving the status for an async pod
- * process. If the store isn't updated by the underlying pod, it will appear as failed.
+ * The document store is considered to be the truth when retrieving the status for an async pod process. If the store isn't updated by the underlying
+ * pod, it will appear as failed.
  */
 @Slf4j
 public class AsyncOrchestratorPodProcess implements KubePod {

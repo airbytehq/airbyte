@@ -55,18 +55,16 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePe
   protected void tearDown(final TestDestinationEnv testEnv) {}
 
   /**
-   * This is a data provider for performance tests, Each argument's group would be ran as a separate
-   * test. Set the "testArgs" in test class of your DB in @BeforeTest method.
+   * This is a data provider for performance tests, Each argument's group would be ran as a separate test. Set the "testArgs" in test class of your DB
+   * in @BeforeTest method.
    *
-   * 1st arg - a name of DB that will be used in jdbc connection string. 2nd arg - a schemaName that
-   * will be ised as a NameSpace in Configured Airbyte Catalog. 3rd arg - a number of expected records
-   * retrieved in each stream. 4th arg - a number of columns in each stream\table that will be used
-   * for Airbyte Cataloq configuration 5th arg - a number of streams to read in configured airbyte
-   * Catalog. Each stream\table in DB should be names like "test_0", "test_1",..., test_n.
+   * 1st arg - a name of DB that will be used in jdbc connection string. 2nd arg - a schemaName that will be ised as a NameSpace in Configured Airbyte
+   * Catalog. 3rd arg - a number of expected records retrieved in each stream. 4th arg - a number of columns in each stream\table that will be used
+   * for Airbyte Cataloq configuration 5th arg - a number of streams to read in configured airbyte Catalog. Each stream\table in DB should be names
+   * like "test_0", "test_1",..., test_n.
    *
    * Example: Stream.of( Arguments.of("test1000tables240columns200recordsDb", "dbo", 200, 240, 1000),
-   * Arguments.of("test5000tables240columns200recordsDb", "dbo", 200, 240, 1000),
-   * Arguments.of("newregular25tables50000records", "dbo", 50052, 8, 25),
+   * Arguments.of("test5000tables240columns200recordsDb", "dbo", 200, 240, 1000), Arguments.of("newregular25tables50000records", "dbo", 50052, 8, 25),
    * Arguments.of("newsmall1000tableswith10000rows", "dbo", 10011, 8, 1000) );
    */
   protected abstract Stream<Arguments> provideParameters();
@@ -93,8 +91,7 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePe
   }
 
   /**
-   * The column name will be used for a PK column in the test tables. Override it if default name is
-   * not valid for your source.
+   * The column name will be used for a PK column in the test tables. Override it if default name is not valid for your source.
    *
    * @return Id column name
    */

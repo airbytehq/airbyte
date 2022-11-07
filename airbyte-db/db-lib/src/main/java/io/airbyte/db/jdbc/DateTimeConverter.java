@@ -88,8 +88,7 @@ public class DateTimeConverter {
   }
 
   /**
-   * See {@link #convertToTimestampWithTimezone(Object)} for explanation of the weird things happening
-   * here.
+   * See {@link #convertToTimestampWithTimezone(Object)} for explanation of the weird things happening here.
    */
   public static String convertToTimestamp(final Object timestamp) {
     if (timestamp instanceof final Timestamp t) {
@@ -117,8 +116,7 @@ public class DateTimeConverter {
   }
 
   /**
-   * See {@link #convertToTimestampWithTimezone(Object)} for explanation of the weird things happening
-   * here.
+   * See {@link #convertToTimestampWithTimezone(Object)} for explanation of the weird things happening here.
    */
   public static String convertToDate(final Object date) {
     if (date instanceof final Date d) {

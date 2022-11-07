@@ -33,13 +33,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link io.airbyte.integrations.destination.record_buffer.BaseSerializedBuffer} class
- * abstracts the {@link io.airbyte.integrations.destination.record_buffer.BufferStorage} from the
- * details of the format the data is going to be stored in.
+ * The {@link io.airbyte.integrations.destination.record_buffer.BaseSerializedBuffer} class abstracts the
+ * {@link io.airbyte.integrations.destination.record_buffer.BufferStorage} from the details of the format the data is going to be stored in.
  *
- * Unfortunately, the Parquet library doesn't allow us to manipulate the output stream and forces us
- * to go through {@link HadoopOutputFile} instead. So we can't benefit from the abstraction
- * described above. Therefore, we re-implement the necessary methods to be used as
+ * Unfortunately, the Parquet library doesn't allow us to manipulate the output stream and forces us to go through {@link HadoopOutputFile} instead.
+ * So we can't benefit from the abstraction described above. Therefore, we re-implement the necessary methods to be used as
  * {@link SerializableBuffer}, while data will be buffered in such a hadoop file.
  */
 public class ParquetSerializedBuffer implements SerializableBuffer {

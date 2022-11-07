@@ -10,8 +10,7 @@ import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 
 /**
- * Parse command line arguments and inject them into the test class before running the test. Then
- * runs the tests.
+ * Parse command line arguments and inject them into the test class before running the test. Then runs the tests.
  */
 public class TestPythonSourceMain {
 

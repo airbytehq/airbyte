@@ -10,9 +10,8 @@ import io.airbyte.commons.json.Jsons;
 import java.util.Map;
 
 /**
- * This helper class is for testing only. It tracks the original and standardized names, and revert
- * them when necessary, so that the tests can correctly compare the generated json with the original
- * input.
+ * This helper class is for testing only. It tracks the original and standardized names, and revert them when necessary, so that the tests can
+ * correctly compare the generated json with the original input.
  */
 public class JsonFieldNameUpdater {
 

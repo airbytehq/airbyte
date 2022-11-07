@@ -16,9 +16,8 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 
 /**
- * Creates a server on a single port that returns a 200 JSON response on any path requested. This is
- * intended to stay up as long as the Kube worker exists so pods spun up can check if the spawning
- * Kube worker still exists.
+ * Creates a server on a single port that returns a 200 JSON response on any path requested. This is intended to stay up as long as the Kube worker
+ * exists so pods spun up can check if the spawning Kube worker still exists.
  */
 public class WorkerHeartbeatServer {
 

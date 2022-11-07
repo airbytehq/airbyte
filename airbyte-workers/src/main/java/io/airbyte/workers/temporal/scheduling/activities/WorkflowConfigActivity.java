@@ -9,8 +9,7 @@ import io.temporal.activity.ActivityMethod;
 import java.time.Duration;
 
 /**
- * Custom Temporal activity that can be used to retrieve configuration values managed by the
- * application framework from the application context.
+ * Custom Temporal activity that can be used to retrieve configuration values managed by the application framework from the application context.
  */
 @ActivityInterface
 public interface WorkflowConfigActivity {

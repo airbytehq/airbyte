@@ -7,8 +7,8 @@ package io.airbyte.cron;
 import io.micronaut.runtime.Micronaut;
 
 /**
- * Micronaut server responsible of running scheduled method. The methods need to be separated in
- * Bean based on what they are cleaning and contain a method annotated with `@Scheduled`
+ * Micronaut server responsible of running scheduled method. The methods need to be separated in Bean based on what they are cleaning and contain a
+ * method annotated with `@Scheduled`
  *
  * Injected object looks unused but they are not
  */

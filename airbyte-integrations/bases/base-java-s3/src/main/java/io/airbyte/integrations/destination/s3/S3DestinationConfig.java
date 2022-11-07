@@ -32,8 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An S3 configuration. Typical usage sets at most one of {@code bucketPath} (necessary for more
- * delicate data syncing to S3)
+ * An S3 configuration. Typical usage sets at most one of {@code bucketPath} (necessary for more delicate data syncing to S3)
  */
 public class S3DestinationConfig {
 

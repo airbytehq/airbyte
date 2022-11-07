@@ -11,8 +11,8 @@ import java.io.File;
 import lombok.AllArgsConstructor;
 
 /**
- * This handler is only responsible for server and scheduler logs. Jobs logs paths are determined by
- * the submitJob function in the JobSubmitter class in the airbyte-server module.
+ * This handler is only responsible for server and scheduler logs. Jobs logs paths are determined by the submitJob function in the JobSubmitter class
+ * in the airbyte-server module.
  */
 @AllArgsConstructor
 public class LogsHandler {

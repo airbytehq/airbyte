@@ -81,8 +81,7 @@ public class QuickbooksOAuthFlow extends BaseOAuth2Flow {
   }
 
   /**
-   * This function should be redefined in each OAuthFlow implementation to isolate such "hardcoded"
-   * values.
+   * This function should be redefined in each OAuthFlow implementation to isolate such "hardcoded" values.
    */
   @Override
   public List<String> getDefaultOAuthOutputPath() {

@@ -38,8 +38,7 @@ public class LineGobbler implements VoidCallable {
   }
 
   /**
-   * Used to emit a visual separator in the user-facing logs indicating a start of a meaningful
-   * temporal activity
+   * Used to emit a visual separator in the user-facing logs indicating a start of a meaningful temporal activity
    *
    * @param message
    */
@@ -48,8 +47,7 @@ public class LineGobbler implements VoidCallable {
   }
 
   /**
-   * Used to emit a visual separator in the user-facing logs indicating a end of a meaningful temporal
-   * activity
+   * Used to emit a visual separator in the user-facing logs indicating a end of a meaningful temporal activity
    *
    * @param message
    */

@@ -36,8 +36,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
 
   /**
-   * Simple enum of content type strings and their respective encoding functions used for POSTing the
-   * access token request
+   * Simple enum of content type strings and their respective encoding functions used for POSTing the access token request
    */
   public enum TOKEN_REQUEST_CONTENT_TYPE {
 
@@ -109,15 +108,13 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
   }
 
   /**
-   * Depending on the OAuth flow implementation, the URL to grant user's consent may differ,
-   * especially in the query parameters to be provided. This function should generate such consent URL
-   * accordingly.
+   * Depending on the OAuth flow implementation, the URL to grant user's consent may differ, especially in the query parameters to be provided. This
+   * function should generate such consent URL accordingly.
    *
    * @param definitionId The configured definition ID of this client
    * @param clientId The configured client ID
    * @param redirectUrl the redirect URL
-   * @param inputOAuthConfiguration any configuration property from connector necessary for this OAuth
-   *        Flow
+   * @param inputOAuthConfiguration any configuration property from connector necessary for this OAuth Flow
    */
   protected abstract String formatConsentUrl(final UUID definitionId,
                                              final String clientId,
@@ -261,9 +258,8 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
   }
 
   /**
-   * Once the user is redirected after getting their consent, the API should redirect them to a
-   * specific redirection URL along with query parameters. This function should parse and extract the
-   * code from these query parameters in order to continue the OAuth Flow.
+   * Once the user is redirected after getting their consent, the API should redirect them to a specific redirection URL along with query parameters.
+   * This function should parse and extract the code from these query parameters in order to continue the OAuth Flow.
    */
   protected String extractCodeParameter(final Map<String, Object> queryParams) throws IOException {
     if (queryParams.containsKey("code")) {

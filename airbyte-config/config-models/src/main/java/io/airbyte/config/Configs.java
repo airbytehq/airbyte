@@ -22,8 +22,7 @@ import java.util.Set;
  * <p>
  * Please also add one of the following tags to the env var accordingly:
  * <p>
- * 1. 'Internal-use only' if a var is mainly for Airbyte-only configuration. e.g. tracking, test or
- * Cloud related etc.
+ * 1. 'Internal-use only' if a var is mainly for Airbyte-only configuration. e.g. tracking, test or Cloud related etc.
  * <p>
  * 2. 'Alpha support' if a var does not have proper support and should be used with care.
  */
@@ -57,8 +56,7 @@ public interface Configs {
   String getAirbyteVersionOrWarning();
 
   /**
-   * Defines the bucket for caching specs. This immensely speeds up spec operations. This is updated
-   * when new versions are published.
+   * Defines the bucket for caching specs. This immensely speeds up spec operations. This is updated when new versions are published.
    */
   String getSpecCacheBucket();
 
@@ -73,14 +71,12 @@ public interface Configs {
   WorkerEnvironment getWorkerEnvironment();
 
   /**
-   * Defines the configs directory. Applies only to Docker, and is present in Kubernetes for backward
-   * compatibility.
+   * Defines the configs directory. Applies only to Docker, and is present in Kubernetes for backward compatibility.
    */
   Path getConfigRoot();
 
   /**
-   * Defines the Airbyte workspace directory. Applies only to Docker, and is present in Kubernetes for
-   * backward compatibility.
+   * Defines the Airbyte workspace directory. Applies only to Docker, and is present in Kubernetes for backward compatibility.
    */
   Path getWorkspaceRoot();
 
@@ -99,8 +95,8 @@ public interface Configs {
   String getWorkspaceDockerMount();
 
   /**
-   * Defines the name of the docker mount that is used for local file handling. On Docker, this allows
-   * connector pods to interact with a volume for "local file" operations.
+   * Defines the name of the docker mount that is used for local file handling. On Docker, this allows connector pods to interact with a volume for
+   * "local file" operations.
    */
   String getLocalDockerMount();
 
@@ -119,15 +115,15 @@ public interface Configs {
   String getSecretStoreGcpProjectId();
 
   /**
-   * Define the JSON credentials used to read/write Airbyte Configuration to Google Secret Manager.
-   * These credentials must have Secret Manager Read/Write access. Alpha support.
+   * Define the JSON credentials used to read/write Airbyte Configuration to Google Secret Manager. These credentials must have Secret Manager
+   * Read/Write access. Alpha support.
    */
   String getSecretStoreGcpCredentials();
 
   /**
-   * Defines the Secret Persistence type. None by default. Set to GOOGLE_SECRET_MANAGER to use Google
-   * Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Set to VAULT to use
-   * Hashicorp Vault. Alpha support. Undefined behavior will result if this is turned on and then off.
+   * Defines the Secret Persistence type. None by default. Set to GOOGLE_SECRET_MANAGER to use Google Secret Manager. Set to TESTING_CONFIG_DB_TABLE
+   * to use the database as a test. Set to VAULT to use Hashicorp Vault. Alpha support. Undefined behavior will result if this is turned on and then
+   * off.
    */
   SecretPersistenceType getSecretPersistenceType();
 
@@ -137,14 +133,12 @@ public interface Configs {
   String getVaultAddress();
 
   /**
-   * Define the vault path prefix to read/write Airbyte Configuration to Hashicorp Vault. Empty by
-   * default. Alpha Support.
+   * Define the vault path prefix to read/write Airbyte Configuration to Hashicorp Vault. Empty by default. Alpha Support.
    */
   String getVaultPrefix();
 
   /**
-   * Define the vault token to read/write Airbyte Configuration to Hashicorp Vault. Empty by default.
-   * Alpha Support.
+   * Define the vault token to read/write Airbyte Configuration to Hashicorp Vault. Empty by default. Alpha Support.
    */
   String getVaultToken();
 
@@ -161,15 +155,14 @@ public interface Configs {
   String getDatabasePassword();
 
   /**
-   * Define the Jobs Database url in the form of
-   * jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}. Do not include username or
+   * Define the Jobs Database url in the form of jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}. Do not include username or
    * password.
    */
   String getDatabaseUrl();
 
   /**
-   * Define the minimum flyway migration version the Jobs Database must be at. If this is not
-   * satisfied, applications will not successfully connect. Internal-use only.
+   * Define the minimum flyway migration version the Jobs Database must be at. If this is not satisfied, applications will not successfully connect.
+   * Internal-use only.
    */
   String getJobsDatabaseMinimumFlywayMigrationVersion();
 
@@ -189,21 +182,19 @@ public interface Configs {
   String getConfigDatabasePassword();
 
   /**
-   * Define the Configs Database url in the form of
-   * jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}. Defaults to the Jobs Database
+   * Define the Configs Database url in the form of jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}. Defaults to the Jobs Database
    * url if empty.
    */
   String getConfigDatabaseUrl();
 
   /**
-   * Define the minimum flyway migration version the Configs Database must be at. If this is not
-   * satisfied, applications will not successfully connect. Internal-use only.
+   * Define the minimum flyway migration version the Configs Database must be at. If this is not satisfied, applications will not successfully
+   * connect. Internal-use only.
    */
   String getConfigsDatabaseMinimumFlywayMigrationVersion();
 
   /**
-   * Define the total time to wait for the Configs Database to be initialized. This includes
-   * migrations.
+   * Define the total time to wait for the Configs Database to be initialized. This includes migrations.
    */
   long getConfigsDatabaseInitializationTimeoutMs();
 
@@ -220,8 +211,7 @@ public interface Configs {
   boolean temporalCloudEnabled();
 
   /**
-   * Temporal Cloud target endpoint, usually with form ${namespace}.tmprl.cloud:7233. Internal-use
-   * only.
+   * Temporal Cloud target endpoint, usually with form ${namespace}.tmprl.cloud:7233. Internal-use only.
    */
   String getTemporalCloudHost();
 
@@ -243,8 +233,7 @@ public interface Configs {
   // Airbyte Services
 
   /**
-   * Define the url where Temporal is hosted at. Please include the port. Airbyte services use this
-   * information.
+   * Define the url where Temporal is hosted at. Please include the port. Airbyte services use this information.
    */
   String getTemporalHost();
 
@@ -254,14 +243,12 @@ public interface Configs {
   int getTemporalRetentionInDays();
 
   /**
-   * Define the url where the Airbyte Server is hosted at. Airbyte services use this information.
-   * Manipulates the `INTERNAL_API_HOST` variable.
+   * Define the url where the Airbyte Server is hosted at. Airbyte services use this information. Manipulates the `INTERNAL_API_HOST` variable.
    */
   String getAirbyteApiHost();
 
   /**
-   * Define the port where the Airbyte Server is hosted at. Airbyte services use this information.
-   * Manipulates the `INTERNAL_API_HOST` variable.
+   * Define the port where the Airbyte Server is hosted at. Airbyte services use this information. Manipulates the `INTERNAL_API_HOST` variable.
    */
   int getAirbyteApiPort();
 
@@ -283,33 +270,28 @@ public interface Configs {
   int getSyncJobMaxTimeoutDays();
 
   /**
-   * Defines whether job creation uses connector-specific resource requirements when spawning jobs.
-   * Works on both Docker and Kubernetes. Defaults to false for ease of use in OSS trials of Airbyte
-   * but recommended for production deployments.
+   * Defines whether job creation uses connector-specific resource requirements when spawning jobs. Works on both Docker and Kubernetes. Defaults to
+   * false for ease of use in OSS trials of Airbyte but recommended for production deployments.
    */
   boolean connectorSpecificResourceDefaultsEnabled();
 
   /**
-   * Define the job container's minimum CPU usage. Units follow either Docker or Kubernetes, depending
-   * on the deployment. Defaults to none.
+   * Define the job container's minimum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
    */
   String getJobMainContainerCpuRequest();
 
   /**
-   * Define the job container's maximum CPU usage. Units follow either Docker or Kubernetes, depending
-   * on the deployment. Defaults to none.
+   * Define the job container's maximum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
    */
   String getJobMainContainerCpuLimit();
 
   /**
-   * Define the job container's minimum RAM usage. Units follow either Docker or Kubernetes, depending
-   * on the deployment. Defaults to none.
+   * Define the job container's minimum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
    */
   String getJobMainContainerMemoryRequest();
 
   /**
-   * Define the job container's maximum RAM usage. Units follow either Docker or Kubernetes, depending
-   * on the deployment. Defaults to none.
+   * Define the job container's maximum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
    */
   String getJobMainContainerMemoryLimit();
 
@@ -319,89 +301,80 @@ public interface Configs {
   String getMetricClient();
 
   /**
-   * If choosing OTEL as the metric client, Airbyte will emit metrics and traces to this provided
-   * endpoint.
+   * If choosing OTEL as the metric client, Airbyte will emit metrics and traces to this provided endpoint.
    */
   String getOtelCollectorEndpoint();
 
   /**
-   * Defines a default map of environment variables to use for any launched job containers. The
-   * expected format is a JSON encoded String -> String map. Make sure to escape properly. Defaults to
-   * an empty map.
+   * Defines a default map of environment variables to use for any launched job containers. The expected format is a JSON encoded String -> String
+   * map. Make sure to escape properly. Defaults to an empty map.
    */
   Map<String, String> getJobDefaultEnvMap();
 
   /**
-   * Defines the number of consecutive job failures required before a connection is auto-disabled if
-   * the AUTO_DISABLE_FAILING_CONNECTIONS flag is set to true.
+   * Defines the number of consecutive job failures required before a connection is auto-disabled if the AUTO_DISABLE_FAILING_CONNECTIONS flag is set
+   * to true.
    */
   int getMaxFailedJobsInARowBeforeConnectionDisable();
 
   /**
-   * Defines the required number of days with only failed jobs before a connection is auto-disabled if
-   * the AUTO_DISABLE_FAILING_CONNECTIONS flag is set to true.
+   * Defines the required number of days with only failed jobs before a connection is auto-disabled if the AUTO_DISABLE_FAILING_CONNECTIONS flag is
+   * set to true.
    */
   int getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable();
 
   // Jobs - Kube only
 
   /**
-   * Define the check job container's minimum CPU request. Defaults to
-   * {@link #getJobMainContainerCpuRequest()} if not set. Internal-use only.
+   * Define the check job container's minimum CPU request. Defaults to {@link #getJobMainContainerCpuRequest()} if not set. Internal-use only.
    */
   String getCheckJobMainContainerCpuRequest();
 
   /**
-   * Define the check job container's maximum CPU usage. Defaults to
-   * {@link #getJobMainContainerCpuLimit()} if not set. Internal-use only.
+   * Define the check job container's maximum CPU usage. Defaults to {@link #getJobMainContainerCpuLimit()} if not set. Internal-use only.
    */
   String getCheckJobMainContainerCpuLimit();
 
   /**
-   * Define the check job container's minimum RAM usage. Defaults to
-   * {@link #getJobMainContainerMemoryRequest()} if not set. Internal-use only.
+   * Define the check job container's minimum RAM usage. Defaults to {@link #getJobMainContainerMemoryRequest()} if not set. Internal-use only.
    */
   String getCheckJobMainContainerMemoryRequest();
 
   /**
-   * Define the check job container's maximum RAM usage. Defaults to
-   * {@link #getJobMainContainerMemoryLimit()} if not set. Internal-use only.
+   * Define the check job container's maximum RAM usage. Defaults to {@link #getJobMainContainerMemoryLimit()} if not set. Internal-use only.
    */
   String getCheckJobMainContainerMemoryLimit();
 
   /**
-   * Define the normalization job container's minimum CPU request. Defaults to
-   * {@link #getJobMainContainerCpuRequest()} if not set. Internal-use only.
+   * Define the normalization job container's minimum CPU request. Defaults to {@link #getJobMainContainerCpuRequest()} if not set. Internal-use only.
    */
   String getNormalizationJobMainContainerCpuRequest();
 
   /**
-   * Define the normalization job container's maximum CPU usage. Defaults to
-   * {@link #getJobMainContainerCpuLimit()} if not set. Internal-use only.
+   * Define the normalization job container's maximum CPU usage. Defaults to {@link #getJobMainContainerCpuLimit()} if not set. Internal-use only.
    */
   String getNormalizationJobMainContainerCpuLimit();
 
   /**
-   * Define the normalization job container's minimum RAM usage. Defaults to
-   * {@link #getJobMainContainerMemoryRequest()} if not set. Internal-use only.
+   * Define the normalization job container's minimum RAM usage. Defaults to {@link #getJobMainContainerMemoryRequest()} if not set. Internal-use
+   * only.
    */
   String getNormalizationJobMainContainerMemoryRequest();
 
   /**
-   * Define the normalization job container's maximum RAM usage. Defaults to
-   * {@link #getJobMainContainerMemoryLimit()} if not set. Internal-use only.
+   * Define the normalization job container's maximum RAM usage. Defaults to {@link #getJobMainContainerMemoryLimit()} if not set. Internal-use only.
    */
   String getNormalizationJobMainContainerMemoryLimit();
 
   /**
-   * Define one or more Job pod tolerations. Tolerations are separated by ';'. Each toleration
-   * contains k=v pairs mentioning some/all of key, effect, operator and value and separated by `,`.
+   * Define one or more Job pod tolerations. Tolerations are separated by ';'. Each toleration contains k=v pairs mentioning some/all of key, effect,
+   * operator and value and separated by `,`.
    */
   List<TolerationPOJO> getJobKubeTolerations();
 
   /**
-   * Define one or more Job pod node selectors. Each kv-pair is separated by a `,`. Used for the sync
-   * job and as fallback in case job specific (spec, check, discover) node selectors are not defined.
+   * Define one or more Job pod node selectors. Each kv-pair is separated by a `,`. Used for the sync job and as fallback in case job specific (spec,
+   * check, discover) node selectors are not defined.
    */
   Map<String, String> getJobKubeNodeSelectors();
 
@@ -421,8 +394,8 @@ public interface Configs {
   Map<String, String> getDiscoverJobKubeNodeSelectors();
 
   /**
-   * Define one or more Job pod annotations. Each kv-pair is separated by a `,`. Used for the sync job
-   * and as fallback in case job specific (spec, check, discover) annotations are not defined.
+   * Define one or more Job pod annotations. Each kv-pair is separated by a `,`. Used for the sync job and as fallback in case job specific (spec,
+   * check, discover) annotations are not defined.
    */
   Map<String, String> getJobKubeAnnotations();
 
@@ -479,8 +452,8 @@ public interface Configs {
   // Logging/Monitoring/Tracking
 
   /**
-   * Define either S3, Minio or GCS as a logging backend. Kubernetes only. Multiple variables are
-   * involved here. Please see {@link CloudStorageConfigs} for more info.
+   * Define either S3, Minio or GCS as a logging backend. Kubernetes only. Multiple variables are involved here. Please see
+   * {@link CloudStorageConfigs} for more info.
    */
   LogConfigs getLogConfigs();
 
@@ -490,8 +463,8 @@ public interface Configs {
   String getGoogleApplicationCredentials();
 
   /**
-   * Define either S3, Minio or GCS as a state storage backend. Multiple variables are involved here.
-   * Please see {@link CloudStorageConfigs} for more info.
+   * Define either S3, Minio or GCS as a state storage backend. Multiple variables are involved here. Please see {@link CloudStorageConfigs} for more
+   * info.
    */
   CloudStorageConfigs getStateStorageCloudConfigs();
 
@@ -501,20 +474,18 @@ public interface Configs {
   boolean getPublishMetrics();
 
   /**
-   * Set the Agent to publish Datadog metrics to. Only relevant if metrics should be published. Mainly
-   * for Airbyte internal use.
+   * Set the Agent to publish Datadog metrics to. Only relevant if metrics should be published. Mainly for Airbyte internal use.
    */
   String getDDAgentHost();
 
   /**
-   * Set the port to publish Datadog metrics to. Only relevant if metrics should be published. Mainly
-   * for Airbyte internal use.
+   * Set the port to publish Datadog metrics to. Only relevant if metrics should be published. Mainly for Airbyte internal use.
    */
   String getDDDogStatsDPort();
 
   /**
-   * Set constant tags to be attached to all metrics. Useful for distinguishing between environments.
-   * Example: airbyte_instance:dev,k8s-cluster:aws-dev
+   * Set constant tags to be attached to all metrics. Useful for distinguishing between environments. Example:
+   * airbyte_instance:dev,k8s-cluster:aws-dev
    */
   List<String> getDDConstantTags();
 
@@ -529,8 +500,8 @@ public interface Configs {
   JobErrorReportingStrategy getJobErrorReportingStrategy();
 
   /**
-   * Determines the Sentry DSN that should be used when reporting connector job failures to Sentry.
-   * Used with SENTRY error reporting strategy. Airbyte internal use.
+   * Determines the Sentry DSN that should be used when reporting connector job failures to Sentry. Used with SENTRY error reporting strategy. Airbyte
+   * internal use.
    */
   String getJobErrorReportingSentryDSN();
 
@@ -548,8 +519,8 @@ public interface Configs {
   String getAirbyteApiAuthHeaderValue();
 
   /**
-   * Define the maximum number of workers each Airbyte Worker container supports. Multiple variables
-   * are involved here. Please see {@link MaxWorkersConfig} for more info.
+   * Define the maximum number of workers each Airbyte Worker container supports. Multiple variables are involved here. Please see
+   * {@link MaxWorkersConfig} for more info.
    */
   MaxWorkersConfig getMaxWorkers();
 
@@ -574,36 +545,32 @@ public interface Configs {
   boolean shouldRunSyncWorkflows();
 
   /**
-   * Define if the worker should run connection manager workflows. Defaults to true. Internal-use
-   * only.
+   * Define if the worker should run connection manager workflows. Defaults to true. Internal-use only.
    */
   boolean shouldRunConnectionManagerWorkflows();
 
   // Worker - Data Plane configs
 
   /**
-   * Define a set of Temporal Task Queue names for which the worker should register handlers for to
-   * process tasks related to syncing data. - For workers within Airbyte's Control Plane, this returns
-   * the Control Plane's default task queue. - For workers within a Data Plane, this returns only task
-   * queue names specific to that Data Plane. Internal-use only.
+   * Define a set of Temporal Task Queue names for which the worker should register handlers for to process tasks related to syncing data. - For
+   * workers within Airbyte's Control Plane, this returns the Control Plane's default task queue. - For workers within a Data Plane, this returns only
+   * task queue names specific to that Data Plane. Internal-use only.
    */
   Set<String> getDataSyncTaskQueues();
 
   /**
-   * Return the Control Plane endpoint that workers in a Data Plane will hit for authentication. This
-   * is separate from the actual endpoint being hit for application logic. Internal-use only.
+   * Return the Control Plane endpoint that workers in a Data Plane will hit for authentication. This is separate from the actual endpoint being hit
+   * for application logic. Internal-use only.
    */
   String getControlPlaneAuthEndpoint();
 
   /**
-   * Return the service account a data plane uses to authenticate with a control plane. Internal-use
-   * only.
+   * Return the service account a data plane uses to authenticate with a control plane. Internal-use only.
    */
   String getDataPlaneServiceAccountCredentialsPath();
 
   /**
-   * Return the service account email a data plane uses to authenticate with a control plane.
-   * Internal-use only.
+   * Return the service account email a data plane uses to authenticate with a control plane. Internal-use only.
    */
   String getDataPlaneServiceAccountEmail();
 
@@ -627,8 +594,7 @@ public interface Configs {
   String getContainerOrchestratorSecretName();
 
   /**
-   * Get the mount path for a secret that should be loaded onto container orchestrator pods.
-   * Internal-use only.
+   * Get the mount path for a secret that should be loaded onto container orchestrator pods. Internal-use only.
    */
   String getContainerOrchestratorSecretMountPath();
 

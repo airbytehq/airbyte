@@ -18,8 +18,7 @@ import org.slf4j.Logger;
 public interface DatabaseAvailabilityCheck extends DatabaseCheck {
 
   /**
-   * The number of times to check if the database is available. TODO replace with a default value in a
-   * value injection annotation
+   * The number of times to check if the database is available. TODO replace with a default value in a value injection annotation
    */
   int NUM_POLL_TIMES = 10;
 
@@ -63,8 +62,8 @@ public interface DatabaseAvailabilityCheck extends DatabaseCheck {
   }
 
   /**
-   * Generates a {@link Function} that is used to test if a connection can be made to the database by
-   * verifying that the {@code information_schema.tables} tables has been populated.
+   * Generates a {@link Function} that is used to test if a connection can be made to the database by verifying that the
+   * {@code information_schema.tables} tables has been populated.
    *
    * @param databaseName The name of the database to test.
    * @return A {@link Function} that can be invoked to test if the database is available.
@@ -96,16 +95,14 @@ public interface DatabaseAvailabilityCheck extends DatabaseCheck {
   Optional<DSLContext> getDslContext();
 
   /**
-   * Retrieves the configured {@link Logger} object to be used to record progress of the migration
-   * check.
+   * Retrieves the configured {@link Logger} object to be used to record progress of the migration check.
    *
    * @return The configured {@link Logger} object.
    */
   Logger getLogger();
 
   /**
-   * Retrieves the timeout in milliseconds for the check. Once this timeout is exceeded, the check
-   * will fail with an {@link InterruptedException}.
+   * Retrieves the timeout in milliseconds for the check. Once this timeout is exceeded, the check will fail with an {@link InterruptedException}.
    *
    * @return The timeout in milliseconds for the check.
    */

@@ -50,9 +50,8 @@ public class SecretMigrator {
   }
 
   /**
-   * Perform a secret migration. It will load all the actor specs extract the secret JsonPath from it.
-   * Then for all the secret that are stored in a plain text format, it will save the plain text in
-   * the secret manager and store the coordinate in the config DB.
+   * Perform a secret migration. It will load all the actor specs extract the secret JsonPath from it. Then for all the secret that are stored in a
+   * plain text format, it will save the plain text in the secret manager and store the coordinate in the config DB.
    */
   public void migrateSecrets() throws JsonValidationException, IOException, ConfigNotFoundException {
     if (secretPersistence.isEmpty()) {

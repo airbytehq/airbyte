@@ -29,9 +29,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
 /**
- * Generates a combined representation of the connector catalog that includes Sources, Destinations
- * and their specs all in one. This connector catalog can then be served and loaded from a
- * RemoteDefinitionsProvider.
+ * Generates a combined representation of the connector catalog that includes Sources, Destinations and their specs all in one. This connector catalog
+ * can then be served and loaded from a RemoteDefinitionsProvider.
  */
 public class CombinedConnectorCatalogGenerator {
 
@@ -75,8 +74,7 @@ public class CombinedConnectorCatalogGenerator {
    * Updates all connector definitions with provided specs.
    *
    * @param definitions - List of Source or Destination Definitions as generated in the seed files
-   * @param specs - List of connector specs as generated in the seed files (see
-   *        {@link DockerImageSpec})
+   * @param specs - List of connector specs as generated in the seed files (see {@link DockerImageSpec})
    */
   @VisibleForTesting
   void mergeSpecsIntoDefinitions(final List<JsonNode> definitions, final List<JsonNode> specs, final ConfigSchema configSchema) {

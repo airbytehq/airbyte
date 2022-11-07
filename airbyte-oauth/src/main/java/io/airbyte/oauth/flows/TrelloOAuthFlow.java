@@ -24,8 +24,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Following docs from
- * https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth
+ * Following docs from https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth
  */
 public class TrelloOAuthFlow extends BaseOAuthFlow {
 

@@ -15,9 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /*
- * This class represents a single run of a worker. It handles making sure the correct inputs and
- * outputs are passed to the selected worker. It also makes sure that the outputs of the worker are
- * persisted to the db.
+ * This class represents a single run of a worker. It handles making sure the correct inputs and outputs are passed to the selected worker. It also
+ * makes sure that the outputs of the worker are persisted to the db.
  */
 @SuppressWarnings("PMD.AvoidFieldNameMatchingTypeName")
 public class WorkerRun implements Callable<OutputAndStatus<JobOutput>> {
