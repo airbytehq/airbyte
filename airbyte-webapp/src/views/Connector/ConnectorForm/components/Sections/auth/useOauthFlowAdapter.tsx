@@ -8,7 +8,7 @@ import { useMemo, useState } from "react";
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { AuthSpecification } from "core/request/AirbyteClient";
 import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
-import { useAuthentication } from "views/Connector/ServiceForm/useAuthentication";
+import { useAuthentication } from "views/Connector/ConnectorForm/useAuthentication";
 
 import { useConnectorForm } from "../../../connectorFormContext";
 import { ConnectorFormValues } from "../../../types";
