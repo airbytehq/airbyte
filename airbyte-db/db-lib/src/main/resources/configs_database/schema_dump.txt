@@ -54,6 +54,9 @@ create table "public"."actor_definition"(
   "public" bool not null default false,
   "custom" bool not null default false,
   "protocol_version" varchar(255) null,
+  "normalization_repository" varchar(255) null,
+  "normalization_tag" varchar(255) null,
+  "supports_dbt" bool null,
   constraint "actor_definition_pkey"
     primary key ("id")
 );

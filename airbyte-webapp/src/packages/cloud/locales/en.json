@@ -130,6 +130,7 @@
   "credits.date": "Date",
   "credits.amount": "Credits",
 
+  "credits.loadingCreditsUsage": "Loading credits usage …",
   "credits.usagePerConnection": "Usage per connection",
   "credits.connection": "Connection",
   "credits.usage": "Usage",
