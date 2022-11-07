@@ -26,6 +26,10 @@ import io.airbyte.server.apis.HealthApiController;
 import io.airbyte.server.apis.JobsApiController;
 import io.airbyte.server.apis.LogsApiController;
 import io.airbyte.server.apis.NotificationsApiController;
+import io.airbyte.server.apis.OpenapiApiController;
+import io.airbyte.server.apis.OperationApiController;
+import io.airbyte.server.apis.SchedulerApiController;
+import io.airbyte.server.apis.SourceApiController;
 import io.airbyte.server.apis.binders.AttemptApiBinder;
 import io.airbyte.server.apis.binders.ConnectionApiBinder;
 import io.airbyte.server.apis.binders.DbMigrationBinder;
@@ -37,6 +41,10 @@ import io.airbyte.server.apis.binders.HealthApiBinder;
 import io.airbyte.server.apis.binders.JobsApiBinder;
 import io.airbyte.server.apis.binders.LogsApiBinder;
 import io.airbyte.server.apis.binders.NotificationApiBinder;
+import io.airbyte.server.apis.binders.OpenapiApiBinder;
+import io.airbyte.server.apis.binders.OperationApiBinder;
+import io.airbyte.server.apis.binders.SchedulerApiBinder;
+import io.airbyte.server.apis.binders.SourceApiBinder;
 import io.airbyte.server.apis.binders.SourceOauthApiBinder;
 import io.airbyte.server.apis.factories.AttemptApiFactory;
 import io.airbyte.server.apis.factories.ConnectionApiFactory;
@@ -49,6 +57,10 @@ import io.airbyte.server.apis.factories.HealthApiFactory;
 import io.airbyte.server.apis.factories.JobsApiFactory;
 import io.airbyte.server.apis.factories.LogsApiFactory;
 import io.airbyte.server.apis.factories.NotificationsApiFactory;
+import io.airbyte.server.apis.factories.OpenapiApiFactory;
+import io.airbyte.server.apis.factories.OperationApiFactory;
+import io.airbyte.server.apis.factories.SchedulerApiFactory;
+import io.airbyte.server.apis.factories.SourceApiFactory;
 import io.airbyte.server.apis.factories.SourceOauthApiFactory;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
@@ -59,8 +71,10 @@ import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.LogsHandler;
 import io.airbyte.server.handlers.OAuthHandler;
+import io.airbyte.server.handlers.OpenApiConfigHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
+import io.airbyte.server.handlers.SourceHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
@@ -98,8 +112,10 @@ public interface ServerFactory {
                         final JobHistoryHandler jobHistoryHandler,
                         final LogsHandler logsHandler,
                         final OAuthHandler oAuthHandler,
+                        final OpenApiConfigHandler openApiConfigHandler,
                         final OperationsHandler operationsHandler,
                         final SchedulerHandler schedulerHandler,
+                        final SourceHandler sourceHandler,
                         final WorkspacesHandler workspacesHandler);
 
   class Api implements ServerFactory {
@@ -130,8 +146,10 @@ public interface ServerFactory {
                                  final JobHistoryHandler jobHistoryHandler,
                                  final LogsHandler logsHandler,
                                  final OAuthHandler oAuthHandler,
+                                 final OpenApiConfigHandler openApiConfigHandler,
                                  final OperationsHandler operationsHandler,
                                  final SchedulerHandler schedulerHandler,
+                                 final SourceHandler sourceHandler,
                                  final WorkspacesHandler workspacesHandler) {
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
@@ -184,6 +202,14 @@ public interface ServerFactory {
 
       NotificationsApiFactory.setValues(workspacesHandler);
 
+      OperationApiFactory.setValues(operationsHandler);
+
+      OpenapiApiFactory.setValues(openApiConfigHandler);
+
+      SchedulerApiFactory.setValues(schedulerHandler);
+
+      SourceApiFactory.setValues(schedulerHandler, sourceHandler);
+
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(
           ConfigurationApi.class,
@@ -198,6 +224,10 @@ public interface ServerFactory {
           JobsApiController.class,
           LogsApiController.class,
           NotificationsApiController.class,
+          OpenapiApiController.class,
+          OperationApiController.class,
+          SchedulerApiController.class,
+          SourceApiController.class,
           SourceOauthApiFactory.class);
 
       final Set<Object> components = Set.of(
@@ -214,6 +244,10 @@ public interface ServerFactory {
           new JobsApiBinder(),
           new LogsApiBinder(),
           new NotificationApiBinder(),
+          new OpenapiApiBinder(),
+          new OperationApiBinder(),
+          new SchedulerApiBinder(),
+          new SourceApiBinder(),
           new SourceOauthApiBinder());
 
       // construct server
