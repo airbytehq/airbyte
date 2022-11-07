@@ -64,6 +64,7 @@ import io.airbyte.api.model.generated.PrivateDestinationDefinitionRead;
 import io.airbyte.api.model.generated.PrivateDestinationDefinitionReadList;
 import io.airbyte.api.model.generated.PrivateSourceDefinitionRead;
 import io.airbyte.api.model.generated.PrivateSourceDefinitionReadList;
+import io.airbyte.api.model.generated.SaveStatsRequestBody;
 import io.airbyte.api.model.generated.SetInstancewideDestinationOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
@@ -253,6 +254,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
+  public WorkspaceRead getWorkspaceByConnectionId(final ConnectionIdRequestBody connectionIdRequestBody) {
+    return execute(() -> workspacesHandler.getWorkspaceByConnectionId(connectionIdRequestBody));
+  }
+
+  @Override
   public WorkspaceRead updateWorkspace(final WorkspaceUpdate workspaceUpdate) {
     return execute(() -> workspacesHandler.updateWorkspace(workspaceUpdate));
   }
@@ -407,6 +413,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   @Override
   public void revokeSourceDefinitionFromWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
     throw new NotImplementedException();
+  }
+
+  @Override
+  public InternalOperationResult saveStats(final SaveStatsRequestBody saveStatsRequestBody) {
+    throw new UnsupportedOperationException();
   }
 
   // SOURCE SPECIFICATION

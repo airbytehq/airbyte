@@ -280,8 +280,6 @@ public interface JobPersistence {
    */
   Map<JobsDatabaseSchema, Stream<JsonNode>> exportDatabase() throws IOException;
 
-  Map<String, Stream<JsonNode>> dump() throws IOException;
-
   /**
    * Import all SQL tables from streams of JsonNode objects.
    *
@@ -305,22 +303,6 @@ public interface JobPersistence {
    * Set that the secret migration has been performed.
    */
   void setSecretMigrationDone() throws IOException;
-
-  /**
-   * Check if the scheduler has been migrated to temporal.
-   *
-   * TODO (https://github.com/airbytehq/airbyte/issues/12823): remove this method after the next
-   * "major" version bump as it will no longer be needed.
-   */
-  boolean isSchedulerMigrated() throws IOException;
-
-  /**
-   * Set that the scheduler migration has been performed.
-   *
-   * TODO (https://github.com/airbytehq/airbyte/issues/12823): remove this method after the next
-   * "major" version bump as it will no longer be needed.
-   */
-  void setSchedulerMigrationDone() throws IOException;
 
   List<AttemptNormalizationStatus> getAttemptNormalizationStatusesForJob(final Long jobId) throws IOException;
 
