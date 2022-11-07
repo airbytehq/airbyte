@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.6.0
+Low-code: Allow connector specifications to be defined in the manifest
+
 ## 0.5.4
 Low-code: Get response.json in a safe way
 
