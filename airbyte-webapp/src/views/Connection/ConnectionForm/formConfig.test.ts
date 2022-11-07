@@ -1,17 +1,12 @@
 import { renderHook } from "@testing-library/react-hooks";
-import mockConnection from "test-utils/mock-data/mockConnection.json";
-import mockDestinationDefinition from "test-utils/mock-data/mockDestinationDefinition.json";
-import mockWorkspace from "test-utils/mock-data/mockWorkspace.json";
+import { mockConnection } from "test-utils/mock-data/mockConnection";
+import { mockDestination } from "test-utils/mock-data/mockDestination";
+import { mockWorkspace } from "test-utils/mock-data/mockWorkspace";
 import { TestWrapper as wrapper } from "test-utils/testutils";
 
 import { frequencyConfig } from "config/frequencyConfig";
 import { NormalizationType } from "core/domain/connection";
-import {
-  ConnectionScheduleTimeUnit,
-  DestinationDefinitionSpecificationRead,
-  OperationRead,
-  WebBackendConnectionRead,
-} from "core/request/AirbyteClient";
+import { ConnectionScheduleTimeUnit, OperationRead } from "core/request/AirbyteClient";
 
 import { mapFormPropsToOperation, useFrequencyDropdownData, useInitialValues } from "./formConfig";
 
@@ -176,36 +171,19 @@ describe("#mapFormPropsToOperation", () => {
 
 describe("#useInitialValues", () => {
   it("should generate initial values w/ no 'not create' mode", () => {
-    const { result } = renderHook(() =>
-      useInitialValues(
-        mockConnection as WebBackendConnectionRead,
-        mockDestinationDefinition as DestinationDefinitionSpecificationRead
-      )
-    );
+    const { result } = renderHook(() => useInitialValues(mockConnection, mockDestination));
     expect(result.current).toMatchSnapshot();
     expect(result.current.name).toBeDefined();
   });
 
   it("should generate initial values w/ 'not create' mode: false", () => {
-    const { result } = renderHook(() =>
-      useInitialValues(
-        mockConnection as WebBackendConnectionRead,
-        mockDestinationDefinition as DestinationDefinitionSpecificationRead,
-        false
-      )
-    );
+    const { result } = renderHook(() => useInitialValues(mockConnection, mockDestination, false));
     expect(result.current).toMatchSnapshot();
     expect(result.current.name).toBeDefined();
   });
 
   it("should generate initial values w/ 'not create' mode: true", () => {
-    const { result } = renderHook(() =>
-      useInitialValues(
-        mockConnection as WebBackendConnectionRead,
-        mockDestinationDefinition as DestinationDefinitionSpecificationRead,
-        true
-      )
-    );
+    const { result } = renderHook(() => useInitialValues(mockConnection, mockDestination, true));
     expect(result.current).toMatchSnapshot();
     expect(result.current.name).toBeUndefined();
   });

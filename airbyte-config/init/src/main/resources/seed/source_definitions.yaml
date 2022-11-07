@@ -401,7 +401,7 @@
 - name: Freshdesk
   sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
   dockerRepository: airbyte/source-freshdesk
-  dockerImageTag: 0.3.6
+  dockerImageTag: 0.3.7
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshdesk
   icon: freshdesk.svg
   sourceType: api
@@ -627,7 +627,7 @@
 - name: Jira
   sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   dockerRepository: airbyte/source-jira
-  dockerImageTag: 0.2.22
+  dockerImageTag: 0.2.23
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   icon: jira.svg
   sourceType: api
@@ -635,7 +635,7 @@
 - name: Kafka
   sourceDefinitionId: d917a47b-8537-4d0d-8c10-36a9928d4265
   dockerRepository: airbyte/source-kafka
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/kafka
   icon: kafka.svg
   sourceType: database
