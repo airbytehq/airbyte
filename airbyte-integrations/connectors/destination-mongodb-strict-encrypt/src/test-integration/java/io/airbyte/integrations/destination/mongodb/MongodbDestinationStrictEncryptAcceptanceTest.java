@@ -5,19 +5,21 @@
 package io.airbyte.integrations.destination.mongodb;
 
 import static com.mongodb.client.model.Projections.excludeId;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCursor;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
+import io.airbyte.db.mongodb.MongoUtils;
 import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -116,15 +118,13 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
 
     final JsonNode invalidStandaloneConfig = getConfig();
 
-    ((ObjectNode) invalidStandaloneConfig).put(MongoDbDestinationUtils.INSTANCE_TYPE, instanceConfig);
+    ((ObjectNode) invalidStandaloneConfig).put(MongoUtils.INSTANCE_TYPE, instanceConfig);
 
-    final AirbyteConnectionStatus actual = new MongodbDestinationStrictEncrypt().check(invalidStandaloneConfig);
-    final AirbyteConnectionStatus expected =
-        new AirbyteConnectionStatus()
-            .withStatus(Status.FAILED)
-            .withMessage("TLS connection must be used to read from MongoDB.");
-
-    assertEquals(expected, actual);
+    final Throwable throwable = catchThrowable(() -> new MongodbDestinationStrictEncrypt().check(invalidStandaloneConfig));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    assertThat(((ConfigErrorException) throwable)
+        .getDisplayMessage()
+        .contains("TLS connection must be used to read from MongoDB."));
   }
 
   @Override

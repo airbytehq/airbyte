@@ -18,6 +18,7 @@ import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
+import io.airbyte.db.mongodb.MongoUtils;
 import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -119,7 +120,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
       final Set<String> documentsHash = new HashSet<>();
       try (final MongoCursor<Document> cursor = collection.find().projection(excludeId()).iterator()) {
         while (cursor.hasNext()) {
-          documentsHash.add(cursor.next().get(MongoDbDestinationUtils.AIRBYTE_DATA_HASH, String.class));
+          documentsHash.add(cursor.next().get(MongoUtils.AIRBYTE_DATA_HASH, String.class));
         }
       }
 
@@ -137,18 +138,18 @@ public class MongodbDestination extends BaseConnector implements Destination {
 
   @VisibleForTesting
   String getConnectionString(final JsonNode config) {
-    final var credentials = config.get(MongoDbDestinationUtils.AUTH_TYPE).get(MongoDbDestinationUtils.AUTHORIZATION).asText().equals(MongoDbDestinationUtils.LOGIN_AND_PASSWORD)
-        ? String.format("%s:%s@", config.get(MongoDbDestinationUtils.AUTH_TYPE).get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get(MongoDbDestinationUtils.AUTH_TYPE).get(JdbcUtils.PASSWORD_KEY).asText())
+    final var credentials = config.get(MongoUtils.AUTH_TYPE).get(MongoUtils.AUTHORIZATION).asText().equals(MongoUtils.LOGIN_AND_PASSWORD)
+        ? String.format("%s:%s@", config.get(MongoUtils.AUTH_TYPE).get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(MongoUtils.AUTH_TYPE).get(JdbcUtils.PASSWORD_KEY).asText())
         : StringUtils.EMPTY;
 
     // backward compatibility check
     // the old mongo db spec only includes host, port, database, and auth_type
     // the new spec replaces host and port with the instance_type property
-    if (config.has(MongoDbDestinationUtils.INSTANCE_TYPE)) {
+    if (config.has(MongoUtils.INSTANCE_TYPE)) {
       return buildConnectionString(config, credentials);
     } else {
-      return String.format(MongoDbDestinationUtils.MONGODB_SERVER_URL, credentials, config.get(JdbcUtils.HOST_KEY).asText(),
+      return String.format(MongoUtils.MONGODB_SERVER_URL, credentials, config.get(JdbcUtils.HOST_KEY).asText(),
           config.get(JdbcUtils.PORT_KEY).asText(), config.get(JdbcUtils.DATABASE_KEY).asText(), false);
     }
   }
@@ -156,32 +157,32 @@ public class MongodbDestination extends BaseConnector implements Destination {
   private String buildConnectionString(final JsonNode config, final String credentials) {
     final StringBuilder connectionStrBuilder = new StringBuilder();
 
-    final JsonNode instanceConfig = config.get(MongoDbDestinationUtils.INSTANCE_TYPE);
-    final MongoInstanceType instance = MongoInstanceType.fromValue(instanceConfig.get(MongoDbDestinationUtils.INSTANCE).asText());
+    final JsonNode instanceConfig = config.get(MongoUtils.INSTANCE_TYPE);
+    final MongoInstanceType instance = MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
 
     switch (instance) {
       case STANDALONE -> {
         // if there is no TLS present in spec, TLS should be enabled by default for strict encryption
         final var tls = !instanceConfig.has(JdbcUtils.TLS_KEY) || instanceConfig.get(JdbcUtils.TLS_KEY).asBoolean();
         connectionStrBuilder.append(
-            String.format(MongoDbDestinationUtils.MONGODB_SERVER_URL, credentials, instanceConfig.get(JdbcUtils.HOST_KEY).asText(),
+            String.format(MongoUtils.MONGODB_SERVER_URL, credentials, instanceConfig.get(JdbcUtils.HOST_KEY).asText(),
                 instanceConfig.get(JdbcUtils.PORT_KEY).asText(),
                 config.get(JdbcUtils.DATABASE_KEY).asText(), tls));
       }
       case REPLICA -> {
         connectionStrBuilder.append(
-            String.format(MongoDbDestinationUtils.MONGODB_REPLICA_URL,
+            String.format(MongoUtils.MONGODB_REPLICA_URL,
                 credentials,
-                instanceConfig.get(MongoDbDestinationUtils.SERVER_ADDRESSES).asText(),
+                instanceConfig.get(MongoUtils.SERVER_ADDRESSES).asText(),
                 config.get(JdbcUtils.DATABASE_KEY).asText()));
-        if (instanceConfig.has(MongoDbDestinationUtils.REPLICA_SET)) {
-          connectionStrBuilder.append(String.format("&replicaSet=%s", instanceConfig.get(MongoDbDestinationUtils.REPLICA_SET).asText()));
+        if (instanceConfig.has(MongoUtils.REPLICA_SET)) {
+          connectionStrBuilder.append(String.format("&replicaSet=%s", instanceConfig.get(MongoUtils.REPLICA_SET).asText()));
         }
       }
       case ATLAS -> {
         connectionStrBuilder.append(
-            String.format(MongoDbDestinationUtils.MONGODB_CLUSTER_URL, credentials,
-                instanceConfig.get(MongoDbDestinationUtils.CLUSTER_URL).asText(),
+            String.format(MongoUtils.MONGODB_CLUSTER_URL, credentials,
+                instanceConfig.get(MongoUtils.CLUSTER_URL).asText(),
                 config.get(JdbcUtils.DATABASE_KEY).asText()));
       }
       default -> throw new IllegalArgumentException("Unsupported instance type: " + instance);
