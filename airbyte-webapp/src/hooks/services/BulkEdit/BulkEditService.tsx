@@ -1,9 +1,11 @@
 import { setIn } from "formik";
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useSet } from "react-use";
 
 import { SyncSchemaStream } from "core/domain/catalog";
 import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
+
+import { useEditControlsService } from "../EditControls/BulkEditService";
 
 const Context = React.createContext<BulkEditServiceContext | null>(null);
 
@@ -34,6 +36,7 @@ export const BulkEditServiceProvider: React.FC<
     update: (streams: SyncSchemaStream[]) => void;
   }>
 > = ({ children, nodes, update }) => {
+  const { setVisible } = useEditControlsService();
   const [selectedBatchNodes, { reset, toggle, add }] = useSet<string | undefined>(new Set());
   const [options, setOptions] = useState<Partial<AirbyteStreamConfiguration>>(defaultOptions);
 
@@ -57,6 +60,9 @@ export const BulkEditServiceProvider: React.FC<
   };
 
   const isActive = selectedBatchNodes.size > 0;
+  useEffect(() => {
+    setVisible(!isActive);
+  }, [isActive, setVisible]);
   const allChecked = selectedBatchNodes.size === nodes.length;
 
   const ctx: BulkEditServiceContext = {
