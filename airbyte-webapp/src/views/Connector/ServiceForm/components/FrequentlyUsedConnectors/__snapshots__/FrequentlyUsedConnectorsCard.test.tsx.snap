@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<FrequentlyUsedDestinations /> should renders with mock data without crash 1`] = `
+exports[`<FrequentlyUsedConnectors /> should renders with mock data without crash 1`] = `
 <body>
   <div>
     <div

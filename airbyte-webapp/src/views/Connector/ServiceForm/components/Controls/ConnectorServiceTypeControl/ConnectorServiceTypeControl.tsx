@@ -23,9 +23,7 @@ import { ReleaseStage } from "core/request/AirbyteClient";
 import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
 import { useExperiment } from "hooks/services/Experiment";
 import { useModalService } from "hooks/services/Modal";
-import { useClearbitReveal } from "hooks/services/useClearbitReveal";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { sortClearbitRevealSources } from "packages/cloud/experiments/ClearbitRevealSources";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 
@@ -124,20 +122,15 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
   const { formatMessage } = useIntl();
   const { openModal, closeModal } = useModalService();
   const { trackMenuOpen, trackNoOptionMessage, trackConnectorSelection } = useAnalyticsTrackFunctions(formType);
-  const reveal = useClearbitReveal();
 
   const workspace = useCurrentWorkspace();
-  const revealSort = useExperiment("connector.revealSort", true);
   const orderOverwrite = useExperiment("connector.orderOverwrite", {});
 
   const availableConnectorDefinitions = useAvailableConnectorDefinitions(availableServices, workspace);
-  const pinnedDropDownData = useMemo(
+  const sortedDropDownData = useMemo(
     () => getSortedDropdownDataUsingExperiment(availableConnectorDefinitions, orderOverwrite),
     [availableConnectorDefinitions, orderOverwrite]
   );
-  const sortedDropDownData = revealSort
-    ? sortClearbitRevealSources(reveal?.company.tech, pinnedDropDownData)
-    : pinnedDropDownData;
 
   const { setDocumentationUrl } = useDocumentationPanelContext();
   useEffect(() => setDocumentationUrl(documentationUrl ?? ""), [documentationUrl, setDocumentationUrl]);

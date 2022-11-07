@@ -8,7 +8,7 @@ import { LogsRequestError } from "core/request/LogsRequestError";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { FrequentlyUsedDestinations, StartWithDestination } from "views/Connector/ServiceForm";
+import { FrequentlyUsedConnectors, StartWithDestination } from "views/Connector/ServiceForm";
 
 import styles from "./DestinationForm.module.scss";
 
@@ -63,8 +63,12 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
 
   const errorMessage = error ? generateMessageFromError(error) : null;
 
-  const frequentlyUsedDestinationsComponent = !isLoading && !destinationDefinitionId && (
-    <FrequentlyUsedDestinations onDestinationSelect={onDropDownSelect} availableServices={destinationDefinitions} />
+  const frequentlyUsedConnectorsComponent = !isLoading && !destinationDefinitionId && (
+    <FrequentlyUsedConnectors
+      connectorType="destination"
+      onConnectorClick={onDropDownSelect}
+      availableServices={destinationDefinitions}
+    />
   );
   const startWithDestinationComponent = !isLoading && !destinationDefinitionId && (
     <div className={styles.startWithDestinationContainer}>
@@ -79,7 +83,7 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
         fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
         onSubmit={onSubmitForm}
         formType="destination"
-        additionalSelectorComponent={frequentlyUsedDestinationsComponent}
+        additionalSelectorComponent={frequentlyUsedConnectorsComponent}
         availableServices={destinationDefinitions}
         selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
         hasSuccess={hasSuccess}

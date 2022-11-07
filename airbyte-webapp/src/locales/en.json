@@ -312,6 +312,7 @@
   "sources.message": "Message",
   "sources.additionalFailureInfo": "Additional Failure Information",
   "sources.lastAttempt": "Last attempt:",
+  "sources.suggested": "Suggested sources",
 
   "destination.destinationSettings": "Destination Settings",
   "destinations.newDestination": "New destination",
@@ -325,6 +326,7 @@
   "destinations.frequentlyUsed": "Most frequently used destinations",
   "destinations.dontHaveYourOwnDestination": "Don’t have your own destination yet?",
   "destinations.startWith": "Start with {name}",
+  "destinations.suggested": "Suggested destinations",
 
   "connection.stream.syncMode": "{syncMode} - {destinationSyncMode}",
 

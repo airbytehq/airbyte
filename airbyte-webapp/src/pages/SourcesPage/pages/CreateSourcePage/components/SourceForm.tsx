@@ -8,6 +8,7 @@ import { SourceDefinitionReadWithLatestTag } from "services/connector/SourceDefi
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { FrequentlyUsedConnectors } from "views/Connector/ServiceForm";
 import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 
 interface SourceFormProps {
@@ -56,11 +57,20 @@ export const SourceForm: React.FC<SourceFormProps> = ({ onSubmit, sourceDefiniti
 
   const errorMessage = error ? generateMessageFromError(error) : null;
 
+  const frequentlyUsedConnectorsComponent = !isLoading && !sourceDefinitionId && (
+    <FrequentlyUsedConnectors
+      connectorType="source"
+      onConnectorClick={onDropDownSelect}
+      availableServices={sourceDefinitions}
+    />
+  );
+
   return (
     <ConnectorCard
       onServiceSelect={onDropDownSelect}
       onSubmit={onSubmitForm}
       formType="source"
+      additionalSelectorComponent={frequentlyUsedConnectorsComponent}
       availableServices={sourceDefinitions}
       selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
       hasSuccess={hasSuccess}
