@@ -1371,6 +1371,13 @@
   icon: wrike.svg
   sourceType: api
   releaseStage: alpha
+- name: Zendesk Supported Storage
+  sourceDefinitionId: b8c917bc-7d1b-4828-995f-6726820266d0
+  dockerRepository: airbyte/source-zendesk-supported-storage
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-supported-storage
+  sourceType: api
+  releaseStage: alpha
 - name: Zendesk Chat
   sourceDefinitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
   dockerRepository: airbyte/source-zendesk-chat
