@@ -40,7 +40,7 @@ def test_next_page_token(patch_base_class):
 def test_request_headers(patch_base_class):
     stream = FastbillStream()
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_headers = {'Content-type': 'application/json'}
+    expected_headers = {"Content-type": "application/json"}
     assert stream.request_headers(**inputs) == expected_headers
 
 

@@ -1,9 +1,10 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
+
 def req_body(offset, endpoint: str):
-    return {
-        "SERVICE": f"{endpoint}.get",
-        "FILTER": {},
-        "OFFSET": offset
-    }
+    return {"SERVICE": f"{endpoint}.get", "FILTER": {}, "OFFSET": offset}
 
 
 def get_next_page_token(response, response_key: str, API_OFFSET_LIMIT: int, endpoint: str):
@@ -22,8 +23,4 @@ def get_request_body_json(next_page_token, endpoint):
     if next_page_token:
         return next_page_token
     else:
-        return {
-            "SERVICE": f"{endpoint}.get",
-            "FILTER": {},
-            "OFFSET": 0
-        }
+        return {"SERVICE": f"{endpoint}.get", "FILTER": {}, "OFFSET": 0}

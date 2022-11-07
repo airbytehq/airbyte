@@ -4,14 +4,14 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union, MutableMapping
-from source_fastbill.helpers import get_request_body_json, get_next_page_token
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from requests.auth import HTTPBasicAuth
+from source_fastbill.helpers import get_next_page_token, get_request_body_json
 
 
 class FastbillStream(HttpStream, ABC):
@@ -30,36 +30,36 @@ class FastbillStream(HttpStream, ABC):
         return "POST"
 
     def path(
-            self,
-            *,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return None
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return None
 
     def request_headers(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        return {'Content-type': 'application/json'}
+        return {"Content-type": "application/json"}
 
     def request_body_json(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Mapping, str]]:
         return get_request_body_json(next_page_token, endpoint=self.endpoint)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return get_next_page_token(response=response, response_key=self.data,
-                                   API_OFFSET_LIMIT=self.API_OFFSET_LIMIT,
-                                   endpoint=self.endpoint)
+        return get_next_page_token(
+            response=response, response_key=self.data, API_OFFSET_LIMIT=self.API_OFFSET_LIMIT, endpoint=self.endpoint
+        )
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json().get("RESPONSE", {}).get(self.data, [])
@@ -97,11 +97,8 @@ class Customers(FastbillStream):
 
 # Source
 class SourceFastbill(AbstractSource):
-
     def get_basic_auth(self, config: Mapping[str, Any]) -> requests.auth.HTTPBasicAuth:
-        return requests.auth.HTTPBasicAuth(
-            config["username"], config["api_key"]
-        )
+        return requests.auth.HTTPBasicAuth(config["username"], config["api_key"])
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
@@ -120,5 +117,5 @@ class SourceFastbill(AbstractSource):
             Invoices(auth, **config),
             RecurringInvoices(auth, **config),
             Products(auth, **config),
-            Revenues(auth, **config)
+            Revenues(auth, **config),
         ]
