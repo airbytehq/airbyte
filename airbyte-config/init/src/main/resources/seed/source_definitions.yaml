@@ -1333,7 +1333,7 @@
   icon: victorops.svg
   sourceType: api
   releaseStage: alpha
-- name: Visma e-conomic
+- name: Visma E-conomic
   sourceDefinitionId: 42495935-95de-4f5c-ae08-8fac00f6b308
   dockerRepository: airbyte/source-visma-economic
   dockerImageTag: 0.1.0
