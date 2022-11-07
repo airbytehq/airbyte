@@ -69,6 +69,7 @@ class NoSlicer(StreamSlicer, JsonSchemaMixin):
     primary_key: Union[InterpolatedString, str]
     _cursor: Optional[datetime.datetime] = field(repr=False, default=None)
     _cursor_end: datetime.datetime = field(repr=False, default_factory=datetime.datetime.utcnow)
+    _filter_params: bool = field(repr=False, default=False)
 
     DATETIME_FORMAT: ClassVar[str] = "%Y-%m-%d %H:%M:%S"
 
@@ -92,6 +93,8 @@ class NoSlicer(StreamSlicer, JsonSchemaMixin):
             self._cursor = self.safe_max(datetime.datetime.strptime(last_record[cursor_field], self.DATETIME_FORMAT), self._cursor)
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+        if self._cursor:
+            self._filter_params = True
         yield self.get_stream_state()
 
     def get_request_params(
@@ -107,7 +110,7 @@ class NoSlicer(StreamSlicer, JsonSchemaMixin):
             "date": "1",
             "sort": f"[{cursor_field}_ASC,{primary_key}_ASC]",
         }
-        if self._cursor:
+        if self._filter_params:
             start_datetime = self._cursor.strftime(self.DATETIME_FORMAT)
             end_datetime = self._cursor_end.strftime(self.DATETIME_FORMAT)
             params[f"filter[{cursor_field}]"] = f"[{start_datetime},{end_datetime}]"
