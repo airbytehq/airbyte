@@ -612,6 +612,13 @@
   icon: kafka.svg
   sourceType: database
   releaseStage: alpha
+- name: Klarna
+  sourceDefinitionId: 60c24725-00ae-490c-991d-55b78c3197e0
+  dockerRepository: airbyte/source-klarna
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/klarna
+  sourceType: api
+  releaseStage: alpha
 - name: Klaviyo
   sourceDefinitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
   dockerRepository: airbyte/source-klaviyo
