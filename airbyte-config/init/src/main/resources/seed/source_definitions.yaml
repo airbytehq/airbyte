@@ -1078,7 +1078,7 @@
 - name: RD Station Marketing
   sourceDefinitionId: fb141f29-be2a-450b-a4f2-2cd203a00f84
   dockerRepository: airbyte/source-rd-station-marketing
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/rd-station-marketing
   sourceType: api
   releaseStage: alpha
