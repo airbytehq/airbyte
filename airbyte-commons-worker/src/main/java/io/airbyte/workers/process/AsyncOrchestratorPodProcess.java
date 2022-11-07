@@ -396,7 +396,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         // several issues with copying files. See https://github.com/airbytehq/airbyte/issues/8643 for
         // details.
         final String command = String.format("kubectl cp %s %s/%s:%s -c %s", tmpFile, podDefinition.getMetadata().getNamespace(),
-            podDefinition.getMetadata().getName(), containerPath, "main");
+            podDefinition.getMetadata().getName(), containerPath, KubePodProcess.INIT_CONTAINER_NAME);
         log.info(command);
 
         proc = Runtime.getRuntime().exec(command);
