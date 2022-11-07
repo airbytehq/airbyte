@@ -1,4 +1,4 @@
-documentationUrl: https://docsurl.com
+documentationUrl: https://docs.airbyte.com/integrations/sources/aha
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Aha Spec
@@ -11,6 +11,8 @@ connectionSpecification:
     api_key:
       type: string
       description: API Key
+      title: API BEARER TOKEN
     url:
       type: string
       description: URL
+      title: AHA URL INSTANCE
