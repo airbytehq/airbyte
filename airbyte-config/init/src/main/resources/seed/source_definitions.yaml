@@ -370,6 +370,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   sourceType: api
   releaseStage: alpha
+- name: Fastbill
+  sourceDefinitionId: eb3e9c1c-0467-4eb7-a172-5265e04ccd0a
+  dockerRepository: airbyte/source-fastbill
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/fastbill
+  sourceType: api
+  releaseStage: alpha
 - name: Fauna
   sourceDefinitionId: 3825db3e-c94b-42ac-bd53-b5a9507ace2b
   dockerRepository: airbyte/source-fauna
@@ -1333,6 +1340,13 @@
   icon: victorops.svg
   sourceType: api
   releaseStage: alpha
+- name: Visma E-conomic
+  sourceDefinitionId: 42495935-95de-4f5c-ae08-8fac00f6b308
+  dockerRepository: airbyte/source-visma-economic
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/visma-economic
+  sourceType: api
+  releaseStage: alpha
 - name: xkcd
   sourceDefinitionId: 80fddd16-17bd-4c0c-bf4a-80df7863fc9d
   dockerRepository: airbyte/source-xkcd
@@ -1376,6 +1390,13 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/wrike
   icon: wrike.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Zapier Supported Storage
+  sourceDefinitionId: b8c917bc-7d1b-4828-995f-6726820266d0
+  dockerRepository: airbyte/source-zapier-supported-storage
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-supported-storage
   sourceType: api
   releaseStage: alpha
 - name: Zendesk Chat

@@ -3429,6 +3429,29 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-fastbill:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/fastbill"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Fastbill Spec"
+      type: "object"
+      required:
+      - "username"
+      - "api_key"
+      properties:
+        username:
+          title: "Username"
+          type: "string"
+          description: "Username for Fastbill account"
+        api_key:
+          title: "API Key"
+          type: "string"
+          description: "Fastbill API key"
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-fauna:dev"
   spec:
     documentationUrl: "https://github.com/fauna/airbyte/blob/source-fauna/docs/integrations/sources/fauna.md"
@@ -12935,6 +12958,30 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-visma-economic:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/visma-economic"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Visma E-conomic Spec"
+      type: "object"
+      required:
+      - "app_secret_token"
+      - "agreement_grant_token"
+      properties:
+        app_secret_token:
+          title: "App Secret Token"
+          type: "string"
+          description: "Identification token for app accessing data"
+          airbyte_secret: true
+        agreement_grant_token:
+          title: "Agreement Grant Token"
+          type: "string"
+          description: "Identifier for the grant issued by an agreement"
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-xkcd:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/xkcd"
@@ -13102,6 +13149,25 @@
           examples:
           - "2017-01-25T00:00:00Z"
           order: 2
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-zapier-supported-storage:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/zapier-supported-storage"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Zapier Supported Storage Spec"
+      type: "object"
+      required:
+      - "secret"
+      additionalProperties: true
+      properties:
+        secret:
+          title: "Secret Key"
+          type: "string"
+          description: "Secret key supplied by zapier"
+          airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
