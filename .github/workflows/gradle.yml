@@ -859,7 +859,7 @@ jobs:
         uses: ./.github/actions/start-aws-runner
         with:
           # github-self-hosted-runner-ubuntu-20-with-150gdisk-docker-20.10.7-and-socat
-          ec2-image-id: ami-03ba6c40a876f6ed6
+          ec2-image-id: ami-0c1a9bc22624339d8
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
@@ -879,6 +879,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
+      - name: Delete default old docker and replace it with a new one
+        shell: bash
+        run: |
+          sudo apt-get remove docker.io docker-engine docker containerd runc
+          curl -fsSL https://get.docker.com | bash -
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -903,6 +909,7 @@ jobs:
           version: 'latest'
           token: ${{ secrets.GITHUB_TOKEN }}
         id: install
+
       - uses: AbsaOSS/k3d-action@v2
         name: "Create Single Cluster"
         with:
