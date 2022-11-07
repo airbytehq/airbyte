@@ -31,6 +31,8 @@ import io.airbyte.server.apis.OperationApiController;
 import io.airbyte.server.apis.SchedulerApiController;
 import io.airbyte.server.apis.SourceApiController;
 import io.airbyte.server.apis.SourceDefinitionApiController;
+import io.airbyte.server.apis.SourceOauthApiController;
+import io.airbyte.server.apis.StateApiController;
 import io.airbyte.server.apis.binders.AttemptApiBinder;
 import io.airbyte.server.apis.binders.ConnectionApiBinder;
 import io.airbyte.server.apis.binders.DbMigrationBinder;
@@ -244,8 +246,8 @@ public interface ServerFactory {
           SchedulerApiController.class,
           SourceApiController.class,
           SourceDefinitionApiController.class,
-          SourceOauthApiFactory.class,
-          StateApiFactory.class);
+          SourceOauthApiController.class,
+          StateApiController.class);
 
       final Set<Object> components = Set.of(
           new CorsFilter(),
