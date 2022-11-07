@@ -6,7 +6,7 @@ import { Card } from "components/ui/Card";
 import { ConnectorSpecification } from "core/domain/connector";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
 
-import { ServiceForm } from "./ServiceForm";
+import { ConnectorForm } from "./ConnectorForm";
 
 const TempConnector = {
   name: "Service",
@@ -19,8 +19,8 @@ const TempConnector = {
 };
 
 export default {
-  title: "Connector/ServiceForm",
-  component: ServiceForm,
+  title: "Connector/ConnectorForm",
+  component: ConnectorForm,
   parameters: {
     actions: { argTypesRegex: "^on.*" },
     mockData: [
@@ -43,9 +43,9 @@ export default {
     availableServices: [TempConnector],
   },
   decorators: [withMock],
-} as ComponentMeta<typeof ServiceForm>;
+} as ComponentMeta<typeof ConnectorForm>;
 
-const Template: ComponentStory<typeof ServiceForm> = (args) => {
+const Template: ComponentStory<typeof ConnectorForm> = (args) => {
   // Hack to allow devs to not specify sourceDefinitionId
   if (
     args.selectedConnectorDefinitionSpecification &&
@@ -62,7 +62,7 @@ const Template: ComponentStory<typeof ServiceForm> = (args) => {
 
   return (
     <Card title="Test">
-      <ServiceForm {...args} />
+      <ConnectorForm {...args} />
     </Card>
   );
 };

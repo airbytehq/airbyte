@@ -7,8 +7,8 @@ import { DropDown, DropDownOptionDataItem } from "components/ui/DropDown";
 import { FormBlock, FormConditionItem } from "core/form/types";
 import { isDefined } from "utils/common";
 
-import { useServiceForm } from "../../serviceFormContext";
-import { ServiceFormValues } from "../../types";
+import { useConnectorForm } from "../../connectorFormContext";
+import { ConnectorFormValues } from "../../types";
 import styles from "./ConditionSection.module.scss";
 import { FormSection } from "./FormSection";
 import { GroupLabel } from "./GroupLabel";
@@ -23,8 +23,8 @@ interface ConditionSectionProps {
  * ConditionSection is responsible for handling oneOf sections of form
  */
 export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, path, disabled }) => {
-  const { widgetsInfo, setUiWidgetsInfo } = useServiceForm();
-  const { values, setValues } = useFormikContext<ServiceFormValues>();
+  const { widgetsInfo, setUiWidgetsInfo } = useConnectorForm();
+  const { values, setValues } = useFormikContext<ConnectorFormValues>();
 
   const currentlySelectedCondition = widgetsInfo[formField.path]?.selectedItem;
 
@@ -35,7 +35,7 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
       const newValues =
         newSelectedPath._type === "formGroup"
           ? newSelectedPath.properties?.reduce(
-              (acc: ServiceFormValues, property: FormBlock) =>
+              (acc: ConnectorFormValues, property: FormBlock) =>
                 property._type === "formItem" && isDefined(property.const)
                   ? setIn(acc, property.path, property.const)
                   : acc,

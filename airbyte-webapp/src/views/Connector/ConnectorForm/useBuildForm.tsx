@@ -11,7 +11,7 @@ import { buildPathInitialState } from "core/form/uiWidget";
 import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
 import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
 
-import { ServiceFormValues } from "./types";
+import { ConnectorFormValues } from "./types";
 
 export function useBuildInitialSchema(
   connectorSpecification?: ConnectorDefinitionSpecification
@@ -21,16 +21,16 @@ export function useBuildInitialSchema(
   }, [connectorSpecification]);
 }
 
+// useBuildForm hook
 export interface BuildFormHook {
-  initialValues: ServiceFormValues;
+  initialValues: ConnectorFormValues;
   formFields: FormBlock;
 }
 
-export function useBuildForm(jsonSchema: JSONSchema7, initialValues?: Partial<ServiceFormValues>): BuildFormHook {
-  const startValues = useMemo<ServiceFormValues>(
+export function useBuildForm(jsonSchema: JSONSchema7, initialValues?: Partial<ConnectorFormValues>): BuildFormHook {
+  const startValues = useMemo<ConnectorFormValues>(
     () => ({
       name: "",
-      serviceType: "",
       connectionConfiguration: {},
       ...initialValues,
     }),
@@ -45,6 +45,7 @@ export function useBuildForm(jsonSchema: JSONSchema7, initialValues?: Partial<Se
   };
 }
 
+// useBuildUiWidgetsContext hook
 interface BuildUiWidgetsContextHook {
   uiWidgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (widgetId: string, updatedValues: WidgetConfig) => void;
@@ -53,7 +54,7 @@ interface BuildUiWidgetsContextHook {
 
 export const useBuildUiWidgetsContext = (
   formFields: FormBlock[] | FormBlock,
-  formValues: ServiceFormValues,
+  formValues: ConnectorFormValues,
   uiOverrides?: WidgetConfigMap
 ): BuildUiWidgetsContextHook => {
   const [overriddenWidgetState, setUiWidgetsInfo] = useState<WidgetConfigMap>(uiOverrides ?? {});

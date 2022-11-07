@@ -6,18 +6,15 @@ import { useDeepCompareEffect } from "react-use";
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 
 import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
-import { isDestinationDefinitionSpecification } from "core/domain/connector/destination";
-import { isSourceDefinition, isSourceDefinitionSpecification } from "core/domain/connector/source";
 import { FormBaseItem, FormComponentOverrideProps } from "core/form/types";
 import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { isDefined } from "utils/common";
 
-import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
+import { ConnectorFormContextProvider, useConnectorForm } from "./connectorFormContext";
 import { FormRoot } from "./FormRoot";
-import { ServiceFormContextProvider, useServiceForm } from "./serviceFormContext";
-import { ServiceFormValues } from "./types";
+import { ConnectorCardValues, ConnectorFormValues } from "./types";
 import {
   useBuildForm,
   useBuildInitialSchema,
@@ -39,10 +36,10 @@ const FormikPatch: React.FC = () => {
  */
 const PatchInitialValuesWithWidgetConfig: React.FC<{
   schema: JSONSchema7;
-  initialValues: ServiceFormValues;
+  initialValues: ConnectorFormValues;
 }> = ({ schema, initialValues }) => {
-  const { widgetsInfo } = useServiceForm();
-  const { setFieldValue } = useFormikContext<ServiceFormValues>();
+  const { widgetsInfo } = useConnectorForm();
+  const { setFieldValue } = useFormikContext<ConnectorFormValues>();
 
   useDeepCompareEffect(() => {
     const widgetsInfoEntries = Object.entries(widgetsInfo);
@@ -83,42 +80,15 @@ const RevalidateOnValidationSchemaChange: React.FC<{ validationSchema: unknown }
   return null;
 };
 
-/**
- * A component that will observe whenever the serviceType (selected connector)
- * changes and set the name of the connector to match the connector definition name.
- */
-const SetDefaultName: React.FC = () => {
-  const { setFieldValue } = useFormikContext();
-  const { selectedService } = useServiceForm();
-
-  useEffect(() => {
-    if (!selectedService) {
-      return;
-    }
-
-    const timeout = setTimeout(() => {
-      // We need to push this out one execution slot, so the form isn't still in its
-      // initialization status and won't react to this call but would just take the initialValues instead.
-      setFieldValue("name", selectedService.name);
-    });
-    return () => clearTimeout(timeout);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedService]);
-
-  return null;
-};
-
-export interface ServiceFormProps {
+export interface ConnectorFormProps {
   formType: "source" | "destination";
   formId?: string;
-  availableServices: ConnectorDefinition[];
+  selectedConnectorDefinition?: ConnectorDefinition;
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
-  onServiceSelect?: (id: string) => void;
-  onSubmit: (values: ServiceFormValues) => Promise<void> | void;
+  onSubmit: (values: ConnectorFormValues) => Promise<void> | void;
   isLoading?: boolean;
   isEditMode?: boolean;
-  formValues?: Partial<ServiceFormValues>;
+  formValues?: Partial<ConnectorFormValues>;
   hasSuccess?: boolean;
   fetchingConnectorError?: Error | null;
   errorMessage?: React.ReactNode;
@@ -126,10 +96,10 @@ export interface ServiceFormProps {
 
   isTestConnectionInProgress?: boolean;
   onStopTesting?: () => void;
-  testConnector?: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
+  testConnector?: (v?: ConnectorCardValues) => Promise<CheckConnectionRead>;
 }
 
-export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
+export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
   const formId = useUniqueFormId(props.formId);
   const { clearFormChange } = useFormChangeTrackerService();
 
@@ -142,8 +112,8 @@ export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     isTestConnectionInProgress,
     onStopTesting,
     testConnector,
+    selectedConnectorDefinition,
     selectedConnectorDefinitionSpecification,
-    availableServices,
     errorMessage,
   } = props;
 
@@ -153,7 +123,6 @@ export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     () => ({
       type: "object",
       properties: {
-        serviceType: { type: "string" },
         ...(selectedConnectorDefinitionSpecification ? { name: { type: "string" } } : {}),
         ...Object.fromEntries(
           Object.entries({
@@ -161,51 +130,20 @@ export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           }).filter(([, v]) => !!v)
         ),
       },
-      required: ["name", "serviceType"],
+      required: ["name"],
     }),
     [isLoading, selectedConnectorDefinitionSpecification, specifications]
   );
 
   const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
 
-  const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
-
-  useEffect(() => {
-    if (!selectedConnectorDefinitionSpecification) {
-      return;
-    }
-
-    const selectedServiceDefinition = availableServices.find((service) => {
-      if (isSourceDefinition(service)) {
-        const serviceDefinitionId = service.sourceDefinitionId;
-        return (
-          isSourceDefinitionSpecification(selectedConnectorDefinitionSpecification) &&
-          serviceDefinitionId === selectedConnectorDefinitionSpecification.sourceDefinitionId
-        );
-      }
-      const serviceDefinitionId = service.destinationDefinitionId;
-      return (
-        isDestinationDefinitionSpecification(selectedConnectorDefinitionSpecification) &&
-        serviceDefinitionId === selectedConnectorDefinitionSpecification.destinationDefinitionId
-      );
-    });
-    setDocumentationUrl(selectedServiceDefinition?.documentationUrl ?? "");
-    setDocumentationPanelOpen(true);
-  }, [availableServices, selectedConnectorDefinitionSpecification, setDocumentationPanelOpen, setDocumentationUrl]);
-
+  // Overrides default field label(i.e "Source name", "Destination name")
   const uiOverrides = useMemo(() => {
     return {
       name: {
         component: (property: FormBaseItem, componentProps: FormComponentOverrideProps) => (
           <ConnectorNameControl property={property} formType={formType} {...componentProps} />
         ),
-      },
-      serviceType: {
-        /* since we use <ConnectorServiceTypeControl/> outside formik form
-           we need to keep the serviceType field in formik, but hide it.
-           serviceType prop will be removed in further PR
-        */
-        component: () => null,
       },
     };
   }, [formType]);
@@ -219,7 +157,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const validationSchema = useConstructValidationSchema(jsonSchema, uiWidgetsInfo);
 
   const getValues = useCallback(
-    (values: ServiceFormValues) =>
+    (values: ConnectorFormValues) =>
       validationSchema.cast(values, {
         stripUnknown: true,
       }),
@@ -227,7 +165,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   );
 
   const onFormSubmit = useCallback(
-    async (values: ServiceFormValues) => {
+    async (values: ConnectorFormValues) => {
       const valuesToSend = getValues(values);
       await onSubmit(valuesToSend);
 
@@ -246,33 +184,32 @@ export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       enableReinitialize
     >
       {({ dirty }) => (
-        <ServiceFormContextProvider
+        <ConnectorFormContextProvider
+          formType={formType}
           widgetsInfo={uiWidgetsInfo}
           getValues={getValues}
           setUiWidgetsInfo={setUiWidgetsInfo}
           resetUiWidgetsInfo={resetUiWidgetsInfo}
-          formType={formType}
-          selectedConnector={selectedConnectorDefinitionSpecification}
-          availableServices={availableServices}
+          selectedConnectorDefinition={selectedConnectorDefinition}
+          selectedConnectorDefinitionSpecification={selectedConnectorDefinitionSpecification}
           isEditMode={isEditMode}
           isLoadingSchema={isLoading}
           validationSchema={validationSchema}
         >
-          {!isEditMode && <SetDefaultName />}
           <RevalidateOnValidationSchemaChange validationSchema={validationSchema} />
           <FormikPatch />
           <FormChangeTracker changed={dirty} formId={formId} />
           <PatchInitialValuesWithWidgetConfig schema={jsonSchema} initialValues={initialValues} />
           <FormRoot
             {...props}
+            selectedConnector={selectedConnectorDefinitionSpecification}
+            formFields={formFields}
             errorMessage={errorMessage}
             isTestConnectionInProgress={isTestConnectionInProgress}
             onStopTestingConnector={onStopTesting ? () => onStopTesting() : undefined}
             onRetest={testConnector ? async () => await testConnector() : undefined}
-            formFields={formFields}
-            selectedConnector={selectedConnectorDefinitionSpecification}
           />
-        </ServiceFormContextProvider>
+        </ConnectorFormContextProvider>
       )}
     </Formik>
   );

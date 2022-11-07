@@ -10,9 +10,9 @@ import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
 import { FormSection } from "./components/Sections/FormSection";
 import ShowLoadingMessage from "./components/ShowLoadingMessage";
+import { useConnectorForm } from "./connectorFormContext";
 import styles from "./FormRoot.module.scss";
-import { useServiceForm } from "./serviceFormContext";
-import { ServiceFormValues } from "./types";
+import { ConnectorFormValues } from "./types";
 
 interface FormRootProps {
   formFields: FormBlock;
@@ -37,8 +37,8 @@ export const FormRoot: React.FC<FormRootProps> = ({
   onStopTestingConnector,
   selectedConnector,
 }) => {
-  const { dirty, isSubmitting, isValid } = useFormikContext<ServiceFormValues>();
-  const { resetServiceForm, isLoadingSchema, selectedService, isEditMode, formType } = useServiceForm();
+  const { dirty, isSubmitting, isValid } = useFormikContext<ConnectorFormValues>();
+  const { resetServiceForm, isLoadingSchema, selectedService, isEditMode, formType } = useConnectorForm();
 
   return (
     <Form>
