@@ -351,6 +351,8 @@ public class ServerApp implements ServerRunnable {
         openApiConfigHandler,
         operationsHandler,
         schedulerHandler,
+        sourceHandler,
+        sourceDefinitionsHandler,
         workspacesHandler);
   }
 
