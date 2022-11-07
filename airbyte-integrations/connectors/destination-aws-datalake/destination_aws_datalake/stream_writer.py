@@ -115,6 +115,22 @@ class StreamWriter:
 
         return record
 
+    def _add_missing_columns(self, record: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Helper that adds missing columns to a record's top level keys. Required
+        for awswrangler to create the correct schema in glue, even with the explicit
+        schema passed in, awswrangler will remove those columns when not present
+        in the dataframe
+        """
+        schema_keys = self._schema.keys()
+        records_keys = record.keys()
+        difference = list(set(schema_keys).difference(set(records_keys)))
+
+        for key in difference:
+            record[key] = None
+
+        return record
+
     def _get_non_null_json_schema_types(self, typ: Union[str, List[str]]) -> Union[str, List[str]]:
         if isinstance(typ, list):
             return list(filter(lambda x: x != "null", typ))
@@ -321,6 +337,7 @@ class StreamWriter:
     def append_message(self, message: Dict[str, Any]):
         clean_message = self._drop_additional_top_level_properties(message)
         clean_message = self._fix_obvious_type_violations(clean_message)
+        clean_message = self._add_missing_columns(clean_message)
         self._messages.append(clean_message)
 
     def reset(self):
