@@ -399,7 +399,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     final List<FailureReason> failures = getFailureReasons(replicationRunnableFailureRef, destinationRunnableFailureRef,
         output);
 
-    saveState(syncInput, output);
+    prepStateForLaterSaving(syncInput, output);
 
     final ObjectMapper mapper = new ObjectMapper();
     LOGGER.info("sync summary: {}", mapper.writerWithDefaultPrettyPrinter().writeValueAsString(summary));
@@ -459,7 +459,14 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     }).collect(Collectors.toList());
   }
 
-  private void saveState(StandardSyncInput syncInput, ReplicationOutput output) {
+  /**
+   * Extracts state out to the {@link ReplicationOutput} so it can be later saved in the
+   * PersistStateActivity - State is NOT SAVED here.
+   *
+   * @param syncInput
+   * @param output
+   */
+  private void prepStateForLaterSaving(StandardSyncInput syncInput, ReplicationOutput output) {
     if (messageTracker.getSourceOutputState().isPresent()) {
       LOGGER.info("Source output at least one state message");
     } else {
