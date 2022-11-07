@@ -216,6 +216,7 @@ definitions:
         description: The name of the stream
         type: string
       type:
+        title: "estimate type" # this title is required to avoid python codegen conflicts with the "type" parameter in AirbyteMessage. See https://github.com/airbytehq/airbyte/pull/12581
         description: The type of estimate
         type: string
         enum:

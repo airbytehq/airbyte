@@ -99,7 +99,7 @@ class AirbyteErrorTraceMessage(BaseModel):
     failure_type: Optional[FailureType] = Field(None, description="The type of error")
 
 
-class Type1(Enum):
+class EstimateType(Enum):
     STREAM = "STREAM"
     SYNC = "SYNC"
 
@@ -109,7 +109,7 @@ class AirbyteEstimateTraceMessage(BaseModel):
         extra = Extra.allow
 
     name: str = Field(..., description="The name of the stream")
-    type: Type1 = Field(..., description="The type of estimate")
+    type: EstimateType = Field(..., description="The type of estimate", title="estimate type")
     namespace: Optional[str] = Field(None, description="The namespace of the stream")
     row_estimate: Optional[int] = Field(
         None,
