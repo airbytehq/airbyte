@@ -396,7 +396,6 @@ spec:
     documentation_url = spec.documentation_url
     connection_specification = spec.connection_specification
     assert documentation_url == "https://airbyte.com/#yaml-from-manifest"
-    print(connection_specification)
     assert connection_specification["title"] == "Test Spec"
     assert connection_specification["required"] == ["api_key"]
     assert connection_specification["properties"]["api_key"] == {
