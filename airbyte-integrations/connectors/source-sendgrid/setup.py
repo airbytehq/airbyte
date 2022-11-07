@@ -8,7 +8,7 @@ from setuptools import find_packages, setup
 PATH_TO_CDK = f"{os.getcwd()}/airbyte-cdk/python#egg=airbyte_cdk"
 
 MAIN_REQUIREMENTS = [
-    f"airbyte-cdk @ file://{PATH_TO_CDK}/airbyte-cdk#egg=airbyte_cdk",
+    f"airbyte-cdk @ file://{PATH_TO_CDK}",
     "backoff",
     "requests",
 ]
