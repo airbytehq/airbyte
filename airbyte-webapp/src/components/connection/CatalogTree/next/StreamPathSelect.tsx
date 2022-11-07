@@ -2,6 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { PillSelect } from "components/ui/PillSelect";
+import { Text } from "components/ui/Text";
 import { Tooltip } from "components/ui/Tooltip";
 
 import { Path } from "core/domain/catalog";
@@ -37,7 +38,7 @@ export const StreamPathSelect: React.FC<PathPopoutProps> = (props) => {
 
       return (
         <Tooltip placement="bottom-start" control={text}>
-          {text}
+          <Text size="lg">{text}</Text>
         </Tooltip>
       );
     }

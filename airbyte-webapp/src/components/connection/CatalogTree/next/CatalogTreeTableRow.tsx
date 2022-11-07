@@ -7,15 +7,14 @@ import { FormattedMessage } from "react-intl";
 import { Cell, Row } from "components/SimpleTableComponents";
 import { CheckBox } from "components/ui/CheckBox";
 import { Switch } from "components/ui/Switch";
+import { Text } from "components/ui/Text";
 
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 
 import { StreamHeaderProps } from "../StreamHeader";
-import { HeaderCell } from "../styles";
 import styles from "./CatalogTreeTableRow.module.scss";
 import { StreamPathSelect } from "./StreamPathSelect";
 import { SyncModeSelect } from "./SyncModeSelect";
-
 export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   stream,
   destName,
@@ -82,27 +81,27 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
         </div>
       )}
-      <Cell flex={0.5} className={styles.streamRowItem}>
+      <Cell flex={0.5} flush>
         <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
       </Cell>
       {/* <Cell>{fieldCount}</Cell> */}
-      <HeaderCell flex={1} ellipsis title={stream.stream?.namespace || ""} className={styles.streamRowItem}>
-        {stream.stream?.namespace || <FormattedMessage id="form.noNamespace" />}
-      </HeaderCell>
-      <HeaderCell flex={1} ellipsis title={stream.stream?.name || ""} className={styles.streamRowItem}>
-        {stream.stream?.name}
-      </HeaderCell>
+      <Cell flex={1} ellipsis title={stream.stream?.namespace || ""}>
+        <Text size="md">{stream.stream?.namespace || <FormattedMessage id="form.noNamespace" />}</Text>
+      </Cell>
+      <Cell flex={1} ellipsis title={stream.stream?.name || ""}>
+        <Text size="md">{stream.stream?.name}</Text>
+      </Cell>
       <Cell flex={2}>
         {disabled ? (
-          <HeaderCell ellipsis title={syncSchema.syncMode}>
-            {syncSchema.syncMode}
-          </HeaderCell>
+          <Cell ellipsis title={syncSchema.syncMode}>
+            <Text size="md">{syncSchema.syncMode}</Text>
+          </Cell>
         ) : (
           // todo: SyncModeSelect should probably have a Tooltip, append/dedupe ends up ellipsing
           <SyncModeSelect options={availableSyncModes} onChange={onSelectSyncMode} value={syncSchema} />
         )}
       </Cell>
-      <HeaderCell flex={1} className={styles.streamRowItem}>
+      <Cell flex={1}>
         {cursorType && (
           <StreamPathSelect
             pathType={cursorType}
@@ -111,8 +110,8 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             onPathChange={onCursorChange}
           />
         )}
-      </HeaderCell>
-      <HeaderCell flex={1} ellipsis className={styles.streamRowItem}>
+      </Cell>
+      <Cell flex={1} ellipsis>
         {pkType && (
           <StreamPathSelect
             pathType={pkType}
@@ -122,14 +121,14 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             onPathChange={onPrimaryKeyChange}
           />
         )}
-      </HeaderCell>
+      </Cell>
       <FontAwesomeIcon icon={faArrowRight} className={styles.arrowCell} />
-      <HeaderCell flex={1} ellipsis title={destNamespace} className={styles.streamRowItem}>
-        {destNamespace}
-      </HeaderCell>
-      <HeaderCell flex={1} ellipsis title={destName} className={styles.streamRowItem}>
-        {destName}
-      </HeaderCell>
+      <Cell flex={1} ellipsis title={destNamespace}>
+        <Text size="md"> {destNamespace}</Text>
+      </Cell>
+      <Cell flex={1} ellipsis title={destName}>
+        <Text size="md"> {destName}</Text>
+      </Cell>
     </Row>
   );
 };
