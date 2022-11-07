@@ -12,7 +12,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_qonto.auth import QontoApiKeyAuthenticator
-
+from source_qonto.endpoint import get_url_base
 
 # Basic full refresh stream
 class QontoStream(HttpStream, ABC):
@@ -23,7 +23,6 @@ class QontoStream(HttpStream, ABC):
     Each stream should extend this class (or another abstract subclass of it) to specify behavior unique to that stream.
     """
 
-    url_base = "https://thirdparty.qonto.com/v2/"
     next_page_token_field = "current_page"
     primary_key = "id"
 
@@ -31,9 +30,17 @@ class QontoStream(HttpStream, ABC):
         auth = QontoApiKeyAuthenticator(organization_slug=config["organization_slug"], secret_key=config["secret_key"])
         super().__init__(authenticator=auth, **kwargs)
         self.stream_name = stream_name
+        self.config = config
+
+    @property
+    def url_base(self) -> str:
+        return get_url_base(self.config["endpoint"])
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return self.stream_name
 
@@ -89,12 +96,17 @@ class Transactions(QontoStream):
         self.iban = config["iban"]
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         """
         Define any query parameters to be set.
         """
-        start_date = datetime.strptime(stream_state.get(self.cursor_field) if stream_state else self.start_date, self.cursor_date_format)
+        start_date = datetime.strptime(
+            stream_state.get(self.cursor_field) if stream_state else self.start_date, self.cursor_date_format
+        )
         params = {"iban": self.iban, "settled_at_from": start_date.strftime(self.cursor_date_format)}
         if next_page_token:
             params.update(next_page_token)
@@ -114,7 +126,9 @@ class SourceQonto(AbstractSource):
         try:
             headers = {"Authorization": f'{config["organization_slug"]}:{config["secret_key"]}'}
             params = {"iban": config["iban"]}
-            resp = requests.request("GET", url=f"{QontoStream.url_base}transactions", params=params, headers=headers)
+            resp = requests.request(
+                "GET", url=f"{get_url_base(config['endpoint'])}/transactions", params=params, headers=headers
+            )
             status = resp.status_code
             logger.info(f"Ping response code: {status}")
             if status == 200:
