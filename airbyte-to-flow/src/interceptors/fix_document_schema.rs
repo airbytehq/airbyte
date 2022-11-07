@@ -42,7 +42,7 @@ pub fn fix_document_schema_keys(mut doc: serde_json::Value, key_ptrs: Vec<Vec<St
                     // These advanced cases are not supported at the moment as we don't expect
                     // there to be many cases of them
                     if parent_map.contains_key("allOf") || parent_map.contains_key("anyOf") || parent_map.contains_key("not") {
-                        tracing::warn!("automatic fixing of document schema keys for schemas with allOf, anyOf and not are not supported yet, skipping.");
+                        tracing::debug!("automatic fixing of document schema keys for schemas with allOf, anyOf and not are not supported yet, skipping.");
                         return Ok(doc)
                     }
 
