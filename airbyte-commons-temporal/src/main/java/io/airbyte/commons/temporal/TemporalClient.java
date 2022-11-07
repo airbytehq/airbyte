@@ -355,7 +355,8 @@ public class TemporalClient {
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
         .withJobId(jobId.toString())
         .withAttemptId((long) attempt)
-        .withDockerImage(config.getDockerImage());
+        .withDockerImage(config.getDockerImage())
+        .withProtocolVersion(config.getProtocolVersion());
     final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput().withConnectionConfiguration(config.getConnectionConfiguration())
         .withSourceId(config.getSourceId()).withConnectorVersion(config.getConnectorVersion()).withConfigHash(config.getConfigHash());
 
@@ -369,12 +370,14 @@ public class TemporalClient {
     final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig()
         .withJobId(String.valueOf(jobId))
         .withAttemptId((long) attempt)
-        .withDockerImage(config.getSourceDockerImage());
+        .withDockerImage(config.getSourceDockerImage())
+        .withProtocolVersion(config.getSourceProtocolVersion());
 
     final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
         .withJobId(String.valueOf(jobId))
         .withAttemptId((long) attempt)
-        .withDockerImage(config.getDestinationDockerImage());
+        .withDockerImage(config.getDestinationDockerImage())
+        .withProtocolVersion(config.getDestinationProtocolVersion());
 
     final StandardSyncInput input = new StandardSyncInput()
         .withNamespaceDefinition(config.getNamespaceDefinition())
