@@ -61,7 +61,8 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
       final JdbcDatabase database = getDatabase(dataSource);
       final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
 
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, snowflakeGcsStagingSqlOperations, true);
+      attemptSQLCreateTableThenInsertDummyRecThenDropThisTableOperations(outputSchema, database, nameTransformer, snowflakeGcsStagingSqlOperations,
+          true);
       attemptWriteAndDeleteGcsObject(gcsConfig, outputSchema);
 
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);

@@ -67,9 +67,11 @@ public class SnowflakeCopyAzureBlobStorageDestination extends CopyDestination {
 
   @Override
   protected void performCreateInsertTestOnDestination(final String outputSchema,
-      final JdbcDatabase database,
-      final NamingConventionTransformer nameTransformer) throws Exception {
-    AbstractJdbcDestination.attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, getSqlOperations(), true);
+                                                      final JdbcDatabase database,
+                                                      final NamingConventionTransformer nameTransformer)
+      throws Exception {
+    AbstractJdbcDestination.attemptSQLCreateTableThenInsertDummyRecThenDropThisTableOperations(outputSchema, database, nameTransformer,
+        getSqlOperations(), true);
   }
 
   private String getConfiguredSchema(final JsonNode config) {

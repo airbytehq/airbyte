@@ -89,8 +89,8 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   /**
    * This method is deprecated. It verifies table creation, but not insert right to a newly created
-   * table. Use attemptSQLCreateAndDropTableOperations with isNeedTryMakeTestDataInsertInTable
-   * argument instead
+   * table. Use attemptSQLCreateTableThenInsertDummyRecThenDropThisTableOperations with
+   * isNeedTryMakeTestDataInsertInTable argument instead.
    */
   @Deprecated
   public static void attemptSQLCreateAndDropTableOperations(final String outputSchema,
@@ -98,14 +98,27 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
                                                             final NamingConventionTransformer namingResolver,
                                                             final SqlOperations sqlOps)
       throws Exception {
-    attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOps, false);
+    attemptSQLCreateTableThenInsertDummyRecThenDropThisTableOperations(outputSchema, database, namingResolver, sqlOps, false);
   }
 
-  public static void attemptSQLCreateAndDropTableOperations(final String outputSchema,
-                                                            final JdbcDatabase database,
-                                                            final NamingConventionTransformer namingResolver,
-                                                            final SqlOperations sqlOps,
-                                                            final boolean isNeedTryMakeTestDataInsertInTable)
+  /**
+   * Verifies if provided creds has enough permissions. Steps are: 1. Create schema if not exists. 2.
+   * Create test table. 3. Insert dummy record to newly created table if
+   * "isNeedTryToInsertDummyRecordInNewlyCreatedTable" set to true. 4. Delete table created on step 2.
+   *
+   * @param outputSchema - schema to tests against.
+   * @param database - database to tests against.
+   * @param namingResolver - naming resolver.
+   * @param sqlOps - SqlOperations object
+   * @param isNeedTryToInsertDummyRecordInNewlyCreatedTable - set true if need to make attempt to
+   *        insert dummy records to newly created table, Set false to skip insert step.
+   * @throws Exception
+   */
+  public static void attemptSQLCreateTableThenInsertDummyRecThenDropThisTableOperations(final String outputSchema,
+                                                                                        final JdbcDatabase database,
+                                                                                        final NamingConventionTransformer namingResolver,
+                                                                                        final SqlOperations sqlOps,
+                                                                                        final boolean isNeedTryToInsertDummyRecordInNewlyCreatedTable)
       throws Exception {
     // verify we have write permissions on the target schema by creating a table with a random name,
     // then dropping that table
@@ -120,11 +133,8 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       sqlOps.createTableIfNotExists(database, outputSchema, outputTableName);
       // verify if user has permission to make SQL INSERT queries
       try {
-        if (isNeedTryMakeTestDataInsertInTable) {
-          final JsonNode dummyDataToInsert = Jsons.deserialize("{ \"field1\": true }");
-          AirbyteRecordMessage airbyteRecordMessage =
-              new AirbyteRecordMessage().withStream("stream1").withData(dummyDataToInsert).withEmittedAt(1602637589000L);
-          sqlOps.insertRecords(database, List.of(airbyteRecordMessage), outputSchema, outputTableName);
+        if (isNeedTryToInsertDummyRecordInNewlyCreatedTable) {
+          sqlOps.insertRecords(database, List.of(getDummyRecord()), outputSchema, outputTableName);
         }
       } finally {
         sqlOps.dropTableIfExists(database, outputSchema, outputTableName);
@@ -139,6 +149,19 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     } catch (final Exception e) {
       throw new Exception(e);
     }
+  }
+
+  /**
+   * Generates a dummy AirbyteRecordMessage with random values that make no sense.
+   *
+   * @return AirbyteRecordMessage object with dummy values that may be used to test insert permission.
+   */
+  private static AirbyteRecordMessage getDummyRecord() {
+    final JsonNode dummyDataToInsert = Jsons.deserialize("{ \"field1\": true }");
+    return new AirbyteRecordMessage()
+        .withStream("stream1")
+        .withData(dummyDataToInsert)
+        .withEmittedAt(1602637589000L);
   }
 
   protected DataSource getDataSource(final JsonNode config) {
