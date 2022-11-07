@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import { FormattedMessage } from "react-intl";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { Button } from "components/ui/Button";
 import { Text } from "components/ui/Text";
@@ -8,6 +9,7 @@ import { SchemaChange } from "core/request/AirbyteClient";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { useRefreshSourceSchemaWithConfirmationOnDirty } from "views/Connection/ConnectionForm/components/refreshSourceSchemaWithConfirmationOnDirty";
 
+import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
 import styles from "./SchemaChangesDetected.module.scss";
 
 export const useSchemaChanges = (schemaChange: SchemaChange) => {
@@ -34,10 +36,20 @@ export const SchemaChangesDetected: React.FC = () => {
 
   const { hasBreakingSchemaChange, hasNonBreakingSchemaChange } = useSchemaChanges(schemaChange);
   const refreshSchema = useRefreshSourceSchemaWithConfirmationOnDirty(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   if (schemaHasBeenRefreshed) {
     return null;
   }
+
+  const onReviewCTAClick: React.MouseEventHandler<HTMLButtonElement> = () => {
+    if (!location.pathname.includes(`/${ConnectionSettingsRoutes.REPLICATION}`)) {
+      navigate(ConnectionSettingsRoutes.REPLICATION);
+    }
+
+    refreshSchema();
+  };
 
   const schemaChangeClassNames = {
     [styles.breaking]: hasBreakingSchemaChange,
@@ -49,7 +61,7 @@ export const SchemaChangesDetected: React.FC = () => {
       <Text size="lg">
         <FormattedMessage id={`connection.schemaChange.${hasBreakingSchemaChange ? "breaking" : "nonBreaking"}`} />
       </Text>
-      <Button onClick={() => refreshSchema()} isLoading={schemaRefreshing}>
+      <Button onClick={onReviewCTAClick} isLoading={schemaRefreshing}>
         <FormattedMessage id="connection.schemaChange.reviewCTA" />
       </Button>
     </div>
