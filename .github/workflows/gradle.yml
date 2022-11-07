@@ -910,6 +910,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
         id: install
 
+      - uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.21.2' # default is latest stable
+
       - uses: AbsaOSS/k3d-action@v2
         name: "Create Single Cluster"
         with:
