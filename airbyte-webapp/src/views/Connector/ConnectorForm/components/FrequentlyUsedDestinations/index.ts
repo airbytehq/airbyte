@@ -1,1 +1,1 @@
-export { FrequentlyUsedDestinations } from "./FrequentlyUsedDestinations";
+export { FrequentlyUsedConnectors } from "./FrequentlyUsedDestinations";

@@ -5,10 +5,11 @@ import { useLocation } from "react-router-dom";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationDefinitionRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
+import { useExperiment } from "hooks/services/Experiment";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { ConnectorCardValues, FrequentlyUsedDestinations, StartWithDestination } from "views/Connector/ConnectorForm";
+import { ConnectorCardValues, FrequentlyUsedConnectors, StartWithDestination } from "views/Connector/ConnectorForm";
 
 import styles from "./DestinationForm.module.scss";
 
@@ -63,8 +64,17 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
 
   const errorMessage = error ? generateMessageFromError(error) : null;
 
+  const frequentlyUsedDestinationIds = useExperiment("connector.frequentlyUsedDestinationIds", [
+    "22f6c74f-5699-40ff-833c-4a879ea40133",
+    "424892c4-daac-4491-b35d-c6688ba547ba",
+  ]);
   const frequentlyUsedDestinationsComponent = !isLoading && !destinationDefinitionId && (
-    <FrequentlyUsedDestinations onDestinationSelect={onDropDownSelect} availableServices={destinationDefinitions} />
+    <FrequentlyUsedConnectors
+      connectorType="destination"
+      onConnectorSelect={onDropDownSelect}
+      availableServices={destinationDefinitions}
+      connectorIds={frequentlyUsedDestinationIds}
+    />
   );
   const startWithDestinationComponent = !isLoading && !destinationDefinitionId && (
     <div className={styles.startWithDestinationContainer}>

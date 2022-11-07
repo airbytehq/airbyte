@@ -4,20 +4,21 @@ import { IntlProvider } from "react-intl";
 import en from "locales/en.json";
 
 import { mockData } from "../../../../../test-utils/mock-data/mockFrequentlyUsedDestinations";
-import { FrequentlyUsedDestinationsCard, FrequentlyUsedDestinationsCardProps } from "./FrequentlyUsedDestinationsCard";
+import { FrequentlyUsedConnectorsCard, FrequentlyUsedConnectorsCardProps } from "./FrequentlyUsedDestinationsCard";
 
-const renderFrequentlyUsedDestinationsComponent = (props: FrequentlyUsedDestinationsCardProps) =>
+const renderFrequentlyUsedConnectorsComponent = (props: FrequentlyUsedConnectorsCardProps) =>
   render(
     <IntlProvider locale="en" messages={en}>
-      <FrequentlyUsedDestinationsCard {...props} />
+      <FrequentlyUsedConnectorsCard {...props} />
     </IntlProvider>
   );
 
 describe("<FrequentlyUsedDestinations />", () => {
   it("should renders with mock data without crash", () => {
-    const component = renderFrequentlyUsedDestinationsComponent({
-      destinations: mockData,
-      onDestinationSelect: jest.fn(),
+    const component = renderFrequentlyUsedConnectorsComponent({
+      connectors: mockData,
+      connectorType: "destination",
+      onConnectorSelect: jest.fn(),
     });
 
     expect(component).toMatchSnapshot();
@@ -25,9 +26,10 @@ describe("<FrequentlyUsedDestinations />", () => {
 
   it("should call provided handler with right param", async () => {
     const handler = jest.fn();
-    const { getByText } = renderFrequentlyUsedDestinationsComponent({
-      destinations: mockData,
-      onDestinationSelect: handler,
+    const { getByText } = renderFrequentlyUsedConnectorsComponent({
+      connectors: mockData,
+      connectorType: "destination",
+      onConnectorSelect: handler,
     });
     fireEvent.click(getByText("BigQuery"));
 

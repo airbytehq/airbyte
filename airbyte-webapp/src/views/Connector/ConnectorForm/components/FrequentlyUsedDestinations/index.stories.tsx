@@ -1,19 +1,19 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
 import { mockData } from "../../../../../test-utils/mock-data/mockFrequentlyUsedDestinations";
-import { FrequentlyUsedDestinationsCard } from "./FrequentlyUsedDestinationsCard";
+import { FrequentlyUsedConnectorsCard } from "./FrequentlyUsedDestinationsCard";
 
 export default {
   title: "Views/FrequentlyUsedDestinations",
-  component: FrequentlyUsedDestinationsCard,
+  component: FrequentlyUsedConnectorsCard,
   args: {
     destinations: mockData,
     propertyPath: "serviceType",
   },
-} as ComponentMeta<typeof FrequentlyUsedDestinationsCard>;
+} as ComponentMeta<typeof FrequentlyUsedConnectorsCard>;
 
-export const Template: ComponentStory<typeof FrequentlyUsedDestinationsCard> = (args) => (
+export const Template: ComponentStory<typeof FrequentlyUsedConnectorsCard> = (args) => (
   <div style={{ maxWidth: 560 }}>
-    <FrequentlyUsedDestinationsCard {...args} />
+    <FrequentlyUsedConnectorsCard {...args} />
   </div>
 );
