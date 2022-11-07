@@ -6,7 +6,7 @@ import styles from "./CodeEditor.module.scss";
 interface CodeEditorProps {
   value: string;
   language?: string;
-  theme?: "airbyte" | "vs-dark" | "light";
+  theme?: "airbyte-dark" | "airbyte-light" | "vs-dark" | "light";
   readOnly?: boolean;
   onChange?: (value: string | undefined) => void;
   height?: string;
@@ -33,7 +33,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   lineNumberCharacterWidth,
 }) => {
   const setAirbyteTheme = (monaco: Monaco) => {
-    monaco.editor.defineTheme("airbyte", {
+    monaco.editor.defineTheme("airbyte-dark", {
       base: "vs-dark",
       inherit: true,
       rules: [
@@ -48,7 +48,22 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       },
     });
 
-    monaco.editor.setTheme("airbyte");
+    monaco.editor.defineTheme("airbyte-light", {
+      base: "vs",
+      inherit: true,
+      rules: [
+        { token: "string.yaml", foreground: expandHexValue(styles.lightString) },
+        { token: "type", foreground: expandHexValue(styles.lightType) },
+        { token: "number", foreground: expandHexValue(styles.lightNumber) },
+        { token: "delimiter", foreground: expandHexValue(styles.lightDelimiter) },
+        { token: "keyword", foreground: expandHexValue(styles.lightKeyword) },
+      ],
+      colors: {
+        "editor.background": "#00000000", // transparent, so that parent background is shown instead
+        "editorLineNumber.foreground": expandHexValue(styles.lightLineNumber),
+        "editorLineNumber.activeForeground": expandHexValue(styles.lightLineNumberActive),
+      },
+    });
   };
 
   return (

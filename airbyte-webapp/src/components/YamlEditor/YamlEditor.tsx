@@ -17,7 +17,7 @@ export const YamlEditor: React.FC = () => {
         <CodeEditor
           value={yamlManifest}
           language="yaml"
-          theme="airbyte"
+          theme="airbyte-light"
           onChange={(value: string | undefined) => setYamlManifest(value ?? "")}
           lineNumberCharacterWidth={6}
         />
