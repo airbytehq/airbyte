@@ -1,7 +1,7 @@
 import { renderHook } from "@testing-library/react-hooks";
 import { mockConnection } from "test-utils/mock-data/mockConnection";
 import { mockDestination } from "test-utils/mock-data/mockDestination";
-import mockWorkspace from "test-utils/mock-data/mockWorkspace.json";
+import { mockWorkspace } from "test-utils/mock-data/mockWorkspace";
 import { TestWrapper as wrapper } from "test-utils/testutils";
 
 import { frequencyConfig } from "config/frequencyConfig";

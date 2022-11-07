@@ -2,7 +2,7 @@ import { act, renderHook } from "@testing-library/react-hooks";
 import React from "react";
 import { mockConnection } from "test-utils/mock-data/mockConnection";
 import { mockDestination } from "test-utils/mock-data/mockDestination";
-import mockWorkspace from "test-utils/mock-data/mockWorkspace.json";
+import { mockWorkspace } from "test-utils/mock-data/mockWorkspace";
 import { TestWrapper } from "test-utils/testutils";
 
 import { WebBackendConnectionUpdate } from "core/request/AirbyteClient";

@@ -7,7 +7,7 @@ import React, { Suspense } from "react";
 import selectEvent from "react-select-event";
 import { mockConnection } from "test-utils/mock-data/mockConnection";
 import { mockDestination } from "test-utils/mock-data/mockDestination";
-import mockWorkspace from "test-utils/mock-data/mockWorkspace.json";
+import { mockWorkspace } from "test-utils/mock-data/mockWorkspace";
 import { mockWorkspaceId } from "test-utils/mock-data/mockWorkspaceId";
 import { TestWrapper } from "test-utils/testutils";
 
