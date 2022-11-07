@@ -4,9 +4,7 @@
       "stream": {
         "name": "payouts",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": null,
         "default_cursor_field": null
       },
@@ -17,9 +15,7 @@
       "stream": {
         "name": "transactions",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": null,
         "default_cursor_field": null
       },

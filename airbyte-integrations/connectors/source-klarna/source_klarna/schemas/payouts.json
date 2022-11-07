@@ -119,11 +119,7 @@
       "description": "Whether the amounts are net or gross",
       "example": "NET",
       "type": "string",
-      "enum": [
-        "GROSS",
-        "NET",
-        "GROSS_FEE"
-      ]
+      "enum": ["GROSS", "NET", "GROSS_FEE"]
     },
     "merchant_id": {
       "description": "The merchant id",
@@ -137,4 +133,3 @@
   },
   "$schema": "http://json-schema.org/schema#"
 }
-
