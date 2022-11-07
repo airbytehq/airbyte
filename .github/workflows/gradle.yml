@@ -912,6 +912,7 @@ jobs:
           minikube version: 'v1.26.1'
           kubernetes version: 'v1.21.14'
           driver: docker
+          start args: --force
       - name: Try the cluster !
         run: kubectl get pods -A
 
