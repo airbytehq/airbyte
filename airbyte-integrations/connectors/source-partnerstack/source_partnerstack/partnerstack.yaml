@@ -13,18 +13,11 @@ definitions:
       password: "{{ config['private_key'] }}"
     request_options_provider:
       request_parameters:
-        min_created: "{{ timestamp(stream_slice['start_time']) * 1000 }}"
+        min_created: "{{ timestamp(config['start_date']) * 1000 }}"
   stream_slicer:
-    type: "DatetimeStreamSlicer"
-    start_datetime:
-      datetime: "{{ config['start_date'] }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    end_datetime:
-      datetime: "{{ now_utc() }}"
-      datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
-    step: "30d"
-    cursor_field: "{{ options.stream_cursor_field }}"
-    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    request_cursor_field: "min_updated"
+    cursor_field: "updated_at"
+    class_name: source_partnerstack.components.PartnerstackSlicer
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
