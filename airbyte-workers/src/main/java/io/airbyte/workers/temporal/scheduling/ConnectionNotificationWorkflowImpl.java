@@ -33,8 +33,6 @@ public class ConnectionNotificationWorkflowImpl implements ConnectionNotificatio
       Notification notification = new Notification().withNotificationType(NotificationType.SLACK).withSendOnFailure(false).withSendOnSuccess(false)
           .withSlackConfiguration(slackConfig.get());
       SlackNotificationClient notificationClient = new SlackNotificationClient(notification);
-      log.info("created notification client");
-      log.info("notification client is: " + notificationClient);
       return notifySchemaChangeActivity.notifySchemaChange(notificationClient, connectionId, isBreaking);
     } else {
       return false;
