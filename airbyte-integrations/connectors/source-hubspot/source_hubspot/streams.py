@@ -1107,7 +1107,6 @@ class ContactLists(IncrementalStream):
     limit_field = "count"
     need_chunk = False
     scopes = {"crm.lists.read"}
-    primary_key = "listId"
 
 
 class ContactsListMemberships(Stream):
@@ -1326,7 +1325,6 @@ class FormSubmissions(Stream):
     url = "/form-integrations/v1/submissions/forms"
     limit = 50
     updated_at_field = "updatedAt"
-    primary_key = "submittedAt"
     scopes = {"forms"}
 
     def path(
@@ -1415,7 +1413,6 @@ class PropertyHistory(Stream):
     url = "/contacts/v1/lists/all/contacts/all"
     updated_at_field = "timestamp"
     created_at_field = "timestamp"
-    primary_key = "timestamp"
     entity = "contacts"
     data_field = "contacts"
     page_field = "vid-offset"
@@ -1466,7 +1463,6 @@ class SubscriptionChanges(IncrementalStream):
     data_field = "timeline"
     more_key = "hasMore"
     updated_at_field = "timestamp"
-    primary_key = "timestamp"
     scopes = {"content"}
 
 

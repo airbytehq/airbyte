@@ -33,6 +33,10 @@ COPY source_hubspot ./source_hubspot
 COPY documentation_url.patch.json ./
 COPY spec.patch.json ./
 COPY oauth2.patch.json ./
+COPY streams/contact_lists.pk.json ./streams/contact_lists.pk.json
+COPY streams/form_submissions.pk.json ./streams/form_submissions.pk.json
+COPY streams/property_history.pk.json ./streams/property_history.pk.json
+COPY streams/subscription_changes.pk.json ./streams/subscription_changes.pk.json
 
 COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
