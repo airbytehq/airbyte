@@ -8,9 +8,13 @@ COPY source_surveymonkey ./source_surveymonkey
 COPY main.py ./
 COPY setup.py ./
 RUN pip install .
+COPY oauth2.patch.json ./
+COPY spec.patch.json ./
+COPY spec.map.json ./
+COPY documentation_url.patch.json ./
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
-COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./
+COPY --from=ghcr.io/estuary/airbyte-to-flow:mahdi-test /airbyte-to-flow ./
 ENTRYPOINT ["/airbyte/integration_code/airbyte-to-flow", "--connector-entrypoint", "python /airbyte/integration_code/main.py"]
 
 LABEL io.airbyte.version=v1

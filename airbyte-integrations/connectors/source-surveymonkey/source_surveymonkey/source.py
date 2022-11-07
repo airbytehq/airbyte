@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 from itertools import groupby
@@ -59,7 +59,7 @@ class SourceSurveymonkey(AbstractSource):
 
     @staticmethod
     def get_authenticator(config: Mapping[str, Any]):
-        token = config["credentials"]["access_token"]
+        token = config["access_token"]
         return TokenAuthenticator(token=token)
 
     @classmethod

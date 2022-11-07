@@ -1,0 +1,55 @@
+{
+  "required": ["credentials", "start_date"],
+  "properties": {
+    "access_token": null,
+    "credentials": {
+      "type": "object",
+      "title": "Credentials",
+      "description": "Credentials for the service",
+      "oneOf": [{
+        "x-oauth2-provider": "surveymonkey",
+        "required": ["auth_type", "access_token", "client_id", "client_secret"],
+        "properties": {
+          "auth_type": {
+            "type": "string",
+            "const": "oauth2",
+            "default": "oauth2"
+          },
+          "access_token": {
+            "title": "Access Token",
+            "order": 0,
+            "type": "string",
+            "airbyte_secret": true,
+            "description": "Access Token for making authenticated requests. See the docs for more information on how to generate this key: https://go.estuary.dev/Y8iqCr"
+          },
+            "client_id": {
+              "title": "Client ID",
+              "type": "string",
+              "airbyte_secret": true
+          },
+            "client_secret": {
+              "title": "Client Secret",
+              "type": "string",
+              "airbyte_secret": true
+          }
+        }
+      }, {
+        "required": ["auth_type", "access_token"],
+        "properties": {
+          "auth_type": {
+            "type": "string",
+            "const": "access_token",
+            "default": "access_token"
+          },
+          "access_token": {
+            "title": "Access Token",
+            "order": 0,
+            "type": "string",
+            "airbyte_secret": true,
+            "description": "Access Token for making authenticated requests. See the docs for more information on how to generate this key: https://go.estuary.dev/Y8iqCr"
+          }
+        }
+      }]
+    }
+  }
+}

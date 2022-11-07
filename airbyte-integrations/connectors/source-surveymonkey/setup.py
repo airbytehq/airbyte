@@ -1,11 +1,11 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["estuary-airbyte-cdk", "vcrpy==4.1.1"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "vcrpy==4.1.1"]
 
 TEST_REQUIREMENTS = ["pytest~=6.1", "source-acceptance-test", "requests_mock"]
 

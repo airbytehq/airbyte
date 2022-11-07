@@ -1,13 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["id"],
   "properties": {
     "page_id": {
       "type": ["string", "null"]
     },
     "id": {
-      "type": ["string"]
+      "type": ["string", "null"]
     },
     "position": {
       "type": ["integer", "null"]

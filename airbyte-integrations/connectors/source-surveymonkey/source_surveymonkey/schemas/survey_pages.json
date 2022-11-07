@@ -1,7 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["id"],
   "properties": {
     "title": {
       "type": ["string", "null"]
@@ -16,7 +15,7 @@
       "type": ["integer", "null"]
     },
     "id": {
-      "type": ["string"]
+      "type": ["string", "null"]
     },
     "href": {
       "type": ["string", "null"]
