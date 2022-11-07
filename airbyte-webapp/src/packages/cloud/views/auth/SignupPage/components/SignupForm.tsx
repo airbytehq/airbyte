@@ -1,4 +1,4 @@
-import { Field, FieldProps, Formik } from "formik";
+import { Field, FieldProps, Formik, Form } from "formik";
 import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useSearchParams } from "react-router-dom";
@@ -15,7 +15,7 @@ import { isGdprCountry } from "utils/dataPrivacy";
 import { links } from "utils/links";
 
 import CheckBoxControl from "../../components/CheckBoxControl";
-import { BottomBlock, FieldItem, Form, RowFieldItem } from "../../components/FormComponents";
+import { BottomBlock, FieldItem, RowFieldItem } from "../../components/FormComponents";
 import styles from "./SignupForm.module.scss";
 
 interface FormValues {
