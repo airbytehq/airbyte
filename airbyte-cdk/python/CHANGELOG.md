@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.5.4
+## 0.6.0
 Low-code: Add support for monthly and yearly incremental updates for `DatetimeStreamSlicer`
 
 ## 0.5.4
