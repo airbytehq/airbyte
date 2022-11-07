@@ -16,6 +16,7 @@ import io.airbyte.integrations.debezium.internals.PostgresConverter;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource.SslMode;
 import java.net.URI;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +56,8 @@ public class PostgresCdcProperties {
     props.setProperty("datetime.type", PostgresConverter.class.getName());
     props.setProperty("include.unknown.datatypes", "true");
 
-    props.setProperty("heartbeat.interval.ms", String.valueOf(1000));
+
+    props.setProperty("heartbeat.interval.ms", Long.toString(Duration.ofSeconds(10).toMillis()));
 
     // Check params for SSL connection in config and add properties for CDC SSL connection
     // https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-property-database-sslmode

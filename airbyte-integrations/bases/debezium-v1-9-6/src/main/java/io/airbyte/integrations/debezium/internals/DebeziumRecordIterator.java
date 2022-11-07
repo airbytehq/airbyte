@@ -48,7 +48,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   private boolean hasSnapshotFinished;
   private boolean signalledClose;
   private LocalDateTime tsLastHeartbeat;
-  private Long lastHeartbeatValue;
+  private Long lastHeartbeatPosition;
 
   public DebeziumRecordIterator(final LinkedBlockingQueue<ChangeEvent<String, String>> queue,
                                 final CdcTargetPosition targetPosition,
@@ -65,7 +65,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     this.hasSnapshotFinished = true;
     this.signalledClose = false;
     tsLastHeartbeat = null;
-    lastHeartbeatValue = null;
+    lastHeartbeatPosition = null;
   }
 
   @Override
@@ -76,7 +76,10 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
       final ChangeEvent<String, String> next;
       try {
-        final Duration waitTime = SUBSEQUENT_RECORD_WAIT_TIME;
+        // #18987: waitTime here is largely meaningless with heartbeats but leaving for backward
+        // compatibility
+        // for connectors not implementing heartbeat yet (MySql, MSSql)
+        final Duration waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME : this.firstRecordWaitTime;
         next = queue.poll(waitTime.getSeconds(), TimeUnit.SECONDS);
       } catch (final InterruptedException e) {
         throw new RuntimeException(e);
@@ -84,23 +87,30 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
 
       // if within the timeout, the consumer could not get a record, it is time to tell the producer to
       // shutdown.
+      // #18987: Noticed in testing that it's possible for DBZ to be stuck "Searching for WAL resume
+      // position"
+      // when no changes exist. In that case queue will pop after timeout with null value for next
       if (next == null) {
         LOGGER.info("Closing: queue returned null event");
         requestClose();
         LOGGER.info("no record found. polling again.");
         continue;
       }
-      LOGGER.info("*** checking heartbeat lsn for: {}", next);
-      final Long hbCurr = targetPosition.getHeartbeatPosition(next);
-      if (hbCurr != null) {
-        if (targetPosition.reachedTargetPosition(hbCurr)
-            || (noChangeInHeartbeatLSN(hbCurr) && tooMuchTimePassed())) {
-          LOGGER.info("Closing: Heartbeat indicate sync is done");
+
+      // check if heartbeat and read hearbeat position
+      LOGGER.debug("checking heartbeat lsn for: {}", next);
+      final Long heartbeatPos = targetPosition.getHeartbeatPosition(next);
+      if (heartbeatPos != null) {
+        // wrap up sync if heartbeat position crossed the target OR heartbeat position hasn't changed for
+        // too long
+        if (targetPosition.reachedTargetPosition(heartbeatPos)
+            || (heartbeatPos.equals(this.lastHeartbeatPosition) && heartbeatPosNotChanging())) {
+          LOGGER.info("Closing: Heartbeat indicates sync is done");
           requestClose();
         }
-        if (!hbCurr.equals(this.lastHeartbeatValue)) {
+        if (!heartbeatPos.equals(this.lastHeartbeatPosition)) {
           this.tsLastHeartbeat = LocalDateTime.now();
-          this.lastHeartbeatValue = hbCurr;
+          this.lastHeartbeatPosition = heartbeatPos;
         }
         continue;
       }
@@ -110,26 +120,21 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
 
       // if the last record matches the target file position, it is time to tell the producer to shutdown.
       if (!signalledClose && shouldSignalClose(eventAsJson)) {
+        LOGGER.info("Closing: Change event reached target position");
         requestClose();
       }
       this.tsLastHeartbeat = null;
-      this.lastHeartbeatValue = null;
+      this.lastHeartbeatPosition = null;
       receivedFirstRecord = true;
       return next;
     }
     return endOfData();
   }
 
-  private boolean tooMuchTimePassed() {
+  private boolean heartbeatPosNotChanging() {
     final Duration tbt = Duration.between(this.tsLastHeartbeat, LocalDateTime.now());
-    LOGGER.info("*** time since last hb change {}s", tbt.toSeconds());
+    LOGGER.debug("Time since last hb_pos change {}s", tbt.toSeconds());
     return tbt.compareTo(SUBSEQUENT_RECORD_WAIT_TIME) > 0;
-  }
-
-  private boolean noChangeInHeartbeatLSN(final Long currLsn) {
-    LOGGER.info("*** last hb {}. new hb {}. same {}", this.lastHeartbeatValue, currLsn, currLsn.equals(this.lastHeartbeatValue));
-    return (currLsn.equals(this.lastHeartbeatValue));
-
   }
 
   private boolean hasSnapshotFinished(final JsonNode eventAsJson) {
@@ -155,6 +160,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
    */
   @Override
   public void close() throws Exception {
+    LOGGER.info("Closing: Iterator closing");
     requestClose();
   }
 

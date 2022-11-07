@@ -13,7 +13,6 @@ import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
 import io.debezium.engine.ChangeEvent;
 import java.lang.reflect.Field;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import org.apache.kafka.connect.source.SourceRecord;
@@ -73,13 +72,12 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
   @Override
   public Long getHeartbeatPosition(final ChangeEvent<String, String> heartbeatEvent) {
     if (isHeartbeatEvent(heartbeatEvent)) {
-      LOGGER.info("*** Trying to get heartbeat lsn");
       try {
         final Field f = heartbeatEvent.getClass().getDeclaredField("sourceRecord");
         f.setAccessible(true);
         final SourceRecord sr = (SourceRecord) f.get(heartbeatEvent);
-        LOGGER.info("*** sr: {}", sr);
         final Long hbLsn = (Long) sr.sourceOffset().get("lsn");
+        LOGGER.debug("Found heartbeat lsn: {}", hbLsn);
         return hbLsn;
       } catch (final NoSuchFieldException | IllegalAccessException e) {
         LOGGER.info("failed to get heartbeat lsn");
