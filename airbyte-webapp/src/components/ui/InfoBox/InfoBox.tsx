@@ -8,7 +8,7 @@ interface Props {
 }
 
 const Box = styled.div`
-  background: ${({ theme }) => theme.darkBeigeColor};
+  background: ${({ theme }) => theme.yellow100};
   border-radius: 8px;
   padding: 18px 25px 22px;
   font-size: 14px;
