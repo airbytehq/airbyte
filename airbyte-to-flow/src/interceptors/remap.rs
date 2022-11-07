@@ -12,7 +12,7 @@ pub fn remap(doc: &mut serde_json::Value, mapping: &serde_json::Value) -> Result
         let value_ptr = doc::Pointer::from_str(value_str);
 
         // copy from "value" pointer to "key" pointer
-        {
+        if key != "" {
             let location = key_ptr.create(doc).ok_or(Error::InvalidMapping(format!("could not query {} in document", key)))?;
             *location = value_ptr.query(&doc_copy).ok_or(Error::InvalidMapping(format!("could not query {} in document", value_str)))?.clone();
         }
