@@ -13105,6 +13105,25 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-zapier-supported-storage:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/zapier-supported-storage"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Zapier Supported Storage Spec"
+      type: "object"
+      required:
+      - "secret"
+      additionalProperties: true
+      properties:
+        secret:
+          title: "Secret Key"
+          type: "string"
+          description: "Secret key supplied by zapier"
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-zendesk-chat:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-chat"
