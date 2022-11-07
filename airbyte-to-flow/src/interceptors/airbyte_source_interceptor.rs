@@ -160,31 +160,35 @@ impl AirbyteSourceInterceptor {
                     cursor_field: stream.default_cursor_field,
                 };
 
-                let source_defined_primary_key = stream.source_defined_primary_key.unwrap_or(Vec::new());
-                let mut key_ptrs = source_defined_primary_key.iter()
+                let mut source_defined_primary_key = stream.source_defined_primary_key.unwrap_or(Vec::new());
+
+                let recommended_name = stream_to_recommended_name(&stream.name);
+                eprintln!("{}", format!("{}/{}{}", STREAM_PATCH_DIR_NAME, recommended_name, STREAM_PK_SUFFIX));
+                let doc_pk = std::fs::read_to_string(format!("{}/{}{}", STREAM_PATCH_DIR_NAME, recommended_name, STREAM_PK_SUFFIX))
+                    .ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
+                eprintln!("{:?}", doc_pk);
+                if let Some(p) = doc_pk {
+                    source_defined_primary_key = p.as_array()
+                        .ok_or(Error::InvalidPKPatch("expected an array".to_string()))?
+                        .into_iter()
+                        .map(|s| s.as_str().unwrap().split('/').map(|a| a.to_owned()).collect())
+                        .collect();
+                }
+
+                let key_ptrs = source_defined_primary_key.iter()
                         .map(|k| doc::Pointer::from_vec(k).to_string())
                         .collect();
-                let recommended_name = stream_to_recommended_name(&stream.name);
 
 
                 let mut doc_schema = sj::from_str::<sj::Value>(stream.json_schema.get())?;
+                eprintln!("{}", format!("{}/{}{}", STREAM_PATCH_DIR_NAME, recommended_name, STREAM_PATCH_SUFFIX));
                 let doc_schema_patch = std::fs::read_to_string(format!("{}/{}{}", STREAM_PATCH_DIR_NAME, recommended_name, STREAM_PATCH_SUFFIX))
-                    .ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
-
-                let doc_pk = std::fs::read_to_string(format!("{}/{}{}", STREAM_PATCH_DIR_NAME, recommended_name, STREAM_PK_SUFFIX))
                     .ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
 
                 if let Some(p) = doc_schema_patch {
                     merge(&mut doc_schema, &p);
                 }
 
-                if let Some(p) = doc_pk {
-                    key_ptrs = p.as_array()
-                        .ok_or(Error::InvalidPKPatch("expected an array".to_string()))?
-                        .into_iter()
-                        .map(|s| s.as_str().unwrap().to_owned())
-                        .collect();
-                }
 
                 resp.bindings.push(discover_response::Binding {
                     recommended_name,
