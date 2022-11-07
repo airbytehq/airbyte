@@ -49,70 +49,68 @@
       "type": "string"
     },
     "VAT_ITEMS": {
-      "type": ["null","array"],
-      "items":
-        {
-          "type": "object",
-          "properties": {
-            "VAT_PERCENT": {
-              "type": "integer"
-            },
-            "COMPLETE_NET": {
-              "type": "number"
-            },
-            "VAT_VALUE": {
-              "type": "number"
-            }
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "VAT_PERCENT": {
+            "type": "integer"
+          },
+          "COMPLETE_NET": {
+            "type": "number"
+          },
+          "VAT_VALUE": {
+            "type": "number"
           }
         }
+      }
     },
     "ITEMS": {
-      "type": ["null","array"],
-      "items":
-        {
-          "type": "object",
-          "properties": {
-            "INVOICE_ITEM_ID": {
-              "type": "integer"
-            },
-            "ARTICLE_NUMBER": {
-              "type": "string"
-            },
-            "DESCRIPTION": {
-              "type": "string",
-              "empty": true
-            },
-            "QUANTITY": {
-              "type": "integer"
-            },
-            "UNIT_PRICE": {
-              "type": "number"
-            },
-            "VAT_PERCENT": {
-              "type": "integer"
-            },
-            "VAT_VALUE": {
-              "type": "number"
-            },
-            "COMPLETE_NET": {
-              "type": "number"
-            },
-            "COMPLETE_GROSS": {
-              "type": "number"
-            },
-            "CATEGORY": {
-              "type": ["null","array"],
-              "items": {}
-            },
-            "CATEGORY_ID": {
-              "type": ["null","array"],
-              "items": {}
-            },
-            "SORT_ORDER": {
-              "type": "integer"
-            }
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "INVOICE_ITEM_ID": {
+            "type": "integer"
+          },
+          "ARTICLE_NUMBER": {
+            "type": "string"
+          },
+          "DESCRIPTION": {
+            "type": "string",
+            "empty": true
+          },
+          "QUANTITY": {
+            "type": "integer"
+          },
+          "UNIT_PRICE": {
+            "type": "number"
+          },
+          "VAT_PERCENT": {
+            "type": "integer"
+          },
+          "VAT_VALUE": {
+            "type": "number"
+          },
+          "COMPLETE_NET": {
+            "type": "number"
+          },
+          "COMPLETE_GROSS": {
+            "type": "number"
+          },
+          "CATEGORY": {
+            "type": ["null", "array"],
+            "items": {}
+          },
+          "CATEGORY_ID": {
+            "type": ["null", "array"],
+            "items": {}
+          },
+          "SORT_ORDER": {
+            "type": "integer"
           }
         }
+      }
     },
     "TOTAL": {
       "type": "number"
@@ -220,7 +218,7 @@
       "type": "string"
     },
     "PAYMENTS": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {}
     },
     "LASTUPDATE": {
