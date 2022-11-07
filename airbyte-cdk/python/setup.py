@@ -52,6 +52,7 @@ setup(
         "jsonref~=0.2",
         "pendulum",
         "pydantic~=1.9.2",
+        "python-dateutil",
         "PyYAML~=5.4",
         "requests",
         "requests_cache",
