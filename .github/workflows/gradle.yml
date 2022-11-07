@@ -908,6 +908,8 @@ jobs:
         run: sudo apt-get remove docker.io || sudo apt-get remove docker
       - name: Start minikube
         uses: medyagh/setup-minikube@master
+        with:
+          driver: none
       - name: Try the cluster !
         run: kubectl get pods -A
 
