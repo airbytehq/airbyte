@@ -48,6 +48,7 @@ import io.airbyte.server.apis.binders.SchedulerApiBinder;
 import io.airbyte.server.apis.binders.SourceApiBinder;
 import io.airbyte.server.apis.binders.SourceDefinitionApiBinder;
 import io.airbyte.server.apis.binders.SourceOauthApiBinder;
+import io.airbyte.server.apis.binders.StateApiBinder;
 import io.airbyte.server.apis.factories.AttemptApiFactory;
 import io.airbyte.server.apis.factories.ConnectionApiFactory;
 import io.airbyte.server.apis.factories.DbMigrationApiFactory;
@@ -243,7 +244,8 @@ public interface ServerFactory {
           SchedulerApiController.class,
           SourceApiController.class,
           SourceDefinitionApiController.class,
-          SourceOauthApiFactory.class);
+          SourceOauthApiFactory.class,
+          StateApiFactory.class);
 
       final Set<Object> components = Set.of(
           new CorsFilter(),
@@ -264,7 +266,8 @@ public interface ServerFactory {
           new SchedulerApiBinder(),
           new SourceApiBinder(),
           new SourceDefinitionApiBinder(),
-          new SourceOauthApiBinder());
+          new SourceOauthApiBinder(),
+          new StateApiBinder());
 
       // construct server
       return new ServerApp(airbyteVersion, componentClasses, components);
