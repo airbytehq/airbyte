@@ -8,10 +8,10 @@ import { useMemo, useState } from "react";
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { AuthSpecification } from "core/request/AirbyteClient";
 import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
-import { useAuthentication } from "views/Connector/ServiceForm/useAuthentication";
+import { useAuthentication } from "views/Connector/ConnectorForm/useAuthentication";
 
-import { useServiceForm } from "../../../serviceFormContext";
-import { ServiceFormValues } from "../../../types";
+import { useConnectorForm } from "../../../connectorFormContext";
+import { ConnectorFormValues } from "../../../types";
 import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "../../../utils";
 
 interface Credentials {
@@ -24,13 +24,13 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
   hasRun: boolean;
   run: () => Promise<void>;
 } {
-  const { values, setValues, errors, setFieldTouched } = useFormikContext<ServiceFormValues<Credentials>>();
+  const { values, setValues, errors, setFieldTouched } = useFormikContext<ConnectorFormValues<Credentials>>();
   const [hasRun, setHasRun] = useState(false);
 
-  const { getValues } = useServiceForm();
+  const { getValues } = useConnectorForm();
 
   const onDone = (completeOauthResponse: Record<string, unknown>) => {
-    let newValues: ServiceFormValues<Credentials>;
+    let newValues: ConnectorFormValues<Credentials>;
 
     if (connector.advancedAuth) {
       const oauthPaths = serverProvidedOauthPaths(connector);

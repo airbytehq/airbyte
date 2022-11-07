@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 import { Button } from "components/ui/Button";
 
-import { useServiceForm } from "../serviceFormContext";
+import { useConnectorForm } from "../connectorFormContext";
 import styles from "./EditControls.module.scss";
 import { TestingConnectionError } from "./TestingConnectionError";
 import { TestingConnectionSpinner } from "./TestingConnectionSpinner";
@@ -42,7 +42,7 @@ const EditControls: React.FC<IProps> = ({
   errorMessage,
   onCancelTesting,
 }) => {
-  const { unfinishedFlows } = useServiceForm();
+  const { unfinishedFlows } = useConnectorForm();
 
   if (isSubmitting) {
     return <TestingConnectionSpinner isCancellable={isTestConnectionInProgress} onCancelTesting={onCancelTesting} />;

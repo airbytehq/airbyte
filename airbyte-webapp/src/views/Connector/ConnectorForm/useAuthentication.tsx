@@ -4,8 +4,8 @@ import { useCallback, useMemo } from "react";
 
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 
-import { useServiceForm } from "./serviceFormContext";
-import { ServiceFormValues } from "./types";
+import { useConnectorForm } from "./connectorFormContext";
+import { ConnectorFormValues } from "./types";
 import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "./utils";
 
 type Path = Array<string | number>;
@@ -44,7 +44,7 @@ const convertAndPrefixPaths = (paths?: Path[], rootPath: Path = []): string[] =>
 const shouldShowButtonForAdvancedAuth = (
   predicateKey: string[] | undefined,
   predicateValue: string | undefined,
-  values: ServiceFormValues<unknown>
+  values: ConnectorFormValues<unknown>
 ): boolean => {
   return (
     !predicateKey ||
@@ -59,7 +59,7 @@ const shouldShowButtonForAdvancedAuth = (
 const shouldShowButtonForLegacyAuth = (
   spec: JSONSchema7,
   rootPath: Path,
-  values: ServiceFormValues<unknown>
+  values: ConnectorFormValues<unknown>
 ): boolean => {
   if (!rootPath.some((p) => isNumerical(p))) {
     // If the root path of the auth parameters (which is also the place the button will be rendered)
@@ -130,8 +130,8 @@ interface AuthenticationHook {
 }
 
 export const useAuthentication = (): AuthenticationHook => {
-  const { values, getFieldMeta, submitCount } = useFormikContext<ServiceFormValues>();
-  const { selectedConnector } = useServiceForm();
+  const { values, getFieldMeta, submitCount } = useFormikContext<ConnectorFormValues>();
+  const { selectedConnector } = useConnectorForm();
 
   const allowOAuthConnector = useFeature(FeatureItem.AllowOAuthConnector);
 
