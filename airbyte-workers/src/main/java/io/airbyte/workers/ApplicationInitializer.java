@@ -243,7 +243,6 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
         WorkflowImplementationOptions.newBuilder().setFailWorkflowExceptionTypes(NonDeterministicException.class).build();
     notifyWorker.registerWorkflowImplementationTypes(options, temporalProxyHelper.proxyWorkflowClass(ConnectionNotificationWorkflowImpl.class));
     notifyWorker.registerActivitiesImplementations(notifyActivities.orElseThrow().toArray(new Object[] {}));
-    log.info("Notify Workflow registered.");
   }
 
   private void registerCheckConnection(final WorkerFactory factory,

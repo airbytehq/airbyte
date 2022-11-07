@@ -30,12 +30,9 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-@Slf4j
 
 public class ConnectionNotificationWorkflowTest {
 
@@ -54,8 +51,6 @@ public class ConnectionNotificationWorkflowTest {
     testEnv = TestWorkflowEnvironment.newInstance();
     notificationsWorker = testEnv.newWorker(NOTIFICATIONS_QUEUE);
     client = testEnv.getWorkflowClient();
-
-    log.info("inside here");
 
     activityOptions = ActivityOptions.newBuilder()
         .setHeartbeatTimeout(Duration.ofSeconds(30))
@@ -82,8 +77,6 @@ public class ConnectionNotificationWorkflowTest {
     temporalProxyHelper = new TemporalProxyHelper(List.of(activityOptionsBeanRegistration));
 
     notificationsWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(ConnectionNotificationWorkflowImpl.class));
-    log.info("got here");
-
   }
 
   @AfterEach
@@ -103,8 +96,6 @@ public class ConnectionNotificationWorkflowTest {
     final boolean isBreaking = false;
 
     workflow.sendSchemaChangeNotification(connectionId, isBreaking);
-
-    log.info("sent schema change notif");
 
     verify(mNotifySchemaChangeActivity, times(1)).notifySchemaChange(any(SlackNotificationClient.class), any(UUID.class), any(boolean.class));
   }
