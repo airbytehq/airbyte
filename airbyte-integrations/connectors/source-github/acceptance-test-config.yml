@@ -122,5 +122,3 @@ acceptance_tests:
               bypass_reason: "No good reason"
             - name: organizations
               bypass_reason: "No good reason"
-            - name: team_members
-              bypass_reason: "No good reason"
