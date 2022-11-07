@@ -209,6 +209,8 @@ class Stream(HttpStream, ABC):
     filter_old_records: bool = True
     denormalize_records: bool = False  # one record from API response can result in multiple records emitted
     raise_on_http_errors: bool = True
+    granted_scopes: Set = None
+    properties_scopes: Set = None
 
     @property
     @abstractmethod
@@ -216,6 +218,7 @@ class Stream(HttpStream, ABC):
         """Set of required scopes. Users need to grant at least one of the scopes for the stream to be avaialble to them"""
 
     def scope_is_granted(self, granted_scopes: Set[str]) -> bool:
+        self.granted_scopes = set(granted_scopes)
         if not self.scopes:
             return True
         else:
@@ -631,15 +634,23 @@ class Stream(HttpStream, ABC):
     @lru_cache()
     def properties(self) -> Mapping[str, Any]:
         """Some entities has dynamic set of properties, so we trying to resolve those at runtime"""
-        if not self.entity:
-            return {}
-
         props = {}
+        if not self.entity:
+            return props
+        if not self.properties_scope_is_granted():
+            logger.warning(
+                f"Check your API key has the following permissions granted: {self.properties_scopes}, "
+                f"to be able to fetch all properties available."
+            )
+            return props
         data, response = self._api.get(f"/properties/v2/{self.entity}/properties")
         for row in data:
             props[row["name"]] = self._get_field_props(row["type"])
 
         return props
+
+    def properties_scope_is_granted(self):
+        return not self.properties_scopes - self.granted_scopes if self.properties_scopes and self.granted_scopes else True
 
     def _flat_associations(self, records: Iterable[MutableMapping]) -> Iterable[MutableMapping]:
         """When result has associations we prefer to have it flat, so we transform this:
@@ -1127,6 +1138,7 @@ class ContactsListMemberships(Stream):
     page_field = "vid-offset"
     primary_key = "canonical-vid"
     scopes = {"crm.objects.contacts.read"}
+    properties_scopes = {"crm.schemas.contacts.read"}
 
     def _transform(self, records: Iterable) -> Iterable:
         """Extracting list membership records from contacts
@@ -1421,6 +1433,7 @@ class PropertyHistory(Stream):
     limit_field = "count"
     limit = 100
     scopes = {"crm.objects.contacts.read"}
+    properties_scopes = {"crm.schemas.contacts.read"}
 
     def request_params(
         self,

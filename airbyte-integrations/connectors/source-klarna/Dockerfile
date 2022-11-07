@@ -1,4 +1,4 @@
-FROM python:3.9.11-alpine3.15 as base
+FROM python:3.9.13-alpine3.15 as base
 
 # build and load all requirements
 FROM base as builder
@@ -9,8 +9,8 @@ RUN apk --no-cache upgrade \
     && pip install --upgrade pip \
     && apk --no-cache add tzdata build-base
 
-COPY setup.py ./
 
+COPY setup.py ./
 # install necessary packages to a temporary folder
 RUN pip install --prefix=/install .
 
@@ -29,10 +29,10 @@ RUN apk --no-cache add bash
 
 # copy payload code only
 COPY main.py ./
-COPY source_hubspot ./source_hubspot
+COPY source_klarna ./source_klarna
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.2.3
-LABEL io.airbyte.name=airbyte/source-hubspot
+LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.name=airbyte/source-klarna

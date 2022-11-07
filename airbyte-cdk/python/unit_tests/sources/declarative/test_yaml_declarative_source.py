@@ -3,252 +3,466 @@
 #
 
 import json
+import logging
+import os
+import sys
+import tempfile
 
+import pytest
+import yaml
+from airbyte_cdk.sources.declarative.exceptions import InvalidConnectorDefinitionException
+from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from jsonschema import ValidationError
 
-# import pytest
-# from airbyte_cdk.sources.declarative.exceptions import InvalidConnectorDefinitionException
+logger = logging.getLogger("airbyte")
 
-# import os
-# import tempfile
-# import unittest
+EXTERNAL_CONNECTION_SPECIFICATION = {
+    "type": "object",
+    "required": ["api_token"],
+    "additionalProperties": False,
+    "properties": {"api_token": {"type": "string"}},
+}
 
 
-# from jsonschema import ValidationError
+class MockYamlDeclarativeSource(YamlDeclarativeSource):
+    """
+    Mock test class that is needed to monkey patch how we read from various files that make up a declarative source because of how our
+    tests write configuration files during testing. It is also used to properly namespace where files get written in specific
+    cases like when we temporarily write files like spec.yaml to the package unit_tests, which is the directory where it will
+    be read in during the tests.
+    """
+
+    def _read_and_parse_yaml_file(self, path_to_yaml_file):
+        """
+        We override the default behavior because we use tempfile to write the yaml manifest to a temporary directory which is
+        not mounted during runtime which prevents pkgutil.get_data() from being able to find the yaml file needed to generate
+        # the declarative source. For tests we use open() which supports using an absolute path.
+        """
+        with open(path_to_yaml_file, "r") as f:
+            config_content = f.read()
+            parsed_config = YamlParser().parse(config_content)
+            return parsed_config
 
 
-# brianjlai: Commenting these out for the moment because I can't figure out why the temp file is unreadable at runtime during testing
-# its more urgent to fix the connectors
-# class TestYamlDeclarativeSource(unittest.TestCase):
-#     def test_source_is_created_if_toplevel_fields_are_known(self):
-#         content = """
-#         version: "version"
-#         definitions:
-#           schema_loader:
-#             name: "{{ options.stream_name }}"
-#             file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
-#           retriever:
-#             paginator:
-#               type: "DefaultPaginator"
-#               page_size: 10
-#               page_size_option:
-#                 inject_into: request_parameter
-#                 field_name: page_size
-#               page_token_option:
-#                 inject_into: path
-#               pagination_strategy:
-#                 type: "CursorPagination"
-#                 cursor_value: "{{ response._metadata.next }}"
-#             requester:
-#               path: "/v3/marketing/lists"
-#               authenticator:
-#                 type: "BearerAuthenticator"
-#                 api_token: "{{ config.apikey }}"
-#               request_parameters:
-#                 page_size: 10
-#             record_selector:
-#               extractor:
-#                 field_pointer: ["result"]
-#         streams:
-#           - type: DeclarativeStream
-#             $options:
-#               name: "lists"
-#               primary_key: id
-#               url_base: "https://api.sendgrid.com"
-#             schema_loader: "*ref(definitions.schema_loader)"
-#             retriever: "*ref(definitions.retriever)"
-#         check:
-#           type: CheckStream
-#           stream_names: ["lists"]
-#         """
-#         temporary_file = TestFileContent(content)
-#         YamlDeclarativeSource(temporary_file.filename)
-#
-#     def test_source_is_not_created_if_toplevel_fields_are_unknown(self):
-#         content = """
-#         version: "version"
-#         definitions:
-#           schema_loader:
-#             name: "{{ options.stream_name }}"
-#             file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
-#           retriever:
-#             paginator:
-#               type: "DefaultPaginator"
-#               page_size: 10
-#               page_size_option:
-#                 inject_into: request_parameter
-#                 field_name: page_size
-#               page_token_option:
-#                 inject_into: path
-#               pagination_strategy:
-#                 type: "CursorPagination"
-#                 cursor_value: "{{ response._metadata.next }}"
-#             requester:
-#               path: "/v3/marketing/lists"
-#               authenticator:
-#                 type: "BearerAuthenticator"
-#                 api_token: "{{ config.apikey }}"
-#               request_parameters:
-#                 page_size: 10
-#             record_selector:
-#               extractor:
-#                 field_pointer: ["result"]
-#         streams:
-#           - type: DeclarativeStream
-#             $options:
-#               name: "lists"
-#               primary_key: id
-#               url_base: "https://api.sendgrid.com"
-#             schema_loader: "*ref(definitions.schema_loader)"
-#             retriever: "*ref(definitions.retriever)"
-#         check:
-#           type: CheckStream
-#           stream_names: ["lists"]
-#         not_a_valid_field: "error"
-#         """
-#         temporary_file = TestFileContent(content)
-#         with self.assertRaises(InvalidConnectorDefinitionException):
-#             YamlDeclarativeSource(temporary_file.filename)
-#
-#     def test_source_missing_checker_fails_validation(self):
-#         content = """
-#         version: "version"
-#         definitions:
-#           schema_loader:
-#             name: "{{ options.stream_name }}"
-#             file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
-#           retriever:
-#             paginator:
-#               type: "DefaultPaginator"
-#               page_size: 10
-#               page_size_option:
-#                 inject_into: request_parameter
-#                 field_name: page_size
-#               page_token_option:
-#                 inject_into: path
-#               pagination_strategy:
-#                 type: "CursorPagination"
-#                 cursor_value: "{{ response._metadata.next }}"
-#             requester:
-#               path: "/v3/marketing/lists"
-#               authenticator:
-#                 type: "BearerAuthenticator"
-#                 api_token: "{{ config.apikey }}"
-#               request_parameters:
-#                 page_size: 10
-#             record_selector:
-#               extractor:
-#                 field_pointer: ["result"]
-#         streams:
-#           - type: DeclarativeStream
-#             $options:
-#               name: "lists"
-#               primary_key: id
-#               url_base: "https://api.sendgrid.com"
-#             schema_loader: "*ref(definitions.schema_loader)"
-#             retriever: "*ref(definitions.retriever)"
-#         check:
-#           type: CheckStream
-#         """
-#         temporary_file = TestFileContent(content)
-#         with pytest.raises(ValidationError):
-#             YamlDeclarativeSource(temporary_file.filename)
-#
-#     def test_source_with_missing_streams_fails(self):
-#         content = """
-#         version: "version"
-#         definitions:
-#         check:
-#           type: CheckStream
-#           stream_names: ["lists"]
-#         """
-#         temporary_file = TestFileContent(content)
-#         with pytest.raises(ValidationError):
-#             YamlDeclarativeSource(temporary_file.filename)
-#
-#     def test_source_with_missing_version_fails(self):
-#         content = """
-#         definitions:
-#           schema_loader:
-#             name: "{{ options.stream_name }}"
-#             file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
-#           retriever:
-#             paginator:
-#               type: "DefaultPaginator"
-#               page_size: 10
-#               page_size_option:
-#                 inject_into: request_parameter
-#                 field_name: page_size
-#               page_token_option:
-#                 inject_into: path
-#               pagination_strategy:
-#                 type: "CursorPagination"
-#                 cursor_value: "{{ response._metadata.next }}"
-#             requester:
-#               path: "/v3/marketing/lists"
-#               authenticator:
-#                 type: "BearerAuthenticator"
-#                 api_token: "{{ config.apikey }}"
-#               request_parameters:
-#                 page_size: 10
-#             record_selector:
-#               extractor:
-#                 field_pointer: ["result"]
-#         streams:
-#           - type: DeclarativeStream
-#             $options:
-#               name: "lists"
-#               primary_key: id
-#               url_base: "https://api.sendgrid.com"
-#             schema_loader: "*ref(definitions.schema_loader)"
-#             retriever: "*ref(definitions.retriever)"
-#         check:
-#           type: CheckStream
-#           stream_names: ["lists"]
-#         """
-#         temporary_file = TestFileContent(content)
-#         with pytest.raises(ValidationError):
-#             YamlDeclarativeSource(temporary_file.filename)
-#
-#     def test_source_with_invalid_stream_config_fails_validation(self):
-#         content = """
-#         version: "version"
-#         definitions:
-#           schema_loader:
-#             name: "{{ options.stream_name }}"
-#             file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
-#         streams:
-#           - type: DeclarativeStream
-#             $options:
-#               name: "lists"
-#               primary_key: id
-#               url_base: "https://api.sendgrid.com"
-#             schema_loader: "*ref(definitions.schema_loader)"
-#         check:
-#           type: CheckStream
-#           stream_names: ["lists"]
-#         """
-#         temporary_file = TestFileContent(content)
-#         with pytest.raises(ValidationError):
-#             YamlDeclarativeSource(temporary_file.filename)
-#
-#
-# class TestFileContent:
-#     def __init__(self, content):
-#         self.file = tempfile.NamedTemporaryFile(mode="w", delete=False)
-#
-#         with self.file as f:
-#             f.write(content)
-#
-#     @property
-#     def filename(self):
-#         return self.file.name
-#
-#     def __enter__(self):
-#         return self
-#
-#     def __exit__(self, type, value, traceback):
-#         os.unlink(self.filename)
+class TestYamlDeclarativeSource:
+    @pytest.fixture
+    def use_external_yaml_spec(self):
+        # Our way of resolving the absolute path to root of the airbyte-cdk unit test directory where spec.yaml files should
+        # be written to (i.e. ~/airbyte/airbyte-cdk/python/unit-tests) because that is where they are read from during testing.
+        module = sys.modules[__name__]
+        module_path = os.path.abspath(module.__file__)
+        test_path = os.path.dirname(module_path)
+        spec_root = test_path.split("/sources/declarative")[0]
+
+        spec = {"documentationUrl": "https://airbyte.com/#yaml-from-external", "connectionSpecification": EXTERNAL_CONNECTION_SPECIFICATION}
+
+        yaml_path = os.path.join(spec_root, "spec.yaml")
+        with open(yaml_path, "w") as f:
+            f.write(yaml.dump(spec))
+        yield
+        os.remove(yaml_path)
+
+    def test_source_is_created_if_toplevel_fields_are_known(self):
+        content = """
+        version: "version"
+        definitions:
+          schema_loader:
+            name: "{{ options.stream_name }}"
+            file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
+          retriever:
+            paginator:
+              type: "DefaultPaginator"
+              page_size: 10
+              page_size_option:
+                inject_into: request_parameter
+                field_name: page_size
+              page_token_option:
+                inject_into: path
+              pagination_strategy:
+                type: "CursorPagination"
+                cursor_value: "{{ response._metadata.next }}"
+            requester:
+              path: "/v3/marketing/lists"
+              authenticator:
+                type: "BearerAuthenticator"
+                api_token: "{{ config.apikey }}"
+              request_parameters:
+                page_size: 10
+            record_selector:
+              extractor:
+                field_pointer: ["result"]
+        streams:
+          - type: DeclarativeStream
+            $options:
+              name: "lists"
+              primary_key: id
+              url_base: "https://api.sendgrid.com"
+            schema_loader: "*ref(definitions.schema_loader)"
+            retriever: "*ref(definitions.retriever)"
+        check:
+          type: CheckStream
+          stream_names: ["lists"]
+        """
+        temporary_file = TestFileContent(content)
+        MockYamlDeclarativeSource(temporary_file.filename)
+
+    def test_source_with_spec_in_yaml(self):
+        content = """
+        version: "version"
+        definitions:
+          schema_loader:
+            name: "{{ options.stream_name }}"
+            file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
+          retriever:
+            paginator:
+              type: "DefaultPaginator"
+              page_size: 10
+              page_size_option:
+                inject_into: request_parameter
+                field_name: page_size
+              page_token_option:
+                inject_into: path
+              pagination_strategy:
+                type: "CursorPagination"
+                cursor_value: "{{ response._metadata.next }}"
+            requester:
+              path: "/v3/marketing/lists"
+              authenticator:
+                type: "BearerAuthenticator"
+                api_token: "{{ config.apikey }}"
+              request_parameters:
+                page_size: 10
+            record_selector:
+              extractor:
+                field_pointer: ["result"]
+        streams:
+          - type: DeclarativeStream
+            $options:
+              name: "lists"
+              primary_key: id
+              url_base: "https://api.sendgrid.com"
+            schema_loader: "*ref(definitions.schema_loader)"
+            retriever: "*ref(definitions.retriever)"
+        check:
+          type: CheckStream
+          stream_names: ["lists"]
+        spec:
+          type: Spec
+          documentation_url: https://airbyte.com/#yaml-from-manifest
+          connection_specification:
+            title: Test Spec
+            type: object
+            required:
+              - api_key
+            additionalProperties: false
+            properties:
+              api_key:
+                type: string
+                airbyte_secret: true
+                title: API Key
+                description: Test API Key
+                order: 0
+        """
+        temporary_file = TestFileContent(content)
+        source = MockYamlDeclarativeSource(temporary_file.filename)
+
+        connector_specification = source.spec(logger)
+        assert connector_specification is not None
+        assert connector_specification.documentationUrl == "https://airbyte.com/#yaml-from-manifest"
+        assert connector_specification.connectionSpecification["title"] == "Test Spec"
+        assert connector_specification.connectionSpecification["required"][0] == "api_key"
+        assert connector_specification.connectionSpecification["additionalProperties"] is False
+        assert connector_specification.connectionSpecification["properties"]["api_key"] == {
+            "type": "string",
+            "airbyte_secret": True,
+            "title": "API Key",
+            "description": "Test API Key",
+            "order": 0,
+        }
+
+    def test_source_with_external_spec(self, use_external_yaml_spec):
+        content = """
+        version: "version"
+        definitions:
+          schema_loader:
+            name: "{{ options.stream_name }}"
+            file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
+          retriever:
+            paginator:
+              type: "DefaultPaginator"
+              page_size: 10
+              page_size_option:
+                inject_into: request_parameter
+                field_name: page_size
+              page_token_option:
+                inject_into: path
+              pagination_strategy:
+                type: "CursorPagination"
+                cursor_value: "{{ response._metadata.next }}"
+            requester:
+              path: "/v3/marketing/lists"
+              authenticator:
+                type: "BearerAuthenticator"
+                api_token: "{{ config.apikey }}"
+              request_parameters:
+                page_size: 10
+            record_selector:
+              extractor:
+                field_pointer: ["result"]
+        streams:
+          - type: DeclarativeStream
+            $options:
+              name: "lists"
+              primary_key: id
+              url_base: "https://api.sendgrid.com"
+            schema_loader: "*ref(definitions.schema_loader)"
+            retriever: "*ref(definitions.retriever)"
+        check:
+          type: CheckStream
+          stream_names: ["lists"]
+        """
+        temporary_file = TestFileContent(content)
+        source = MockYamlDeclarativeSource(temporary_file.filename)
+
+        connector_specification = source.spec(logger)
+
+        assert connector_specification.documentationUrl == "https://airbyte.com/#yaml-from-external"
+        assert connector_specification.connectionSpecification == EXTERNAL_CONNECTION_SPECIFICATION
+
+    def test_source_is_not_created_if_toplevel_fields_are_unknown(self):
+        content = """
+        version: "version"
+        definitions:
+          schema_loader:
+            name: "{{ options.stream_name }}"
+            file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
+          retriever:
+            paginator:
+              type: "DefaultPaginator"
+              page_size: 10
+              page_size_option:
+                inject_into: request_parameter
+                field_name: page_size
+              page_token_option:
+                inject_into: path
+              pagination_strategy:
+                type: "CursorPagination"
+                cursor_value: "{{ response._metadata.next }}"
+            requester:
+              path: "/v3/marketing/lists"
+              authenticator:
+                type: "BearerAuthenticator"
+                api_token: "{{ config.apikey }}"
+              request_parameters:
+                page_size: 10
+            record_selector:
+              extractor:
+                field_pointer: ["result"]
+        streams:
+          - type: DeclarativeStream
+            $options:
+              name: "lists"
+              primary_key: id
+              url_base: "https://api.sendgrid.com"
+            schema_loader: "*ref(definitions.schema_loader)"
+            retriever: "*ref(definitions.retriever)"
+        check:
+          type: CheckStream
+          stream_names: ["lists"]
+        not_a_valid_field: "error"
+        """
+        temporary_file = TestFileContent(content)
+        with pytest.raises(InvalidConnectorDefinitionException):
+            MockYamlDeclarativeSource(temporary_file.filename)
+
+    def test_source_missing_checker_fails_validation(self):
+        content = """
+        version: "version"
+        definitions:
+          schema_loader:
+            name: "{{ options.stream_name }}"
+            file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
+          retriever:
+            paginator:
+              type: "DefaultPaginator"
+              page_size: 10
+              page_size_option:
+                inject_into: request_parameter
+                field_name: page_size
+              page_token_option:
+                inject_into: path
+              pagination_strategy:
+                type: "CursorPagination"
+                cursor_value: "{{ response._metadata.next }}"
+            requester:
+              path: "/v3/marketing/lists"
+              authenticator:
+                type: "BearerAuthenticator"
+                api_token: "{{ config.apikey }}"
+              request_parameters:
+                page_size: 10
+            record_selector:
+              extractor:
+                field_pointer: ["result"]
+        streams:
+          - type: DeclarativeStream
+            $options:
+              name: "lists"
+              primary_key: id
+              url_base: "https://api.sendgrid.com"
+            schema_loader: "*ref(definitions.schema_loader)"
+            retriever: "*ref(definitions.retriever)"
+        check:
+          type: CheckStream
+        """
+        temporary_file = TestFileContent(content)
+        with pytest.raises(ValidationError):
+            MockYamlDeclarativeSource(temporary_file.filename)
+
+    def test_source_with_missing_streams_fails(self):
+        content = """
+        version: "version"
+        definitions:
+        check:
+          type: CheckStream
+          stream_names: ["lists"]
+        """
+        temporary_file = TestFileContent(content)
+        with pytest.raises(ValidationError):
+            MockYamlDeclarativeSource(temporary_file.filename)
+
+    def test_source_with_missing_version_fails(self):
+        content = """
+        definitions:
+          schema_loader:
+            name: "{{ options.stream_name }}"
+            file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
+          retriever:
+            paginator:
+              type: "DefaultPaginator"
+              page_size: 10
+              page_size_option:
+                inject_into: request_parameter
+                field_name: page_size
+              page_token_option:
+                inject_into: path
+              pagination_strategy:
+                type: "CursorPagination"
+                cursor_value: "{{ response._metadata.next }}"
+            requester:
+              path: "/v3/marketing/lists"
+              authenticator:
+                type: "BearerAuthenticator"
+                api_token: "{{ config.apikey }}"
+              request_parameters:
+                page_size: 10
+            record_selector:
+              extractor:
+                field_pointer: ["result"]
+        streams:
+          - type: DeclarativeStream
+            $options:
+              name: "lists"
+              primary_key: id
+              url_base: "https://api.sendgrid.com"
+            schema_loader: "*ref(definitions.schema_loader)"
+            retriever: "*ref(definitions.retriever)"
+        check:
+          type: CheckStream
+          stream_names: ["lists"]
+        """
+        temporary_file = TestFileContent(content)
+        with pytest.raises(ValidationError):
+            MockYamlDeclarativeSource(temporary_file.filename)
+
+    def test_source_with_invalid_stream_config_fails_validation(self):
+        content = """
+        version: "version"
+        definitions:
+          schema_loader:
+            name: "{{ options.stream_name }}"
+            file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
+        streams:
+          - type: DeclarativeStream
+            $options:
+              name: "lists"
+              primary_key: id
+              url_base: "https://api.sendgrid.com"
+            schema_loader: "*ref(definitions.schema_loader)"
+        check:
+          type: CheckStream
+          stream_names: ["lists"]
+        """
+        temporary_file = TestFileContent(content)
+        with pytest.raises(ValidationError):
+            MockYamlDeclarativeSource(temporary_file.filename)
+
+    def test_source_with_no_external_spec_and_no_in_yaml_spec_fails(self):
+        content = """
+        version: "version"
+        definitions:
+          schema_loader:
+            name: "{{ options.stream_name }}"
+            file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
+          retriever:
+            paginator:
+              type: "DefaultPaginator"
+              page_size: 10
+              page_size_option:
+                inject_into: request_parameter
+                field_name: page_size
+              page_token_option:
+                inject_into: path
+              pagination_strategy:
+                type: "CursorPagination"
+                cursor_value: "{{ response._metadata.next }}"
+            requester:
+              path: "/v3/marketing/lists"
+              authenticator:
+                type: "BearerAuthenticator"
+                api_token: "{{ config.apikey }}"
+              request_parameters:
+                page_size: 10
+            record_selector:
+              extractor:
+                field_pointer: ["result"]
+        streams:
+          - type: DeclarativeStream
+            $options:
+              name: "lists"
+              primary_key: id
+              url_base: "https://api.sendgrid.com"
+            schema_loader: "*ref(definitions.schema_loader)"
+            retriever: "*ref(definitions.retriever)"
+        check:
+          type: CheckStream
+          stream_names: ["lists"]
+        """
+        temporary_file = TestFileContent(content)
+        source = MockYamlDeclarativeSource(temporary_file.filename)
+
+        # We expect to fail here because we have not created a temporary spec.yaml file
+        with pytest.raises(FileNotFoundError):
+            source.spec(logger)
+
+
+class TestFileContent:
+    def __init__(self, content):
+        self.file = tempfile.NamedTemporaryFile(mode="w", delete=False)
+
+        with self.file as f:
+            f.write(content)
+
+    @property
+    def filename(self):
+        return self.file.name
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        os.unlink(self.filename)
 
 
 def test_generate_schema():

@@ -5,7 +5,6 @@
 import datetime
 import re
 from dataclasses import InitVar, dataclass, field
-from dateutil.relativedelta import relativedelta
 from typing import Any, Iterable, Mapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
@@ -17,6 +16,7 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from dataclasses_jsonschema import JsonSchemaMixin
+from dateutil.relativedelta import relativedelta
 
 
 @dataclass
@@ -71,7 +71,9 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     stream_state_field_end: Optional[str] = None
     lookback_window: Optional[Union[InterpolatedString, str]] = None
 
-    timedelta_regex = re.compile(r"((?P<years>[\.\d]+?)y)?" r"((?P<months>[\.\d]+?)m)?" r"((?P<weeks>[\.\d]+?)w)?" r"((?P<days>[\.\d]+?)d)?$")
+    timedelta_regex = re.compile(
+        r"((?P<years>[\.\d]+?)y)?" r"((?P<months>[\.\d]+?)m)?" r"((?P<weeks>[\.\d]+?)w)?" r"((?P<days>[\.\d]+?)d)?$"
+    )
 
     def __post_init__(self, options: Mapping[str, Any]):
         if not isinstance(self.start_datetime, MinMaxDatetime):
