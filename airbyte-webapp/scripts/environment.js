@@ -15,9 +15,9 @@ const envFile = path.resolve(
 
 if (!fs.existsSync(envFile)) {
   console.error(
-    `~~~ This mode is for employees only. ~~~\n` +
+    `~~~ This mode is for Airbyte employees only. ~~~\n` +
       `Could not find .env file for environment ${process.env.AB_ENV} (looking at ${envFile}).\n` +
-      `Make sure you have the latest airbyte-cloud repository checked out in parallel to the airbyte repository.\n`
+      `Make sure you have the latest airbyte-cloud repository checked out in a directory directly next to the airbyte OSS repository.\n`
   );
   process.exit(42);
 }
