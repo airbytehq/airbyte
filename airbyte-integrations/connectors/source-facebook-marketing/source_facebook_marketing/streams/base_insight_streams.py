@@ -7,10 +7,12 @@ from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optio
 
 import airbyte_cdk.sources.utils.casing as casing
 import pendulum
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.utils import AirbyteTracedException
 from cached_property import cached_property
+from facebook_business.exceptions import FacebookBadObjectError
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 
@@ -112,8 +114,15 @@ class AdsInsights(FBMarketingIncrementalStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
         job = stream_slice["insight_job"]
-        for obj in job.get_result():
-            yield obj.export_all_data()
+        try:
+            for obj in job.get_result():
+                yield obj.export_all_data()
+        except FacebookBadObjectError as e:
+            raise AirbyteTracedException(
+                message=f"API error occurs on Facebook side during job: {job}, wrong (empty) response received with errors: {e} "
+                f"Please try again later",
+                failure_type=FailureType.system_error,
+            ) from e
 
         self._completed_slices.add(job.interval.start)
         if job.interval.start == self._next_cursor_value:
