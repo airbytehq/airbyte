@@ -15,7 +15,7 @@ interface ConnectorFormContext {
   unfinishedFlows: Record<string, { startValue: string; id: number | string }>;
   addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void;
   removeUnfinishedFlow: (key: string) => void;
-  resetServiceForm: () => void;
+  resetConnectorForm: () => void;
   selectedService?: ConnectorDefinition;
   selectedConnector?: ConnectorDefinitionSpecification;
   isLoadingSchema?: boolean;
@@ -26,11 +26,11 @@ interface ConnectorFormContext {
 const connectorFormContext = React.createContext<ConnectorFormContext | null>(null);
 
 export const useConnectorForm = (): ConnectorFormContext => {
-  const serviceFormHelpers = useContext(connectorFormContext);
-  if (!serviceFormHelpers) {
-    throw new Error("useServiceForm should be used within ServiceFormContextProvider");
+  const connectorFormHelpers = useContext(connectorFormContext);
+  if (!connectorFormHelpers) {
+    throw new Error("useConnectorForm should be used within ConnectorFormContextProvider");
   }
-  return serviceFormHelpers;
+  return connectorFormHelpers;
 };
 
 interface ConnectorFormContextProviderProps {
@@ -84,7 +84,7 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
           "_common.unfinishedFlows",
           Object.fromEntries(Object.entries(unfinishedFlows).filter(([key]) => key !== path))
         ),
-      resetServiceForm: () => {
+      resetConnectorForm: () => {
         resetForm();
         resetUiWidgetsInfo();
       },
