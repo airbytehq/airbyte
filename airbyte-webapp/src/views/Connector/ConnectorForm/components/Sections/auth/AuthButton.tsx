@@ -7,7 +7,7 @@ import { Text } from "components/ui/Text";
 
 import { ConnectorSpecification } from "core/domain/connector";
 
-import { useServiceForm } from "../../../serviceFormContext";
+import { useConnectorForm } from "../../../connectorFormContext";
 import { useAuthentication } from "../../../useAuthentication";
 import styles from "./AuthButton.module.scss";
 import GoogleAuthButton from "./GoogleAuthButton";
@@ -41,7 +41,7 @@ function getAuthenticateMessageId(connectorDefinitionId: string): string {
 }
 
 export const AuthButton: React.FC = () => {
-  const { selectedService, selectedConnector } = useServiceForm();
+  const { selectedService, selectedConnector } = useConnectorForm();
   const { hiddenAuthFieldErrors } = useAuthentication();
   const authRequiredError = Object.values(hiddenAuthFieldErrors).includes("form.empty.error");
 

@@ -6,7 +6,7 @@ import { LabeledSwitch } from "components";
 
 import { FormBaseItem } from "core/form/types";
 
-import { useServiceForm } from "../../serviceFormContext";
+import { useConnectorForm } from "../../connectorFormContext";
 import { Control } from "../Property/Control";
 import { PropertyError } from "../Property/PropertyError";
 import { PropertyLabel } from "../Property/PropertyLabel";
@@ -22,7 +22,7 @@ const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disab
   const propertyPath = path ?? property.path;
   const formikBag = useField(propertyPath);
   const [field, meta] = formikBag;
-  const { addUnfinishedFlow, removeUnfinishedFlow, unfinishedFlows, widgetsInfo } = useServiceForm();
+  const { addUnfinishedFlow, removeUnfinishedFlow, unfinishedFlows, widgetsInfo } = useConnectorForm();
 
   const overriddenComponent = widgetsInfo[propertyPath]?.component;
   if (overriddenComponent) {

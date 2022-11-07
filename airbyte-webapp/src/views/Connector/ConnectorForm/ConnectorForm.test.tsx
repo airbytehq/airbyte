@@ -7,10 +7,10 @@ import { render, useMockIntersectionObserver } from "test-utils/testutils";
 
 import { AirbyteJSONSchema } from "core/jsonSchema";
 import { DestinationDefinitionSpecificationRead } from "core/request/AirbyteClient";
-import { ServiceForm, ServiceFormProps } from "views/Connector/ServiceForm";
+import { ConnectorForm, ConnectorFormProps } from "views/Connector/ConnectorForm";
 
 import { DocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
-import { ServiceFormValues } from "./types";
+import { ConnectorFormValues } from "./types";
 
 // hack to fix tests. https://github.com/remarkjs/react-markdown/issues/635
 jest.mock("components/ui/Markdown", () => ({ children }: React.PropsWithChildren<unknown>) => <>{children}</>);
@@ -158,7 +158,7 @@ describe("Service Form", () => {
     beforeEach(async () => {
       const handleSubmit = jest.fn();
       const renderResult = await render(
-        <ServiceForm
+        <ConnectorForm
           formType="source"
           onSubmit={handleSubmit}
           selectedConnectorDefinitionSpecification={
@@ -169,7 +169,6 @@ describe("Service Form", () => {
               documentationUrl: "",
             } as DestinationDefinitionSpecificationRead
           }
-          availableServices={[]}
         />
       );
       container = renderResult.container;
@@ -235,13 +234,13 @@ describe("Service Form", () => {
   });
 
   describe("filling service form", () => {
-    let result: ServiceFormValues;
+    let result: ConnectorFormValues;
     let container: HTMLElement;
     beforeEach(async () => {
       const renderResult = await render(
-        <ServiceForm
+        <ConnectorForm
           formType="source"
-          formValues={{ name: "test-name", serviceType: "test-service-type" }}
+          formValues={{ name: "test-name" }}
           onSubmit={(values) => {
             result = values;
           }}
@@ -253,7 +252,6 @@ describe("Service Form", () => {
               documentationUrl: "",
             } as DestinationDefinitionSpecificationRead
           }
-          availableServices={[]}
         />
       );
       container = renderResult.container;
@@ -286,7 +284,6 @@ describe("Service Form", () => {
 
       expect(result).toEqual({
         name: "name",
-        serviceType: "test-service-type",
         connectionConfiguration: {
           credentials: { api_key: "test-api-key" },
           emails: ["test@test.com"],
@@ -380,8 +377,8 @@ describe("Service Form", () => {
   });
 
   describe("conditionally render form submit button", () => {
-    const renderServiceForm = (props: ServiceFormProps) =>
-      render(<ServiceForm {...props} formValues={{ name: "test-name", serviceType: "test-service-type" }} />);
+    const renderServiceForm = (props: ConnectorFormProps) =>
+      render(<ConnectorForm {...props} formValues={{ name: "test-name" }} />);
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     const onSubmitClb = () => {};
     const connectorDefSpec = {
@@ -396,7 +393,6 @@ describe("Service Form", () => {
           // @ts-expect-error Partial objects for testing
           connectorDefSpec as DestinationDefinitionSpecificationRead,
         formType: "destination",
-        availableServices: [],
         onSubmit: onSubmitClb,
       });
       expect(getByText(/Set up destination/)).toBeInTheDocument();
@@ -406,7 +402,6 @@ describe("Service Form", () => {
       const { container } = await renderServiceForm({
         selectedConnectorDefinitionSpecification: undefined,
         formType: "destination",
-        availableServices: [],
         onSubmit: onSubmitClb,
       });
 
@@ -421,7 +416,6 @@ describe("Service Form", () => {
           // @ts-expect-error Partial objects for testing
           connectorDefSpec as DestinationDefinitionSpecificationRead,
         formType: "destination",
-        availableServices: [],
         onSubmit: onSubmitClb,
         isEditMode: true,
       });
@@ -433,7 +427,6 @@ describe("Service Form", () => {
       const { container } = await renderServiceForm({
         selectedConnectorDefinitionSpecification: undefined,
         formType: "destination",
-        availableServices: [],
         onSubmit: onSubmitClb,
         isEditMode: true,
       });

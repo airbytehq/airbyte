@@ -9,7 +9,7 @@ import { ModalBody, ModalFooter } from "components/ui/Modal";
 
 import { FormGroupItem, FormObjectArrayItem } from "core/form/types";
 
-import { useServiceForm } from "../../serviceFormContext";
+import { useConnectorForm } from "../../connectorFormContext";
 import { FormSection } from "./FormSection";
 
 interface VariableInputFormProps {
@@ -34,7 +34,7 @@ export const VariableInputFieldForm: React.FC<VariableInputFormProps> = ({
   // The temp field is cleared when this form is done or canceled.
   const variableInputFieldPath = useMemo(() => `__temp__${path.replace(/\./g, "_").replace(/\[|\]/g, "")}`, [path]);
   const [field, , fieldHelper] = useField(variableInputFieldPath);
-  const { validationSchema } = useServiceForm();
+  const { validationSchema } = useConnectorForm();
 
   // Copy the validation from the original field to ensure that the form has all the required values field out correctly.
   // One side effect of this is that validation errors will not be shown in this form because the validationSchema does not
