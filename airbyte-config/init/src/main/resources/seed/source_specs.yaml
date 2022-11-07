@@ -2992,7 +2992,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.71"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.72"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -3429,6 +3429,29 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-fastbill:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/fastbill"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Fastbill Spec"
+      type: "object"
+      required:
+      - "username"
+      - "api_key"
+      properties:
+        username:
+          title: "Username"
+          type: "string"
+          description: "Username for Fastbill account"
+        api_key:
+          title: "API Key"
+          type: "string"
+          description: "Fastbill API key"
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-fauna:dev"
   spec:
     documentationUrl: "https://github.com/fauna/airbyte/blob/source-fauna/docs/integrations/sources/fauna.md"
@@ -3831,7 +3854,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-freshdesk:0.3.6"
+- dockerImage: "airbyte/source-freshdesk:0.3.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/freshdesk"
     connectionSpecification:
@@ -5324,7 +5347,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.2.2"
+- dockerImage: "airbyte/source-hubspot:0.2.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/hubspot"
     connectionSpecification:
@@ -5722,7 +5745,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-jira:0.2.22"
+- dockerImage: "airbyte/source-jira:0.2.23"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/jira"
     connectionSpecification:
@@ -5753,7 +5776,7 @@
           title: "Email"
           description: "The user email for your Jira account."
         max_results:
-          type: "number"
+          type: "integer"
           title: "Max Results"
           description: "Pagination max results (only for users stream)"
           default: 50
@@ -5806,7 +5829,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-kafka:0.2.0"
+- dockerImage: "airbyte/source-kafka:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/kafka"
     connectionSpecification:
@@ -6098,6 +6121,49 @@
     supported_destination_sync_modes: []
     supported_source_sync_modes:
     - "append"
+- dockerImage: "airbyte/source-klarna:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/klarna"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Klarna Spec"
+      type: "object"
+      required:
+      - "region"
+      - "playground"
+      - "username"
+      - "password"
+      additionalProperties: true
+      properties:
+        region:
+          title: "Region"
+          type: "string"
+          enum:
+          - "eu"
+          - "us"
+          - "oc"
+          description: "Base url region (For playground eu https://docs.klarna.com/klarna-payments/api/payments-api/#tag/API-URLs).\
+            \ Supported 'eu', 'us', 'oc'"
+        playground:
+          title: "Playground"
+          type: "boolean"
+          description: "Propertie defining if connector is used against playground\
+            \ or production environment"
+          default: false
+        username:
+          title: "Username"
+          type: "string"
+          description: "Consists of your Merchant ID (eid) - a unique number that\
+            \ identifies your e-store, combined with a random string (https://developers.klarna.com/api/#authentication)"
+        password:
+          title: "Password"
+          type: "string"
+          description: "A string which is associated with your Merchant ID and is\
+            \ used to authorize use of Klarna's APIs (https://developers.klarna.com/api/#authentication)"
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-klaviyo:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/klaviyo"
@@ -13059,6 +13125,25 @@
           examples:
           - "2017-01-25T00:00:00Z"
           order: 2
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-zapier-supported-storage:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/zapier-supported-storage"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Zapier Supported Storage Spec"
+      type: "object"
+      required:
+      - "secret"
+      additionalProperties: true
+      properties:
+        secret:
+          title: "Secret Key"
+          type: "string"
+          description: "Secret key supplied by zapier"
+          airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []

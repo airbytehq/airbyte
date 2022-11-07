@@ -95,6 +95,8 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                                | Subject                                                                                                                 |
 |:--------|:-----------|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 0.2.23  | 2022-10-28 | [\#18505](hhttps://github.com/airbytehq/airbyte/pull/18505) | Correcting `max_results` bug introduced in connector stream                                                                   |
+| 0.2.22  | 2022-10-03 | [\#16944](hhttps://github.com/airbytehq/airbyte/pull/16944) | Adds support for `max_results` to `users` stream                                                                   |
 | 0.2.22  | 2022-10-03 | [\#16944](hhttps://github.com/airbytehq/airbyte/pull/16944) | Adds support for `max_results` to `users` stream                                                                   |
 | 0.2.21  | 2022-07-28 | [\#15135](hhttps://github.com/airbytehq/airbyte/pull/15135) | Adds components to `fields` object on `issues` stream                                                                   |
 | 0.2.20  | 2022-05-25 | [\#13202](https://github.com/airbytehq/airbyte/pull/13202)  | Adds resolutiondate to `fields` object on `issues` stream                                                               |
