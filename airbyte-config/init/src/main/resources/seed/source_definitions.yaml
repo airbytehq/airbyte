@@ -269,6 +269,14 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/convertkit
   sourceType: api
   releaseStage: alpha
+- name: Convex
+  sourceDefinitionId: c332628c-f55c-4017-8222-378cfafda9b2
+  dockerRepository: airbyte/source-convex
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/convex
+  icon: convex.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Courier
   sourceDefinitionId: 0541b2cd-2367-4986-b5f1-b79ff55439e4
   dockerRepository: airbyte/source-courier
