@@ -50,4 +50,9 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
     return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
   }
 
+  @Override
+  public AirbyteMessage saveStateAfterCompletionOfSnapshotOfNewStreams() {
+    throw new RuntimeException("Snapshot of individual tables is not implemented in MSSQL");
+  }
+
 }
