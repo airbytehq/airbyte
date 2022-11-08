@@ -875,7 +875,7 @@ jobs:
     timeout-minutes: 90
     defaults:
       run:
-        working-directory: "/home/runner"
+        working-directory: "/actions-runner/_work/airbyte/airbyte"
     env:
       HOME: /actions-runner/_work/airbyte/airbyte
       GITHUB_WORKSPACE: /actions-runner/_work/airbyte/airbyte
