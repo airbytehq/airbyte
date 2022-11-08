@@ -1,8 +1,8 @@
 import { Field, FieldProps, useFormikContext } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 
+import { DataGeographyDropdown } from "components/common/DataGeographyDropdown";
 import { ControlLabels } from "components/LabeledControl";
-import { DropDown } from "components/ui/DropDown";
 
 import { useAvailableGeographies } from "packages/cloud/services/geographies/GeographiesService";
 import { links } from "utils/links";
@@ -43,17 +43,11 @@ export const DataResidency: React.FC<DataResidencyProps> = ({ name = "geography"
               />
             </div>
             <div className={styles.rightFieldCol}>
-              <DropDown
+              <DataGeographyDropdown
                 isDisabled={form.isSubmitting}
-                options={geographies.map((geography) => ({
-                  label: formatMessage({
-                    id: `connection.geography.${geography}`,
-                    defaultMessage: geography.toUpperCase(),
-                  }),
-                  value: geography,
-                }))}
+                geographies={geographies}
                 value={field.value}
-                onChange={(geography) => setFieldValue(name, geography.value)}
+                onChange={(geography) => setFieldValue(name, geography)}
               />
             </div>
           </div>

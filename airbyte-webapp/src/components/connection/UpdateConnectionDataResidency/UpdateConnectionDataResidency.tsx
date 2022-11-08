@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
+import { DataGeographyDropdown } from "components/common/DataGeographyDropdown";
 import { ControlLabels } from "components/LabeledControl";
 import { Card } from "components/ui/Card";
-import { DropDown } from "components/ui/DropDown";
 import { Spinner } from "components/ui/Spinner";
 
 import { Geography } from "core/request/AirbyteClient";
@@ -22,7 +22,7 @@ export const UpdateConnectionDataResidency: React.FC = () => {
 
   const { geographies } = useAvailableGeographies();
 
-  const handleSubmit = async ({ value }: { value: Geography }) => {
+  const handleSubmit = async (value: Geography) => {
     try {
       setSelectedValue(value);
       await updateConnection({
@@ -63,15 +63,9 @@ export const UpdateConnectionDataResidency: React.FC = () => {
         <div className={styles.dropdownWrapper}>
           <div className={styles.spinner}>{connectionUpdating && <Spinner small />}</div>
           <div className={styles.dropdown}>
-            <DropDown
+            <DataGeographyDropdown
               isDisabled={connectionUpdating}
-              options={geographies.map((geography) => ({
-                label: formatMessage({
-                  id: `connection.geography.${geography}`,
-                  defaultMessage: geography.toUpperCase(),
-                }),
-                value: geography,
-              }))}
+              geographies={geographies}
               value={selectedValue || connection.geography}
               onChange={handleSubmit}
             />

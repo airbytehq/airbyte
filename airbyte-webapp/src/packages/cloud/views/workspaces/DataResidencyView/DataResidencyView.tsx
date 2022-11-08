@@ -3,8 +3,8 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { ControlLabels } from "components";
+import { DataGeographyDropdown } from "components/common/DataGeographyDropdown";
 import { Button } from "components/ui/Button";
-import { DropDown } from "components/ui/DropDown";
 import { Text } from "components/ui/Text";
 
 import { Geography } from "core/request/AirbyteClient";
@@ -35,6 +35,7 @@ export const DataResidencyView: React.FC = () => {
     values: DefaultDataResidencyFormValues,
     { resetForm }: FormikHelpers<DefaultDataResidencyFormValues>
   ) => {
+    console.log(values);
     try {
       await updateWorkspace({
         workspaceId: workspace.workspaceId,
@@ -44,7 +45,7 @@ export const DataResidencyView: React.FC = () => {
     } catch (e) {
       registerNotification({
         id: "workspaceSettings.defaultGeographyError",
-        title: formatMessage({ id: "connection.geographyUpdateError" }),
+        title: formatMessage({ id: "settings.defaultDataResidencyUpdateError" }),
         isError: true,
       });
     }
@@ -92,7 +93,12 @@ export const DataResidencyView: React.FC = () => {
                       }
                     />
                     <div className={styles.defaultGeographyDropdown}>
-                      <DropDown
+                      <DataGeographyDropdown
+                        geographies={geographies}
+                        value={field.value}
+                        onChange={(geography) => form.setFieldValue("defaultGeography", geography)}
+                      />
+                      {/* <DropDown
                         options={geographies.map((geography) => ({
                           label: formatMessage({
                             id: `connection.geography.${geography}`,
@@ -102,7 +108,7 @@ export const DataResidencyView: React.FC = () => {
                         }))}
                         value={field.value}
                         onChange={(option) => form.setFieldValue("defaultGeography", option.value)}
-                      />
+                      /> */}
                     </div>
                   </div>
                 )}
