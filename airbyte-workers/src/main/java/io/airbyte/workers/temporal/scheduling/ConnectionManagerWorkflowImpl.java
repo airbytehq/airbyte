@@ -45,8 +45,6 @@ import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionAc
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverInput;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverOutput;
-import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivity;
-import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivity.ConnectionDeletionInput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.GeneratedJobInput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncInput;
@@ -116,9 +114,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private static final String CHECK_JOB_OUTPUT_TAG = "check_job_output";
   private static final int CHECK_JOB_OUTPUT_TAG_CURRENT_VERSION = 1;
 
-  private static final String DONT_DELETE_IN_TEMPORAL_TAG = "dont_delete_in_temporal";
-  private static final int DONT_DELETE_IN_TEMPORAL_TAG_CURRENT_VERSION = 1;
-
   private static final String DELETE_RESET_JOB_STREAMS_TAG = "delete_reset_job_streams";
   private static final int DELETE_RESET_JOB_STREAMS_CURRENT_VERSION = 1;
   private static final String RECORD_METRIC_TAG = "record_metric";
@@ -138,8 +133,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private JobCreationAndStatusUpdateActivity jobCreationAndStatusUpdateActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private ConfigFetchActivity configFetchActivity;
-  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
-  private ConnectionDeletionActivity connectionDeletionActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private AutoDisableConnectionActivity autoDisableConnectionActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
@@ -189,13 +182,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
           reportCancelled(connectionUpdaterInput.getConnectionId());
         }
 
-        final int dontDeleteInTemporal =
-            Workflow.getVersion(DONT_DELETE_IN_TEMPORAL_TAG, Workflow.DEFAULT_VERSION, DONT_DELETE_IN_TEMPORAL_TAG_CURRENT_VERSION);
-
-        if (dontDeleteInTemporal < DONT_DELETE_IN_TEMPORAL_TAG_CURRENT_VERSION) {
-          log.info("Workflow deletion was requested. Calling deleteConnection activity before terminating the workflow.");
-          deleteConnectionBeforeTerminatingTheWorkflow();
-        }
         return;
       }
 
@@ -898,14 +884,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     }
 
     return false;
-  }
-
-  /**
-   * Delete a connection
-   */
-  private void deleteConnectionBeforeTerminatingTheWorkflow() {
-    final ConnectionDeletionInput connectionDeletionInput = new ConnectionDeletionInput(connectionId);
-    runMandatoryActivity(connectionDeletionActivity::deleteConnection, connectionDeletionInput);
   }
 
   /**
