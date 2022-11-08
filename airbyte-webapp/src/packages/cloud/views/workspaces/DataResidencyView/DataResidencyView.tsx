@@ -35,7 +35,6 @@ export const DataResidencyView: React.FC = () => {
     values: DefaultDataResidencyFormValues,
     { resetForm }: FormikHelpers<DefaultDataResidencyFormValues>
   ) => {
-    console.log(values);
     try {
       await updateWorkspace({
         workspaceId: workspace.workspaceId,
