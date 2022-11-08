@@ -868,7 +868,7 @@ jobs:
   helm-acceptance-test:
     name: "Platform: Acceptance Tests (Helm)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: [start-helm-acceptance-test-runner, prepare-helm-ac-test-runner] # required to start the main job when the runner is ready
+    needs: [start-helm-acceptance-test-runner] # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-helm-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
     # this is the label of the runner
     environment: more-secrets
@@ -1031,7 +1031,6 @@ jobs:
     needs:
       - start-helm-acceptance-test-runner # required to get output from the start-runner job
       - helm-acceptance-test # required to wait when the main job is done
-      - prepare-helm-ac-test-runner # required to wait when the main job is done
       - find_valid_pat
     runs-on: ubuntu-latest
     # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
