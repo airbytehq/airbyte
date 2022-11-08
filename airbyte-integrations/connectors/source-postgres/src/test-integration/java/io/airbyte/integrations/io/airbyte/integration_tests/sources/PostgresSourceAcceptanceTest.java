@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -32,9 +35,6 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -132,7 +132,6 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
     return true;
   }
 
-
   @Test
   public void testFullRefreshWithRevokingSchemaPermissions() throws Exception {
     prepareEnvForUserWithoutPermissions(database);
@@ -174,46 +173,46 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private ConfiguredAirbyteCatalog getCommonConfigCatalog() {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-            new ConfiguredAirbyteStream()
-                    .withSyncMode(SyncMode.INCREMENTAL)
-                    .withCursorField(Lists.newArrayList("id"))
-                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                    .withStream(CatalogHelpers.createAirbyteStream(
-                                    STREAM_NAME,
-                                    Field.of("id", JsonSchemaType.NUMBER),
-                                    Field.of("name", JsonSchemaType.STRING))
-                            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-            new ConfiguredAirbyteStream()
-                    .withSyncMode(SyncMode.INCREMENTAL)
-                    .withCursorField(Lists.newArrayList("id"))
-                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                    .withStream(CatalogHelpers.createAirbyteStream(
-                                    STREAM_NAME2,
-                                    Field.of("id", JsonSchemaType.NUMBER),
-                                    Field.of("name", JsonSchemaType.STRING))
-                            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-            new ConfiguredAirbyteStream()
-                    .withSyncMode(SyncMode.INCREMENTAL)
-                    .withCursorField(Lists.newArrayList("id"))
-                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                    .withStream(CatalogHelpers.createAirbyteStream(
-                                    STREAM_NAME_MATERIALIZED_VIEW,
-                                    Field.of("id", JsonSchemaType.NUMBER),
-                                    Field.of("name", JsonSchemaType.STRING))
-                            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("id"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                STREAM_NAME,
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("id"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                STREAM_NAME2,
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("id"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                STREAM_NAME_MATERIALIZED_VIEW,
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   private ConfiguredAirbyteCatalog getLimitPermissionConfiguredCatalog() {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-            new ConfiguredAirbyteStream()
-                    .withSyncMode(SyncMode.INCREMENTAL)
-                    .withCursorField(Lists.newArrayList("id"))
-                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                    .withStream(CatalogHelpers.createAirbyteStream(
-                                    LIMIT_PERMISSION_SCHEMA + "." + "id_and_name",
-                                    Field.of("id", JsonSchemaType.NUMBER),
-                                    Field.of("name", JsonSchemaType.STRING))
-                            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("id"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                LIMIT_PERMISSION_SCHEMA + "." + "id_and_name",
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
 }
