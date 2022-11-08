@@ -14,8 +14,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.StreamSupport;
 
 public class AirbyteMessageMigrationV0_4_0 implements AirbyteMessageMigration<AirbyteMessage, io.airbyte.protocol.models.v0.AirbyteMessage> {
 
@@ -40,16 +42,62 @@ public class AirbyteMessageMigrationV0_4_0 implements AirbyteMessageMigration<Ai
         io.airbyte.protocol.models.v0.AirbyteMessage.class);
     if (oldMessage.getType() == Type.CATALOG) {
       for (AirbyteStream stream : newMessage.getCatalog().getStreams()) {
-        JsonNode schema = stream.getJsonSchema().deepCopy();
+        JsonNode schema = stream.getJsonSchema();
         mutate(
-            s -> false,
-            s -> {},
+            this::isPrimitiveTypeDeclaration,
+            this::upgradeTypeDeclaration,
             schema);
       }
     } else if (oldMessage.getType() == Type.RECORD) {
       // TODO upgrade record
     }
     return newMessage;
+  }
+
+  /**
+   * Detects any schema that looks like a primitive type declaration, e.g.:
+   * { "type": "string" }
+   * or
+   * { "type": ["string", "object"] }
+   */
+  private boolean isPrimitiveTypeDeclaration(JsonNode schema) {
+    if (!schema.isObject() || !schema.hasNonNull("type")) {
+      return false;
+    }
+    JsonNode typeNode = schema.get("type");
+    if (typeNode.isArray()) {
+      return StreamSupport.stream(typeNode.iterator().next().spliterator(), false)
+          .anyMatch(n -> PRIMITIVE_TYPES.contains(n.asText()));
+    } else {
+      return PRIMITIVE_TYPES.contains(typeNode.asText());
+    }
+  }
+
+  /**
+   * Modifies the schema in-place to upgrade from the old-style type declaration to the new-style $ref declaration.
+   * @param schema An ObjectNode representing a primitive type declaration
+   */
+  private void upgradeTypeDeclaration(JsonNode schema) {
+    ObjectNode schemaNode = (ObjectNode)schema;
+
+    // TODO handle when schema["type"] is a list
+    String type = schema.get("type").asText();
+    switch (type) {
+      case "string" -> {
+        // TODO handle date/time/etc
+        schemaNode.removeAll();
+        schemaNode.put("$ref", "WellKnownTypes.json#definitions/String");
+      }
+      case "integer" -> {
+
+      }
+      case "number" -> {
+
+      }
+      case "boolean" -> {
+
+      }
+    }
   }
 
   /**
@@ -60,18 +108,18 @@ public class AirbyteMessageMigrationV0_4_0 implements AirbyteMessageMigration<Ai
    * @param matcher A function which returns true on any schema node that needs to be transformed
    * @param transformer A function which mutates a schema node
    */
-  private void mutate(Function<JsonNode, Boolean> matcher, Consumer<JsonNode> transformer, JsonNode schema) {
+  private static void mutate(Function<JsonNode, Boolean> matcher, Consumer<JsonNode> transformer, JsonNode schema) {
     if (matcher.apply(schema)) {
       transformer.accept(schema);
     } else {
       List<JsonNode> subschemas = new ArrayList<>();
-      addAllSubschemas(subschemas, schema, "items");
-      addAllSubschemas(subschemas, schema, "allOf");
-      addAllSubschemas(subschemas, schema, "oneOf");
-      addAllSubschemas(subschemas, schema, "anyOf");
-      addAllSubschemas(subschemas, schema, "additionalProperties");
+      findSubschemas(subschemas, schema, "items");
+      findSubschemas(subschemas, schema, "allOf");
+      findSubschemas(subschemas, schema, "oneOf");
+      findSubschemas(subschemas, schema, "anyOf");
+      findSubschemas(subschemas, schema, "additionalProperties");
 
-      addAllSubschemas(subschemas, schema, "properties");
+      findSubschemas(subschemas, schema, "properties");
       if (schema.hasNonNull("properties")) {
         ObjectNode propertiesNode = (ObjectNode)schema.get("properties");
         Iterator<Entry<String, JsonNode>> propertiesIterator = propertiesNode.fields();
@@ -85,7 +133,7 @@ public class AirbyteMessageMigrationV0_4_0 implements AirbyteMessageMigration<Ai
     }
   }
 
-  private static void addAllSubschemas(List<JsonNode> subschemas, JsonNode schema, String key) {
+  private static void findSubschemas(List<JsonNode> subschemas, JsonNode schema, String key) {
     if (schema.hasNonNull(key)) {
       JsonNode subschemaNode = schema.get(key);
       if (subschemaNode.isArray()) {
