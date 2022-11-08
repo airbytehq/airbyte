@@ -984,25 +984,31 @@ The code generator should have already generated a YAML file which configures th
 # See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-stock-ticker-api:dev
-tests:
-  spec:
-    - spec_path: "spec.json"
-      config_path: "secrets/valid_config.json"
-  connection:
-    - config_path: "secrets/valid_config.json"
-      status: "succeed"
-    - config_path: "secrets/invalid_config.json"
-      status: "failed"
-  discovery:
-    - config_path: "secrets/valid_config.json"
+acceptance_tests:
   basic_read:
-    - config_path: "secrets/valid_config.json"
-      configured_catalog_path: "fullrefresh_configured_catalog.json"
+    tests:
+    - config_path: secrets/valid_config.json
+      configured_catalog_path: fullrefresh_configured_catalog.json
       empty_streams: []
+  connection:
+    tests:
+    - config_path: secrets/valid_config.json
+      status: succeed
+    - config_path: secrets/invalid_config.json
+      status: failed
+  discovery:
+    tests:
+    - config_path: secrets/valid_config.json
   full_refresh:
-    - config_path: "secrets/valid_config.json"
-      configured_catalog_path: "fullrefresh_configured_catalog.json"
+    tests:
+    - config_path: secrets/valid_config.json
+      configured_catalog_path: fullrefresh_configured_catalog.json
+  spec:
+    tests:
+    - config_path: secrets/valid_config.json
+      spec_path: spec.json
 #  incremental: # TODO uncomment this once you implement incremental sync in part 2 of the tutorial
+#    tests:
 #    - config_path: "secrets/config.json"
 #      configured_catalog_path: "integration_tests/configured_catalog.json"
 #      future_state_path: "integration_tests/abnormal_state.json"
