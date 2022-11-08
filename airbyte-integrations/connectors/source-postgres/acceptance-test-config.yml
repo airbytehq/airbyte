@@ -1,6 +1,6 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
-# for more information about how to configure these tests
-connector_image: airbyte/source-postgres:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "src/main/resources/spec.json"
+    tests:
+      - spec_path: src/main/resources/spec.json
+connector_image: airbyte/source-postgres:dev
+test_strictness_level: high
