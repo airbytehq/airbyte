@@ -89,8 +89,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   /**
    * This method is deprecated. It verifies table creation, but not insert right to a newly created
-   * table. Use attemptSQLCreateTableThenInsertDummyRecThenDropThisTableOperations with
-   * isNeedTryMakeTestDataInsertInTable argument instead.
+   * table. Use attemptTableOperations with the attemptInsert argument instead.
    */
   @Deprecated
   public static void attemptSQLCreateAndDropTableOperations(final String outputSchema,
