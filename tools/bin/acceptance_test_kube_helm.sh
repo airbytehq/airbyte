@@ -67,7 +67,7 @@ if [ -n "$CI" ]; then
 #  trap "mkdir -p /tmp/kubernetes_logs && write_all_logs" EXIT
 fi
 
-kubectl expose $(kubectl get po -l app.kubernetes.io/name=server -o name) --name exposed-server-svc --type NodePort --overrides '{ "apiVersion": "v1","spec":{"ports": [{"port":8001,"protocol":"TCP","targetPort":8001,"nodePort":30080}]}}'
+kubectl expose $(kubectl get po -l app.kubernetes.io/name=server -o name) --name exposed-server-svc --type NodePort --overrides '{ "apiVersion": "v1","spec":{"ports": [{"port":8001,"protocol":"TCP","targetPort":8001,"nodePort":8001}]}}'
 # kubectl port-forward svc/airbyte-server-svc 8001:8001 &
 # ./tools/bin/health_check.sh &
 
@@ -92,7 +92,7 @@ SUB_BUILD=PLATFORM LOG_LEVEL=DEBUG  ./gradlew :airbyte-workers:integrationTest -
 #  docker system df
 
 echo "Running e2e tests via gradle..."
-AIRBYTE_PORT=30080 KUBE=true LOG_LEVEL=DEBUG SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan
+KUBE=true LOG_LEVEL=DEBUG SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan
 
 echo "Reverting changes back"
 mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.test
