@@ -874,7 +874,16 @@ jobs:
     # this is the label of the runner
     environment: more-secrets
     timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: "/home/runner"
+    env:
+      HOME: /home/runner
     steps:
+      - name: Fix EC-2 Runner
+        run: |
+          mkdir -p /home/runner && mkdir -p /home/runner/.kube
+        
       - name: Checkout Airbyte
         uses: actions/checkout@v2
         with:
@@ -919,9 +928,6 @@ jobs:
       #   with:
       #     cluster-name: "helm-testing"
       #     args: --agents 1 -p "30080:30080@server:0" -i docker.io/rancher/k3s:v1.21.2-k3s1
-      - name: Fix EC-2 Runner
-        run: |
-          mkdir -p /home/runner
 
       - name: Start a local k8s cluster
         uses: jupyterhub/action-k3s-helm@v3
@@ -933,6 +939,7 @@ jobs:
           # k3s-channel: latest
           k3s-version: v1.21.2+k3s1
           helm-version: v3.9.4
+
       - name: Try the cluster !
         run: kubectl get pods -A
 
