@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.airbyte.db.AbstractDatabase;
 import java.io.Closeable;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -74,7 +76,8 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
                 break;
             }
 
-            // TODO(itaseski) will scan more items than specified my doing them in batch of sampleSize
+            // can scan a 'bit' more items than 'sampleSize' if response is > 1MB since every
+            // new page request on the iterator will return new 'sampleSize' amount of items.
             scannedItems += scanResponse.count();
 
             items.addAll(scanResponse.items());
@@ -82,9 +85,9 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
         }
 
         /*
-         * naive schema inference with combining only the top level attributes of different items.
-         * for better schema inference the implementation should do full traversal of each item object graph
-         * and merge different nested attributes at each level
+         * schema inference with combining only the top level attributes of different items.
+         * for complete schema inference the implementation should do full traversal of each item object graph
+         * and merge different nested attributes at the same level
          * */
         Map<String, AttributeValue> mergedItems = items.stream()
             .reduce(new HashMap<>(), (merged, current) -> {
@@ -116,10 +119,18 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
                 case N -> AttributeValue.builder().n(filterValue).build();
             };
 
+            String comparator;
+            try {
+                // if date is of format 2016-02-15 we should use gr-eq in order to not skip records
+                // from the same date after first replication
+                LocalDate.parse(filterValue);
+                comparator = ">=";
+            } catch (DateTimeParseException e) {
+                comparator = ">";
+            }
+
             scanRequestBuilder
-                // flawed approach when syncing data with the ISO format 2016-02-15 since
-                // once records for that date are synced additional syncs will ignore new records from the same date
-                .filterExpression(filterName + " > :timestamp")
+                .filterExpression(filterName + " " + comparator + " :timestamp")
                 .expressionAttributeValues(Map.of(":timestamp", attributeValue));
 
         }
