@@ -41,19 +41,19 @@ function getAuthenticateMessageId(connectorDefinitionId: string): string {
 }
 
 export const AuthButton: React.FC = () => {
-  const { selectedService, selectedConnector } = useConnectorForm();
+  const { selectedConnectorDefinition, selectedConnectorDefinitionSpecification } = useConnectorForm();
   const { hiddenAuthFieldErrors } = useAuthentication();
   const authRequiredError = Object.values(hiddenAuthFieldErrors).includes("form.empty.error");
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { loading, done, run, hasRun } = useFormikOauthAdapter(selectedConnector!);
+  const { loading, done, run, hasRun } = useFormikOauthAdapter(selectedConnectorDefinitionSpecification!);
 
-  if (!selectedConnector) {
+  if (!selectedConnectorDefinitionSpecification) {
     console.error("Entered non-auth flow while no connector is selected");
     return null;
   }
 
-  const definitionId = ConnectorSpecification.id(selectedConnector);
+  const definitionId = ConnectorSpecification.id(selectedConnectorDefinitionSpecification);
   const Component = getButtonComponent(definitionId);
 
   const messageStyle = classnames(styles.message, {
@@ -63,7 +63,10 @@ export const AuthButton: React.FC = () => {
   const buttonLabel = done ? (
     <FormattedMessage id="connectorForm.reauthenticate" />
   ) : (
-    <FormattedMessage id={getAuthenticateMessageId(definitionId)} values={{ connector: selectedService?.name }} />
+    <FormattedMessage
+      id={getAuthenticateMessageId(definitionId)}
+      values={{ connector: selectedConnectorDefinition?.name }}
+    />
   );
   return (
     <div className={styles.authSectionRow}>

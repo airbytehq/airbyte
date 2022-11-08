@@ -16,8 +16,8 @@ interface ConnectorFormContext {
   addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void;
   removeUnfinishedFlow: (key: string) => void;
   resetConnectorForm: () => void;
-  selectedService?: ConnectorDefinition;
-  selectedConnector?: ConnectorDefinitionSpecification;
+  selectedConnectorDefinition?: ConnectorDefinition;
+  selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
   validationSchema: AnySchema;
@@ -63,7 +63,7 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
 
   const ctx = useMemo<ConnectorFormContext>(() => {
     const unfinishedFlows = widgetsInfo["_common.unfinishedFlows"] ?? {};
-    return {
+    const context: ConnectorFormContext = {
       widgetsInfo,
       getValues,
       setUiWidgetsInfo,
@@ -89,6 +89,7 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
         resetUiWidgetsInfo();
       },
     };
+    return context;
   }, [
     widgetsInfo,
     getValues,
