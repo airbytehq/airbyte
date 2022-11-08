@@ -20,7 +20,7 @@ export const FrequentlyUsedConnectorsCard: React.FC<FrequentlyUsedConnectorsCard
 }) => {
   const { formatMessage } = useIntl();
 
-  if (!connectors?.length) {
+  if (connectors.length === 0) {
     return null;
   }
 

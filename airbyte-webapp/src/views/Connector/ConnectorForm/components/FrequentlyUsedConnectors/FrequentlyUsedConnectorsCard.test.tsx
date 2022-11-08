@@ -1,9 +1,9 @@
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { IntlProvider } from "react-intl";
+import { mockDestinationsData } from "test-utils/mock-data/mockFrequentlyUsedDestinations";
 
 import en from "locales/en.json";
 
-import { mockData } from "../../../../../test-utils/mock-data/mockFrequentlyUsedDestinations";
 import { FrequentlyUsedConnectorsCard, FrequentlyUsedConnectorsCardProps } from "./FrequentlyUsedConnectorsCard";
 
 const renderFrequentlyUsedConnectorsComponent = (props: FrequentlyUsedConnectorsCardProps) =>
@@ -16,7 +16,7 @@ const renderFrequentlyUsedConnectorsComponent = (props: FrequentlyUsedConnectors
 describe("<mockFrequentlyUsedConnectors />", () => {
   it("should renders with mock data without crash", () => {
     const component = renderFrequentlyUsedConnectorsComponent({
-      connectors: mockData,
+      connectors: mockDestinationsData,
       connectorType: "destination",
       onConnectorSelect: jest.fn(),
     });
@@ -27,7 +27,7 @@ describe("<mockFrequentlyUsedConnectors />", () => {
   it("should call provided handler with right param", async () => {
     const handler = jest.fn();
     const { getByText } = renderFrequentlyUsedConnectorsComponent({
-      connectors: mockData,
+      connectors: mockDestinationsData,
       connectorType: "destination",
       onConnectorSelect: handler,
     });
