@@ -12,8 +12,7 @@ export interface DropdownMenuOptionType {
   icon?: React.ReactNode;
   iconPosition?: DropdownMenuItemIconPositionType;
   displayName: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value?: any;
+  value?: unknown;
   href?: string;
   className?: string;
 }
