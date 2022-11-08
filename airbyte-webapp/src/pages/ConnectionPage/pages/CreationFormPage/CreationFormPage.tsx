@@ -4,30 +4,31 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { LoadingPage } from "components";
 import { CloudInviteUsersHint } from "components/CloudInviteUsersHint";
+import { HeadTitle } from "components/common/HeadTitle";
 import ConnectionBlock from "components/ConnectionBlock";
 import { FormPageContent } from "components/ConnectorBlocks";
 import { CreateConnectionForm } from "components/CreateConnection/CreateConnectionForm";
-import HeadTitle from "components/HeadTitle";
 import { PageHeader } from "components/ui/PageHeader";
 import { StepsMenu } from "components/ui/StepsMenu";
-
-import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
-import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
-import { useGetDestination } from "hooks/services/useDestinationHook";
-import { useGetSource } from "hooks/services/useSourceHook";
-import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
-import { useSourceDefinition } from "services/connector/SourceDefinitionService";
-import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
 import {
   DestinationDefinitionRead,
   DestinationRead,
   SourceDefinitionRead,
   SourceRead,
-} from "../../../../core/request/AirbyteClient";
-import { ConnectionCreateDestinationForm } from "./DestinationForm";
+} from "core/request/AirbyteClient";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
+import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
+import { useGetDestination } from "hooks/services/useDestinationHook";
+import { useGetSource } from "hooks/services/useSourceHook";
+import { useLocationState } from "hooks/useLocationState";
+import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
+import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
+
+import { ConnectionCreateDestinationForm } from "./ConnectionCreateDestinationForm";
+import { ConnectionCreateSourceForm } from "./ConnectionCreateSourceForm";
 import ExistingEntityForm from "./ExistingEntityForm";
-import { ConnectionCreateSourceForm } from "./SourceForm";
 
 export enum StepsTypes {
   CREATE_ENTITY = "createEntity",
@@ -74,6 +75,11 @@ function usePreloadData(): {
 export const CreationFormPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.CONNECTIONS_NEW);
   const location = useLocation();
+
+  // exp-signup-selected-source-definition
+  const state = useLocationState<{ sourceDefinitionId?: string }>();
+  const isSourceDefinitionSelected = Boolean(state?.sourceDefinitionId);
+
   const navigate = useNavigate();
   const { clearAllFormChanges } = useFormChangeTrackerService();
 
@@ -130,10 +136,10 @@ export const CreationFormPage: React.FC = () => {
       if (currentEntityStep === EntityStepsTypes.SOURCE) {
         return (
           <>
-            {type === EntityStepsTypes.CONNECTION && (
+            {/* // exp-signup-selected-source-definition */}
+            {type === EntityStepsTypes.CONNECTION && !isSourceDefinitionSelected && (
               <ExistingEntityForm type="source" onSubmit={onSelectExistingSource} />
             )}
-
             <ConnectionCreateSourceForm
               afterSubmit={() => {
                 if (type === "connection") {

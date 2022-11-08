@@ -7,6 +7,7 @@ package io.airbyte.workers.config;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.ResourceRequirements;

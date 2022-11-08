@@ -46,7 +46,7 @@ Example:
 authenticator:
   type: "ApiKeyAuthenticator"
   header: "Authorization"
-  token: "Bearer hello"
+  api_token: "Bearer hello"
 ```
 
 ### BearerAuthenticator
@@ -74,7 +74,7 @@ Example:
 ```yaml
 authenticator:
   type: "BearerAuthenticator"
-  token: "hello"
+  api_token: "hello"
 ```
 
 More information on bearer authentication can be found [here](https://swagger.io/docs/specification/authentication/bearer-authentication/).

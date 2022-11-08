@@ -13,8 +13,8 @@ Schema:
     type: object
     anyOf:
       - "$ref": "#/definitions/DefaultPaginator"
-      - "$ref": "#/definitions/NoPaginator"
-  NoPaginator:
+      - "$ref": "#/definitions/NoPagination"
+  NoPagination:
     type: object
     additionalProperties: true
 ```
@@ -103,7 +103,7 @@ paginator:
   pagination_strategy:
     type: "PageIncrement"
     page_size: 5
-  page_token:
+  page_token_option:
     inject_into: "request_parameter"
     field_name: "page"
 ```
@@ -147,7 +147,7 @@ paginator:
   pagination_strategy:
     type: "OffsetIncrement"
     page_size: 5
-  page_token:
+  page_token_option:
     field_name: "offset"
     inject_into: "request_parameter"
 ```
@@ -196,7 +196,7 @@ paginator:
   pagination_strategy:
     type: "CursorPagination"
     cursor_value: "{{ last_records[-1]['id'] }}"
-  page_token:
+  page_token_option:
     field_name: "from"
     inject_into: "request_parameter"
 ```
@@ -217,7 +217,7 @@ paginator:
   pagination_strategy:
     type: "CursorPagination"
     cursor_value: "{{ headers['urls']['next'] }}"
-  page_token:
+  page_token_option:
     inject_into: "path"
 ```
 

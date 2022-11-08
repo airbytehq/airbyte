@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
 import { LoadingPage, MainPageWithScroll } from "components";
-import HeadTitle from "components/HeadTitle";
+import { HeadTitle } from "components/common/HeadTitle";
 
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -45,17 +45,12 @@ export const ConnectionItemPageInner: React.FC = () => {
     >
       <Suspense fallback={<LoadingPage />}>
         <Routes>
-          <Route path={ConnectionSettingsRoutes.STATUS} element={<ConnectionStatusTab connection={connection} />} />
+          <Route path={ConnectionSettingsRoutes.STATUS} element={<ConnectionStatusTab />} />
           <Route path={ConnectionSettingsRoutes.REPLICATION} element={<ConnectionReplicationTab />} />
-          <Route
-            path={ConnectionSettingsRoutes.TRANSFORMATION}
-            element={<ConnectionTransformationTab connection={connection} />}
-          />
+          <Route path={ConnectionSettingsRoutes.TRANSFORMATION} element={<ConnectionTransformationTab />} />
           <Route
             path={ConnectionSettingsRoutes.SETTINGS}
-            element={
-              isConnectionDeleted ? <Navigate replace to=".." /> : <ConnectionSettingsTab connection={connection} />
-            }
+            element={isConnectionDeleted ? <Navigate replace to=".." /> : <ConnectionSettingsTab />}
           />
           <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace />} />
         </Routes>

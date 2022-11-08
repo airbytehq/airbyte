@@ -4,6 +4,7 @@
 
 package io.airbyte.db.instance.development;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -16,6 +17,8 @@ import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.ext.ScriptUtils;
+import org.testcontainers.jdbc.JdbcDatabaseDelegate;
 
 /**
  * Helper class for migration development. See README for details.
@@ -35,26 +38,32 @@ public abstract class MigrationDevCenter {
 
   private final String dbIdentifier;
   private final String schemaDumpFile;
+  private final String initialScript;
 
-  protected MigrationDevCenter(final String dbIdentifier, final String schemaDumpFile) {
+  protected MigrationDevCenter(final String dbIdentifier, final String schemaDumpFile, final String initialScript) {
     this.dbIdentifier = dbIdentifier;
     this.schemaDumpFile = schemaDumpFile;
+    this.initialScript = initialScript;
   }
 
-  private static PostgreSQLContainer<?> createContainer() {
+  private PostgreSQLContainer<?> createContainer() {
     final PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withDatabaseName("airbyte")
         .withUsername("docker")
         .withPassword("docker");
     container.start();
+    final var containerDelegate = new JdbcDatabaseDelegate(container, "");
+    ScriptUtils.runInitScript(containerDelegate, initialScript);
     return container;
   }
 
   protected abstract FlywayDatabaseMigrator getMigrator(Database database, Flyway flyway);
 
-  protected abstract Database getDatabase(DSLContext dslContext) throws IOException;
-
   protected abstract Flyway getFlyway(DataSource dataSource);
+
+  private Database getDatabase(final DSLContext dslContext) throws IOException {
+    return new Database(dslContext);
+  }
 
   private void createMigration() {
     try (final PostgreSQLContainer<?> container = createContainer()) {
@@ -89,7 +98,8 @@ public abstract class MigrationDevCenter {
     }
   }
 
-  private void dumpSchema() {
+  @VisibleForTesting
+  public String dumpSchema(final boolean persistToFile) {
     try (final PostgreSQLContainer<?> container = createContainer()) {
       final DataSource dataSource =
           DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
@@ -99,7 +109,10 @@ public abstract class MigrationDevCenter {
         final FlywayDatabaseMigrator migrator = getMigrator(database, flyway);
         migrator.migrate();
         final String schema = migrator.dumpSchema();
-        MigrationDevHelper.dumpSchema(schema, schemaDumpFile, true);
+        if (persistToFile) {
+          MigrationDevHelper.dumpSchema(schema, schemaDumpFile, true);
+        }
+        return schema;
       }
     } catch (final Exception e) {
       throw new RuntimeException(e);
@@ -120,7 +133,7 @@ public abstract class MigrationDevCenter {
     switch (command) {
       case CREATE -> devCenter.createMigration();
       case MIGRATE -> devCenter.runLastMigration();
-      case DUMP_SCHEMA -> devCenter.dumpSchema();
+      case DUMP_SCHEMA -> devCenter.dumpSchema(true);
       default -> throw new IllegalArgumentException("Unexpected command: " + args[1]);
     }
   }

@@ -20,6 +20,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
+from .custom_reports_validator import CustomReportsValidator
+
 DATA_IS_NOT_GOLDEN_MSG = "Google Analytics data is not golden. Future requests may return different data."
 
 RESULT_IS_SAMPLED_MSG = (
@@ -132,9 +134,12 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         return "./reports:batchGet"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        next_page = response.json().get("nextPageToken")
-        if next_page:
-            return {"pageToken": next_page}
+        reports = response.json().get(self.report_field, [])
+        for report in reports:
+            # since we're requesting just one report at a time, the first report in the response is enough
+            next_page = report.get("nextPageToken")
+            if next_page:
+                return {"pageToken": next_page}
 
     def should_retry(self, response: requests.Response) -> bool:
         """
@@ -150,11 +155,13 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         if response.status_code == 400:
             self.logger.info(f"{response.json()['error']['message']}")
             self._raise_on_http_errors = False
+            return False
 
         elif response.status_code == 429 and "has exceeded the daily request limit" in response.json()["error"]["message"]:
             rate_limit_docs_url = "https://developers.google.com/analytics/devguides/reporting/core/v4/limits-quotas"
             self.logger.info(f"{response.json()['error']['message']}. More info: {rate_limit_docs_url}")
             self._raise_on_http_errors = False
+            return False
 
         result: bool = HttpStream.should_retry(self, response)
         return result
@@ -395,7 +402,9 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                     "ga_exitRate":6.523809523809524
         }
         """
-        json_response = response.json()
+        json_response = response.json() if response.status_code not in (400, 429) else None
+        if not json_response:
+            return []
         reports = json_response.get(self.report_field, [])
 
         for report in reports:
@@ -565,12 +574,12 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         config["metrics"] = ["ga:hits"]
         config["dimensions"] = ["ga:date"]
 
+        # load and verify the custom_reports
         try:
             # test the eligibility of custom_reports input
             custom_reports = config.get("custom_reports")
             if custom_reports:
-                json.loads(custom_reports)
-
+                CustomReportsValidator(json.loads(custom_reports)).validate()
             # Read records to check the reading permissions
             read_check = list(TestStreamConnection(config).read_records(sync_mode=None))
             if read_check:
@@ -579,10 +588,8 @@ class SourceGoogleAnalyticsV4(AbstractSource):
                 False,
                 f"Please check the permissions for the requested view_id: {config['view_id']}. Cannot retrieve data from that view ID.",
             )
-
         except ValueError as e:
             return False, f"Invalid custom reports json structure. {e}"
-
         except requests.exceptions.RequestException as e:
             error_msg = e.response.json().get("error")
             if e.response.status_code == 403:
@@ -599,8 +606,10 @@ class SourceGoogleAnalyticsV4(AbstractSource):
 
         reports = json.loads(pkgutil.get_data("source_google_analytics_v4", "defaults/default_reports.json"))
 
-        if config.get("custom_reports"):
-            custom_reports = json.loads(config["custom_reports"])
+        custom_reports = config.get("custom_reports")
+        if custom_reports:
+            custom_reports = json.loads(custom_reports)
+            custom_reports = [custom_reports] if not isinstance(custom_reports, list) else custom_reports
             reports += custom_reports
 
         config["ga_streams"] = reports

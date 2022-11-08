@@ -4,12 +4,9 @@ This page contains the setup guide and reference information for the Timely sour
 
 ## Prerequisites
 
-1. Please follow these [steps](https://dev.timelyapp.com/#authorization) to obtain `Bearer_token` for your account. <br>
-2. Login into your `https://app.timelyapp.com` portal, fetch the `account-id` present in the URL. <br>
-   URL `https://app.timelyapp.com/12345/calendar` <br>
-   account-id `12345` <br>
-3. Get a start-date to your events. <br>
-   Dateformat `YYYY-MM-DD`
+1. Please follow these [steps](https://dev.timelyapp.com/#authorization) to obtain `Bearer_token` for your account.
+2. Login into your `https://app.timelyapp.com` portal, fetch the `account-id` present in the URL (example: URL `https://app.timelyapp.com/12345/calendar` and account-id `12345`).
+3. Get a start-date to your events. Dateformat `YYYY-MM-DD`.
 
 ## Setup guide
 ## Step 1: Set up the Timely connector in Airbyte

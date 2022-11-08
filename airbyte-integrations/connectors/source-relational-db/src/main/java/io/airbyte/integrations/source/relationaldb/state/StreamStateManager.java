@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.relationaldb.state;
 
 import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.CURSOR_FIELD_FUNCTION;
 import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.CURSOR_FUNCTION;
+import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.CURSOR_RECORD_COUNT_FUNCTION;
 import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.NAME_NAMESPACE_PAIR_FUNCTION;
 
 import io.airbyte.commons.json.Jsons;
@@ -25,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Per-stream implementation of the {@link StateManager} interface.
- *
+ * <p/>
  * This implementation generates a state object for each stream detected in catalog/map of known
  * streams to cursor information stored in this manager.
  */
@@ -44,9 +45,10 @@ public class StreamStateManager extends AbstractStateManager<AirbyteStateMessage
    */
   public StreamStateManager(final List<AirbyteStateMessage> airbyteStateMessages, final ConfiguredAirbyteCatalog catalog) {
     super(catalog,
-        () -> airbyteStateMessages.stream().map(a -> a.getStream()).collect(Collectors.toList()),
+        () -> airbyteStateMessages.stream().map(AirbyteStateMessage::getStream).collect(Collectors.toList()),
         CURSOR_FUNCTION,
         CURSOR_FIELD_FUNCTION,
+        CURSOR_RECORD_COUNT_FUNCTION,
         NAME_NAMESPACE_PAIR_FUNCTION);
   }
 

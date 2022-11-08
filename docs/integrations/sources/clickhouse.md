@@ -96,6 +96,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date | Pull Request                                             | Subject                                                                    |
 |:---| :---  |:---------------------------------------------------------|:---------------------------------------------------------------------------|
+|         | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
 | 0.1.14  | 2022-09-27 | [17031](https://github.com/airbytehq/airbyte/pull/17031) | Added custom jdbc url parameters field  |
 | 0.1.13  | 2022-09-01 | [16238](https://github.com/airbytehq/airbyte/pull/16238) | Emit state messages more frequently |
 | 0.1.9 | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |

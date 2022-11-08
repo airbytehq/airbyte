@@ -44,6 +44,7 @@ public class ConnectionMatcher implements Matchable<ConnectionRead> {
     fromSearch.operationIds(query.getOperationIds());
     fromSearch.sourceCatalogId(query.getSourceCatalogId());
     fromSearch.geography(query.getGeography());
+    fromSearch.breakingChange(query.getBreakingChange());
 
     return fromSearch;
   }

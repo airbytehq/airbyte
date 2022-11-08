@@ -4,9 +4,10 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { LabeledInput, Link, StatusIcon } from "components";
+import { LabeledInput, Link } from "components";
 import { Button } from "components/ui/Button";
 import { Modal } from "components/ui/Modal";
+import { StatusIcon } from "components/ui/StatusIcon";
 
 import { links } from "utils/links";
 
