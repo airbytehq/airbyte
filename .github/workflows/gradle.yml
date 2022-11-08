@@ -887,6 +887,10 @@ jobs:
         working-directory: "/home/runner"
     env:
       HOME: /home/runner
+      GITHUB_WORKSPACE: /home/runner
+    # github:
+    #   workspace: /home/runner
+
     steps:
       - name: Fix EC-2 Runner
         run: |
