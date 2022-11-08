@@ -2,9 +2,9 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
+import { useDeleteModal } from "components/common/DeleteBlock/useDeleteModal";
 import { Button } from "components/ui/Button";
 
-import { useDeleteModal } from "../../../../components/DeleteBlock/useDeleteModal";
 import { useConnectorForm } from "../connectorFormContext";
 import styles from "./EditControls.module.scss";
 import { TestingConnectionError } from "./TestingConnectionError";
