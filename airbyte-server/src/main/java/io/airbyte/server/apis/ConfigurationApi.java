@@ -120,7 +120,6 @@ import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
-import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -135,7 +134,6 @@ import org.apache.commons.lang3.NotImplementedException;
 @Slf4j
 public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
-  private final WorkspacesHandler workspacesHandler;
   private final SourceDefinitionsHandler sourceDefinitionsHandler;
   private final SourceHandler sourceHandler;
   private final DestinationDefinitionsHandler destinationDefinitionsHandler;
@@ -190,67 +188,75 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         schemaValidator,
         connectionsHandler);
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, synchronousSchedulerClient, destinationHandler);
-    workspacesHandler = new WorkspacesHandler(
-        configRepository,
-        secretsRepositoryWriter,
-        connectionsHandler,
-        destinationHandler,
-        sourceHandler);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence, workerEnvironment, logConfigs, connectionsHandler, sourceHandler,
         sourceDefinitionsHandler, destinationHandler, destinationDefinitionsHandler, airbyteVersion);
   }
 
   // WORKSPACE
 
+  /**
+   * This implementation has been moved to {@link WorkspaceApiController}. Since the path of
+   * {@link WorkspaceApiController} is more granular, it will override this implementation
+   */
   @Override
   public WorkspaceReadList listWorkspaces() {
-    return execute(workspacesHandler::listWorkspaces);
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link WorkspaceApiController}. Since the path of
+   * {@link WorkspaceApiController} is more granular, it will override this implementation
+   */
   @Override
   public WorkspaceRead createWorkspace(final WorkspaceCreate workspaceCreate) {
-    return execute(() -> workspacesHandler.createWorkspace(workspaceCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link WorkspaceApiController}. Since the path of
+   * {@link WorkspaceApiController} is more granular, it will override this implementation
+   */
   @Override
   public void deleteWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    execute(() -> {
-      workspacesHandler.deleteWorkspace(workspaceIdRequestBody);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link WorkspaceApiController}. Since the path of
+   * {@link WorkspaceApiController} is more granular, it will override this implementation
+   */
   @Override
   public WorkspaceRead getWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> workspacesHandler.getWorkspace(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
   @Override
   public WorkspaceRead getWorkspaceBySlug(final SlugRequestBody slugRequestBody) {
-    return execute(() -> workspacesHandler.getWorkspaceBySlug(slugRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link WorkspaceApiController}. Since the path of
+   * {@link WorkspaceApiController} is more granular, it will override this implementation
+   */
   @Override
   public WorkspaceRead getWorkspaceByConnectionId(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> workspacesHandler.getWorkspaceByConnectionId(connectionIdRequestBody));
+    throw new NotImplementedException();
   }
 
   @Override
   public WorkspaceRead updateWorkspace(final WorkspaceUpdate workspaceUpdate) {
-    return execute(() -> workspacesHandler.updateWorkspace(workspaceUpdate));
+    throw new NotImplementedException();
   }
 
   @Override
   public WorkspaceRead updateWorkspaceName(final WorkspaceUpdateName workspaceUpdateName) {
-    return execute(() -> workspacesHandler.updateWorkspaceName(workspaceUpdateName));
+    throw new NotImplementedException();
   }
 
   @Override
   public void updateWorkspaceFeedback(final WorkspaceGiveFeedback workspaceGiveFeedback) {
-    execute(() -> {
-      workspacesHandler.setFeedbackDone(workspaceGiveFeedback);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
   /**
