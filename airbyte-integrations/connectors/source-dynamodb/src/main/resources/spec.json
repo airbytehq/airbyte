@@ -5,13 +5,13 @@
     "title": "Dynamodb Source Spec",
     "type": "object",
     "required": [
-      "dynamodb_region",
+      "region",
       "access_key_id",
       "secret_access_key"
     ],
     "additionalProperties": false,
     "properties": {
-      "dynamodb_endpoint": {
+      "endpoint": {
         "title": "Dynamodb Endpoint",
         "type": "string",
         "default": "",
@@ -20,7 +20,7 @@
           "http://localhost:9000"
         ]
       },
-      "dynamodb_region": {
+      "region": {
         "title": "Dynamodb Region",
         "type": "string",
         "default": "",

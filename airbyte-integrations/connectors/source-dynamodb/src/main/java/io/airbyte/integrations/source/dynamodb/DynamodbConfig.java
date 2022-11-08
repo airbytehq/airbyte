@@ -16,11 +16,11 @@ public record DynamodbConfig(
 
 ) {
 
-    public static DynamodbConfig initConfigFromJson(JsonNode jsonNode) {
-        String strend = jsonNode.get("dynamodb_endpoint").asText();
+    public static DynamodbConfig createDynamodbConfig(JsonNode jsonNode) {
+        String strend = jsonNode.get("endpoint").asText();
         return new DynamodbConfig(
             strend != null && !strend.isBlank() ? URI.create(strend) : null,
-            Region.of(jsonNode.get("dynamodb_region").asText()),
+            Region.of(jsonNode.get("region").asText()),
             jsonNode.get("access_key_id").asText(),
             jsonNode.get("secret_access_key").asText()
         );

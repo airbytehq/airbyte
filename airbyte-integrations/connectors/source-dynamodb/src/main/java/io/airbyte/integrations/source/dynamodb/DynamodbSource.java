@@ -1,6 +1,9 @@
 package io.airbyte.integrations.source.dynamodb;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
@@ -35,6 +38,8 @@ public class DynamodbSource extends BaseConnector implements Source {
 
     private final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     public static void main(String[] args) throws Exception {
         Source source = new DynamodbSource();
         LOGGER.info("starting Source: {}", DynamodbSource.class);
@@ -44,7 +49,7 @@ public class DynamodbSource extends BaseConnector implements Source {
 
     @Override
     public AirbyteConnectionStatus check(JsonNode config) {
-        var dynamodbConfig = DynamodbConfig.initConfigFromJson(config);
+        var dynamodbConfig = DynamodbConfig.createDynamodbConfig(config);
 
         try (var dynamodbOperations = new DynamodbOperations(dynamodbConfig)) {
             dynamodbOperations.listTables();
@@ -60,18 +65,21 @@ public class DynamodbSource extends BaseConnector implements Source {
     }
 
     @Override
-    public AirbyteCatalog discover(JsonNode config) throws Exception {
+    public AirbyteCatalog discover(JsonNode config) {
 
-        var dynamodbConfig = DynamodbConfig.initConfigFromJson(config);
+        var dynamodbConfig = DynamodbConfig.createDynamodbConfig(config);
 
         try (var dynamodbOperations = new DynamodbOperations(dynamodbConfig)) {
 
             var airbyteStreams = dynamodbOperations.listTables().stream()
                 .map(tb -> new AirbyteStream()
                     .withName(tb)
-                    .withJsonSchema(dynamodbOperations.inferSchema(tb, 1000))
+                    .withJsonSchema(Jsons.jsonNode(ImmutableMap.builder()
+                        .put("type", "object")
+                        .put("properties", dynamodbOperations.inferSchema(tb, 1000))
+                        .build()))
                     .withSourceDefinedPrimaryKey(Collections.singletonList(dynamodbOperations.primaryKey(tb)))
-                    .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH)))
+                    .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
                 .toList();
 
             return new AirbyteCatalog().withStreams(airbyteStreams);
@@ -85,18 +93,16 @@ public class DynamodbSource extends BaseConnector implements Source {
 
         var streamState = DynamodbUtils.deserializeStreamState(state, featureFlags.useStreamCapableState());
 
-        StateManager stateManager =
-            StateManagerFactory.createStateManager(streamState.airbyteStateType(), streamState.airbyteStateMessages(),
-                catalog);
+        StateManager stateManager = StateManagerFactory
+            .createStateManager(streamState.airbyteStateType(), streamState.airbyteStateMessages(), catalog);
 
-        var dynamodbConfig = DynamodbConfig.initConfigFromJson(config);
+        var dynamodbConfig = DynamodbConfig.createDynamodbConfig(config);
 
         try (var dynamodbOperations = new DynamodbOperations(dynamodbConfig)) {
 
             var streamIterators = catalog.getStreams().stream()
                 .map(str -> switch (str.getSyncMode()) {
-                    case INCREMENTAL ->
-                        scanIncremental(dynamodbOperations, str.getStream(), str.getCursorField().get(0), stateManager);
+                    case INCREMENTAL -> scanIncremental(dynamodbOperations, str.getStream(), str.getCursorField().get(0), stateManager);
                     case FULL_REFRESH -> scanFullRefresh(dynamodbOperations, str.getStream());
                 })
                 .toList();
@@ -116,8 +122,11 @@ public class DynamodbSource extends BaseConnector implements Source {
 
         Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(streamPair);
 
-        Set<String> properties = Jsons.object(airbyteStream.getJsonSchema().get("properties"), Map.class).keySet();
-        String cursorType = airbyteStream.getJsonSchema().get("properties").get(cursorField).get("type").asText();
+        Map<String, JsonNode> properties = objectMapper.convertValue(airbyteStream.getJsonSchema().get("properties"), new TypeReference<>() {});
+        Set<String> selectedAttributes = properties.keySet();
+
+        //cursor type will be retrieved from the json schema to save time on db schema crawling reading large amount of items
+        String cursorType = properties.get(cursorField).get("type").asText();
 
         var messageStream = cursorInfo.map(cursor -> {
 
@@ -125,8 +134,7 @@ public class DynamodbSource extends BaseConnector implements Source {
                     case "string" -> DynamodbOperations.FilterAttribute.FilterType.S;
                     case "integer" -> DynamodbOperations.FilterAttribute.FilterType.N;
                     case "number" -> {
-                        JsonNode airbyteType =
-                            airbyteStream.getJsonSchema().get("properties").get(cursorField).get("airbyte_type");
+                        JsonNode airbyteType = properties.get(cursorField).get("airbyte_type");
                         if (airbyteType != null && airbyteType.asText().equals("integer")) {
                             yield DynamodbOperations.FilterAttribute.FilterType.N;
                         } else {
@@ -142,11 +150,11 @@ public class DynamodbSource extends BaseConnector implements Source {
                     filterType
                 );
 
-                return dynamodbOperations.scanTable(airbyteStream.getName(), properties, filterAttribute);
+                return dynamodbOperations.scanTable(airbyteStream.getName(), selectedAttributes, filterAttribute);
 
             })
             // perform full refresh if cursor is not present
-            .orElse(dynamodbOperations.scanTable(airbyteStream.getName(), properties, null))
+            .orElse(dynamodbOperations.scanTable(airbyteStream.getName(), selectedAttributes, null))
             .stream()
             .map(jn -> DynamodbUtils.mapAirbyteMessage(airbyteStream.getName(), jn));
 
@@ -166,9 +174,12 @@ public class DynamodbSource extends BaseConnector implements Source {
 
     private AutoCloseableIterator<AirbyteMessage> scanFullRefresh(DynamodbOperations dynamodbOperations,
                                                                   AirbyteStream airbyteStream) {
-        Set<String> properties = Jsons.object(airbyteStream.getJsonSchema().get("properties"), Map.class).keySet();
+        Map<String, JsonNode> properties = objectMapper.convertValue(airbyteStream.getJsonSchema().get("properties"), new TypeReference<>() {});
+        Set<String> selectedAttributes = properties.keySet();
 
-        var messageStream = dynamodbOperations.scanTable(airbyteStream.getName(), properties, null).stream()
+        var messageStream = dynamodbOperations
+            .scanTable(airbyteStream.getName(), selectedAttributes, null)
+            .stream()
             .map(jn -> DynamodbUtils.mapAirbyteMessage(airbyteStream.getName(), jn));
 
         return AutoCloseableIterators.fromStream(messageStream);

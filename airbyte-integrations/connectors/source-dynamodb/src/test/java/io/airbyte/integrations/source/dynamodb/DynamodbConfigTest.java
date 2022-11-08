@@ -14,13 +14,13 @@ class DynamodbConfigTest {
     void testDynamodbConfig() {
 
         var jsonConfig = Jsons.jsonNode(Map.of(
-            "dynamodb_endpoint", "http://localhost:8080",
-            "dynamodb_region", "us-east-1",
+            "endpoint", "http://localhost:8080",
+            "region", "us-east-1",
             "access_key_id", "A012345678910EXAMPLE",
             "secret_access_key", "a012345678910ABCDEFGH/AbCdEfGhLEKEY"
         ));
 
-        var dynamodbConfig = DynamodbConfig.initConfigFromJson(jsonConfig);
+        var dynamodbConfig = DynamodbConfig.createDynamodbConfig(jsonConfig);
 
         assertThat(dynamodbConfig)
             .hasFieldOrPropertyWithValue("endpoint", URI.create("http://localhost:8080"))

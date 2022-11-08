@@ -25,7 +25,7 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
     private ObjectMapper schemaObjectMapper;
 
     public DynamodbOperations(DynamodbConfig dynamodbConfig) {
-        this.dynamoDbClient = DynamodbUtils.initDynamoDbClient(dynamodbConfig);
+        this.dynamoDbClient = DynamodbUtils.createDynamoDbClient(dynamodbConfig);
         initMappers();
     }
 
@@ -84,7 +84,7 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
         /*
          * naive schema inference with combining only the top level attributes of different items.
          * for better schema inference the implementation should do full traversal of each item object graph
-         * and merge different nested attributes present in the same top level attribute
+         * and merge different nested attributes at each level
          * */
         Map<String, AttributeValue> mergedItems = items.stream()
             .reduce(new HashMap<>(), (merged, current) -> {
@@ -104,9 +104,8 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
             .tableName(tableName)
             .projectionExpression(projectionAttributes);
 
-        if (filterAttribute != null && filterAttribute.name() != null
-            && filterAttribute.value() != null
-            && filterAttribute.type() != null) {
+        if (filterAttribute != null && filterAttribute.name() != null &&
+            filterAttribute.value() != null && filterAttribute.type() != null) {
 
             var filterName = filterAttribute.name();
             var filterValue = filterAttribute.value();
@@ -117,11 +116,11 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
                 case N -> AttributeValue.builder().n(filterValue).build();
             };
 
-
             scanRequestBuilder
-                //flawed approach when syncing with ISO format dates
-                .filterExpression(filterName + " > :tmps")
-                .expressionAttributeValues(Map.of(":tmps", attributeValue));
+                // flawed approach when syncing data with the ISO format 2016-02-15 since
+                // once records for that date are synced additional syncs will ignore new records from the same date
+                .filterExpression(filterName + " > :timestamp")
+                .expressionAttributeValues(Map.of(":timestamp", attributeValue));
 
         }
 
