@@ -81,12 +81,12 @@ const useConfig = () => {
 };
 
 export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
-  const yamlManifest = useJsonManifest();
+  const jsonManifest = useJsonManifest();
   const selected = useSelected();
   const config = useConfig();
 
   const ctx = {
-    ...yamlManifest,
+    ...jsonManifest,
     ...selected,
     ...config,
   };
