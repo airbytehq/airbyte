@@ -1,0 +1,29 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.container {
+  padding-top: variables.$spacing-sm;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.header {
+  background-color: colors.$grey-50;
+  display: flex;
+  align-items: center;
+  gap: variables.$spacing-md;
+  padding: variables.$spacing-sm variables.$spacing-md;
+}
+
+.numLogsDisplay {
+  border-radius: variables.$border-radius-md;
+  background-color: colors.$blue;
+  padding: 1px variables.$spacing-sm;
+  color: colors.$white;
+}
+
+.logsDisplay {
+  overflow-y: auto;
+  height: 100%;
+}

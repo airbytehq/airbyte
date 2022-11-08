@@ -26,13 +26,13 @@ export const ConnectorDocumentationLayout: React.FC<React.PropsWithChildren<unkn
 
   return (
     <ResizablePanels
-      hideRightPanel={!showDocumentationPanel}
-      leftPanel={{
+      hideSecondPanel={!showDocumentationPanel}
+      firstPanel={{
         children,
         className: styles.leftPanel,
         minWidth: 500,
       }}
-      rightPanel={{
+      secondPanel={{
         children: documentationPanel,
         minWidth: 60,
         overlay: {
