@@ -34,12 +34,12 @@ public class ConnectionManagerUtils {
    * Send a cancellation to the workflow. It will swallow any exception and won't check if the
    * workflow is already deleted when being cancel.
    */
-  public void cancelWorkflowIfItExist(final WorkflowClient client,
+  public void deleteWorkflowIfItExist(final WorkflowClient client,
                                       final UUID connectionId) {
     try {
       final ConnectionManagerWorkflow connectionManagerWorkflow =
           client.newWorkflowStub(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
-      connectionManagerWorkflow.cancelJob();
+      connectionManagerWorkflow.deleteConnection();
     } catch (final Exception e) {
       log.warn("The workflow is not reachable when trying to cancel it");
     }

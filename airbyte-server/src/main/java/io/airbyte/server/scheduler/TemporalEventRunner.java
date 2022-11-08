@@ -40,8 +40,8 @@ public class TemporalEventRunner implements EventRunner {
   }
 
   @Override
-  public void forceCancelConnection(final UUID connectionId) {
-    temporalClient.forceCancelWorkflow(connectionId);
+  public void forceDeleteConnection(final UUID connectionId) {
+    temporalClient.forceDeleteWorkflow(connectionId);
   }
 
   @Override

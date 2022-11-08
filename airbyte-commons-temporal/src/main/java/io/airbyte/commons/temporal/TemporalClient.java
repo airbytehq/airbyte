@@ -481,8 +481,8 @@ public class TemporalClient {
    *
    * @param connectionId - connectionId to cancel
    */
-  public void forceCancelWorkflow(final UUID connectionId) {
-    connectionManagerUtils.cancelWorkflowIfItExist(client, connectionId);
+  public void forceDeleteWorkflow(final UUID connectionId) {
+    connectionManagerUtils.deleteWorkflowIfItExist(client, connectionId);
   }
 
   public void update(final UUID connectionId) {

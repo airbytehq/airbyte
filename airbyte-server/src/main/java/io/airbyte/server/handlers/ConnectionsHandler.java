@@ -552,7 +552,7 @@ public class ConnectionsHandler {
 
   public void deleteConnection(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
     connectionHelper.deleteConnection(connectionId);
-    eventRunner.forceCancelConnection(connectionId);
+    eventRunner.forceDeleteConnection(connectionId);
   }
 
   private ConnectionRead buildConnectionRead(final UUID connectionId)

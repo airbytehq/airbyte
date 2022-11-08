@@ -349,9 +349,9 @@ public class TemporalClientTest {
           .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
 
       temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig, CONNECTION_ID);
-      temporalClient.forceCancelWorkflow(CONNECTION_ID);
+      temporalClient.forceDeleteWorkflow(CONNECTION_ID);
 
-      verify(connectionManagerUtils).cancelWorkflowIfItExist(workflowClient, CONNECTION_ID);
+      verify(connectionManagerUtils).deleteWorkflowIfItExist(workflowClient, CONNECTION_ID);
       verify(mConnectionManagerWorkflow).cancelJob();
     }
 
