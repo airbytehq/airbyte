@@ -23,7 +23,8 @@
       "type": ["null", "integer"]
     },
     "monthly_spend": {
-      "type": ["null", "number"]
+      "type": ["null", "number"],
+      "multipleOf": 1e-8
     },
     "session_count": {
       "type": ["null", "integer"]
@@ -52,7 +53,7 @@
                 "type": "string"
               },
               "id": {
-                "type": "string"
+                "type": "integer"
               }
             }
           }

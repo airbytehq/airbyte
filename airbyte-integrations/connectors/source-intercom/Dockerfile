@@ -31,6 +31,10 @@ RUN apk --no-cache add bash
 # copy payload code only
 COPY main.py ./
 COPY source_intercom ./source_intercom
+COPY documentation_url.patch.json ./
+COPY spec.patch.json ./
+COPY spec.map.json ./
+COPY oauth2.patch.json ./
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./

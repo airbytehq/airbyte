@@ -1,10 +1,10 @@
 {
-  "documentationUrl": "https://go.estuary.dev/3L0sGJ",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/intercom",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Intercom Spec",
     "type": "object",
-    "required": ["start_date", "credentials"],
+    "required": ["start_date", "access_token"],
     "additionalProperties": true,
     "properties": {
       "start_date": {
@@ -14,68 +14,20 @@
         "examples": ["2020-11-16T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       },
-      "credentials": {
-        "type": "object",
-        "discriminator": {
-          "propertyName": "auth_type"
-        },
-        "oneOf": [{
-          "type": "object",
-          "title": "OAuth2",
-          "x-oauth2-provider": "intercom",
-          "required": ["auth_type", "access_token"],
-          "properties": {
-            "auth_type": {
-              "type": "string",
-              "const": "oauth2",
-              "default": "oauth2",
-              "order": 0
-            },
-            "access_token": {
-              "title": "Access token",
-              "type": "string",
-              "description": "Access token for making authenticated requests. See the Intercom docs for more information https://go.estuary.dev/b5C9aN",
-              "airbyte_secret": true
-            },  
-          "client_id": {
-            "title": "Client ID",
-            "type": "string",
-            "airbyte_secret": true
-          },  
-          "client_secret": {
-            "title": "Client Secret",
-            "type": "string",
-            "airbyte_secret": true
-          }
-          }
-        }, {
-          "type": "object",
-          "title": "Access Token",
-          "required": ["auth_type", "access_token"],
-          "properties": {
-            "auth_type": {
-              "type": "string",
-              "const": "access_token",
-              "default": "access_token",
-              "order": 0
-            },
-            "access_token": {
-              "title": "Access token",
-              "type": "string",
-              "description": "Access token for making authenticated requests. See the Intercom docs for more information https://go.estuary.dev/b5C9aN",
-              "airbyte_secret": true
-            }
-          }
-        }]
+      "access_token": {
+        "title": "Access token",
+        "type": "string",
+        "description": "Access token for making authenticated requests. See the <a href=\"https://developers.intercom.com/building-apps/docs/authentication-types#how-to-get-your-access-token\">Intercom docs</a> for more information.",
+        "airbyte_secret": true
       }
     }
   },
   "authSpecification": {
-    "provider": "intercom",
-    "authUrlTemplate": "https://app.intercom.com/oauth?client_id={{ urlencode client_id }}&state={{ urlencode state }}",
-    "accessTokenUrlTemplate": "https://api.intercom.io/auth/eagle/token",
-    "accessTokenBody": "client_id={{ urlencode client_id }}&client_secret={{ urlencode client_secret }}&code={{ urlencode code }}",
-    "accessTokenHeaders": "{\"content-type\": \"application/x-www-form-urlencoded\"}",
-    "accessTokenResponseMap": "{\"access_token\": \"/token\"}"
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": [],
+      "oauthFlowInitParameters": [],
+      "oauthFlowOutputParameters": [["access_token"]]
+    }
   }
 }
