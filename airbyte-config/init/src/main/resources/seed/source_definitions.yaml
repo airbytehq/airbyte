@@ -839,6 +839,13 @@
   icon: mysql.svg
   sourceType: database
   releaseStage: beta
+- name: n8n
+  sourceDefinitionId: 4a961f66-5e99-4430-8320-a73afe52f7a2
+  dockerRepository: airbyte/source-n8n
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/n8n
+  sourceType: api
+  releaseStage: alpha
 - name: NASA
   sourceDefinitionId: 1a8667d7-7978-43cd-ba4d-d32cbd478971
   dockerRepository: airbyte/source-nasa
