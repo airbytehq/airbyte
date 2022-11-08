@@ -2,28 +2,46 @@
 
 This page guides you through the process of setting up the TikTok Marketing source connector.
 
-## Prerequisites (Airbyte Cloud)
-* A Tiktok Ads Business account with permission to access data from accounts you want to sync 
+## Prerequisites
 
-## Prerequisites (Airbyte Open Source)
+<!-- env:cloud -->
+
+- A Tiktok Ads Business account with permission to access data from accounts you want to sync
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
 For the Production environment:
-* Access token 
-* Secret
-* App ID
+
+- Access token
+- Secret
+- App ID
 
 To access the Sandbox environment:
-* Access token 
-* Advertiser ID
 
-## Step 1: Set up TikTok
+- Access token
+- Advertiser ID
+<!-- /env:oss -->
+
+## Setup guide
+
+### Step 1: Set up TikTok
+
+<!-- env:oss -->
 
 1. Create a TikTok For Business account: [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1702715936951297)
-2. (Open source only) Create developer application: [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1702716474845185)
-3. (Open source only) For a sandbox environment: create a Sandbox Ad Account [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1701890920013825)
+2. Create developer application: [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1702716474845185)
+<!-- /env:oss -->
 
-## Step 2: Set up the source connector in Airbyte
+<!-- env:cloud -->
 
-**For Airbyte Cloud:**
+1. Create a TikTok For Business account: [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1702715936951297)
+2. For a sandbox environment: create a Sandbox Ad Account [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1701890920013825)
+<!-- /env:cloud -->
+
+### Step 2: Set up the source connector in Airbyte
+
+<!-- env:cloud -->
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
@@ -32,15 +50,17 @@ To access the Sandbox environment:
 5. Log in and Authorize to the Tiktok account
 6. Choose required Start date
 7. click `Set up source`.
+<!-- /env:cloud -->
 
-**For Airbyte Open Source:**
+<!-- env:oss -->
 
 1. Go to local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
-3. On the Set up the source page, enter the name for the connector and select **Tiktok Marketing** from the Source type dropdown. 
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+3. On the Set up the source page, enter the name for the connector and select **Tiktok Marketing** from the Source type dropdown.
 4. Select `Production Access Token` or `Sandbox Access Token` Authorization method, then copy and paste info from step 1.
 5. Choose required Start date
 6. Click `Set up source`.
+<!-- /env:oss -->
 
 ## Supported streams and sync modes
 
@@ -73,10 +93,13 @@ To access the Sandbox environment:
 | CampaignsAudienceReportsByCountryDaily  | Prod,Sandbox | None        | Yes         |
 
 ### Report Aggregation
+
 Reports synced by this connector can use either hourly, daily, or lifetime granularities for aggregating performance data. For example, if you select the daily-aggregation flavor of a report, the report will contain a row for each day for the duration of the report. Each row will indicate the number of impressions recorded on that day.
 
 ### Output Schemas
+
 **[Advertisers](https://ads.tiktok.com/marketing_api/docs?id=1708503202263042) Stream**
+
 ```
 {
   "contacter": "Ai***te",
@@ -111,6 +134,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 ```
 
 **[AdGroups](https://ads.tiktok.com/marketing_api/docs?id=1708503489590273) Stream**
+
 ```
 {
   "placement_type": "PLACEMENT_TYPE_AUTOMATIC",
@@ -195,6 +219,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 ```
 
 **[Ads](https://ads.tiktok.com/marketing_api/docs?id=1708572923161602) Stream**
+
 ```
 {
   "vast_moat": false,
@@ -242,6 +267,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 ```
 
 **[Campaigns](https://ads.tiktok.com/marketing_api/docs?id=1708582970809346) Stream**
+
 ```
 {
   "create_time": "2021-10-19 18:18:08",
@@ -264,6 +290,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 ```
 
 **AdsReportsDaily Stream - [BasicReports](https://ads.tiktok.com/marketing_api/docs?id=1707957200780290)**
+
 ```
 {
   "dimensions": {
@@ -312,6 +339,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 ```
 
 **AdvertisersReportsDaily Stream - [BasicReports](https://ads.tiktok.com/marketing_api/docs?id=1707957200780290)**
+
 ```
 {
   "metrics": {
@@ -336,6 +364,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 ```
 
 **AdGroupsReportsDaily Stream - [BasicReports](https://ads.tiktok.com/marketing_api/docs?id=1707957200780290)**
+
 ```
 {
   "metrics": {
@@ -381,6 +410,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 ```
 
 **CampaignsReportsDaily Stream - [BasicReports](https://ads.tiktok.com/marketing_api/docs?id=1707957200780290)**
+
 ```
 {
   "metrics": {
@@ -404,8 +434,9 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 ```
 
 **AdsAudienceReportsDaily Stream - [AudienceReports](https://ads.tiktok.com/marketing_api/docs?id=1707957217727489)**
+
 ```
-{ 
+{
   {
     "result": 17,
     "clicks": 17,
@@ -448,6 +479,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 ```
 
 **AdvertisersAudienceReportsDaily Stream - [AudienceReports](https://ads.tiktok.com/marketing_api/docs?id=1707957217727489)**
+
 ```
 {
   "dimensions": {
@@ -468,6 +500,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 ```
 
 **AdGroupAudienceReportsDaily Stream - [AudienceReports](https://ads.tiktok.com/marketing_api/docs?id=1707957217727489)**
+
 ```
 {
   "dimensions": {
@@ -509,6 +542,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 ```
 
 **CampaignsAudienceReportsByCountryDaily Stream - [AudienceReports](https://ads.tiktok.com/marketing_api/docs?id=1707957217727489)**
+
 ```
 {
   "metrics": {
@@ -536,12 +570,12 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
 | 0.1.17  | 2022-10-04 | [17557](https://github.com/airbytehq/airbyte/pull/17557) | Retry error 50002                                                                             |
-| 0.1.16  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream state                                                                   |                                               
-| 0.1.15  | 2022-08-30 | [16137](https://github.com/airbytehq/airbyte/pull/16137) | Fixed bug with normalization caused by unsupported nested cursor field                        |                                               
-| 0.1.14  | 2022-06-29 | [13890](https://github.com/airbytehq/airbyte/pull/13890) | Removed granularity config option                                                             |                                               
-| 0.1.13  | 2022-06-28 | [13650](https://github.com/airbytehq/airbyte/pull/13650) | Added video metrics to report streams                                                         |                                                        
+| 0.1.16  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream state                                                                   |
+| 0.1.15  | 2022-08-30 | [16137](https://github.com/airbytehq/airbyte/pull/16137) | Fixed bug with normalization caused by unsupported nested cursor field                        |
+| 0.1.14  | 2022-06-29 | [13890](https://github.com/airbytehq/airbyte/pull/13890) | Removed granularity config option                                                             |
+| 0.1.13  | 2022-06-28 | [13650](https://github.com/airbytehq/airbyte/pull/13650) | Added video metrics to report streams                                                         |
 | 0.1.12  | 2022-05-24 | [13127](https://github.com/airbytehq/airbyte/pull/13127) | Fixed integration test                                                                        |
 | 0.1.11  | 2022-04-27 | [12838](https://github.com/airbytehq/airbyte/pull/12838) | Added end date configuration for tiktok                                                       |
 | 0.1.10  | 2022-05-07 | [12545](https://github.com/airbytehq/airbyte/pull/12545) | Removed odd production authenication method                                                   |

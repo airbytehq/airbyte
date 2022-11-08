@@ -11,6 +11,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 Note that refresh token are entirely optional for Slack and are not required to use Airbyte. You can learn more about refresh tokens [here](https://api.slack.com/authentication/rotation).
 
 ## Setup guide
+
 ### Step 1: Set up Slack
 
 :::info
@@ -58,38 +59,40 @@ This tutorial assumes that you are an administrator on your slack instance. If y
 8. In Airbyte, create a Slack source. The "Bot User OAuth Access Token" from the earlier should be used as the token.
 9. You can now pull data from your slack instance!
 
-
-### Airbyte Open Source additional setup steps
+<!-- env:oss -->
 
 You can no longer create "Legacy" API Keys, but if you already have one, you can use it with this source. Fill it into the API key section.
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
 
+<!-- /env:oss -->
 
-## Step 2: Set up the Slack connector in Airbyte
+### Step 2: Set up the Slack connector in Airbyte
 
-### For Airbyte Cloud:
+<!-- env:cloud -->
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Slack connector and select **Slack** from the Source type dropdown. 
+3. On the Set up the source page, enter the name for the Slack connector and select **Slack** from the Source type dropdown.
 4. Select `Authenticate your account` and log in and Authorize to the Slack account.
 5. Enter your `start_date`.
 6. Enter your `lookback_window`.
 7. Enter your `join_channels`.
-8. Enter your `channel_filter`. 
+8. Enter your `channel_filter`.
 9. Click **Set up source**.
+<!-- /env:cloud -->
 
-### For Airbyte OSS:
+<!-- env:oss -->
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source. 
+2. Set the name for your source.
 3. Enter your `start_date`.
 4. Enter your `lookback_window`.
 5. Enter your `join_channels`.
 6. Enter your `channel_filter`.
-7. Enter your `api_token`. 
+7. Enter your `api_token`.
 8. Click **Set up source**.
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -103,14 +106,14 @@ The Slack source connector supports the following [sync modes](https://docs.airb
 
 ## Supported Streams
 
-* [Channels \(Conversations\)](https://api.slack.com/methods/conversations.list)
-* [Channel Members \(Conversation Members\)](https://api.slack.com/methods/conversations.members)
-* [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history) It will only replicate messages from non-archive, public channels that the Slack App is a member of.
-* [Users](https://api.slack.com/methods/users.list)
-* [Threads \(Conversation Replies\)](https://api.slack.com/methods/conversations.replies)
-* [User Groups](https://api.slack.com/methods/usergroups.list)
-* [Files](https://api.slack.com/methods/files.list)
-* [Remote Files](https://api.slack.com/methods/files.remote.list)
+- [Channels \(Conversations\)](https://api.slack.com/methods/conversations.list)
+- [Channel Members \(Conversation Members\)](https://api.slack.com/methods/conversations.members)
+- [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history) It will only replicate messages from non-archive, public channels that the Slack App is a member of.
+- [Users](https://api.slack.com/methods/users.list)
+- [Threads \(Conversation Replies\)](https://api.slack.com/methods/conversations.replies)
+- [User Groups](https://api.slack.com/methods/usergroups.list)
+- [Files](https://api.slack.com/methods/files.list)
+- [Remote Files](https://api.slack.com/methods/files.remote.list)
 
 ## Performance considerations
 
@@ -130,7 +133,7 @@ It is recommended to sync required channels only, this can be done by specifying
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                             |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------- |
 | 0.1.18  | 2022-09-28 | [17315](https://github.com/airbytehq/airbyte/pull/17315) | Always install latest version of Airbyte CDK        |
 | 0.1.17  | 2022-08-28 | [16085](https://github.com/airbytehq/airbyte/pull/16085) | Increase unit test coverage                         |
 | 0.1.16  | 2022-08-28 | [16050](https://github.com/airbytehq/airbyte/pull/16050) | Fix SATs                                            |
@@ -141,5 +144,5 @@ It is recommended to sync required channels only, this can be done by specifying
 | 0.1.11  | 2021-08-27 | [5830](https://github.com/airbytehq/airbyte/pull/5830)   | Fix sync operations hang forever issue              |
 | 0.1.10  | 2021-08-27 | [5697](https://github.com/airbytehq/airbyte/pull/5697)   | Fix max retries issue                               |
 | 0.1.9   | 2021-07-20 | [4860](https://github.com/airbytehq/airbyte/pull/4860)   | Fix reading threads issue                           |
-| 0.1.8   | 2021-07-14 | [4683](https://github.com/airbytehq/airbyte/pull/4683)   | Add float\_ts primary key                           |
+| 0.1.8   | 2021-07-14 | [4683](https://github.com/airbytehq/airbyte/pull/4683)   | Add float_ts primary key                            |
 | 0.1.7   | 2021-06-25 | [3978](https://github.com/airbytehq/airbyte/pull/3978)   | Release Slack CDK Connector                         |

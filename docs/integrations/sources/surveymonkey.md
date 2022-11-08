@@ -8,18 +8,22 @@ OAuth for Survey Monkey is officially supported only for the US. We are testing 
 
 :::
 
-## Prerequisites 
+<!-- env:oss -->
 
- ### For Airbyte Open Source:
-* Access Token
+## Prerequisites
+
+- Access Token
+<!-- /env:oss -->
 
 ## Setup guide
+
 ### Step 1: Set up SurveyMonkey
+
 Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-started). Register your application [here](https://developer.surveymonkey.com/apps/) Then go to Settings and copy your access token
 
-## Step 2: Set up the source connector in Airbyte
+### Step 2: Set up the source connector in Airbyte
 
-**For Airbyte Cloud:**
+<!-- env:cloud -->
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
@@ -28,29 +32,31 @@ Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-start
 5. Log in and Authorize to the SurveyMonkey account
 6. Choose required Start date
 7. click `Set up source`.
+<!-- /env:cloud -->
 
-**For Airbyte Open Source:**
+<!-- env:oss -->
 
 1. Go to local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **SurveyMonkey** from the Source type dropdown and enter a name for this connector.
 4. Add **Access Token**
 5. Choose required Start date
 6. Click `Set up source`.
+<!-- /env:oss -->
 
 ## Supported streams and sync modes
 
-* [Surveys](https://developer.surveymonkey.com/api/v3/#surveys) \(Incremental\)
-* [SurveyPages](https://developer.surveymonkey.com/api/v3/#surveys-id-pages)
-* [SurveyQuestions](https://developer.surveymonkey.com/api/v3/#surveys-id-pages-id-questions)
-* [SurveyResponses](https://developer.surveymonkey.com/api/v3/#survey-responses) \(Incremental\)
+- [Surveys](https://developer.surveymonkey.com/api/v3/#surveys) \(Incremental\)
+- [SurveyPages](https://developer.surveymonkey.com/api/v3/#surveys-id-pages)
+- [SurveyQuestions](https://developer.surveymonkey.com/api/v3/#surveys-id-pages-id-questions)
+- [SurveyResponses](https://developer.surveymonkey.com/api/v3/#survey-responses) \(Incremental\)
 
 ### Performance considerations
 
 The SurveyMonkey API applies heavy API quotas for default private apps, which have the following limits:
 
-* 125 requests per minute
-* 500 requests per day
+- 125 requests per minute
+- 500 requests per day
 
 To cover more data from this source we use caching.
 
@@ -70,4 +76,3 @@ To cover more data from this source we use caching.
 | 0.1.2   | 2021-10-27 | [7433](https://github.com/airbytehq/airbyte/pull/7433)   | Add OAuth support                                                      |
 | 0.1.1   | 2021-09-10 | [5983](https://github.com/airbytehq/airbyte/pull/5983)   | Fix caching for gzip compressed http response                          |
 | 0.1.0   | 2021-07-06 | [4097](https://github.com/airbytehq/airbyte/pull/4097)   | Initial Release                                                        |
-

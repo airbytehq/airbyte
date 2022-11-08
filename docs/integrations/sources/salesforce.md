@@ -6,11 +6,22 @@ This page guides you through the process of setting up the Salesforce source con
 
 ## Prerequisites
 
-* [Salesforce Account](https://login.salesforce.com/) with Enterprise access or API quota purchased
-* Dedicated Salesforce [user](https://help.salesforce.com/s/articleView?id=adding_new_users.htm&type=5&language=en_US) (optional)
-* (For Airbyte Open Source) Salesforce [OAuth](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_tokens_scopes.htm&type=5) credentials
+<!-- env:cloud -->
 
-## Step 1: (Optional, Recommended) Create a read-only Salesforce user
+- [Salesforce Account](https://login.salesforce.com/) with Enterprise access or API quota purchased
+- Dedicated Salesforce [user](https://help.salesforce.com/s/articleView?id=adding_new_users.htm&type=5&language=en_US) (optional)
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+- [Salesforce Account](https://login.salesforce.com/) with Enterprise access or API quota purchased
+- Dedicated Salesforce [user](https://help.salesforce.com/s/articleView?id=adding_new_users.htm&type=5&language=en_US) (optional)
+- Salesforce [OAuth](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_tokens_scopes.htm&type=5) credentials
+<!-- /env:oss -->
+
+## Setup guide
+
+### Step 1: (Optional, Recommended) Create a read-only Salesforce user
 
 While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated read-only user for Airbyte. This allows you to granularly control the data Airbyte can read.
 
@@ -25,18 +36,16 @@ To create a dedicated read only Salesforce user:
 7. Scroll to the top and click **Save**.
 8. On the left side, under Administration, click **Users** > **Users**. The All Users page is displayed. Click **New User**.
 9. Fill out the required fields:
-    1. For License, select **Salesforce**.
-    2. For Profile, select **Airbyte Read Only User**.
-    3. For Email, make sure to use an email address that you can access.
+   1. For License, select **Salesforce**.
+   2. For Profile, select **Airbyte Read Only User**.
+   3. For Email, make sure to use an email address that you can access.
 10. Click **Save**.
 11. Copy the Username and keep it accessible.
 12. Log into the email you used above and verify your new Salesforce account user. You'll need to set a password as part of this process. Keep this password accessible.
 
-## Step 2: Set up Salesforce as a Source in Airbyte
+### Step 2: Set up Salesforce as a Source in Airbyte
 
-### For Airbyte Cloud
-
-To set up Salesforce as a source in Airbyte Cloud:
+<!-- env:cloud -->
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
@@ -47,27 +56,28 @@ To set up Salesforce as a source in Airbyte Cloud:
 7. (Optional) In the Salesforce Object filtering criteria section, click **Add**. From the Search criteria dropdown, select the criteria relevant to you. For Search value, add the search terms relevant to you. If this field is blank, Airbyte will replicate all data.
 8. Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to. Make sure you are logged into the right account.
 9. Click **Set up source**.
+<!-- /env:cloud -->
 
-### For Airbyte Open Source
-
-To set up Salesforce as a source in Airbyte Open Source:
+<!-- env:oss -->
 
 1. Follow this [walkthrough](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) with the following modifications:
 
-    1. If your Salesforce URL’s is not in the `X.salesforce.com` format, use your Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of `awesomecompany.salesforce.com`.
-    2. When running a curl command, run it with the `-L` option to follow any redirects.
-    3. If you [created a read-only user](https://docs.google.com/document/d/1wZR8pz4MRdc2zUculc9IqoF8JxN87U40IqVnTtcqdrI/edit#heading=h.w5v6h7b2a9y4), use the user credentials when logging in to generate OAuth tokens.
+   1. If your Salesforce URL’s is not in the `X.salesforce.com` format, use your Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of `awesomecompany.salesforce.com`.
+   2. When running a curl command, run it with the `-L` option to follow any redirects.
+   3. If you [created a read-only user](https://docs.google.com/document/d/1wZR8pz4MRdc2zUculc9IqoF8JxN87U40IqVnTtcqdrI/edit#heading=h.w5v6h7b2a9y4), use the user credentials when logging in to generate OAuth tokens.
 
 2. Navigate to the Airbute Open Source dashboard and follow the same steps as [setting up Salesforce as a source in Airbyte Cloud](#for-airbyte-cloud).
+
+<!-- /env:oss -->
 
 ## Supported sync modes
 
 The Salesforce source connector supports the following sync modes:
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
-* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-* [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-* (Recommended)[ Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- (Recommended)[ Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ### Incremental Deletes Sync
 
@@ -83,44 +93,48 @@ The Salesforce connector supports reading both Standard Objects and Custom Objec
 
 Airbyte fetches and handles all the possible and available streams dynamically based on:
 
-* If the authenticated Salesforce user has the Role and Permissions to read and fetch objects
+- If the authenticated Salesforce user has the Role and Permissions to read and fetch objects
 
-* If the stream has the queryable property set to true. Airbyte can fetch only queryable streams via the API. If you don’t see your object available via Airbyte, check if it is API-accessible to the Salesforce user you authenticated with in Step 2.
+- If the stream has the queryable property set to true. Airbyte can fetch only queryable streams via the API. If you don’t see your object available via Airbyte, check if it is API-accessible to the Salesforce user you authenticated with in Step 2.
 
 **Note:** [BULK API](https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/asynch_api_intro.htm) cannot be used to receive data from the following streams due to Salesforce API limitations. The Salesforce connector syncs them using the REST API which will occasionally cost more of your API quota:
 
-* AcceptedEventRelation
-* Attachment
-* CaseStatus
-* ContractStatus
-* DeclinedEventRelation
-* FieldSecurityClassification
-* KnowledgeArticle
-* KnowledgeArticleVersion
-* KnowledgeArticleVersionHistory
-* KnowledgeArticleViewStat
-* KnowledgeArticleVoteStat
-* OrderStatus
-* PartnerRole
-* RecentlyViewed
-* ServiceAppointmentStatus
-* ShiftStatus
-* SolutionStatus
-* TaskPriority
-* TaskStatus
-* UndecidedEventRelation
+- AcceptedEventRelation
+- Attachment
+- CaseStatus
+- ContractStatus
+- DeclinedEventRelation
+- FieldSecurityClassification
+- KnowledgeArticle
+- KnowledgeArticleVersion
+- KnowledgeArticleVersionHistory
+- KnowledgeArticleViewStat
+- KnowledgeArticleVoteStat
+- OrderStatus
+- PartnerRole
+- RecentlyViewed
+- ServiceAppointmentStatus
+- ShiftStatus
+- SolutionStatus
+- TaskPriority
+- TaskStatus
+- UndecidedEventRelation
 
 ## Salesforce tutorials
 
 Now that you have set up the Salesforce source connector, check out the following Salesforce tutorials:
 
-* [Replicate Salesforce data to BigQuery](https://airbyte.com/tutorials/replicate-salesforce-data-to-bigquery)
-* [Replicate Salesforce and Zendesk data to Keen for unified analytics](https://airbyte.com/tutorials/salesforce-zendesk-analytics)
+- [Replicate Salesforce data to BigQuery](https://airbyte.com/tutorials/replicate-salesforce-data-to-bigquery)
+- [Replicate Salesforce and Zendesk data to Keen for unified analytics](https://airbyte.com/tutorials/salesforce-zendesk-analytics)
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
+<<<<<<< HEAD
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+=======
 |:--------| :--------- |:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+>>>>>>> c1a81696185fceec5a4c7b64c8ac5fee62272232
 | 1.0.24  | 2022-11-01 | [18799](https://github.com/airbytehq/airbyte/pull/18799) | Update list of unsupported Bulk API objects                                                                                      |
 | 1.0.23  | 2022-11-01 | [18753](https://github.com/airbytehq/airbyte/pull/18753) | Add error_display_message for ConnectionError                                                                                    |
 | 1.0.22  | 2022-10-12 | [17615](https://github.com/airbytehq/airbyte/pull/17615) | Make paging work, if `cursor_field` is not changed inside one page                                                               |
