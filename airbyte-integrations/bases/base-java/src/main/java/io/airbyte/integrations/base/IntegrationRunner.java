@@ -153,10 +153,10 @@ public class IntegrationRunner {
         default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
       }
     } catch (final Exception e) {
-      // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. We need to get the
-      // root exception to decide whether it corresponds to an exception that represents a configuration
-      // error.
-      final Throwable rootThrowable = getRootThrowable(e);
+      // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An attempt is made to
+      // find the root exception that corresponds to a configuration error. If that does not exist, we
+      // just return the original exception.
+      final Throwable rootThrowable = getRootConfigError(e);
       final String displayMessage = getDisplayMessage(rootThrowable);
       // If the source connector throws a config error, a trace message with the relevant message should
       // be surfaced.
@@ -183,7 +183,11 @@ public class IntegrationRunner {
     LOGGER.info("Completed integration: {}", integration.getClass().getName());
   }
 
-  private Throwable getRootThrowable(final Exception e) {
+  /**
+   * Returns the first instance of an exception associated with a configuration error (if it exists).
+   * Otherwise, the original exception is returned.
+   */
+  private Throwable getRootConfigError(final Exception e) {
     Throwable current = e;
     while (current != null) {
       if (isConfigError(current)) {
@@ -192,7 +196,7 @@ public class IntegrationRunner {
         current = current.getCause();
       }
     }
-    return current;
+    return e;
   }
 
   private boolean isConfigError(final Throwable e) {
