@@ -1,5 +1,5 @@
 @use "scss/colors";
-@use "scss/variables" as vars;
+@use "scss/variables";
 
 .jobListContainer {
   display: flex;
@@ -21,7 +21,7 @@
 .emptyListImage {
   width: 111px;
   height: 111px;
-  margin: vars.$spacing-xl 0;
+  margin: variables.$spacing-xl 0;
 }
 
 .contextExplanation {
@@ -36,16 +36,16 @@
 .jobListButtonGroup {
   display: flex;
   justify-content: flex-end;
-  margin-top: vars.$spacing-xl;
+  margin-top: variables.$spacing-xl;
   width: 100%;
 }
 
 .jobListButton {
-  margin-left: vars.$spacing-md;
+  margin-left: variables.$spacing-md;
 }
 
 .jobListItem {
-  margin-top: vars.$spacing-md;
+  margin-top: variables.$spacing-md;
   padding: 18px;
   width: 100%;
   display: flex;
@@ -82,7 +82,7 @@
 .jobListItemDelete {
   color: colors.$grey-200;
   font-size: large;
-  margin-left: vars.$spacing-lg;
+  margin-left: variables.$spacing-lg;
   cursor: pointer;
   border: none;
   background-color: inherit;

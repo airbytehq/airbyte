@@ -1,11 +1,11 @@
-@use "scss/variables" as vars;
+@use "scss/variables";
 
 .controlGroup {
   display: flex;
   justify-content: flex-end;
-  margin-top: vars.$spacing-xl;
+  margin-top: variables.$spacing-xl;
 
   .button {
-    margin-left: vars.$spacing-md;
+    margin-left: variables.$spacing-md;
   }
 }
