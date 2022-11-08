@@ -1,16 +1,15 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["date", "site_url"],
   "properties": {
     "site_url": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "search_type": {
       "type": ["null", "string"]
     },
     "date": {
-      "type": ["string"],
+      "type": ["null", "string"],
       "format": "date"
     },
     "clicks": {
@@ -20,10 +19,12 @@
       "type": ["null", "integer"]
     },
     "ctr": {
-      "type": ["null", "number"]
+      "type": ["null", "number"],
+      "multipleOf": 1e-25
     },
     "position": {
-      "type": ["null", "number"]
+      "type": ["null", "number"],
+      "multipleOf": 1e-25
     }
   }
 }

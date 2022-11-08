@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC
@@ -60,7 +60,6 @@ class Sites(GoogleSearchConsole):
     """
     API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites
     """
-    primary_key = ["siteUrl"]
 
     def path(
         self,
@@ -76,7 +75,6 @@ class Sitemaps(GoogleSearchConsole):
     API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps
     """
 
-    primary_key = ["path"]
     data_field = "sitemap"
 
     def path(
@@ -277,29 +275,37 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
 class SearchAnalyticsByDate(SearchAnalytics):
     dimensions = ["date"]
-    primary_key = ["date", "site_url"]
+
 
 class SearchAnalyticsByCountry(SearchAnalytics):
     dimensions = ["date", "country"]
-    primary_key = ["country", "date", "site_url"]
+
 
 class SearchAnalyticsByDevice(SearchAnalytics):
     dimensions = ["date", "device"]
-    primary_key = ["device", "date", "site_url"]
+
 
 class SearchAnalyticsByPage(SearchAnalytics):
     dimensions = ["date", "page"]
-    primary_key = ["page", "date", "site_url"]
+
 
 class SearchAnalyticsByQuery(SearchAnalytics):
     dimensions = ["date", "query"]
-    primary_key = ["query", "date", "site_url"]
+
 
 class SearchAnalyticsAllFields(SearchAnalytics):
     dimensions = ["date", "country", "device", "page", "query"]
-    primary_key = ["query", "date", "site_url", "device", "country"]
+
 
 class SearchAnalyticsByCustomDimensions(SearchAnalytics):
+    dimension_to_property_schema_map = {
+        "country": [{"country": {"type": ["null", "string"]}}],
+        "date": [],
+        "device": [{"device": {"type": ["null", "string"]}}],
+        "page": [{"page": {"type": ["null", "string"]}}],
+        "query": [{"query": {"type": ["null", "string"]}}],
+    }
+
     def __init__(self, dimensions: List[str], *args, **kwargs):
         super(SearchAnalyticsByCustomDimensions, self).__init__(*args, **kwargs)
         self.dimensions = dimensions
@@ -307,7 +313,7 @@ class SearchAnalyticsByCustomDimensions(SearchAnalytics):
     def get_json_schema(self) -> Mapping[str, Any]:
         try:
             return super(SearchAnalyticsByCustomDimensions, self).get_json_schema()
-        except IOError:
+        except FileNotFoundError:
             schema: Mapping[str, Any] = {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": ["null", "object"],
@@ -329,16 +335,9 @@ class SearchAnalyticsByCustomDimensions(SearchAnalytics):
             return schema
 
     def dimension_to_property_schema(self) -> dict:
-        dimension_to_property_schema_map = {
-            "country": [{"country": {"type": ["null", "string"]}}],
-            "date": [],
-            "device": [{"device": {"type": ["null", "string"]}}],
-            "page": [{"page": {"type": ["null", "string"]}}],
-            "query": [{"query": {"type": ["null", "string"]}}],
-        }
         properties = {}
         for dimension in sorted(self.dimensions):
-            fields = dimension_to_property_schema_map[dimension]
+            fields = self.dimension_to_property_schema_map[dimension]
             for field in fields:
                 properties = {**properties, **field}
         return properties

@@ -1,19 +1,19 @@
 {
-  "documentationUrl": "https://go.estuary.dev/EkkKXD",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-search-console",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Search Console Spec",
     "type": "object",
-    "required": ["site_urls", "start_date", "credentials"],
+    "required": ["site_urls", "start_date", "authorization"],
     "properties": {
       "site_urls": {
         "type": "array",
         "items": {
           "type": "string"
         },
-        "title": "Website URL",
-        "description": "The URLs of the website property attached to your GSC account. Read more here: https://support.google.com/webmasters/answer/34592?hl=en.",
-        "examples": ["https://example1.com", "https://example2.com"],
+        "title": "Website URL Property",
+        "description": "The URLs of the website property attached to your GSC account. Read more <a href=\"https://support.google.com/webmasters/answer/34592?hl=en\">here</a>.",
+        "examples": ["https://example1.com/", "https://example2.com/"],
         "order": 0
       },
       "start_date": {
@@ -29,10 +29,10 @@
         "title": "End Date",
         "description": "UTC date in the format 2017-01-25. Any data after this date will not be replicated. Must be greater or equal to the start date field.",
         "examples": ["2021-12-12"],
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "order": 2
       },
-      "credentials": {
+      "authorization": {
         "type": "object",
         "title": "Authentication Type",
         "description": "",
@@ -41,18 +41,16 @@
           {
             "title": "OAuth",
             "type": "object",
-            "x-oauth2-provider": "google",
             "required": [
+              "auth_type",
               "client_id",
               "client_secret",
-              "refresh_token",
-              "auth_type"
+              "refresh_token"
             ],
             "properties": {
               "auth_type": {
                 "type": "string",
                 "const": "Client",
-                "default": "Client",
                 "order": 0
               },
               "client_id": {
@@ -89,13 +87,12 @@
               "auth_type": {
                 "type": "string",
                 "const": "Service",
-                "default": "Service",
                 "order": 0
               },
               "service_account_info": {
                 "title": "Service Account JSON Key",
                 "type": "string",
-                "description": "The JSON key of the service account to use for authorization. Read more here: https://cloud.google.com/iam/docs/creating-managing-service-account-keys",
+                "description": "The JSON key of the service account to use for authorization. Read more <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-account-keys\">here</a>.",
                 "examples": [
                   "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
                 ],
@@ -113,16 +110,17 @@
       "custom_reports": {
         "order": 4,
         "type": "string",
-        "title": "Custom Reports (Optional)",
-        "description": "A JSON array describing the custom reports you want to sync from Google Search Console. See the docs for more information: https://go.estuary.dev/fdKumB"
+        "title": "Custom Reports",
+        "description": "A JSON array describing the custom reports you want to sync from Google Search Console. See <a href=\"https://docs.airbyte.com/integrations/sources/google-search-console#step-2-set-up-the-google-search-console-connector-in-airbyte\">the docs</a> for more information about the exact format you can use to fill out this field."
       }
     }
   },
   "authSpecification": {
-    "provider": "google",
-    "authUrlTemplate": "https://accounts.google.com/o/oauth2/auth?access_type=offline&prompt=consent&client_id={{ client_id }}&redirect_uri={{ redirect_uri }}&response_type=code&scope=https://www.googleapis.com/auth/webmasters.readonly&state={{ state }}",
-    "accessTokenUrlTemplate": "https://oauth2.googleapis.com/token",
-    "accessTokenBody": "{\"grant_type\": \"authorization_code\", \"client_id\": \"{{ client_id }}\", \"client_secret\": \"{{ client_secret }}\", \"redirect_uri\": \"{{ redirect_uri }}\", \"code\": \"{{ code }}\"}",
-    "accessTokenResponseMap": "{\"refresh_token\": \"/refresh_token\"}"
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["authorization", 0],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]]
+    }
   }
 }

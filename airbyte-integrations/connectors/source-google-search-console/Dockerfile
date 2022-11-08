@@ -8,6 +8,11 @@ COPY source_google_search_console ./source_google_search_console
 COPY main.py ./
 COPY setup.py ./
 RUN pip install .
+COPY documentation_url.patch.json ./
+COPY spec.patch.json ./
+COPY spec.map.json ./
+COPY oauth2.patch.json ./
+COPY streams/* ./streams/
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./

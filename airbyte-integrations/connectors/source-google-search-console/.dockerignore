@@ -1,4 +1,7 @@
 *
+!streams
+!*.patch.json
+!*.map.json
 !Dockerfile
 !Dockerfile.test
 !main.py
