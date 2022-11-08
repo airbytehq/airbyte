@@ -9,6 +9,7 @@ import { LabeledInput, Link } from "components";
 import { Button } from "components/ui/Button";
 
 import { useExperiment } from "hooks/services/Experiment";
+import { SignupSourceDropdown } from "packages/cloud/components/experiments/SignupSourceDropdown";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { isGdprCountry } from "utils/dataPrivacy";
@@ -180,6 +181,7 @@ export const SignupForm: React.FC = () => {
 
   const showName = !useExperiment("authPage.signup.hideName", false);
   const showCompanyName = !useExperiment("authPage.signup.hideCompanyName", false);
+  const showSourceSelector = useExperiment("authPage.signup.sourceSelector", false);
 
   const validationSchema = useMemo(() => {
     const shape = {
@@ -223,7 +225,7 @@ export const SignupForm: React.FC = () => {
       validateOnBlur
       validateOnChange
     >
-      {({ isValid, isSubmitting, status }) => (
+      {({ isValid, isSubmitting, status, values }) => (
         <Form>
           {(showName || showCompanyName) && (
             <RowFieldItem>
@@ -232,6 +234,12 @@ export const SignupForm: React.FC = () => {
             </RowFieldItem>
           )}
 
+          {/* exp-select-source-signup */}
+          {showSourceSelector && (
+            <FieldItem>
+              <SignupSourceDropdown disabled={isSubmitting} email={values.email} />
+            </FieldItem>
+          )}
           <FieldItem>
             <EmailField />
           </FieldItem>
