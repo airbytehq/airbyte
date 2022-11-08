@@ -68,6 +68,13 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     lastHeartbeatPosition = null;
   }
 
+
+  // #18987 The following logic incorporates heartbeat (CDC postgres only for now):
+  // 1. Wait on queue the either the configured time first or 1 min after a record received
+  // 2. If nothing came out of queue finish sync
+  // 3. If received heartbeat: check if hearbeat_lsn reached target or hasn't changed in a while finish sync
+  // 4. If change event lsn reached target finish sync
+  // 5. Otherwise check message queuen again
   @Override
   protected ChangeEvent<String, String> computeNext() {
     // keep trying until the publisher is closed or until the queue is empty. the latter case is
