@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.db.PgLsn;
 import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -22,7 +23,8 @@ import org.slf4j.LoggerFactory;
 public class PostgresCdcTargetPosition implements CdcTargetPosition {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcTargetPosition.class);
-  private final PgLsn targetLsn;
+  @VisibleForTesting
+  final PgLsn targetLsn;
 
   public PostgresCdcTargetPosition(final PgLsn targetLsn) {
     this.targetLsn = targetLsn;
@@ -66,7 +68,7 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
   }
 
   private boolean isHeartbeatEvent(final ChangeEvent<String, String> event) {
-    return !event.value().contains("source");
+    return  Objects.nonNull(event) && !event.value().contains("source");
   }
 
   @Override
@@ -88,7 +90,7 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
 
   @Override
   public boolean reachedTargetPosition(final Long lsn) {
-    return lsn.compareTo(targetLsn.asLong()) >= 0;
+    return (lsn == null) ? false : lsn.compareTo(targetLsn.asLong()) >= 0;
   }
 
   private PgLsn extractLsn(final JsonNode valueAsJson) {
