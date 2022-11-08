@@ -25,8 +25,4 @@ connectionSpecification:
     language:
       title: Optional language for filtering
       type: string
-<<<<<<< HEAD
       description: Language expressed in ISO 639-1 scheme, Mandate for required streams (Example en-US) 
-=======
-      description: Language expressed in ISO 639-1 scheme, Default would be en-US for required streams
->>>>>>> 972678c282a90864b5a021998080e975cbe75512

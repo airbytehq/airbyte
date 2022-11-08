@@ -100,7 +100,7 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_lists"
-      path: "/movie/{{ config['movie_id'] or '550' }}/lists?api_key={{ config['api_key'] }}"
+      path: "/movie/{{ config['movie_id'] }}/lists"
       
   movies_recommendations_stream:
     $ref: "*ref(definitions.base_stream)"
