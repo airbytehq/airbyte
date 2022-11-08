@@ -284,10 +284,8 @@ class SourceCoda(AbstractSource):
             Categories(**stream_args),
             Pages(**additional_args),
             Tables(**additional_args),
-            # Columns(**additional_args),
-            # Rows(authenticator=auth, **config),
             Formulas(**additional_args),
             Controls(**additional_args),
-            # Account(authenticator=auth, **config),
-            # Analytics(authenticator=auth, **config),
+            Columns(**additional_args),
+
         ]

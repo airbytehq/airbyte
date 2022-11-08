@@ -2,18 +2,19 @@ documentationUrl: https://docs.airbyte.com/integrations/sources/coda
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Coda Spec
-  type: object
+  type: Required attributes for hitting apis
   required:
     - auth_token
+    - doc_id
   additionalProperties: true
   properties:
     auth_token:
+      title: Authentication token
       type: string
       description: Bearer token
       airbyte_secret: true
       order: 0
     doc_id:
+      title: Document Id
       type: string
       description: Document id
-
-     
