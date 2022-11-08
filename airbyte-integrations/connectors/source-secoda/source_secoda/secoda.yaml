@@ -1,6 +1,9 @@
 version: "0.1.0"
 
 definitions:
+  schema_loader:
+    type: JsonSchema
+    file_path: "./source_secoda/schemas/{{ options.name }}.json"
   selector:
     extractor:
       field_pointer: ["results"]
