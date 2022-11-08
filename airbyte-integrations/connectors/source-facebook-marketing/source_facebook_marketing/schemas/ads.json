@@ -1,6 +1,5 @@
 {
-  "type": ["object"],
-  "required": ["id"],
+  "type": ["null", "object"],
   "properties": {
     "bid_type": {
       "type": ["null", "string"]
@@ -74,7 +73,7 @@
       }
     },
     "id": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "updated_time": {
       "type": ["null", "string"],

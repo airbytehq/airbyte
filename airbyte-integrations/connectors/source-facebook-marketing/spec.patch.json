@@ -1,0 +1,21 @@
+{
+  "properties": {
+    "custom_insights": {
+      "items": {
+        "properties": {
+          "insights_lookback_window": {
+            "minimum": 1,
+            "mininum": null
+          }
+        }
+      }
+    },
+    "access_token": {
+      "description": "The generated access token. See the docs for more information: https://go.estuary.dev/OzUqlE"
+    },
+    "insights_lookback_window": {
+      "minimum": 1,
+      "mininum": null
+    }
+  }
+}

@@ -1,8 +1,7 @@
 {
-  "required": ["actor_id", "object_id", "event_time"],
   "properties": {
     "actor_id": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "actor_name": {
       "type": ["null", "string"]
@@ -27,7 +26,7 @@
       "type": ["null", "string"]
     },
     "object_id": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "object_name": {
       "type": ["null", "string"]
@@ -39,5 +38,5 @@
       "type": ["null", "string"]
     }
   },
-  "type": ["object"]
+  "type": ["null", "object"]
 }

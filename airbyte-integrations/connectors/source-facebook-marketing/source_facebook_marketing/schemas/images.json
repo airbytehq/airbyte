@@ -1,13 +1,12 @@
 {
   "type": "object",
   "additionalProperties": true,
-  "required": ["id"],
   "properties": {
     "account_id": {
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "name": {
       "type": ["null", "string"]

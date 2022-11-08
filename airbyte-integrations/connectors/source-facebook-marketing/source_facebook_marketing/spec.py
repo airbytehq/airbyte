@@ -3,11 +3,10 @@
 #
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Optional
+from typing import Any, Dict, List, Optional, Type
 
-import pendulum
 from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.adsinsights import AdsInsights
 from pydantic import BaseModel, Field, PositiveInt
@@ -15,13 +14,11 @@ from pydantic import BaseModel, Field, PositiveInt
 logger = logging.getLogger("airbyte")
 
 
-class StrEnum(str, Enum):
-    pass
-
-
-ValidFields = StrEnum("ValidEnums", AdsInsights.Field.__dict__)
-ValidBreakdowns = StrEnum("ValidBreakdowns", AdsInsights.Breakdowns.__dict__)
-ValidActionBreakdowns = StrEnum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
+ValidFields = Enum("ValidEnums", AdsInsights.Field.__dict__)
+ValidBreakdowns = Enum("ValidBreakdowns", AdsInsights.Breakdowns.__dict__)
+ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
+DATE_TIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+EMPTY_PATTERN = "^$"
 
 
 class InsightConfig(BaseModel):
@@ -66,6 +63,7 @@ class InsightConfig(BaseModel):
     start_date: Optional[datetime] = Field(
         title="Start Date",
         description="The date from which you'd like to replicate data for this stream, in the format YYYY-MM-DDT00:00:00Z.",
+        pattern=DATE_TIME_PATTERN,
         examples=["2017-01-25T00:00:00Z"],
     )
 
@@ -76,7 +74,15 @@ class InsightConfig(BaseModel):
             "All data generated between the start date and this date will be replicated. "
             "Not setting this option will result in always syncing the latest data."
         ),
+        pattern=DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
+    )
+    insights_lookback_window: Optional[PositiveInt] = Field(
+        title="Custom Insights Lookback Window",
+        description="The attribution window",
+        maximum=28,
+        mininum=1,
+        default=28,
     )
 
 
@@ -86,6 +92,17 @@ class ConnectorConfig(BaseConfig):
     class Config:
         title = "Source Facebook Marketing"
 
+        @staticmethod
+        def schema_extra(schema: Dict[str, Any], model: Type["ConnectorConfig"]) -> None:
+            schema["properties"]["end_date"].pop("format")
+
+    account_id: str = Field(
+        title="Account ID",
+        order=0,
+        description="The Facebook Ad account ID to use when pulling data from the Facebook Marketing API.",
+        examples=["111111111111111"],
+    )
+
     start_date: datetime = Field(
         title="Start Date",
         order=1,
@@ -93,6 +110,7 @@ class ConnectorConfig(BaseConfig):
             "The date from which you'd like to replicate data for all incremental streams, "
             "in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated."
         ),
+        pattern=DATE_TIME_PATTERN,
         examples=["2017-01-25T00:00:00Z"],
     )
 
@@ -104,14 +122,18 @@ class ConnectorConfig(BaseConfig):
             "All data generated between start_date and this date will be replicated. "
             "Not setting this option will result in always syncing the latest data."
         ),
+        pattern=EMPTY_PATTERN + "|" + DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
-        default_factory=pendulum.now,
+        default_factory=lambda: datetime.now(tz=timezone.utc),
     )
 
     access_token: str = Field(
         title="Access Token",
         order=3,
-        description=("The value of the access token generated. " "See the docs for more information: https://go.estuary.dev/OzUqlE"),
+        description=(
+            "The value of the access token generated. "
+            'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information'
+        ),
         airbyte_secret=True,
     )
 
@@ -144,4 +166,20 @@ class ConnectorConfig(BaseConfig):
         description=(
             "Page size used when sending requests to Facebook API to specify number of records per page when response has pagination. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases."
         ),
+    )
+
+    insights_lookback_window: Optional[PositiveInt] = Field(
+        title="Insights Lookback Window",
+        order=8,
+        description="The attribution window",
+        maximum=28,
+        mininum=1,
+        default=28,
+    )
+
+    max_batch_size: Optional[PositiveInt] = Field(
+        title="Maximum size of Batched Requests",
+        order=9,
+        description="Maximum batch size used when sending batch requests to Facebook API. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases.",
+        default=50,
     )

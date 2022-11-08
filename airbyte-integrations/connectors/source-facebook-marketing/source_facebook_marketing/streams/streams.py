@@ -4,14 +4,15 @@
 
 import base64
 import logging
-from itertools import chain
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, Iterable, List, Mapping, Optional, Set
 
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
+from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
+from facebook_business.adobjects.user import User
 
 from .base_insight_streams import AdsInsights
 from .base_streams import FBMarketingIncrementalStream, FBMarketingReversedIncrementalStream, FBMarketingStream
@@ -65,10 +66,17 @@ class AdCreatives(FBMarketingStream):
             yield record
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        objects = []
-        for account in self._api.accounts:
-            objects = chain(objects, account.get_ad_creatives(params=params))
-        return objects
+        return self._api.account.get_ad_creatives(params=params)
+
+
+class CustomConversions(FBMarketingStream):
+    """doc: https://developers.facebook.com/docs/marketing-api/reference/custom-conversion"""
+
+    entity_prefix = "customconversion"
+    enable_deleted = False
+
+    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+        return self._api.account.get_custom_conversions(params=params)
 
 
 class Ads(FBMarketingIncrementalStream):
@@ -77,10 +85,7 @@ class Ads(FBMarketingIncrementalStream):
     entity_prefix = "ad"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        objects = []
-        for account in self._api.accounts:
-            objects = chain(objects, account.get_ads(params=params))
-        return objects
+        return self._api.account.get_ads(params=params)
 
 
 class AdSets(FBMarketingIncrementalStream):
@@ -89,23 +94,16 @@ class AdSets(FBMarketingIncrementalStream):
     entity_prefix = "adset"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        objects = []
-        for account in self._api.accounts:
-            objects = chain(objects, account.get_ad_sets(params=params))
-        return objects
+        return self._api.account.get_ad_sets(params=params)
 
 
 class Campaigns(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group"""
 
     entity_prefix = "campaign"
-    primary_key = ["id"]
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        objects = []
-        for account in self._api.accounts:
-            objects = chain(objects, account.get_campaigns(params=params))
-        return objects
+        return self._api.account.get_campaigns(params=params)
 
 
 class Activities(FBMarketingIncrementalStream):
@@ -113,13 +111,10 @@ class Activities(FBMarketingIncrementalStream):
 
     entity_prefix = "activity"
     cursor_field = "event_time"
-    primary_key = ["actor_id", "object_id", "event_time"]
+    primary_key = None
 
     def list_objects(self, fields: List[str], params: Mapping[str, Any]) -> Iterable:
-        objects = []
-        for account in self._api.accounts:
-            objects = chain(objects, account.get_activities(fields=fields, params=params))
-        return objects
+        return self._api.account.get_activities(fields=fields, params=params)
 
     def read_records(
         self,
@@ -156,10 +151,7 @@ class Videos(FBMarketingIncrementalStream):
     entity_prefix = "video"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        objects = []
-        for account in self._api.accounts:
-            objects = chain(objects, account.get_ad_videos(params=params))
-        return objects
+        return self._api.account.get_ad_videos(params=params)
 
 
 class AdAccount(FBMarketingStream):
@@ -168,19 +160,37 @@ class AdAccount(FBMarketingStream):
     use_batch = False
     enable_deleted = False
 
+    def get_task_permissions(self) -> Set[str]:
+        """https://developers.facebook.com/docs/marketing-api/reference/ad-account/assigned_users/"""
+        res = set()
+        me = User(fbid="me", api=self._api.api)
+        for business_user in me.get_business_users():
+            assigned_users = self._api.account.get_assigned_users(params={"business": business_user["business"].get_id()})
+            for assigned_user in assigned_users:
+                if business_user.get_id() == assigned_user.get_id():
+                    res.update(set(assigned_user["tasks"]))
+        return res
+
+    @cached_property
+    def fields(self) -> List[str]:
+        properties = super().fields
+        # https://developers.facebook.com/docs/marketing-apis/guides/javascript-ads-dialog-for-payments/
+        # To access "funding_source_details", the user making the API call must have a MANAGE task permission for
+        # that specific ad account.
+        if "funding_source_details" in properties and "MANAGE" not in self.get_task_permissions():
+            properties.remove("funding_source_details")
+        return properties
+
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         """noop in case of AdAccount"""
-        return self._api.accounts
+        return [FBAdAccount(self._api.account.get_id())]
 
 
 class Images(FBMarketingReversedIncrementalStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/ad-image"""
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        objects = []
-        for account in self._api.accounts:
-            objects = chain(objects, account.get_ad_images(params=params, fields=self.fields))
-        return objects
+        return self._api.account.get_ad_images(params=params, fields=self.fields)
 
 
 class AdsInsightsAgeAndGender(AdsInsights):

@@ -1,0 +1,8 @@
+{
+  "provider": "facebook",
+  "authUrlTemplate": "",
+  "accessTokenUrlTemplate": "",
+  "accessTokenBody": "",
+  "accessTokenHeaders": "",
+  "accessTokenResponseMap": ""
+}

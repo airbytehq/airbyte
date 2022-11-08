@@ -8,7 +8,6 @@ import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
 from facebook_business import FacebookAdsApi, FacebookSession
-from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams import AdAccount, AdCreatives, Campaigns
 
@@ -39,15 +38,16 @@ def fb_call_rate_response_fixture():
     }
 
 
-@pytest.fixture(scope="session", name="account_id")
-def account_id_fixture():
-    return "unknown_account"
+@pytest.fixture(name="fb_call_amount_data_response")
+def fb_call_amount_data_response_fixture():
+    error = {"message": "Please reduce the amount of data you're asking for, then retry your request", "code": 1}
 
-
-@pytest.fixture(autouse=True)
-def mock_accounts(mocker, account_id):
-    account = FBAdAccount(f"act_{account_id}")
-    mocker.patch("facebook_business.adobjects.user.User.get_ad_accounts", return_value=[account])
+    return {
+        "json": {
+            "error": error,
+        },
+        "status_code": 500,
+    }
 
 
 class TestBackoff:
@@ -136,6 +136,7 @@ class TestBackoff:
             },
         ]
 
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/business_users", json={"data": []})
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/", responses)
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{account_data['id']}/", responses)
 
@@ -143,3 +144,16 @@ class TestBackoff:
         accounts = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
 
         assert accounts == [account_data]
+
+    def test_limit_error_retry(self, fb_call_amount_data_response, requests_mock, api, account_id):
+        """Error every time, check limit parameter decreases by 2 times every new call"""
+
+        res = requests_mock.register_uri(
+            "GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/campaigns", [fb_call_amount_data_response]
+        )
+
+        stream = Campaigns(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
+        try:
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+        except FacebookRequestError:
+            assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "50", "25", "12", "6"]

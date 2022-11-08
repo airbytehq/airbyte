@@ -5,7 +5,8 @@
 import pendulum
 import pytest
 import source_facebook_marketing
-from facebook_business import FacebookAdsApi
+from facebook_business import FacebookAdsApi, FacebookSession
+from facebook_business.adobjects.adaccount import AdAccount
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
@@ -132,3 +133,9 @@ class TestMyFacebookAdsApi:
             source_facebook_marketing.api.logger.warning.assert_called_with(
                 f"Utilization is too high ({usage})%, pausing for {fb_api._compute_pause_interval.return_value}"
             )
+
+    def test_find_account(self, api, account_id, requests_mock):
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/", [{"json": {"id": "act_test"}}])
+        account = api._find_account(account_id)
+        assert isinstance(account, AdAccount)
+        assert account.get_id() == "act_test"

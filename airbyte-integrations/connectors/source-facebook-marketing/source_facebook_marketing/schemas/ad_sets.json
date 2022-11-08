@@ -1,6 +1,5 @@
 {
-  "type": ["object"],
-  "required": ["id"],
+  "type": ["null", "object"],
   "properties": {
     "name": {
       "type": ["null", "string"]
@@ -39,7 +38,7 @@
       }
     },
     "id": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "account_id": {
       "type": ["null", "string"]
@@ -85,6 +84,20 @@
           "type": ["null", "integer"]
         },
         "REACH": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "bid_strategy": {
+      "type": ["null", "string"]
+    },
+    "bid_amount": {
+      "type": ["null", "number"]
+    },
+    "bid_constraints": {
+      "type": ["null", "object"],
+      "properties": {
+        "roas_average_floor": {
           "type": ["null", "integer"]
         }
       }
