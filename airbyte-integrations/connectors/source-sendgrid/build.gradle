@@ -8,6 +8,11 @@ airbytePython {
     moduleDirectory 'source_sendgrid'
 }
 
+
+airbyteDocker {
+    followSymlinks true
+}
+
 dependencies {
     implementation files(project(':airbyte-integrations:bases:source-acceptance-test').airbyteDocker.outputs)
 }
