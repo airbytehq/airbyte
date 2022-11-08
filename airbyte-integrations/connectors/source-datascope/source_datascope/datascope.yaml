@@ -11,9 +11,24 @@ definitions:
       type: ApiKeyAuthenticator
       header: "Authorization"
       api_token: "{{ config['Authorization'] }}"
+  stream_slicer:
+    type: "DatetimeStreamSlicer"
+    start_datetime:
+      datetime: "{{ config['date'] }}"
+      datetime_format: "%Y-%m-%d %H:%M"
+    end_datetime:
+      datetime: "{{ now_utc().strftime('%Y-%m-%d %H:%M') }}"
+      datetime_format: "%Y-%m-%d %H:%M"
+    step: "1d"
+    datetime_format: "%Y-%m-%d %H:%M"
+    cursor_field: "{{ options['stream_cursor_field'] }}"
+
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
+    request_options_provider:
+      request_parameters:
+        date: "{{stream_slice['start_time'] or 'latest'}}"
     paginator:
       type: DefaultPaginator
       url_base: "*ref(definitions.requester.url_base)"
@@ -28,6 +43,9 @@ definitions:
         field_name: "offset"
     requester:
       $ref: "*ref(definitions.requester)"
+    stream_slicer:
+      $ref: "*ref(definitions.stream_slicer)"
+
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
@@ -37,24 +55,37 @@ definitions:
       name: "locations"
       primary_key: "id"
       path: "/locations"
+      stream_cursor_field: "date"
   answers_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "answers"
       primary_key: "form_answer_id"
       path: "/v2/answers"
+      stream_cursor_field: "date"
   lists_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "lists"
       primary_key: "id"
       path: "/metadata_objects"
+      stream_cursor_field: "date"
   notifications_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "notifications"
       primary_key: "id"
       path: "/notifications"
+      stream_cursor_field: "date"
+    requester_notifications: #notification stream uses start instead of date as incremental parameter
+      $ref: "*ref(definitions.requester)"
+      request_options_provider:
+        request_parameters:
+          start: "{{stream_slice['start'] or 'latest'}}"
+    retriever:
+        $ref: "*ref(definitions.retriever)"
+        requester:
+            $ref: "*ref(definitions.notifications_stream.requester_notifications)"
 
 streams:
   - "*ref(definitions.location_stream)"
