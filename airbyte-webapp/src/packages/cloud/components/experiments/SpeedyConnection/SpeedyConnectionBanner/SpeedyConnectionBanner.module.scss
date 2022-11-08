@@ -9,11 +9,11 @@
   z-index: 3;
   font-size: 12px;
   line-height: 15px;
-  color: colors.$black;
   padding: 8px;
   display: flex;
   align-items: center;
-  background-color: colors.$beige-100;
+  background-color: colors.$blue;
+  color: colors.$white;
 
   @media (min-width: 1280px) {
     height: 50px;

@@ -155,13 +155,7 @@ export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
                     </a>
                   </li>
                 </ul>
-                <img
-                  className={styles.webhookGuideImg}
-                  alt={formatMessage({
-                    id: "settings.notificationGuide.button",
-                  })}
-                  src={help}
-                />
+                <img className={styles.webhookGuideImg} alt="" src={help} />
               </div>
               <Row className={styles.webhookUrlLabelRow}>
                 <Cell className={styles.webhookUrlLabelCell}>
@@ -180,13 +174,7 @@ export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
                       >
                         <FormattedMessage id="settings.notificationGuide.button" />
                       </Button>
-                      <img
-                        className={styles.webhookGuideButtonImg}
-                        alt={formatMessage({
-                          id: "settings.notificationGuide.button",
-                        })}
-                        src={help}
-                      />
+                      <img className={styles.webhookGuideButtonImg} alt="" src={help} />
                     </>
                   )}
                 </Cell>
