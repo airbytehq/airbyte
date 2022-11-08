@@ -238,7 +238,7 @@
   sourceDefinitionId: c332628c-f55c-4017-8222-378cfafda9b2
   dockerRepository: airbyte/source-convex
   dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/sources/convex
+  documentationUrl: https://docs.airbyte.com/integrations/sources/convex
   icon: convex.svg
   sourceType: api
   releaseStage: alpha
