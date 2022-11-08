@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from unittest.mock import patch
 
 import pytest
@@ -12,17 +13,9 @@ from source_bing_ads.source import AccountPerformanceReportMonthly, Accounts, Ad
 @pytest.fixture(name="config")
 def config_fixture():
     """Generates streams settings from a config file"""
-    return {
-        "tenant_id": "common",
-        "developer_token": "test_token",
-        "credentials": {
-            "client_id": "test_client_id",
-            "client_secret": "test_client_secret",
-            "refresh_token": "test_refresh_token",
-            "auth-method": "oauth2.0",
-        },
-        "reports_start_date": "2020-01-01",
-    }
+    CONFIG_FILE = "secrets/config.json"
+    with open(CONFIG_FILE, "r") as f:
+        return json.loads(f.read())
 
 
 @pytest.fixture(name="logger_mock")
@@ -56,6 +49,7 @@ def test_campaigns_request_params(mocked_client, config):
     request_params = campaigns.request_params(stream_slice={"account_id": "account_id"})
     assert request_params == {
         "AccountId": "account_id",
+        "CampaignType": "Audience DynamicSearchAds Search Shopping",
         "ReturnAdditionalFields": "AdScheduleUseSearcherTimeZone BidStrategyId CpvCpmBiddingScheme DynamicDescriptionSetting DynamicFeedSetting MaxConversionValueBiddingScheme MultimediaAdsBidAdjustment TargetImpressionShareBiddingScheme TargetSetting VerifiedTrackingSetting",
     }
 

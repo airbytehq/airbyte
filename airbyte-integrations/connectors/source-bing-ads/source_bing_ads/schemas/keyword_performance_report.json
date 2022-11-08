@@ -1,52 +1,51 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["AccountId", "CampaignId", "AdId", "KeywordId", "AdGroupId", "TimePeriod", "CurrencyCode", "AdDistribution", "DeviceType", "Language", "Network", "DeviceOS", "TopVsOther", "BidMatchType", "DeliveredMatchType"],
   "properties": {
     "AccountId": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "CampaignId": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "AdGroupId": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "KeywordId": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "AdId": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "TimePeriod": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "CurrencyCode": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "DeliveredMatchType": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "AdDistribution": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "DeviceType": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "Language": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "Network": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "DeviceOS": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "TopVsOther": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "BidMatchType": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "KeywordStatus": {
       "type": ["null", "string"]

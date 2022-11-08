@@ -1,36 +1,35 @@
 {
-  "type": ["object"],
-  "required": ["TimePeriod", "AccountId", "CurrencyCode", "DeviceType", "DeviceOS", "TopVsOther", "BidMatchType", "AdDistribution", "Network", "DeliveredMatchType"],
+  "type": ["null", "object"],
   "properties": {
     "AccountId": {
-      "type": ["integer"]
+      "type": ["null", "integer"]
     },
     "TimePeriod": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "CurrencyCode": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "AdDistribution": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "DeviceType": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "Network": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "DeliveredMatchType": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "DeviceOS": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "TopVsOther": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "BidMatchType": {
-      "type": ["string"]
+      "type": ["null", "string"]
     },
     "PhoneImpressions": {
       "type": ["null", "integer"]

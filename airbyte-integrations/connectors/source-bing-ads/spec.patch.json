@@ -1,0 +1,54 @@
+{
+  "required": [
+    "developer_token",
+    "reports_start_date",
+    "credentials"
+  ],
+  "properties": {
+    "client_id": null,
+    "client_secret": null,
+    "refresh_token": null,
+    "auth_method": null,
+    "credentials": {
+      "type": "object",
+      "description": "",
+      "x-oauth2-provider": "microsoft",
+      "title": "Microsoft Credentials",
+      "required": [
+        "client_id",
+        "client_secret",
+        "refresh_token",
+        "auth_method"
+      ],
+      "properties": {
+        "auth_method": {
+          "type": "string",
+          "const": "oauth2.0",
+          "default": "oauth2.0"
+        },
+        "client_id": {
+          "type": "string",
+          "title": "Client ID",
+          "description": "The Client ID of your Microsoft Advertising developer application.",
+          "airbyte_secret": true,
+          "order": 3
+        },
+        "client_secret": {
+          "type": "string",
+          "title": "Client Secret",
+          "description": "The Client Secret of your Microsoft Advertising developer application.",
+          "default": "",
+          "airbyte_secret": true,
+          "order": 4
+        },
+        "refresh_token": {
+          "type": "string",
+          "title": "Refresh Token",
+          "description": "Refresh Token to renew the expired Access Token.",
+          "airbyte_secret": true,
+          "order": 5
+        }
+      }
+    }
+  }
+}

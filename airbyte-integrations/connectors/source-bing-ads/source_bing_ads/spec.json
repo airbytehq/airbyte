@@ -1,17 +1,21 @@
 {
-  "documentationUrl": "https://go.estuary.dev/QpEo4F",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/bing-ads",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Bing Ads Spec",
     "type": "object",
     "required": [
       "developer_token",
-      "reports_start_date",
-      "credentials",
-      "tenant_id"
+      "client_id",
+      "refresh_token",
+      "reports_start_date"
     ],
     "additionalProperties": true,
     "properties": {
+      "auth_method": {
+        "type": "string",
+        "const": "oauth2.0"
+      },
       "tenant_id": {
         "type": "string",
         "title": "Tenant ID",
@@ -20,70 +24,96 @@
         "default": "common",
         "order": 0
       },
-      "reports_start_date": {
+      "client_id": {
         "type": "string",
-        "title": "Start date",
-        "default": "2020-01-01",
-        "description": "The start date from which to begin replicating report data. Any data generated before this date will not be replicated in reports. This is a UTC date in YYYY-MM-DD format.",
+        "title": "Client ID",
+        "description": "The Client ID of your Microsoft Advertising developer application.",
+        "airbyte_secret": true,
         "order": 1
+      },
+      "client_secret": {
+        "type": "string",
+        "title": "Client Secret",
+        "description": "The Client Secret of your Microsoft Advertising developer application.",
+        "default": "",
+        "airbyte_secret": true,
+        "order": 2
+      },
+      "refresh_token": {
+        "type": "string",
+        "title": "Refresh Token",
+        "description": "Refresh Token to renew the expired Access Token.",
+        "airbyte_secret": true,
+        "order": 3
       },
       "developer_token": {
         "type": "string",
         "title": "Developer Token",
-        "description": "Developer token associated with user. See more info in the docs: https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token",
+        "description": "Developer token associated with user. See more info <a href=\"https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token\"> in the docs</a>.",
         "airbyte_secret": true,
-        "order": 2
+        "order": 4
       },
-      "credentials": {
+      "reports_start_date": {
+        "type": "string",
+        "title": "Reports replication start date",
+        "format": "date",
+        "default": "2020-01-01",
+        "description": "The start date from which to begin replicating report data. Any data generated before this date will not be replicated in reports. This is a UTC date in YYYY-MM-DD format.",
+        "order": 5
+      }
+    }
+  },
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["auth_method"],
+    "predicate_value": "oauth2.0",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
         "type": "object",
-        "description": "",
-        "x-oauth2-provider": "microsoft",
-        "title": "Microsoft Credentials",
-        "required": [
-          "client_id",
-          "client_secret",
-          "refresh_token",
-          "auth_method"
-        ],
+        "additionalProperties": false,
         "properties": {
-          "auth_method": {
+          "refresh_token": {
             "type": "string",
-            "const": "oauth2.0",
-            "default": "oauth2.0"
+            "path_in_connector_config": ["refresh_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string"
           },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
           "client_id": {
             "type": "string",
-            "title": "Client ID",
-            "description": "The Client ID of your Microsoft Advertising developer application.",
-            "airbyte_secret": true,
-            "order": 3
+            "path_in_connector_config": ["client_id"]
           },
           "client_secret": {
             "type": "string",
-            "title": "Client Secret",
-            "description": "The Client Secret of your Microsoft Advertising developer application.",
-            "default": "",
-            "airbyte_secret": true,
-            "order": 4
-          },
-          "refresh_token": {
+            "path_in_connector_config": ["client_secret"]
+          }
+        }
+      },
+      "oauth_user_input_from_connector_config_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenant_id": {
             "type": "string",
-            "title": "Refresh Token",
-            "description": "Refresh Token to renew the expired Access Token.",
-            "airbyte_secret": true,
-            "order": 5
+            "path_in_connector_config": ["tenant_id"]
           }
         }
       }
     }
-  },
-  "authSpecification": {
-    "provider": "microsoft",
-    "authUrlTemplate": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id={{ urlencode client_id }}&scope=openid%20profile%20https://ads.microsoft.com/msads.manage%20offline_access&response_type=code&redirect_uri={{ urlencode redirect_uri }}&state={{ urlencode state }}&response_mode=query",
-    "accessTokenUrlTemplate": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
-    "accessTokenBody": "client_id={{ urlencode client_id }}&scope=openid%20profile%20https://ads.microsoft.com/msads.manage%20offline_access&code={{ urlencode code }}&grant_type=authorization_code&redirect_uri={{ urlencode redirect_uri }}&client_secret={{ urlencode client_secret }}",
-    "accessTokenHeaders": "{\"content-type\": \"application/x-www-form-urlencoded\"}",
-    "accessTokenResponseMap": "{\"refresh_token\": \"/refresh_token\"}"
-      
   }
 }
