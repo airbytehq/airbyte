@@ -153,7 +153,8 @@ public class IntegrationRunner {
         default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
       }
     } catch (final Exception e) {
-      // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An attempt is made to
+      // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An attempt is made
+      // to
       // find the root exception that corresponds to a configuration error. If that does not exist, we
       // just return the original exception.
       final Throwable rootThrowable = getRootConfigError(e);
