@@ -110,8 +110,10 @@ public class AirbyteMessageMigrationV0_4_0 implements AirbyteMessageMigration<Ai
    */
   private static void mutate(Function<JsonNode, Boolean> matcher, Consumer<JsonNode> transformer, JsonNode schema) {
     if (matcher.apply(schema)) {
+      // If this schema has a primitive type, then we need to mutate it
       transformer.accept(schema);
     } else {
+      // Otherwise, we need to find all of the subschemas and mutate them.
       List<JsonNode> subschemas = new ArrayList<>();
       findSubschemas(subschemas, schema, "items");
       findSubschemas(subschemas, schema, "allOf");
@@ -119,7 +121,6 @@ public class AirbyteMessageMigrationV0_4_0 implements AirbyteMessageMigration<Ai
       findSubschemas(subschemas, schema, "anyOf");
       findSubschemas(subschemas, schema, "additionalProperties");
 
-      findSubschemas(subschemas, schema, "properties");
       if (schema.hasNonNull("properties")) {
         ObjectNode propertiesNode = (ObjectNode)schema.get("properties");
         Iterator<Entry<String, JsonNode>> propertiesIterator = propertiesNode.fields();
@@ -133,6 +134,9 @@ public class AirbyteMessageMigrationV0_4_0 implements AirbyteMessageMigration<Ai
     }
   }
 
+  /**
+   * If schema contains key, then grab the subschema(s) at schema[key] and add them to the subschemas list.
+   */
   private static void findSubschemas(List<JsonNode> subschemas, JsonNode schema, String key) {
     if (schema.hasNonNull(key)) {
       JsonNode subschemaNode = schema.get(key);
