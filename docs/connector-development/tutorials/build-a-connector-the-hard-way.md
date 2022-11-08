@@ -288,8 +288,6 @@ def check(config):
     print(json.dumps(output_message))
 ```
 
-In order to run this code later, be sure to `pip install requests` in your local virtual environment. `datetime` should already be included in your Python installation. 
-
 Lastly we'll extend the `run` method to accept the `check` command and call the `check` method. First we'll add a helper method for reading input:
 
 ```python
