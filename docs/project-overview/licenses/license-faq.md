@@ -11,7 +11,7 @@
 
 ## About Elastic License 2.0 (ELv2)
 ELv2 is a simple, non-copyleft license, allowing for the right to “use, copy, distribute, make available, and prepare derivative works of the software”. Anyone can use Airbyte, free of charge. You can run the software at scale on your infrastructure. There are only three high-level limitations. You cannot:
-1. Provide the products to others as a managed service ([read more](license-faq#what-is-the-managed-service-use-case-that-is-not-allowed-under-elv2));
+1. Provide the products to others as a managed service ([read more](#what-is-the-managed-service-use-case-that-is-not-allowed-under-elv2));
 2. Circumvent the license key functionality or remove/obscure features protected by license keys; or
 3. Remove or obscure any licensing, copyright, or other notices.
 
@@ -26,7 +26,7 @@ If you are an Airbyte Cloud customer, nothing changes for you.
 For open-source users, everyone can continue to use Airbyte as they are doing today: no limitations on volume, number of users, number of connections…
 
 There are only a few high-level limitations. You cannot:
-1. Provide the products to others as a managed service. For example, you cannot sell a cloud service that provides users with direct access to Airbyte. You can sell access to applications built and run using Airbyte ([read more](license-faq#what-is-the-managed-service-use-case-that-is-not-allowed-under-elv2)).
+1. Provide the products to others as a managed service. For example, you cannot sell a cloud service that provides users with direct access to Airbyte. You can sell access to applications built and run using Airbyte ([read more](#what-is-the-managed-service-use-case-that-is-not-allowed-under-elv2)).
 2. Circumvent the license key functionality or remove/obscure features protected by license keys. For example, our code may contain watermarks or keys to unlock proprietary functionality. Those elements of our code will be marked in our source code. You can’t remove or change them.
 
 ### Why did Airbyte adopt ELv2?

@@ -1,22 +1,8 @@
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+import { Notification, tryNotificationConfig } from "../../request/AirbyteClient";
+import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 
-import { NotificationStatus } from "./types";
-
-class NotificationService extends AirbyteRequestService {
-  get url(): string {
-    return "notifications";
-  }
-
-  public try(payload: {
-    notificationType: "slack";
-    sendOnSuccess: boolean;
-    sendOnFailure: boolean;
-    slackConfiguration: {
-      webhook: string;
-    };
-  }): Promise<NotificationStatus> {
-    return this.fetch<NotificationStatus>(`${this.url}/try`, payload);
+export class NotificationService extends AirbyteRequestService {
+  public try(notification: Notification) {
+    return tryNotificationConfig(notification, this.requestOptions);
   }
 }
-
-export { NotificationService };

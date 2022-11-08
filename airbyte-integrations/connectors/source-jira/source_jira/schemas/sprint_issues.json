@@ -57,10 +57,10 @@
       }
     },
     "issueId": {
-      "type": "number"
+      "type": "string"
     },
     "sprintId": {
-      "type": "number"
+      "type": "integer"
     }
   }
 }

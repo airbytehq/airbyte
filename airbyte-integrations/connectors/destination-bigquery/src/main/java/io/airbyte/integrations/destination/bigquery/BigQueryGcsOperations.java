@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -138,7 +138,8 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
         BigQueryUtils.waitForJobFinish(loadJob);
         LOGGER.info("[{}] Tmp table {} (dataset {}) is successfully appended with staging files", loadJob.getJobId(), tmpTableId, datasetId);
       } catch (final BigQueryException | InterruptedException e) {
-        LOGGER.error(String.format("[%s] Failed to upload staging files to tmp table %s (%s)", loadJob.getJobId(), tmpTableId, datasetId), e);
+        throw new RuntimeException(
+            String.format("[%s] Failed to upload staging files to tmp table %s (%s)", loadJob.getJobId(), tmpTableId, datasetId), e);
       }
     });
   }

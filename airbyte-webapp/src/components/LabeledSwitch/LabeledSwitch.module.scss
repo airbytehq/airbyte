@@ -1,0 +1,33 @@
+@use "../../scss/colors";
+
+.labeledSwitch {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.label {
+  padding-left: 7px;
+  font-size: 13px;
+  line-height: 16px;
+  cursor: pointer;
+  color: colors.$dark-blue;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  &.disabled {
+    cursor: auto;
+    color: colors.$grey-300;
+  }
+}
+
+.additionalMessage {
+  padding-left: 5px;
+  color: colors.$grey-300;
+
+  & a {
+    text-decoration: underline;
+    color: colors.$blue;
+  }
+}

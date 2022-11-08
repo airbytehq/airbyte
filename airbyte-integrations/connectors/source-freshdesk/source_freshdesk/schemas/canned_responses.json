@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "folder_id": {
+      "type": ["null", "integer"]
+    },
+    "content": {
+      "type": ["null", "string"]
+    },
+    "content_html": {
+      "type": ["null", "string"]
+    },
+    "attachments": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "content_type": {
+            "type": ["null", "string"]
+          },
+          "size": {
+            "type": ["null", "integer"]
+          },
+          "attachment_url": {
+            "type": ["null", "string"]
+          },
+          "thumb_url": {
+            "type": ["null", "string"]
+          },
+          "created_at": {
+            "type": ["string", "null"]
+          },
+          "updated_at": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "created_at": {
+      "type": ["string", "null"]
+    },
+    "updated_at": {
+      "type": ["string", "null"]
+    }
+  }
+}

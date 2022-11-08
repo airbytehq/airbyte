@@ -16,6 +16,9 @@ metadata:
   name: airbyte-db
 spec:
   replicas: 1
+  # Recreate strategy is necessary to avoid multiple simultaneous db pods running and corrupting the db state
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       airbyte: db

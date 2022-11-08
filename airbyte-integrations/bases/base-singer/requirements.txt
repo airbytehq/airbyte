@@ -1,3 +1,0 @@
--e ../airbyte-protocol
--e ../base-python
--e .

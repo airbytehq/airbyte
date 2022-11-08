@@ -1,0 +1,41 @@
+@use "../../../../../../scss/colors";
+@use "../../../../../../scss/variables";
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .link {
+    text-decoration: none;
+    margin-top: variables.$spacing-2xl;
+
+    .content {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+
+      .icon {
+        margin-right: 10px;
+        font-size: 36px;
+        color: colors.$black;
+      }
+
+      .hostingText {
+        font-weight: 700;
+        font-size: 14px;
+        line-height: 17px;
+        color: colors.$dark-blue-900;
+        margin: 0;
+      }
+
+      .deployText {
+        font-weight: 400;
+        font-size: 12px;
+        line-height: 15px;
+        margin: 0;
+        color: colors.$grey-300;
+      }
+    }
+  }
+}

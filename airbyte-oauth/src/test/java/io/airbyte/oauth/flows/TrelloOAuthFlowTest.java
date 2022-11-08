@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
@@ -28,7 +28,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class TrelloOAuthFlowTest {
+class TrelloOAuthFlowTest {
 
   private static final String REDIRECT_URL = "https://airbyte.io";
 
@@ -39,7 +39,7 @@ public class TrelloOAuthFlowTest {
   private HttpTransport transport;
 
   @BeforeEach
-  public void setup() throws IOException, JsonValidationException {
+  void setup() throws IOException, JsonValidationException {
     workspaceId = UUID.randomUUID();
     definitionId = UUID.randomUUID();
 
@@ -74,14 +74,14 @@ public class TrelloOAuthFlowTest {
   }
 
   @Test
-  public void testGetSourceConsentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
+  void testGetSourceConsentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
     final String consentUrl =
         trelloOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
     assertEquals("https://trello.com/1/OAuthAuthorizeToken?oauth_token=test_token", consentUrl);
   }
 
   @Test
-  public void testCompleteSourceAuth() throws IOException, InterruptedException, ConfigNotFoundException {
+  void testCompleteSourceAuth() throws IOException, InterruptedException, ConfigNotFoundException {
     final Map<String, String> expectedParams = Map.of(
         "key", "test_client_id",
         "token", "test_token",

@@ -1,3 +1,3 @@
-import CreateDestinationPage from "./CreateDestinationPage";
+import { CreateDestinationPage } from "./CreateDestinationPage";
 
 export default CreateDestinationPage;

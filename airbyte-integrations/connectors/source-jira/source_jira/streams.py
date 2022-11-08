@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import re
@@ -364,6 +364,7 @@ class Issues(IncrementalJiraStream):
         fields = [
             "assignee",
             "attachment",
+            "components",
             "created",
             "creator",
             "description",
@@ -373,6 +374,7 @@ class Issues(IncrementalJiraStream):
             "parent",
             "priority",
             "project",
+            "resolutiondate",
             "security",
             "status",
             "subtasks",
@@ -529,6 +531,8 @@ class IssueProperties(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-propertykey-get
     """
+
+    primary_key = "key"
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
@@ -1079,7 +1083,15 @@ class Users(JiraStream):
 
     primary_key = None
 
+    def __init__(self, domain: str, projects: List[str], max_results: int, **kwargs):
+        super(JiraStream, self).__init__(**kwargs)
+        self._domain = domain
+        self._projects = projects
+        self._max_results = max_results
+
     def path(self, **kwargs) -> str:
+        if self._max_results > 0:
+            return "user/search?maxResults=" + str(self._max_results) + "&query="
         return "user/search?query="
 
 

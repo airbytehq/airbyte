@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres;
@@ -9,7 +9,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
@@ -19,6 +21,8 @@ import io.airbyte.integrations.standardtest.destination.comparator.TestDataCompa
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.jooq.SQLDialect;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 // todo (cgardens) - likely some of this could be further de-duplicated with
@@ -32,6 +36,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
 
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
   private static final String schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
+  private static final Network network = Network.newNetwork();
   private static PostgreSQLContainer<?> db;
   private final SshBastionContainer bastion = new SshBastionContainer();
 
@@ -109,19 +114,24 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
   }
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
-    return Databases.createPostgresDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s", config.get("host").asText(), config.get("port").asText(),
-            config.get("database").asText()));
+    return new Database(
+        DSLContextFactory.create(
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
+            DatabaseDriver.POSTGRESQL.getDriverClassName(),
+            String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
+                config.get(JdbcUtils.DATABASE_KEY).asText()),
+            SQLDialect.POSTGRES));
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,
-        PostgresDestination.HOST_KEY,
-        PostgresDestination.PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(ctx -> {
               ctx.execute("set time zone 'UTC';");
@@ -139,21 +149,21 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
     // do everything in a randomly generated schema so that we can wipe it out at the end.
     SshTunnel.sshWrap(
         getConfig(),
-        PostgresDestination.HOST_KEY,
-        PostgresDestination.PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName)));
         });
   }
 
   private void startTestContainers() {
-    bastion.initAndStartBastion();
+    bastion.initAndStartBastion(network);
     initAndStartJdbcContainer();
   }
 
   private void initAndStartJdbcContainer() {
     db = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withNetwork(bastion.getNetWork());
+        .withNetwork(network);
     db.start();
   }
 
@@ -162,8 +172,8 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
     // blow away the test schema at the end.
     SshTunnel.sshWrap(
         getConfig(),
-        PostgresDestination.HOST_KEY,
-        PostgresDestination.PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP SCHEMA %s CASCADE;", schemaName)));
         });

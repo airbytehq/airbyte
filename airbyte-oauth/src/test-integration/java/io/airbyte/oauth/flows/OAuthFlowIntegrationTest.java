@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
@@ -25,6 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("PMD.AvoidReassigningParameters")
 public abstract class OAuthFlowIntegrationTest {
 
   /**

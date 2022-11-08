@@ -10,17 +10,17 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
-    implementation 'ru.yandex.clickhouse:clickhouse-jdbc:0.3.1'
+    implementation 'com.clickhouse:clickhouse-jdbc:0.3.2-patch10:all'
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-clickhouse')
     integrationTestJavaImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
-    integrationTestJavaImplementation "org.testcontainers:clickhouse:1.16.0"
+    integrationTestJavaImplementation libs.connectors.source.testcontainers.clickhouse
 }

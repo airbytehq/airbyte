@@ -1,0 +1,20 @@
+@use "sass:math";
+@use "../../../scss/colors";
+@use "../../../scss/variables";
+
+$line-height: 17px;
+$icon-size: 14px;
+$icon-padding: 5px;
+$icon-top: math.div($line-height - $icon-size, 2);
+
+.container {
+  display: inline-block;
+  color: colors.$grey;
+  width: calc($icon-size + $icon-padding);
+  padding-left: $icon-padding;
+}
+
+.icon {
+  position: relative;
+  top: $icon-top;
+}

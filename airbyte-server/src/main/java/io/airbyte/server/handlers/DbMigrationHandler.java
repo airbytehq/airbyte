@@ -1,19 +1,20 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
 
-import io.airbyte.api.model.DbMigrationExecutionRead;
-import io.airbyte.api.model.DbMigrationRead;
-import io.airbyte.api.model.DbMigrationReadList;
-import io.airbyte.api.model.DbMigrationRequestBody;
-import io.airbyte.api.model.DbMigrationState;
+import io.airbyte.api.model.generated.DbMigrationExecutionRead;
+import io.airbyte.api.model.generated.DbMigrationRead;
+import io.airbyte.api.model.generated.DbMigrationReadList;
+import io.airbyte.api.model.generated.DbMigrationRequestBody;
+import io.airbyte.api.model.generated.DbMigrationState;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import java.util.stream.Collectors;
+import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.output.MigrateOutput;
 import org.flywaydb.core.api.output.MigrateResult;
@@ -23,9 +24,9 @@ public class DbMigrationHandler {
   private final DatabaseMigrator configDbMigrator;
   private final DatabaseMigrator jobDbMigrator;
 
-  public DbMigrationHandler(final Database configsDatabase, final Database jobsDatabase) {
-    this.configDbMigrator = new ConfigsDatabaseMigrator(configsDatabase, DbMigrationHandler.class.getSimpleName());
-    this.jobDbMigrator = new JobsDatabaseMigrator(jobsDatabase, DbMigrationHandler.class.getSimpleName());
+  public DbMigrationHandler(final Database configsDatabase, final Flyway configsFlyway, final Database jobsDatabase, final Flyway jobsFlyway) {
+    this.configDbMigrator = new ConfigsDatabaseMigrator(configsDatabase, configsFlyway);
+    this.jobDbMigrator = new JobsDatabaseMigrator(jobsDatabase, jobsFlyway);
   }
 
   public DbMigrationReadList list(final DbMigrationRequestBody request) {
@@ -44,9 +45,9 @@ public class DbMigrationHandler {
   }
 
   private DatabaseMigrator getMigrator(final String database) {
-    if (database.equalsIgnoreCase("configs")) {
+    if ("configs".equalsIgnoreCase(database)) {
       return configDbMigrator;
-    } else if (database.equalsIgnoreCase("jobs")) {
+    } else if ("jobs".equalsIgnoreCase(database)) {
       return jobDbMigrator;
     }
     throw new IllegalArgumentException("Unexpected database: " + database);

@@ -1,0 +1,75 @@
+{
+  "type": "object",
+  "properties": {
+    "username": {
+      "type": "string"
+    },
+    "password": {
+      "type": "string"
+    },
+    "has_ssl": {
+      "type": "boolean"
+    },
+    "empty_string": {
+      "type": "string"
+    },
+    "null_value": {
+      "type": "null"
+    },
+    "one_of": {
+      "type": "object",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type_key": {
+              "const": "foo"
+            },
+            "some_key": {
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    },
+    "const_object": {
+      "const": {
+        "sub_key": "bar",
+        "sub_array": [1, 2, 3],
+        "sub_object": {
+          "sub_sub_key": "baz"
+        }
+      }
+    },
+    "const_null": {
+      "const": null
+    },
+    "enum_string": {
+      "type": "string",
+      "enum": ["foo", "bar"]
+    },
+    "additionalPropertiesUnset": {
+      "type": "object"
+    },
+    "additionalPropertiesBoolean": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "additionalPropertiesSchema": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    },
+    "additionalPropertiesConst": {
+      "type": "object",
+      "additionalProperties": {
+        "const": 42
+      }
+    },
+    "additionalPropertiesEnumString": {
+      "type": "string",
+      "enum": ["foo", "bar"]
+    }
+  }
+}

@@ -18,10 +18,10 @@ union all
 
 union all
 
-    select distinct '_airbyte_raw_dedup_cdc_excluded' as label, count(*) as row_count, 2 as expected_count
+    select distinct '_airbyte_raw_dedup_cdc_excluded' as label, count(*) as row_count, 3 as expected_count
     from {{ source('test_normalization', '_airbyte_raw_dedup_cdc_excluded') }}
 union all
-    select distinct 'dedup_cdc_excluded_scd' as label, count(*) as row_count, 9 as expected_count
+    select distinct 'dedup_cdc_excluded_scd' as label, count(*) as row_count, 10 as expected_count
     from {{ ref('dedup_cdc_excluded_scd') }}
 union all
     select distinct 'dedup_cdc_excluded' as label, count(*) as row_count, 4 as expected_count

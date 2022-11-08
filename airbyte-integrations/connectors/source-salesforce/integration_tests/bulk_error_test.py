@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -33,7 +33,9 @@ def get_stream(input_config: Mapping[str, Any], stream_name: str) -> Stream:
     stream_cls = type("a", (object,), {"name": stream_name})
     configured_stream_cls = type("b", (object,), {"stream": stream_cls()})
     catalog_cls = type("c", (object,), {"streams": [configured_stream_cls()]})
-    return SourceSalesforce().streams(input_config, catalog_cls())[0]
+    source = SourceSalesforce()
+    source.catalog = catalog_cls()
+    return source.streams(input_config)[0]
 
 
 def get_any_real_stream(input_config: Mapping[str, Any]) -> Stream:
@@ -87,6 +89,13 @@ def test_failed_jobs_with_successful_switching(caplog, input_sandbox_config, str
         m.register_uri("DELETE", job_matcher, json={})
         with caplog.at_level(logging.WARNING):
             loaded_record_ids = set(record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh))
-        for i, log_message in enumerate(log_messages, 1):
-            assert log_message in caplog.records[-i].message
+
+        caplog_rec_counter = len(caplog.records) - 1
+        for log_message in log_messages:
+            for index in range(caplog_rec_counter, -1, -1):
+                if log_message in caplog.records[index].message:
+                    caplog_rec_counter = index - 1
+                    break
+            else:
+                pytest.fail(f"{log_message} is missing from captured log")
     assert loaded_record_ids == expected_record_ids

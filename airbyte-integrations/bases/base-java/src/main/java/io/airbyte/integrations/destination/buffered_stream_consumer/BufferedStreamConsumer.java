@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.buffered_stream_consumer;
@@ -13,6 +13,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DefaultDestStateLifecycleManager;
+import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DestStateLifecycleManager;
 import io.airbyte.integrations.destination.record_buffer.BufferingStrategy;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -80,12 +82,10 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final Map<AirbyteStreamNameNamespacePair, Long> streamToIgnoredRecordCount;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final BufferingStrategy bufferingStrategy;
+  private final DestStateLifecycleManager stateManager;
 
   private boolean hasStarted;
   private boolean hasClosed;
-
-  private AirbyteMessage lastFlushedState;
-  private AirbyteMessage pendingState;
 
   public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                                 final VoidCallable onStart,
@@ -103,7 +103,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.isValidRecord = isValidRecord;
     this.streamToIgnoredRecordCount = new HashMap<>();
     this.bufferingStrategy = bufferingStrategy;
-    bufferingStrategy.registerFlushAllEventHook(this::flushQueueToDestination);
+    this.stateManager = new DefaultDestStateLifecycleManager();
   }
 
   @Override
@@ -134,23 +134,24 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         return;
       }
 
-      bufferingStrategy.addRecord(stream, message);
+      // if the buffer flushes, update the states appropriately.
+      if (bufferingStrategy.addRecord(stream, message)) {
+        markStatesAsFlushedToTmpDestination();
+      }
+
     } else if (message.getType() == Type.STATE) {
-      pendingState = message;
+      stateManager.addState(message);
     } else {
       LOGGER.warn("Unexpected message: " + message.getType());
     }
 
   }
 
-  private void flushQueueToDestination() {
-    if (pendingState != null) {
-      lastFlushedState = pendingState;
-      pendingState = null;
-    }
+  private void markStatesAsFlushedToTmpDestination() {
+    stateManager.markPendingAsFlushed();
   }
 
-  private void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final AirbyteMessage message) {
+  private static void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final AirbyteMessage message) {
     throw new IllegalArgumentException(
         String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
             Jsons.serialize(catalog), Jsons.serialize(message)));
@@ -169,24 +170,31 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     } else {
       LOGGER.info("executing on success close procedure.");
       bufferingStrategy.flushAll();
+      markStatesAsFlushedToTmpDestination();
     }
     bufferingStrategy.close();
 
     try {
-      // if no state was emitted (i.e. full refresh), if there were still no failures, then we can
-      // still succeed.
-      if (lastFlushedState == null) {
+      // flushed is empty in 2 cases:
+      // 1. either it is full refresh (no state is emitted necessarily).
+      // 2. it is stream but no states were flushed.
+      // in both of these cases, if there was a failure, we should not bother committing. otherwise,
+      // attempt to commit.
+      if (stateManager.listFlushed().isEmpty()) {
         onClose.accept(hasFailed);
       } else {
-        // if any state message flushed that means we can still go for at least a partial success.
+        /*
+         * if any state message was flushed that means we should try to commit what we have. if
+         * hasFailed=false, then it could be full success. if hasFailed=true, then going for partial
+         * success.
+         */
         onClose.accept(false);
       }
 
       // if onClose succeeds without exception then we can emit the state record because it means its
       // records were not only flushed, but committed.
-      if (lastFlushedState != null) {
-        outputRecordCollector.accept(lastFlushedState);
-      }
+      stateManager.markFlushedAsCommitted();
+      stateManager.listCommitted().forEach(outputRecordCollector);
     } catch (final Exception e) {
       LOGGER.error("Close failed.", e);
       throw e;

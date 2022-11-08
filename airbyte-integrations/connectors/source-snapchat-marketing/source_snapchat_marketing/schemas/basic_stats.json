@@ -1,0 +1,226 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["string"]
+    },
+    "type": {
+      "type": ["string"]
+    },
+    "granularity": {
+      "type": ["string"]
+    },
+    "start_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "end_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "android_installs": {
+      "type": ["null", "number"]
+    },
+    "attachment_avg_view_time_millis": {
+      "type": ["null", "number"]
+    },
+    "attachment_impressions": {
+      "type": ["null", "number"]
+    },
+    "attachment_quartile_1": {
+      "type": ["null", "number"]
+    },
+    "attachment_quartile_2": {
+      "type": ["null", "number"]
+    },
+    "attachment_quartile_3": {
+      "type": ["null", "number"]
+    },
+    "attachment_total_view_time_millis": {
+      "type": ["null", "number"]
+    },
+    "attachment_view_completion": {
+      "type": ["null", "number"]
+    },
+    "avg_screen_time_millis": {
+      "type": ["null", "number"]
+    },
+    "avg_view_time_millis": {
+      "type": ["null", "number"]
+    },
+    "impressions": {
+      "type": ["null", "number"]
+    },
+    "ios_installs": {
+      "type": ["null", "number"]
+    },
+    "quartile_1": {
+      "type": ["null", "number"]
+    },
+    "quartile_2": {
+      "type": ["null", "number"]
+    },
+    "quartile_3": {
+      "type": ["null", "number"]
+    },
+    "screen_time_millis": {
+      "type": ["null", "number"]
+    },
+    "spend": {
+      "type": ["null", "number"]
+    },
+    "swipe_up_percent": {
+      "type": ["null", "number"]
+    },
+    "swipes": {
+      "type": ["null", "number"]
+    },
+    "total_installs": {
+      "type": ["null", "number"]
+    },
+    "video_views": {
+      "type": ["null", "number"]
+    },
+    "video_views_time_based": {
+      "type": ["null", "number"]
+    },
+    "video_views_15s": {
+      "type": ["null", "number"]
+    },
+    "view_completion": {
+      "type": ["null", "number"]
+    },
+    "view_time_millis": {
+      "type": ["null", "number"]
+    },
+    "paid_impressions": {
+      "type": ["null", "number"]
+    },
+    "earned_impressions": {
+      "type": ["null", "number"]
+    },
+    "total_impressions": {
+      "type": ["null", "number"]
+    },
+    "play_time_millis": {
+      "type": ["null", "number"]
+    },
+    "shares": {
+      "type": ["null", "number"]
+    },
+    "saves": {
+      "type": ["null", "number"]
+    },
+    "native_leads": {
+      "type": ["null", "number"]
+    },
+    "conversion_purchases": {
+      "type": ["null", "number"]
+    },
+    "conversion_purchases_value": {
+      "type": ["null", "number"]
+    },
+    "conversion_save": {
+      "type": ["null", "number"]
+    },
+    "conversion_start_checkout": {
+      "type": ["null", "number"]
+    },
+    "conversion_add_cart": {
+      "type": ["null", "number"]
+    },
+    "conversion_view_content": {
+      "type": ["null", "number"]
+    },
+    "conversion_add_billing": {
+      "type": ["null", "number"]
+    },
+    "conversion_searches": {
+      "type": ["null", "number"]
+    },
+    "conversion_level_completes": {
+      "type": ["null", "number"]
+    },
+    "conversion_app_opens": {
+      "type": ["null", "number"]
+    },
+    "conversion_page_views": {
+      "type": ["null", "number"]
+    },
+    "conversion_subscribe": {
+      "type": ["null", "number"]
+    },
+    "conversion_ad_click": {
+      "type": ["null", "number"]
+    },
+    "conversion_ad_view": {
+      "type": ["null", "number"]
+    },
+    "conversion_complete_tutorial": {
+      "type": ["null", "number"]
+    },
+    "conversion_invite": {
+      "type": ["null", "number"]
+    },
+    "conversion_login": {
+      "type": ["null", "number"]
+    },
+    "conversion_share": {
+      "type": ["null", "number"]
+    },
+    "conversion_reserve": {
+      "type": ["null", "number"]
+    },
+    "conversion_achievement_unlocked": {
+      "type": ["null", "number"]
+    },
+    "conversion_add_to_wishlist": {
+      "type": ["null", "number"]
+    },
+    "conversion_spend_credits": {
+      "type": ["null", "number"]
+    },
+    "conversion_rate": {
+      "type": ["null", "number"]
+    },
+    "conversion_start_trial": {
+      "type": ["null", "number"]
+    },
+    "conversion_list_view": {
+      "type": ["null", "number"]
+    },
+    "custom_event_1": {
+      "type": ["null", "number"]
+    },
+    "custom_event_2": {
+      "type": ["null", "number"]
+    },
+    "custom_event_3": {
+      "type": ["null", "number"]
+    },
+    "custom_event_4": {
+      "type": ["null", "number"]
+    },
+    "custom_event_5": {
+      "type": ["null", "number"]
+    },
+    "attachment_frequency": {
+      "type": ["null", "number"]
+    },
+    "attachment_uniques": {
+      "type": ["null", "number"]
+    },
+    "frequency": {
+      "type": ["null", "number"]
+    },
+    "uniques": {
+      "type": ["null", "number"]
+    },
+    "total_reach": {
+      "type": ["null", "number"]
+    },
+    "earned_reach": {
+      "type": ["null", "number"]
+    }
+  }
+}

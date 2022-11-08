@@ -1,0 +1,23 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/webflow
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Webflow Spec
+  type: object
+  required:
+    - api_key
+    - site_id
+  additionalProperties: false
+  properties:
+    site_id:
+      title: Site id
+      type: string
+      description: "The id of the Webflow site you are requesting data from. See https://developers.webflow.com/#sites"
+      example: "a relatively long hex sequence"
+      order: 0
+    api_key:
+      title: API token
+      type: string
+      description: "The API token for authenticating to Webflow. See https://university.webflow.com/lesson/intro-to-the-webflow-api"
+      example: "a very long hex sequence"
+      order: 1
+      airbyte_secret: true

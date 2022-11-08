@@ -14,9 +14,9 @@ dependencies {
     // required so that log4j uses a standard xml parser instead of an oracle one (that gets pulled in by the oracle driver)
     implementation group: 'xerces', name: 'xercesImpl', version: '2.12.1'
 
-    implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
     implementation project(':airbyte-integrations:connectors:destination-oracle')
 
@@ -25,7 +25,7 @@ dependencies {
     testImplementation project(':airbyte-test-utils')
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation 'org.testcontainers:oracle-xe:1.16.0'
+    testImplementation libs.connectors.destination.testcontainers.oracle.xe
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-oracle')

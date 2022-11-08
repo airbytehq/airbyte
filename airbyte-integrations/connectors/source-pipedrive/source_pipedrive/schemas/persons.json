@@ -115,12 +115,10 @@
       "type": ["null", "string"]
     },
     "update_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "add_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "visible_to": {
       "type": ["null", "string"]
@@ -138,8 +136,7 @@
           "type": ["null", "boolean"]
         },
         "add_time": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "string"]
         },
         "update_time": {
           "type": ["null", "string"]
@@ -178,16 +175,13 @@
       "type": ["null", "integer"]
     },
     "last_activity_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "last_incoming_mail_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "last_outgoing_mail_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "label": {
       "type": ["null", "integer"]

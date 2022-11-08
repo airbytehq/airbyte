@@ -4,6 +4,8 @@
   "warehouse": "AIRBYTE_WAREHOUSE",
   "database": "AIRBYTE_DATABASE",
   "schema": "AIRBYTE_SCHEMA",
-  "username": "AIRBYTE_INTEGRATION_TEST",
-  "password": "testPass"
+  "username": "AIRBYTE_USER",
+  "credentials": {
+    "password": "test"
+  }
 }

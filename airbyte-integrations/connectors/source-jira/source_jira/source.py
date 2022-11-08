@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from base64 import b64encode
@@ -101,6 +101,7 @@ class SourceJira(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self.get_authenticator(config)
         args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+        users_args = {**args, "max_results": config.get("max_results", 50)}
         incremental_args = {**args, "start_date": config.get("start_date", "")}
         render_fields = config.get("render_fields", False)
         issues_stream = Issues(
@@ -162,7 +163,7 @@ class SourceJira(AbstractSource):
             Sprints(**args),
             SprintIssues(**incremental_args),
             TimeTracking(**args),
-            Users(**args),
+            Users(**users_args),
             Workflows(**args),
             WorkflowSchemes(**args),
             WorkflowStatuses(**args),

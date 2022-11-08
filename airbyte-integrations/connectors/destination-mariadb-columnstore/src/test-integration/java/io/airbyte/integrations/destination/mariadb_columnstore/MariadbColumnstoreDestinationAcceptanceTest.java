@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mariadb_columnstore;
@@ -8,8 +8,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
@@ -39,27 +42,27 @@ public class MariadbColumnstoreDestinationAcceptanceTest extends DestinationAcce
   @Override
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
-        .put("database", db.getDatabaseName())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
+        .put(JdbcUtils.HOST_KEY, db.getHost())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .build());
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
     final JsonNode clone = Jsons.clone(getConfig());
-    ((ObjectNode) clone).put("password", "wrong password");
+    ((ObjectNode) clone).put(JdbcUtils.PASSWORD_KEY, "wrong password");
     return clone;
   }
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    if (config.get("database") == null) {
+    if (config.get(JdbcUtils.DATABASE_KEY) == null) {
       return null;
     }
-    return config.get("database").asText();
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   @Override
@@ -101,14 +104,15 @@ public class MariadbColumnstoreDestinationAcceptanceTest extends DestinationAcce
   }
 
   private static JdbcDatabase getDatabase(final JsonNode config) {
-    return Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.has("password") ? config.get("password").asText() : null,
-        String.format("jdbc:mariadb://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        MariadbColumnstoreDestination.DRIVER_CLASS);
+    return new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.has(JdbcUtils.PASSWORD_KEY) ? config.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+            MariadbColumnstoreDestination.DRIVER_CLASS,
+            String.format(DatabaseDriver.MARIADB.getUrlFormatString(),
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
+                config.get(JdbcUtils.DATABASE_KEY).asText())));
   }
 
   @Override

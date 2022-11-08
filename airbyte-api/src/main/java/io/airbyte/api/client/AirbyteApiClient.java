@@ -1,10 +1,24 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.api.client;
 
-import io.airbyte.api.client.invoker.ApiClient;
+import io.airbyte.api.client.generated.AttemptApi;
+import io.airbyte.api.client.generated.ConnectionApi;
+import io.airbyte.api.client.generated.DbMigrationApi;
+import io.airbyte.api.client.generated.DestinationApi;
+import io.airbyte.api.client.generated.DestinationDefinitionApi;
+import io.airbyte.api.client.generated.DestinationDefinitionSpecificationApi;
+import io.airbyte.api.client.generated.HealthApi;
+import io.airbyte.api.client.generated.JobsApi;
+import io.airbyte.api.client.generated.OperationApi;
+import io.airbyte.api.client.generated.SourceApi;
+import io.airbyte.api.client.generated.SourceDefinitionApi;
+import io.airbyte.api.client.generated.SourceDefinitionSpecificationApi;
+import io.airbyte.api.client.generated.StateApi;
+import io.airbyte.api.client.generated.WorkspaceApi;
+import io.airbyte.api.client.invoker.generated.ApiClient;
 
 /**
  * This class is meant to consolidate all our API endpoints into a fluent-ish client. Currently, all
@@ -33,6 +47,8 @@ public class AirbyteApiClient {
   private final WorkspaceApi workspaceApi;
   private final HealthApi healthApi;
   private final DbMigrationApi dbMigrationApi;
+  private final AttemptApi attemptApi;
+  private final StateApi stateApi;
 
   public AirbyteApiClient(final ApiClient apiClient) {
     connectionApi = new ConnectionApi(apiClient);
@@ -48,6 +64,8 @@ public class AirbyteApiClient {
     workspaceApi = new WorkspaceApi(apiClient);
     healthApi = new HealthApi(apiClient);
     dbMigrationApi = new DbMigrationApi(apiClient);
+    attemptApi = new AttemptApi(apiClient);
+    stateApi = new StateApi(apiClient);
   }
 
   public ConnectionApi getConnectionApi() {
@@ -100,6 +118,14 @@ public class AirbyteApiClient {
 
   public DbMigrationApi getDbMigrationApi() {
     return dbMigrationApi;
+  }
+
+  public AttemptApi getAttemptApi() {
+    return attemptApi;
+  }
+
+  public StateApi getStateApi() {
+    return stateApi;
   }
 
 }

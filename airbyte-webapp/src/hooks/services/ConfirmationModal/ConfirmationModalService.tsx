@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useMemo } from "react";
 
-import { ConfirmationModal } from "components/ConfirmationModal";
+import { ConfirmationModal } from "components/common/ConfirmationModal";
 
 import useTypesafeReducer from "hooks/useTypesafeReducer";
 
@@ -65,6 +65,7 @@ export const ConfirmationModalService = ({ children }: { children: React.ReactNo
           onSubmit={state.confirmationModal.onSubmit}
           submitButtonText={state.confirmationModal.submitButtonText}
           submitButtonDataId={state.confirmationModal.submitButtonDataId}
+          cancelButtonText={state.confirmationModal.cancelButtonText}
         />
       ) : null}
     </>

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -15,7 +15,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="airbyte-cdk",
-    version="0.1.55",
+    version="0.7.1",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -42,18 +42,22 @@ setup(
         "Tracker": "https://github.com/airbytehq/airbyte/issues",
     },
     packages=find_packages(exclude=("unit_tests",)),
+    package_data={"airbyte_cdk": ["py.typed"]},
     install_requires=[
         "backoff",
+        # pinned to the last working version for us temporarily while we fix
+        "dataclasses-jsonschema==2.15.1",
         "dpath~=2.0.1",
         "jsonschema~=3.2.0",
         "jsonref~=0.2",
         "pendulum",
-        "pydantic~=1.6",
+        "pydantic~=1.9.2",
+        "python-dateutil",
         "PyYAML~=5.4",
         "requests",
-        "sentry-sdk~=1.5.1",
-        "vcrpy",
+        "requests_cache",
         "Deprecated~=1.2",
+        "Jinja2~=3.1.2",
     ],
     python_requires=">=3.9",
     extras_require={
@@ -69,8 +73,5 @@ setup(
             "Sphinx~=4.2",
             "sphinx-rtd-theme~=1.0",
         ],
-    },
-    entry_points={
-        "console_scripts": ["base-python=base_python.entrypoint:main"],
     },
 )

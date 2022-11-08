@@ -1,21 +1,25 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
 
+import { CloudInviteUsersHint } from "components/CloudInviteUsersHint";
+import { HeadTitle } from "components/common/HeadTitle";
 import { FormPageContent } from "components/ConnectorBlocks";
-import HeadTitle from "components/HeadTitle";
-import PageTitle from "components/PageTitle";
+import { PageHeader } from "components/ui/PageHeader";
 
 import { ConnectionConfiguration } from "core/domain/connection";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
-import useRouter from "hooks/useRouter";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
-import DestinationForm from "./components/DestinationForm";
+import { DestinationForm } from "./components/DestinationForm";
 
-const CreateDestinationPage: React.FC = () => {
-  const { push } = useRouter();
+export const CreateDestinationPage: React.FC = () => {
+  useTrackPage(PageTrackingCodes.DESTINATION_NEW);
+
+  const navigate = useNavigate();
   const [successRequest, setSuccessRequest] = useState(false);
-
   const { destinationDefinitions } = useDestinationDefinitionList();
   const { mutateAsync: createDestination } = useCreateDestination();
 
@@ -32,23 +36,24 @@ const CreateDestinationPage: React.FC = () => {
     setSuccessRequest(true);
     setTimeout(() => {
       setSuccessRequest(false);
-      push(`../${result.destinationId}`);
+      navigate(`../${result.destinationId}`);
     }, 2000);
   };
 
   return (
     <>
       <HeadTitle titles={[{ id: "destinations.newDestinationTitle" }]} />
-      <PageTitle withLine title={<FormattedMessage id="destinations.newDestinationTitle" />} />
-      <FormPageContent>
-        <DestinationForm
-          onSubmit={onSubmitDestinationForm}
-          destinationDefinitions={destinationDefinitions}
-          hasSuccess={successRequest}
-        />
-      </FormPageContent>
+      <ConnectorDocumentationWrapper>
+        <PageHeader title={null} middleTitleBlock={<FormattedMessage id="destinations.newDestinationTitle" />} />
+        <FormPageContent>
+          <DestinationForm
+            onSubmit={onSubmitDestinationForm}
+            destinationDefinitions={destinationDefinitions}
+            hasSuccess={successRequest}
+          />
+          <CloudInviteUsersHint connectorType="destination" />
+        </FormPageContent>
+      </ConnectorDocumentationWrapper>
     </>
   );
 };
-
-export default CreateDestinationPage;

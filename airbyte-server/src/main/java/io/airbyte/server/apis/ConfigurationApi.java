@@ -1,222 +1,179 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.apis;
 
 import io.airbyte.analytics.TrackingClient;
-import io.airbyte.api.model.CheckConnectionRead;
-import io.airbyte.api.model.CheckOperationRead;
-import io.airbyte.api.model.CompleteDestinationOAuthRequest;
-import io.airbyte.api.model.CompleteSourceOauthRequest;
-import io.airbyte.api.model.ConnectionCreate;
-import io.airbyte.api.model.ConnectionIdRequestBody;
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.ConnectionReadList;
-import io.airbyte.api.model.ConnectionSearch;
-import io.airbyte.api.model.ConnectionState;
-import io.airbyte.api.model.ConnectionUpdate;
-import io.airbyte.api.model.CustomDestinationDefinitionCreate;
-import io.airbyte.api.model.CustomDestinationDefinitionUpdate;
-import io.airbyte.api.model.CustomSourceDefinitionCreate;
-import io.airbyte.api.model.CustomSourceDefinitionUpdate;
-import io.airbyte.api.model.DbMigrationExecutionRead;
-import io.airbyte.api.model.DbMigrationReadList;
-import io.airbyte.api.model.DbMigrationRequestBody;
-import io.airbyte.api.model.DestinationCoreConfig;
-import io.airbyte.api.model.DestinationCreate;
-import io.airbyte.api.model.DestinationDefinitionCreate;
-import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
-import io.airbyte.api.model.DestinationDefinitionIdWithWorkspaceId;
-import io.airbyte.api.model.DestinationDefinitionRead;
-import io.airbyte.api.model.DestinationDefinitionReadList;
-import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
-import io.airbyte.api.model.DestinationDefinitionUpdate;
-import io.airbyte.api.model.DestinationIdRequestBody;
-import io.airbyte.api.model.DestinationOauthConsentRequest;
-import io.airbyte.api.model.DestinationRead;
-import io.airbyte.api.model.DestinationReadList;
-import io.airbyte.api.model.DestinationSearch;
-import io.airbyte.api.model.DestinationUpdate;
-import io.airbyte.api.model.HealthCheckRead;
-import io.airbyte.api.model.ImportRead;
-import io.airbyte.api.model.ImportRequestBody;
-import io.airbyte.api.model.JobDebugInfoRead;
-import io.airbyte.api.model.JobIdRequestBody;
-import io.airbyte.api.model.JobInfoRead;
-import io.airbyte.api.model.JobListRequestBody;
-import io.airbyte.api.model.JobReadList;
-import io.airbyte.api.model.LogsRequestBody;
-import io.airbyte.api.model.Notification;
-import io.airbyte.api.model.NotificationRead;
-import io.airbyte.api.model.OAuthConsentRead;
-import io.airbyte.api.model.OperationCreate;
-import io.airbyte.api.model.OperationIdRequestBody;
-import io.airbyte.api.model.OperationRead;
-import io.airbyte.api.model.OperationReadList;
-import io.airbyte.api.model.OperationUpdate;
-import io.airbyte.api.model.OperatorConfiguration;
-import io.airbyte.api.model.PrivateDestinationDefinitionRead;
-import io.airbyte.api.model.PrivateDestinationDefinitionReadList;
-import io.airbyte.api.model.PrivateSourceDefinitionRead;
-import io.airbyte.api.model.PrivateSourceDefinitionReadList;
-import io.airbyte.api.model.SetInstancewideDestinationOauthParamsRequestBody;
-import io.airbyte.api.model.SetInstancewideSourceOauthParamsRequestBody;
-import io.airbyte.api.model.SlugRequestBody;
-import io.airbyte.api.model.SourceCoreConfig;
-import io.airbyte.api.model.SourceCreate;
-import io.airbyte.api.model.SourceDefinitionCreate;
-import io.airbyte.api.model.SourceDefinitionIdRequestBody;
-import io.airbyte.api.model.SourceDefinitionIdWithWorkspaceId;
-import io.airbyte.api.model.SourceDefinitionRead;
-import io.airbyte.api.model.SourceDefinitionReadList;
-import io.airbyte.api.model.SourceDefinitionSpecificationRead;
-import io.airbyte.api.model.SourceDefinitionUpdate;
-import io.airbyte.api.model.SourceDiscoverSchemaRead;
-import io.airbyte.api.model.SourceDiscoverSchemaRequestBody;
-import io.airbyte.api.model.SourceIdRequestBody;
-import io.airbyte.api.model.SourceOauthConsentRequest;
-import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.SourceReadList;
-import io.airbyte.api.model.SourceSearch;
-import io.airbyte.api.model.SourceUpdate;
-import io.airbyte.api.model.UploadRead;
-import io.airbyte.api.model.WebBackendConnectionCreate;
-import io.airbyte.api.model.WebBackendConnectionRead;
-import io.airbyte.api.model.WebBackendConnectionReadList;
-import io.airbyte.api.model.WebBackendConnectionRequestBody;
-import io.airbyte.api.model.WebBackendConnectionSearch;
-import io.airbyte.api.model.WebBackendConnectionUpdate;
-import io.airbyte.api.model.WebBackendWorkspaceState;
-import io.airbyte.api.model.WebBackendWorkspaceStateResult;
-import io.airbyte.api.model.WorkspaceCreate;
-import io.airbyte.api.model.WorkspaceGiveFeedback;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.api.model.WorkspaceRead;
-import io.airbyte.api.model.WorkspaceReadList;
-import io.airbyte.api.model.WorkspaceUpdate;
-import io.airbyte.api.model.WorkspaceUpdateName;
-import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.io.FileTtlManager;
+import io.airbyte.api.model.generated.AttemptNormalizationStatusReadList;
+import io.airbyte.api.model.generated.CheckConnectionRead;
+import io.airbyte.api.model.generated.CheckOperationRead;
+import io.airbyte.api.model.generated.CompleteDestinationOAuthRequest;
+import io.airbyte.api.model.generated.CompleteSourceOauthRequest;
+import io.airbyte.api.model.generated.ConnectionCreate;
+import io.airbyte.api.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.ConnectionReadList;
+import io.airbyte.api.model.generated.ConnectionSearch;
+import io.airbyte.api.model.generated.ConnectionState;
+import io.airbyte.api.model.generated.ConnectionStateCreateOrUpdate;
+import io.airbyte.api.model.generated.ConnectionStateType;
+import io.airbyte.api.model.generated.ConnectionUpdate;
+import io.airbyte.api.model.generated.CustomDestinationDefinitionCreate;
+import io.airbyte.api.model.generated.CustomDestinationDefinitionUpdate;
+import io.airbyte.api.model.generated.CustomSourceDefinitionCreate;
+import io.airbyte.api.model.generated.CustomSourceDefinitionUpdate;
+import io.airbyte.api.model.generated.DbMigrationExecutionRead;
+import io.airbyte.api.model.generated.DbMigrationReadList;
+import io.airbyte.api.model.generated.DbMigrationRequestBody;
+import io.airbyte.api.model.generated.DestinationCloneRequestBody;
+import io.airbyte.api.model.generated.DestinationCoreConfig;
+import io.airbyte.api.model.generated.DestinationCreate;
+import io.airbyte.api.model.generated.DestinationDefinitionCreate;
+import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
+import io.airbyte.api.model.generated.DestinationDefinitionRead;
+import io.airbyte.api.model.generated.DestinationDefinitionReadList;
+import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
+import io.airbyte.api.model.generated.DestinationDefinitionUpdate;
+import io.airbyte.api.model.generated.DestinationIdRequestBody;
+import io.airbyte.api.model.generated.DestinationOauthConsentRequest;
+import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.DestinationReadList;
+import io.airbyte.api.model.generated.DestinationSearch;
+import io.airbyte.api.model.generated.DestinationUpdate;
+import io.airbyte.api.model.generated.HealthCheckRead;
+import io.airbyte.api.model.generated.InternalOperationResult;
+import io.airbyte.api.model.generated.JobDebugInfoRead;
+import io.airbyte.api.model.generated.JobIdRequestBody;
+import io.airbyte.api.model.generated.JobInfoLightRead;
+import io.airbyte.api.model.generated.JobInfoRead;
+import io.airbyte.api.model.generated.JobListRequestBody;
+import io.airbyte.api.model.generated.JobReadList;
+import io.airbyte.api.model.generated.LogsRequestBody;
+import io.airbyte.api.model.generated.Notification;
+import io.airbyte.api.model.generated.NotificationRead;
+import io.airbyte.api.model.generated.OAuthConsentRead;
+import io.airbyte.api.model.generated.OperationCreate;
+import io.airbyte.api.model.generated.OperationIdRequestBody;
+import io.airbyte.api.model.generated.OperationRead;
+import io.airbyte.api.model.generated.OperationReadList;
+import io.airbyte.api.model.generated.OperationUpdate;
+import io.airbyte.api.model.generated.OperatorConfiguration;
+import io.airbyte.api.model.generated.PrivateDestinationDefinitionRead;
+import io.airbyte.api.model.generated.PrivateDestinationDefinitionReadList;
+import io.airbyte.api.model.generated.PrivateSourceDefinitionRead;
+import io.airbyte.api.model.generated.PrivateSourceDefinitionReadList;
+import io.airbyte.api.model.generated.SaveStatsRequestBody;
+import io.airbyte.api.model.generated.SetInstancewideDestinationOauthParamsRequestBody;
+import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
+import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
+import io.airbyte.api.model.generated.SlugRequestBody;
+import io.airbyte.api.model.generated.SourceCloneRequestBody;
+import io.airbyte.api.model.generated.SourceCoreConfig;
+import io.airbyte.api.model.generated.SourceCreate;
+import io.airbyte.api.model.generated.SourceDefinitionCreate;
+import io.airbyte.api.model.generated.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.generated.SourceDefinitionIdWithWorkspaceId;
+import io.airbyte.api.model.generated.SourceDefinitionRead;
+import io.airbyte.api.model.generated.SourceDefinitionReadList;
+import io.airbyte.api.model.generated.SourceDefinitionSpecificationRead;
+import io.airbyte.api.model.generated.SourceDefinitionUpdate;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
+import io.airbyte.api.model.generated.SourceIdRequestBody;
+import io.airbyte.api.model.generated.SourceOauthConsentRequest;
+import io.airbyte.api.model.generated.SourceRead;
+import io.airbyte.api.model.generated.SourceReadList;
+import io.airbyte.api.model.generated.SourceSearch;
+import io.airbyte.api.model.generated.SourceUpdate;
+import io.airbyte.api.model.generated.WebBackendConnectionCreate;
+import io.airbyte.api.model.generated.WebBackendConnectionRead;
+import io.airbyte.api.model.generated.WebBackendConnectionReadList;
+import io.airbyte.api.model.generated.WebBackendConnectionRequestBody;
+import io.airbyte.api.model.generated.WebBackendConnectionUpdate;
+import io.airbyte.api.model.generated.WebBackendGeographiesListResult;
+import io.airbyte.api.model.generated.WebBackendWorkspaceState;
+import io.airbyte.api.model.generated.WebBackendWorkspaceStateResult;
+import io.airbyte.api.model.generated.WorkspaceCreate;
+import io.airbyte.api.model.generated.WorkspaceGiveFeedback;
+import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.WorkspaceRead;
+import io.airbyte.api.model.generated.WorkspaceReadList;
+import io.airbyte.api.model.generated.WorkspaceUpdate;
+import io.airbyte.api.model.generated.WorkspaceUpdateName;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
-import io.airbyte.db.Database;
-import io.airbyte.scheduler.client.EventRunner;
-import io.airbyte.scheduler.client.SchedulerJobClient;
-import io.airbyte.scheduler.client.SynchronousSchedulerClient;
-import io.airbyte.scheduler.persistence.JobNotifier;
-import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.scheduler.persistence.WorkspaceHelper;
-import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
 import io.airbyte.server.errors.IdNotFoundKnownException;
-import io.airbyte.server.handlers.ArchiveHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
-import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
-import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
-import io.airbyte.server.handlers.LogsHandler;
-import io.airbyte.server.handlers.OAuthHandler;
-import io.airbyte.server.handlers.OpenApiConfigHandler;
-import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
-import io.airbyte.server.handlers.WebBackendConnectionsHandler;
-import io.airbyte.server.handlers.WorkspacesHandler;
+import io.airbyte.server.scheduler.EventRunner;
+import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.WorkerConfigs;
-import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
-import java.net.http.HttpClient;
-import java.nio.file.Path;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.NotImplementedException;
 
 @javax.ws.rs.Path("/v1")
-public class ConfigurationApi implements io.airbyte.api.V1Api {
+@Slf4j
+public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
-  private final WorkspacesHandler workspacesHandler;
   private final SourceDefinitionsHandler sourceDefinitionsHandler;
   private final SourceHandler sourceHandler;
   private final DestinationDefinitionsHandler destinationDefinitionsHandler;
   private final DestinationHandler destinationHandler;
   private final ConnectionsHandler connectionsHandler;
-  private final OperationsHandler operationsHandler;
   private final SchedulerHandler schedulerHandler;
   private final JobHistoryHandler jobHistoryHandler;
-  private final WebBackendConnectionsHandler webBackendConnectionsHandler;
-  private final HealthCheckHandler healthCheckHandler;
-  private final ArchiveHandler archiveHandler;
-  private final LogsHandler logsHandler;
-  private final OpenApiConfigHandler openApiConfigHandler;
-  private final DbMigrationHandler dbMigrationHandler;
-  private final OAuthHandler oAuthHandler;
-  private final WorkerEnvironment workerEnvironment;
-  private final LogConfigs logConfigs;
-  private final Path workspaceRoot;
 
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
-                          final ConfigPersistence seed,
                           final SecretsRepositoryReader secretsRepositoryReader,
                           final SecretsRepositoryWriter secretsRepositoryWriter,
-                          final SchedulerJobClient schedulerJobClient,
                           final SynchronousSchedulerClient synchronousSchedulerClient,
-                          final FileTtlManager archiveTtlManager,
-                          final WorkflowServiceStubs temporalService,
-                          final Database configsDatabase,
-                          final Database jobsDatabase,
                           final TrackingClient trackingClient,
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
-                          final WorkerConfigs workerConfigs,
-                          final String webappUrl,
                           final AirbyteVersion airbyteVersion,
-                          final Path workspaceRoot,
-                          final HttpClient httpClient,
-                          final FeatureFlags featureFlags,
                           final EventRunner eventRunner) {
-    this.workerEnvironment = workerEnvironment;
-    this.logConfigs = logConfigs;
-    this.workspaceRoot = workspaceRoot;
 
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
-    final JobNotifier jobNotifier = new JobNotifier(
-        webappUrl,
-        configRepository,
-        new WorkspaceHelper(configRepository, jobPersistence),
-        trackingClient);
 
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
-
-    schedulerHandler = new SchedulerHandler(
-        configRepository,
-        secretsRepositoryReader,
-        secretsRepositoryWriter,
-        schedulerJobClient,
-        synchronousSchedulerClient,
-        jobPersistence,
-        jobNotifier,
-        temporalService,
-        new OAuthConfigSupplier(configRepository, trackingClient), workerEnvironment, logConfigs, eventRunner, featureFlags);
 
     connectionsHandler = new ConnectionsHandler(
         configRepository,
         workspaceHelper,
         trackingClient,
+        eventRunner);
+
+    schedulerHandler = new SchedulerHandler(
+        configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
+        synchronousSchedulerClient,
+        jobPersistence,
+        workerEnvironment,
+        logConfigs,
         eventRunner,
-        featureFlags,
-        workerConfigs);
+        connectionsHandler);
+
     sourceHandler = new SourceHandler(
         configRepository,
         secretsRepositoryReader,
@@ -224,7 +181,6 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         schemaValidator,
         connectionsHandler);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, synchronousSchedulerClient, sourceHandler);
-    operationsHandler = new OperationsHandler(configRepository);
     destinationHandler = new DestinationHandler(
         configRepository,
         secretsRepositoryReader,
@@ -232,170 +188,219 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         schemaValidator,
         connectionsHandler);
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, synchronousSchedulerClient, destinationHandler);
-    workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence, workerEnvironment, logConfigs, connectionsHandler, sourceHandler,
         sourceDefinitionsHandler, destinationHandler, destinationDefinitionsHandler, airbyteVersion);
-    oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient);
-    webBackendConnectionsHandler = new WebBackendConnectionsHandler(
-        connectionsHandler,
-        sourceHandler,
-        destinationHandler,
-        jobHistoryHandler,
-        schedulerHandler,
-        operationsHandler,
-        featureFlags,
-        eventRunner,
-        configRepository);
-    healthCheckHandler = new HealthCheckHandler(configRepository);
-    archiveHandler = new ArchiveHandler(
-        airbyteVersion,
-        configRepository,
-        secretsRepositoryReader,
-        secretsRepositoryWriter,
-        jobPersistence,
-        seed,
-        workspaceHelper,
-        archiveTtlManager,
-        true);
-    logsHandler = new LogsHandler();
-    openApiConfigHandler = new OpenApiConfigHandler();
-    dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);
   }
 
   // WORKSPACE
 
+  /**
+   * This implementation has been moved to {@link WorkspaceApiController}. Since the path of
+   * {@link WorkspaceApiController} is more granular, it will override this implementation
+   */
   @Override
   public WorkspaceReadList listWorkspaces() {
-    return execute(workspacesHandler::listWorkspaces);
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link WorkspaceApiController}. Since the path of
+   * {@link WorkspaceApiController} is more granular, it will override this implementation
+   */
   @Override
   public WorkspaceRead createWorkspace(final WorkspaceCreate workspaceCreate) {
-    return execute(() -> workspacesHandler.createWorkspace(workspaceCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link WorkspaceApiController}. Since the path of
+   * {@link WorkspaceApiController} is more granular, it will override this implementation
+   */
   @Override
   public void deleteWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    execute(() -> {
-      workspacesHandler.deleteWorkspace(workspaceIdRequestBody);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link WorkspaceApiController}. Since the path of
+   * {@link WorkspaceApiController} is more granular, it will override this implementation
+   */
   @Override
   public WorkspaceRead getWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> workspacesHandler.getWorkspace(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
   @Override
   public WorkspaceRead getWorkspaceBySlug(final SlugRequestBody slugRequestBody) {
-    return execute(() -> workspacesHandler.getWorkspaceBySlug(slugRequestBody));
+    throw new NotImplementedException();
+  }
+
+  /**
+   * This implementation has been moved to {@link WorkspaceApiController}. Since the path of
+   * {@link WorkspaceApiController} is more granular, it will override this implementation
+   */
+  @Override
+  public WorkspaceRead getWorkspaceByConnectionId(final ConnectionIdRequestBody connectionIdRequestBody) {
+    throw new NotImplementedException();
   }
 
   @Override
   public WorkspaceRead updateWorkspace(final WorkspaceUpdate workspaceUpdate) {
-    return execute(() -> workspacesHandler.updateWorkspace(workspaceUpdate));
+    throw new NotImplementedException();
   }
 
   @Override
   public WorkspaceRead updateWorkspaceName(final WorkspaceUpdateName workspaceUpdateName) {
-    return execute(() -> workspacesHandler.updateWorkspaceName(workspaceUpdateName));
+    throw new NotImplementedException();
   }
 
   @Override
   public void updateWorkspaceFeedback(final WorkspaceGiveFeedback workspaceGiveFeedback) {
-    execute(() -> {
-      workspacesHandler.setFeedbackDone(workspaceGiveFeedback);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link AttemptApiController}. Since the path of
+   * {@link AttemptApiController} is more granular, it will override this implementation
+   */
   @Override
   public NotificationRead tryNotificationConfig(final Notification notification) {
-    return execute(() -> workspacesHandler.tryNotification(notification));
+    throw new NotImplementedException();
   }
 
   // SOURCE
 
+  /**
+   * This implementation has been moved to {@link SourceDefinitionApiController}. Since the path of
+   * {@link SourceDefinitionApiController} is more granular, it will override this implementation
+   */
   @Override
   public SourceDefinitionReadList listSourceDefinitions() {
-    return execute(sourceDefinitionsHandler::listSourceDefinitions);
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceDefinitionApiController}. Since the path of
+   * {@link SourceDefinitionApiController} is more granular, it will override this implementation
+   */
   @Override
   public SourceDefinitionReadList listSourceDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> sourceDefinitionsHandler.listSourceDefinitionsForWorkspace(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceDefinitionApiController}. Since the path of
+   * {@link SourceDefinitionApiController} is more granular, it will override this implementation
+   */
   @Override
   public SourceDefinitionReadList listLatestSourceDefinitions() {
-    return execute(sourceDefinitionsHandler::listLatestSourceDefinitions);
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceDefinitionApiController}. Since the path of
+   * {@link SourceDefinitionApiController} is more granular, it will override this implementation
+   */
   @Override
   public PrivateSourceDefinitionReadList listPrivateSourceDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> sourceDefinitionsHandler.listPrivateSourceDefinitions(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceDefinitionApiController}. Since the path of
+   * {@link SourceDefinitionApiController} is more granular, it will override this implementation
+   */
   @Override
   public SourceDefinitionRead getSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
-    return execute(() -> sourceDefinitionsHandler.getSourceDefinition(sourceDefinitionIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceDefinitionApiController}. Since the path of
+   * {@link SourceDefinitionApiController} is more granular, it will override this implementation
+   */
   @Override
   public SourceDefinitionRead getSourceDefinitionForWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
-    return execute(() -> sourceDefinitionsHandler.getSourceDefinitionForWorkspace(sourceDefinitionIdWithWorkspaceId));
+    throw new NotImplementedException();
   }
 
   // TODO: Deprecate this route in favor of createCustomSourceDefinition
   // since all connector definitions created through the API are custom
+  /**
+   * This implementation has been moved to {@link SourceDefinitionApiController}. Since the path of
+   * {@link SourceDefinitionApiController} is more granular, it will override this implementation
+   */
   @Override
   public SourceDefinitionRead createSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate) {
-    return execute(() -> sourceDefinitionsHandler.createPrivateSourceDefinition(sourceDefinitionCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceDefinitionApiController}. Since the path of
+   * {@link SourceDefinitionApiController} is more granular, it will override this implementation
+   */
   @Override
   public SourceDefinitionRead createCustomSourceDefinition(final CustomSourceDefinitionCreate customSourceDefinitionCreate) {
-    return execute(() -> sourceDefinitionsHandler.createCustomSourceDefinition(customSourceDefinitionCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceDefinitionApiController}. Since the path of
+   * {@link SourceDefinitionApiController} is more granular, it will override this implementation
+   */
   @Override
   public SourceDefinitionRead updateSourceDefinition(final SourceDefinitionUpdate sourceDefinitionUpdate) {
-    return execute(() -> sourceDefinitionsHandler.updateSourceDefinition(sourceDefinitionUpdate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceDefinitionApiController}. Since the path of
+   * {@link SourceDefinitionApiController} is more granular, it will override this implementation
+   */
   @Override
   public SourceDefinitionRead updateCustomSourceDefinition(final CustomSourceDefinitionUpdate customSourceDefinitionUpdate) {
-    return execute(() -> sourceDefinitionsHandler.updateCustomSourceDefinition(customSourceDefinitionUpdate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceDefinitionApiController}. Since the path of
+   * {@link SourceDefinitionApiController} is more granular, it will override this implementation
+   */
   @Override
   public void deleteSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
-    execute(() -> {
-      sourceDefinitionsHandler.deleteSourceDefinition(sourceDefinitionIdRequestBody);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceDefinitionApiController}. Since the path of
+   * {@link SourceDefinitionApiController} is more granular, it will override this implementation
+   */
   @Override
   public void deleteCustomSourceDefinition(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
-    execute(() -> {
-      sourceDefinitionsHandler.deleteCustomSourceDefinition(sourceDefinitionIdWithWorkspaceId);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceDefinitionApiController}. Since the path of
+   * {@link SourceDefinitionApiController} is more granular, it will override this implementation
+   */
   @Override
   public PrivateSourceDefinitionRead grantSourceDefinitionToWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
-    return execute(() -> sourceDefinitionsHandler.grantSourceDefinitionToWorkspace(sourceDefinitionIdWithWorkspaceId));
+    throw new NotImplementedException();
+  }
+
+  /**
+   * This implementation has been moved to {@link SourceDefinitionApiController}. Since the path of
+   * {@link SourceDefinitionApiController} is more granular, it will override this implementation
+   */
+  @Override
+  public void revokeSourceDefinitionFromWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
+    throw new NotImplementedException();
   }
 
   @Override
-  public void revokeSourceDefinitionFromWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
-    execute(() -> {
-      sourceDefinitionsHandler.revokeSourceDefinitionFromWorkspace(sourceDefinitionIdWithWorkspaceId);
-      return null;
-    });
+  public InternalOperationResult saveStats(final SaveStatsRequestBody saveStatsRequestBody) {
+    throw new NotImplementedException();
   }
 
   // SOURCE SPECIFICATION
@@ -407,470 +412,762 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   // OAUTH
 
+  /**
+   * This implementation has been moved to {@link SourceOauthApiController}. Since the path of
+   * {@link SourceOauthApiController} is more granular, it will override this implementation
+   */
   @Override
   public OAuthConsentRead getSourceOAuthConsent(final SourceOauthConsentRequest sourceOauthConsentRequest) {
-    return execute(() -> oAuthHandler.getSourceOAuthConsent(sourceOauthConsentRequest));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceOauthApiController}. Since the path of
+   * {@link SourceOauthApiController} is more granular, it will override this implementation
+   */
   @Override
   public Map<String, Object> completeSourceOAuth(final CompleteSourceOauthRequest completeSourceOauthRequest) {
-    return execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationOauthApiController}. Since the path of
+   * {@link DestinationOauthApiController} is more granular, it will override this implementation
+   */
   @Override
   public OAuthConsentRead getDestinationOAuthConsent(final DestinationOauthConsentRequest destinationOauthConsentRequest) {
-    return execute(() -> oAuthHandler.getDestinationOAuthConsent(destinationOauthConsentRequest));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationOauthApiController}. Since the path of
+   * {@link DestinationOauthApiController} is more granular, it will override this implementation
+   */
   @Override
   public Map<String, Object> completeDestinationOAuth(final CompleteDestinationOAuthRequest requestBody) {
-    return execute(() -> oAuthHandler.completeDestinationOAuth(requestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationOauthApiController}. Since the path of
+   * {@link DestinationOauthApiController} is more granular, it will override this implementation
+   */
   @Override
   public void setInstancewideDestinationOauthParams(final SetInstancewideDestinationOauthParamsRequestBody requestBody) {
-    execute(() -> {
-      oAuthHandler.setDestinationInstancewideOauthParams(requestBody);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceOauthApiController}. Since the path of
+   * {@link SourceOauthApiController} is more granular, it will override this implementation
+   */
   @Override
   public void setInstancewideSourceOauthParams(final SetInstancewideSourceOauthParamsRequestBody requestBody) {
-    execute(() -> {
-      oAuthHandler.setSourceInstancewideOauthParams(requestBody);
-      return null;
-    });
+    throw new NotImplementedException();
+  }
+
+  /**
+   * This implementation has been moved to {@link AttemptApiController}. Since the path of
+   * {@link AttemptApiController} is more granular, it will override this implementation
+   */
+  @Override
+  public InternalOperationResult setWorkflowInAttempt(final SetWorkflowInAttemptRequestBody setWorkflowInAttemptRequestBody) {
+    throw new NotImplementedException();
   }
 
   // SOURCE IMPLEMENTATION
 
+  /**
+   * This implementation has been moved to {@link SourceApiController}. Since the path of
+   * {@link SourceApiController} is more granular, it will override this implementation
+   */
   @Override
   public SourceRead createSource(final SourceCreate sourceCreate) {
-    return execute(() -> sourceHandler.createSource(sourceCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceApiController}. Since the path of
+   * {@link SourceApiController} is more granular, it will override this implementation
+   */
   @Override
   public SourceRead updateSource(final SourceUpdate sourceUpdate) {
-    return execute(() -> sourceHandler.updateSource(sourceUpdate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceApiController}. Since the path of
+   * {@link SourceApiController} is more granular, it will override this implementation
+   */
   @Override
   public SourceReadList listSourcesForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> sourceHandler.listSourcesForWorkspace(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceApiController}. Since the path of
+   * {@link SourceApiController} is more granular, it will override this implementation
+   */
   @Override
   public SourceReadList searchSources(final SourceSearch sourceSearch) {
-    return execute(() -> sourceHandler.searchSources(sourceSearch));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceApiController}. Since the path of
+   * {@link SourceApiController} is more granular, it will override this implementation
+   */
   @Override
   public SourceRead getSource(final SourceIdRequestBody sourceIdRequestBody) {
-    return execute(() -> sourceHandler.getSource(sourceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceApiController}. Since the path of
+   * {@link SourceApiController} is more granular, it will override this implementation
+   */
   @Override
   public void deleteSource(final SourceIdRequestBody sourceIdRequestBody) {
-    execute(() -> {
-      sourceHandler.deleteSource(sourceIdRequestBody);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceApiController}. Since the path of
+   * {@link SourceApiController} is more granular, it will override this implementation
+   */
   @Override
-  public SourceRead cloneSource(final SourceIdRequestBody sourceIdRequestBody) {
-    return execute(() -> sourceHandler.cloneSource(sourceIdRequestBody));
+  public SourceRead cloneSource(final SourceCloneRequestBody sourceCloneRequestBody) {
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceApiController}. Since the path of
+   * {@link SourceApiController} is more granular, it will override this implementation
+   */
   @Override
   public CheckConnectionRead checkConnectionToSource(final SourceIdRequestBody sourceIdRequestBody) {
-    return execute(() -> schedulerHandler.checkSourceConnectionFromSourceId(sourceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceApiController}. Since the path of
+   * {@link SourceApiController} is more granular, it will override this implementation
+   */
   @Override
   public CheckConnectionRead checkConnectionToSourceForUpdate(final SourceUpdate sourceUpdate) {
-    return execute(() -> schedulerHandler.checkSourceConnectionFromSourceIdForUpdate(sourceUpdate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SourceApiController}. Since the path of
+   * {@link SourceApiController} is more granular, it will override this implementation
+   */
   @Override
   public SourceDiscoverSchemaRead discoverSchemaForSource(final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody) {
-    return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaRequestBody));
+    throw new NotImplementedException();
   }
 
   // DB MIGRATION
 
+  /**
+   * This implementation has been moved to {@link DbMigrationApiController}. Since the path of
+   * {@link DbMigrationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DbMigrationReadList listMigrations(final DbMigrationRequestBody request) {
-    return execute(() -> dbMigrationHandler.list(request));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DbMigrationApiController}. Since the path of
+   * {@link DbMigrationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DbMigrationExecutionRead executeMigrations(final DbMigrationRequestBody request) {
-    return execute(() -> dbMigrationHandler.migrate(request));
+    throw new NotImplementedException();
   }
 
   // DESTINATION
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public DestinationDefinitionReadList listDestinationDefinitions() {
-    return execute(destinationDefinitionsHandler::listDestinationDefinitions);
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public DestinationDefinitionReadList listDestinationDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> destinationDefinitionsHandler.listDestinationDefinitionsForWorkspace(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public DestinationDefinitionReadList listLatestDestinationDefinitions() {
-    return execute(destinationDefinitionsHandler::listLatestDestinationDefinitions);
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public PrivateDestinationDefinitionReadList listPrivateDestinationDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> destinationDefinitionsHandler.listPrivateDestinationDefinitions(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public DestinationDefinitionRead getDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
-    return execute(() -> destinationDefinitionsHandler.getDestinationDefinition(destinationDefinitionIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public DestinationDefinitionRead getDestinationDefinitionForWorkspace(
                                                                         final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
-    return execute(() -> destinationDefinitionsHandler.getDestinationDefinitionForWorkspace(destinationDefinitionIdWithWorkspaceId));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   // TODO: Deprecate this route in favor of createCustomDestinationDefinition
   // since all connector definitions created through the API are custom
   @Override
   public DestinationDefinitionRead createDestinationDefinition(final DestinationDefinitionCreate destinationDefinitionCreate) {
-    return execute(() -> destinationDefinitionsHandler.createPrivateDestinationDefinition(destinationDefinitionCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public DestinationDefinitionRead createCustomDestinationDefinition(final CustomDestinationDefinitionCreate customDestinationDefinitionCreate) {
-    return execute(() -> destinationDefinitionsHandler.createCustomDestinationDefinition(customDestinationDefinitionCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public DestinationDefinitionRead updateDestinationDefinition(final DestinationDefinitionUpdate destinationDefinitionUpdate) {
-    return execute(() -> destinationDefinitionsHandler.updateDestinationDefinition(destinationDefinitionUpdate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public DestinationDefinitionRead updateCustomDestinationDefinition(final CustomDestinationDefinitionUpdate customDestinationDefinitionUpdate) {
-    return execute(() -> destinationDefinitionsHandler.updateCustomDestinationDefinition(customDestinationDefinitionUpdate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public void deleteDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
-    execute(() -> {
-      destinationDefinitionsHandler.deleteDestinationDefinition(destinationDefinitionIdRequestBody);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public void deleteCustomDestinationDefinition(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
-    execute(() -> {
-      destinationDefinitionsHandler.deleteCustomDestinationDefinition(destinationDefinitionIdWithWorkspaceId);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public PrivateDestinationDefinitionRead grantDestinationDefinitionToWorkspace(
                                                                                 final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
-    return execute(() -> destinationDefinitionsHandler.grantDestinationDefinitionToWorkspace(destinationDefinitionIdWithWorkspaceId));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public void revokeDestinationDefinitionFromWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
-    execute(() -> {
-      destinationDefinitionsHandler.revokeDestinationDefinitionFromWorkspace(destinationDefinitionIdWithWorkspaceId);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
   // DESTINATION SPECIFICATION
-
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionSpecificationApiController}.
+   * Since the path of {@link DestinationDefinitionSpecificationApiController} is more granular, it
+   * will override this implementation
+   */
   @Override
   public DestinationDefinitionSpecificationRead getDestinationDefinitionSpecification(
                                                                                       final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
-    return execute(() -> schedulerHandler.getDestinationSpecification(destinationDefinitionIdWithWorkspaceId));
+    throw new NotImplementedException();
   }
 
   // DESTINATION IMPLEMENTATION
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DestinationRead createDestination(final DestinationCreate destinationCreate) {
-    return execute(() -> destinationHandler.createDestination(destinationCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public void deleteDestination(final DestinationIdRequestBody destinationIdRequestBody) {
-    execute(() -> {
-      destinationHandler.deleteDestination(destinationIdRequestBody);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DestinationRead updateDestination(final DestinationUpdate destinationUpdate) {
-    return execute(() -> destinationHandler.updateDestination(destinationUpdate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DestinationReadList listDestinationsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> destinationHandler.listDestinationsForWorkspace(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DestinationReadList searchDestinations(final DestinationSearch destinationSearch) {
-    return execute(() -> destinationHandler.searchDestinations(destinationSearch));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DestinationRead getDestination(final DestinationIdRequestBody destinationIdRequestBody) {
-    return execute(() -> destinationHandler.getDestination(destinationIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
-  public DestinationRead cloneDestination(final DestinationIdRequestBody destinationIdRequestBody) {
-    return execute(() -> destinationHandler.cloneDestination(destinationIdRequestBody));
+  public DestinationRead cloneDestination(final DestinationCloneRequestBody destinationCloneRequestBody) {
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public CheckConnectionRead checkConnectionToDestination(final DestinationIdRequestBody destinationIdRequestBody) {
-    return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationId(destinationIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public CheckConnectionRead checkConnectionToDestinationForUpdate(final DestinationUpdate destinationUpdate) {
-    return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationIdForUpdate(destinationUpdate));
+    throw new NotImplementedException();
   }
 
   // CONNECTION
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionRead createConnection(final ConnectionCreate connectionCreate) {
-    return execute(() -> connectionsHandler.createConnection(connectionCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionRead updateConnection(final ConnectionUpdate connectionUpdate) {
-    return execute(() -> connectionsHandler.updateConnection(connectionUpdate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionReadList listAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> connectionsHandler.listAllConnectionsForWorkspace(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionReadList searchConnections(final ConnectionSearch connectionSearch) {
-    return execute(() -> connectionsHandler.searchConnections(connectionSearch));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionRead getConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId()));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public void deleteConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    execute(() -> {
-      operationsHandler.deleteOperationsForConnection(connectionIdRequestBody);
-      connectionsHandler.deleteConnection(connectionIdRequestBody.getConnectionId());
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
+    throw new NotImplementedException();
   }
 
   // Operations
 
+  /**
+   * This implementation has been moved to {@link OperationApiController}. Since the path of
+   * {@link OperationApiController} is more granular, it will override this implementation
+   */
   @Override
   public CheckOperationRead checkOperation(final OperatorConfiguration operatorConfiguration) {
-    return execute(() -> operationsHandler.checkOperation(operatorConfiguration));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link OperationApiController}. Since the path of
+   * {@link OperationApiController} is more granular, it will override this implementation
+   */
   @Override
   public OperationRead createOperation(final OperationCreate operationCreate) {
-    return execute(() -> operationsHandler.createOperation(operationCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link StateApiController}. Since the path of
+   * {@link StateApiController} is more granular, it will override this implementation
+   */
+  @Override
+  public ConnectionState createOrUpdateState(final ConnectionStateCreateOrUpdate connectionStateCreateOrUpdate) {
+    throw new NotImplementedException();
+  }
+
+  /**
+   * This implementation has been moved to {@link OperationApiController}. Since the path of
+   * {@link OperationApiController} is more granular, it will override this implementation
+   */
   @Override
   public void deleteOperation(final OperationIdRequestBody operationIdRequestBody) {
-    execute(() -> {
-      operationsHandler.deleteOperation(operationIdRequestBody);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link OperationApiController}. Since the path of
+   * {@link OperationApiController} is more granular, it will override this implementation
+   */
   @Override
   public OperationReadList listOperationsForConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> operationsHandler.listOperationsForConnection(connectionIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link OperationApiController}. Since the path of
+   * {@link OperationApiController} is more granular, it will override this implementation
+   */
   @Override
   public OperationRead getOperation(final OperationIdRequestBody operationIdRequestBody) {
-    return execute(() -> operationsHandler.getOperation(operationIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link OperationApiController}. Since the path of
+   * {@link OperationApiController} is more granular, it will override this implementation
+   */
   @Override
   public OperationRead updateOperation(final OperationUpdate operationUpdate) {
-    return execute(() -> operationsHandler.updateOperation(operationUpdate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link StateApiController}. Since the path of
+   * {@link StateApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> schedulerHandler.getState(connectionIdRequestBody));
+    throw new NotImplementedException();
   }
 
   // SCHEDULER
+  /**
+   * This implementation has been moved to {@link SchedulerApiController}. Since the path of
+   * {@link SchedulerApiController} is more granular, it will override this implementation
+   */
   @Override
   public CheckConnectionRead executeSourceCheckConnection(final SourceCoreConfig sourceConfig) {
-    return execute(() -> schedulerHandler.checkSourceConnectionFromSourceCreate(sourceConfig));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SchedulerApiController}. Since the path of
+   * {@link SchedulerApiController} is more granular, it will override this implementation
+   */
   @Override
   public CheckConnectionRead executeDestinationCheckConnection(final DestinationCoreConfig destinationConfig) {
-    return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationCreate(destinationConfig));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link SchedulerApiController}. Since the path of
+   * {@link SchedulerApiController} is more granular, it will override this implementation
+   */
   @Override
   public SourceDiscoverSchemaRead executeSourceDiscoverSchema(final SourceCoreConfig sourceCreate) {
-    return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link JobsApiController}. Since the path of
+   * {@link JobsApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) {
-    return execute(() -> schedulerHandler.cancelJob(jobIdRequestBody));
+    throw new NotImplementedException();
   }
 
   // JOB HISTORY
 
+  /**
+   * This implementation has been moved to {@link JobsApiController}. Since the path of
+   * {@link JobsApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobReadList listJobsFor(final JobListRequestBody jobListRequestBody) {
-    return execute(() -> jobHistoryHandler.listJobsFor(jobListRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link JobsApiController}. Since the path of
+   * {@link JobsApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) {
-    return execute(() -> jobHistoryHandler.getJobInfo(jobIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link JobsApiController}. Since the path of
+   * {@link JobsApiController} is more granular, it will override this implementation
+   */
+  @Override
+  public JobInfoLightRead getJobInfoLight(final JobIdRequestBody jobIdRequestBody) {
+    throw new NotImplementedException();
+  }
+
+  /**
+   * This implementation has been moved to {@link JobsApiController}. Since the path of
+   * {@link JobsApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobDebugInfoRead getJobDebugInfo(final JobIdRequestBody jobIdRequestBody) {
-    return execute(() -> jobHistoryHandler.getJobDebugInfo(jobIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link JobsApiController}. Since the path of
+   * {@link JobsApiController} is more granular, it will override this implementation
+   */
+  @Override
+  public AttemptNormalizationStatusReadList getAttemptNormalizationStatusesForJob(final JobIdRequestBody jobIdRequestBody) {
+    return execute(() -> jobHistoryHandler.getAttemptNormalizationStatuses(jobIdRequestBody));
+  }
+
+  /**
+   * This implementation has been moved to {@link LogsApiController}. Since the path of
+   * {@link LogsApiController} is more granular, it will override this implementation
+   */
   @Override
   public File getLogs(final LogsRequestBody logsRequestBody) {
-    return execute(() -> logsHandler.getLogs(workspaceRoot, workerEnvironment, logConfigs, logsRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
   public File getOpenApiSpec() {
-    return execute(openApiConfigHandler::getFile);
+    throw new NotImplementedException();
   }
 
   // HEALTH
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
   public HealthCheckRead getHealthCheck() {
-    return healthCheckHandler.health();
+    throw new NotImplementedException();
   }
 
   // WEB BACKEND
 
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> webBackendConnectionsHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
-  public WebBackendConnectionReadList webBackendListAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> webBackendConnectionsHandler.webBackendListAllConnectionsForWorkspace(workspaceIdRequestBody));
+  public WebBackendGeographiesListResult webBackendListGeographies() {
+    throw new NotImplementedException();
   }
 
-  @Override
-  public WebBackendConnectionReadList webBackendSearchConnections(final WebBackendConnectionSearch webBackendConnectionSearch) {
-    return execute(() -> webBackendConnectionsHandler.webBackendSearchConnections(webBackendConnectionSearch));
-  }
-
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
   public WebBackendConnectionRead webBackendGetConnection(final WebBackendConnectionRequestBody webBackendConnectionRequestBody) {
-    return execute(() -> webBackendConnectionsHandler.webBackendGetConnection(webBackendConnectionRequestBody));
+    throw new NotImplementedException();
   }
 
-  @Override
-  public WebBackendWorkspaceStateResult webBackendGetWorkspaceState(WebBackendWorkspaceState webBackendWorkspaceState) {
-    return execute(() -> webBackendConnectionsHandler.getWorkspaceState(webBackendWorkspaceState));
-  }
-
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
   public WebBackendConnectionRead webBackendCreateConnection(final WebBackendConnectionCreate webBackendConnectionCreate) {
-    return execute(() -> webBackendConnectionsHandler.webBackendCreateConnection(webBackendConnectionCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
   public WebBackendConnectionRead webBackendUpdateConnection(final WebBackendConnectionUpdate webBackendConnectionUpdate) {
-    return execute(() -> webBackendConnectionsHandler.webBackendUpdateConnection(webBackendConnectionUpdate));
+    throw new NotImplementedException();
   }
 
-  // ARCHIVES
-
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
-  public File exportArchive() {
-    return execute(archiveHandler::exportData);
+  public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) {
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
-  public ImportRead importArchive(final File archiveFile) {
-    return execute(() -> archiveHandler.importData(archiveFile));
+  public WebBackendWorkspaceStateResult webBackendGetWorkspaceState(final WebBackendWorkspaceState webBackendWorkspaceState) {
+    throw new NotImplementedException();
   }
 
-  @Override
-  public File exportWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> archiveHandler.exportWorkspace(workspaceIdRequestBody));
-  }
-
-  @Override
-  public UploadRead uploadArchiveResource(final File archiveFile) {
-    return execute(() -> archiveHandler.uploadArchiveResource(archiveFile));
-  }
-
-  @Override
-  public ImportRead importIntoWorkspace(final ImportRequestBody importRequestBody) {
-    return execute(() -> archiveHandler.importIntoWorkspace(importRequestBody));
-  }
-
-  public boolean canImportDefinitons() {
-    return archiveHandler.canImportDefinitions();
-  }
-
-  private <T> T execute(final HandlerCall<T> call) {
+  // TODO: Move to common when all the api are moved
+  static <T> T execute(final HandlerCall<T> call) {
     try {
       return call.call();
     } catch (final ConfigNotFoundException e) {
-      throw new IdNotFoundKnownException(String.format("Could not find configuration for %s: %s.", e.getType().toString(), e.getConfigId()),
+      throw new IdNotFoundKnownException(String.format("Could not find configuration for %s: %s.", e.getType(), e.getConfigId()),
           e.getConfigId(), e);
     } catch (final JsonValidationException e) {
       throw new BadObjectSchemaKnownException(
@@ -880,7 +1177,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     }
   }
 
-  private interface HandlerCall<T> {
+  interface HandlerCall<T> {
 
     T call() throws ConfigNotFoundException, IOException, JsonValidationException;
 

@@ -60,7 +60,7 @@ python main_dev.py spec
 
 You should see some output:
 ```
-{"type": "SPEC", "spec": {"documentationUrl": "https://docsurl.com", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "title": "Python Http Tutorial Spec", "type": "object", "required": ["TODO"], "additionalProperties": false, "properties": {"TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.": {"type": "string", "description": "describe me"}}}}}
+{"type": "SPEC", "spec": {"documentationUrl": "https://docsurl.com", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "title": "Python Http Tutorial Spec", "type": "object", "required": ["TODO"], "properties": {"TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.": {"type": "string", "description": "describe me"}}}}}
 ```
 
 We just ran Airbyte Protocol's `spec` command! We'll talk more about this later, but this is a simple sanity check to make sure everything is wired up correctly.
@@ -119,7 +119,7 @@ Each connector declares the inputs it needs to read data from the underlying dat
 
 The simplest way to implement this is by creating a `.json` file in `source_<name>/spec.json` which describes your connector's inputs according to the [ConnectorSpecification](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L211) schema. This is a good place to start when developing your source. Using JsonSchema, define what the inputs are \(e.g. username and password\). Here's [an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-freshdesk/source_freshdesk/spec.json) of what the `spec.json` looks like for the Freshdesk API source.
 
-For more details on what the spec is, you can read about the Airbyte Protocol [here](https://docs.airbyte.io/understanding-airbyte/airbyte-specification#the-airbyte-protocol).
+For more details on what the spec is, you can read about the Airbyte Protocol [here](https://docs.airbyte.io/understanding-airbyte/airbyte-protocol#the-airbyte-protocol).
 
 The generated code that Airbyte provides, handles implementing the `spec` method for you. It assumes that there will be a file called `spec.json` in the same directory as `source.py`. If you have declared the necessary JsonSchema in `spec.json` you should be done with this step.
 
@@ -133,7 +133,6 @@ Given that we'll pulling currency data for our example source, we'll define the 
     "title": "Python Http Tutorial Spec",
     "type": "object",
     "required": ["start_date", "currency_base"],
-    "additionalProperties": false,
     "properties": {
       "start_date": {
         "type": "string",
@@ -312,7 +311,8 @@ Backoff policy options:
 - `max_retries` Specifies maximum amount of retries for backoff policy (by default is 5)
 - `raise_on_http_errors` If set to False, allows opting-out of raising HTTP code exception (by default is True)
 
-There are many other customizable options - you can find them in the [`base_python.cdk.streams.http.HttpStream`](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-python/base_python/cdk/streams/http.py) class. 
+
+There are many other customizable options - you can find them in the [`airbyte_cdk.sources.streams.http.HttpStream`](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/streams/http/http.py) class. 
 
 So in order to read data from the exchange rates API, we'll fill out the necessary information for the stream to do its work. First, we'll implement a basic read that just reads the last day's exchange rates, then we'll implement incremental sync using stream slicing.
 

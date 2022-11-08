@@ -20,5 +20,5 @@ select
 from {{ ref('multiple_column_names_conflicts_ab1') }}
 -- multiple_column_names_conflicts
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

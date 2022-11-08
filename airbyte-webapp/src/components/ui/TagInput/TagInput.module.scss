@@ -1,0 +1,9 @@
+@use "scss/colors";
+@use "scss/variables";
+
+:export {
+  backgroundColor: colors.$dark-blue-800;
+  fontColor: colors.$white;
+  borderRadius: variables.$border-radius-sm;
+  paddingLeft: variables.$spacing-sm;
+}

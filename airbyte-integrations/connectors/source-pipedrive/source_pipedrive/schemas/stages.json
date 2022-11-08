@@ -27,12 +27,10 @@
       "type": ["null", "integer"]
     },
     "add_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "update_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "pipeline_name": {
       "type": ["null", "string"]

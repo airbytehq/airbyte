@@ -1,11 +1,11 @@
 import React from "react";
 import styled, { keyframes } from "styled-components";
 
-type PlayButtonProps = {
+interface PlayButtonProps {
   small?: boolean;
   onClick: () => void;
   isLink?: boolean;
-};
+}
 
 export const BigCircleAnimation = keyframes`
   0% {

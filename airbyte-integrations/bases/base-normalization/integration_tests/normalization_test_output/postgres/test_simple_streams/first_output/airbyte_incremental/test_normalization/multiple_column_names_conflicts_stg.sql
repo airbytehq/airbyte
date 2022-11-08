@@ -31,9 +31,7 @@ select
     cast("id" as 
     bigint
 ) as "id",
-    cast("User Id" as 
-    varchar
-) as "User Id",
+    cast("User Id" as text) as "User Id",
     cast(user_id as 
     float
 ) as user_id,
@@ -43,9 +41,7 @@ select
     cast("user id" as 
     float
 ) as "user id",
-    cast("User@Id" as 
-    varchar
-) as "User@Id",
+    cast("User@Id" as text) as "User@Id",
     cast(userid as 
     float
 ) as userid,
@@ -59,23 +55,7 @@ where 1 = 1
 )-- SQL model to build a hash column based on the values of this record
 -- depends_on: __dbt__cte__multiple_column_names_conflicts_ab2
 select
-    md5(cast(coalesce(cast("id" as 
-    varchar
-), '') || '-' || coalesce(cast("User Id" as 
-    varchar
-), '') || '-' || coalesce(cast(user_id as 
-    varchar
-), '') || '-' || coalesce(cast("User id" as 
-    varchar
-), '') || '-' || coalesce(cast("user id" as 
-    varchar
-), '') || '-' || coalesce(cast("User@Id" as 
-    varchar
-), '') || '-' || coalesce(cast(userid as 
-    varchar
-), '') as 
-    varchar
-)) as _airbyte_multiple_co__ames_conflicts_hashid,
+    md5(cast(coalesce(cast("id" as text), '') || '-' || coalesce(cast("User Id" as text), '') || '-' || coalesce(cast(user_id as text), '') || '-' || coalesce(cast("User id" as text), '') || '-' || coalesce(cast("user id" as text), '') || '-' || coalesce(cast("User@Id" as text), '') || '-' || coalesce(cast(userid as text), '') as text)) as _airbyte_multiple_co__ames_conflicts_hashid,
     tmp.*
 from __dbt__cte__multiple_column_names_conflicts_ab2 tmp
 -- multiple_column_names_conflicts

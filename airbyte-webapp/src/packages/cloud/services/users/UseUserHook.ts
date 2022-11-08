@@ -36,9 +36,9 @@ export const useUserHook = () => {
     ),
     inviteUserLogic: useMutation(
       async (payload: {
-        users: {
+        users: Array<{
           email: string;
-        }[];
+        }>;
         workspaceId: string;
       }) => service.invite(payload.users, payload.workspaceId),
       {

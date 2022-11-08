@@ -1,9 +1,12 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
 
+import com.clickhouse.client.ClickHouseFormat;
+import com.clickhouse.jdbc.ClickHouseConnection;
+import com.clickhouse.jdbc.ClickHouseStatement;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
@@ -15,9 +18,6 @@ import java.sql.SQLException;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.yandex.clickhouse.ClickHouseConnection;
-import ru.yandex.clickhouse.ClickHouseStatement;
-import ru.yandex.clickhouse.domain.ClickHouseFormat;
 
 public class ClickhouseSqlOperations extends JdbcSqlOperations {
 
@@ -52,11 +52,10 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
 
   @Override
   public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
-    final StringBuilder appendedQueries = new StringBuilder();
+    // Note: ClickHouse does not support multi query
     for (final String query : queries) {
-      appendedQueries.append(query);
+      database.execute(query);
     }
-    database.execute(appendedQueries.toString());
   }
 
   @Override
@@ -78,11 +77,12 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
         tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
         writeBatchToFile(tmpFile, records);
 
-        ClickHouseConnection conn = connection.unwrap(ClickHouseConnection.class);
-        ClickHouseStatement sth = conn.createStatement();
+        final ClickHouseConnection conn = connection.unwrap(ClickHouseConnection.class);
+        final ClickHouseStatement sth = conn.createStatement();
         sth.write() // Write API entrypoint
             .table(String.format("%s.%s", schemaName, tmpTableName)) // where to write data
-            .data(tmpFile, ClickHouseFormat.CSV) // specify input
+            .format(ClickHouseFormat.CSV) // set a format
+            .data(tmpFile.getAbsolutePath()) // specify input
             .send();
 
       } catch (final Exception e) {

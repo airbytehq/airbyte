@@ -89,3 +89,15 @@ The following setup steps are written for PyCharm but should have similar equiva
 You should now have access to code completion and proper syntax highlighting for python projects.
 
 If you need to work on another connector you can quickly change the current virtual environment in the bottom toolbar.
+
+### Excluding files from venv
+
+By default, the find function in IntelliJ is not scoped and will include all files in the monorepo, including all the libraries installed as part of a connector's virtual environment. This huge volume of files makes indexing and search very slow. You can ignore files from the connectors' virtual environment with the following steps:
+
+1. Open the project structure using `cmd-;`
+2. Navigate to the "Project Settings / Modules" section in the right-side of the menu
+3. Select the top level `airbyte` module so the change is applied to all submodules
+4. Add the following filter to the `Exclude files` option: `connectors/**/.venv`
+5. Press OK to confirm your options.
+
+![](../.gitbook/assets/monorepo-exclude-files.png)

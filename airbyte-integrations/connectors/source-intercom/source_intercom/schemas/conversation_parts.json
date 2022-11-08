@@ -1,18 +1,13 @@
 {
   "type": "object",
-  "additionalProperties": false,
   "properties": {
     "assigned_to": {
-      "anyOf": [
+      "oneOf": [
         {
-          "type": ["null", "object"],
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "type": {
-                "type": ["null", "string"]
-              }
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": ["null", "string"]
             },
             "id": {
               "type": ["null", "string"]
@@ -20,50 +15,44 @@
           }
         },
         {
-          "type": "null"
-        }
-      ]
-    },
-    "attachments": {
-      "anyOf": [
-        {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "type": {
-                "type": ["null", "string"]
-              },
-              "name": {
-                "type": ["null", "string"]
-              },
-              "url": {
-                "type": ["null", "string"]
-              },
-              "content_type": {
-                "type": ["null", "string"]
-              },
-              "filesize": {
-                "type": ["null", "integer"]
-              },
-              "height": {
-                "type": ["null", "integer"]
-              },
-              "width": {
-                "type": ["null", "integer"]
-              }
-            }
-          }
+          "type": "string"
         },
         {
           "type": "null"
         }
       ]
     },
+    "attachments": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "type": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "url": {
+            "type": ["null", "string"]
+          },
+          "content_type": {
+            "type": ["null", "string"]
+          },
+          "filesize": {
+            "type": ["null", "integer"]
+          },
+          "height": {
+            "type": ["null", "integer"]
+          },
+          "width": {
+            "type": ["null", "integer"]
+          }
+        }
+      }
+    },
     "author": {
       "type": ["null", "object"],
-      "additionalProperties": false,
       "properties": {
         "id": {
           "type": ["null", "string"]

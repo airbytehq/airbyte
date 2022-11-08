@@ -1,11 +1,19 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from pathlib import Path
 from unittest.mock import mock_open, patch
 
 import pytest
-from octavia_cli.generate import renderers
+import yaml
+from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
+from airbyte_api_client.model.airbyte_stream import AirbyteStream
+from airbyte_api_client.model.airbyte_stream_and_configuration import AirbyteStreamAndConfiguration
+from airbyte_api_client.model.airbyte_stream_configuration import AirbyteStreamConfiguration
+from airbyte_api_client.model.destination_sync_mode import DestinationSyncMode
+from airbyte_api_client.model.sync_mode import SyncMode
+from octavia_cli.generate import renderers, yaml_dumpers
 
 
 class TestFieldToRender:
@@ -123,6 +131,7 @@ class TestFieldToRender:
         [
             ({"const": "foo", "default": "bar"}, "foo"),
             ({"default": "bar"}, "bar"),
+            ({"airbyte_secret": True}, "${FIELD_NAME}"),
             ({}, None),
         ],
     )
@@ -168,21 +177,63 @@ class TestBaseRenderer:
 
     def test_get_output_path(self, patch_base_class, mocker):
         mocker.patch.object(renderers, "os")
+        mocker.patch.object(renderers, "slugify")
         renderers.os.path.exists.return_value = False
         spec_renderer = renderers.BaseRenderer("my_resource_name")
         renderers.os.path.join.side_effect = [
             "./my_definition_types/my_resource_name",
             "./my_definition_types/my_resource_name/configuration.yaml",
         ]
-        output_path = spec_renderer._get_output_path(".", "my_definition_type")
+        output_path = spec_renderer.get_output_path(".", "my_definition_type", "my_resource_name")
         renderers.os.makedirs.assert_called_once()
+        renderers.slugify.assert_called_with("my_resource_name", separator="_")
         renderers.os.path.join.assert_has_calls(
             [
-                mocker.call(".", "my_definition_types", "my_resource_name"),
+                mocker.call(".", "my_definition_types", renderers.slugify.return_value),
                 mocker.call("./my_definition_types/my_resource_name", "configuration.yaml"),
             ]
         )
-        assert output_path == "./my_definition_types/my_resource_name/configuration.yaml"
+        assert output_path == Path("./my_definition_types/my_resource_name/configuration.yaml")
+
+    @pytest.mark.parametrize("file_exists, confirmed_overwrite", [(True, True), (False, None), (True, False)])
+    def test__confirm_overwrite(self, mocker, file_exists, confirmed_overwrite):
+        mock_output_path = mocker.Mock(is_file=mocker.Mock(return_value=file_exists))
+        mocker.patch.object(renderers.click, "confirm", mocker.Mock(return_value=confirmed_overwrite))
+        overwrite = renderers.BaseRenderer._confirm_overwrite(mock_output_path)
+        if file_exists:
+            assert overwrite == confirmed_overwrite
+        else:
+            assert overwrite is True
+
+    @pytest.mark.parametrize("confirmed_overwrite", [True, False])
+    def test_import_configuration(self, mocker, patch_base_class, confirmed_overwrite):
+        configuration = {"foo": "bar"}
+        mocker.patch.object(renderers.BaseRenderer, "_render")
+        mocker.patch.object(renderers.BaseRenderer, "get_output_path")
+        mocker.patch.object(renderers.yaml, "safe_load", mocker.Mock(return_value={}))
+        mocker.patch.object(renderers.yaml, "safe_dump")
+        mocker.patch.object(renderers.BaseRenderer, "_confirm_overwrite", mocker.Mock(return_value=confirmed_overwrite))
+        spec_renderer = renderers.BaseRenderer("my_resource_name")
+        spec_renderer.definition = mocker.Mock(type="my_definition")
+        expected_output_path = renderers.BaseRenderer.get_output_path.return_value
+        with patch("builtins.open", mock_open()) as mock_file:
+            output_path = spec_renderer.import_configuration(project_path=".", configuration=configuration)
+            spec_renderer._render.assert_called_once()
+            renderers.yaml.safe_load.assert_called_with(spec_renderer._render.return_value)
+            assert renderers.yaml.safe_load.return_value["configuration"] == configuration
+            spec_renderer.get_output_path.assert_called_with(".", spec_renderer.definition.type, spec_renderer.resource_name)
+            spec_renderer._confirm_overwrite.assert_called_with(expected_output_path)
+            if confirmed_overwrite:
+                mock_file.assert_called_with(expected_output_path, "wb")
+                renderers.yaml.safe_dump.assert_called_with(
+                    renderers.yaml.safe_load.return_value,
+                    mock_file.return_value,
+                    default_flow_style=False,
+                    sort_keys=False,
+                    allow_unicode=True,
+                    encoding="utf-8",
+                )
+            assert output_path == renderers.BaseRenderer.get_output_path.return_value
 
 
 class TestConnectorSpecificationRenderer:
@@ -214,26 +265,31 @@ class TestConnectorSpecificationRenderer:
         assert len(parsed_schema) == len(schema["oneOf"])
         renderers.parse_fields.assert_called_with(["free"], {"free": "beer"})
 
-    def test_write_yaml(self, mocker):
+    @pytest.mark.parametrize("overwrite", [True, False])
+    def test_write_yaml(self, mocker, overwrite):
 
-        mocker.patch.object(renderers.ConnectorSpecificationRenderer, "_get_output_path")
+        mocker.patch.object(renderers.ConnectorSpecificationRenderer, "get_output_path")
         mocker.patch.object(renderers.ConnectorSpecificationRenderer, "_parse_connection_specification")
         mocker.patch.object(
             renderers.ConnectorSpecificationRenderer, "TEMPLATE", mocker.Mock(render=mocker.Mock(return_value="rendered_string"))
         )
+        mocker.patch.object(renderers.ConnectorSpecificationRenderer, "_confirm_overwrite", mocker.Mock(return_value=overwrite))
 
         spec_renderer = renderers.ConnectorSpecificationRenderer("my_resource_name", mocker.Mock(type="source"))
-        with patch("builtins.open", mock_open()) as mock_file:
+        if overwrite:
+            with patch("builtins.open", mock_open()) as mock_file:
+                output_path = spec_renderer.write_yaml(".")
+            spec_renderer.TEMPLATE.render.assert_called_with(
+                {
+                    "resource_name": "my_resource_name",
+                    "definition": spec_renderer.definition,
+                    "configuration_fields": spec_renderer._parse_connection_specification.return_value,
+                }
+            )
+            mock_file.assert_called_with(output_path, "w")
+        else:
             output_path = spec_renderer.write_yaml(".")
-        assert output_path == spec_renderer._get_output_path.return_value
-        spec_renderer.TEMPLATE.render.assert_called_with(
-            {
-                "resource_name": "my_resource_name",
-                "definition": spec_renderer.definition,
-                "configuration_fields": spec_renderer._parse_connection_specification.return_value,
-            }
-        )
-        mock_file.assert_called_with(output_path, "w")
+        assert output_path == spec_renderer.get_output_path.return_value
 
     def test__render(self, mocker):
         mocker.patch.object(renderers.ConnectorSpecificationRenderer, "_parse_connection_specification")
@@ -268,30 +324,44 @@ class TestConnectionRenderer:
         assert connection_renderer.destination == mock_destination
 
     def test_catalog_to_yaml(self, mocker):
-        catalog = {"camelCase": "camelCase", "snake_case": "camelCase", "myArray": ["a", "b"]}
+        stream = AirbyteStream(
+            default_cursor_field=["foo"], json_schema={}, name="my_stream", supported_sync_modes=[SyncMode("full_refresh")]
+        )
+        config = AirbyteStreamConfiguration(
+            alias_name="pokemon", selected=True, destination_sync_mode=DestinationSyncMode("append"), sync_mode=SyncMode("full_refresh")
+        )
+        catalog = AirbyteCatalog([AirbyteStreamAndConfiguration(stream=stream, config=config)])
         yaml_catalog = renderers.ConnectionRenderer.catalog_to_yaml(catalog)
-        assert yaml_catalog == "camelCase: camelCase\nmyArray:\n  - a\n  - b\nsnake_case: camelCase\n"
+        assert yaml_catalog == yaml.dump(catalog.to_dict(), Dumper=yaml_dumpers.CatalogDumper, default_flow_style=False)
 
-    def test_write_yaml(self, mocker, mock_source, mock_destination):
-        mocker.patch.object(renderers.ConnectionRenderer, "_get_output_path")
+    @pytest.mark.parametrize("overwrite", [True, False])
+    def test_write_yaml(self, mocker, mock_source, mock_destination, overwrite):
+        mocker.patch.object(renderers.ConnectionRenderer, "get_output_path")
         mocker.patch.object(renderers.ConnectionRenderer, "catalog_to_yaml")
         mocker.patch.object(renderers.ConnectionRenderer, "TEMPLATE")
+        mocker.patch.object(renderers.ConnectionRenderer, "_confirm_overwrite", mocker.Mock(return_value=overwrite))
 
         connection_renderer = renderers.ConnectionRenderer("my_resource_name", mock_source, mock_destination)
-        with patch("builtins.open", mock_open()) as mock_file:
+        if overwrite:
+            with patch("builtins.open", mock_open()) as mock_file:
+                output_path = connection_renderer.write_yaml(".")
+            connection_renderer.get_output_path.assert_called_with(".", renderers.ConnectionDefinition.type, "my_resource_name")
+            connection_renderer.catalog_to_yaml.assert_called_with(mock_source.catalog)
+            mock_file.assert_called_with(output_path, "w")
+            mock_file.return_value.write.assert_called_with(connection_renderer.TEMPLATE.render.return_value)
+            connection_renderer.TEMPLATE.render.assert_called_with(
+                {
+                    "connection_name": connection_renderer.resource_name,
+                    "source_configuration_path": mock_source.configuration_path,
+                    "destination_configuration_path": mock_destination.configuration_path,
+                    "catalog": connection_renderer.catalog_to_yaml.return_value,
+                    "supports_normalization": connection_renderer.destination.definition.supports_normalization,
+                    "supports_dbt": connection_renderer.destination.definition.supports_dbt,
+                }
+            )
+        else:
             output_path = connection_renderer.write_yaml(".")
-        connection_renderer._get_output_path.assert_called_with(".", renderers.ConnectionDefinition.type)
-        connection_renderer.catalog_to_yaml.assert_called_with(mock_source.catalog)
-        mock_file.assert_called_with(output_path, "w")
-        mock_file.return_value.write.assert_called_with(connection_renderer.TEMPLATE.render.return_value)
-        connection_renderer.TEMPLATE.render.assert_called_with(
-            {
-                "connection_name": connection_renderer.resource_name,
-                "source_id": mock_source.resource_id,
-                "destination_id": mock_destination.resource_id,
-                "catalog": connection_renderer.catalog_to_yaml.return_value,
-            }
-        )
+        assert output_path == connection_renderer.get_output_path.return_value
 
     def test__render(self, mocker):
         mocker.patch.object(renderers.ConnectionRenderer, "catalog_to_yaml")
@@ -302,9 +372,44 @@ class TestConnectionRenderer:
         connection_renderer.TEMPLATE.render.assert_called_with(
             {
                 "connection_name": connection_renderer.resource_name,
-                "source_id": connection_renderer.source.resource_id,
-                "destination_id": connection_renderer.destination.resource_id,
+                "source_configuration_path": connection_renderer.source.configuration_path,
+                "destination_configuration_path": connection_renderer.destination.configuration_path,
                 "catalog": connection_renderer.catalog_to_yaml.return_value,
+                "supports_normalization": connection_renderer.destination.definition.supports_normalization,
+                "supports_dbt": connection_renderer.destination.definition.supports_dbt,
             }
         )
         assert rendered == connection_renderer.TEMPLATE.render.return_value
+
+    @pytest.mark.parametrize("confirmed_overwrite, operations", [(True, []), (False, []), (True, [{}]), (False, [{}])])
+    def test_import_configuration(self, mocker, confirmed_overwrite, operations):
+        configuration = {"foo": "bar", "bar": "foo", "operations": operations}
+        mocker.patch.object(renderers.ConnectionRenderer, "KEYS_TO_REMOVE_FROM_REMOTE_CONFIGURATION", ["bar"])
+        mocker.patch.object(renderers.ConnectionRenderer, "_render")
+        mocker.patch.object(renderers.ConnectionRenderer, "get_output_path")
+        mocker.patch.object(renderers.yaml, "safe_load", mocker.Mock(return_value={}))
+        mocker.patch.object(renderers.yaml, "safe_dump")
+        mocker.patch.object(renderers.ConnectionRenderer, "_confirm_overwrite", mocker.Mock(return_value=confirmed_overwrite))
+        spec_renderer = renderers.ConnectionRenderer("my_resource_name", mocker.Mock(), mocker.Mock())
+        expected_output_path = renderers.ConnectionRenderer.get_output_path.return_value
+        with patch("builtins.open", mock_open()) as mock_file:
+            output_path = spec_renderer.import_configuration(project_path=".", configuration=configuration)
+            spec_renderer._render.assert_called_once()
+            renderers.yaml.safe_load.assert_called_with(spec_renderer._render.return_value)
+            if operations:
+                assert renderers.yaml.safe_load.return_value["configuration"] == {"foo": "bar", "operations": operations}
+            else:
+                assert renderers.yaml.safe_load.return_value["configuration"] == {"foo": "bar"}
+            spec_renderer.get_output_path.assert_called_with(".", spec_renderer.definition.type, spec_renderer.resource_name)
+            spec_renderer._confirm_overwrite.assert_called_with(expected_output_path)
+            if confirmed_overwrite:
+                mock_file.assert_called_with(expected_output_path, "wb")
+                renderers.yaml.safe_dump.assert_called_with(
+                    renderers.yaml.safe_load.return_value,
+                    mock_file.return_value,
+                    default_flow_style=False,
+                    sort_keys=False,
+                    allow_unicode=True,
+                    encoding="utf-8",
+                )
+            assert output_path == renderers.ConnectionRenderer.get_output_path.return_value

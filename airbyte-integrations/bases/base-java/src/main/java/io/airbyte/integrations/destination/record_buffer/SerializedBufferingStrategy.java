@@ -1,15 +1,13 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.record_buffer;
 
-import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.ArrayList;
@@ -27,7 +25,6 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
 
   private final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer;
   private final CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> onStreamFlush;
-  private VoidCallable onFlushAllEventHook;
 
   private Map<AirbyteStreamNameNamespacePair, SerializableBuffer> allBuffers = new HashMap<>();
   private long totalBufferSizeInBytes;
@@ -40,16 +37,11 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
     this.catalog = catalog;
     this.onStreamFlush = onStreamFlush;
     this.totalBufferSizeInBytes = 0;
-    this.onFlushAllEventHook = null;
   }
 
   @Override
-  public void registerFlushAllEventHook(final VoidCallable onFlushAllEventHook) {
-    this.onFlushAllEventHook = onFlushAllEventHook;
-  }
-
-  @Override
-  public void addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
+  public boolean addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
+    boolean didFlush = false;
 
     final SerializableBuffer streamBuffer = allBuffers.computeIfAbsent(stream, k -> {
       LOGGER.info("Starting a new buffer for stream {} (current state: {} in {} buffers)",
@@ -71,18 +63,34 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
     if (totalBufferSizeInBytes >= streamBuffer.getMaxTotalBufferSizeInBytes()
         || allBuffers.size() >= streamBuffer.getMaxConcurrentStreamsInBuffer()) {
       flushAll();
+      didFlush = true;
       totalBufferSizeInBytes = 0;
     } else if (streamBuffer.getByteCount() >= streamBuffer.getMaxPerStreamBufferSizeInBytes()) {
       flushWriter(stream, streamBuffer);
+      /*
+       * Note: We intentionally do not mark didFlush as true in the branch of this conditional. Because
+       * this branch flushes individual streams, there is no guaranteee that it will flush records in the
+       * same order that state messages were received. The outcome here is that records get flushed but
+       * our updating of which state messages have been flushed falls behind.
+       *
+       * This is not ideal from a checkpoint point of view, because it means in the case where there is a
+       * failure, we will not be able to report that those records that were flushed and committed were
+       * committed because there corresponding state messages weren't marked as flushed. Thus, it weakens
+       * checkpointing, but it does not cause a correctness issue.
+       *
+       * In non-failure cases, using this conditional branch relies on the state messages getting flushed
+       * by some other means. That can be caused by the previous branch in this conditional. It is
+       * guaranteed by the fact that we always flush all state messages at the end of a sync.
+       */
     }
+
+    return didFlush;
   }
 
   @Override
   public void flushWriter(final AirbyteStreamNameNamespacePair stream, final SerializableBuffer writer) throws Exception {
     LOGGER.info("Flushing buffer of stream {} ({})", stream.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
-    AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
-      onStreamFlush.accept(stream, writer);
-    }, Map.of("bufferSizeInBytes", writer.getByteCount()));
+    onStreamFlush.accept(stream, writer);
     totalBufferSizeInBytes -= writer.getByteCount();
     allBuffers.remove(stream);
   }
@@ -90,18 +98,13 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   @Override
   public void flushAll() throws Exception {
     LOGGER.info("Flushing all {} current buffers ({} in total)", allBuffers.size(), FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes));
-    AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
-      for (final Entry<AirbyteStreamNameNamespacePair, SerializableBuffer> entry : allBuffers.entrySet()) {
-        LOGGER.info("Flushing buffer of stream {} ({})", entry.getKey().getName(), FileUtils.byteCountToDisplaySize(entry.getValue().getByteCount()));
-        onStreamFlush.accept(entry.getKey(), entry.getValue());
-      }
-      close();
-      clear();
-    }, Map.of("bufferSizeInBytes", totalBufferSizeInBytes));
-
-    if (onFlushAllEventHook != null) {
-      onFlushAllEventHook.call();
+    for (final Entry<AirbyteStreamNameNamespacePair, SerializableBuffer> entry : allBuffers.entrySet()) {
+      LOGGER.info("Flushing buffer of stream {} ({})", entry.getKey().getName(), FileUtils.byteCountToDisplaySize(entry.getValue().getByteCount()));
+      onStreamFlush.accept(entry.getKey(), entry.getValue());
     }
+    close();
+    clear();
+
     totalBufferSizeInBytes = 0;
   }
 

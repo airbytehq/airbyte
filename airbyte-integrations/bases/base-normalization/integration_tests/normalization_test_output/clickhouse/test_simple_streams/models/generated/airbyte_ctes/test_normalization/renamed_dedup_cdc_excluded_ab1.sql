@@ -14,5 +14,5 @@ select
 from {{ source('test_normalization', '_airbyte_raw_renamed_dedup_cdc_excluded') }} as table_alias
 -- renamed_dedup_cdc_excluded
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

@@ -1,0 +1,7 @@
+@use "scss/variables";
+
+.leftPanel {
+  > *:last-child {
+    padding-bottom: variables.$spacing-page-bottom;
+  }
+}

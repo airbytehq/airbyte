@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.spec_modification.SpecModifyingDestination;
@@ -24,7 +25,7 @@ public class ClickhouseDestinationStrictEncrypt extends SpecModifyingDestination
   @Override
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
-    ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove("ssl");
+    ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
     return spec;
   }
 

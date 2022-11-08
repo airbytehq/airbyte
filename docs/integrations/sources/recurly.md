@@ -62,9 +62,10 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 ## CHANGELOG
 
-| Version | Date       | Pull Request | Subject |
-|:--------|:-----------| :--- | :--- |
-| 0.4.0   | 2022-01-28 | [9866](https://github.com/airbytehq/airbyte/pull/9866) | Revamp Recurly Schema and add more resources |
-| 0.3.2   | 2022-01-20 | [8617](https://github.com/airbytehq/airbyte/pull/8617) | Update connector fields title/description |
-| 0.3.1   | 2022-01-10 | [9382](https://github.com/airbytehq/airbyte/pull/9382) | Source Recurly: avoid loading all accounts when importing account coupon redemptions |
-| 0.3.0   | 2021-12-08 | [8468](https://github.com/airbytehq/airbyte/pull/8468) | Support Incremental Sync Mode |
+| Version | Date       | Pull Request                                             | Subject                                                                                  |
+|:--------|:-----------| :--------------------------------------------------------| :--------------------------------------------------------------------------------------- |
+| 0.4.1   | 2022-06-10 | [13685](https://github.com/airbytehq/airbyte/pull/13685) | Add state_checkpoint_interval to Recurly stream                                          |
+| 0.4.0   | 2022-01-28 | [9866](https://github.com/airbytehq/airbyte/pull/9866)   | Revamp Recurly Schema and add more resources                                             |
+| 0.3.2   | 2022-01-20 | [8617](https://github.com/airbytehq/airbyte/pull/8617)   | Update connector fields title/description                                                |
+| 0.3.1   | 2022-01-10 | [9382](https://github.com/airbytehq/airbyte/pull/9382)   | Source Recurly: avoid loading all accounts when importing account coupon redemptions     |
+| 0.3.0   | 2021-12-08 | [8468](https://github.com/airbytehq/airbyte/pull/8468)   | Support Incremental Sync Mode                                                            |

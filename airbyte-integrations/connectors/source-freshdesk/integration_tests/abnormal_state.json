@@ -1,35 +1,123 @@
-{
-  "agents": {
-    "updated_at": "2121-11-01T00:00:00Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "agents"
+      }
+    }
   },
-  "companies": {
-    "updated_at": "2121-11-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "companies"
+      }
+    }
   },
-  "contacts": {
-    "updated_at": "2121-11-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "contacts"
+      }
+    }
   },
-  "conversations": {
-    "updated_at": "2121-11-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "conversations"
+      }
+    }
   },
-  "groups": {
-    "updated_at": "2121-11-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "groups"
+      }
+    }
   },
-  "roles": {
-    "updated_at": "2121-11-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "roles"
+      }
+    }
   },
-  "satisfaction_ratings": {
-    "updated_at": "2121-11-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "satisfaction_ratings"
+      }
+    }
   },
-  "skills": {
-    "updated_at": "2121-11-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "skills"
+      }
+    }
   },
-  "surveys": {
-    "updated_at": "2121-11-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "surveys"
+      }
+    }
   },
-  "tickets": {
-    "updated_at": "2121-11-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "tickets"
+      }
+    }
   },
-  "time_entries": {
-    "updated_at": "2121-11-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "time_entries"
+      }
+    }
   }
-}
+]

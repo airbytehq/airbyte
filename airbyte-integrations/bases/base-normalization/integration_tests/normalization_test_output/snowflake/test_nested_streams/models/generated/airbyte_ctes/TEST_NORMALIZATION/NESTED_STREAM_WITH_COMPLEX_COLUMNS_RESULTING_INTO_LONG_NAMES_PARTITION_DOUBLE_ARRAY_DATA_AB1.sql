@@ -17,5 +17,5 @@ from {{ ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTIT
 {{ cross_join_unnest('PARTITION', 'DOUBLE_ARRAY_DATA') }}
 where 1 = 1
 and DOUBLE_ARRAY_DATA is not null
-{{ incremental_clause('_AIRBYTE_EMITTED_AT') }}
+{{ incremental_clause('_AIRBYTE_EMITTED_AT', this) }}
 

@@ -1,10 +1,9 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.record_buffer;
 
-import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteMessage;
 
@@ -22,8 +21,13 @@ public interface BufferingStrategy extends AutoCloseable {
 
   /**
    * Add a new message to the buffer while consuming streams
+   *
+   * @param stream - stream associated with record
+   * @param message - message to buffer
+   * @return true if this record cause ALL records in the buffer to flush, otherwise false.
+   * @throws Exception throw on failure
    */
-  void addRecord(AirbyteStreamNameNamespacePair stream, AirbyteMessage message) throws Exception;
+  boolean addRecord(AirbyteStreamNameNamespacePair stream, AirbyteMessage message) throws Exception;
 
   /**
    * Flush buffered messages in a writer from a particular stream
@@ -39,13 +43,5 @@ public interface BufferingStrategy extends AutoCloseable {
    * Removes all stream buffers.
    */
   void clear() throws Exception;
-
-  /**
-   * When all buffers are being flushed, we can signal some parent function of this event for further
-   * processing.
-   *
-   * THis install such a hook to be triggered when that happens.
-   */
-  void registerFlushAllEventHook(VoidCallable onFlushAllEventHook);
 
 }

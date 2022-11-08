@@ -2,16 +2,16 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import ContentCard from "components/ContentCard";
+import { Card } from "components/ui/Card";
 
-type UseCaseBlockProps = {
+interface UseCaseBlockProps {
   count: number;
   id: string;
   href: string;
   onSkip: (id: string) => void;
-};
+}
 
-const Block = styled(ContentCard)`
+const Block = styled(Card)`
   margin-bottom: 10px;
   width: 100%;
   padding: 16px;

@@ -4,13 +4,13 @@ import styled from "styled-components";
 import PlayButton from "./components/PlayButton";
 import ShowVideo from "./components/ShowVideo";
 
-type VideoItemProps = {
+interface VideoItemProps {
   small?: boolean;
   videoId?: string;
   link?: string;
   img?: string;
   description?: React.ReactNode;
-};
+}
 
 const Content = styled.div<{ small?: boolean }>`
   width: ${({ small }) => (small ? 158 : 317)}px;

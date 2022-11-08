@@ -13,7 +13,7 @@ echo "Namespace" $NAMESPACE
 TAG=$(openssl rand -hex 12)
 echo "Tag" $TAG
 
-docker login -u airbytebot -p $DOCKER_PASSWORD
+docker login -u "$DOCKER_HUB_USERNAME" -p "$DOCKER_HUB_PASSWORD"
 VERSION=$TAG ./gradlew build
 VERSION=$TAG docker-compose -f docker-compose.build.yaml push
 
@@ -44,7 +44,7 @@ function findAndDeleteTag () {
 }
 
 function cleanUpImages () {
-    TOKEN=$(curl --request POST 'https://hub.docker.com/v2/users/login/' --header 'Content-Type: application/json' --data-raw '{"username":"airbytebot","password":"'$DOCKER_PASSWORD'"}' | jq '.token')
+    TOKEN=$(curl --request POST 'https://hub.docker.com/v2/users/login/' --header 'Content-Type: application/json' --data-raw '{"username":"'$DOCKER_HUB_USERNAME'","password":"'$DOCKER_HUB_PASSWORD'"}' | jq '.token')
     TOKEN="${TOKEN%\"}"
     TOKEN="${TOKEN#\"}"
 
@@ -55,6 +55,7 @@ function cleanUpImages () {
     findAndDeleteTag "server" $TOKEN
     findAndDeleteTag "webapp" $TOKEN
     findAndDeleteTag "migration" $TOKEN
+    findAndDeleteTag "cron" $TOKEN
 }
 
 trap "cleanUpImages && kubectl delete namespaces $NAMESPACE --grace-period=0 --force" EXIT
@@ -63,7 +64,7 @@ kubectl port-forward svc/airbyte-server-svc 8001:8001 --namespace=$NAMESPACE &
 
 kubectl port-forward svc/postgres-source-svc 2000:5432 --namespace=$NAMESPACE &
 
-kubectl port-forward svc/postgres-destination-svc 3000:5432 --namespace=$NAMESPACE &
+kubectl port-forward svc/postgres-destination-svc 4000:5432 --namespace=$NAMESPACE &
 
 sleep 10s
 

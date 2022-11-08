@@ -110,6 +110,45 @@
                 }
               }
             }
+          },
+          "number": {
+            "type": ["null", "number"]
+          },
+          "date": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "email": {
+            "type": ["null", "string"]
+          },
+          "phone_number": {
+            "type": ["null", "string"]
+          },
+          "boolean": {
+            "type": ["null", "boolean"]
+          },
+          "file_url": {
+            "type": ["null", "string"]
+          },
+          "url": {
+            "type": ["null", "string"]
+          },
+          "payment": {
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "type": ["null", "string"]
+              },
+              "last4": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              },
+              "success": {
+                "type": ["null", "boolean"]
+              }
+            }
           }
         }
       }

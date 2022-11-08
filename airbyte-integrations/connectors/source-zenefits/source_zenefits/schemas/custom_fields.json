@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string", "null"]
+    },
+    "can_manager_view_field": {
+      "type": ["boolean", "null"]
+    },
+    "custom_field_values": {
+      "type": "object",
+      "properties": {
+        "ref_object": {
+          "type": ["string", "null"]
+        },
+        "object": {
+          "type": ["string", "null"]
+        },
+        "url": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "person_during_onboarding": {
+      "type": ["boolean", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "is_field_completer_person": {
+      "type": ["boolean", "null"]
+    },
+    "url": {
+      "type": ["string", "null"]
+    },
+    "is_sensitive": {
+      "type": ["boolean", "null"]
+    },
+    "is_field_required": {
+      "type": ["boolean", "null"]
+    },
+    "object": {
+      "type": ["string", "null"]
+    },
+    "can_person_view_field": {
+      "type": ["boolean", "null"]
+    },
+    "can_person_edit_field": {
+      "type": ["boolean", "null"]
+    },
+    "company": {
+      "type": "object",
+      "properties": {
+        "ref_object": {
+          "type": ["string", "null"]
+        },
+        "object": {
+          "type": ["string", "null"]
+        },
+        "url": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "company_during_hiring": {
+      "type": ["boolean", "null"]
+    },
+    "custom_field_type": {
+      "type": ["string", "null"]
+    },
+    "help_url": {
+      "type": ["null", "string"]
+    },
+    "help_text": {
+      "type": ["string", "null"]
+    },
+    "help_url_media": {
+      "type": ["null", "string"]
+    },
+    "media_file_type": {
+      "type": ["null"]
+    }
+  }
+}

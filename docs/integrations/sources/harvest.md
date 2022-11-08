@@ -1,12 +1,45 @@
 # Harvest
 
-## Overview
+This page contains the setup guide and reference information for the Harvest source connector.
 
-The Harvest connector can be used to sync your Harvest data. It supports full refresh sync for all streams and incremental sync for all streams except of Expense Reports streams which are: Clients Report, Projects Report, Categories Report, Team Report. Incremental sync is also now available for Company stream, but it always has only one record.
+## Prerequisites
 
-### Output schema
+To set up the Harvest source connector, you'll need the [Harvest Account ID and API key](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
 
-Several output streams are available from this source:
+## Set up the Harvest connector in Airbyte
+
+### For Airbyte Cloud
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces).
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Harvest** from the Source type dropdown.
+4. Enter the name for the Harvest connector.
+5. Enter your [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
+6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. 
+7. For Authentication mechanism, select **Authenticate via Harvest (OAuth)** from the dropdown and click **Authenticate your Harvest account**. Log in and authorize your Harvest account.
+8. Click **Set up source**.
+
+### For Airbyte Open Source
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Harvest** from the Source type dropdown.
+4. Enter the name for the Harvest connector.
+5. Enter your [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
+6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. 
+7. For **Authentication mechanism**, select **Authenticate with Personal Access Token** from the dropdown. Enter your [Personal Access Token](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#personal-access-tokens).
+8. Click **Set up source**.
+
+## Supported sync modes
+
+The Harvest source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+
+## Supported Streams
 
 * [Client Contacts](https://help.getharvest.com/api-v2/clients-api/clients/contacts/) \(Incremental\)
 * [Clients](https://help.getharvest.com/api-v2/clients-api/clients/clients/) \(Incremental\)
@@ -34,47 +67,22 @@ Several output streams are available from this source:
 * [Time Reports](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/)
 * [Project Budget Report](https://help.getharvest.com/api-v2/reports-api/reports/project-budget-report/)
 
-### Features
+## Performance considerations
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental Sync | Yes |
-| Replicate Incremental Deletes | No |
-| SSL connection | Yes |
-| Namespaces | No |
-
-### Performance considerations
-
-The Harvest connector will gracefully handle rate limits. For more information, see [the Harvest docs for rate limitations](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting).
-
-## Getting started
-
-### Requirements
-
-* Harvest Account
-* Harvest Authorized OAuth2 API Client to create Access Token and get account ID
-
-### Setup guide
-
-This connector supports only authentication with API Key. To obtain API key follow the instructions below:
-
-1. Go to Account Settings page;
-2. Under Integrations section press Authorized OAuth2 API Clients button;
-3. New page will be opened on which you need to click on Create New Personal Access Token button and follow instructions.
-
-See [docs](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/) for more details.
+The connector is restricted by the [Harvest rate limits](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting).
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.8 | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Update titles and descriptions |
-| 0.1.6 | 2021-11-14 | [7952](https://github.com/airbytehq/airbyte/pull/7952) | Implement OAuth 2.0 support |
-| 0.1.5 | 2021-09-28 | [5747](https://github.com/airbytehq/airbyte/pull/5747) | Update schema date-time fields |
-| 0.1.4 | 2021-06-22 | [5701](https://github.com/airbytehq/airbyte/pull/5071) | Harvest normalization failure: fixing the schemas |
-| 0.1.3 | 2021-06-22 | [4274](https://github.com/airbytehq/airbyte/pull/4274) | Fix wrong data type on `statement_key` in `clients` stream |
-| 0.1.2 | 2021-06-07 | [4222](https://github.com/airbytehq/airbyte/pull/4222) | Correct specification parameter name |
-| 0.1.1 | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
-| 0.1.0 | 2021-06-07 | [3709](https://github.com/airbytehq/airbyte/pull/3709) | Release Harvest connector! |
-
+| Version | Date       | Pull Request                                             | Subject                                                                            |
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------- |
+| 0.1.11  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                      |
+| 0.1.10  | 2022-08-08 | [15221](https://github.com/airbytehq/airbyte/pull/15221) | Added `parent_id` for all streams which have parent stream                         |
+| 0.1.9   | 2022-08-04 | [15312](https://github.com/airbytehq/airbyte/pull/15312) | Fix `started_time` and `ended_time` format schema error and updated report slicing |
+| 0.1.8   | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429)   | Update titles and descriptions                                                     |
+| 0.1.6   | 2021-11-14 | [7952](https://github.com/airbytehq/airbyte/pull/7952)   | Implement OAuth 2.0 support                                                        |
+| 0.1.5   | 2021-09-28 | [5747](https://github.com/airbytehq/airbyte/pull/5747)   | Update schema date-time fields                                                     |
+| 0.1.4   | 2021-06-22 | [5701](https://github.com/airbytehq/airbyte/pull/5071)   | Harvest normalization failure: fixing the schemas                                  |
+| 0.1.3   | 2021-06-22 | [4274](https://github.com/airbytehq/airbyte/pull/4274)   | Fix wrong data type on `statement_key` in `clients` stream                         |
+| 0.1.2   | 2021-06-07 | [4222](https://github.com/airbytehq/airbyte/pull/4222)   | Correct specification parameter name                                               |
+| 0.1.1   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                                    |
+| 0.1.0   | 2021-06-07 | [3709](https://github.com/airbytehq/airbyte/pull/3709)   | Release Harvest connector!                                                         |

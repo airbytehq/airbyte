@@ -2,7 +2,7 @@
 
 ## CDK Speedrun \(HTTP API Source Creation [Any%](https://en.wikipedia.org/wiki/Speedrun#:~:text=Any%25%2C%20or%20fastest%20completion%2C,the%20game%20to%20its%20fullest.&text=Specific%20requirements%20for%20a%20100,different%20depending%20on%20the%20game.) Route\)
 
-This is a blazing fast guide to building an HTTP source connector. Think of it as the TL;DR version of [this tutorial.](cdk-tutorial-python-http/0-getting-started.md)
+This is a blazing fast guide to building an HTTP source connector. Think of it as the TL;DR version of [this tutorial.](cdk-tutorial-python-http/getting-started.md)
 
 ## Dependencies
 
@@ -44,7 +44,6 @@ We're working with the Exchange Rates API, so we need to define our input schema
     "title": "Python Http Example Spec",
     "type": "object",
     "required": ["start_date", "currency_base"],
-    "additionalProperties": false,
     "properties": {
       "start_date": {
         "type": "string",

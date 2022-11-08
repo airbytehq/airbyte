@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "cases": {
+      "type": "integer"
+    },
+    "date": {
+      "type": "string"
+    }
+  },
+  "required": ["cases", "date"]
+}

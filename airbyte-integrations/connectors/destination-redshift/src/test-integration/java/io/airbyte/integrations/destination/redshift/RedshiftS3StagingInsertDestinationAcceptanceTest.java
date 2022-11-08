@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift;
@@ -33,13 +33,15 @@ import org.jooq.Record;
 import org.jooq.Result;
 import org.junit.jupiter.api.Test;
 
-public class RedshiftS3StagingInsertDestinationAcceptanceTest extends RedshiftCopyDestinationAcceptanceTest {
+public class RedshiftS3StagingInsertDestinationAcceptanceTest extends RedshiftStagingS3DestinationAcceptanceTest {
 
   public static final String DATASET_ID = Strings.addRandomSuffix("airbyte_tests", "_", 8);
   private static final String TYPE = "type";
   private ConfiguredAirbyteCatalog catalog;
 
   private static final Instant NOW = Instant.now();
+
+  private static final String USERS_STREAM_NAME = "users_" + RandomStringUtils.randomAlphabetic(5);
   private static final String BOOKS_STREAM_NAME = "books_" + RandomStringUtils.randomAlphabetic(5);
 
   private static final AirbyteMessage MESSAGE_BOOKS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
@@ -59,7 +61,7 @@ public class RedshiftS3StagingInsertDestinationAcceptanceTest extends RedshiftCo
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
   public JsonNode getStaticConfig() {
-    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
+    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config_staging.json")));
   }
 
   void setup() {
@@ -75,11 +77,13 @@ public class RedshiftS3StagingInsertDestinationAcceptanceTest extends RedshiftCo
   @Test
   void testIfSuperTmpTableWasCreatedAfterVarcharTmpTableDuringS3Staging() throws Exception {
     setup();
-    Database database = getDatabase();
-    String rawTableName = this.getNamingResolver().getRawTableName(BOOKS_STREAM_NAME);
-    createTmpTableWithVarchar(database, rawTableName);
+    final Database database = getDatabase();
+    final String booksStream = getNamingResolver().getRawTableName(BOOKS_STREAM_NAME);
+    final String usersStream = getNamingResolver().getRawTableName(USERS_STREAM_NAME);
+    createTmpTableWithVarchar(database, usersStream);
+    createTmpTableWithVarchar(database, booksStream);
 
-    assertTrue(isTmpTableDataColumnInExpectedType(database, DATASET_ID, rawTableName, "character varying"));
+    assertTrue(isTmpTableDataColumnInExpectedType(database, DATASET_ID, booksStream, "character varying"));
 
     final Destination destination = new RedshiftDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
@@ -89,7 +93,8 @@ public class RedshiftS3StagingInsertDestinationAcceptanceTest extends RedshiftCo
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    assertTrue(isTmpTableDataColumnInExpectedType(database, DATASET_ID, rawTableName, "super"));
+    assertTrue(isTmpTableDataColumnInExpectedType(database, DATASET_ID, booksStream, "super"));
+    assertTrue(isTmpTableDataColumnInExpectedType(database, DATASET_ID, usersStream, "character varying"));
 
     final List<JsonNode> booksActual = retrieveRecords(testDestinationEnv, BOOKS_STREAM_NAME, DATASET_ID, config);
     final List<JsonNode> expectedUsersJson = Lists.newArrayList(

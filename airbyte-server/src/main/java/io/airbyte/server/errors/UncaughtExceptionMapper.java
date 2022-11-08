@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.errors;
 
-import io.airbyte.api.model.KnownExceptionInfo;
+import io.airbyte.api.model.generated.KnownExceptionInfo;
 import io.airbyte.commons.json.Jsons;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;

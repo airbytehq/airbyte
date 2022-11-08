@@ -1,5 +1,7 @@
 name: GKE Kube Acceptance Test
 on:
+  schedule:
+    - cron: '0 0 * * 0' # runs at midnight UTC every Sunday
   workflow_dispatch:
     inputs:
       repo:
@@ -64,23 +66,23 @@ jobs:
         if: github.event.inputs.comment-id
         uses: peter-evans/create-or-update-comment@v1
         with:
-          comment-id: ${{ github.event.inputs.comment-id }}
+          comment-id: ${{ github.event.inputs.comment-id || ""}}
           body: |
             > :clock2: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
 
       - name: Checkout Airbyte
         uses: actions/checkout@v2
         with:
-          repository: ${{ github.event.inputs.repo }}
-          ref: ${{ github.event.inputs.gitref }}
+          repository: ${{ github.event.inputs.repo || "airbytehq/airbyte" }}
+          ref: ${{ github.event.inputs.gitref || "master" }}
 
       - uses: actions/setup-java@v1
         with:
           java-version: "17"
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
 
       - name: Fix EC-2 Runner
         run: |
@@ -116,7 +118,8 @@ jobs:
         env:
           USER: root
           HOME: /home/runner
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           ACTION_RUN_ID: ${{github.run_id}}
         run: |
           ./tools/bin/gke-kube-acceptance-test/acceptance_test_kube_gke.sh

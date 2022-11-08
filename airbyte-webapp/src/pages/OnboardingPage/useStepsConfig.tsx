@@ -1,7 +1,8 @@
 import { useMemo, useState, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
+import { useLocation } from "react-router-dom";
 
-import { StepType } from "./types";
+import { ILocationState, StepType } from "./types";
 
 const useStepsConfig = (
   hasSources: boolean,
@@ -11,13 +12,20 @@ const useStepsConfig = (
 ): {
   currentStep: StepType;
   setCurrentStep: (step: StepType) => void;
-  steps: { name: JSX.Element; id: StepType }[];
+  steps: Array<{ name: JSX.Element; id: StepType }>;
 } => {
+  // exp-speedy-connection
+  const location = useLocation() as unknown as ILocationState<{ step: StepType }>;
+
   const getInitialStep = () => {
+    // exp-speedy-connection
+    if (location.state?.step) {
+      return location.state.step;
+    }
     if (hasSources) {
       if (hasDestinations) {
         if (hasConnections) {
-          return StepType.FINAl;
+          return StepType.FINAL;
         }
         return StepType.SET_UP_CONNECTION;
       }
@@ -68,7 +76,7 @@ const useStepsConfig = (
         //     : undefined
       },
       {
-        id: StepType.FINAl,
+        id: StepType.FINAL,
         name: <FormattedMessage id="onboarding.final" />,
       },
     ],

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.cassandra;
@@ -26,7 +26,7 @@ class CassandraDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     var cassandraConfig = new CassandraConfig(config);
     // add random uuid to avoid conflicts with existing tables.
     String tableName = "table_" + UUID.randomUUID().toString().replace("-", "");
@@ -55,10 +55,12 @@ class CassandraDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog configuredCatalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
-    return new CassandraMessageConsumer(new CassandraConfig(config), configuredCatalog, outputRecordCollector);
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog configuredCatalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+    final CassandraConfig cassandraConfig = new CassandraConfig(config);
+    final CassandraCqlProvider cassandraCqlProvider = new CassandraCqlProvider(cassandraConfig);
+    return new CassandraMessageConsumer(cassandraConfig, configuredCatalog, cassandraCqlProvider, outputRecordCollector);
   }
 
 }

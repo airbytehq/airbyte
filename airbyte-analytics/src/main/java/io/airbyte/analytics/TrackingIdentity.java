@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.analytics;
@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+@SuppressWarnings("PMD.CompareObjectsWithEquals")
 public class TrackingIdentity {
 
   private final AirbyteVersion airbyteVersion;

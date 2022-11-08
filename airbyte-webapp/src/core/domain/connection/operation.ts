@@ -1,52 +1,14 @@
-export interface Operation {
-  name: string;
-  id?: string;
-  workspaceId: string;
-  operatorConfiguration: DbtOperationConfiguration | NormalizationOperationConfiguration;
-}
-
-export interface Transformation extends Operation {
-  operatorConfiguration: DbtOperationConfiguration;
-}
-
-export interface DbtOperationConfiguration {
-  operatorType: OperatorType.Dbt;
-  dbt: DbtConfiguration;
-}
-
-export interface Normalization extends Operation {
-  operatorType: OperatorType.Normalization;
-  operatorConfiguration: NormalizationOperationConfiguration;
-}
-
-export interface NormalizationOperationConfiguration {
-  operatorType: OperatorType.Normalization;
-  normalization: {
-    option: NormalizationType;
-  };
-}
-
-export interface DbtConfiguration {
-  gitRepoUrl?: string;
-  gitRepoBranch?: string;
-  dockerImage: string;
-  dbtArguments: string;
-}
-
-export enum OperatorType {
-  Normalization = "normalization",
-  Dbt = "dbt",
-}
+import { OperationCreate, OperationRead, OperatorType } from "../../request/AirbyteClient";
 
 export enum NormalizationType {
-  BASIC = "basic",
-  RAW = "raw",
+  basic = "basic",
+  raw = "raw",
 }
 
-export const isDbtTransformation = (op: Operation): op is Transformation => {
-  return op.operatorConfiguration.operatorType === OperatorType.Dbt;
+export const isDbtTransformation = (op: OperationCreate): op is OperationRead => {
+  return op.operatorConfiguration.operatorType === OperatorType.dbt;
 };
 
-export const isNormalizationTransformation = (op: Operation): op is Normalization => {
-  return op.operatorConfiguration.operatorType === OperatorType.Normalization;
+export const isNormalizationTransformation = (op: OperationCreate): op is OperationRead => {
+  return op.operatorConfiguration.operatorType === OperatorType.normalization;
 };

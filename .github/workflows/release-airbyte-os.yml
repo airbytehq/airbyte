@@ -60,9 +60,9 @@ jobs:
         with:
           java-version: "17"
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
       # necessary to install pip
       - uses: actions/setup-python@v2
         with:
@@ -70,7 +70,8 @@ jobs:
       - name: Release Airbyte
         id: release_airbyte
         env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
           CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
@@ -91,16 +92,17 @@ jobs:
         with:
           java-version: "17"
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
       - uses: actions/setup-python@v2
         with:
           python-version: "3.9"
       - name: Release Octavia
         id: release_octavia
         env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
         run: ./tools/bin/release_version_octavia.sh
 
@@ -133,8 +135,9 @@ jobs:
         run: |
           chmod +x tools/bin/pr_body.sh
           body=$(./tools/bin/pr_body.sh)
-          body="${body//$'\n'/'%0A'}"
-          echo ::set-output name=PR_BODY::$body
+          echo "PR_BODY<<EOF" >> $GITHUB_ENV
+          echo "$body" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v3
@@ -144,7 +147,7 @@ jobs:
           branch-suffix: random
           delete-branch: true
           title: Bump Airbyte version from ${{ steps.bump_version.outputs.PREV_VERSION }} to ${{ steps.bump_version.outputs.NEW_VERSION }}
-          body: ${{ steps.pr_body.outputs.PR_BODY }}
+          body: ${{ env.PR_BODY }}
           commit-message: Bump Airbyte version from ${{ steps.bump_version.outputs.PREV_VERSION }} to ${{ steps.bump_version.outputs.NEW_VERSION }}
       - name: PR Details
         run: |

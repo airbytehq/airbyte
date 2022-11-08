@@ -1,0 +1,6 @@
+{
+  "database": "database_name",
+  "username": "xxx",
+  "password": "xxx",
+  "engine": "database_name_Analytics"
+}

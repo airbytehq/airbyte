@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.scylla;
@@ -8,16 +8,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.scylla.ScyllaContainerInitializr.ScyllaContainer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.integrations.util.HostPortResolver;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class ScyllaDestinationAcceptanceTest extends DestinationAcceptanceTest {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(ScyllaDestinationAcceptanceTest.class);
 
   private JsonNode configJson;
 
@@ -40,8 +39,8 @@ class ScyllaDestinationAcceptanceTest extends DestinationAcceptanceTest {
   @Override
   protected void setup(TestDestinationEnv testEnv) {
     configJson = TestDataFactory.jsonConfig(
-        scyllaContainer.getHost(),
-        scyllaContainer.getFirstMappedPort());
+        HostPortResolver.resolveHost(scyllaContainer),
+        HostPortResolver.resolvePort(scyllaContainer));
     var scyllaConfig = new ScyllaConfig(configJson);
     this.scyllaCqlProvider = new ScyllaCqlProvider(scyllaConfig);
     this.nameTransformer = new ScyllaNameTransformer(scyllaConfig);
@@ -69,6 +68,26 @@ class ScyllaDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected boolean implementsNamespaces() {
+    return true;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new AdvancedTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
     return true;
   }
 

@@ -32,7 +32,7 @@ The name of the branch to use when cloning the git repository. If left empty, gi
 
 A Docker image and tag to run dbt commands from. The Docker image should have `/bin/bash` and `dbt` installed for this operation type to work.
 
-A typical value for this field would be for example: `fishtownanalytics/dbt:0.19.1` from [dbt dockerhub](https://hub.docker.com/r/fishtownanalytics/dbt/tags?page=1&ordering=last_updated).
+A typical value for this field would be for example: `fishtownanalytics/dbt:1.0.0` from [dbt dockerhub](https://hub.docker.com/r/fishtownanalytics/dbt/tags?page=1&ordering=last_updated).
 
 This field lets you configure the version of dbt that your custom dbt project requires and the loading of additional software and packages necessary for your transformations \(other than your dbt `packages.yml` file\).
 

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import multiprocessing as mp
@@ -48,3 +48,7 @@ def run_in_external_process(fn: Callable, timeout: int, max_timeout: int, logger
 def multiprocess_queuer(func: Callable, queue: mp.Queue, *args: Any, **kwargs: Any) -> None:
     """this is our multiprocesser helper function, lives at top-level to be Windows-compatible"""
     queue.put(dill.loads(func)(*args, **kwargs))
+
+
+def get_value_or_json_if_empty_string(options: str) -> str:
+    return options.strip() or "{}"

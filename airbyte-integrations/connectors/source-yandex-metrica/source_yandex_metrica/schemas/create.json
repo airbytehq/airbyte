@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "log_request": {
+      "type": "object",
+      "properties": {
+        "request_id": {
+          "type": "integer"
+        },
+        "counter_id": {
+          "type": "integer"
+        },
+        "source": {
+          "type": "string"
+        },
+        "date1": {
+          "type": "string"
+        },
+        "date2": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": [
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "status": {
+          "type": "string"
+        },
+        "size": {
+          "type": "integer"
+        },
+        "attribution": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "counter_id",
+        "source",
+        "date1",
+        "date2",
+        "fields",
+        "status",
+        "size",
+        "attribution"
+      ]
+    }
+  },
+  "required": ["log_request"]
+}

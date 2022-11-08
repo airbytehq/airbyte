@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from __future__ import annotations
@@ -141,6 +141,8 @@ class CustomFields(WorkspaceRelatedStream):
 
 
 class Projects(WorkspaceRequestParamsRelatedStream):
+    use_cache = True
+
     def path(self, **kwargs) -> str:
         return "projects"
 
@@ -218,5 +220,7 @@ class Users(WorkspaceRequestParamsRelatedStream):
 
 
 class Workspaces(AsanaStream):
+    use_cache = True
+
     def path(self, **kwargs) -> str:
         return "workspaces"

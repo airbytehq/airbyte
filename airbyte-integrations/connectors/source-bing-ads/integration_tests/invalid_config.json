@@ -1,16 +1,12 @@
 {
-  "accounts": { "selection_strategy": "all" },
-  "user_id": "2222",
-  "customer_id": "1111",
-  "developer_token": "asgag4gwag3",
   "refresh_token": "as2Ggas23gsa236gasgaskjfhas7i8ygf78as7osa7gy87asg8as7tg6as",
-  "client_secret": "1234",
+  "client_secret": "",
   "client_id": "123",
-  "tenant_id": "common",
-  "redirect_uri": "",
+  "developer_token": "asgag4gwag3",
   "reports_start_date": "2018-11-13",
-  "hourly_reports": true,
+  "hourly_reports": false,
   "daily_reports": false,
-  "weekly_reports": false,
-  "monthly_reports": true
+  "weekly_reports": true,
+  "monthly_reports": true,
+  "tenant_id": "common"
 }

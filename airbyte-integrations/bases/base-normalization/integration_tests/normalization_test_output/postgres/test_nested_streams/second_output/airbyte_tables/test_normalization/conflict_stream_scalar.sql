@@ -21,9 +21,7 @@ where 1 = 1
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
 -- depends_on: __dbt__cte__conflict_stream_scalar_ab1
 select
-    cast("id" as 
-    varchar
-) as "id",
+    cast("id" as text) as "id",
     cast(conflict_stream_scalar as 
     bigint
 ) as conflict_stream_scalar,
@@ -38,13 +36,7 @@ where 1 = 1
 -- SQL model to build a hash column based on the values of this record
 -- depends_on: __dbt__cte__conflict_stream_scalar_ab2
 select
-    md5(cast(coalesce(cast("id" as 
-    varchar
-), '') || '-' || coalesce(cast(conflict_stream_scalar as 
-    varchar
-), '') as 
-    varchar
-)) as _airbyte_conflict_stream_scalar_hashid,
+    md5(cast(coalesce(cast("id" as text), '') || '-' || coalesce(cast(conflict_stream_scalar as text), '') as text)) as _airbyte_conflict_stream_scalar_hashid,
     tmp.*
 from __dbt__cte__conflict_stream_scalar_ab2 tmp
 -- conflict_stream_scalar

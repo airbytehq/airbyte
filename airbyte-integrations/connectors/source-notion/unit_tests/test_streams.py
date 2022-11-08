@@ -1,9 +1,9 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from http import HTTPStatus
 import random
+from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
@@ -74,10 +74,9 @@ def test_should_retry(patch_base_class, http_status, should_retry):
 
 
 def test_backoff_time(patch_base_class):
-    response_mock = MagicMock()
+    response_mock = MagicMock(headers={"retry-after": "10"})
     stream = NotionStream(config=MagicMock())
-    expected_backoff_time = None
-    assert stream.backoff_time(response_mock) == expected_backoff_time
+    assert stream.backoff_time(response_mock) == 10.0
 
 
 def test_users_request_params(patch_base_class):
@@ -104,7 +103,7 @@ def test_user_stream_handles_pagination_correclty(requests_mock):
         "results": [{"id": f"{x}", "object": "user", "type": ["person", "bot"][random.randint(0, 1)]} for x in range(100)],
         "next_cursor": "bc48234b-77b2-41a6-95a3-6a8abb7887d5",
         "has_more": True,
-        "type": "user"
+        "type": "user",
     }
     requests_mock.get("https://api.notion.com/v1/users?page_size=100", json=response_body)
 
@@ -113,7 +112,7 @@ def test_user_stream_handles_pagination_correclty(requests_mock):
         "results": [{"id": f"{x}", "object": "user", "type": ["person", "bot"][random.randint(0, 1)]} for x in range(100, 200)],
         "next_cursor": "67030467-b97b-4729-8fd6-2fb33d012da4",
         "has_more": True,
-        "type": "user"
+        "type": "user",
     }
     requests_mock.get("https://api.notion.com/v1/users?page_size=100&start_cursor=bc48234b-77b2-41a6-95a3-6a8abb7887d5", json=response_body)
 
@@ -122,7 +121,7 @@ def test_user_stream_handles_pagination_correclty(requests_mock):
         "results": [{"id": f"{x}", "object": "user", "type": ["person", "bot"][random.randint(0, 1)]} for x in range(200, 220)],
         "next_cursor": None,
         "has_more": False,
-        "type": "user"
+        "type": "user",
     }
     requests_mock.get("https://api.notion.com/v1/users?page_size=100&start_cursor=67030467-b97b-4729-8fd6-2fb33d012da4", json=response_body)
 

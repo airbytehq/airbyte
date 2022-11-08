@@ -20,8 +20,11 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "associations": {
-      "type": ["null", "object"]
+    "deals": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     }
   }
 }

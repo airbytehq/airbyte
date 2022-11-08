@@ -30,16 +30,13 @@
       "type": ["null", "string"]
     },
     "add_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "update_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "stage_change_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "active": {
       "type": ["null", "boolean"]
@@ -77,23 +74,19 @@
       "type": ["null", "string"]
     },
     "close_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "pipeline_id": {
       "type": ["null", "integer"]
     },
     "won_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "first_won_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "lost_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "products_count": {
       "type": ["null", "integer"]
@@ -127,12 +120,10 @@
       "format": "date"
     },
     "last_incoming_mail_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "last_outgoing_mail_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "label": {
       "type": ["null", "string"]

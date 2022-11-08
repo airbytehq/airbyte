@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -51,12 +52,12 @@ class PostgresStressTest extends JdbcStressTest {
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", PSQL_DB.getHost())
-        .put("port", PSQL_DB.getFirstMappedPort())
-        .put("database", dbName)
-        .put("username", PSQL_DB.getUsername())
-        .put("password", PSQL_DB.getPassword())
-        .put("ssl", false)
+        .put(JdbcUtils.HOST_KEY, PSQL_DB.getHost())
+        .put(JdbcUtils.PORT_KEY, PSQL_DB.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
 
     final String initScriptName = "init_" + dbName.concat(".sql");
@@ -95,7 +96,7 @@ class PostgresStressTest extends JdbcStressTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PostgresTestSource.class);
 
-    static final String DRIVER_CLASS = "org.postgresql.Driver";
+    static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
 
     public PostgresTestSource() {
       super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
@@ -104,14 +105,14 @@ class PostgresStressTest extends JdbcStressTest {
     @Override
     public JsonNode toDatabaseConfig(final JsonNode config) {
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-          .put("username", config.get("username").asText())
-          .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
-              config.get("host").asText(),
-              config.get("port").asText(),
-              config.get("database").asText()));
+          .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+          .put(JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+              config.get(JdbcUtils.HOST_KEY).asText(),
+              config.get(JdbcUtils.PORT_KEY).asInt(),
+              config.get(JdbcUtils.DATABASE_KEY).asText()));
 
-      if (config.has("password")) {
-        configBuilder.put("password", config.get("password").asText());
+      if (config.has(JdbcUtils.PASSWORD_KEY)) {
+        configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
       }
 
       return Jsons.jsonNode(configBuilder.build());

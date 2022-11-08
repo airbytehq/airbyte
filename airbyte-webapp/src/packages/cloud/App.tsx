@@ -1,15 +1,16 @@
-import GlobalStyle from "global-styles";
 import React, { Suspense } from "react";
-import { IntlProvider } from "react-intl";
+import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter as Router } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 
-import ApiErrorBoundary from "components/ApiErrorBoundary";
+import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 import LoadingPage from "components/LoadingPage";
 
+import { I18nProvider } from "core/i18n";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { FeatureService } from "hooks/services/Feature";
+import { FeatureItem, FeatureService } from "hooks/services/Feature";
 import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
+import { ModalServiceProvider } from "hooks/services/Modal";
 import NotificationServiceProvider from "hooks/services/Notification";
 import en from "locales/en.json";
 import { Routing } from "packages/cloud/cloudRoutes";
@@ -23,41 +24,30 @@ import { AppServicesProvider } from "./services/AppServicesProvider";
 import { ConfigProvider } from "./services/ConfigProvider";
 import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvider";
 
-const messages = Object.assign({}, en, cloudLocales);
+const messages = { ...en, ...cloudLocales };
 
-const I18NProvider: React.FC = ({ children }) => (
-  <IntlProvider
-    locale="en"
-    messages={messages}
-    defaultRichTextElements={{
-      b: (chunk) => <strong>{chunk}</strong>,
-    }}
-  >
-    {children}
-  </IntlProvider>
+const StyleProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
+  <ThemeProvider theme={theme}>{children}</ThemeProvider>
 );
 
-const StyleProvider: React.FC = ({ children }) => (
-  <ThemeProvider theme={theme}>
-    <GlobalStyle />
-    {children}
-  </ThemeProvider>
-);
-
-const Services: React.FC = ({ children }) => (
+const Services: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <AnalyticsProvider>
     <ApiErrorBoundary>
       <NotificationServiceProvider>
         <ConfirmationModalService>
-          <FormChangeTrackerService>
-            <FeatureService>
-              <AppServicesProvider>
-                <AuthenticationProvider>
-                  <IntercomProvider>{children}</IntercomProvider>
-                </AuthenticationProvider>
-              </AppServicesProvider>
-            </FeatureService>
-          </FormChangeTrackerService>
+          <ModalServiceProvider>
+            <FormChangeTrackerService>
+              <FeatureService features={[FeatureItem.AllowOAuthConnector, FeatureItem.AllowSync]}>
+                <AppServicesProvider>
+                  <AuthenticationProvider>
+                    <HelmetProvider>
+                      <IntercomProvider>{children}</IntercomProvider>
+                    </HelmetProvider>
+                  </AuthenticationProvider>
+                </AppServicesProvider>
+              </FeatureService>
+            </FormChangeTrackerService>
+          </ModalServiceProvider>
         </ConfirmationModalService>
       </NotificationServiceProvider>
     </ApiErrorBoundary>
@@ -68,7 +58,7 @@ const App: React.FC = () => {
   return (
     <React.StrictMode>
       <StyleProvider>
-        <I18NProvider>
+        <I18nProvider locale="en" messages={messages}>
           <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
               <ConfigProvider>
@@ -80,7 +70,7 @@ const App: React.FC = () => {
               </ConfigProvider>
             </Suspense>
           </StoreProvider>
-        </I18NProvider>
+        </I18nProvider>
       </StyleProvider>
     </React.StrictMode>
   );
