@@ -312,13 +312,14 @@ public class AsyncOrchestratorPodProcess implements KubePod {
                           i=0
                           until [ $i -gt 60 ]
                           do
-                            echo i: $i
+                            echo $i - waiting for config file transfer to complete...
                             if [ -f "%s/%s" ]; then
                               exit 0
                             fi
                             i=$((i+1))
                             sleep 1
                           done
+                          echo config files did not transfer in time
                           exit 1
                           """,
                 KubePodProcess.CONFIG_DIR,
