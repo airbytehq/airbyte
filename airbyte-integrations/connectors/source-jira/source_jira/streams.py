@@ -421,7 +421,9 @@ class IssueComments(IncrementalJiraStream):
         key = stream_slice["key"]
         return f"issue/{key}/comment"
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
         issues_stream = Issues(
             additional_fields=[],
             authenticator=self.authenticator,
@@ -697,7 +699,9 @@ class IssueWorklogs(IncrementalJiraStream):
         key = stream_slice["key"]
         return f"issue/{key}/worklog"
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
         issues_stream = Issues(
             additional_fields=[],
             authenticator=self.authenticator,
@@ -1129,6 +1133,8 @@ class UsersGroupsDetailed(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-get
     """
+
+    primary_key = "accountId"
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["accountId"]
