@@ -1001,7 +1001,7 @@ jobs:
           # CHANGE_MINIKUBE_NONE_USER: true
 
       - name: Build Platform Docker Images
-        run: eval $(minikube -p minikube docker-env) && SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan
+        run: SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan
 
       - name: Run Helm End-to-End Acceptance Tests
         env:
