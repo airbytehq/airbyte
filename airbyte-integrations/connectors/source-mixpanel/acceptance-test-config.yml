@@ -1,42 +1,55 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
-# for more information about how to configure these tests
-connector_image: airbyte/source-mixpanel:dev
-tests:
-  spec:
-    - spec_path: "source_mixpanel/spec.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.23"
-  connection:
-    - config_path: "secrets/config_old.json"
-      status: "succeed"
-    - config_path: "secrets/config_project_secret.json"
-      status: "succeed"
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
-  discovery:
-    - config_path: "secrets/config.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.23"
-      timeout_seconds: 60
+acceptance_tests:
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 3600
-      empty_streams: ['export', 'annotations']
+    tests:
+      - config_path: secrets/config.json
+        empty_streams:
+          - name: export
+          - name: annotations
+        timeout_seconds: 3600
+  connection:
+    tests:
+      - config_path: secrets/config_old.json
+        status: succeed
+      - config_path: secrets/config_project_secret.json
+        status: succeed
+      - config_path: secrets/config.json
+        status: succeed
+      - config_path: integration_tests/invalid_config.json
+        status: failed
+  discovery:
+    tests:
+      - backward_compatibility_tests_config:
+          disable_for_version: 0.1.23
+        config_path: secrets/config.json
+        timeout_seconds: 60
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 3600
+    tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/configured_catalog.json
+        timeout_seconds: 3600
   incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state_path: "integration_tests/abnormal_state.json"
-      cursor_paths:
-        cohorts: ["created"]
-        export: ["time"]
-        funnels: ["8901755", "date"]
-        revenue: ["date"]
-        cohort_members": ["last_seen"]
-      timeout_seconds: 3600
+    tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/configured_catalog.json
+        cursor_paths:
+          cohort_members":
+            - last_seen
+          cohorts:
+            - created
+          export:
+            - time
+          funnels:
+            - "8901755"
+            - date
+          revenue:
+            - date
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json
+        timeout_seconds: 3600
+  spec:
+    tests:
+      - backward_compatibility_tests_config:
+          disable_for_version: 0.1.23
+        spec_path: source_mixpanel/spec.json
+connector_image: airbyte/source-mixpanel:dev
+test_strictness_level: high
