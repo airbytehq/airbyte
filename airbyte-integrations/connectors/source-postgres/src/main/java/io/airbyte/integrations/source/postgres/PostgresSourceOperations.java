@@ -233,7 +233,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     }
   }
 
-  private void putTimeArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+  private void putTimeArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int colIndex) throws SQLException {
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
@@ -247,7 +247,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     node.set(columnName, arrayNode);
   }
 
-  private void putTimeTzArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+  private void putTimeTzArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int colIndex) throws SQLException {
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
@@ -261,7 +261,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     node.set(columnName, arrayNode);
   }
 
-  private void putTimestampArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+  private void putTimestampArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int colIndex) throws SQLException {
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
@@ -275,7 +275,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     node.set(columnName, arrayNode);
   }
 
-  private void putTimestampTzArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+  private void putTimestampTzArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int colIndex) throws SQLException {
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
@@ -290,7 +290,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     node.set(columnName, arrayNode);
   }
 
-  private void putDateArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+  private void putDateArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int colIndex) throws SQLException {
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
@@ -304,7 +304,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     node.set(columnName, arrayNode);
   }
 
-  private void putByteaArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+  private void putByteaArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int colIndex) throws SQLException {
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
@@ -313,7 +313,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     node.set(columnName, arrayNode);
   }
 
-  private void putBitArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+  private void putBitArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int colIndex) throws SQLException {
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
@@ -327,7 +327,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     node.set(columnName, arrayNode);
   }
 
-  private void putBooleanArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+  private void putBooleanArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int colIndex) throws SQLException {
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
@@ -341,7 +341,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     node.set(columnName, arrayNode);
   }
 
-  private void putBigDecimalArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+  private void putBigDecimalArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int colIndex) throws SQLException {
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
@@ -355,7 +355,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     node.set(columnName, arrayNode);
   }
 
-  private void putDoubleArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+  private void putDoubleArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int colIndex) throws SQLException {
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
@@ -364,7 +364,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     node.set(columnName, arrayNode);
   }
 
-  private void putMoneyArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+  private void putMoneyArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int colIndex) throws SQLException {
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
@@ -374,7 +374,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     node.set(columnName, arrayNode);
   }
 
-  private void putLongArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+  private void putLongArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int colIndex) throws SQLException {
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
