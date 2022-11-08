@@ -666,7 +666,7 @@ class IssueWatchers(StartDateJiraStream):
     """
 
     # parse_response_root = "watchers"
-    primary_key = "id"
+    primary_key = None
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
