@@ -108,6 +108,73 @@ describe("ConnectionEditService", () => {
     });
 
     expect(result.current[0].schemaHasBeenRefreshed).toBe(true);
+    expect(result.current[0].schemaRefreshing).toBe(false);
     expect(result.current[0].connection).toEqual(mockConnection);
+  });
+
+  it("should refresh connection only if the catalog has changed", async () => {
+    // Need to combine the hooks so both can be used.
+    const useMyTestHook = () =>
+      ({ editService: useConnectionEditService(), formService: useConnectionFormService() } as const);
+
+    const { result } = renderHook(useMyTestHook, {
+      wrapper: Wrapper,
+      initialProps: {
+        connectionId: mockConnection.connectionId,
+      },
+    });
+
+    const mockUpdateConnection: WebBackendConnectionUpdate = {
+      connectionId: mockConnection.connectionId,
+      name: "new connection name",
+      prefix: "new connection prefix",
+    };
+
+    await act(async () => {
+      await result.current.editService.updateConnection(mockUpdateConnection);
+    });
+
+    expect(result.current.editService.connection).toEqual({ ...mockConnection, ...mockUpdateConnection });
+
+    await act(async () => {
+      await result.current.formService.refreshSchema();
+    });
+
+    expect(result.current.editService.schemaHasBeenRefreshed).toBe(false);
+    expect(result.current.editService.schemaRefreshing).toBe(false);
+    expect(result.current.editService.connection).toEqual(mockConnection);
+  });
+
+  it("should clear the refreshed schema", async () => {
+    const useMyTestHook = () =>
+      ({ editService: useConnectionEditService(), formService: useConnectionFormService() } as const);
+
+    const { result } = renderHook(useMyTestHook, {
+      wrapper: Wrapper,
+      initialProps: {
+        connectionId: mockConnection.connectionId,
+      },
+    });
+
+    const connectionUpdate: WebBackendConnectionUpdate = {
+      connectionId: mockConnection.connectionId,
+      name: "new connection name",
+      prefix: "new connection prefix",
+      syncCatalog: { streams: [] },
+    };
+
+    const updatedConnection = { ...mockConnection, ...connectionUpdate };
+
+    await act(async () => {
+      // Update the connection to verify that it has been cleared later
+      await result.current.editService.updateConnection(connectionUpdate);
+
+      await result.current.formService.refreshSchema();
+      result.current.editService.clearRefreshedSchema();
+    });
+
+    expect(result.current.editService.schemaHasBeenRefreshed).toBe(false);
+    expect(result.current.editService.schemaRefreshing).toBe(false);
+    expect(result.current.editService.connection).toEqual(updatedConnection);
   });
 });

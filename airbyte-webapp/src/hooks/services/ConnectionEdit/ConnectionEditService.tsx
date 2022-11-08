@@ -1,7 +1,8 @@
 import { useContext, useState, createContext, useCallback } from "react";
 import { useAsyncFn } from "react-use";
 
-import { ConnectionStatus, WebBackendConnectionUpdate } from "core/request/AirbyteClient";
+import { ConnectionStatus, WebBackendConnectionRead, WebBackendConnectionUpdate } from "core/request/AirbyteClient";
+import { equal } from "utils/objects";
 
 import { ConnectionFormServiceProvider } from "../ConnectionForm/ConnectionFormService";
 import { useGetConnection, useUpdateConnection, useWebConnectionService } from "../useConnectionHook";
@@ -12,34 +13,49 @@ interface ConnectionEditProps {
 }
 
 const useConnectionEdit = ({ connectionId }: ConnectionEditProps) => {
-  const [connection, setConnection] = useState(useGetConnection(connectionId));
   const connectionService = useWebConnectionService();
+  const [connection, setConnection] = useState(useGetConnection(connectionId));
+  const [refreshedConnection, setRefreshedConnection] = useState<WebBackendConnectionRead>();
   const [schemaHasBeenRefreshed, setSchemaHasBeenRefreshed] = useState(false);
 
   const [{ loading: schemaRefreshing, error: schemaError }, refreshSchema] = useAsyncFn(async () => {
     const refreshedConnection = await connectionService.getConnection(connectionId, true);
-    setConnection(refreshedConnection);
-    setSchemaHasBeenRefreshed(true);
-  }, [connectionId]);
+    const hasCatalogChanged = !equal(
+      connection.syncCatalog.streams.filter((s) => s.config?.selected),
+      refreshedConnection.syncCatalog.streams.filter((s) => s.config?.selected)
+    );
+    if (hasCatalogChanged) {
+      setRefreshedConnection(refreshedConnection);
+      setSchemaHasBeenRefreshed(true);
+    } else {
+      setConnection(refreshedConnection);
+    }
+  }, [connectionId, connection]);
 
   const { mutateAsync: updateConnectionAction, isLoading: connectionUpdating } = useUpdateConnection();
+
+  const clearRefreshedSchema = useCallback(() => {
+    setRefreshedConnection(undefined);
+    setSchemaHasBeenRefreshed(false);
+  }, []);
 
   const updateConnection = useCallback(
     async (connection: WebBackendConnectionUpdate) => {
       setConnection(await updateConnectionAction(connection));
+      clearRefreshedSchema();
     },
-    [updateConnectionAction]
+    [clearRefreshedSchema, updateConnectionAction]
   );
 
   return {
-    connection,
+    connection: refreshedConnection ?? connection,
     connectionUpdating,
     schemaError,
     schemaRefreshing,
     schemaHasBeenRefreshed,
     updateConnection,
-    setSchemaHasBeenRefreshed,
     refreshSchema,
+    clearRefreshedSchema,
   };
 };
 
