@@ -45,17 +45,35 @@ definitions:
       $ref: "*ref(definitions.requester)"
     stream_slicer:
       $ref: "*ref(definitions.stream_slicer)"
-
+  retriever_non_incremental:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: DefaultPaginator
+      url_base: "*ref(definitions.requester.url_base)"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "limit"
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 200
+      page_token_option:
+        inject_into: "request_parameter"
+        field_name: "offset"
+    requester:
+      $ref: "*ref(definitions.requester)"
+    stream_slicer:
+      $ref: "*ref(definitions.stream_slicer)"
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
   location_stream:
-    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever_non_incremental)"
     $options:
       name: "locations"
       primary_key: "id"
       path: "/locations"
-      stream_cursor_field: "date"
   answers_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
