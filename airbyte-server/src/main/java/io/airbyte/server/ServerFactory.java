@@ -22,6 +22,8 @@ import io.airbyte.server.apis.SchedulerApiController;
 import io.airbyte.server.apis.SourceApiController;
 import io.airbyte.server.apis.SourceDefinitionApiController;
 import io.airbyte.server.apis.SourceDefinitionSpecificationApiController;
+import io.airbyte.server.apis.SourceOauthApiController;
+import io.airbyte.server.apis.StateApiController;
 import io.airbyte.server.apis.WebBackendApiController;
 import io.airbyte.server.apis.WorkspaceApiController;
 import io.airbyte.server.apis.binders.AttemptApiBinder;
@@ -42,6 +44,7 @@ import io.airbyte.server.apis.binders.SourceApiBinder;
 import io.airbyte.server.apis.binders.SourceDefinitionApiBinder;
 import io.airbyte.server.apis.binders.SourceDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.SourceOauthApiBinder;
+import io.airbyte.server.apis.binders.StateApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
 import io.airbyte.server.apis.binders.WorkspaceApiBinder;
 import io.airbyte.server.apis.factories.AttemptApiFactory;
@@ -198,7 +201,8 @@ public interface ServerFactory {
           SourceApiController.class,
           SourceDefinitionApiController.class,
           SourceDefinitionSpecificationApiController.class,
-          SourceOauthApiFactory.class,
+          SourceOauthApiController.class,
+          StateApiController.class,
           WebBackendApiController.class,
           WorkspaceApiController.class);
 
@@ -222,6 +226,7 @@ public interface ServerFactory {
           new SourceDefinitionApiBinder(),
           new SourceDefinitionSpecificationApiBinder(),
           new SourceOauthApiBinder(),
+          new StateApiBinder(),
           new WebBackendApiBinder(),
           new WorkspaceApiBinder());
 

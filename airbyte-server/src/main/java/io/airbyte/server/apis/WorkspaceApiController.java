@@ -5,6 +5,7 @@
 package io.airbyte.server.apis;
 
 import io.airbyte.api.generated.WorkspaceApi;
+import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.SlugRequestBody;
 import io.airbyte.api.model.generated.WorkspaceCreate;
 import io.airbyte.api.model.generated.WorkspaceGiveFeedback;
@@ -67,6 +68,11 @@ public class WorkspaceApiController implements WorkspaceApi {
   @Override
   public WorkspaceRead updateWorkspaceName(final WorkspaceUpdateName workspaceUpdateName) {
     return ApiHelper.execute(() -> workspacesHandler.updateWorkspaceName(workspaceUpdateName));
+  }
+
+  @Override
+  public WorkspaceRead getWorkspaceByConnectionId(final ConnectionIdRequestBody connectionIdRequestBody) {
+    return ApiHelper.execute(() -> workspacesHandler.getWorkspaceByConnectionId(connectionIdRequestBody));
   }
 
 }
