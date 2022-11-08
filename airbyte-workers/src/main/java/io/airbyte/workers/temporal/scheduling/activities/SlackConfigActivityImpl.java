@@ -10,9 +10,11 @@ import io.airbyte.api.client.model.generated.Notification;
 import io.airbyte.api.client.model.generated.NotificationType;
 import io.airbyte.api.client.model.generated.WorkspaceRead;
 import io.airbyte.config.SlackNotificationConfiguration;
+import jakarta.inject.Singleton;
 import java.util.Optional;
 import java.util.UUID;
 
+@Singleton
 public class SlackConfigActivityImpl implements SlackConfigActivity {
 
   private final AirbyteApiClient airbyteApiClient;

@@ -5,9 +5,11 @@
 package io.airbyte.workers.temporal.scheduling.activities;
 
 import io.airbyte.notification.SlackNotificationClient;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.UUID;
 
+@Singleton
 public class NotifySchemaChangeActivityImpl implements NotifySchemaChangeActivity {
 
   @Override
