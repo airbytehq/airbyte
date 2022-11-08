@@ -4,9 +4,9 @@ import React from "react";
 import { Card } from "components/ui/Card";
 import { Spinner } from "components/ui/Spinner";
 
+import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { FormBlock } from "core/form/types";
 
-import { ConnectorDefinitionSpecification } from "../../../core/domain/connector";
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
 import { FormSection } from "./components/Sections/FormSection";
@@ -40,8 +40,8 @@ export const FormRoot: React.FC<FormRootProps> = ({
   onDelete,
   selectedConnector,
 }) => {
-  const { isSubmitting, isValid, dirty } = useFormikContext<ConnectorFormValues>();
-  const { resetConnectorForm, isLoadingSchema, isEditMode, selectedService, formType } = useConnectorForm();
+  const { dirty, isSubmitting, isValid } = useFormikContext<ConnectorFormValues>();
+  const { resetConnectorForm, isLoadingSchema, selectedConnectorDefinition, isEditMode, formType } = useConnectorForm();
 
   return (
     <Form>
@@ -51,7 +51,7 @@ export const FormRoot: React.FC<FormRootProps> = ({
           <div className={styles.loaderContainer}>
             <Spinner />
             <div className={styles.loadingMessage}>
-              <ShowLoadingMessage connector={selectedService?.name} />
+              <ShowLoadingMessage connector={selectedConnectorDefinition?.name} />
             </div>
           </div>
         )}

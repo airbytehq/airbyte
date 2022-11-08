@@ -725,7 +725,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:0.1.24"
+- dockerImage: "airbyte/source-amazon-ads:0.1.25"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -770,26 +770,6 @@
           type: "string"
           default: "NA"
           order: 4
-        report_wait_timeout:
-          title: "Report Wait Timeout"
-          description: "Timeout duration in minutes for Reports. Default is 60 minutes."
-          default: 60
-          examples:
-          - 60
-          - 120
-          order: 5
-          type: "integer"
-        report_generation_max_retries:
-          title: "Report Generation Maximum Retries"
-          description: "Maximum retries Airbyte will attempt for fetching report data.\
-            \ Default is 5."
-          default: 5
-          examples:
-          - 5
-          - 10
-          - 15
-          order: 6
-          type: "integer"
         start_date:
           title: "Start Date"
           description: "The Start date for collecting reports, should not be more\
@@ -797,13 +777,13 @@
           examples:
           - "2022-10-10"
           - "2022-10-22"
-          order: 7
+          order: 5
           type: "string"
         profiles:
           title: "Profile IDs"
           description: "Profile IDs you want to fetch data for. See <a href=\"https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles\"\
             >docs</a> for more details."
-          order: 8
+          order: 6
           type: "array"
           items:
             type: "integer"
@@ -820,7 +800,7 @@
             - "archived"
           type: "array"
           uniqueItems: true
-          order: 9
+          order: 7
       required:
       - "client_id"
       - "client_secret"
@@ -1828,6 +1808,68 @@
       - "public_key"
       - "private_key"
       - "environment"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-breezometer:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/breezometer"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Breezometer Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "latitude"
+      - "longitude"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          tittle: "API Key"
+          description: "Your API Access Key. See <a href=\"https://docs.breezometer.com/api-documentation/introduction/#authentication/\"\
+            >here</a>."
+          airbyte_secret: true
+        latitude:
+          type: "string"
+          tittle: "Latitude"
+          description: "Latitude of the monitored location."
+          examples:
+          - "54.675003"
+        longitude:
+          type: "string"
+          tittle: "Longitude"
+          description: "Longitude of the monitored location."
+          examples:
+          - "-113.550282"
+        days_to_forecast:
+          type: "integer"
+          tittle: "Days to Forecast"
+          description: "Number of days to forecast. Minimum 1, maximum 3. Valid for\
+            \ Polen and Weather Forecast streams."
+          examples:
+          - 3
+        hours_to_forecast:
+          type: "integer"
+          tittle: "Hours to Forecast"
+          description: "Number of hours to forecast. Minimum 1, maximum 96. Valid\
+            \ for Air Quality Forecast stream."
+          examples:
+          - 30
+        historic_hours:
+          type: "integer"
+          tittle: "Historic Hours"
+          description: "Number of hours retireve from Air Quality History stream.\
+            \ Minimum 1, maximum 720."
+          examples:
+          - 30
+        radius:
+          type: "integer"
+          tittle: "Radius"
+          description: "Desired radius from the location provided. Minimum 5, maximum\
+            \ 100. Valid for Wildfires streams."
+          examples:
+          - 50
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -8149,6 +8191,28 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-n8n:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/n8n"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "N8n Spec"
+      type: "object"
+      required:
+      - "host"
+      - "api_key"
+      additionalProperties: true
+      properties:
+        host:
+          type: "string"
+          description: "Hostname of the n8n instance"
+        api_key:
+          type: "string"
+          description: "Your API KEY. See <a href=\"https://docs.n8n.io/api/authentication\"\
+            >here</a>"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-nasa:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/nasa-apod"
@@ -9412,7 +9476,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pinterest:0.1.8"
+- dockerImage: "airbyte/source-pinterest:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pinterest"
     connectionSpecification:
@@ -9430,6 +9494,20 @@
             \ it would be defaulted to latest allowed date by api (914 days from today)."
           examples:
           - "2022-07-28"
+        status:
+          title: "Status"
+          description: "Entity statuses based off of campaigns, ad_groups, and ads.\
+            \ If you do not have a status set, it will be ignored completely."
+          type:
+          - "array"
+          - "null"
+          items:
+            type: "string"
+            enum:
+            - "ACTIVE"
+            - "PAUSED"
+            - "ARCHIVED"
+          uniqueItems: true
         credentials:
           title: "Authorization Method"
           type: "object"
@@ -10341,6 +10419,33 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-recruitee:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/recruitee"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Recruitee Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "company_id"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API Key"
+          type: "string"
+          description: "Recruitee API Key. See <a href=\"https://docs.recruitee.com/reference/getting-started#generate-api-token\"\
+            >here</a>."
+          airbyte_secret: true
+        company_id:
+          title: "Company ID"
+          type: "integer"
+          description: "Recruitee Company ID. You can also find this ID on the <a\
+            \ href=\"https://app.recruitee.com/#/settings/api_tokens\">Recruitee API\
+            \ tokens page</a>."
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-recurly:0.4.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recurly"
@@ -10636,7 +10741,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.25"
+- dockerImage: "airbyte/source-s3:0.1.26"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -11169,6 +11274,26 @@
           examples:
           - "20200925"
           pattern: "^[0-9]{4}[0-9]{2}[0-9]{2}$"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-secoda:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/secoda"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Secoda Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "Api Key"
+          type: "string"
+          description: "Your API Access Key. See <a href=\"https://docs.secoda.co/secoda-api/authentication\"\
+            >here</a>. The key is case sensitive."
+          airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -12955,6 +13080,30 @@
           type: "string"
           title: "VictorOps Current Phase"
           default: "triggered,acknowledged,resolved"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-visma-economic:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/visma-economic"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Visma E-conomic Spec"
+      type: "object"
+      required:
+      - "app_secret_token"
+      - "agreement_grant_token"
+      properties:
+        app_secret_token:
+          title: "App Secret Token"
+          type: "string"
+          description: "Identification token for app accessing data"
+          airbyte_secret: true
+        agreement_grant_token:
+          title: "Agreement Grant Token"
+          type: "string"
+          description: "Identifier for the grant issued by an agreement"
+          airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
