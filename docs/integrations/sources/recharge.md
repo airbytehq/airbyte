@@ -3,17 +3,20 @@
 This source can sync data for the [Recharge API](https://developer.rechargepayments.com/).
 This page guides you through the process of setting up the Recharge source connector.
 
-## Prerequisites (Airbyte Cloud & Airbyte Open Source)
-* A Recharge account with permission to access data from accounts you want to sync.
-* Recharge API Token
+## Prerequisites
 
-## Step 1: Set up Recharge
+- A Recharge account with permission to access data from accounts you want to sync.
+- Recharge API Token
+
+## Setup guide
+
+### Step 1: Set up Recharge
 
 Please read [How to generate your API token](https://support.rechargepayments.com/hc/en-us/articles/360008829993-ReCharge-API).
 
-## Step 2: Set up the source connector in Airbyte
+### Step 2: Set up the source connector in Airbyte
 
-**For Airbyte Cloud:**
+<!-- env:cloud -->
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
@@ -21,8 +24,9 @@ Please read [How to generate your API token](https://support.rechargepayments.co
 4. Choose required `Start date`
 5. Enter your `Access Token`.
 6. click `Set up source`.
+<!-- /env:cloud -->
 
-**For Airbyte Open Source:**
+<!-- env:oss -->
 
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
@@ -30,6 +34,7 @@ Please read [How to generate your API token](https://support.rechargepayments.co
 4. Choose required `Start date`
 5. Enter your `Access Token` generated from `Step 1`.
 6. click `Set up source`.
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -45,17 +50,17 @@ The Recharge supports full refresh and incremental sync.
 
 Several output streams are available from this source:
 
-* [Addresses](https://developer.rechargepayments.com/v1-shopify?python#list-addresses) \(Incremental sync\)
-* [Charges](https://developer.rechargepayments.com/v1-shopify?python#list-charges) \(Incremental sync\)
-* [Collections](https://developer.rechargepayments.com/v1-shopify)
-* [Customers](https://developer.rechargepayments.com/v1-shopify?python#list-customers) \(Incremental sync\)
-* [Discounts](https://developer.rechargepayments.com/v1-shopify?python#list-discounts) \(Incremental sync\)
-* [Metafields](https://developer.rechargepayments.com/v1-shopify?python#list-metafields)
-* [Onetimes](https://developer.rechargepayments.com/v1-shopify?python#list-onetimes) \(Incremental sync\)
-* [Orders](https://developer.rechargepayments.com/v1-shopify?python#list-orders) \(Incremental sync\)
-* [Products](https://developer.rechargepayments.com/v1-shopify?python#list-products)
-* [Shop](https://developer.rechargepayments.com/v1-shopify?python#shop)
-* [Subscriptions](https://developer.rechargepayments.com/v1-shopify?python#list-subscriptions) \(Incremental sync\)
+- [Addresses](https://developer.rechargepayments.com/v1-shopify?python#list-addresses) \(Incremental sync\)
+- [Charges](https://developer.rechargepayments.com/v1-shopify?python#list-charges) \(Incremental sync\)
+- [Collections](https://developer.rechargepayments.com/v1-shopify)
+- [Customers](https://developer.rechargepayments.com/v1-shopify?python#list-customers) \(Incremental sync\)
+- [Discounts](https://developer.rechargepayments.com/v1-shopify?python#list-discounts) \(Incremental sync\)
+- [Metafields](https://developer.rechargepayments.com/v1-shopify?python#list-metafields)
+- [Onetimes](https://developer.rechargepayments.com/v1-shopify?python#list-onetimes) \(Incremental sync\)
+- [Orders](https://developer.rechargepayments.com/v1-shopify?python#list-orders) \(Incremental sync\)
+- [Products](https://developer.rechargepayments.com/v1-shopify?python#list-products)
+- [Shop](https://developer.rechargepayments.com/v1-shopify?python#shop)
+- [Subscriptions](https://developer.rechargepayments.com/v1-shopify?python#list-subscriptions) \(Incremental sync\)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -80,4 +85,3 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 | 0.1.3   | 2021-09-17 | [6149](https://github.com/airbytehq/airbyte/pull/6149)   | Update `discount` and `order` schema                                                      |
 | 0.1.2   | 2021-09-17 | [6149](https://github.com/airbytehq/airbyte/pull/6149)   | Change `cursor_field` for Incremental streams                                             |
 |         |            |                                                          |                                                                                           |
-
