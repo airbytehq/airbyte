@@ -20,10 +20,10 @@ import { Text } from "components/ui/Text";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
 import { useModalService } from "hooks/services/Modal";
+import styles from "views/Connector/ConnectorForm/components/Controls/ConnectorServiceTypeControl/ConnectorServiceTypeControl.module.scss";
+import { useAnalyticsTrackFunctions } from "views/Connector/ConnectorForm/components/Controls/ConnectorServiceTypeControl/useAnalyticsTrackFunctions";
+import { WarningMessage } from "views/Connector/ConnectorForm/components/WarningMessage";
 import RequestConnectorModal from "views/Connector/RequestConnectorModal";
-import styles from "views/Connector/ServiceForm/components/Controls/ConnectorServiceTypeControl/ConnectorServiceTypeControl.module.scss";
-import { useAnalyticsTrackFunctions } from "views/Connector/ServiceForm/components/Controls/ConnectorServiceTypeControl/useAnalyticsTrackFunctions";
-import { WarningMessage } from "views/Connector/ServiceForm/components/WarningMessage";
 
 import { useGetSourceDefinitions } from "./useGetSourceDefinitions";
 import { getSortedDropdownData } from "./utils";
