@@ -942,7 +942,7 @@ jobs:
           # k3s-channel: latest
           k3s-version: v1.21.2+k3s1
           helm-version: v3.9.4
-          extra-setup-args: --docker --kube-apiserver-arg --service-node-port-range=6001-30000
+          extra-setup-args: --docker --kube-apiserver-arg service-node-port-range=6000-32767
 
       - name: Try the cluster !
         run: kubectl get pods -A
