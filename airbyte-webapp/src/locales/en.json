@@ -605,5 +605,6 @@
   "connectorBuilder.requestTab": "Request",
   "connectorBuilder.responseTab": "Response",
   "connectorBuilder.resultsPlaceholder": "Click Test to fetch data for this stream",
-  "connectorBuilder.sliceLabel": "Slice"
+  "connectorBuilder.sliceLabel": "Slice",
+  "connectorBuilder.connectorLogs": "Connector logs"
 }
