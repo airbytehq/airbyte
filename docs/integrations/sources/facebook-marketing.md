@@ -50,16 +50,17 @@ To set up Facebook Marketing as a source in Airbyte Cloud:
     To configure Custom Insights:
 
     1. For **Name**, enter a name for the insight. This will be used as the Airbyte stream name 
-    2. For **Fields**, enter a list of the fields you want to pull from the Facebook Marketing API.
-    3. For **End Date**, enter the date in the YYYY-MM-DDTHR:MIN:S format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
-    4. For **Breakdowns**, enter a list of the breakdowns you want to configure.
-    5. For **Start Date**, enter the date in the YYYY-MM-DDTHR:MIN:S format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-    6. For **Time Increment**, enter the number of days over which you want to aggregate statistics. 
+    2. For **Level**, enter the level of the fields you want to pull from the Facebook Marketing API. By default, 'ad'. You can specify also account, campaign or adset. 
+    3. For **Fields**, enter a list of the fields you want to pull from the Facebook Marketing API.
+    4. For **End Date**, enter the date in the YYYY-MM-DDTHR:MIN:S format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
+    5. For **Breakdowns**, enter a list of the breakdowns you want to configure.
+    6. For **Start Date**, enter the date in the YYYY-MM-DDTHR:MIN:S format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+    7. For **Time Increment**, enter the number of days over which you want to aggregate statistics. 
 
             For example, if you set this value to 7, Airbyte will report statistics as 7-day aggregates starting from the Start Date. Suppose the start and end dates are October 1st and October 30th, then the connector will output 5 records: 01 - 06, 07 - 13, 14 - 20, 21 - 27, and 28 - 30 (3 days only).  
-    7. For **Action Breakdown**, enter a list of the action breakdowns you want to configure.
-    8. For **Custom Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
-    9. Click **Done**.
+    8. For **Action Breakdown**, enter a list of the action breakdowns you want to configure.
+    9. For **Custom Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
+    10. Click **Done**.
 12. For **Page Size of Requests**, fill in the size of the page in case pagintion kicks in. Feel free to ignore it, the default value should work in most cases.
 13. For **Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
 14. Click **Set up source**.
@@ -133,6 +134,7 @@ Please be informed that the connector uses the `lookback_window` parameter to pe
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.73  | 2022-11-09 | [19116](https://github.com/airbytehq/airbyte/pull/19116) | Added Level parameter to custom Ads Insights                                                                                                                                                                                                                                                      |
 | 0.2.72  | 2022-11-04 | [18971](https://github.com/airbytehq/airbyte/pull/18971) | handle FacebookBadObjectError for empty results on async jobs                                                                                                                                                                                                                                     |
 | 0.2.71  | 2022-10-31 | [18734](https://github.com/airbytehq/airbyte/pull/18734) | Reduce request record limit on retry                                                                                                                                                                                                                                                              |
 | 0.2.70  | 2022-10-26 | [18045](https://github.com/airbytehq/airbyte/pull/18045) | Upgrade FB SDK to v15.0                                                                                                                                                                                                                                                                           |

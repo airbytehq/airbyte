@@ -50,7 +50,6 @@ class AdsInsights(FBMarketingIncrementalStream):
     INSIGHTS_RETENTION_PERIOD = pendulum.duration(months=37)
 
     action_breakdowns = ALL_ACTION_BREAKDOWNS
-    level = "ad"
     action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
     time_increment = 1
 
@@ -64,6 +63,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         action_breakdowns: List[str] = None,
         time_increment: Optional[int] = None,
         insights_lookback_window: int = None,
+        level: str = "ad",
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -75,6 +75,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         self.time_increment = time_increment or self.time_increment
         self._new_class_name = name
         self._insights_lookback_window = insights_lookback_window
+        self.level = level
 
         # state
         self._cursor_value: Optional[pendulum.Date] = None  # latest period that was read
