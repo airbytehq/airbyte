@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import { FormattedMessage } from "react-intl";
 
 import { RotateIcon } from "components/icons/RotateIcon";
@@ -11,13 +12,14 @@ import styles from "./TestControls.module.scss";
 
 interface TestControlsProps {
   onClickTest: () => void;
+  className?: string;
 }
 
-export const TestControls: React.FC<TestControlsProps> = ({ onClickTest }) => {
+export const TestControls: React.FC<TestControlsProps> = ({ onClickTest, className }) => {
   const { selectedStream } = useConnectorBuilderState();
 
   return (
-    <div className={styles.container}>
+    <div className={classNames(className, styles.container)}>
       <ConfigMenu />
       <div className={styles.urlDisplay}>
         <Text size="lg">{selectedStream.url}</Text>

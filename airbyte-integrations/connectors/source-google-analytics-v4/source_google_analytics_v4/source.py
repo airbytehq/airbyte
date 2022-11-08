@@ -588,10 +588,8 @@ class SourceGoogleAnalyticsV4(AbstractSource):
                 False,
                 f"Please check the permissions for the requested view_id: {config['view_id']}. Cannot retrieve data from that view ID.",
             )
-
         except ValueError as e:
             return False, f"Invalid custom reports json structure. {e}"
-
         except requests.exceptions.RequestException as e:
             error_msg = e.response.json().get("error")
             if e.response.status_code == 403:
@@ -608,8 +606,10 @@ class SourceGoogleAnalyticsV4(AbstractSource):
 
         reports = json.loads(pkgutil.get_data("source_google_analytics_v4", "defaults/default_reports.json"))
 
-        if config.get("custom_reports"):
-            custom_reports = json.loads(config["custom_reports"])
+        custom_reports = config.get("custom_reports")
+        if custom_reports:
+            custom_reports = json.loads(custom_reports)
+            custom_reports = [custom_reports] if not isinstance(custom_reports, list) else custom_reports
             reports += custom_reports
 
         config["ga_streams"] = reports

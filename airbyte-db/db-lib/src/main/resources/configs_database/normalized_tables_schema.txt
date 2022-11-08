@@ -1,4 +1,7 @@
-// The file represents the schema of each of the config table
+// The file represents the schema of each of the config table after the normalization.
+// It is created in https://github.com/airbytehq/airbyte/pull/8563.
+// This schema is maintained manually by copying / pasting the output from Postgres' \d+ command.
+// It is not consumed programmatically, and can be outdated.
 
  enum_schema |         enum_name         |          enum_value
 -------------+---------------------------+------------------------------
@@ -68,23 +71,26 @@ Referenced by:
 
 
                                Table "public.actor_definition"
-        Column         |           Type           | Collation | Nullable |      Default
------------------------+--------------------------+-----------+----------+-------------------
- id                    | uuid                     |           | not null |
- name                  | character varying(256)   |           | not null |
- docker_repository     | character varying(256)   |           | not null |
- docker_image_tag      | character varying(256)   |           | not null |
- documentation_url     | character varying(256)   |           |          |
- icon                  | character varying(256)   |           |          |
- actor_type            | actor_type               |           | not null |
- source_type           | source_type              |           |          |
- spec                  | jsonb                    |           | not null |
- created_at            | timestamp with time zone |           | not null | CURRENT_TIMESTAMP
- updated_at            | timestamp with time zone |           | not null | CURRENT_TIMESTAMP
- tombstone             | boolean                  |           | not null | false
- release_stage         | release_stage            |           |          |
- release_date          | date                     |           |          |
- resource_requirements | jsonb                    |           |          |
+        Column              |           Type           | Collation | Nullable |      Default
+----------------------------+--------------------------+-----------+----------+-------------------
+ id                         | uuid                     |           | not null |
+ name                       | character varying(256)   |           | not null |
+ docker_repository          | character varying(256)   |           | not null |
+ docker_image_tag           | character varying(256)   |           | not null |
+ documentation_url          | character varying(256)   |           |          |
+ icon                       | character varying(256)   |           |          |
+ actor_type                 | actor_type               |           | not null |
+ source_type                | source_type              |           |          |
+ spec                       | jsonb                    |           | not null |
+ created_at                 | timestamp with time zone |           | not null | CURRENT_TIMESTAMP
+ updated_at                 | timestamp with time zone |           | not null | CURRENT_TIMESTAMP
+ tombstone                  | boolean                  |           | not null | false
+ release_stage              | release_stage            |           |          |
+ release_date               | date                     |           |          |
+ resource_requirements      | jsonb                    |           |          |
+ normalization_repository   | character varying(255)   |           |          |
+ normalization_tag          | character varying(255)   |           |          |
+ supports_dbt               | boolean                  |           |          |
 Indexes:
     "actor_definition_pkey" PRIMARY KEY, btree (id)
 Referenced by:
