@@ -369,10 +369,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
             stream_slice,
             stream_state,
         )
-        # FIXME: need to get the actual stream schema before this can use type transformers
-        stream_schema = {}
-        for r in records_generator:
-            message = stream_data_to_airbyte_message(self.name, r, self.transformer, stream_schema)
+        for message in records_generator:
             if message.type == MessageType.RECORD:
                 self.stream_slicer.update_cursor(stream_slice, last_record=message.record.data)
             if message.type == MessageType.RECORD or self.logger.isEnabledFor(logging.DEBUG):
@@ -421,17 +418,19 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         # FIXME: this should return some sort of trace message
         request_object = Request(url=request.url, headers=request.headers, body=self._safe_request_body(request.body))
         log_message = filter_secrets(f"request:{str(request_object)}")
-        return AirbyteLogMessage(level=Level.INFO, message=log_message)
+        return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))
 
     def _create_trace_message_from_response(self, response: requests.Response):
         # FIXME: this should return some sort of trace message
         response_object = Response(body=self._safe_response_json(response), headers=response.headers, status_code=response.status_code)
 
         log_message = filter_secrets(f"response:{response_object}")
-        return AirbyteLogMessage(level=Level.INFO, message=log_message)
+        return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))
 
     @staticmethod
     def _safe_request_body(request_body: Union[str, bytes]) -> dict:
+        if not request_body:
+            return {}
         if isinstance(request_body, bytes):
             request_body = request_body.decode("utf-8")
         if isinstance(request_body, str):

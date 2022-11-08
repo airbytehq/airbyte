@@ -3,22 +3,27 @@
 #
 
 import datetime
-from typing import Any, Mapping
+from typing import Any, Mapping, Union
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, AirbyteTraceMessage
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
+message_type_to_field = {MessageType.RECORD: "record"}
+
 
 def stream_data_to_airbyte_message(
     stream_name: str,
-    data_or_message: StreamData,
+    data_or_message: Union[StreamData, AirbyteMessage],
     transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform),
     schema: Mapping[str, Any] = None,
 ) -> AirbyteMessage:
     if schema is None:
         schema = {}
+
+    if isinstance(data_or_message, AirbyteMessage):
+        return data_or_message
 
     if isinstance(data_or_message, dict):
         data = data_or_message
