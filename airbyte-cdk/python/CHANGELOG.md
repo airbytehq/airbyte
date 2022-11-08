@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.1
+Low-code: Decouple yaml manifest parsing from the declarative source implementation
+
+## 0.7.0
+Low-code: Allow connector specifications to be defined in the manifest
+
+## 0.6.0
+Low-code: Add support for monthly and yearly incremental updates for `DatetimeStreamSlicer`
+
 ## 0.5.4
 Low-code: Get response.json in a safe way
 

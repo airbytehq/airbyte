@@ -66,5 +66,5 @@ To migrate a legacy configuration to the latest configuration format please run:
 ```bash
 python -m venv .venv # If you don't have a virtualenv already
 source ./.venv/bin/activate # If you're not in your virtualenv already
-python source_acceptance_test/utils/config_migration.py ../../connectors/source-to-migrate/acceptance-test-config.yml
+python source_acceptance_test/tools/strictness_level_migration/config_migration.py ../../connectors/source-to-migrate/acceptance-test-config.yml
 ```
