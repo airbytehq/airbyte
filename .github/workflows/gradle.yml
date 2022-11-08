@@ -864,15 +864,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
 
-  prepare-helm-ac-test-runner:
-    name: "Hack: Prepare runner for doing its job"
-    needs: start-helm-acceptance-test-runner
-    runs-on:  ${{ needs.start-helm-acceptance-test-runner.outputs.label }}
-    steps:
-      - name: Create home directory
-        shell: bash
-        run: mkdir -p /home/runner
-
   # Todo: Kyrylo turn this on.
   helm-acceptance-test:
     name: "Platform: Acceptance Tests (Helm)"
@@ -1005,7 +996,7 @@ jobs:
           # CHANGE_MINIKUBE_NONE_USER: true
 
       - name: Build Platform Docker Images
-        run: SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan
+        run: pwd && SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan
 
       - name: Run Helm End-to-End Acceptance Tests
         env:
