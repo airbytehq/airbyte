@@ -8,7 +8,7 @@ import { LogsRequestError } from "core/request/LogsRequestError";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { ConnectorCardValues, FrequentlyUsedDestinations, StartWithDestination } from "views/Connector/ConnectorForm";
+import { FrequentlyUsedDestinations, StartWithDestination } from "views/Connector/ServiceForm";
 
 import styles from "./DestinationForm.module.scss";
 
@@ -54,7 +54,7 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
     setDestinationDefinitionId(destinationDefinitionId);
   };
 
-  const onSubmitForm = async (values: ConnectorCardValues) => {
+  const onSubmitForm = async (values: { name: string; serviceType: string }) => {
     onSubmit({
       ...values,
       destinationDefinitionId: destinationDefinitionSpecification?.destinationDefinitionId,
@@ -75,18 +75,19 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
   return (
     <>
       <ConnectorCard
+        onServiceSelect={onDropDownSelect}
+        fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
+        onSubmit={onSubmitForm}
         formType="destination"
-        title={<FormattedMessage id="onboarding.destinationSetUp" />}
-        isLoading={isLoading}
+        additionalSelectorComponent={frequentlyUsedDestinationsComponent}
+        availableServices={destinationDefinitions}
+        selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
-        fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
-        availableConnectorDefinitions={destinationDefinitions}
-        onConnectorDefinitionSelect={onDropDownSelect}
-        selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
-        onSubmit={onSubmitForm}
+        isLoading={isLoading}
+        formValues={destinationDefinitionId ? { serviceType: destinationDefinitionId } : undefined}
+        title={<FormattedMessage id="onboarding.destinationSetUp" />}
         jobInfo={LogsRequestError.extractJobInfo(error)}
-        additionalSelectorComponent={frequentlyUsedDestinationsComponent}
       />
       {startWithDestinationComponent}
     </>

@@ -1217,7 +1217,8 @@ public abstract class DestinationAcceptanceTest {
     final List<AirbyteMessage> destinationOutput = runSync(config, messages, catalog,
         runNormalization);
 
-    final AirbyteMessage expectedStateMessage = reversed(messages)
+    Collections.reverse(messages);
+    final AirbyteMessage expectedStateMessage = messages
         .stream()
         .filter(m -> m.getType() == Type.STATE)
         .findFirst()
@@ -1235,20 +1236,6 @@ public abstract class DestinationAcceptanceTest {
         });
 
     assertEquals(expectedStateMessage, actualStateMessage);
-  }
-
-  /**
-   * Reverses a list by creating a new list with the same elements of the input list and then
-   * reversing it. The input list will not be altered.
-   *
-   * @param list to reverse
-   * @param <T> type
-   * @return new list with elements of original reversed.
-   */
-  public static <T> List<T> reversed(final List<T> list) {
-    final ArrayList<T> reversed = new ArrayList<>(list);
-    Collections.reverse(reversed);
-    return reversed;
   }
 
   private List<AirbyteMessage> runSync(

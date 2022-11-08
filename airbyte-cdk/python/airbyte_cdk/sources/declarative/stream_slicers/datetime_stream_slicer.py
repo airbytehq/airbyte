@@ -5,7 +5,6 @@
 import datetime
 import re
 from dataclasses import InitVar, dataclass, field
-from dateutil.relativedelta import relativedelta
 from typing import Any, Iterable, Mapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
@@ -31,12 +30,10 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     `"<number><unit>"`
 
     where unit can be one of
-    - years, y
-    - months, m
     - weeks, w
     - days, d
 
-    For example, "1d" will produce windows of 1 day, and "2w" windows of 2 weeks.
+    For example, "1d" will produce windows of 1 day, and 2weeks windows of 2 weeks.
 
     The timestamp format accepts the same format codes as datetime.strfptime, which are
     all the format codes required by the 1989 C standard.
@@ -71,7 +68,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     stream_state_field_end: Optional[str] = None
     lookback_window: Optional[Union[InterpolatedString, str]] = None
 
-    timedelta_regex = re.compile(r"((?P<years>[\.\d]+?)y)?" r"((?P<months>[\.\d]+?)m)?" r"((?P<weeks>[\.\d]+?)w)?" r"((?P<days>[\.\d]+?)d)?$")
+    timedelta_regex = re.compile(r"((?P<weeks>[\.\d]+?)w)?" r"((?P<days>[\.\d]+?)d)?$")
 
     def __post_init__(self, options: Mapping[str, Any]):
         if not isinstance(self.start_datetime, MinMaxDatetime):
@@ -191,14 +188,14 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         Parse a time string e.g. (2h13m) into a timedelta object.
         Modified from virhilo's answer at https://stackoverflow.com/a/4628148/851699
         :param time_str: A string identifying a duration. (eg. 2h13m)
-        :return relativedelta: A relativedelta object
+        :return datetime.timedelta: A datetime.timedelta object
         """
         parts = cls.timedelta_regex.match(time_str)
 
         assert parts is not None
 
         time_params = {name: float(param) for name, param in parts.groupdict().items() if param}
-        return relativedelta(**time_params)
+        return datetime.timedelta(**time_params)
 
     def get_request_params(
         self,

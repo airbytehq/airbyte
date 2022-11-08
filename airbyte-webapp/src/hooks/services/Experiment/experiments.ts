@@ -19,6 +19,4 @@ export interface Experiments {
   "authPage.oauth.google.signUpPage": boolean;
   "authPage.oauth.github.signUpPage": boolean;
   "onboarding.speedyConnection": boolean;
-  "authPage.signup.sourceSelector": boolean;
-  "authPage.oauth.position": "top" | "bottom";
 }

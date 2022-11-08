@@ -8,7 +8,6 @@ import { useGetSourceDefinitionSpecificationAsync } from "services/connector/Sou
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
-import { ConnectorCardValues } from "views/Connector/ConnectorForm";
 
 interface SourcesStepProps {
   onSuccess: () => void;
@@ -72,7 +71,7 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
     setSourceDefinitionId(sourceId);
   };
 
-  const onSubmitForm = async (values: ConnectorCardValues) =>
+  const onSubmitForm = async (values: { name: string; serviceType: string }) =>
     onSubmitSourceStep({
       ...values,
     });
@@ -82,15 +81,16 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
   return (
     <ConnectorCard
       full
+      jobInfo={LogsRequestError.extractJobInfo(error)}
+      onServiceSelect={onServiceSelect}
+      onSubmit={onSubmitForm}
       formType="source"
-      isLoading={isLoading}
+      availableServices={sourceDefinitions}
       hasSuccess={successRequest}
       errorMessage={errorMessage}
-      availableConnectorDefinitions={sourceDefinitions}
-      onConnectorDefinitionSelect={onServiceSelect}
       selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
-      onSubmit={onSubmitForm}
-      jobInfo={LogsRequestError.extractJobInfo(error)}
+      isLoading={isLoading}
+      formValues={sourceDefinitionId ? { serviceType: sourceDefinitionId } : undefined}
     />
   );
 };

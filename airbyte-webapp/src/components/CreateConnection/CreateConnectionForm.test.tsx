@@ -3,17 +3,18 @@ import { act, render as tlr } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import selectEvent from "react-select-event";
-import { mockConnection } from "test-utils/mock-data/mockConnection";
-import { mockDestination } from "test-utils/mock-data/mockDestination";
+import mockConnection from "test-utils/mock-data/mockConnection.json";
+import mockDest from "test-utils/mock-data/mockDestinationDefinition.json";
 import { TestWrapper } from "test-utils/testutils";
 
+import { AirbyteCatalog } from "core/request/AirbyteClient";
 import { defaultFeatures, FeatureItem } from "hooks/services/Feature";
 import * as sourceHook from "hooks/services/useSourceHook";
 
 import { CreateConnectionForm } from "./CreateConnectionForm";
 
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => ({
-  useGetDestinationDefinitionSpecification: () => mockDestination,
+  useGetDestinationDefinitionSpecification: () => mockDest,
 }));
 
 jest.mock("services/workspaces/WorkspacesService", () => ({
@@ -39,7 +40,7 @@ describe("CreateConnectionForm", () => {
   const baseUseDiscoverSchema = {
     schemaErrorStatus: null,
     isLoading: false,
-    schema: mockConnection.syncCatalog,
+    schema: mockConnection.syncCatalog as AirbyteCatalog,
     catalogId: "",
     onDiscoverSchema: () => Promise.resolve(),
   };

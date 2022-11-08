@@ -127,7 +127,6 @@ public class JsonFormat extends AbstractFormat {
       }
 
       consumerRecords.forEach(record -> {
-        record_count.getAndIncrement();
         recordsList.add(record);
       });
       consumer.commitAsync();

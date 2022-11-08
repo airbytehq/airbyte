@@ -447,94 +447,57 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   // SOURCE IMPLEMENTATION
 
-  /**
-   * This implementation has been moved to {@link SourceApiController}. Since the path of
-   * {@link SourceApiController} is more granular, it will override this implementation
-   */
   @Override
   public SourceRead createSource(final SourceCreate sourceCreate) {
-    throw new NotImplementedException();
+    return execute(() -> sourceHandler.createSource(sourceCreate));
   }
 
-  /**
-   * This implementation has been moved to {@link SourceApiController}. Since the path of
-   * {@link SourceApiController} is more granular, it will override this implementation
-   */
   @Override
   public SourceRead updateSource(final SourceUpdate sourceUpdate) {
-    throw new NotImplementedException();
+    return execute(() -> sourceHandler.updateSource(sourceUpdate));
   }
 
-  /**
-   * This implementation has been moved to {@link SourceApiController}. Since the path of
-   * {@link SourceApiController} is more granular, it will override this implementation
-   */
   @Override
   public SourceReadList listSourcesForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    throw new NotImplementedException();
+    return execute(() -> sourceHandler.listSourcesForWorkspace(workspaceIdRequestBody));
   }
 
-  /**
-   * This implementation has been moved to {@link SourceApiController}. Since the path of
-   * {@link SourceApiController} is more granular, it will override this implementation
-   */
   @Override
   public SourceReadList searchSources(final SourceSearch sourceSearch) {
-    throw new NotImplementedException();
+    return execute(() -> sourceHandler.searchSources(sourceSearch));
   }
 
-  /**
-   * This implementation has been moved to {@link SourceApiController}. Since the path of
-   * {@link SourceApiController} is more granular, it will override this implementation
-   */
   @Override
   public SourceRead getSource(final SourceIdRequestBody sourceIdRequestBody) {
-    throw new NotImplementedException();
+    return execute(() -> sourceHandler.getSource(sourceIdRequestBody));
   }
 
-  /**
-   * This implementation has been moved to {@link SourceApiController}. Since the path of
-   * {@link SourceApiController} is more granular, it will override this implementation
-   */
   @Override
   public void deleteSource(final SourceIdRequestBody sourceIdRequestBody) {
-    throw new NotImplementedException();
+    execute(() -> {
+      sourceHandler.deleteSource(sourceIdRequestBody);
+      return null;
+    });
   }
 
-  /**
-   * This implementation has been moved to {@link SourceApiController}. Since the path of
-   * {@link SourceApiController} is more granular, it will override this implementation
-   */
   @Override
   public SourceRead cloneSource(final SourceCloneRequestBody sourceCloneRequestBody) {
-    throw new NotImplementedException();
+    return execute(() -> sourceHandler.cloneSource(sourceCloneRequestBody));
   }
 
-  /**
-   * This implementation has been moved to {@link SourceApiController}. Since the path of
-   * {@link SourceApiController} is more granular, it will override this implementation
-   */
   @Override
   public CheckConnectionRead checkConnectionToSource(final SourceIdRequestBody sourceIdRequestBody) {
-    throw new NotImplementedException();
+    return execute(() -> schedulerHandler.checkSourceConnectionFromSourceId(sourceIdRequestBody));
   }
 
-  /**
-   * This implementation has been moved to {@link SourceApiController}. Since the path of
-   * {@link SourceApiController} is more granular, it will override this implementation
-   */
   @Override
   public CheckConnectionRead checkConnectionToSourceForUpdate(final SourceUpdate sourceUpdate) {
-    throw new NotImplementedException();
+    return execute(() -> schedulerHandler.checkSourceConnectionFromSourceIdForUpdate(sourceUpdate));
   }
 
-  /**
-   * This implementation has been moved to {@link SourceApiController}. Since the path of
-   * {@link SourceApiController} is more granular, it will override this implementation
-   */
   @Override
   public SourceDiscoverSchemaRead discoverSchemaForSource(final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody) {
-    throw new NotImplementedException();
+    return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaRequestBody));
   }
 
   // DB MIGRATION

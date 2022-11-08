@@ -57,14 +57,18 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
   return (
     <div className={styles.content}>
       <ConnectorCard
-        formType="source"
+        formId={formId}
         title={<FormattedMessage id="sources.sourceSettings" />}
         isEditMode
-        formId={formId}
-        availableConnectorDefinitions={[sourceDefinition]}
-        selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
-        connector={currentSource}
         onSubmit={onSubmit}
+        formType="source"
+        connector={currentSource}
+        availableServices={[sourceDefinition]}
+        formValues={{
+          ...currentSource,
+          serviceType: currentSource.sourceDefinitionId,
+        }}
+        selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
       />
       <DeleteBlock type="source" onDelete={onDelete} />
     </div>

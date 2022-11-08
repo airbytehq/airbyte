@@ -1,8 +1,5 @@
 # Changelog
 
-## 0.2.16
-Run `basic_read` on the discovered catalog in `high` `test_strictness_level`. [#18937](https://github.com/airbytehq/airbyte/pull/18937).
-
 ## 0.2.15
 Make `expect_records` mandatory in `high` `test_strictness_level`. [#18497](https://github.com/airbytehq/airbyte/pull/18497/).
 

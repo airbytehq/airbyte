@@ -4,10 +4,6 @@ FROM python:3.9-slim
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /airbyte/integration_code
-
-ENV AIRBYTE_ROOT "/airbyte/integration_code"
-
-COPY ./airbyte-cdk/ ./airbyte-cdk
 COPY source_sendgrid ./source_sendgrid
 COPY main.py ./
 COPY setup.py ./
@@ -18,4 +14,3 @@ ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 LABEL io.airbyte.version=0.2.16
 LABEL io.airbyte.name=airbyte/source-sendgrid
-airbyte-integrations/connectors/source-sendgrid/build.gradle

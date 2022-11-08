@@ -13,8 +13,7 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "integration_tests/config.json"
-        expect_records:
-          bypass_reason: "We should create an expected_records file"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
   full_refresh:
     tests:
       - config_path: "integration_tests/config.json"

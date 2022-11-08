@@ -4,8 +4,6 @@ import { FormattedMessage } from "react-intl";
 import { HeadTitle } from "components/common/HeadTitle";
 import { MainPageWithScroll } from "components/common/MainPageWithScroll";
 import { PageHeader } from "components/ui/PageHeader";
-import { Spinner } from "components/ui/Spinner";
-import { Text } from "components/ui/Text";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
@@ -26,18 +24,7 @@ const CreditsPage: React.FC = () => {
       <div className={styles.content}>
         {!emailVerified && <EmailVerificationHint className={styles.emailVerificationHint} />}
         <RemainingCredits selfServiceCheckoutEnabled={emailVerified} />
-        <React.Suspense
-          fallback={
-            <div className={styles.creditUsageLoading}>
-              <Spinner small />
-              <Text>
-                <FormattedMessage id="credits.loadingCreditsUsage" />
-              </Text>
-            </div>
-          }
-        >
-          <CreditsUsage />
-        </React.Suspense>
+        <CreditsUsage />
       </div>
     </MainPageWithScroll>
   );

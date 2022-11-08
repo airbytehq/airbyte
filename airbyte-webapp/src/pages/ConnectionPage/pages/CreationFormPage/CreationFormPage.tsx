@@ -21,7 +21,6 @@ import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { useGetDestination } from "hooks/services/useDestinationHook";
 import { useGetSource } from "hooks/services/useSourceHook";
-import { useLocationState } from "hooks/useLocationState";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
@@ -75,11 +74,6 @@ function usePreloadData(): {
 export const CreationFormPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.CONNECTIONS_NEW);
   const location = useLocation();
-
-  // exp-signup-selected-source-definition
-  const state = useLocationState<{ sourceDefinitionId?: string }>();
-  const isSourceDefinitionSelected = Boolean(state?.sourceDefinitionId);
-
   const navigate = useNavigate();
   const { clearAllFormChanges } = useFormChangeTrackerService();
 
@@ -136,10 +130,10 @@ export const CreationFormPage: React.FC = () => {
       if (currentEntityStep === EntityStepsTypes.SOURCE) {
         return (
           <>
-            {/* // exp-signup-selected-source-definition */}
-            {type === EntityStepsTypes.CONNECTION && !isSourceDefinitionSelected && (
+            {type === EntityStepsTypes.CONNECTION && (
               <ExistingEntityForm type="source" onSubmit={onSelectExistingSource} />
             )}
+
             <ConnectionCreateSourceForm
               afterSubmit={() => {
                 if (type === "connection") {

@@ -87,15 +87,20 @@ To switch between workspaces:
 ### Choose your default data residency
 Default data residency allows you to choose where your data is processed. When you set the default data residency, it is applied to all new connections, but it does not affect existing connections. 
 
-Your data is processed on a data plane in the chosen data residency, but configuration data, like data associated with sync mode, cursor, and primary key, is stored on our control plane in the US. Because of this, data that must stay in the chosen data residency should not be used as a stream’s cursor or primary key. 
-
 For individual connections, you can choose a data residency that is different from the default. You can do this in the [connection settings](#choose-the-data-residency-for-a-connection) or when you create a [new connection](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-connection).
+
+:::note 
+
+Your data is processed in the chosen residency, but some data is still stored in the US.
+
+:::
+
 
 To choose your default data residency:
 
 1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings** in the navigation bar.
 
-2. In the Workspace settings sidebar, click **Data Residency**.
+2. In the Workspace settings sidebar, click **Default Data Residency**.
 
 3. Click the dropdown and choose the location for your default data residency.
 
@@ -283,9 +288,7 @@ To display **Connection State**:
     The **Connection State** displays. 
 
 ## Choose the data residency for a connection
-You can choose the data residency for your connection in the connection settings. You can also choose data residency when creating a [new connection](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-connection), or you can set the [default data residency](#choose-your-default-data-residency) for your workspace.
-
-To choose the data residency for your connection: 
+To choose the data residency for an existing connection: 
 
 1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** in the navigation bar and then click the connection that you want to change. 
 
@@ -296,8 +299,8 @@ To choose the data residency for your connection:
 3. Click the **Data residency** dropdown and choose the location for your default data residency.
 
 :::note 
-
-Changes to data residency will not affect any currently running sync. 
+    
+You can also choose data residency when creating a [new connection](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-connection), or you can set the [default data residency](#choose-your-default-data-residency) for all of your connections. 
 
 :::
 

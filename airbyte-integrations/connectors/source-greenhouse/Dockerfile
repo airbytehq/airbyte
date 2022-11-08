@@ -4,8 +4,6 @@ FROM python:3.9-slim
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /airbyte/integration_code
-
-COPY ./airbyte-cdk/ ./airbyte-cdk
 COPY setup.py ./
 RUN pip install .
 COPY source_greenhouse ./source_greenhouse
