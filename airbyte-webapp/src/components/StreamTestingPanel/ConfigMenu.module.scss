@@ -2,4 +2,6 @@
 
 .modalContent {
   height: 60vh;
+  overflow: visible;
+  background-color: colors.$grey-100;
 }

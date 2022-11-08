@@ -38,6 +38,9 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       inherit: true,
       rules: [
         { token: "string", foreground: expandHexValue(styles.darkString) },
+        { token: "string.yaml", foreground: expandHexValue(styles.darkString) },
+        { token: "string.value.json", foreground: expandHexValue(styles.darkType) },
+        { token: "string.key.json", foreground: expandHexValue(styles.darkType) },
         { token: "type", foreground: expandHexValue(styles.darkType) },
         { token: "number", foreground: expandHexValue(styles.darkNumber) },
         { token: "delimiter", foreground: expandHexValue(styles.darkDelimiter) },
@@ -52,7 +55,10 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       base: "vs",
       inherit: true,
       rules: [
+        { token: "string", foreground: expandHexValue(styles.lightString) },
         { token: "string.yaml", foreground: expandHexValue(styles.lightString) },
+        { token: "string.value.json", foreground: expandHexValue(styles.lightString) },
+        { token: "string.key.json", foreground: expandHexValue(styles.lightType) },
         { token: "type", foreground: expandHexValue(styles.lightType) },
         { token: "number", foreground: expandHexValue(styles.lightNumber) },
         { token: "delimiter", foreground: expandHexValue(styles.lightDelimiter) },
