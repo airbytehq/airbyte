@@ -98,27 +98,27 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
                                                             final NamingConventionTransformer namingResolver,
                                                             final SqlOperations sqlOps)
       throws Exception {
-    attemptSQLCreateTableThenInsertDummyRecThenDropThisTableOperations(outputSchema, database, namingResolver, sqlOps, false);
+    attemptTableOperations(outputSchema, database, namingResolver, sqlOps, false);
   }
 
   /**
    * Verifies if provided creds has enough permissions. Steps are: 1. Create schema if not exists. 2.
-   * Create test table. 3. Insert dummy record to newly created table if
-   * "isNeedTryToInsertDummyRecordInNewlyCreatedTable" set to true. 4. Delete table created on step 2.
+   * Create test table. 3. Insert dummy record to newly created table if "attemptInsert" set to true.
+   * 4. Delete table created on step 2.
    *
    * @param outputSchema - schema to tests against.
    * @param database - database to tests against.
    * @param namingResolver - naming resolver.
    * @param sqlOps - SqlOperations object
-   * @param isNeedTryToInsertDummyRecordInNewlyCreatedTable - set true if need to make attempt to
-   *        insert dummy records to newly created table, Set false to skip insert step.
+   * @param attemptInsert - set true if need to make attempt to insert dummy records to newly created
+   *        table. Set false to skip insert step.
    * @throws Exception
    */
-  public static void attemptSQLCreateTableThenInsertDummyRecThenDropThisTableOperations(final String outputSchema,
-                                                                                        final JdbcDatabase database,
-                                                                                        final NamingConventionTransformer namingResolver,
-                                                                                        final SqlOperations sqlOps,
-                                                                                        final boolean isNeedTryToInsertDummyRecordInNewlyCreatedTable)
+  public static void attemptTableOperations(final String outputSchema,
+                                            final JdbcDatabase database,
+                                            final NamingConventionTransformer namingResolver,
+                                            final SqlOperations sqlOps,
+                                            final boolean attemptInsert)
       throws Exception {
     // verify we have write permissions on the target schema by creating a table with a random name,
     // then dropping that table
@@ -133,7 +133,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       sqlOps.createTableIfNotExists(database, outputSchema, outputTableName);
       // verify if user has permission to make SQL INSERT queries
       try {
-        if (isNeedTryToInsertDummyRecordInNewlyCreatedTable) {
+        if (attemptInsert) {
           sqlOps.insertRecords(database, List.of(getDummyRecord()), outputSchema, outputTableName);
         }
       } finally {
@@ -152,7 +152,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   }
 
   /**
-   * Generates a dummy AirbyteRecordMessage with random values that make no sense.
+   * Generates a dummy AirbyteRecordMessage with random values.
    *
    * @return AirbyteRecordMessage object with dummy values that may be used to test insert permission.
    */

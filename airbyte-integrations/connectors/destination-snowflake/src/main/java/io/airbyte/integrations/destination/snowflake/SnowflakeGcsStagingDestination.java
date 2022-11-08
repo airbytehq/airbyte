@@ -61,7 +61,7 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
       final JdbcDatabase database = getDatabase(dataSource);
       final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
 
-      attemptSQLCreateTableThenInsertDummyRecThenDropThisTableOperations(outputSchema, database, nameTransformer, snowflakeGcsStagingSqlOperations,
+      attemptTableOperations(outputSchema, database, nameTransformer, snowflakeGcsStagingSqlOperations,
           true);
       attemptWriteAndDeleteGcsObject(gcsConfig, outputSchema);
 

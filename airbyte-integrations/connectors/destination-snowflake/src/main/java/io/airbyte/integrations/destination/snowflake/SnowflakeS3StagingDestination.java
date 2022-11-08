@@ -60,9 +60,9 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
-      attemptSQLCreateTableThenInsertDummyRecThenDropThisTableOperations(outputSchema, database, nameTransformer, snowflakeS3StagingSqlOperations,
+      attemptTableOperations(outputSchema, database, nameTransformer, snowflakeS3StagingSqlOperations,
           true);
-      attemptSQLCreateAndDropStages(outputSchema, database, nameTransformer, snowflakeS3StagingSqlOperations);
+      attemptStageOperations(outputSchema, database, nameTransformer, snowflakeS3StagingSqlOperations);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
@@ -78,7 +78,7 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
     }
   }
 
-  private static void attemptSQLCreateAndDropStages(final String outputSchema,
+  private static void attemptStageOperations(final String outputSchema,
                                                     final JdbcDatabase database,
                                                     final NamingConventionTransformer namingResolver,
                                                     final SnowflakeS3StagingSqlOperations sqlOperations)

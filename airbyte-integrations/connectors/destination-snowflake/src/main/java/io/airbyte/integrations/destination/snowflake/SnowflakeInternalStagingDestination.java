@@ -46,9 +46,9 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final String outputSchema = nameTransformer.getIdentifier(config.get("schema").asText());
-      attemptSQLCreateTableThenInsertDummyRecThenDropThisTableOperations(outputSchema, database, nameTransformer,
+      attemptTableOperations(outputSchema, database, nameTransformer,
           snowflakeInternalStagingSqlOperations, true);
-      attemptSQLCreateAndDropStages(outputSchema, database, nameTransformer, snowflakeInternalStagingSqlOperations);
+      attemptStageOperations(outputSchema, database, nameTransformer, snowflakeInternalStagingSqlOperations);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
@@ -64,10 +64,10 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     }
   }
 
-  private static void attemptSQLCreateAndDropStages(final String outputSchema,
-                                                    final JdbcDatabase database,
-                                                    final NamingConventionTransformer namingResolver,
-                                                    final SnowflakeInternalStagingSqlOperations sqlOperations)
+  private static void attemptStageOperations(final String outputSchema,
+                                             final JdbcDatabase database,
+                                             final NamingConventionTransformer namingResolver,
+                                             final SnowflakeInternalStagingSqlOperations sqlOperations)
       throws Exception {
 
     // verify we have permissions to create/drop stage

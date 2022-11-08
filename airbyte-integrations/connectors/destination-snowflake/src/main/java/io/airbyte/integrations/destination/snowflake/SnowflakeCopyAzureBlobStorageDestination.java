@@ -70,7 +70,7 @@ public class SnowflakeCopyAzureBlobStorageDestination extends CopyDestination {
                                                       final JdbcDatabase database,
                                                       final NamingConventionTransformer nameTransformer)
       throws Exception {
-    AbstractJdbcDestination.attemptSQLCreateTableThenInsertDummyRecThenDropThisTableOperations(outputSchema, database, nameTransformer,
+    AbstractJdbcDestination.attemptTableOperations(outputSchema, database, nameTransformer,
         getSqlOperations(), true);
   }
 
