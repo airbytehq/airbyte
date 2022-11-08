@@ -169,6 +169,13 @@
   icon: braintree.svg
   sourceType: api
   releaseStage: alpha
+- name: Breezometer
+  sourceDefinitionId: 7c37685e-8512-4901-addf-9afbef6c0de9
+  dockerRepository: airbyte/source-breezometer
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/breezometer
+  sourceType: api
+  releaseStage: alpha
 - name: Cart.com
   sourceDefinitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
   dockerRepository: airbyte/source-cart
@@ -966,7 +973,7 @@
 - name: Pinterest
   sourceDefinitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-pinterest
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.com/integrations/sources/pinterest
   icon: pinterest.svg
   sourceType: api
@@ -1065,6 +1072,13 @@
   icon: recharge.svg
   sourceType: api
   releaseStage: generally_available
+- name: Recruitee
+  sourceDefinitionId: 3b046ac7-d8d3-4eb3-b122-f96b2a16d8a8
+  dockerRepository: airbyte/source-recruitee
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/recruitee
+  sourceType: api
+  releaseStage: alpha
 - name: Recurly
   sourceDefinitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
   dockerRepository: airbyte/source-recurly
@@ -1338,6 +1352,13 @@
   dockerImageTag: 0.1.23
   documentationUrl: https://docs.airbyte.com/integrations/sources/victorops
   icon: victorops.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Visma E-conomic
+  sourceDefinitionId: 42495935-95de-4f5c-ae08-8fac00f6b308
+  dockerRepository: airbyte/source-visma-economic
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/visma-economic
   sourceType: api
   releaseStage: alpha
 - name: xkcd
