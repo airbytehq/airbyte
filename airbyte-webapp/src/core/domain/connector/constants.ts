@@ -22,7 +22,6 @@ export const getExcludedConnectorIds = (workspaceId: string) =>
         "8ccd8909-4e99-4141-b48d-4984b70b2d89", // hide DynamoDB Destination https://github.com/airbytehq/airbyte-cloud/issues/2608
         "9f760101-60ae-462f-9ee6-b7a9dafd454d", // hide Kafka Destination https://github.com/airbytehq/airbyte-cloud/issues/2610
         "294a4790-429b-40ae-9516-49826b9702e1", // hide MariaDB Destination https://github.com/airbytehq/airbyte-cloud/issues/2611
-        "8b746512-8c2e-6ac1-4adc-b59faafd473c", // hide MongoDB Destination https://github.com/airbytehq/airbyte-cloud/issues/2612
         "f3802bc4-5406-4752-9e8d-01e504ca8194", // hide MQTT Destination https://github.com/airbytehq/airbyte-cloud/issues/2613
         "2340cbba-358e-11ec-8d3d-0242ac130203", // hide Pular Destination https://github.com/airbytehq/airbyte-cloud/issues/2614
         "2c9d93a7-9a17-4789-9de9-f46f0097eb70", // hide Rockset Destination https://github.com/airbytehq/airbyte-cloud/issues/2615
