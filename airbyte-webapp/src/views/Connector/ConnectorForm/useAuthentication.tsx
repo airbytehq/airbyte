@@ -131,29 +131,32 @@ interface AuthenticationHook {
 
 export const useAuthentication = (): AuthenticationHook => {
   const { values, getFieldMeta, submitCount } = useFormikContext<ConnectorFormValues>();
-  const { selectedConnector } = useConnectorForm();
+  const { getValues, selectedConnectorDefinitionSpecification: connectorSpec } = useConnectorForm();
 
   const allowOAuthConnector = useFeature(FeatureItem.AllowOAuthConnector);
 
-  const advancedAuth = selectedConnector?.advancedAuth;
-  const legacyOauthSpec = selectedConnector?.authSpecification?.oauth2Specification;
+  const advancedAuth = connectorSpec?.advancedAuth;
+  const legacyOauthSpec = connectorSpec?.authSpecification?.oauth2Specification;
 
-  const spec = selectedConnector?.connectionSpecification as JSONSchema7;
+  const spec = connectorSpec?.connectionSpecification as JSONSchema7;
+
+  const valuesWithDefaults = useMemo(() => getValues(values), [getValues, values]);
 
   const isAuthButtonVisible = useMemo(() => {
     const shouldShowAdvancedAuth =
-      advancedAuth && shouldShowButtonForAdvancedAuth(advancedAuth.predicateKey, advancedAuth.predicateValue, values);
+      advancedAuth &&
+      shouldShowButtonForAdvancedAuth(advancedAuth.predicateKey, advancedAuth.predicateValue, valuesWithDefaults);
     const shouldShowLegacyAuth =
-      legacyOauthSpec && shouldShowButtonForLegacyAuth(spec, legacyOauthSpec.rootObject as Path, values);
+      legacyOauthSpec && shouldShowButtonForLegacyAuth(spec, legacyOauthSpec.rootObject as Path, valuesWithDefaults);
     return Boolean(allowOAuthConnector && (shouldShowAdvancedAuth || shouldShowLegacyAuth));
-  }, [values, advancedAuth, legacyOauthSpec, spec, allowOAuthConnector]);
+  }, [advancedAuth, valuesWithDefaults, legacyOauthSpec, spec, allowOAuthConnector]);
 
   // Fields that are filled by the OAuth flow and thus won't need to be shown in the UI if OAuth is available
   const implicitAuthFieldPaths = useMemo(
     () => [
       // Fields from `advancedAuth` connectors
       ...(advancedAuth
-        ? Object.values(serverProvidedOauthPaths(selectedConnector)).map((f) =>
+        ? Object.values(serverProvidedOauthPaths(connectorSpec)).map((f) =>
             makeConnectionConfigurationPath(f.path_in_connector_config)
           )
         : []),
@@ -165,7 +168,7 @@ export const useAuthentication = (): AuthenticationHook => {
           ]
         : []),
     ],
-    [advancedAuth, legacyOauthSpec, selectedConnector]
+    [advancedAuth, legacyOauthSpec, connectorSpec]
   );
 
   const isHiddenAuthField = useCallback(
@@ -208,8 +211,8 @@ export const useAuthentication = (): AuthenticationHook => {
   );
 
   const hasAuthFieldValues: boolean = useMemo(() => {
-    return implicitAuthFieldPaths.some((path) => getIn(values, path) !== undefined);
-  }, [implicitAuthFieldPaths, values]);
+    return implicitAuthFieldPaths.some((path) => !!getIn(valuesWithDefaults, path));
+  }, [implicitAuthFieldPaths, valuesWithDefaults]);
 
   return {
     isHiddenAuthField,
