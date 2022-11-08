@@ -182,17 +182,20 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
             new RecordMetricInput(connectionUpdaterInput, Optional.of(FailureCause.CANCELED), OssMetricsRegistry.TEMPORAL_WORKFLOW_FAILURE, null));
       }
 
-      final int dontDeleteInTemporal =
-          Workflow.getVersion(DONT_DELETE_IN_TEMPORAL_TAG, Workflow.DEFAULT_VERSION, DONT_DELETE_IN_TEMPORAL_TAG_CURRENT_VERSION);
-
-      if (dontDeleteInTemporal < DONT_DELETE_IN_TEMPORAL_TAG_CURRENT_VERSION && workflowState.isDeleted()) {
+      if (workflowState.isDeleted()) {
         if (workflowState.isRunning()) {
           log.info("Cancelling the current running job because a connection deletion was requested");
           // This call is not needed anymore since this will be cancel using the the cancellation state
           reportCancelled(connectionUpdaterInput.getConnectionId());
         }
-        log.info("Workflow deletion was requested. Calling deleteConnection activity before terminating the workflow.");
-        deleteConnectionBeforeTerminatingTheWorkflow();
+
+        final int dontDeleteInTemporal =
+            Workflow.getVersion(DONT_DELETE_IN_TEMPORAL_TAG, Workflow.DEFAULT_VERSION, DONT_DELETE_IN_TEMPORAL_TAG_CURRENT_VERSION);
+
+        if (dontDeleteInTemporal < DONT_DELETE_IN_TEMPORAL_TAG_CURRENT_VERSION) {
+          log.info("Workflow deletion was requested. Calling deleteConnection activity before terminating the workflow.");
+          deleteConnectionBeforeTerminatingTheWorkflow();
+        }
         return;
       }
 

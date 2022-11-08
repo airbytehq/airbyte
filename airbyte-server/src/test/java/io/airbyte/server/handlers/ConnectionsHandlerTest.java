@@ -838,7 +838,6 @@ class ConnectionsHandlerTest {
       connectionsHandler.deleteConnection(connectionId);
 
       verify(connectionHelper).deleteConnection(connectionId);
-      verify(eventRunner).startNewCancellation(connectionId);
     }
 
     @Test

@@ -352,7 +352,6 @@ public class TemporalClientTest {
       temporalClient.forceDeleteWorkflow(CONNECTION_ID);
 
       verify(connectionManagerUtils).deleteWorkflowIfItExist(workflowClient, CONNECTION_ID);
-      verify(mConnectionManagerWorkflow).cancelJob();
     }
 
   }
