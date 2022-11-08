@@ -8,6 +8,10 @@ airbytePython {
     moduleDirectory 'source_sentry'
 }
 
+airbyteDocker {
+    followSymlinks true
+}
+
 dependencies {
     implementation files(project(':airbyte-integrations:bases:source-acceptance-test').airbyteDocker.outputs)
 }

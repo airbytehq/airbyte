@@ -27,6 +27,10 @@ RUN echo "Etc/UTC" > /etc/timezone
 # bash is installed for more convenient debugging.
 RUN apk --no-cache add bash
 
+ENV AIRBYTE_ROOT "/airbyte/integration_code"
+
+COPY ./airbyte-cdk/ ./airbyte-cdk
+
 # copy payload code only
 COPY main.py ./
 COPY source_sentry ./source_sentry
