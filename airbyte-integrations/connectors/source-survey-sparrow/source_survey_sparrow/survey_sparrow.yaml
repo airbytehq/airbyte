@@ -6,7 +6,7 @@ definitions:
     extractor:
       field_pointer: ["data"]
   requester:
-    url_base: "{{ config['url_base'] }}"
+    url_base: "{{ config['is_eu_based']['url_base'] }}"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
