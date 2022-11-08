@@ -64,6 +64,7 @@ import io.airbyte.api.model.generated.PrivateDestinationDefinitionRead;
 import io.airbyte.api.model.generated.PrivateDestinationDefinitionReadList;
 import io.airbyte.api.model.generated.PrivateSourceDefinitionRead;
 import io.airbyte.api.model.generated.PrivateSourceDefinitionReadList;
+import io.airbyte.api.model.generated.SaveStatsRequestBody;
 import io.airbyte.api.model.generated.SetInstancewideDestinationOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
@@ -234,6 +235,15 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link WorkspaceApiController}. Since the path of
+   * {@link WorkspaceApiController} is more granular, it will override this implementation
+   */
+  @Override
+  public WorkspaceRead getWorkspaceByConnectionId(final ConnectionIdRequestBody connectionIdRequestBody) {
+    throw new NotImplementedException();
+  }
+
   @Override
   public WorkspaceRead updateWorkspace(final WorkspaceUpdate workspaceUpdate) {
     throw new NotImplementedException();
@@ -385,6 +395,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
    */
   @Override
   public void revokeSourceDefinitionFromWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
+    throw new NotImplementedException();
+  }
+
+  @Override
+  public InternalOperationResult saveStats(final SaveStatsRequestBody saveStatsRequestBody) {
     throw new NotImplementedException();
   }
 
