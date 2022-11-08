@@ -7,20 +7,18 @@ import logging
 import os
 from abc import ABC, abstractmethod
 from contextlib import suppress
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, \
-    Optional, Tuple, Union
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import urljoin
 
 import requests
 import requests_cache
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import Stream, StreamData
 from requests.auth import AuthBase
 from requests_cache.session import CachedSession
 
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.core import Stream, StreamData
 from .auth.core import HttpAuthenticator, NoAuth
-from .exceptions import DefaultBackoffException, RequestBodyException, \
-    UserDefinedBackoffException
+from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 
 # list of all possible HTTP methods which can be used for sending of request bodies
@@ -127,21 +125,21 @@ class HttpStream(Stream, ABC):
 
     @abstractmethod
     def path(
-            self,
-            *,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         """
         Returns the URL path for the API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "some_entity"
         """
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         """
         Override this method to define the query parameters that should be set on an outgoing HTTP request given the inputs.
@@ -151,7 +149,7 @@ class HttpStream(Stream, ABC):
         return {}
 
     def request_headers(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         """
         Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
@@ -159,10 +157,10 @@ class HttpStream(Stream, ABC):
         return {}
 
     def request_body_data(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Mapping, str]]:
         """
         Override when creating POST/PUT/PATCH requests to populate the body of the request with a non-JSON payload.
@@ -176,10 +174,10 @@ class HttpStream(Stream, ABC):
         return None
 
     def request_body_json(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         """
         Override when creating POST/PUT/PATCH requests to populate the body of the request with a JSON payload.
@@ -189,10 +187,10 @@ class HttpStream(Stream, ABC):
         return None
 
     def request_kwargs(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         """
         Override to return a mapping of keyword arguments to be used when creating the HTTP request.
@@ -203,12 +201,12 @@ class HttpStream(Stream, ABC):
 
     @abstractmethod
     def parse_response(
-            self,
-            response: requests.Response,
-            *,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         """
         Parses the raw response object into a list of records.
@@ -255,12 +253,12 @@ class HttpStream(Stream, ABC):
         return ""
 
     def _create_prepared_request(
-            self,
-            path: str,
-            headers: Mapping = None,
-            params: Mapping = None,
-            json: Any = None,
-            data: Any = None,
+        self,
+        path: str,
+        headers: Mapping = None,
+        params: Mapping = None,
+        json: Any = None,
+        data: Any = None,
     ) -> requests.PreparedRequest:
         args = {"method": self.http_method, "url": urljoin(self.url_base, path), "headers": headers, "params": params}
         if self.http_method.upper() in BODY_REQUEST_METHODS:
@@ -373,12 +371,12 @@ class HttpStream(Stream, ABC):
                 return ", ".join(_try_get_error(v) for v in value)
             elif isinstance(value, dict):
                 new_value = (
-                        value.get("message")
-                        or value.get("messages")
-                        or value.get("error")
-                        or value.get("errors")
-                        or value.get("failures")
-                        or value.get("failure")
+                    value.get("message")
+                    or value.get("messages")
+                    or value.get("error")
+                    or value.get("errors")
+                    or value.get("failures")
+                    or value.get("failure")
                 )
                 return _try_get_error(new_value)
             return None
@@ -405,11 +403,11 @@ class HttpStream(Stream, ABC):
         return None
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:
         yield from self._read_and_parse_pages(stream_slice, stream_state)
 
@@ -419,12 +417,12 @@ class HttpStream(Stream, ABC):
         )
 
     def _read_pages(
-            self,
-            records_generator_fn: Callable[
-                [requests.PreparedRequest, requests.Response, Mapping[str, Any], Mapping[str, Any]], Iterable[StreamData]
-            ],
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        records_generator_fn: Callable[
+            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Mapping[str, Any]], Iterable[StreamData]
+        ],
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:
         stream_state = stream_state or {}
         pagination_complete = False
@@ -441,7 +439,7 @@ class HttpStream(Stream, ABC):
         yield from []
 
     def _fetch_next_page(
-            self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request = self._create_prepared_request(
@@ -466,7 +464,7 @@ class HttpSubStream(HttpStream, ABC):
         self.parent = parent
 
     def stream_slices(
-            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream_slices = self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
