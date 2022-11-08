@@ -43,7 +43,17 @@ definitions:
         type: DpathExtractor
         field_pointer: [ "{{ options['name'] }}" ]
     paginator:
-      type: NoPagination
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ headers['link']['next']['url'] }}"
+        stop_condition: "{{ 'next' not in headers['link'] }}"
+        page_size: 100
+      page_size_option:
+        field_name: "per_page"
+        inject_into: "request_parameter"
+      page_token_option:
+        inject_into: "path"
     stream_slicer:
       $ref: "*ref(definitions.stream_slicer)"
 
