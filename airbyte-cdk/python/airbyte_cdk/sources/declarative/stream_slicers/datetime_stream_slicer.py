@@ -16,7 +16,6 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from dataclasses_jsonschema import JsonSchemaMixin
-from dateutil.relativedelta import relativedelta
 
 
 @dataclass
