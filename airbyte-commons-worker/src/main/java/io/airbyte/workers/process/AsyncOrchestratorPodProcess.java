@@ -313,6 +313,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
                           until [ $i -gt 60 ]
                           do
                             echo "$i - waiting for config file transfer to complete..."
+                            # check if the upload-complete file exists, if so exit without error
                             if [ -f "%s/%s" ]; then
                               exit 0
                             fi
@@ -320,6 +321,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
                             sleep 1
                           done
                           echo "config files did not transfer in time"
+                          # no upload-complete file was created in time, exit with error
                           exit 1
                           """,
                 KubePodProcess.CONFIG_DIR,
