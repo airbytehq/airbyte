@@ -3,180 +3,96 @@
   "type": "object",
   "properties": {
     "date": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "index_id": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "index_display_name": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "types": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {
         "grass": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": ["null", "object"],
           "properties": {
             "display_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "in_season": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "data_available": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "index": {
-              "type": [
-                "null",
-                "object"
-              ],
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "category": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "color": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 }
               }
             }
           }
         },
         "tree": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": ["null", "object"],
           "properties": {
             "display_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "in_season": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "data_available": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "index": {
-              "type": [
-                "null",
-                "object"
-              ],
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "category": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "color": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 }
               }
             }
           }
         },
         "weed": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": ["null", "object"],
           "properties": {
             "display_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "in_season": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "data_available": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "index": {
-              "type": [
-                "null",
-                "object"
-              ],
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "category": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "color": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 }
               }
             }

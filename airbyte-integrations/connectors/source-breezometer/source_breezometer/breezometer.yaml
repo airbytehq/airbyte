@@ -23,7 +23,7 @@ definitions:
       name: "air_quality_current"
       primary_key: "datetime"
       path: "/air-quality/v2/current-conditions"
-  
+
   air_quality_forecast_stream:
     retriever:
       record_selector:
@@ -43,7 +43,7 @@ definitions:
       name: "air_quality_forecast"
       primary_key: "datetime"
       path: "/air-quality/v2/forecast/hourly"
-  
+
   air_quality_historical_stream:
     retriever:
       record_selector:
@@ -102,7 +102,7 @@ definitions:
       name: "weather_current"
       primary_key: "datetime"
       path: "/weather/v1/current-conditions"
-  
+
   weather_forecast_stream:
     retriever:
       record_selector:
@@ -159,7 +159,6 @@ definitions:
     $options:
       name: "wildfire_locate"
       path: "/fires/v1/locate-and-track"
-
 
 streams:
   - "*ref(definitions.air_quality_current_stream)"

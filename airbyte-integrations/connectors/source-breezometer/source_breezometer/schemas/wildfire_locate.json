@@ -3,109 +3,55 @@
   "type": "object",
   "properties": {
     "type": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "features": {
-      "type": [
-        "null",
-        "array"
-      ],
+      "type": ["null", "array"],
       "items": {
-        "type": [
-          "null",
-          "object"
-        ],
+        "type": ["null", "object"],
         "properties": {
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "type": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "properties": {
-            "type": [
-              "null",
-              "object"
-            ],
+            "type": ["null", "object"],
             "properties": {
               "CurrentLat": {
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": ["null", "number"]
               },
               "CurrentLon": {
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": ["null", "number"]
               },
               "DiscoveryDateTime": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "EventDescription": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "LastUpdated": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               }
             }
           },
           "geometry": {
-            "type": [
-              "null",
-              "object"
-            ],
+            "type": ["null", "object"],
             "properties": {
               "type": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "coordinates": {
-                "type": [
-                  "null",
-                  "array"
-                ],
+                "type": ["null", "array"],
                 "items": {
-                  "type": [
-                    "null",
-                    "array"
-                  ],
+                  "type": ["null", "array"],
                   "items": {
-                    "type": [
-                      "null",
-                      "array"
-                    ],
+                    "type": ["null", "array"],
                     "items": {
-                      "type": [
-                        "null",
-                        "array"
-                      ],
+                      "type": ["null", "array"],
                       "items": {
-                        "type": [
-                          "null",
-                          "number"
-                        ]
+                        "type": ["null", "number"]
                       }
                     }
                   }

@@ -3,64 +3,34 @@
   "type": "object",
   "properties": {
     "datetime": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "data_available": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "indexes": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {
         "baqi": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": ["null", "object"],
           "properties": {
             "display_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "aqi": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "aqi_display": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "color": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "category": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "dominant_pollutant": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           }
         }

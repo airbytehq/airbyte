@@ -4,9 +4,7 @@
       "stream": {
         "name": "air_quality_current",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -15,9 +13,7 @@
       "stream": {
         "name": "air_quality_forecast",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -26,9 +22,7 @@
       "stream": {
         "name": "air_quality_historical",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -37,9 +31,7 @@
       "stream": {
         "name": "pollen_forecast",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -48,9 +40,7 @@
       "stream": {
         "name": "weather_current",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -59,9 +49,7 @@
       "stream": {
         "name": "weather_forecast",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -70,9 +58,7 @@
       "stream": {
         "name": "wildfire_burnt_area",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -81,9 +67,7 @@
       "stream": {
         "name": "wildfire_locate",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
