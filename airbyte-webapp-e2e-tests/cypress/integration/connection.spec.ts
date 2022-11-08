@@ -171,7 +171,11 @@ describe("Connection main actions", () => {
 
     let loadedConnection: any = null; // Should be a WebBackendConnectionRead
     cy.wait("@getConnection").then((interception) => {
-      const { scheduleType: readScheduleType, scheduleData: readScheduleData, ...connectionRead } = interception.response?.body;
+      const {
+        scheduleType: readScheduleType,
+        scheduleData: readScheduleData,
+        ...connectionRead
+      } = interception.response?.body;
       loadedConnection = connectionRead;
 
       expect(loadedConnection).not.to.eq(null);
