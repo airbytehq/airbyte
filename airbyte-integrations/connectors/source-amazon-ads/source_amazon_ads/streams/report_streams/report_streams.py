@@ -119,7 +119,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         self._model = self._generate_model()
         self._start_date: Optional[Date] = config.get("start_date")
         # Timeout duration in minutes for Reports
-        self.report_wait_timeout: int = get_typed_env("REPORT_WAIT_TIMEOUT", 60)
+        self.report_wait_timeout: int = get_typed_env("REPORT_WAIT_TIMEOUT", 180)
         # Maximum retries Airbyte will attempt for fetching report data
         self.report_generation_maximum_retries: int = get_typed_env("REPORT_GENERATION_MAX_RETRIES", 5)
 
