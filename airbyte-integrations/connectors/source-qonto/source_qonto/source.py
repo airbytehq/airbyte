@@ -14,6 +14,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from source_qonto.auth import QontoApiKeyAuthenticator
 from source_qonto.endpoint import get_url_base
 
+
 # Basic full refresh stream
 class QontoStream(HttpStream, ABC):
     """
@@ -104,9 +105,7 @@ class Transactions(QontoStream):
         """
         Define any query parameters to be set.
         """
-        start_date = datetime.strptime(
-            stream_state.get(self.cursor_field) if stream_state else self.start_date, self.cursor_date_format
-        )
+        start_date = datetime.strptime(stream_state.get(self.cursor_field) if stream_state else self.start_date, self.cursor_date_format)
         params = {"iban": self.iban, "settled_at_from": start_date.strftime(self.cursor_date_format)}
         if next_page_token:
             params.update(next_page_token)
@@ -126,9 +125,7 @@ class SourceQonto(AbstractSource):
         try:
             headers = {"Authorization": f'{config["organization_slug"]}:{config["secret_key"]}'}
             params = {"iban": config["iban"]}
-            resp = requests.request(
-                "GET", url=f"{get_url_base(config['endpoint'])}/transactions", params=params, headers=headers
-            )
+            resp = requests.request("GET", url=f"{get_url_base(config['endpoint'])}/transactions", params=params, headers=headers)
             status = resp.status_code
             logger.info(f"Ping response code: {status}")
             if status == 200:
