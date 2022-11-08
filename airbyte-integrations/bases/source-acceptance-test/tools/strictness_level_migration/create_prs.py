@@ -25,7 +25,7 @@ def main():
     new_branch = airbyte_repo.create_head(new_branch_name)
     new_branch.checkout()
     migrate_acceptance_test_config(connector_name)
-    relative_config_path = "airbyte-integrations/connectors/{connector_name}/acceptance-test-config.yml"
+    relative_config_path = f"airbyte-integrations/connectors/{connector_name}/acceptance-test-config.yml"
     airbyte_repo.git.add(relative_config_path)
     airbyte_repo.git.commit(m=f"Migrated config for {connector_name}")
     airbyte_repo.git.push("--set-upstream", "origin", new_branch)
