@@ -42,10 +42,8 @@ import io.airbyte.protocol.models.SyncMode;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
@@ -341,8 +339,13 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
       bastion.initAndStartBastion(network);
       db.start();
       final JsonNode configWithSSLModeDisabled = bastion.getTunnelConfig(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, ImmutableMap.builder()
-              .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
-              .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
+              .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(db.getContainerInfo()
+                      .getNetworkSettings()
+                      .getNetworks()
+                      .entrySet().stream()
+                      .findFirst()
+                      .get().getValue().getIpAddress()))
+              .put(JdbcUtils.PORT_KEY, db.getExposedPorts().get(0))
               .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
               .put(JdbcUtils.SCHEMAS_KEY, List.of("public"))
               .put(JdbcUtils.USERNAME_KEY, db.getUsername())
