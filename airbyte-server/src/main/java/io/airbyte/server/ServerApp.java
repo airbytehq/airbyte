@@ -63,8 +63,6 @@ import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
 import io.airbyte.server.handlers.StateHandler;
-import io.airbyte.server.handlers.WebBackendConnectionsHandler;
-import io.airbyte.server.handlers.WebBackendGeographiesHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.server.scheduler.EventRunner;
@@ -328,19 +326,6 @@ public class ServerApp implements ServerRunnable {
 
     final StateHandler stateHandler = new StateHandler(statePersistence);
 
-    final WebBackendConnectionsHandler webBackendConnectionsHandler = new WebBackendConnectionsHandler(
-        connectionsHandler,
-        stateHandler,
-        sourceHandler,
-        destinationHandler,
-        jobHistoryHandler,
-        schedulerHandler,
-        operationsHandler,
-        eventRunner,
-        configRepository);
-
-    final WebBackendGeographiesHandler webBackendGeographiesHandler = new WebBackendGeographiesHandler();
-
     LOGGER.info("Starting server...");
 
     return apiFactory.create(
@@ -375,9 +360,7 @@ public class ServerApp implements ServerRunnable {
         sourceHandler,
         sourceDefinitionsHandler,
         stateHandler,
-        workspacesHandler,
-        webBackendConnectionsHandler,
-        webBackendGeographiesHandler);
+        workspacesHandler);
   }
 
   public static void main(final String[] args) {

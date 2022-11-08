@@ -109,6 +109,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
@@ -117,9 +118,13 @@ import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
+import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
+import io.airbyte.server.handlers.StateHandler;
+import io.airbyte.server.handlers.WebBackendConnectionsHandler;
+import io.airbyte.server.handlers.WebBackendGeographiesHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
@@ -141,14 +146,19 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   private final DestinationDefinitionsHandler destinationDefinitionsHandler;
   private final DestinationHandler destinationHandler;
   private final ConnectionsHandler connectionsHandler;
+  private final OperationsHandler operationsHandler;
   private final SchedulerHandler schedulerHandler;
+  private final StateHandler stateHandler;
   private final JobHistoryHandler jobHistoryHandler;
+  private final WebBackendConnectionsHandler webBackendConnectionsHandler;
+  private final WebBackendGeographiesHandler webBackendGeographiesHandler;
 
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
                           final SecretsRepositoryReader secretsRepositoryReader,
                           final SecretsRepositoryWriter secretsRepositoryWriter,
                           final SynchronousSchedulerClient synchronousSchedulerClient,
+                          final StatePersistence statePersistence,
                           final TrackingClient trackingClient,
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
@@ -176,6 +186,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         eventRunner,
         connectionsHandler);
 
+    stateHandler = new StateHandler(statePersistence);
     sourceHandler = new SourceHandler(
         configRepository,
         secretsRepositoryReader,
@@ -183,6 +194,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         schemaValidator,
         connectionsHandler);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, synchronousSchedulerClient, sourceHandler);
+    operationsHandler = new OperationsHandler(configRepository);
     destinationHandler = new DestinationHandler(
         configRepository,
         secretsRepositoryReader,
@@ -198,6 +210,17 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         sourceHandler);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence, workerEnvironment, logConfigs, connectionsHandler, sourceHandler,
         sourceDefinitionsHandler, destinationHandler, destinationDefinitionsHandler, airbyteVersion);
+    webBackendConnectionsHandler = new WebBackendConnectionsHandler(
+        connectionsHandler,
+        stateHandler,
+        sourceHandler,
+        destinationHandler,
+        jobHistoryHandler,
+        schedulerHandler,
+        operationsHandler,
+        eventRunner,
+        configRepository);
+    webBackendGeographiesHandler = new WebBackendGeographiesHandler();
   }
 
   // WORKSPACE
@@ -394,7 +417,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public InternalOperationResult saveStats(final SaveStatsRequestBody saveStatsRequestBody) {
-    throw new NotImplementedException();
+    throw new UnsupportedOperationException();
   }
 
   // SOURCE SPECIFICATION
@@ -1093,67 +1116,39 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   // WEB BACKEND
 
-  /**
-   * This implementation has been moved to {@link HealthApiController}. Since the path of
-   * {@link HealthApiController} is more granular, it will override this implementation
-   */
   @Override
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    throw new NotImplementedException();
+    return execute(() -> webBackendConnectionsHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody));
   }
 
-  /**
-   * This implementation has been moved to {@link HealthApiController}. Since the path of
-   * {@link HealthApiController} is more granular, it will override this implementation
-   */
   @Override
   public WebBackendGeographiesListResult webBackendListGeographies() {
-    throw new NotImplementedException();
+    return execute(webBackendGeographiesHandler::listGeographiesOSS);
   }
 
-  /**
-   * This implementation has been moved to {@link HealthApiController}. Since the path of
-   * {@link HealthApiController} is more granular, it will override this implementation
-   */
   @Override
   public WebBackendConnectionRead webBackendGetConnection(final WebBackendConnectionRequestBody webBackendConnectionRequestBody) {
-    throw new NotImplementedException();
+    return execute(() -> webBackendConnectionsHandler.webBackendGetConnection(webBackendConnectionRequestBody));
   }
 
-  /**
-   * This implementation has been moved to {@link HealthApiController}. Since the path of
-   * {@link HealthApiController} is more granular, it will override this implementation
-   */
   @Override
   public WebBackendConnectionRead webBackendCreateConnection(final WebBackendConnectionCreate webBackendConnectionCreate) {
-    throw new NotImplementedException();
+    return execute(() -> webBackendConnectionsHandler.webBackendCreateConnection(webBackendConnectionCreate));
   }
 
-  /**
-   * This implementation has been moved to {@link HealthApiController}. Since the path of
-   * {@link HealthApiController} is more granular, it will override this implementation
-   */
   @Override
   public WebBackendConnectionRead webBackendUpdateConnection(final WebBackendConnectionUpdate webBackendConnectionUpdate) {
-    throw new NotImplementedException();
+    return execute(() -> webBackendConnectionsHandler.webBackendUpdateConnection(webBackendConnectionUpdate));
   }
 
-  /**
-   * This implementation has been moved to {@link HealthApiController}. Since the path of
-   * {@link HealthApiController} is more granular, it will override this implementation
-   */
   @Override
   public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) {
-    throw new NotImplementedException();
+    return ConfigurationApi.execute(() -> webBackendConnectionsHandler.getStateType(connectionIdRequestBody));
   }
 
-  /**
-   * This implementation has been moved to {@link HealthApiController}. Since the path of
-   * {@link HealthApiController} is more granular, it will override this implementation
-   */
   @Override
   public WebBackendWorkspaceStateResult webBackendGetWorkspaceState(final WebBackendWorkspaceState webBackendWorkspaceState) {
-    throw new NotImplementedException();
+    return execute(() -> webBackendConnectionsHandler.getWorkspaceState(webBackendWorkspaceState));
   }
 
   // TODO: Move to common when all the api are moved
