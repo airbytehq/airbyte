@@ -250,6 +250,7 @@
   "sources.incrementalDefault": "{value} (default)",
   "sources.incrementalSourceCursor": "Incremental - source-defined cursor",
   "sources.full_refresh": "Full refresh",
+  "sources.frequentlyUsed": "Suggested sources",
   "sources.incremental": "Incremental - based on...",
   "sources.newSource": "New source",
   "sources.createFirst": "Connect your first source",
