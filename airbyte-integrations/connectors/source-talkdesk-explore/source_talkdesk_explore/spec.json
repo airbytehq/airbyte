@@ -28,6 +28,7 @@
         "title": "REGION",
         "description": "Region to use when generating reports. Only US, Canada and Europe are supported. Defaults to US region.",
         "examples": ["US", "Canada", "Europe" ],
+        "enum": ["US", "Canada", "Europe" ],
         "pattern": "^(US|Canada|Europe)$",
         "default": "US",
         "order": 2
