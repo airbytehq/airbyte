@@ -37,11 +37,11 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       base: "vs-dark",
       inherit: true,
       rules: [
-        { token: "string", foreground: expandHexValue(styles.tokenString) },
-        { token: "type", foreground: expandHexValue(styles.tokenType) },
-        { token: "number", foreground: expandHexValue(styles.tokenNumber) },
-        { token: "delimiter", foreground: expandHexValue(styles.tokenDelimiter) },
-        { token: "keyword", foreground: expandHexValue(styles.tokenKeyword) },
+        { token: "string", foreground: expandHexValue(styles.darkString) },
+        { token: "type", foreground: expandHexValue(styles.darkType) },
+        { token: "number", foreground: expandHexValue(styles.darkNumber) },
+        { token: "delimiter", foreground: expandHexValue(styles.darkDelimiter) },
+        { token: "keyword", foreground: expandHexValue(styles.darkKeyword) },
       ],
       colors: {
         "editor.background": "#00000000", // transparent, so that parent background is shown instead
