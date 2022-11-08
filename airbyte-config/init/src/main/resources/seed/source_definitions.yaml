@@ -839,6 +839,13 @@
   icon: mysql.svg
   sourceType: database
   releaseStage: beta
+- name: n8n
+  sourceDefinitionId: 4a961f66-5e99-4430-8320-a73afe52f7a2
+  dockerRepository: airbyte/source-n8n
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/n8n
+  sourceType: api
+  releaseStage: alpha
 - name: NASA
   sourceDefinitionId: 1a8667d7-7978-43cd-ba4d-d32cbd478971
   dockerRepository: airbyte/source-nasa
@@ -973,7 +980,7 @@
 - name: Pinterest
   sourceDefinitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-pinterest
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.com/integrations/sources/pinterest
   icon: pinterest.svg
   sourceType: api
@@ -1120,7 +1127,7 @@
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 0.1.25
+  dockerImageTag: 0.1.26
   documentationUrl: https://docs.airbyte.com/integrations/sources/s3
   icon: s3.svg
   sourceType: file
@@ -1147,6 +1154,13 @@
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/search-metrics
   icon: searchmetrics.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Secoda
+  sourceDefinitionId: da9fc6b9-8059-4be0-b204-f56e22e4d52d
+  dockerRepository: airbyte/source-secoda
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/secoda
   sourceType: api
   releaseStage: alpha
 - name: Sendgrid
