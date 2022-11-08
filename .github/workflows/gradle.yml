@@ -886,15 +886,15 @@ jobs:
       run:
         working-directory: "/home/runner"
     env:
-      HOME: /home/runner
-      GITHUB_WORKSPACE: /home/runner
+      HOME: /actions-runner/_work/airbyte/airbyte
+      GITHUB_WORKSPACE: /actions-runner/_work/airbyte/airbyte
     # github:
     #   workspace: /home/runner
 
     steps:
       - name: Fix EC-2 Runner
         run: |
-          mkdir -p /home/runner && mkdir -p /home/runner/.kube
+          mkdir -p /actions-runner/_work/airbyte/airbyte && mkdir -p /actions-runner/_work/airbyte/airbyte/.kube
         
       - name: Checkout Airbyte
         uses: actions/checkout@v2
