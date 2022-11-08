@@ -6,9 +6,9 @@
 from typing import Dict
 
 QONTO_ENDPOINT_MAP: Dict = {
-    "sandbox": "https://thirdparty-sandbox.staging.qonto.co/v2/",
-    "production": "https://thirdparty.qonto.com/v2/",
-    "mocked server": "https://stoplight.io/mocks/qonto-next/business-api/8419419/v2/",
+    "Sandbox": "https://thirdparty-sandbox.staging.qonto.co/v2/",
+    "Production": "https://thirdparty.qonto.com/v2/",
+    "Test Mocked API Server": "https://stoplight.io/mocks/qonto-next/business-api/8419419/v2/",
 }
 
 

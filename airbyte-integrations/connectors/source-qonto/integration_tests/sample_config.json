@@ -1,5 +1,5 @@
 {
-    "endpoint" : "mocked server",
+    "endpoint" : "Test Mocked API Server",
     "iban": "REPLACEME",
     "organization_slug": "REPLACEME",
     "secret_key": "REPLACEME",

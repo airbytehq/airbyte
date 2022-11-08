@@ -4,6 +4,7 @@ connectionSpecification:
   title: Qonto Spec
   type: object
   required:
+    - endpoint
     - organization_slug
     - secret_key
     - iban
@@ -13,9 +14,9 @@ connectionSpecification:
       type: string
       description: Please choose the right endpoint to use in this connection
       enum: 
-        #- sandbox # not yet supported
-        - production
-        - mocked server
+        #- Sandbox # not yet supported
+        - Production
+        - Test Mocked API Server
     organization_slug:
       title: Organization slug
       type: string
