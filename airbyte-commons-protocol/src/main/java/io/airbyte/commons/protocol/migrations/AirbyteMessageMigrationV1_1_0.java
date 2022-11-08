@@ -14,12 +14,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.StreamSupport;
 
-public class AirbyteMessageMigrationV0_4_0 implements AirbyteMessageMigration<AirbyteMessage, io.airbyte.protocol.models.v0.AirbyteMessage> {
+public class AirbyteMessageMigrationV1_1_0 implements AirbyteMessageMigration<AirbyteMessage, io.airbyte.protocol.models.v0.AirbyteMessage> {
 
   private static final Set<String> PRIMITIVE_TYPES = ImmutableSet.of(
     "string",
@@ -194,11 +193,11 @@ public class AirbyteMessageMigrationV0_4_0 implements AirbyteMessageMigration<Ai
 
   @Override
   public Version getPreviousVersion() {
-    return new Version("0.3.2");
+    return new Version("1.0.0");
   }
 
   @Override
   public Version getCurrentVersion() {
-    return new Version("0.4.0");
+    return new Version("1.1.0");
   }
 }
