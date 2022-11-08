@@ -5,13 +5,19 @@
 package io.airbyte.integrations.destination.mongodb;
 
 import static com.mongodb.client.model.Projections.excludeId;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCursor;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
+import io.airbyte.db.mongodb.MongoUtils;
 import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.IOException;
@@ -21,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -102,9 +109,27 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
     return result;
   }
 
+  @Test
+  void testCheck() throws Exception {
+    final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
+        .put("instance", MongoInstanceType.STANDALONE.getType())
+        .put("tls", false)
+        .build());
+
+    final JsonNode invalidStandaloneConfig = getConfig();
+
+    ((ObjectNode) invalidStandaloneConfig).put(MongoUtils.INSTANCE_TYPE, instanceConfig);
+
+    final Throwable throwable = catchThrowable(() -> new MongodbDestinationStrictEncrypt().check(invalidStandaloneConfig));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    assertThat(((ConfigErrorException) throwable)
+        .getDisplayMessage()
+        .contains("TLS connection must be used to read from MongoDB."));
+  }
+
   @Override
   protected void setup(final TestDestinationEnv testEnv) {
-    var credentials = String.format("%s:%s@", config.get(AUTH_TYPE).get(JdbcUtils.USERNAME_KEY).asText(),
+    final var credentials = String.format("%s:%s@", config.get(AUTH_TYPE).get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(AUTH_TYPE).get(JdbcUtils.PASSWORD_KEY).asText());
     final String connectionString = String.format("mongodb+srv://%s%s/%s?retryWrites=true&w=majority&tls=true",
         credentials,
