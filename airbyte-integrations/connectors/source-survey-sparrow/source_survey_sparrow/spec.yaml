@@ -5,6 +5,7 @@ connectionSpecification:
   type: object
   required:
     - access_token
+    - url_base
   additionalProperties: true
   properties:
     # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
@@ -18,3 +19,14 @@ connectionSpecification:
     survey_id:
       type: array
       description: A List of your survey ids for survey-specific stream
+    url_base:
+      title: Base URL 
+      type: string
+      description: Is your account location is EU based? If yes, the base url to retrieve data will be different.
+      oneOf:
+        - title: EU-based account
+          type: string
+          const: "https://eu-api.surveysparrow.com/v3"
+        - title: Other locations account
+          type: string
+          const: "https://api.surveysparrow.com/v3"
