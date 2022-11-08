@@ -476,13 +476,13 @@ public class TemporalClient {
     return connectionManagerWorkflow;
   }
 
-  public void deleteConnection(final UUID connectionId) {
-    try {
-      connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId,
-          connectionManagerWorkflow -> connectionManagerWorkflow::deleteConnection);
-    } catch (final DeletedWorkflowException e) {
-      log.info("Connection {} has already been deleted.", connectionId);
-    }
+  /**
+   * This will cancel a workflow even if the connection is deleted already
+   *
+   * @param connectionId - connectionId to cancel
+   */
+  public void forceCancelWorkflow(final UUID connectionId) {
+    connectionManagerUtils.cancelWorkflowIfItExist(client, connectionId);
   }
 
   public void update(final UUID connectionId) {
