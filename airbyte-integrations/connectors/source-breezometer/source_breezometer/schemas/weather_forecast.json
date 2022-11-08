@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "start_date": {
+      "type": ["null", "string"]
+    },
+    "sun": {
+      "type": ["null", "object"],
+      "properties": {
+        "sunrise_time": {
+          "type": ["null", "string"]
+        },
+        "sunset_time": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "moon": {
+      "type": ["null", "object"],
+      "properties": {
+        "moonrise_time": {
+          "type": ["null", "string"]
+        },
+        "moonset_time": {
+          "type": ["null", "string"]
+        },
+        "moon_phase": {
+          "type": ["null", "string"]
+        },
+        "moon_age": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "max_uv_index": {
+      "type": ["null", "integer"]
+    }
+  }
+}
