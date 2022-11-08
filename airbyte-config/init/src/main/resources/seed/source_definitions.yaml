@@ -169,6 +169,13 @@
   icon: braintree.svg
   sourceType: api
   releaseStage: alpha
+- name: Breezometer
+  sourceDefinitionId: 7c37685e-8512-4901-addf-9afbef6c0de9
+  dockerRepository: airbyte/source-breezometer
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/breezometer
+  sourceType: api
+  releaseStage: alpha
 - name: Cart.com
   sourceDefinitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
   dockerRepository: airbyte/source-cart
@@ -350,7 +357,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.71
+  dockerImageTag: 0.2.72
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -368,6 +375,13 @@
   dockerRepository: airbyte/source-faker
   dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
+  sourceType: api
+  releaseStage: alpha
+- name: Fastbill
+  sourceDefinitionId: eb3e9c1c-0467-4eb7-a172-5265e04ccd0a
+  dockerRepository: airbyte/source-fastbill
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/fastbill
   sourceType: api
   releaseStage: alpha
 - name: Fauna
@@ -401,7 +415,7 @@
 - name: Freshdesk
   sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
   dockerRepository: airbyte/source-freshdesk
-  dockerImageTag: 0.3.6
+  dockerImageTag: 0.3.7
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshdesk
   icon: freshdesk.svg
   sourceType: api
@@ -572,7 +586,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -627,7 +641,7 @@
 - name: Jira
   sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   dockerRepository: airbyte/source-jira
-  dockerImageTag: 0.2.22
+  dockerImageTag: 0.2.23
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   icon: jira.svg
   sourceType: api
@@ -635,10 +649,17 @@
 - name: Kafka
   sourceDefinitionId: d917a47b-8537-4d0d-8c10-36a9928d4265
   dockerRepository: airbyte/source-kafka
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/kafka
   icon: kafka.svg
   sourceType: database
+  releaseStage: alpha
+- name: Klarna
+  sourceDefinitionId: 60c24725-00ae-490c-991d-55b78c3197e0
+  dockerRepository: airbyte/source-klarna
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/klarna
+  sourceType: api
   releaseStage: alpha
 - name: Klaviyo
   sourceDefinitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
@@ -1051,6 +1072,13 @@
   icon: recharge.svg
   sourceType: api
   releaseStage: generally_available
+- name: Recruitee
+  sourceDefinitionId: 3b046ac7-d8d3-4eb3-b122-f96b2a16d8a8
+  dockerRepository: airbyte/source-recruitee
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/recruitee
+  sourceType: api
+  releaseStage: alpha
 - name: Recurly
   sourceDefinitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
   dockerRepository: airbyte/source-recurly
@@ -1326,6 +1354,13 @@
   icon: victorops.svg
   sourceType: api
   releaseStage: alpha
+- name: Visma E-conomic
+  sourceDefinitionId: 42495935-95de-4f5c-ae08-8fac00f6b308
+  dockerRepository: airbyte/source-visma-economic
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/visma-economic
+  sourceType: api
+  releaseStage: alpha
 - name: xkcd
   sourceDefinitionId: 80fddd16-17bd-4c0c-bf4a-80df7863fc9d
   dockerRepository: airbyte/source-xkcd
@@ -1369,6 +1404,13 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/wrike
   icon: wrike.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Zapier Supported Storage
+  sourceDefinitionId: b8c917bc-7d1b-4828-995f-6726820266d0
+  dockerRepository: airbyte/source-zapier-supported-storage
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-supported-storage
   sourceType: api
   releaseStage: alpha
 - name: Zendesk Chat
