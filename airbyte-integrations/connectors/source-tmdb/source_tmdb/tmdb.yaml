@@ -7,10 +7,9 @@ definitions:
   requester:
     url_base: "https://api.themoviedb.org/3/"
     http_method: "GET"
-    authenticator:
-      type: ApiKeyAuthenticator
-      header: "apikey"
-      api_token: "{{ config['api_key'] }}"
+    request_options_provider:
+      request_parameters:
+        api_key: "{{ config['api_key'] }}"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -29,199 +28,199 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "certification_movie"
-      path: "/certification/movie/list?api_key={{ config['api_key'] }}"
+      path: "/certification/movie/list"
 
   certification_tv_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "certification_tv"
-      path: "/certification/tv/list?api_key={{ config['api_key'] }}"
+      path: "/certification/tv/list"
 
   changes_movie_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "changes_movie"
-      path: "/movie/changes?api_key={{ config['api_key'] }}&page=1"
+      path: "/movie/changes?page=1"
 
   changes_tv_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "changes_tv"
-      path: "/tv/changes?api_key={{ config['api_key'] }}&page=1"
+      path: "/tv/changes?page=1"
 
   changes_person_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "changes_person"
-      path: "/person/changes?api_key={{ config['api_key'] }}&page=1"
+      path: "/person/changes?page=1"
 
   movies_details_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_details"
-      path: "/movie/{{ config['movie_id'] or '550' }}?api_key={{ config['api_key'] }}"
+      path: "/movie/{{ config['movie_id'] }}"
 
   movies_alternative_titles_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_alternative_titles"
-      path: "/movie/{{ config['movie_id'] or '550' }}/alternative_titles?api_key={{ config['api_key'] }}"
+      path: "/movie/{{ config['movie_id'] }}/alternative_titles"
 
   movies_changes_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_changes"
-      path: "/movie/{{ config['movie_id'] or '550' }}/changes?api_key={{ config['api_key'] }}"
+      path: "/movie/{{ config['movie_id'] }}/changes"
 
   movies_credits_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_credits"
-      path: "/movie/{{ config['movie_id'] or '550' }}/credits?api_key={{ config['api_key'] }}"
+      path: "/movie/{{ config['movie_id'] }}/credits"
 
   movies_external_ids_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_external_ids"
-      path: "/movie/{{ config['movie_id'] or '550' }}/external_ids?api_key={{ config['api_key'] }}"
+      path: "/movie/{{ config['movie_id'] }}/external_ids"
 
   movies_images_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_images"
-      path: "/movie/{{ config['movie_id'] or '550' }}/images?api_key={{ config['api_key'] }}"
+      path: "/movie/{{ config['movie_id'] }}/images"
 
   movies_keywords_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_keywords"
-      path: "/movie/{{ config['movie_id'] or '550' }}/keywords?api_key={{ config['api_key'] }}"
+      path: "/movie/{{ config['movie_id'] }}/keywords"
   
   movies_lists_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_lists"
-      path: "/movie/{{ config['movie_id'] or '550' }}/lists?api_key={{ config['api_key'] }}"
+      path: "/movie/{{ config['movie_id'] }}/lists"
       
   movies_recommendations_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_recommendations"
-      path: "/movie/{{ config['movie_id'] or '550' }}/recommendations?api_key={{ config['api_key'] }}"
+      path: "/movie/{{ config['movie_id'] }}/recommendations"
 
   movies_releases_dates_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_releases_dates"
-      path: "/movie/{{ config['movie_id'] or '550' }}/release_dates?api_key={{ config['api_key'] }}"
+      path: "/movie/{{ config['movie_id'] }}/release_dates"
       
   movies_reviews_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_reviews"
-      path: "/movie/{{ config['movie_id'] or '550' }}/reviews?api_key={{ config['api_key'] }}"
+      path: "/movie/{{ config['movie_id'] }}/reviews"
 
   movies_similar_movies_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_similar_movies"
-      path: "/movie/{{ config['movie_id'] or '550' }}/similar?api_key={{ config['api_key'] }}"
+      path: "/movie/{{ config['movie_id'] }}/similar"
   
   movies_translations_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_translations"
-      path: "/movie/{{ config['movie_id'] or '550' }}/translations?api_key={{ config['api_key'] }}"
+      path: "/movie/{{ config['movie_id'] }}/translations"
 
   movies_videos_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_videos"
-      path: "/movie/{{ config['movie_id'] or '550' }}/videos?api_key={{ config['api_key'] }}"
+      path: "/movie/{{ config['movie_id'] }}/videos"
 
   movies_watch_providers_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_watch_providers"
-      path: "/movie/{{ config['movie_id'] or '550' }}/watch/providers?api_key={{ config['api_key'] }}"
+      path: "/movie/{{ config['movie_id'] }}/watch/providers"
 
   movies_latest_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_latest"
-      path: "/movie/latest?api_key={{ config['api_key'] }}"
+      path: "/movie/latest"
 
   movies_now_playing_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_now_playing"
-      path: "/movie/now_playing?api_key={{ config['api_key'] }}"
+      path: "/movie/now_playing"
 
   movies_popular_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_popular"
-      path: "/movie/popular?api_key={{ config['api_key'] }}"
+      path: "/movie/popular"
       
   movies_top_rated_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_top_rated"
-      path: "/movie/top_rated?api_key={{ config['api_key'] }}"
+      path: "/movie/top_rated"
 
   movies_upcoming_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_upcoming"
-      path: "/movie/upcoming?api_key={{ config['api_key'] }}"
+      path: "/movie/upcoming"
 
   trending_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "trending"
-      path: "/trending/all/day?api_key={{ config['api_key'] }}"
+      path: "/trending/all/day"
 
   search_companies_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "search_companies"
-      path: "/search/company?query={{ config['api_key'] or 'Marvel'}}&api_key={{ config['api_key'] }}&page=1"
+      path: "/search/company?query={{ config['query'] }}"
 
   search_collections_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "search_collections"
-      path: "/search/collection?query={{ config['api_key'] or 'Marvel'}}&api_key={{ config['api_key'] }}&language={{ config['language'] or 'en-US' }}&page=1"
+      path: "/search/collection?query={{ config['query'] }}&language={{ config['language'] or 'en-US' }}"
 
   search_keywords_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "search_keywords"
-      path: "/search/keyword?query={{ config['api_key'] or 'Marvel'}}&api_key={{ config['api_key'] }}&page=1"
+      path: "/search/keyword?query={{ config['query'] }}"
 
   search_movies_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "search_movies"
-      path: "/search/movie?query={{ config['api_key'] or 'Marvel'}}&api_key={{ config['api_key'] }}&language={{ config['language'] or 'en-US' }}&page=1&include_adult=false"
+      path: "/search/movie?query={{ config['query'] }}&language={{ config['language'] or 'en-US' }}&include_adult=false"
 
   search_multi_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "search_multi"
-      path: "/search/multi?query={{ config['api_key'] or 'Marvel'}}&api_key={{ config['api_key'] }}&language={{ config['language'] or 'en-US' }}&page=1&include_adult=false"
+      path: "/search/multi?query={{ config['query'] }}&language={{ config['language'] or 'en-US' }}&include_adult=false"
 
   search_people_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "search_people"
-      path: "/search/person?query={{ config['api_key'] or 'Marvel'}}&api_key={{ config['api_key'] }}&language={{ config['language'] or 'en-US' }}&page=1&include_adult=false"
+      path: "/search/person?query={{ config['query'] }}&language={{ config['language'] or 'en-US' }}&include_adult=false"
 
   search_tv_shows_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "search_tv_shows"
-      path: "/search/tv?query={{ config['api_key'] or 'Marvel'}}&api_key={{ config['api_key'] }}&language={{ config['language'] or 'en-US' }}&page=1&include_adult=false"
+      path: "/search/tv?query={{ config['query'] }}&language={{ config['language'] or 'en-US' }}&include_adult=false"
 
 
 streams:

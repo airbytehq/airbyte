@@ -24,7 +24,7 @@
 					"poster_path": {
 						"$id": "#root/results/items/poster_path", 
 						"title": "Poster_path", 
-						"type": "string",
+						"type": ["null","string"],
 						"default": "",
 						"pattern": "^.*$"
 					},
@@ -43,7 +43,7 @@
 					"backdrop_path": {
 						"$id": "#root/results/items/backdrop_path", 
 						"title": "Backdrop_path", 
-						"type": "string",
+						"type": ["null","string"],
 						"default": "",
 						"pattern": "^.*$"
 					},
@@ -56,14 +56,14 @@
 					"overview": {
 						"$id": "#root/results/items/overview", 
 						"title": "Overview", 
-						"type": "string",
+						"type": ["null","string"],
 						"default": "",
 						"pattern": "^.*$"
 					},
 					"first_air_date": {
 						"$id": "#root/results/items/first_air_date", 
 						"title": "First_air_date", 
-						"type": "string",
+						"type": ["null","string"],
 						"default": "",
 						"pattern": "^.*$"
 					},
@@ -75,7 +75,7 @@
 						"items":{
 							"$id": "#root/results/items/origin_country/items", 
 							"title": "Items", 
-							"type": "string",
+							"type": ["null","string"],
 							"default": "",
 							"pattern": "^.*$"
 						}
@@ -95,7 +95,7 @@
 					"original_language": {
 						"$id": "#root/results/items/original_language", 
 						"title": "Original_language", 
-						"type": "string",
+						"type": ["null","string"],
 						"default": "",
 						"pattern": "^.*$"
 					},
@@ -108,14 +108,14 @@
 					"name": {
 						"$id": "#root/results/items/name", 
 						"title": "Name", 
-						"type": "string",
+						"type": ["null","string"],
 						"default": "",
 						"pattern": "^.*$"
 					},
 					"original_name": {
 						"$id": "#root/results/items/original_name", 
 						"title": "Original_name", 
-						"type": "string",
+						"type": ["null","string"],
 						"default": "",
 						"pattern": "^.*$"
 					}

@@ -5,6 +5,8 @@ connectionSpecification:
   type: object
   required:
     - api_key
+    - movie_id
+    - query
   additionalProperties: true
   properties:
     api_key:
@@ -15,12 +17,12 @@ connectionSpecification:
     movie_id:
       title: Optional movie ID for targeting movies 
       type: string
-      description: Target movie ID, Default would be '550' for required streams
+      description: Target movie ID, Mandate for movie streams (Example is 550)
     query:
       title: Optional Query for search streams 
       type: string
-      description: Target movie ID, Default would be Marvel for required streams
+      description: Target movie ID, Mandate for search streams (Example is Marvel)
     language:
       title: Optional language for filtering
       type: string
-      description: Language expressed in ISO 639-1 scheme, Default would be en-US for required streams
+      description: Language expressed in ISO 639-1 scheme, Mandate for required streams (Example en-US) 
