@@ -1,0 +1,18 @@
+{
+  "properties": {
+    "conversation_rating": {
+      "properties": {
+        "teammate": {
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "type": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    }
+  }
+}
