@@ -14,12 +14,12 @@
       "description": "The status of the campaign (DRAFT/SENDING/SENT/ERROR)."
     },
     "name": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "Campaign Name",
       "description": "The name of the campaign."
     },
     "subject": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "Subject",
       "description": "The subject of the campaign."
     },
