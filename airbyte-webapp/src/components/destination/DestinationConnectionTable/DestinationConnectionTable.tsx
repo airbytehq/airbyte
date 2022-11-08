@@ -8,14 +8,14 @@ import { getConnectionTableData } from "components/EntityTable/utils";
 
 import { RoutePaths } from "pages/routePaths";
 
-import { WebBackendConnectionListItem } from "../../../../../core/request/AirbyteClient";
+import { WebBackendConnectionListItem } from "../../../core/request/AirbyteClient";
 import styles from "./DestinationConnectionTable.module.scss";
 
 interface IProps {
   connections: WebBackendConnectionListItem[];
 }
 
-const DestinationConnectionTable: React.FC<IProps> = ({ connections }) => {
+export const DestinationConnectionTable: React.FC<IProps> = ({ connections }) => {
   const navigate = useNavigate();
   const { syncManualConnection } = useSyncActions();
 
@@ -39,5 +39,3 @@ const DestinationConnectionTable: React.FC<IProps> = ({ connections }) => {
     </div>
   );
 };
-
-export default DestinationConnectionTable;
