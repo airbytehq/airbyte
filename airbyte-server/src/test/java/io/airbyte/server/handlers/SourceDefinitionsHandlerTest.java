@@ -32,7 +32,11 @@ import io.airbyte.api.model.generated.SourceReadList;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.config.ActorType;
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSourceDefinition;
@@ -524,6 +528,11 @@ class SourceDefinitionsHandlerTest {
     assertEquals(newDockerImageTag, sourceDefinitionRead.getDockerImageTag());
     verify(schedulerSynchronousClient).createGetSpecJob(newImageName);
     verify(configRepository).writeStandardSourceDefinition(updatedSource);
+
+    final Configs configs = new EnvConfigs();
+    final AirbyteProtocolVersionRange protocolVersionRange =
+        new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(), configs.getAirbyteProtocolVersionMax());
+    verify(configRepository).clearUnsupportedProtocolVersionFlag(updatedSource.getSourceDefinitionId(), ActorType.SOURCE, protocolVersionRange);
   }
 
   @Test
