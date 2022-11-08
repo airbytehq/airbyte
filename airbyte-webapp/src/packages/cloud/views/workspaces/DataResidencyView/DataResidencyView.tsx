@@ -98,17 +98,6 @@ export const DataResidencyView: React.FC = () => {
                         value={field.value}
                         onChange={(geography) => form.setFieldValue("defaultGeography", geography)}
                       />
-                      {/* <DropDown
-                        options={geographies.map((geography) => ({
-                          label: formatMessage({
-                            id: `connection.geography.${geography}`,
-                            defaultMessage: geography.toUpperCase(),
-                          }),
-                          value: geography,
-                        }))}
-                        value={field.value}
-                        onChange={(option) => form.setFieldValue("defaultGeography", option.value)}
-                      /> */}
                     </div>
                   </div>
                 )}
