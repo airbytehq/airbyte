@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 public class PostgresCdcProperties {
 
+  private static final int HEARTBEAT_FREQUENCY_SEC = 10;
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcProperties.class);
 
   static Properties getDebeziumDefaultProperties(final JdbcDatabase database) {
@@ -57,7 +58,7 @@ public class PostgresCdcProperties {
     props.setProperty("include.unknown.datatypes", "true");
 
 
-    props.setProperty("heartbeat.interval.ms", Long.toString(Duration.ofSeconds(10).toMillis()));
+    props.setProperty("heartbeat.interval.ms", Long.toString(Duration.ofSeconds(HEARTBEAT_FREQUENCY_SEC).toMillis()));
 
     // Check params for SSL connection in config and add properties for CDC SSL connection
     // https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-property-database-sslmode
