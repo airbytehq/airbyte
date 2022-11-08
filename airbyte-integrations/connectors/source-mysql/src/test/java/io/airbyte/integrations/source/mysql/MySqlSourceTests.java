@@ -13,14 +13,20 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.base.ssh.SshBastionContainer;
+import io.airbyte.integrations.base.ssh.SshTunnel;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 
 public class MySqlSourceTests {
@@ -29,6 +35,8 @@ public class MySqlSourceTests {
 
   private static final String TEST_USER = "test";
   private static final String TEST_PASSWORD = "test";
+  private static final SshBastionContainer bastion = new SshBastionContainer();
+  private static final Network network = Network.newNetwork();
 
   @Test
   public void testSettingTimezones() throws Exception {
@@ -84,6 +92,27 @@ public class MySqlSourceTests {
         JdbcUtils.PORT_KEY, 1111,
         JdbcUtils.USERNAME_KEY, "user",
         JdbcUtils.DATABASE_KEY, "db/foo"));
+  }
+
+  @Test
+  void testCheckWithSSlModeDisabled() throws Exception {
+    try (final MySQLContainer<?> db = new MySQLContainer<>("mysql:8.0").withNetwork(network)) {
+      bastion.initAndStartBastion(network);
+      db.start();
+      final JsonNode configWithSSLModeDisabled = bastion.getTunnelConfig(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, ImmutableMap.builder()
+          .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
+          .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
+          .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
+          .put(JdbcUtils.SCHEMAS_KEY, List.of("public"))
+          .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+          .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+          .put(JdbcUtils.SSL_MODE_KEY, Map.of(JdbcUtils.MODE_KEY, "disable")));
+
+      final AirbyteConnectionStatus actual = MySqlSource.sshWrappedSource().check(configWithSSLModeDisabled);
+      assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, actual.getStatus());
+    } finally {
+      bastion.stopAndClose();
+    }
   }
 
 }
