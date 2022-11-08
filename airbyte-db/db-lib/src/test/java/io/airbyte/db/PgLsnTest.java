@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class PgLsnTest {
 
   private static final Map<String, Long> TEST_LSNS = ImmutableMap.<String, Long>builder()

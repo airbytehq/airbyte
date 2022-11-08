@@ -13,6 +13,7 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
+    AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateMessage,
@@ -22,7 +23,8 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources import Source
-from faker import Faker
+from mimesis import Datetime, Person
+from mimesis.locales import Locale
 
 
 class SourceFaker(Source):
@@ -107,8 +109,8 @@ class SourceFaker(Source):
         records_per_sync: int = config["records_per_sync"] if "records_per_sync" in config else 500
         records_per_slice: int = config["records_per_slice"] if "records_per_slice" in config else 100
 
-        Faker.seed(seed)
-        fake = Faker()
+        person = Person(locale=Locale.EN, seed=seed)
+        dt = Datetime(seed=seed)
 
         to_generate_users = False
         to_generate_purchases = False
@@ -126,6 +128,8 @@ class SourceFaker(Source):
             raise ValueError("Purchases stream cannot be enabled without Users stream")
 
         for stream in catalog.streams:
+            yield log_stream(stream.stream.name)
+
             if stream.stream.name == "Users":
                 cursor = get_stream_cursor(state, stream.stream.name)
                 total_records = cursor
@@ -133,14 +137,14 @@ class SourceFaker(Source):
                 records_in_page = 0
 
                 for i in range(cursor, count):
-                    user = generate_user(fake, i)
+                    user = generate_user(person, dt, i)
                     yield generate_record(stream, user)
                     total_records += 1
                     records_in_sync += 1
                     records_in_page += 1
 
                     if to_generate_purchases:
-                        purchases = generate_purchases(fake, user, purchases_count)
+                        purchases = generate_purchases(user, purchases_count)
                         for p in purchases:
                             yield generate_record(purchases_stream, p)
                             purchases_count += 1
@@ -181,11 +185,22 @@ def generate_record(stream: any, data: any):
     # timestamps need to be emitted in ISO format
     for key in dict:
         if isinstance(dict[key], datetime.datetime):
-            dict[key] = dict[key].isoformat()
+            dict[key] = format_airbyte_time(dict[key])
 
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(stream=stream.stream.name, data=dict, emitted_at=int(datetime.datetime.now().timestamp()) * 1000),
+    )
+
+
+def log_stream(stream_name: str):
+    return AirbyteMessage(
+        type=Type.LOG,
+        log=AirbyteLogMessage(
+            message="Sending data for stream: " + stream_name,
+            level="INFO",
+            emitted_at=int(datetime.datetime.now().timestamp()) * 1000,
+        ),
     )
 
 
@@ -196,22 +211,39 @@ def generate_state(state: Dict[str, any], stream: any, data: any):
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=state))
 
 
-def generate_user(fake: Faker, user_id: int):
-    profile = fake.profile()
-    del profile["birthdate"]  # the birthdate field seems to not obey the seed at the moment, so we'll ignore it
+def generate_user(person: Person, dt: Datetime, user_id: int):
+    time_a = dt.datetime()
+    time_b = dt.datetime()
 
-    time_a = fake.date_time()
-    time_b = fake.date_time()
-    metadata = {
+    profile = {
         "id": user_id + 1,
         "created_at": time_a if time_a <= time_b else time_b,
         "updated_at": time_a if time_a > time_b else time_b,
+        "name": person.name(),
+        "title": person.title(),
+        "age": person.age(),
+        "email": person.email(),
+        "telephone": person.telephone(),
+        "gender": person.gender(),
+        "language": person.language(),
+        "academic_degree": person.academic_degree(),
+        "nationality": person.nationality(),
+        "occupation": person.occupation(),
+        "height": person.height(),
+        "blood_type": person.blood_type(),
+        "weight": person.weight(),
     }
-    profile.update(metadata)
+
+    while not profile["created_at"]:
+        profile["created_at"] = dt.datetime()
+
+    if not profile["updated_at"]:
+        profile["updated_at"] = profile["created_at"] + 1
+
     return profile
 
 
-def generate_purchases(fake: Faker, user: any, purchases_count: int) -> list[Dict]:
+def generate_purchases(user: any, purchases_count: int) -> list[Dict]:
     purchases: list[Dict] = []
     purchase_percent_remaining = 80  # ~ 20% of people will have no purchases
     total_products = len(generate_products())
@@ -255,6 +287,16 @@ def read_json(filepath):
 def random_date_in_range(start_date: datetime.datetime, end_date: datetime.datetime = datetime.datetime.now()) -> datetime.datetime:
     time_between_dates = end_date - start_date
     days_between_dates = time_between_dates.days
+    if days_between_dates < 2:
+        days_between_dates = 2
     random_number_of_days = random.randrange(days_between_dates)
     random_date = start_date + datetime.timedelta(days=random_number_of_days)
     return random_date
+
+
+def format_airbyte_time(d: datetime):
+    s = f"{d}"
+    s = s.split(".")[0]
+    s = s.replace(" ", "T")
+    s += "+00:00"
+    return s

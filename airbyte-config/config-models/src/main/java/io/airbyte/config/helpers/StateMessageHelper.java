@@ -8,12 +8,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Iterables;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 
 public class StateMessageHelper {
 
@@ -26,6 +28,7 @@ public class StateMessageHelper {
    * @param state - a blob representing the state
    * @return An optional state wrapper, if there is no state an empty optional will be returned
    */
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   public static Optional<StateWrapper> getTypedState(final JsonNode state, final boolean useStreamCapableState) {
     if (state == null) {
       return Optional.empty();
@@ -36,7 +39,7 @@ public class StateMessageHelper {
       } catch (final IllegalArgumentException e) {
         return Optional.of(getLegacyStateWrapper(state));
       }
-      if (stateMessages.size() == 0) {
+      if (stateMessages.isEmpty()) {
         return Optional.empty();
       }
 
@@ -72,6 +75,33 @@ public class StateMessageHelper {
 
       }
     }
+  }
+
+  /**
+   * Converts a StateWrapper to a State
+   *
+   * LegacyStates are directly serialized into the state. GlobalStates and StreamStates are serialized
+   * as a list of AirbyteStateMessage in the state attribute.
+   *
+   * @param stateWrapper the StateWrapper to convert
+   * @return the Converted State
+   */
+  @SuppressWarnings("UnnecessaryDefault")
+  public static State getState(final StateWrapper stateWrapper) {
+    return switch (stateWrapper.getStateType()) {
+      case LEGACY -> new State().withState(stateWrapper.getLegacyState());
+      case STREAM -> new State().withState(Jsons.jsonNode(stateWrapper.getStateMessages()));
+      case GLOBAL -> new State().withState(Jsons.jsonNode(List.of(stateWrapper.getGlobal())));
+      default -> throw new RuntimeException("Unexpected StateType " + stateWrapper.getStateType());
+    };
+  }
+
+  public static Boolean isMigration(final StateType currentStateType, final Optional<StateWrapper> previousState) {
+    return previousState.isPresent() && isMigration(currentStateType, previousState.get().getStateType());
+  }
+
+  public static Boolean isMigration(final StateType currentStateType, final @Nullable StateType previousStateType) {
+    return previousStateType == StateType.LEGACY && currentStateType != StateType.LEGACY;
   }
 
   private static StateWrapper provideGlobalState(final AirbyteStateMessage stateMessages, final boolean useStreamCapableState) {

@@ -51,4 +51,15 @@ public class MySqlCdcStateHandler implements CdcStateHandler {
     return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
   }
 
+  @Override
+  public AirbyteMessage saveStateAfterCompletionOfSnapshotOfNewStreams() {
+    LOGGER.info("Snapshot of new tables is complete, saving state");
+    /*
+     * Namespace pair is ignored by global state manager, but is needed for satisfy the API contract.
+     * Therefore, provide an empty optional.
+     */
+    final AirbyteStateMessage stateMessage = stateManager.emit(Optional.empty());
+    return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
+  }
+
 }

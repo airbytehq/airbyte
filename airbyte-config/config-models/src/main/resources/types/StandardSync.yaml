@@ -11,6 +11,8 @@ required:
   - catalog
   - manual
   - namespaceDefinition
+  - geography
+  - breakingChange
 additionalProperties: false
 properties:
   namespaceDefinition:
@@ -46,9 +48,7 @@ properties:
       - active
       - inactive
       - deprecated
-  # Ideally schedule and manual should be a union, but java
-  # codegen does not handle the union type properly.
-  # When schedule is defined, manual should be false.
+  # TODO(https://github.com/airbytehq/airbyte/issues/11432): remove. Prefer the scheduleType and scheduleData properties.
   schedule:
     type: object
     required:
@@ -67,10 +67,63 @@ properties:
       units:
         type: integer
   # When manual is true, schedule should be null, and will be ignored.
+  # TODO(https://github.com/airbytehq/airbyte/issues/11432): remove. Prefer setting the scheduleType property to Manual.
   manual:
     type: boolean
+  # If this property is set to BasicSchedule or Cron, the corresponding field in the scheduleData property should be set.
+  # NOTE: if this is set, it takes precedence over the `manual` property.
+  scheduleType:
+    type: string
+    enum:
+      - Manual
+      - BasicSchedule
+      - Cron
+  scheduleData:
+    type: object
+    additionalProperties: false
+    # Ideally basicSchedule and cron should be a union, but java codegen does not handle the union type properly.
+    properties:
+      # This should be populated when scheduleType is BasicSchedule.
+      basicSchedule:
+        type: object
+        required:
+          - timeUnit
+          - units
+        properties:
+          timeUnit:
+            type: string
+            enum:
+              - minutes
+              - hours
+              - days
+              - weeks
+              - months
+          units:
+            type: integer
+      # This should be populated when scheduleType is Cron.
+      cron:
+        type: object
+        required:
+          - cronExpression
+          - cronTimeZone
+        properties:
+          cronExpression:
+            type: string
+          cronTimeZone:
+            type: string
   source_catalog_id:
     type: string
     format: uuid
   resourceRequirements:
     "$ref": ResourceRequirements.yaml
+  geography:
+    "$ref": Geography.yaml
+  breakingChange:
+    type: boolean
+  notifySchemaChanges:
+    type: boolean
+  nonBreakingChangesPreference:
+    type: string
+    enum:
+      - ignore
+      - disable

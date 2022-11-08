@@ -3,56 +3,57 @@
 #
 
 import inspect
+from typing import Any, Mapping
 
-from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
-from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
+OPTIONS_STR = "$options"
 
-"""
+
+def create(func, /, *args, **keywords):
+    """
     Create a partial on steroids.
     Returns a partial object which when called will behave like func called with the arguments supplied.
     Parameters will be interpolated before the creation of the object
     The interpolation will take in kwargs, and config as parameters that can be accessed through interpolating.
     If any of the parameters are also create functions, they will also be created.
     kwargs are propagated to the recursive method calls
+
     :param func: Function
     :param args:
     :param keywords:
     :return: partially created object
     """
 
-
-def create(func, /, *args, **keywords):
     def newfunc(*fargs, **fkeywords):
-        interpolation = JinjaInterpolation()
+
         all_keywords = {**keywords}
         all_keywords.update(fkeywords)
 
         # config is a special keyword used for interpolation
         config = all_keywords.pop("config", None)
 
-        # options is a special keyword used for interpolation and propagation
-        if "options" in all_keywords:
-            options = all_keywords.pop("options")
+        # $options is a special keyword used for interpolation and propagation
+        if OPTIONS_STR in all_keywords:
+            options = all_keywords.get(OPTIONS_STR)
         else:
             options = dict()
-
-        # create object's partial parameters
-        fully_created = _create_inner_objects(all_keywords, options)
-
-        # interpolate the parameters
-        interpolated_keywords = InterpolatedMapping(fully_created, interpolation).eval(config, **{"options": options})
-        interpolated_keywords = {k: v for k, v in interpolated_keywords.items() if v is not None}
-
-        all_keywords.update(interpolated_keywords)
 
         # if config is not none, add it back to the keywords mapping
         if config is not None:
             all_keywords["config"] = config
 
-        kwargs_to_pass_down = _get_kwargs_to_pass_to_func(func, options)
-        all_keywords_to_pass_down = _get_kwargs_to_pass_to_func(func, all_keywords)
+        kwargs_to_pass_down = _get_kwargs_to_pass_to_func(func, options, all_keywords)
+        all_keywords_to_pass_down = _get_kwargs_to_pass_to_func(func, all_keywords, all_keywords)
+
+        # options is required as part of creation of all declarative components
+        dynamic_args = {**all_keywords_to_pass_down, **kwargs_to_pass_down}
+        if "options" not in dynamic_args:
+            dynamic_args["options"] = {}
+        else:
+            # Handles the case where kwarg options and keyword $options both exist. We should merge both sets of options
+            # before creating the component
+            dynamic_args["options"] = {**all_keywords_to_pass_down["options"], **kwargs_to_pass_down["options"]}
         try:
-            ret = func(*args, *fargs, **{**all_keywords_to_pass_down, **kwargs_to_pass_down})
+            ret = func(*args, *fargs, **dynamic_args)
         except TypeError as e:
             raise Exception(f"failed to create object of type {func} because {e}")
         return ret
@@ -64,13 +65,21 @@ def create(func, /, *args, **keywords):
     return newfunc
 
 
-def _get_kwargs_to_pass_to_func(func, kwargs):
+def _get_kwargs_to_pass_to_func(func, options, existing_keyword_parameters):
     argspec = inspect.getfullargspec(func)
     kwargs_to_pass_down = set(argspec.kwonlyargs)
     args_to_pass_down = set(argspec.args)
     all_args = args_to_pass_down.union(kwargs_to_pass_down)
-    kwargs_to_pass_down = {k: v for k, v in kwargs.items() if k in all_args}
+    kwargs_to_pass_down = {
+        k: v for k, v in options.items() if k in all_args and _key_is_unset_or_identical(k, v, existing_keyword_parameters)
+    }
+    if "options" in all_args:
+        kwargs_to_pass_down["options"] = options
     return kwargs_to_pass_down
+
+
+def _key_is_unset_or_identical(key: str, value: Any, mapping: Mapping[str, Any]):
+    return key not in mapping or mapping[key] == value
 
 
 def _create_inner_objects(keywords, kwargs):

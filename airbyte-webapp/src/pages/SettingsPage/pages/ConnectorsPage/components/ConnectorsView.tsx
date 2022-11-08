@@ -2,16 +2,17 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 
-import HeadTitle from "components/HeadTitle";
-import Table from "components/Table";
+import { HeadTitle } from "components/common/HeadTitle";
+import { Table } from "components/ui/Table";
 
 import { Connector, ConnectorDefinition } from "core/domain/connector";
 import { DestinationDefinitionRead, SourceDefinitionRead } from "core/request/AirbyteClient";
 import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
-import { FeatureItem, useFeatureService, WithFeature } from "hooks/services/Feature";
+import { FeatureItem, IfFeatureEnabled, useFeature } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 import ConnectorCell from "./ConnectorCell";
+import styles from "./ConnectorsView.module.scss";
 import CreateConnector from "./CreateConnector";
 import ImageCell from "./ImageCell";
 import { Block, FormContentTitle, Title } from "./PageComponents";
@@ -45,8 +46,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
   onUpdate,
   connectorsDefinitions,
 }) => {
-  const { hasFeature } = useFeatureService();
-  const allowUpdateConnectors = hasFeature(FeatureItem.AllowUpdateConnectors);
+  const allowUpdateConnectors = useFeature(FeatureItem.AllowUpdateConnectors);
   const workspace = useCurrentWorkspace();
   const availableConnectorDefinitions = useAvailableConnectorDefinitions(connectorsDefinitions, workspace);
 
@@ -108,10 +108,10 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
   const renderHeaderControls = (section: "used" | "available") =>
     ((section === "used" && usedConnectorsDefinitions.length > 0) ||
       (section === "available" && usedConnectorsDefinitions.length === 0)) && (
-      <div>
-        <WithFeature featureId={FeatureItem.AllowUploadCustomImage}>
+      <div className={styles.buttonsContainer}>
+        <IfFeatureEnabled feature={FeatureItem.AllowUploadCustomImage}>
           <CreateConnector type={type} />
-        </WithFeature>
+        </IfFeatureEnabled>
         {(hasNewConnectorVersion || isUpdateSuccess) && allowUpdateConnectors && (
           <UpgradeAllButton
             isLoading={loading}

@@ -1,0 +1,186 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "applications",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["applied_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "primary_key": [["id"]],
+      "cursor_field": ["applied_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "candidates",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "job_posts",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "jobs",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "offers",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "scorecards",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "users",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "demographics_answers",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "applications_demographics_answers",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "interviews",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "applications_interviews",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "job_stages",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "jobs_stages",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

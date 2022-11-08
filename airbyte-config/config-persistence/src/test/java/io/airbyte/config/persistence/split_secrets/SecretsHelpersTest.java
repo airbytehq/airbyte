@@ -14,6 +14,7 @@ import io.airbyte.config.persistence.split_secrets.test_cases.ArrayOneOfTestCase
 import io.airbyte.config.persistence.split_secrets.test_cases.ArrayTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.NestedObjectTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.NestedOneOfTestCase;
+import io.airbyte.config.persistence.split_secrets.test_cases.OneOfSecretTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.OneOfTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.OptionalPasswordTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.PostgresSshKeyTestCase;
@@ -61,6 +62,7 @@ public class SecretsHelpersTest {
         new SimpleTestCase(),
         new NestedObjectTestCase(),
         new OneOfTestCase(),
+        new OneOfSecretTestCase(),
         new ArrayTestCase(),
         new ArrayOneOfTestCase(),
         new NestedOneOfTestCase(),
@@ -86,7 +88,7 @@ public class SecretsHelpersTest {
         uuidIterator::next,
         WORKSPACE_ID,
         inputConfig,
-        testCase.getSpec());
+        testCase.getSpec().getConnectionSpecification());
 
     assertEquals(testCase.getPartialConfig(), splitConfig.getPartialConfig());
     assertEquals(testCase.getFirstSecretMap(), splitConfig.getCoordinateToPayload());
@@ -129,7 +131,7 @@ public class SecretsHelpersTest {
         WORKSPACE_ID,
         inputPartialConfig,
         inputUpdateConfig,
-        testCase.getSpec(),
+        testCase.getSpec().getConnectionSpecification(),
         secretPersistence::read);
 
     assertEquals(testCase.getUpdatedPartialConfig(), updatedSplit.getPartialConfig());
@@ -177,7 +179,7 @@ public class SecretsHelpersTest {
         uuidIterator::next,
         WORKSPACE_ID,
         testCase.getFullConfig(),
-        testCase.getSpec());
+        testCase.getSpec().getConnectionSpecification());
 
     assertEquals(testCase.getPartialConfig(), splitConfig.getPartialConfig());
     assertEquals(testCase.getFirstSecretMap(), splitConfig.getCoordinateToPayload());
@@ -191,7 +193,7 @@ public class SecretsHelpersTest {
         WORKSPACE_ID,
         testCase.getPartialConfig(),
         testCase.getFullConfigUpdate1(),
-        testCase.getSpec(),
+        testCase.getSpec().getConnectionSpecification(),
         secretPersistence::read);
 
     assertEquals(testCase.getUpdatedPartialConfigAfterUpdate1(), updatedSplit1.getPartialConfig());
@@ -206,7 +208,7 @@ public class SecretsHelpersTest {
         WORKSPACE_ID,
         updatedSplit1.getPartialConfig(),
         testCase.getFullConfigUpdate2(),
-        testCase.getSpec(),
+        testCase.getSpec().getConnectionSpecification(),
         secretPersistence::read);
 
     assertEquals(testCase.getUpdatedPartialConfigAfterUpdate2(), updatedSplit2.getPartialConfig());

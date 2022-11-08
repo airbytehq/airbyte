@@ -1,6 +1,7 @@
 {
   "type": "object",
   "properties": {
+    "id": { "type": "number" },
     "date": { "type": "string", "format": "date-time" },
     "CAD": { "type": ["null", "number"] },
     "HKD": { "type": ["null", "number"] },
@@ -44,6 +45,18 @@
           }
         }
       ]
+    },
+    "someArray": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "oldName": {
+            "type": ["string", "null"],
+            "maxLength": 100
+          }
+        }
+      }
     }
   }
 }

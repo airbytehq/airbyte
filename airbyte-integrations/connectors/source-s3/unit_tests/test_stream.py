@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
+from source_s3.exceptions import S3Exception
 from source_s3.source_files_abstract.file_info import FileInfo
 from source_s3.source_files_abstract.storagefile import StorageFile
 from source_s3.source_files_abstract.stream import IncrementalFileStream
@@ -593,6 +594,42 @@ class TestIncrementalFileStream:
                 False,
                 False,
             ),
+            (  # int becomes str in case of type mismatch in different files
+                "{}",
+                datetime(2020, 5, 5, 13, 5, 5),
+                [
+                    FileInfo(last_modified=datetime(2022, 1, 1, 13, 5, 5), key="first", size=128),
+                    FileInfo(last_modified=datetime(2022, 6, 7, 8, 9, 10), key="second", size=128),
+                ],
+                [
+                    {
+                        "pk": "string",
+                        "full_name": "string",
+                        "street_address": "string",
+                        "customer_code": "integer",
+                        "email": "string",
+                        "dob": "string",
+                    },
+                    {
+                        "pk": "integer",
+                        "full_name": "string",
+                        "street_address": "string",
+                        "customer_code": "integer",
+                        "email": "string",
+                        "dob": "string",
+                    },
+                ],
+                {
+                    "pk": "string",
+                    "full_name": "string",
+                    "street_address": "string",
+                    "customer_code": "integer",
+                    "email": "string",
+                    "dob": "string",
+                },
+                True,
+                False,
+            ),
         ),
     )
     @patch("source_s3.stream.IncrementalFileStreamS3.storagefile_class", MagicMock())
@@ -606,7 +643,7 @@ class TestIncrementalFileStream:
                     dataset="dummy", provider={}, format={"filetype": "csv"}, schema=user_schema, path_pattern="**/prefix*.csv"
                 )
                 if error_expected:
-                    with pytest.raises(RuntimeError):
+                    with pytest.raises(S3Exception):
                         stream_instance._get_master_schema(min_datetime=min_datetime)
                 else:
                     assert stream_instance._get_master_schema(min_datetime=min_datetime) == expected_schema

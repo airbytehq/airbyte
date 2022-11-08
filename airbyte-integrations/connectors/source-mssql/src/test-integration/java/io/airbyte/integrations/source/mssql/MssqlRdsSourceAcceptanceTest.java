@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -39,7 +40,7 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
     }
 
     config = Jsons.clone(baseConfig);
-    ((ObjectNode) config).put("database", dbName);
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
   }
 
   public JsonNode getStaticConfig() {
@@ -54,12 +55,12 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
       case "encrypted_trust_server_certificate" -> additionalParameter = "encrypt=true;trustServerCertificate=true;";
     }
     return DSLContextFactory.create(
-        baseConfig.get("username").asText(),
-        baseConfig.get("password").asText(),
+        baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+        baseConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;%s",
-            baseConfig.get("host").asText(),
-            baseConfig.get("port").asInt(),
+            baseConfig.get(JdbcUtils.HOST_KEY).asText(),
+            baseConfig.get(JdbcUtils.PORT_KEY).asInt(),
             additionalParameter),
         null);
   }
@@ -70,7 +71,7 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    final String database = config.get("database").asText();
+    final String database = config.get(JdbcUtils.DATABASE_KEY).asText();
     try (final DSLContext dslContext = getDslContext(baseConfig)) {
       getDatabase(dslContext).query(ctx -> {
         ctx.fetch(String.format("ALTER DATABASE %s SET single_user with rollback immediate;", database));

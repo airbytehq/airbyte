@@ -30,7 +30,7 @@ You should see an onboarding page. Enter your email and continue.
 
 ## 2. Set up your first connection
 
-We support a growing [list of source connectors](../../integrations/sources). For now, we will start out with a Postgres source and destination.
+We support a growing [list of source connectors](../../category/sources). For now, we will start out with a Postgres source and destination.
 
 **If you don't have a readily available Postgres database to sync, here are some quick instructions:**  
 Run the following commands in a new terminal window to start backgrounded source and destination databases:

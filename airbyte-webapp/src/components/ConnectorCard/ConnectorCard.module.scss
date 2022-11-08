@@ -1,0 +1,55 @@
+@use "../../scss/colors";
+@use "../../scss/variables";
+
+.container {
+  display: flex;
+  padding: variables.$spacing-md;
+  width: 220px;
+  align-items: center;
+}
+
+.details {
+  width: 160px;
+  margin-left: variables.$spacing-md;
+  display: flex;
+  flex-direction: column;
+  font-weight: normal;
+}
+
+.entityIcon {
+  height: 30px;
+  width: 30px;
+}
+
+.connectionName {
+  font-size: 14px;
+  color: colors.$dark-blue-900;
+  text-align: left;
+  margin-right: variables.$spacing-md;
+}
+
+.connectorDetails {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.connectorName {
+  font-size: 11px;
+  margin-top: 1px;
+  color: colors.$grey-300;
+  text-align: left;
+  word-wrap: break-word;
+}
+
+.fullWidth {
+  width: 100%;
+
+  .details {
+    width: 100%;
+
+    .connectorDetails {
+      justify-content: space-between;
+    }
+  }
+}

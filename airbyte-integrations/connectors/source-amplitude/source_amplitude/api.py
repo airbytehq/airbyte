@@ -60,7 +60,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
 
     def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
-        self._start_date = pendulum.parse(start_date)
+        self._start_date = pendulum.parse(start_date) if isinstance(start_date, str) else start_date
 
     @property
     @abstractmethod
@@ -101,7 +101,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
         if self.compare_date_template:
             latest_state = pendulum.parse(latest_record[self.cursor_field]).strftime(self.compare_date_template)
         else:
-            latest_state = latest_record[self.cursor_field]
+            latest_state = latest_record.get(self.cursor_field, "")
         return {self.cursor_field: max(latest_state, current_stream_state.get(self.cursor_field, ""))}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -131,6 +131,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
                     "end": self._get_end_date(start_datetime).strftime(self.date_template),
                 }
             )
+
         return params
 
 
@@ -140,7 +141,7 @@ class Events(IncrementalAmplitudeStream):
     compare_date_template = "%Y-%m-%d %H:%M:%S.%f"
     primary_key = "uuid"
     state_checkpoint_interval = 1000
-    time_interval = {"days": 3}
+    time_interval = {"days": 1}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         state_value = stream_state[self.cursor_field] if stream_state else self._start_date.strftime(self.compare_date_template)
@@ -177,6 +178,7 @@ class Events(IncrementalAmplitudeStream):
                 }
             )
             start = start.add(**self.time_interval)
+
         return slices
 
     def read_records(
@@ -196,7 +198,8 @@ class Events(IncrementalAmplitudeStream):
         # https://developers.amplitude.com/docs/export-api#status-codes
         try:
             self.logger.info(f"Fetching {self.name} time range: {start.strftime('%Y-%m-%dT%H')} - {end.strftime('%Y-%m-%dT%H')}")
-            yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+            records = super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+            yield from records
         except requests.exceptions.HTTPError as error:
             status = error.response.status_code
             if status in HTTP_ERROR_CODES.keys():
@@ -231,7 +234,7 @@ class ActiveUsers(IncrementalAmplitudeStream):
         if response_data:
             series = list(map(list, zip(*response_data["series"])))
             for i, date in enumerate(response_data["xValues"]):
-                yield {"date": date, "statistics": dict(zip(response_data["seriesLabels"], series[i]))}
+                yield from [{"date": date, "statistics": dict(zip(response_data["seriesLabels"], series[i]))}] if series else []
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/users"
@@ -249,9 +252,11 @@ class AverageSessionLength(IncrementalAmplitudeStream):
             # From the Amplitude documentation it follows that "series" is an array with one element which is itself
             # an array that contains the average session length for each day.
             # https://developers.amplitude.com/docs/dashboard-rest-api#returns-2
-            series = response_data["series"][0]
-            for i, date in enumerate(response_data["xValues"]):
-                yield {"date": date, "length": series[i]}
+            series = response_data.get("series", [])
+            if len(series) > 0:
+                series = series[0]  # get the nested list
+                for i, date in enumerate(response_data["xValues"]):
+                    yield {"date": date, "length": series[i]}
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/sessions/average"

@@ -6,6 +6,10 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 **Note: you are not required to maintain the connectors you create.** The goal is that the Airbyte core team and the community help maintain the connector.
 
+## Low-code Connector-Development Framework
+
+You can use the [low-code framework](config-based/low-code-cdk-overview.md) to build source connectors for REST APIs by modifying boilerplate YAML files.
+
 ## Python Connector-Development Kit \(CDK\)
 
 You can build a connector very quickly in Python with the [Airbyte CDK](cdk-python/), which generates 75% of the code required for you.
@@ -64,7 +68,7 @@ and choose the relevant template by using the arrow keys. This will generate a n
 Search the generated directory for "TODO"s and follow them to implement your connector. For more detailed walkthroughs and instructions, follow the relevant tutorial:
 
 * [Speedrun: Building a HTTP source with the CDK](tutorials/cdk-speedrun.md)
-* [Building a HTTP source with the CDK](tutorials/cdk-tutorial-python-http/)
+* [Building a HTTP source with the CDK](tutorials/cdk-tutorial-python-http/getting-started.md)
 * [Building a Python source](tutorials/building-a-python-source.md) 
 * [Building a Python destination](tutorials/building-a-python-destination.md)
 * [Building a Java destination](tutorials/building-a-java-destination.md)
@@ -131,7 +135,8 @@ Once you've finished iterating on the changes to a connector as specified in its
    
    * Then run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/a534bb2a8f29b20e3cc7c52fef1bc3c34783695d/airbyte-config/specs) for more information.
    
-5. The new version of the connector is now available for everyone who uses it. Thank you!
+5. If the `README.md` file of the connector contains a `Changelog` section, add the new version and relevant release information to the table in the section.
+6. The new version of the connector is now available for everyone who uses it. Thank you!
 
 ### The /publish command
 

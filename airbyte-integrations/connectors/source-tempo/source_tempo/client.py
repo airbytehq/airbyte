@@ -22,10 +22,10 @@ class Client(BaseClient):
 
     PARAMS = {"limit": DEFAULT_ITEMS_PER_PAGE, "offset": 0}
     ENTITIES_MAP = {
-        "accounts": {"url": "/accounts", "func": lambda v: v["results"], "params": PARAMS},
-        "customers": {"url": "/customers", "func": lambda v: v["results"], "params": PARAMS},
-        "worklogs": {"url": "/worklogs", "func": lambda v: v["results"], "params": PARAMS},
-        "workload-schemes": {"url": "/workload-schemes", "func": lambda v: v["results"], "params": PARAMS},
+        "accounts": {"url": "/accounts", "func": lambda v: v["results"], "paginated": False, "params": PARAMS},
+        "customers": {"url": "/customers", "func": lambda v: v["results"], "paginated": False, "params": PARAMS},
+        "worklogs": {"url": "/worklogs", "func": lambda v: v["results"], "paginated": True, "params": PARAMS},
+        "workload-schemes": {"url": "/workload-schemes", "func": lambda v: v["results"], "paginated": True, "params": PARAMS},
     }
 
     def __init__(self, api_token):
@@ -38,7 +38,7 @@ class Client(BaseClient):
             response = requests.get(f"{self.base_api_url}{url}?limit={params['limit']}&offset={params['offset']}", headers=self.headers)
             data = func(response.json())
             yield from data
-            if len(data) < self.DEFAULT_ITEMS_PER_PAGE:
+            if not self.ENTITIES_MAP[name]["paginated"] or len(data) < self.DEFAULT_ITEMS_PER_PAGE:
                 break
             params["offset"] += self.DEFAULT_ITEMS_PER_PAGE
 

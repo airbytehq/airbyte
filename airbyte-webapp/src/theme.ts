@@ -76,10 +76,6 @@ export const theme = {
   red900: scss.red900,
   red: scss.red,
 
-  beige50: scss.beige50,
-  beige100: scss.beige100,
-  beige: scss.beige,
-
   black: scss.black,
   white: scss.white,
 
@@ -111,12 +107,10 @@ export const theme = {
   dangerColor: scss.red,
   dangerColor25: scss.red50,
   warningColor: scss.yellow,
-  warningBackgroundColor: scss.yellow100,
   lightDangerColor: scss.red50,
   dangerTransparentColor: scss.red50,
   successColor: scss.green,
   successColor20: scss.green50,
-  backgroundColor: scss.beige,
   shadowColor: scss.shadowColor,
   cardShadowColor: scss.cardShadowColor,
 
@@ -135,8 +129,6 @@ export const theme = {
 
   whiteColor: scss.white,
   blackColor: scss.black,
-  beigeColor: scss.beige,
-  darkBeigeColor: scss.beige100,
   borderTableColor: scss.grey100,
   lightTableColor: scss.grey50,
   darkGreyColor: scss.grey400,
@@ -146,9 +138,6 @@ export const theme = {
   transparentColor: scss.transparentColor,
 
   regularFont: scss.regularFont,
-  highlightFont: scss.highlightFont,
-  codeFont: scss.codeFont,
-  italicFont: scss.italicFont,
 };
 
 export const barChartColors = [scss.grey500, scss.grey300];

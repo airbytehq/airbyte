@@ -1,4 +1,4 @@
-import { faStar } from "@fortawesome/free-regular-svg-icons";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useRef, useState } from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
@@ -6,23 +6,25 @@ import { useSearchParams } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 import styled from "styled-components";
 
-import { Button, LoadingButton } from "components";
+import { Button } from "components/ui/Button";
 
-import { useConfig } from "config";
+import { Action, Namespace } from "core/analytics";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { CloudWorkspace } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useStripeCheckout } from "packages/cloud/services/stripe/StripeService";
 import {
   useGetCloudWorkspace,
   useInvalidateCloudWorkspace,
-} from "packages/cloud/services/workspaces/WorkspacesService";
+} from "packages/cloud/services/workspaces/CloudWorkspacesService";
+import { links } from "utils/links";
 
 interface Props {
   selfServiceCheckoutEnabled: boolean;
 }
 
 const Block = styled.div`
-  background: ${({ theme }) => theme.darkBeigeColor};
+  background: ${({ theme }) => theme.blue50};
   border-radius: 8px;
   padding: 18px 25px 22px;
   font-size: 13px;
@@ -30,6 +32,7 @@ const Block = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin: 10px 0;
 `;
 const CreditView = styled.div`
   text-transform: uppercase;
@@ -39,10 +42,6 @@ const Count = styled.div`
   font-weight: bold;
   font-size: 24px;
   line-height: 29px;
-`;
-const StarIcon = styled(FontAwesomeIcon)`
-  margin-right: 6px;
-  font-size: 22px;
 `;
 const Actions = styled.div`
   display: flex;
@@ -61,12 +60,12 @@ function hasRecentCreditIncrease(cloudWorkspace: CloudWorkspace): boolean {
 
 const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
   const retryIntervalId = useRef<number>();
-  const config = useConfig();
   const currentWorkspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(currentWorkspace.workspaceId);
   const [searchParams, setSearchParams] = useSearchParams();
-  const invalidateWorkspace = useInvalidateCloudWorkspace(currentWorkspace.workspaceId);
+  const invalidateCloudWorkspace = useInvalidateCloudWorkspace(currentWorkspace.workspaceId);
   const { isLoading, mutateAsync: createCheckout } = useStripeCheckout();
+  const analytics = useAnalyticsService();
   const [isWaitingForCredits, setIsWaitingForCredits] = useState(false);
 
   useEffectOnce(() => {
@@ -81,10 +80,12 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
       if (!hasRecentCreditIncrease(cloudWorkspace)) {
         setIsWaitingForCredits(true);
         retryIntervalId.current = window.setInterval(() => {
-          invalidateWorkspace();
+          invalidateCloudWorkspace();
         }, 3000);
       }
     }
+
+    return () => clearInterval(retryIntervalId.current);
   });
 
   useEffect(() => {
@@ -107,6 +108,9 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
       successUrl: successUrl.href,
       cancelUrl: window.location.href,
     });
+    analytics.track(Namespace.CREDITS, Action.CHECKOUT_START, {
+      actionDescription: "Checkout Start",
+    });
     // Forward to stripe as soon as we created a checkout session successfully
     window.location.assign(stripeUrl);
   };
@@ -116,21 +120,21 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
       <CreditView>
         <FormattedMessage id="credits.remainingCredits" />
         <Count>
-          <StarIcon icon={faStar} />
           <FormattedNumber value={cloudWorkspace.remainingCredits} />
         </Count>
       </CreditView>
       <Actions>
-        <LoadingButton
+        <Button
           disabled={!selfServiceCheckoutEnabled}
-          size="xl"
           type="button"
+          size="xs"
           onClick={startStripeCheckout}
           isLoading={isLoading || isWaitingForCredits}
+          icon={<FontAwesomeIcon icon={faPlus} />}
         >
           <FormattedMessage id="credits.buyCredits" />
-        </LoadingButton>
-        <Button as="a" target="_blank" href={config.links.contactSales} size="xl">
+        </Button>
+        <Button size="xs" onClick={() => window.open(links.contactSales, "_blank")}>
           <FormattedMessage id="credits.talkToSales" />
         </Button>
       </Actions>

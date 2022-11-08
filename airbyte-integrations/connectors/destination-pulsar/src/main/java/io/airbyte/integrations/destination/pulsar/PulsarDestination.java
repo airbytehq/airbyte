@@ -80,8 +80,10 @@ public class PulsarDestination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    return new PulsarRecordConsumer(PulsarDestinationConfig.getPulsarDestinationConfig(config),
+    final PulsarDestinationConfig pulsarConfig = PulsarDestinationConfig.getPulsarDestinationConfig(config);
+    return new PulsarRecordConsumer(pulsarConfig,
         catalog,
+        PulsarUtils.buildClient(pulsarConfig.getServiceUrl()),
         outputRecordCollector,
         namingResolver);
   }

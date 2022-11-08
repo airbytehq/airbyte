@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbyte-cron
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      airbyte: cron
+  template:
+    metadata:
+      labels:
+        airbyte: cron
+    spec:
+      containers:
+        - name: airbyte-cron-container
+          image: airbyte/cron
+          env:
+            - name: AIRBYTE_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: AIRBYTE_VERSION
+            - name: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: airbyte-secrets
+                  key: DATABASE_PASSWORD
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: DATABASE_URL
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: airbyte-secrets
+                  key: DATABASE_USER
+            - name: TEMPORAL_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: TEMPORAL_HOST
+            - name: TEMPORAL_WORKER_PORTS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: TEMPORAL_WORKER_PORTS
+            - name: WORKSPACE_ROOT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WORKSPACE_ROOT
+            - name: MICRONAUT_ENVIRONMENTS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CRON_MICRONAUT_ENVIRONMENTS
+          volumeMounts:
+            - name: airbyte-volume-configs
+              mountPath: /configs
+            - name: gcs-log-creds-volume
+              mountPath: /secrets/gcs-log-creds
+              readOnly: true
+      volumes:
+        - name: airbyte-volume-configs
+          persistentVolumeClaim:
+            claimName: airbyte-volume-configs
+        - name: gcs-log-creds-volume
+          secret:
+            secretName: gcs-log-creds

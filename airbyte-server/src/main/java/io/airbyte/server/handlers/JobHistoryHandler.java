@@ -5,6 +5,7 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.base.Preconditions;
+import io.airbyte.api.model.generated.AttemptNormalizationStatusReadList;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.generated.DestinationDefinitionRead;
@@ -13,8 +14,10 @@ import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.JobDebugInfoRead;
 import io.airbyte.api.model.generated.JobDebugRead;
 import io.airbyte.api.model.generated.JobIdRequestBody;
+import io.airbyte.api.model.generated.JobInfoLightRead;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.JobListRequestBody;
+import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.JobReadList;
 import io.airbyte.api.model.generated.JobWithAttemptsRead;
 import io.airbyte.api.model.generated.SourceDefinitionIdRequestBody;
@@ -28,12 +31,15 @@ import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.models.Job;
+import io.airbyte.persistence.job.models.JobStatus;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -80,20 +86,35 @@ public class JobHistoryHandler {
         .collect(Collectors.toSet());
     final String configId = request.getConfigId();
 
-    final List<JobWithAttemptsRead> jobReads = jobPersistence.listJobs(configTypes,
-        configId,
-        (request.getPagination() != null && request.getPagination().getPageSize() != null) ? request.getPagination().getPageSize()
-            : DEFAULT_PAGE_SIZE,
-        (request.getPagination() != null && request.getPagination().getRowOffset() != null) ? request.getPagination().getRowOffset() : 0)
+    final int pageSize = (request.getPagination() != null && request.getPagination().getPageSize() != null) ? request.getPagination().getPageSize()
+        : DEFAULT_PAGE_SIZE;
+    final List<Job> jobs;
+
+    if (request.getIncludingJobId() != null) {
+      jobs = jobPersistence.listJobsIncludingId(configTypes, configId, request.getIncludingJobId(), pageSize);
+    } else {
+      jobs = jobPersistence.listJobs(configTypes, configId, pageSize,
+          (request.getPagination() != null && request.getPagination().getRowOffset() != null) ? request.getPagination().getRowOffset() : 0);
+    }
+
+    final Long totalJobCount = jobPersistence.getJobCount(configTypes, configId);
+
+    final List<JobWithAttemptsRead> jobReads = jobs
         .stream()
-        .map(attempt -> jobConverter.getJobWithAttemptsRead(attempt))
+        .map(JobConverter::getJobWithAttemptsRead)
         .collect(Collectors.toList());
-    return new JobReadList().jobs(jobReads);
+
+    return new JobReadList().jobs(jobReads).totalJobCount(totalJobCount);
   }
 
   public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) throws IOException {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
     return jobConverter.getJobInfoRead(job);
+  }
+
+  public JobInfoLightRead getJobInfoLight(final JobIdRequestBody jobIdRequestBody) throws IOException {
+    final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
+    return jobConverter.getJobInfoLightRead(job);
   }
 
   public JobDebugInfoRead getJobDebugInfo(final JobIdRequestBody jobIdRequestBody)
@@ -102,6 +123,40 @@ public class JobHistoryHandler {
     final JobInfoRead jobinfoRead = jobConverter.getJobInfoRead(job);
 
     return buildJobDebugInfoRead(jobinfoRead);
+  }
+
+  public Optional<JobRead> getLatestRunningSyncJob(final UUID connectionId) throws IOException {
+    final List<Job> nonTerminalSyncJobsForConnection = jobPersistence.listJobsForConnectionWithStatuses(
+        connectionId,
+        Collections.singleton(ConfigType.SYNC),
+        JobStatus.NON_TERMINAL_STATUSES);
+
+    // there *should* only be a single running sync job for a connection, but
+    // jobPersistence.listJobsForConnectionWithStatuses orders by created_at desc so
+    // .findFirst will always return what we want.
+    return nonTerminalSyncJobsForConnection.stream().map(JobConverter::getJobRead).findFirst();
+  }
+
+  public Optional<JobRead> getLatestSyncJob(final UUID connectionId) throws IOException {
+    return jobPersistence.getLastSyncJob(connectionId).map(JobConverter::getJobRead);
+  }
+
+  public List<JobRead> getLatestSyncJobsForConnections(final List<UUID> connectionIds) throws IOException {
+    return jobPersistence.getLastSyncJobForConnections(connectionIds).stream()
+        .map(JobConverter::getJobRead)
+        .collect(Collectors.toList());
+  }
+
+  public AttemptNormalizationStatusReadList getAttemptNormalizationStatuses(final JobIdRequestBody jobIdRequestBody) throws IOException {
+    return new AttemptNormalizationStatusReadList()
+        .attemptNormalizationStatuses(jobPersistence.getAttemptNormalizationStatusesForJob(jobIdRequestBody.getId()).stream()
+            .map(JobConverter::convertAttemptNormalizationStatus).collect(Collectors.toList()));
+  }
+
+  public List<JobRead> getRunningSyncJobForConnections(final List<UUID> connectionIds) throws IOException {
+    return jobPersistence.getRunningSyncJobForConnections(connectionIds).stream()
+        .map(JobConverter::getJobRead)
+        .collect(Collectors.toList());
   }
 
   private SourceRead getSourceRead(final ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mysql.cj.MysqlType;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import org.junit.jupiter.api.*;
@@ -21,8 +21,6 @@ class TiDBJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   protected static String USER = "root";
   protected static String DATABASE = "test";
 
-  protected Database database;
-
   @BeforeEach
   public void setup() throws Exception {
     container = new GenericContainer(DockerImageName.parse("pingcap/tidb:nightly"))
@@ -30,11 +28,11 @@ class TiDBJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", "127.0.0.1")
-        .put("port", container.getFirstMappedPort())
-        .put("username", USER)
-        .put("database", DATABASE)
-        // .put("ssl", true)
+        .put(JdbcUtils.HOST_KEY, "127.0.0.1")
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.USERNAME_KEY, USER)
+        .put(JdbcUtils.DATABASE_KEY, DATABASE)
+        // .put(JdbcUtils.SSL_KEY, true)
         .build());
 
     super.setup();

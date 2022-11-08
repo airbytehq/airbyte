@@ -7,6 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from chargebee import APIError
 from chargebee.list_result import ListResult
 from chargebee.model import Model
@@ -25,6 +26,7 @@ from chargebee.models import Subscription as SubscriptionModel
 from chargebee.models import Transaction as TransactionModel
 
 from .rate_limiting import default_backoff_handler
+from .utils import transform_custom_fields
 
 # Backoff params below according to Chargebee's guidance on rate limit.
 # https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_rate_limits
@@ -59,7 +61,7 @@ class ChargebeeStream(Stream):
 
     def parse_response(self, list_result: ListResult, **kwargs) -> Iterable[Mapping]:
         for message in list_result:
-            yield message._response[self.name]
+            yield from transform_custom_fields(message._response[self.name])
 
     @default_backoff_handler(max_tries=MAX_TRIES, factor=MAX_TIME)
     def _send_request(self, **kwargs) -> ListResult:
@@ -133,13 +135,13 @@ class SemiIncrementalChargebeeStream(ChargebeeStream):
         for message in list_result:
             record = message._response[self.name]
             if record[self.cursor_field] > starting_point:
-                yield record
+                yield from transform_custom_fields(record)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """
         Override airbyte_cdk Stream's `get_updated_state` method to get the latest Chargebee stream state.
         """
-        item_id = latest_record["parent_item_id"]
+        item_id = latest_record.get("parent_item_id")
         latest_cursor_value = latest_record.get(self.cursor_field)
         current_stream_state = current_stream_state.copy()
         current_state = current_stream_state.get(item_id)
@@ -147,9 +149,10 @@ class SemiIncrementalChargebeeStream(ChargebeeStream):
             current_state = current_state.get(self.cursor_field)
 
         current_state_value = current_state or latest_cursor_value
-        max_value = max(current_state_value, latest_cursor_value)
-        current_stream_state[item_id] = {self.cursor_field: max_value}
-        return current_stream_state
+        if current_state_value:
+            max_value = max(current_state_value, latest_cursor_value)
+            current_stream_state[item_id] = {self.cursor_field: max_value}
+        return current_stream_state or {}
 
 
 class IncrementalChargebeeStream(SemiIncrementalChargebeeStream):
@@ -178,7 +181,7 @@ class IncrementalChargebeeStream(SemiIncrementalChargebeeStream):
 
     def parse_response(self, list_result: ListResult, **kwargs) -> Iterable[Mapping]:
         for message in list_result:
-            yield message._response[self.name]
+            yield from transform_custom_fields(message._response[self.name])
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """
@@ -300,10 +303,11 @@ class Transaction(IncrementalChargebeeStream):
     cursor_field = "updated_at"
 
     api = TransactionModel
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
-        params["sort_by[asc]"] = "created_at"
+        params["sort_by[asc]"] = "date"
         return params
 
 

@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-notion:dev
 tests:
@@ -6,6 +6,8 @@ tests:
     - spec_path: "source_notion/spec.json"
   connection:
     - config_path: "secrets/config.json"
+      status: "succeed"
+    - config_path: "secrets/config_oauth.json"
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"

@@ -1,0 +1,12 @@
+@forward "../components/StreamRow.module.scss";
+@forward "../components/DiffSection.module.scss";
+@use "../../../../scss/variables";
+
+.namespace {
+  padding-left: variables.$spacing-sm;
+}
+
+.headerAdjust {
+  padding-left: -10px;
+  margin-left: -5px;
+}

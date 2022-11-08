@@ -45,8 +45,9 @@ public class JobsFlywayMigrationDatabase extends FlywayMigrationDatabase {
     return new String[] {JobsDatabaseMigrator.MIGRATION_FILE_LOCATION};
   }
 
+  @Override
   protected void initializeDatabase(final DSLContext dslContext) throws DatabaseInitializationException, IOException {
-    final String initialSchema = MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH);
+    final String initialSchema = MoreResources.readResource(DatabaseConstants.JOBS_INITIAL_SCHEMA_PATH);
     DatabaseCheckFactory.createJobsDatabaseInitializer(dslContext, DatabaseConstants.DEFAULT_CONNECTION_TIMEOUT_MS, initialSchema).initialize();
   }
 

@@ -6,6 +6,7 @@ package io.airbyte.config.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.protocol.models.AirbyteGlobalState;
@@ -13,38 +14,40 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.StreamDescriptor;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class StateMessageHelperTest {
+class StateMessageHelperTest {
 
   private static final boolean USE_STREAM_CAPABLE_STATE = true;
   private static final boolean DONT_USE_STREAM_CAPABALE_STATE = false;
 
   @Test
-  public void testEmpty() {
+  void testEmpty() {
     final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(null, USE_STREAM_CAPABLE_STATE);
     Assertions.assertThat(stateWrapper).isEmpty();
   }
 
   @Test
-  public void testEmptyList() {
+  void testEmptyList() {
     final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(Jsons.arrayNode(), USE_STREAM_CAPABLE_STATE);
     Assertions.assertThat(stateWrapper).isEmpty();
   }
 
   @Test
-  public void testLegacy() {
+  void testLegacy() {
     final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(Jsons.emptyObject(), USE_STREAM_CAPABLE_STATE);
     Assertions.assertThat(stateWrapper).isNotEmpty();
     Assertions.assertThat(stateWrapper.get().getStateType()).isEqualTo(StateType.LEGACY);
   }
 
   @Test
-  public void testLegacyInList() {
+  void testLegacyInList() {
     final JsonNode jsonState = Jsons.jsonNode(List.of(Map.of("Any", "value")));
 
     final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(jsonState, USE_STREAM_CAPABLE_STATE);
@@ -54,7 +57,7 @@ public class StateMessageHelperTest {
   }
 
   @Test
-  public void testLegacyInNewFormat() {
+  void testLegacyInNewFormat() {
     final AirbyteStateMessage stateMessage = new AirbyteStateMessage()
         .withType(AirbyteStateType.LEGACY)
         .withData(Jsons.emptyObject());
@@ -64,7 +67,7 @@ public class StateMessageHelperTest {
   }
 
   @Test
-  public void testGlobal() {
+  void testGlobal() {
     final AirbyteStateMessage stateMessage = new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
         .withGlobal(
@@ -81,7 +84,7 @@ public class StateMessageHelperTest {
   }
 
   @Test
-  public void testGlobalForceLegacy() {
+  void testGlobalForceLegacy() {
     final JsonNode legacyState = Jsons.jsonNode(1);
     final AirbyteStateMessage stateMessage = new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
@@ -100,7 +103,7 @@ public class StateMessageHelperTest {
   }
 
   @Test
-  public void testStream() {
+  void testStream() {
     final AirbyteStateMessage stateMessage1 = new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
         .withStream(
@@ -117,7 +120,7 @@ public class StateMessageHelperTest {
   }
 
   @Test
-  public void testStreamForceLegacy() {
+  void testStreamForceLegacy() {
     final JsonNode firstEmittedLegacyState = Jsons.jsonNode(1);
     final AirbyteStateMessage stateMessage1 = new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
@@ -138,7 +141,7 @@ public class StateMessageHelperTest {
   }
 
   @Test
-  public void testInvalidMixedState() {
+  void testInvalidMixedState() {
     final AirbyteStateMessage stateMessage1 = new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
         .withStream(
@@ -158,7 +161,7 @@ public class StateMessageHelperTest {
   }
 
   @Test
-  public void testDuplicatedGlobalState() {
+  void testDuplicatedGlobalState() {
     final AirbyteStateMessage stateMessage1 = new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
         .withGlobal(
@@ -179,6 +182,71 @@ public class StateMessageHelperTest {
         .assertThatThrownBy(
             () -> StateMessageHelper.getTypedState(Jsons.jsonNode(List.of(stateMessage1, stateMessage2)), USE_STREAM_CAPABLE_STATE))
         .isInstanceOf(IllegalStateException.class);
+  }
+
+  @Test
+  void testLegacyStateConversion() {
+    final StateWrapper stateWrapper = new StateWrapper()
+        .withStateType(StateType.LEGACY)
+        .withLegacyState(Jsons.deserialize("{\"json\": \"blob\"}"));
+    final State expectedState = new State().withState(Jsons.deserialize("{\"json\": \"blob\"}"));
+
+    final State convertedState = StateMessageHelper.getState(stateWrapper);
+    Assertions.assertThat(convertedState).isEqualTo(expectedState);
+  }
+
+  @Test
+  void testGlobalStateConversion() {
+    final StateWrapper stateWrapper = new StateWrapper()
+        .withStateType(StateType.GLOBAL)
+        .withGlobal(
+            new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(
+                new AirbyteGlobalState()
+                    .withSharedState(Jsons.deserialize("\"shared\""))
+                    .withStreamStates(Collections.singletonList(
+                        new AirbyteStreamState()
+                            .withStreamDescriptor(new StreamDescriptor().withNamespace("ns").withName("name"))
+                            .withStreamState(Jsons.deserialize("\"stream state\""))))));
+    final State expectedState = new State().withState(Jsons.deserialize(
+        """
+        [{
+          "type":"GLOBAL",
+          "global":{
+             "shared_state":"shared",
+             "stream_states":[
+               {"stream_descriptor":{"name":"name","namespace":"ns"},"stream_state":"stream state"}
+             ]
+          }
+        }]
+        """));
+
+    final State convertedState = StateMessageHelper.getState(stateWrapper);
+    Assertions.assertThat(convertedState).isEqualTo(expectedState);
+  }
+
+  @Test
+  void testStreamStateConversion() {
+    final StateWrapper stateWrapper = new StateWrapper()
+        .withStateType(StateType.STREAM)
+        .withStateMessages(Arrays.asList(
+            new AirbyteStateMessage().withType(AirbyteStateType.STREAM).withStream(
+                new AirbyteStreamState()
+                    .withStreamDescriptor(new StreamDescriptor().withNamespace("ns1").withName("name1"))
+                    .withStreamState(Jsons.deserialize("\"state1\""))),
+            new AirbyteStateMessage().withType(AirbyteStateType.STREAM).withStream(
+                new AirbyteStreamState()
+                    .withStreamDescriptor(new StreamDescriptor().withNamespace("ns2").withName("name2"))
+                    .withStreamState(Jsons.deserialize("\"state2\"")))));
+    final State expectedState = new State().withState(Jsons.deserialize(
+        """
+        [
+          {"type":"STREAM","stream":{"stream_descriptor":{"name":"name1","namespace":"ns1"},"stream_state":"state1"}},
+          {"type":"STREAM","stream":{"stream_descriptor":{"name":"name2","namespace":"ns2"},"stream_state":"state2"}}
+        ]
+        """));
+
+    final State convertedState = StateMessageHelper.getState(stateWrapper);
+    Assertions.assertThat(convertedState).isEqualTo(expectedState);
   }
 
 }

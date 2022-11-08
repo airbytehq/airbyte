@@ -5,8 +5,9 @@
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.integrations.source.postgres.PostgresSource.CDC_LSN;
+import static io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest.setEnv;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -16,7 +17,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -29,17 +33,25 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -54,6 +66,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   protected static final String SLOT_NAME_BASE = "debezium_slot";
   protected static final String PUBLICATION = "publication";
+  protected static final int INITIAL_WAITING_SECONDS = 5;
   private PostgreSQLContainer<?> container;
 
   protected String dbName;
@@ -61,11 +74,12 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   private DSLContext dslContext;
   private PostgresSource source;
   private JsonNode config;
+  private String fullReplicationSlot;
 
   protected abstract String getPluginName();
 
   @AfterEach
-  void tearDown() throws Exception {
+  void tearDown() {
     dslContext.close();
     container.close();
   }
@@ -77,6 +91,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
+    setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     source = new PostgresSource();
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
@@ -85,7 +100,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), container);
 
     config = getConfig(dbName);
-    final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
+    fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
     dslContext = getDslContext(config);
     database = getDatabase(dslContext);
     super.setup();
@@ -103,16 +118,18 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         .put("replication_slot", SLOT_NAME_BASE + "_" + dbName)
         .put("publication", PUBLICATION)
         .put("plugin", getPluginName())
+        .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
         .build());
 
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", dbName)
-        .put("schemas", List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("ssl", false)
+        .put(JdbcUtils.HOST_KEY, container.getHost())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
+        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
+        .put(JdbcUtils.SSL_KEY, false)
+        .put("is_test", true)
         .put("replication_method", replicationMethod)
         .build());
   }
@@ -123,13 +140,13 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   private static DSLContext getDslContext(final JsonNode config) {
     return DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            config.get("database").asText()),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES);
   }
 
@@ -178,13 +195,13 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   protected CdcTargetPosition cdcLatestTargetPosition() {
     final JdbcDatabase database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.POSTGRESQL.getDriverClassName(),
             String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-                config.get("host").asText(),
-                config.get("port").asInt(),
-                config.get("database").asText())));
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
+                config.get(JdbcUtils.DATABASE_KEY).asText())));
 
     return PostgresCdcTargetPosition.targetPosition(database);
   }
@@ -253,21 +270,27 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Override
+  protected String randomTableSchema() {
+    return MODELS_SCHEMA + "_random";
+  }
+
   @Test
-  public void testRecordsProducedDuringAndAfterSync() throws Exception {
+  public void testTableWithTimestampColDefault() throws Exception {
+    createAndPopulateTimestampTable();
+    final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(List.of(
+        CatalogHelpers.createAirbyteStream("time_stamp_table", MODELS_SCHEMA,
+            Field.of("id", JsonSchemaType.NUMBER),
+            Field.of("name", JsonSchemaType.STRING),
+            Field.of("created_at", JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers
+        .toDefaultConfiguredCatalog(catalog);
 
-    final int recordsToCreate = 20;
-    // first batch of records. 20 created here and 6 created in setup method.
-    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
-      final JsonNode record =
-          Jsons.jsonNode(ImmutableMap
-              .of(COL_ID, 100 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
-                  "F-" + recordsCreated));
-      writeModelRecord(record);
-    }
-
+    // set all streams to incremental.
+    configuredCatalog.getStreams().forEach(s -> s.setSyncMode(SyncMode.INCREMENTAL));
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
+        .read(getConfig(), configuredCatalog, null);
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
         .toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
@@ -276,7 +299,48 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     assertExpectedStateMessages(stateAfterFirstBatch);
     final Set<AirbyteRecordMessage> recordsFromFirstBatch = extractRecordMessages(
         dataFromFirstBatch);
-    assertEquals((MODEL_RECORDS.size() + recordsToCreate), recordsFromFirstBatch.size());
+
+    assertEquals(6, recordsFromFirstBatch.size());
+  }
+
+  private void createAndPopulateTimestampTable() {
+    createTable(MODELS_SCHEMA, "time_stamp_table",
+        columnClause(ImmutableMap.of("id", "INTEGER", "name", "VARCHAR(200)", "created_at", "TIMESTAMPTZ NOT NULL DEFAULT NOW()"),
+            Optional.of("id")));
+    final List<JsonNode> timestampRecords = ImmutableList.of(
+        Jsons
+            .jsonNode(ImmutableMap
+                .of("id", 11000, "name", "blah1")),
+        Jsons.jsonNode(ImmutableMap
+            .of("id", 12000, "name", "blah2")),
+        Jsons
+            .jsonNode(ImmutableMap
+                .of("id", 13000, "name", "blah3")),
+        Jsons.jsonNode(ImmutableMap
+            .of("id", 14000, "name", "blah4")),
+        Jsons.jsonNode(ImmutableMap
+            .of("id", 15000, "name", "blah5")),
+        Jsons
+            .jsonNode(ImmutableMap
+                .of("id", 16000, "name", "blah6")));
+    for (final JsonNode recordJson : timestampRecords) {
+      executeQuery(
+          String.format("INSERT INTO %s.%s (%s, %s) VALUES (%s, '%s');", MODELS_SCHEMA, "time_stamp_table",
+              "id", "name",
+              recordJson.get("id").asInt(), recordJson.get("name").asText()));
+    }
+  }
+
+  @Test
+  protected void syncShouldHandlePurgedLogsGracefully() throws Exception {
+
+    final int recordsToCreate = 20;
+
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
+        .read(getConfig(), CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
+        .toListAndClose(firstBatchIterator);
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
 
     // second batch of records again 20 being created
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
@@ -292,30 +356,31 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         .read(getConfig(), CONFIGURED_CATALOG, state);
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
-
     final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
-    assertEquals(1, stateAfterSecondBatch.size());
-    assertNotNull(stateAfterSecondBatch.get(0).getData());
     assertExpectedStateMessages(stateAfterSecondBatch);
 
-    final Set<AirbyteRecordMessage> recordsFromSecondBatch = extractRecordMessages(
-        dataFromSecondBatch);
-    assertEquals(recordsToCreate * 2, recordsFromSecondBatch.size(),
-        "Expected 40 records to be replicated in the second sync.");
+    for (int recordsCreated = 0; recordsCreated < 1; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 400 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "H-" + recordsCreated));
+      writeModelRecord(record);
+    }
 
-    // sometimes there can be more than one of these at the end of the snapshot and just before the
-    // first incremental.
-    final Set<AirbyteRecordMessage> recordsFromFirstBatchWithoutDuplicates = removeDuplicates(
-        recordsFromFirstBatch);
-    final Set<AirbyteRecordMessage> recordsFromSecondBatchWithoutDuplicates = removeDuplicates(
-        recordsFromSecondBatch);
+    // Triggering sync with the first sync's state only which would mimic a scenario that the second
+    // sync failed on destination end and we didn't save state
+    final AutoCloseableIterator<AirbyteMessage> thirdBatchIterator = getSource()
+        .read(getConfig(), CONFIGURED_CATALOG, state);
 
-    final int recordsCreatedBeforeTestCount = MODEL_RECORDS.size();
-    assertTrue(recordsCreatedBeforeTestCount < recordsFromFirstBatchWithoutDuplicates.size(),
-        "Expected first sync to include records created while the test was running.");
-    assertEquals((recordsToCreate * 3) + recordsCreatedBeforeTestCount,
-        recordsFromFirstBatchWithoutDuplicates.size() + recordsFromSecondBatchWithoutDuplicates
-            .size());
+    final List<AirbyteMessage> dataFromThirdBatch = AutoCloseableIterators
+        .toListAndClose(thirdBatchIterator);
+
+    final List<AirbyteStateMessage> stateAfterThirdBatch = extractStateMessages(dataFromThirdBatch);
+    assertExpectedStateMessages(stateAfterThirdBatch);
+    final Set<AirbyteRecordMessage> recordsFromThirdBatch = extractRecordMessages(
+        dataFromThirdBatch);
+
+    assertEquals(MODEL_RECORDS.size() + recordsToCreate + 1, recordsFromThirdBatch.size());
   }
 
 }

@@ -12,6 +12,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -41,21 +42,21 @@ public class CockroachDbEncryptSourceAcceptanceTest extends SourceAcceptanceTest
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getCockroachSslDbContainer().getHost())
-        .put("port", container.getCockroachSslDbContainer().getFirstMappedPort())
-        .put("database", "defaultdb")
-        .put("username", "test_user")
-        .put("password", "test_user")
+        .put(JdbcUtils.HOST_KEY, container.getCockroachSslDbContainer().getHost())
+        .put(JdbcUtils.PORT_KEY, container.getCockroachSslDbContainer().getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, "defaultdb")
+        .put(JdbcUtils.USERNAME_KEY, "test_user")
+        .put(JdbcUtils.PASSWORD_KEY, "test_user")
         .build());
 
     try (final DSLContext dslContext = DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            config.get("database").asText()),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES)) {
       final Database database = new Database(dslContext);
 

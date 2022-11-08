@@ -11,4 +11,5 @@ properties:
   streamsToReset:
     type: array
     items:
-      "$ref": StreamDescriptor.yaml
+      type: object
+      existingJavaType: io.airbyte.protocol.models.StreamDescriptor

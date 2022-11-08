@@ -240,10 +240,11 @@ def test_raise_on_http_errors_off_5xx(mocker, status_code):
 @pytest.mark.parametrize("status_code", [400, 401, 402, 403, 416])
 def test_raise_on_http_errors_off_non_retryable_4xx(mocker, status_code):
     stream = AutoFailFalseHttpStream()
-    req = requests.Response()
-    req.status_code = status_code
+    req = requests.PreparedRequest()
+    res = requests.Response()
+    res.status_code = status_code
 
-    mocker.patch.object(requests.Session, "send", return_value=req)
+    mocker.patch.object(requests.Session, "send", return_value=res)
     response = stream._send_request(req, {})
     assert response.status_code == status_code
 
@@ -372,14 +373,15 @@ class CacheHttpSubStream(HttpSubStream):
 
 def test_caching_filename():
     stream = CacheHttpStream()
-    assert stream.cache_filename == f"{stream.name}.yml"
+    assert stream.cache_filename == f"{stream.name}.sqlite"
 
 
-def test_caching_cassettes_are_different():
+def test_caching_sessions_are_different():
     stream_1 = CacheHttpStream()
     stream_2 = CacheHttpStream()
 
-    assert stream_1.cache_file != stream_2.cache_file
+    assert stream_1._session != stream_2._session
+    assert stream_1.cache_filename == stream_2.cache_filename
 
 
 def test_parent_attribute_exist():
@@ -394,7 +396,7 @@ def test_cache_response(mocker):
     mocker.patch.object(stream, "url_base", "https://google.com/")
     list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
-    with open(stream.cache_filename, "r") as f:
+    with open(stream.cache_filename, "rb") as f:
         assert f.read()
 
 
@@ -413,19 +415,31 @@ class CacheHttpStreamWithSlices(CacheHttpStream):
 
 
 @patch("airbyte_cdk.sources.streams.core.logging", MagicMock())
-def test_using_cache(mocker):
+def test_using_cache(mocker, requests_mock):
+    requests_mock.register_uri("GET", "https://google.com/", text="text")
+    requests_mock.register_uri("GET", "https://google.com/search", text="text")
+
     parent_stream = CacheHttpStreamWithSlices()
     mocker.patch.object(parent_stream, "url_base", "https://google.com/")
 
+    assert requests_mock.call_count == 0
+    assert parent_stream._session.cache.response_count() == 0
+
     for _slice in parent_stream.stream_slices():
         list(parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice))
+
+    assert requests_mock.call_count == 2
+    assert parent_stream._session.cache.response_count() == 2
 
     child_stream = CacheHttpSubStream(parent=parent_stream)
 
     for _slice in child_stream.stream_slices(sync_mode=SyncMode.full_refresh):
         pass
 
-    assert parent_stream.cassete.play_count != 0
+    assert requests_mock.call_count == 2
+    assert parent_stream._session.cache.response_count() == 2
+    assert parent_stream._session.cache.has_url("https://google.com/")
+    assert parent_stream._session.cache.has_url("https://google.com/search")
 
 
 class AutoFailTrueHttpStream(StubBasicReadHttpStream):
@@ -437,9 +451,10 @@ def test_send_raise_on_http_errors_logs(mocker, status_code):
     mocker.patch.object(AutoFailTrueHttpStream, "logger")
     mocker.patch.object(AutoFailTrueHttpStream, "should_retry", mocker.Mock(return_value=False))
     stream = AutoFailTrueHttpStream()
-    req = requests.Response()
-    req.status_code = status_code
-    mocker.patch.object(requests.Session, "send", return_value=req)
+    req = requests.PreparedRequest()
+    res = requests.Response()
+    res.status_code = status_code
+    mocker.patch.object(requests.Session, "send", return_value=res)
     with pytest.raises(requests.exceptions.HTTPError):
         response = stream._send_request(req, {})
         stream.logger.error.assert_called_with(response.text)

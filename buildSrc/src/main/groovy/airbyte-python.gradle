@@ -84,6 +84,8 @@ class AirbytePythonPlugin implements Plugin<Project> {
             installVirtualenv = true
             pip 'pip:21.3.1'
             pip 'mccabe:0.6.1'
+            // https://github.com/csachs/pyproject-flake8/issues/13
+            pip 'flake8:4.0.1'
             // flake8 doesn't support pyproject.toml files
             // and thus there is the wrapper "pyproject-flake8" for this
             pip 'pyproject-flake8:0.0.1a2'

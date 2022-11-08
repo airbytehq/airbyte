@@ -13,17 +13,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -36,7 +30,6 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
 import java.time.Duration;
 import java.time.Instant;
@@ -47,16 +40,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * See {@link DatabaseConfigPersistenceLoadDataTest} and
- * {@link DatabaseConfigPersistenceUpdateConnectorDefinitionsTest} for testing of specific methods.
+ * See {@link DatabaseConfigPersistenceUpdateConnectorDefinitionsTest} for testing of specific
+ * methods.
  */
 @SuppressWarnings({"PMD.SignatureDeclareThrowsException", "PMD.ShortVariable", "PMD.JUnitTestsShouldIncludeAssert"})
 class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
@@ -65,10 +56,10 @@ class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
   public void setup() throws Exception {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
+    flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
         ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
     database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(false);
-    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
+    configPersistence = spy(new DatabaseConfigPersistence(database));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, flyway);
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
@@ -157,58 +148,6 @@ class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  void testReplaceAllConfigs() throws Exception {
-    writeDestination(configPersistence, DESTINATION_S3);
-    writeDestination(configPersistence, DESTINATION_SNOWFLAKE);
-
-    final Map<AirbyteConfig, Stream<?>> newConfigs = Map.of(STANDARD_SOURCE_DEFINITION, Stream.of(SOURCE_GITHUB, SOURCE_POSTGRES));
-
-    configPersistence.replaceAllConfigs(newConfigs, true);
-
-    // dry run does not change anything
-    assertRecordCount(2, ACTOR_DEFINITION);
-    assertHasDestination(DESTINATION_S3);
-    assertHasDestination(DESTINATION_SNOWFLAKE);
-
-    configPersistence.replaceAllConfigs(newConfigs, false);
-    assertRecordCount(2, ACTOR_DEFINITION);
-    assertHasSource(SOURCE_GITHUB);
-    assertHasSource(SOURCE_POSTGRES);
-  }
-
-  @Test
-  void testDumpConfigs() throws Exception {
-    writeSource(configPersistence, SOURCE_GITHUB);
-    writeSource(configPersistence, SOURCE_POSTGRES);
-    writeDestination(configPersistence, DESTINATION_S3);
-    final Map<String, Stream<JsonNode>> actual = configPersistence.dumpConfigs();
-    final Map<String, Stream<JsonNode>> expected = Map.of(
-        STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB), Jsons.jsonNode(SOURCE_POSTGRES)),
-        STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_S3)));
-    assertSameConfigDump(expected, actual);
-  }
-
-  @Test
-  void testDumpConfigsWithoutSecret() throws Exception {
-    final ConnectorSpecification mockedConnectorSpec = new ConnectorSpecification()
-        .withConnectionSpecification(
-            Jsons.emptyObject());
-    doReturn(new StandardDestinationDefinition()
-        .withSpec(mockedConnectorSpec)).when(configPersistence).getConfig(eq(STANDARD_DESTINATION_DEFINITION), any(), any());
-    doReturn(new StandardSourceDefinition()
-        .withSpec(mockedConnectorSpec)).when(configPersistence).getConfig(eq(STANDARD_SOURCE_DEFINITION), any(), any());
-
-    writeSourceWithSourceConnection(configPersistence, SOURCE_GITHUB);
-    writeSourceWithSourceConnection(configPersistence, SOURCE_POSTGRES);
-    writeDestinationWithDestinationConnection(configPersistence, DESTINATION_S3);
-    final Map<String, Stream<JsonNode>> result = configPersistence.dumpConfigs();
-    result.values().forEach(stream -> {
-      stream.collect(Collectors.toList());
-    });
-    verify(jsonSecretsProcessor, times(3)).prepareSecretsForOutput(any(), any());
-  }
-
-  @Test
   void testGetConnectorRepositoryToInfoMap() throws Exception {
     final String connectorRepository = "airbyte/duplicated-connector";
     final String oldVersion = "0.1.10";
@@ -269,7 +208,14 @@ class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
   @Test
   void testHasNewVersion() {
     assertTrue(DatabaseConfigPersistence.hasNewVersion("0.1.99", "0.2.0"));
-    assertFalse(DatabaseConfigPersistence.hasNewVersion("invalid_version", "0.2.0"));
+    assertFalse(DatabaseConfigPersistence.hasNewVersion("invalid_version", "0.1.2"));
+  }
+
+  @Test
+  void testHasNewPatchVersion() {
+    assertFalse(DatabaseConfigPersistence.hasNewPatchVersion("0.1.99", "0.2.0"));
+    assertFalse(DatabaseConfigPersistence.hasNewPatchVersion("invalid_version", "0.3.1"));
+    assertTrue(DatabaseConfigPersistence.hasNewPatchVersion("0.1.0", "0.1.3"));
   }
 
   @Test

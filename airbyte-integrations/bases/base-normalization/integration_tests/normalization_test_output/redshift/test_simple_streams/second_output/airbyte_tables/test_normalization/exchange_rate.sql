@@ -1,7 +1,7 @@
 
 
   create  table
-    "integrationtests".test_normalization."exchange_rate__dbt_tmp"
+    "integrationtests".test_normalization_bhhpj."exchange_rate__dbt_tmp"
     
     
       compound sortkey(_airbyte_emitted_at)
@@ -11,7 +11,7 @@
 with __dbt__cte__exchange_rate_ab1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
--- depends_on: "integrationtests".test_normalization._airbyte_raw_exchange_rate
+-- depends_on: "integrationtests".test_normalization_bhhpj._airbyte_raw_exchange_rate
 select
     case when _airbyte_data."id" != '' then _airbyte_data."id" end as id,
     case when _airbyte_data."currency" != '' then _airbyte_data."currency" end as currency,
@@ -25,7 +25,7 @@ select
     _airbyte_ab_id,
     _airbyte_emitted_at,
     getdate() as _airbyte_normalized_at
-from "integrationtests".test_normalization._airbyte_raw_exchange_rate as table_alias
+from "integrationtests".test_normalization_bhhpj._airbyte_raw_exchange_rate as table_alias
 -- exchange_rate
 where 1 = 1
 ),  __dbt__cte__exchange_rate_ab2 as (
@@ -87,6 +87,6 @@ select
     getdate() as _airbyte_normalized_at,
     _airbyte_exchange_rate_hashid
 from __dbt__cte__exchange_rate_ab3
--- exchange_rate from "integrationtests".test_normalization._airbyte_raw_exchange_rate
+-- exchange_rate from "integrationtests".test_normalization_bhhpj._airbyte_raw_exchange_rate
 where 1 = 1
   );

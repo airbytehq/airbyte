@@ -31,10 +31,6 @@
                   "airbyte_type": "big_number"
                 },
                 "property_integer": { "type": "integer" },
-                "property_big_integer": {
-                  "type": "string",
-                  "airbyte_type": "big_integer"
-                },
                 "property_boolean": { "type": "boolean" }
               }
             }

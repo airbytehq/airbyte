@@ -4,8 +4,6 @@
 
 package io.airbyte.config.persistence;
 
-import static org.mockito.Mockito.mock;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
@@ -18,7 +16,7 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.init.DatabaseInitializationException;
@@ -34,6 +32,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.jooq.JSONB;
@@ -44,19 +43,25 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
+class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
   private ConfigRepository configRepository;
   private StatePersistence statePersistence;
   private UUID connectionId;
+  private static final String STATE_ONE = "\"state1\"";
+  private static final String STATE_TWO = "\"state2\"";
+  private static final String STATE_WITH_NAMESPACE = "\"state s1.n1\"";
+  private static final String STREAM_STATE_2 = "\"state s2\"";
+  private static final String GLOBAL_STATE = "\"my global state\"";
+  private static final String STATE = "state";
 
   @Test
-  public void testReadingNonExistingState() throws IOException {
+  void testReadingNonExistingState() throws IOException {
     Assertions.assertTrue(statePersistence.getCurrentState(UUID.randomUUID()).isEmpty());
   }
 
   @Test
-  public void testLegacyReadWrite() throws IOException {
+  void testLegacyReadWrite() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.LEGACY)
         .withLegacyState(Jsons.deserialize("{\"woot\": \"legacy states is passthrough\"}"));
@@ -86,7 +91,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testLegacyMigrationToGlobal() throws IOException {
+  void testLegacyMigrationToGlobal() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.LEGACY)
         .withLegacyState(Jsons.deserialize("{\"woot\": \"legacy states is passthrough\"}"));
@@ -102,17 +107,17 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                 .withStreamStates(Arrays.asList(
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n2"))
-                        .withStreamState(Jsons.deserialize("\"state1\"")),
+                        .withStreamState(Jsons.deserialize(STATE_ONE)),
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1"))
-                        .withStreamState(Jsons.deserialize("\"state2\""))))));
+                        .withStreamState(Jsons.deserialize(STATE_TWO))))));
     statePersistence.updateOrCreateState(connectionId, newGlobalState);
     final StateWrapper storedGlobalState = statePersistence.getCurrentState(connectionId).orElseThrow();
     assertEquals(newGlobalState, storedGlobalState);
   }
 
   @Test
-  public void testLegacyMigrationToStream() throws IOException {
+  void testLegacyMigrationToStream() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.LEGACY)
         .withLegacyState(Jsons.deserialize("{\"woot\": \"legacy states is passthrough\"}"));
@@ -126,32 +131,32 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                 .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n1"))
-                    .withStreamState(Jsons.deserialize("\"state s1.n1\""))),
+                    .withStreamState(Jsons.deserialize(STATE_WITH_NAMESPACE))),
             new AirbyteStateMessage()
                 .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s2"))
-                    .withStreamState(Jsons.deserialize("\"state s2\"")))));
+                    .withStreamState(Jsons.deserialize(STREAM_STATE_2)))));
     statePersistence.updateOrCreateState(connectionId, newStreamState);
     final StateWrapper storedStreamState = statePersistence.getCurrentState(connectionId).orElseThrow();
     assertEquals(newStreamState, storedStreamState);
   }
 
   @Test
-  public void testGlobalReadWrite() throws IOException {
+  void testGlobalReadWrite() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.GLOBAL)
         .withGlobal(new AirbyteStateMessage()
             .withType(AirbyteStateType.GLOBAL)
             .withGlobal(new AirbyteGlobalState()
-                .withSharedState(Jsons.deserialize("\"my global state\""))
+                .withSharedState(Jsons.deserialize(GLOBAL_STATE))
                 .withStreamStates(Arrays.asList(
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n2"))
-                        .withStreamState(Jsons.deserialize("\"state1\"")),
+                        .withStreamState(Jsons.deserialize(STATE_ONE)),
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1"))
-                        .withStreamState(Jsons.deserialize("\"state2\""))))));
+                        .withStreamState(Jsons.deserialize(STATE_TWO))))));
 
     // Initial write/read loop, making sure we read what we wrote
     statePersistence.updateOrCreateState(connectionId, state0);
@@ -182,20 +187,20 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testGlobalPartialReset() throws IOException {
+  void testGlobalPartialReset() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.GLOBAL)
         .withGlobal(new AirbyteStateMessage()
             .withType(AirbyteStateType.GLOBAL)
             .withGlobal(new AirbyteGlobalState()
-                .withSharedState(Jsons.deserialize("\"my global state\""))
+                .withSharedState(Jsons.deserialize(GLOBAL_STATE))
                 .withStreamStates(Arrays.asList(
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n2"))
-                        .withStreamState(Jsons.deserialize("\"state1\"")),
+                        .withStreamState(Jsons.deserialize(STATE_ONE)),
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1"))
-                        .withStreamState(Jsons.deserialize("\"state2\""))))));
+                        .withStreamState(Jsons.deserialize(STATE_TWO))))));
 
     // Set the initial state
     statePersistence.updateOrCreateState(connectionId, state0);
@@ -206,11 +211,11 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
         .withGlobal(new AirbyteStateMessage()
             .withType(AirbyteStateType.GLOBAL)
             .withGlobal(new AirbyteGlobalState()
-                .withSharedState(Jsons.deserialize("\"my global state\""))
+                .withSharedState(Jsons.deserialize(GLOBAL_STATE))
                 .withStreamStates(Arrays.asList(
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1"))
-                        .withStreamState(Jsons.deserialize("\"state2\""))))));
+                        .withStreamState(Jsons.deserialize(STATE_TWO))))));
     statePersistence.updateOrCreateState(connectionId, incompletePartialReset);
     final StateWrapper incompletePartialResetResult = statePersistence.getCurrentState(connectionId).orElseThrow();
     Assertions.assertEquals(state0, incompletePartialResetResult);
@@ -221,11 +226,11 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
         .withGlobal(new AirbyteStateMessage()
             .withType(AirbyteStateType.GLOBAL)
             .withGlobal(new AirbyteGlobalState()
-                .withSharedState(Jsons.deserialize("\"my global state\""))
+                .withSharedState(Jsons.deserialize(GLOBAL_STATE))
                 .withStreamStates(Arrays.asList(
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n2"))
-                        .withStreamState(Jsons.deserialize("\"state1\"")),
+                        .withStreamState(Jsons.deserialize(STATE_ONE)),
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1"))
                         .withStreamState(null)))));
@@ -241,20 +246,20 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testGlobalFullReset() throws IOException {
+  void testGlobalFullReset() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.GLOBAL)
         .withGlobal(new AirbyteStateMessage()
             .withType(AirbyteStateType.GLOBAL)
             .withGlobal(new AirbyteGlobalState()
-                .withSharedState(Jsons.deserialize("\"my global state\""))
+                .withSharedState(Jsons.deserialize(GLOBAL_STATE))
                 .withStreamStates(Arrays.asList(
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n2"))
-                        .withStreamState(Jsons.deserialize("\"state1\"")),
+                        .withStreamState(Jsons.deserialize(STATE_ONE)),
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1"))
-                        .withStreamState(Jsons.deserialize("\"state2\""))))));
+                        .withStreamState(Jsons.deserialize(STATE_TWO))))));
 
     final StateWrapper fullReset = new StateWrapper()
         .withStateType(StateType.GLOBAL)
@@ -268,7 +273,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                         .withStreamState(null),
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1"))
-                        .withStreamState(null)))));;
+                        .withStreamState(null)))));
 
     statePersistence.updateOrCreateState(connectionId, state0);
     statePersistence.updateOrCreateState(connectionId, fullReset);
@@ -277,13 +282,13 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testGlobalStateAllowsEmptyNameAndNamespace() throws IOException {
+  void testGlobalStateAllowsEmptyNameAndNamespace() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.GLOBAL)
         .withGlobal(new AirbyteStateMessage()
             .withType(AirbyteStateType.GLOBAL)
             .withGlobal(new AirbyteGlobalState()
-                .withSharedState(Jsons.deserialize("\"my global state\""))
+                .withSharedState(Jsons.deserialize(GLOBAL_STATE))
                 .withStreamStates(Arrays.asList(
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName(""))
@@ -298,7 +303,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testStreamReadWrite() throws IOException {
+  void testStreamReadWrite() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.STREAM)
         .withStateMessages(Arrays.asList(
@@ -306,12 +311,12 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                 .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n1"))
-                    .withStreamState(Jsons.deserialize("\"state s1.n1\""))),
+                    .withStreamState(Jsons.deserialize(STATE_WITH_NAMESPACE))),
             new AirbyteStateMessage()
                 .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s2"))
-                    .withStreamState(Jsons.deserialize("\"state s2\"")))));
+                    .withStreamState(Jsons.deserialize(STREAM_STATE_2)))));
 
     // Initial write/read loop, making sure we read what we wrote
     statePersistence.updateOrCreateState(connectionId, state0);
@@ -334,7 +339,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testStreamPartialUpdates() throws IOException {
+  void testStreamPartialUpdates() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.STREAM)
         .withStateMessages(Arrays.asList(
@@ -342,12 +347,12 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                 .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n1"))
-                    .withStreamState(Jsons.deserialize("\"state s1.n1\""))),
+                    .withStreamState(Jsons.deserialize(STATE_WITH_NAMESPACE))),
             new AirbyteStateMessage()
                 .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s2"))
-                    .withStreamState(Jsons.deserialize("\"state s2\"")))));
+                    .withStreamState(Jsons.deserialize(STREAM_STATE_2)))));
 
     statePersistence.updateOrCreateState(connectionId, state0);
 
@@ -375,7 +380,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                     .withType(AirbyteStateType.STREAM)
                     .withStream(new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s2"))
-                        .withStreamState(Jsons.deserialize("\"state s2\""))))),
+                        .withStreamState(Jsons.deserialize(STREAM_STATE_2))))),
         partialUpdateResult);
 
     // Partial Reset
@@ -402,7 +407,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testStreamFullReset() throws IOException {
+  void testStreamFullReset() throws IOException {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.STREAM)
         .withStateMessages(Arrays.asList(
@@ -410,12 +415,12 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                 .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n1"))
-                    .withStreamState(Jsons.deserialize("\"state s1.n1\""))),
+                    .withStreamState(Jsons.deserialize(STATE_WITH_NAMESPACE))),
             new AirbyteStateMessage()
                 .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s2"))
-                    .withStreamState(Jsons.deserialize("\"state s2\"")))));
+                    .withStreamState(Jsons.deserialize(STREAM_STATE_2)))));
 
     statePersistence.updateOrCreateState(connectionId, state0);
 
@@ -439,7 +444,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testInconsistentTypeUpdates() throws IOException {
+  void testInconsistentTypeUpdates() throws IOException {
     final StateWrapper streamState = new StateWrapper()
         .withStateType(StateType.STREAM)
         .withStateMessages(Arrays.asList(
@@ -447,12 +452,12 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                 .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n1"))
-                    .withStreamState(Jsons.deserialize("\"state s1.n1\""))),
+                    .withStreamState(Jsons.deserialize(STATE_WITH_NAMESPACE))),
             new AirbyteStateMessage()
                 .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s2"))
-                    .withStreamState(Jsons.deserialize("\"state s2\"")))));
+                    .withStreamState(Jsons.deserialize(STREAM_STATE_2)))));
     statePersistence.updateOrCreateState(connectionId, streamState);
 
     Assertions.assertThrows(IllegalStateException.class, () -> {
@@ -461,7 +466,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
           .withGlobal(new AirbyteStateMessage()
               .withType(AirbyteStateType.GLOBAL)
               .withGlobal(new AirbyteGlobalState()
-                  .withSharedState(Jsons.deserialize("\"my global state\""))
+                  .withSharedState(Jsons.deserialize(GLOBAL_STATE))
                   .withStreamStates(Arrays.asList(
                       new AirbyteStreamState()
                           .withStreamDescriptor(new StreamDescriptor().withName(""))
@@ -474,8 +479,8 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
     // We should be guarded against those cases let's make sure we don't make things worse if we're in
     // an inconsistent state
-    dslContext.insertInto(DSL.table("state"))
-        .columns(DSL.field("id"), DSL.field("connection_id"), DSL.field("type"), DSL.field("state"))
+    dslContext.insertInto(DSL.table(STATE))
+        .columns(DSL.field("id"), DSL.field("connection_id"), DSL.field("type"), DSL.field(STATE))
         .values(UUID.randomUUID(), connectionId, io.airbyte.db.instance.configs.jooq.generated.enums.StateType.GLOBAL, JSONB.valueOf("{}"))
         .execute();
     Assertions.assertThrows(IllegalStateException.class, () -> statePersistence.updateOrCreateState(connectionId, streamState));
@@ -483,7 +488,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testEnumsConversion() {
+  void testEnumsConversion() {
     // Making sure StateType we write to the DB and the StateType from the protocols are aligned.
     // Otherwise, we'll have to dig through runtime errors.
     Assertions.assertTrue(Enums.isCompatible(
@@ -492,7 +497,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testStatePersistenceLegacyReadConsistency() throws IOException {
+  void testStatePersistenceLegacyReadConsistency() throws IOException {
     final JsonNode jsonState = Jsons.deserialize("{\"my\": \"state\"}");
     final State state = new State().withState(jsonState);
     configRepository.updateConnectionState(connectionId, state);
@@ -503,20 +508,27 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  public void testStatePersistenceLegacyWriteConsistency() throws IOException {
+  void testStatePersistenceLegacyWriteConsistency() throws IOException {
     final JsonNode jsonState = Jsons.deserialize("{\"my\": \"state\"}");
     final StateWrapper stateWrapper = new StateWrapper().withStateType(StateType.LEGACY).withLegacyState(jsonState);
     statePersistence.updateOrCreateState(connectionId, stateWrapper);
 
-    final State readState = configRepository.getConnectionState(connectionId).orElseThrow();
-    Assertions.assertEquals(readState.getState(), stateWrapper.getLegacyState());
+    // Making sure we still follow the legacy format
+    final List<State> readStates = dslContext
+        .selectFrom(STATE)
+        .where(DSL.field("connection_id").eq(connectionId))
+        .fetch().map(r -> Jsons.deserialize(r.get(DSL.field(STATE, JSONB.class)).data(), State.class))
+        .stream().toList();
+    Assertions.assertEquals(1, readStates.size());
+
+    Assertions.assertEquals(readStates.get(0).getState(), stateWrapper.getLegacyState());
   }
 
   @BeforeEach
-  public void beforeEach() throws DatabaseInitializationException, IOException, JsonValidationException {
+  void beforeEach() throws DatabaseInitializationException, IOException, JsonValidationException {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(),
+    flyway = FlywayFactory.create(dataSource, StatePersistenceTest.class.getName(),
         ConfigsDatabaseMigrator.DB_IDENTIFIER, ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
     database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(true);
     setupTestData();
@@ -525,7 +537,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @AfterEach
-  public void afterEach() {
+  void afterEach() {
     // Making sure we reset between tests
     dslContext.dropSchemaIfExists("public").cascade().execute();
     dslContext.createSchema("public").execute();
@@ -534,8 +546,10 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
   private void setupTestData() throws JsonValidationException, IOException {
     configRepository = new ConfigRepository(
-        new DatabaseConfigPersistence(database, mock(JsonSecretsProcessor.class)),
-        database);
+        new DatabaseConfigPersistence(database),
+        database,
+        new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
+        new StandardSyncPersistence(database));
 
     final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
     final StandardSourceDefinition sourceDefinition = MockData.publicSourceDefinition();
@@ -544,7 +558,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     final DestinationConnection destinationConnection = MockData.destinationConnections().get(0);
     final StandardSync sync = MockData.standardSyncs().get(0);
 
-    configRepository.writeStandardWorkspace(workspace);
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
     configRepository.writeStandardSourceDefinition(sourceDefinition);
     configRepository.writeSourceConnectionNoSecrets(sourceConnection);
     configRepository.writeStandardDestinationDefinition(destinationDefinition);
@@ -571,7 +585,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     };
   }
 
-  private void assertEquals(StateWrapper lhs, StateWrapper rhs) {
+  private void assertEquals(final StateWrapper lhs, final StateWrapper rhs) {
     Assertions.assertEquals(Jsons.serialize(lhs), Jsons.serialize(rhs));
   }
 

@@ -19,6 +19,7 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -43,15 +44,17 @@ class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends BaseDataba
   private static final JsonNode SOURCE_GITHUB_JSON = Jsons.jsonNode(SOURCE_GITHUB);
   private static final String DOCKER_IMAGE_TAG = "0.0.0";
   private static final String DOCKER_IMAGE_TAG_2 = "0.1000.0";
+  private static final String DEFAULT_PROTOCOL_VERSION = "0.2.0";
 
   @BeforeAll
   public static void setup() throws Exception {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
+    flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceUpdateConnectorDefinitionsTest.class.getName(),
+        ConfigsDatabaseMigrator.DB_IDENTIFIER,
         ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
     database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(false);
-    configPersistence = new DatabaseConfigPersistence(database, jsonSecretsProcessor);
+    configPersistence = new DatabaseConfigPersistence(database);
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, flyway);
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
@@ -72,11 +75,12 @@ class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends BaseDataba
   @Test
   @DisplayName("When a connector does not exist, add it")
   void testNewConnector() throws Exception {
+    final StandardSourceDefinition expectedSourceDef = cloneWithProtocolVersion(SOURCE_GITHUB, DEFAULT_PROTOCOL_VERSION);
     assertUpdateConnectorDefinition(
         Collections.emptyList(),
         Collections.emptyList(),
         List.of(SOURCE_GITHUB),
-        Collections.singletonList(SOURCE_GITHUB));
+        Collections.singletonList(expectedSourceDef));
   }
 
   @Test
@@ -98,12 +102,13 @@ class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends BaseDataba
     final StandardSourceDefinition currentSource = getSource().withDockerImageTag(DOCKER_IMAGE_TAG).withDocumentationUrl(null).withSourceType(null);
     final StandardSourceDefinition latestSource = getSource().withDockerImageTag(DOCKER_IMAGE_TAG_2);
     final StandardSourceDefinition currentSourceWithNewFields = getSource().withDockerImageTag(DOCKER_IMAGE_TAG);
+    final StandardSourceDefinition expectedSourceDef = cloneWithProtocolVersion(currentSourceWithNewFields, DEFAULT_PROTOCOL_VERSION);
 
     assertUpdateConnectorDefinition(
         Collections.singletonList(currentSource),
         Collections.singletonList(currentSource),
         Collections.singletonList(latestSource),
-        Collections.singletonList(currentSourceWithNewFields));
+        Collections.singletonList(expectedSourceDef));
   }
 
   @Test
@@ -111,12 +116,13 @@ class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends BaseDataba
   void testOldConnectorInUseWithMinorVersion() throws Exception {
     final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.1.0");
     final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.1.9");
+    final StandardSourceDefinition expectedSourceDef = cloneWithProtocolVersion(latestSource, DEFAULT_PROTOCOL_VERSION);
 
     assertUpdateConnectorDefinition(
         Collections.singletonList(currentSource),
         Collections.singletonList(currentSource),
         Collections.singletonList(latestSource),
-        Collections.singletonList(latestSource));
+        Collections.singletonList(expectedSourceDef));
   }
 
   @Test
@@ -137,12 +143,15 @@ class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends BaseDataba
   void testUnusedConnectorWithOldVersion() throws Exception {
     final StandardSourceDefinition currentSource = getSource().withDockerImageTag(DOCKER_IMAGE_TAG);
     final StandardSourceDefinition latestSource = getSource().withDockerImageTag(DOCKER_IMAGE_TAG_2);
+    final String protocolVersion = "1.0.3";
+    latestSource.withSpec(new ConnectorSpecification().withProtocolVersion(protocolVersion));
+    final StandardSourceDefinition expectedSourceDef = cloneWithProtocolVersion(latestSource, protocolVersion);
 
     assertUpdateConnectorDefinition(
         Collections.singletonList(currentSource),
         Collections.emptyList(),
         Collections.singletonList(latestSource),
-        Collections.singletonList(latestSource));
+        Collections.singletonList(expectedSourceDef));
   }
 
   @Test
@@ -151,12 +160,13 @@ class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends BaseDataba
     final StandardSourceDefinition currentSource = getSource().withDockerImageTag(DOCKER_IMAGE_TAG_2).withDocumentationUrl(null).withSourceType(null);
     final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.99.0");
     final StandardSourceDefinition currentSourceWithNewFields = getSource().withDockerImageTag(DOCKER_IMAGE_TAG_2);
+    final StandardSourceDefinition expectedSourceDef = cloneWithProtocolVersion(currentSourceWithNewFields, DEFAULT_PROTOCOL_VERSION);
 
     assertUpdateConnectorDefinition(
         Collections.singletonList(currentSource),
         Collections.emptyList(),
         Collections.singletonList(latestSource),
-        Collections.singletonList(currentSourceWithNewFields));
+        Collections.singletonList(expectedSourceDef));
   }
 
   /**
@@ -164,6 +174,12 @@ class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends BaseDataba
    */
   private StandardSourceDefinition getSource() {
     return Jsons.object(Jsons.clone(SOURCE_GITHUB_JSON), StandardSourceDefinition.class);
+  }
+
+  private StandardSourceDefinition cloneWithProtocolVersion(final StandardSourceDefinition sourceDef, final String protocolVersion) {
+    final StandardSourceDefinition clonedDef = Jsons.deserialize(Jsons.serialize(sourceDef), StandardSourceDefinition.class);
+    clonedDef.withProtocolVersion(protocolVersion);
+    return clonedDef;
   }
 
   /**

@@ -12,14 +12,15 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Function;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+/**
+ * TODO : Replace all the DateTime related logic of this class with
+ * {@link io.airbyte.db.jdbc.DateTimeConverter}
+ */
 public class DataTypeUtils {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(DataTypeUtils.class);
 
   public static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
@@ -29,6 +30,8 @@ public class DataTypeUtils {
   public static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
   public static final DateTimeFormatter TIMETZ_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSSXXX");
   public static final DateTimeFormatter TIMESTAMPTZ_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX");
+  public static final DateTimeFormatter OFFSETDATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS XXX");
+  public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
   // wrap SimpleDateFormat in a function because SimpleDateFormat is not threadsafe as a static final.
   public static DateFormat getDateFormat() {
@@ -63,6 +66,7 @@ public class DataTypeUtils {
     return dateWithMilliseconds.substring(0, 23) + calculateMicrosecondsString(instant.getNano()) + dateWithMilliseconds.substring(23);
   }
 
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   private static String calculateMicrosecondsString(final int nano) {
     final var microSeconds = (nano / 1000) % 1000;
     final String result;
@@ -98,6 +102,10 @@ public class DataTypeUtils {
 
   public static String toISO8601String(final LocalDateTime date) {
     return date.format(DateTimeFormatter.ofPattern(DATE_FORMAT_PATTERN));
+  }
+
+  public static String toISO8601String(final OffsetDateTime date) {
+    return date.format(OFFSETDATETIME_FORMATTER);
   }
 
   public static String toISO8601String(final Duration duration) {

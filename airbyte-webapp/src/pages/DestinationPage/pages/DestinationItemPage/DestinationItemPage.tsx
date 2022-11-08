@@ -1,18 +1,20 @@
 import React, { Suspense, useMemo } from "react";
-import { FormattedMessage } from "react-intl";
-import { Route, Routes } from "react-router-dom";
+import { useIntl } from "react-intl";
+import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 
-import { DropDownRow, LoadingPage, PageTitle } from "components";
-import ApiErrorBoundary from "components/ApiErrorBoundary";
-import Breadcrumbs from "components/Breadcrumbs";
+import { LoadingPage } from "components";
+import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
+import { ConnectorIcon } from "components/common/ConnectorIcon";
+import { HeadTitle } from "components/common/HeadTitle";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
-import { ConnectorIcon } from "components/ConnectorIcon";
-import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
+import { Breadcrumbs } from "components/ui/Breadcrumbs";
+import { DropDownOptionDataItem } from "components/ui/DropDown";
+import { PageHeader } from "components/ui/PageHeader";
 
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useSourceList } from "hooks/services/useSourceHook";
-import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
@@ -24,7 +26,10 @@ import DestinationConnectionTable from "./components/DestinationConnectionTable"
 import DestinationSettings from "./components/DestinationSettings";
 
 const DestinationItemPage: React.FC = () => {
-  const { params, push } = useRouter<unknown, { id: string; "*": string }>();
+  useTrackPage(PageTrackingCodes.DESTINATION_ITEM);
+  const params = useParams() as { "*": StepsTypes | ""; id: string };
+  const navigate = useNavigate();
+  const { formatMessage } = useIntl();
   const currentStep = useMemo<string>(() => (params["*"] === "" ? StepsTypes.OVERVIEW : params["*"]), [params]);
 
   const { sources } = useSourceList();
@@ -37,19 +42,17 @@ const DestinationItemPage: React.FC = () => {
 
   const { connections } = useConnectionList();
 
-  const onClickBack = () => push("..");
-
   const onSelectStep = (id: string) => {
     const path = id === StepsTypes.OVERVIEW ? "." : id.toLowerCase();
-    push(path);
+    navigate(path);
   };
 
   const breadcrumbsData = [
     {
-      name: <FormattedMessage id="admin.destinations" />,
-      onClick: onClickBack,
+      label: formatMessage({ id: "admin.destinations" }),
+      to: "..",
     },
-    { name: destination.name },
+    { label: destination.name },
   ];
 
   const connectionsWithDestination = connections.filter(
@@ -69,7 +72,7 @@ const DestinationItemPage: React.FC = () => {
     [sources, sourceDefinitions]
   );
 
-  const onSelect = (data: DropDownRow.IDataItem) => {
+  const onSelect = (data: DropDownOptionDataItem) => {
     const path = `../${RoutePaths.ConnectionNew}`;
     const state =
       data.value === "create-new-item"
@@ -79,14 +82,14 @@ const DestinationItemPage: React.FC = () => {
             destinationId: destination.destinationId,
           };
 
-    push(path, { state });
+    navigate(path, { state });
   };
 
   return (
     <ConnectorDocumentationWrapper>
       <HeadTitle titles={[{ id: "admin.destinations" }, { title: destination.name }]} />
 
-      <PageTitle
+      <PageHeader
         title={<Breadcrumbs data={breadcrumbsData} />}
         middleComponent={<ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />}
       />

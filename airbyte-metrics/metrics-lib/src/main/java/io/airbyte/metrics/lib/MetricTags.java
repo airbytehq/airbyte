@@ -13,24 +13,27 @@ import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
  */
 public class MetricTags {
 
-  private static final String RELEASE_STAGE = "release_stage";
-  private static final String FAILURE_ORIGIN = "failure_origin";
-  private static final String JOB_STATUS = "job_status";
+  public static final String CONNECTION_ID = "connection_id";
+  public static final String FAILURE_ORIGIN = "failure_origin";
+  public static final String JOB_ID = "job_id";
+  public static final String JOB_STATUS = "job_status";
+  public static final String RELEASE_STAGE = "release_stage";
+  public static final String RESET_WORKFLOW_FAILURE_CAUSE = "failure_cause";
+  public static final String WORKFLOW_TYPE = "workflow_type";
+  public static final String ATTEMPT_QUEUE = "attempt_queue";
+  public static final String GEOGRAPHY = "geography";
+  public static final String UNKNOWN = "unknown";
 
   public static String getReleaseStage(final ReleaseStage stage) {
-    return tagDelimit(RELEASE_STAGE, stage.getLiteral());
+    return stage != null ? stage.getLiteral() : UNKNOWN;
   }
 
   public static String getFailureOrigin(final FailureOrigin origin) {
-    return tagDelimit(FAILURE_ORIGIN, origin.value());
+    return origin != null ? origin.value() : UNKNOWN;
   }
 
   public static String getJobStatus(final JobStatus status) {
-    return tagDelimit(JOB_STATUS, status.getLiteral());
-  }
-
-  private static String tagDelimit(final String tagName, final String tagVal) {
-    return String.join(":", tagName, tagVal);
+    return status != null ? status.getLiteral() : UNKNOWN;
   }
 
 }

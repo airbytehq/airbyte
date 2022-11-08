@@ -4,10 +4,10 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ConnectionHelper;
-import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivity.ConnectionDeletionInput;
 import java.io.IOException;
 import java.util.UUID;
@@ -21,7 +21,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class ConnectionDeletionActivityTest {
+class ConnectionDeletionActivityTest {
 
   @Mock
   private ConnectionHelper mConnectionHelper;
@@ -33,7 +33,7 @@ public class ConnectionDeletionActivityTest {
 
   @Test
   @DisplayName("Test that the proper helper method is called")
-  public void testSuccess() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testSuccess() throws JsonValidationException, ConfigNotFoundException, IOException {
     connectionDeletionActivity.deleteConnection(input);
 
     Mockito.verify(mConnectionHelper).deleteConnection(input.getConnectionId());
@@ -41,7 +41,7 @@ public class ConnectionDeletionActivityTest {
 
   @Test
   @DisplayName("Test that exception are properly wrapped")
-  public void testWrapException() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testWrapException() throws JsonValidationException, ConfigNotFoundException, IOException {
     Mockito.doThrow(new JsonValidationException(""), new ConfigNotFoundException("", ""), new IOException())
         .when(mConnectionHelper).deleteConnection(input.getConnectionId());
 

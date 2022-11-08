@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["integer", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "users": {
+      "items": {
+        "properties": {
+          "id": {
+            "type": ["integer", "null"]
+          }
+        },
+        "type": "object"
+      },
+      "type": ["array", "null"]
+    },
+    "omni_channel": {
+      "type": ["boolean", "null"]
+    }
+  }
+}

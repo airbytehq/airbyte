@@ -5,7 +5,10 @@
 from typing import Any, BinaryIO, Iterator, List, Mapping, TextIO, Tuple, Union
 
 import pyarrow.parquet as pq
+from airbyte_cdk.models import FailureType
 from pyarrow.parquet import ParquetFile
+from source_s3.exceptions import S3Exception
+from source_s3.source_files_abstract.file_info import FileInfo
 
 from .abstract_file_parser import AbstractFileParser
 from .parquet_spec import ParquetFormat
@@ -18,6 +21,7 @@ PARQUET_TYPES = {
     "boolean": ("boolean", ["BOOLEAN"], None),
     "number": ("number", ["DOUBLE", "FLOAT"], None),
     "integer": ("integer", ["INT32", "INT64", "INT96"], None),
+    "decimal": ("number", ["INT32", "INT64", "FIXED_LEN_BYTE_ARRAY"], None),
     # supported by PyArrow types
     "timestamp": ("string", ["INT32", "INT64", "INT96"], lambda v: v.isoformat()),
     "date": ("string", ["INT32", "INT64", "INT96"], lambda v: v.isoformat()),
@@ -84,7 +88,7 @@ class ParquetParser(AbstractFileParser):
             return func(field_value) if func else field_value
         raise TypeError(f"unsupported field type: {logical_type}, value: {field_value}")
 
-    def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> dict:
+    def get_inferred_schema(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> dict:
         """
         https://arrow.apache.org/docs/python/parquet.html#finer-grained-reading-and-writing
 
@@ -96,10 +100,10 @@ class ParquetParser(AbstractFileParser):
         }
         if not schema_dict:
             # pyarrow can parse empty parquet files but a connector can't generate dynamic schema
-            raise OSError("empty Parquet file")
+            raise S3Exception(file_info, "empty Parquet file", "The .parquet file is empty!", FailureType.config_error)
         return schema_dict
 
-    def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
+    def stream_records(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Iterator[Mapping[str, Any]]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html
         PyArrow reads streaming batches from a Parquet file
@@ -107,12 +111,15 @@ class ParquetParser(AbstractFileParser):
 
         reader = self._init_reader(file)
         self.logger.info(f"found {reader.num_row_groups} row groups")
+        # parsing logical_types with respect to master_schema column names.
         logical_types = {
-            field.name: self.parse_field_type(field.logical_type.type.lower(), field.physical_type)[1] for field in reader.schema
+            field.name: self.parse_field_type(field.logical_type.type.lower(), field.physical_type)[1]
+            for field in reader.schema
+            if field.name in self._master_schema
         }
         if not reader.schema:
             # pyarrow can parse empty parquet files but a connector can't generate dynamic schema
-            raise OSError("empty Parquet file")
+            raise S3Exception(file_info, "empty Parquet file", "The .parquet file is empty!", FailureType.config_error)
 
         args = self._select_options("columns", "batch_size")  # type: ignore[arg-type]
         self.logger.debug(f"Found the {reader.num_row_groups} Parquet groups")
@@ -123,10 +130,13 @@ class ParquetParser(AbstractFileParser):
             for batch in reader.iter_batches(**args):
                 # this gives us a dist of lists where each nested list holds ordered values for a single column
                 # {'number': [1.0, 2.0, 3.0], 'name': ['foo', None, 'bar'], 'flag': [True, False, True], 'delta': [-1.0, 2.5, 0.1]}
-                batch_columns = [col.name for col in batch.schema]
                 batch_dict = batch.to_pydict()
-                columnwise_record_values = [batch_dict[column] for column in batch_columns]
-
+                # sometimes the batch file has more columns than master_schema declares, like:
+                # master schema: ['number', 'name', 'flag', 'delta'],
+                # batch_file_schema: ['number', 'name', 'flag', 'delta', 'EXTRA_COL_NAME'].
+                # we need to check wether batch_file_schema == master_schema and reject extra columns, otherwise "KeyError" raises.
+                batch_columns = [column for column in batch_dict.keys() if column in self._master_schema]
+                columnwise_record_values = [batch_dict[column] for column in batch_columns if column in self._master_schema]
                 # we zip this to get row-by-row
                 for record_values in zip(*columnwise_record_values):
                     yield {

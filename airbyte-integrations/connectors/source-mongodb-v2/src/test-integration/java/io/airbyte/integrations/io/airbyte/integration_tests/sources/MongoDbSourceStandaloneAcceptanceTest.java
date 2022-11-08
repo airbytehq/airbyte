@@ -6,14 +6,18 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.STANDALONE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
+import io.airbyte.integrations.source.mongodb.MongoDbSource;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
@@ -22,6 +26,7 @@ import java.util.List;
 import org.bson.BsonArray;
 import org.bson.BsonString;
 import org.bson.Document;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -55,14 +60,14 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
 
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("instance", STANDALONE.getType())
-        .put("host", mongoDBContainer.getHost())
-        .put("port", mongoDBContainer.getFirstMappedPort())
-        .put("tls", false)
+        .put(JdbcUtils.HOST_KEY, mongoDBContainer.getHost())
+        .put(JdbcUtils.PORT_KEY, mongoDBContainer.getFirstMappedPort())
+        .put(JdbcUtils.TLS_KEY, false)
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("instance_type", instanceConfig)
-        .put("database", DATABASE_NAME)
+        .put(JdbcUtils.DATABASE_KEY, DATABASE_NAME)
         .put("auth_source", "admin")
         .build());
 
@@ -93,13 +98,51 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
   }
 
   @Override
-  protected void verifyCatalog(AirbyteCatalog catalog) {
+  protected void verifyCatalog(final AirbyteCatalog catalog) {
     final List<AirbyteStream> streams = catalog.getStreams();
     // only one stream is expected; the schema that should be ignored
     // must not be included in the retrieved catalog
     assertEquals(1, streams.size());
     final AirbyteStream actualStream = streams.get(0);
     assertEquals(CatalogHelpers.fieldsToJsonSchema(FIELDS), actualStream.getJsonSchema());
+  }
+
+  @Test
+  public void testCheckIncorrectHost() throws Exception {
+    final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
+        .put("instance", STANDALONE.getType())
+        .put("host", "localhost2")
+        .put("port", mongoDBContainer.getFirstMappedPort())
+        .put("tls", false)
+        .build());
+
+    final JsonNode conf = Jsons.jsonNode(ImmutableMap.builder()
+        .put("instance_type", instanceConfig)
+        .put("database", DATABASE_NAME)
+        .put("auth_source", "admin")
+        .build());
+    final AirbyteConnectionStatus status = new MongoDbSource().check(conf);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: -3"));
+  }
+
+  @Test
+  public void testCheckIncorrectPort() throws Exception {
+    final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
+        .put("instance", STANDALONE.getType())
+        .put("host", mongoDBContainer.getHost())
+        .put("port", 1234)
+        .put("tls", false)
+        .build());
+
+    final JsonNode conf = Jsons.jsonNode(ImmutableMap.builder()
+        .put("instance_type", instanceConfig)
+        .put("database", DATABASE_NAME)
+        .put("auth_source", "admin")
+        .build());
+    final AirbyteConnectionStatus status = new MongoDbSource().check(conf);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: -3"));
   }
 
 }

@@ -5,7 +5,7 @@ import { AirbyteJSONSchema } from "./types";
 
 // Note: We have to check yup schema with JSON.stringify
 // as exactly same objects throw now equality due to `Received: serializes to the same string` error
-test("should build schema for simple case", () => {
+it("should build schema for simple case", () => {
   const schema: AirbyteJSONSchema = {
     type: "object",
     title: "Postgres Source Spec",
@@ -59,7 +59,7 @@ test("should build schema for simple case", () => {
   expect(JSON.stringify(yupSchema)).toEqual(JSON.stringify(expectedSchema));
 });
 
-test("should build schema for conditional case", () => {
+it("should build schema for conditional case", () => {
   const yupSchema = buildYupFormForJsonSchema(
     {
       type: "object",
@@ -107,7 +107,7 @@ test("should build schema for conditional case", () => {
   expect(JSON.stringify(yupSchema)).toEqual(JSON.stringify(expectedSchema));
 });
 
-test("should build schema for conditional case with inner schema and selected uiwidget", () => {
+it("should build schema for conditional case with inner schema and selected uiwidget", () => {
   const yupSchema = buildYupFormForJsonSchema(
     {
       type: "object",

@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
 
 import { ConnectionConfiguration } from "core/domain/connection";
-import { JobInfo } from "core/domain/job";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useCreateSource } from "hooks/services/useSourceHook";
-import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
+import { ConnectorCardValues } from "views/Connector/ConnectorForm";
 
 interface SourcesStepProps {
   onSuccess: () => void;
@@ -20,16 +19,10 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
   const { sourceDefinitions } = useSourceDefinitionList();
   const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(null);
   const [successRequest, setSuccessRequest] = useState(false);
-  const [error, setError] = useState<{
-    status: number;
-    response: JobInfo;
-    message: string;
-  } | null>(null);
+  const [error, setError] = useState<FormError | null>(null);
 
   const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
   const { mutateAsync: createSource } = useCreateSource();
-
-  const trackNewSourceAction = useTrackAction(TrackActionType.NEW_SOURCE);
 
   const getSourceDefinitionById = (id: string) => sourceDefinitions.find((item) => item.sourceDefinitionId === id);
 
@@ -74,34 +67,30 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
     setDocumentationPanelOpen(false);
     const sourceDefinition = getSourceDefinitionById(sourceId);
     setDocumentationUrl(sourceDefinition?.documentationUrl || "");
-    trackNewSourceAction("Select a connector", {
-      connector_source: sourceDefinition?.name,
-      connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
-    });
 
     setError(null);
     setSourceDefinitionId(sourceId);
   };
 
-  const onSubmitForm = async (values: { name: string; serviceType: string }) =>
+  const onSubmitForm = async (values: ConnectorCardValues) =>
     onSubmitSourceStep({
       ...values,
     });
 
-  const errorMessage = error ? createFormErrorMessage(error) : "";
+  const errorMessage = error ? generateMessageFromError(error) : "";
 
   return (
     <ConnectorCard
       full
-      jobInfo={LogsRequestError.extractJobInfo(error)}
-      onServiceSelect={onServiceSelect}
-      onSubmit={onSubmitForm}
       formType="source"
-      availableServices={sourceDefinitions}
+      isLoading={isLoading}
       hasSuccess={successRequest}
       errorMessage={errorMessage}
+      availableConnectorDefinitions={sourceDefinitions}
+      onConnectorDefinitionSelect={onServiceSelect}
       selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
-      isLoading={isLoading}
+      onSubmit={onSubmitForm}
+      jobInfo={LogsRequestError.extractJobInfo(error)}
     />
   );
 };

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.constants.AirbyteSecretConstants;
 import io.airbyte.commons.json.JsonPaths;
 import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.commons.json.Jsons;
@@ -27,21 +28,15 @@ import lombok.extern.slf4j.Slf4j;
 public class JsonSecretsProcessor {
 
   @Builder.Default
-  final private boolean maskSecrets = true;
-
-  @Builder.Default
-  final private boolean copySecrets = true;
+  final private Boolean copySecrets = false;
 
   protected static final JsonSchemaValidator VALIDATOR = new JsonSchemaValidator();
 
-  @VisibleForTesting
-  static final String SECRETS_MASK = "**********";
-
-  static final String AIRBYTE_SECRET_FIELD = "airbyte_secret";
   static final String PROPERTIES_FIELD = "properties";
   static final String TYPE_FIELD = "type";
   static final String ARRAY_TYPE_FIELD = "array";
   static final String ITEMS_FIELD = "items";
+  static final String ONE_OF_FIELD = "oneOf";
 
   /**
    * Returns a copy of the input object wherein any fields annotated with "airbyte_secret" in the
@@ -54,18 +49,14 @@ public class JsonSecretsProcessor {
    * @param obj Object containing potentially secret fields
    */
   public JsonNode prepareSecretsForOutput(final JsonNode obj, final JsonNode schema) {
-    if (maskSecrets) {
-      // todo (cgardens) this is not safe. should throw.
-      // if schema is an object and has a properties field
-      if (!isValidJsonSchema(schema)) {
-        log.error("The schema is not valid, the secret can't be hidden");
-        return obj;
-      }
-
-      return maskAllSecrets(obj, schema);
+    // todo (cgardens) this is not safe. should throw.
+    // if schema is an object and has a properties field
+    if (!isValidJsonSchema(schema)) {
+      log.error("The schema is not valid, the secret can't be hidden");
+      return obj;
     }
 
-    return obj;
+    return maskAllSecrets(obj, schema);
   }
 
   /**
@@ -81,14 +72,14 @@ public class JsonSecretsProcessor {
         schema,
         node -> MoreIterators.toList(node.fields())
             .stream()
-            .anyMatch(field -> AIRBYTE_SECRET_FIELD.equals(field.getKey())))
+            .anyMatch(field -> AirbyteSecretConstants.AIRBYTE_SECRET_FIELD.equals(field.getKey())))
         .stream()
         .map(JsonPaths::mapJsonSchemaPathToJsonPath)
         .collect(Collectors.toSet());
 
     JsonNode copy = Jsons.clone(json);
     for (final String path : pathsWithSecrets) {
-      copy = JsonPaths.replaceAtString(copy, path, SECRETS_MASK);
+      copy = JsonPaths.replaceAtString(copy, path, AirbyteSecretConstants.SECRETS_MASK);
     }
 
     return copy;
@@ -129,7 +120,7 @@ public class JsonSecretsProcessor {
         final JsonNode fieldSchema = properties.get(key);
         // We only copy the original secret if the destination object isn't attempting to overwrite it
         // I.e. if the destination object's value is set to the mask, then we can copy the original secret
-        if (JsonSecretsProcessor.isSecret(fieldSchema) && dst.has(key) && SECRETS_MASK.equals(dst.get(key).asText())) {
+        if (JsonSecretsProcessor.isSecret(fieldSchema) && dst.has(key) && AirbyteSecretConstants.SECRETS_MASK.equals(dst.get(key).asText())) {
           dstCopy.set(key, src.get(key));
         } else if (dstCopy.has(key)) {
           // If the destination has this key, then we should consider copying it
@@ -169,7 +160,7 @@ public class JsonSecretsProcessor {
   }
 
   static boolean isSecret(final JsonNode obj) {
-    return obj.isObject() && obj.has(AIRBYTE_SECRET_FIELD) && obj.get(AIRBYTE_SECRET_FIELD).asBoolean();
+    return obj.isObject() && obj.has(AirbyteSecretConstants.AIRBYTE_SECRET_FIELD) && obj.get(AirbyteSecretConstants.AIRBYTE_SECRET_FIELD).asBoolean();
   }
 
   private static Optional<String> findJsonCombinationNode(final JsonNode node) {
@@ -182,8 +173,10 @@ public class JsonSecretsProcessor {
   }
 
   @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-  private static boolean isValidJsonSchema(final JsonNode schema) {
-    return schema.isObject() && schema.has(PROPERTIES_FIELD) && schema.get(PROPERTIES_FIELD).isObject();
+  @VisibleForTesting
+  public static boolean isValidJsonSchema(final JsonNode schema) {
+    return schema.isObject() && ((schema.has(PROPERTIES_FIELD) && schema.get(PROPERTIES_FIELD).isObject())
+        || (schema.has(ONE_OF_FIELD) && schema.get(ONE_OF_FIELD).isArray()));
   }
 
 }

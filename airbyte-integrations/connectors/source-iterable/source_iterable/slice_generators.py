@@ -4,7 +4,7 @@
 
 import math
 from dataclasses import dataclass
-from typing import Iterable, List, Tuple
+from typing import Iterable, List, Optional, Tuple
 
 import pendulum
 from pendulum.datetime import DateTime, Period
@@ -24,9 +24,9 @@ class SliceGenerator:
     _start_date: DateTime = None
     _end_data: DateTime = None
 
-    def __init__(self, start_date: DateTime):
+    def __init__(self, start_date: DateTime, end_date: Optional[DateTime] = None):
         self._start_date = start_date
-        self._end_date = pendulum.now("UTC")
+        self._end_date = end_date or pendulum.now("UTC")
 
     def __iter__(self):
         return self
@@ -41,8 +41,8 @@ class RangeSliceGenerator(SliceGenerator):
     RANGE_LENGTH_DAYS: int = 90
     _slices: List[StreamSlice] = []
 
-    def __init__(self, start_date: DateTime):
-        super().__init__(start_date)
+    def __init__(self, start_date: DateTime, end_date: Optional[DateTime] = None):
+        super().__init__(start_date, end_date)
         self._slices = [
             StreamSlice(start_date=start, end_date=end)
             for start, end in self.make_datetime_ranges(self._start_date, self._end_date, self.RANGE_LENGTH_DAYS)
@@ -119,9 +119,6 @@ class AdjustableSliceGenerator(SliceGenerator):
     # next range would have MAX_RANGE_DAYS length
     # Default is True so for first slice it would length would be INITIAL_RANGE_DAYS (30 days)
     _range_adjusted = True
-
-    def __init__(self, start_date: DateTime):
-        super().__init__(start_date)
 
     def adjust_range(self, previous_request_time: Period):
         """

@@ -47,7 +47,7 @@ class SourceZendeskException(Exception):
 
 class SourceZendeskSupportFuturesSession(FuturesSession):
     """
-    Check the docs at https://github.com/ross/requests-futures.
+    Check the docs at https://github.com/ross/requests-futures
     Used to async execute a set of requests.
     """
 
@@ -474,6 +474,7 @@ class Tickets(SourceZendeskIncrementalExportStream):
     """Tickets stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based"""
 
     response_list_name: str = "tickets"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
@@ -492,6 +493,20 @@ class Groups(SourceZendeskSupportStream):
 
 class GroupMemberships(SourceZendeskSupportCursorPaginationStream):
     """GroupMemberships stream: https://developer.zendesk.com/api-reference/ticketing/groups/group_memberships/"""
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        next_page = self._parse_next_page_number(response)
+        return next_page if next_page else None
+
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = {"page": 1, "per_page": self.page_size, "sort_by": "asc"}
+        start_time = self.str2unixtime((stream_state or {}).get(self.cursor_field))
+        params["start_time"] = start_time if start_time else self.str2unixtime(self._start_date)
+        if next_page_token:
+            params["page"] = next_page_token
+        return params
 
 
 class SatisfactionRatings(SourceZendeskSupportCursorPaginationStream):
@@ -519,7 +534,7 @@ class TicketFields(SourceZendeskSupportStream):
 
 
 class TicketForms(SourceZendeskSupportCursorPaginationStream):
-    """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms/"""
+    """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms"""
 
 
 class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
@@ -567,6 +582,8 @@ class TicketAudits(SourceZendeskSupportCursorPaginationStream):
 
     # Root of response is 'audits'. As rule as an endpoint name is equal a response list name
     response_list_name = "audits"
+
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     # This endpoint uses a variant of cursor pagination with some differences from cursor pagination used in other endpoints.
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
@@ -629,3 +646,23 @@ class UserSettingsStream(SourceZendeskSupportFullRefreshStream):
         for resp in self.read_records(SyncMode.full_refresh):
             return resp
         raise SourceZendeskException("not found settings")
+
+
+class UserSubscriptionStream(SourceZendeskSupportFullRefreshStream):
+    """Stream for checking read permissions for streams"""
+
+    def path(self, *args, **kwargs) -> str:
+        return "/api/v2/account/subscription.json"
+
+    def next_page_token(self, *args, **kwargs) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        subscription_plan = response.json().get("subscription").get("plan_name")
+        if subscription_plan:
+            yield subscription_plan
+
+    def get_subscription_plan(self) -> Mapping[str, Any]:
+        for result in self.read_records(SyncMode.full_refresh):
+            return result
+        raise SourceZendeskException("Could not read User's Subscription Plan.")

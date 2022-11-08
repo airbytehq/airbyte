@@ -79,3 +79,8 @@ vars:
     multiple_column_names_conflicts_stg: test_normalization._airbyte_raw_multiple_column_names_conflicts
     multiple_column_names_conflicts_scd: test_normalization._airbyte_raw_multiple_column_names_conflicts
     multiple_column_names_conflicts: test_normalization._airbyte_raw_multiple_column_names_conflicts
+    types_testing_ab1: test_normalization._airbyte_raw_types_testing
+    types_testing_ab2: test_normalization._airbyte_raw_types_testing
+    types_testing_stg: test_normalization._airbyte_raw_types_testing
+    types_testing_scd: test_normalization._airbyte_raw_types_testing
+    types_testing: test_normalization._airbyte_raw_types_testing

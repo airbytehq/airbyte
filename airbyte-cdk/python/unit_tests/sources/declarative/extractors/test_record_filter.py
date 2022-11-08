@@ -33,14 +33,21 @@ from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilte
             [{"id": 11}, {"id": 12}, {"id": 13}, {"id": 14}, {"id": 15}],
             [],
         ),
+        (
+            "test_using_options_filter",
+            "{{ record['created_at'] > options['created_at'] }}",
+            [{"id": 1, "created_at": "06-06-21"}, {"id": 2, "created_at": "06-07-21"}, {"id": 3, "created_at": "06-08-21"}],
+            [{"id": 3, "created_at": "06-08-21"}],
+        ),
     ],
 )
 def test_record_filter(test_name, filter_template, records, expected_records):
     config = {"response_override": "stop_if_you_see_me"}
+    options = {"created_at": "06-07-21"}
     stream_state = {"created_at": "06-06-21"}
     stream_slice = {"last_seen": "06-10-21"}
     next_page_token = {"last_seen_id": 14}
-    record_filter = RecordFilter(config=config, condition=filter_template)
+    record_filter = RecordFilter(config=config, condition=filter_template, options=options)
 
     actual_records = record_filter.filter_records(
         records, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token

@@ -11,7 +11,7 @@ import static org.mockito.Mockito.verify;
 import java.io.InputStream;
 import org.junit.jupiter.api.Test;
 
-public class CloseableShutdownHookTest {
+class CloseableShutdownHookTest {
 
   @Test
   void testRegisteringShutdownHook() throws Exception {

@@ -72,7 +72,7 @@ class CustomQuery(IncrementalGoogleAdsStream):
                 # Represents protobuf message and could be anything, set custom
                 # attribute "protobuf_message" to convert it to a string (or
                 # array of strings) later.
-                # https://developers.google.com/google-ads/api/reference/rpc/v9/GoogleAdsFieldDataTypeEnum.GoogleAdsFieldDataType?hl=en#message
+                # https://developers.google.com/google-ads/api/reference/rpc/v11/GoogleAdsFieldDataTypeEnum.GoogleAdsFieldDataType?hl=en#message
                 if node.is_repeated:
                     output_type = ["array", "null"]
                 else:

@@ -1,13 +1,12 @@
 # Google Sheets
 
-The Google Sheets Destination is configured to push data to a single Google Sheets spreadsheet with multiple Worksheets as streams. To replicate data to multiple spreadsheets, you can create multiple instances of the Google Sheets Destination in your Airbyte instance. 
+The Google Sheets Destination is configured to push data to a single Google Sheets spreadsheet with multiple Worksheets as streams. To replicate data to multiple spreadsheets, you can create multiple instances of the Google Sheets Destination in your Airbyte instance.
 This page guides you through the process of setting up the Google Sheets destination connector.
-
 
 ## Prerequisites
 
-* Google Account
-* Google Spreadsheet URL
+- Google Account
+- Google Spreadsheet URL
 
 ## Step 1: Set up Google Sheets
 
@@ -19,9 +18,9 @@ Visit the [Google Support](https://support.google.com/accounts/answer/27441?hl=e
 
 ### Google Sheets (Google Spreadsheets)
 
-1. Once you acquire your Google Account, simply open the [Google Support](https://support.google.com/docs/answer/6000292?hl=en&co=GENIE.Platform%3DDesktop) to create the fresh empty Google  to be used as a destination for your data replication, or if already have one - follow the next step.
+1. Once you acquire your Google Account, simply open the [Google Support](https://support.google.com/docs/answer/6000292?hl=en&co=GENIE.Platform%3DDesktop) to create the fresh empty Google to be used as a destination for your data replication, or if already have one - follow the next step.
 2. You will need the link of the Spreadsheet you'd like to sync. To get it, click Share button in the top right corner of Google Sheets interface, and then click Copy Link in the dialog that pops up.
-These two steps are highlighted in the screenshot below:
+   These two steps are highlighted in the screenshot below:
 
 ![](../../.gitbook/assets/google_spreadsheet_url.png)
 
@@ -29,13 +28,13 @@ These two steps are highlighted in the screenshot below:
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account. 
-2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**. 
-3. On the source setup page, select **Google Sheets** from the Source type dropdown and enter a name for this connector. 
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
+3. On the source setup page, select **Google Sheets** from the Source type dropdown and enter a name for this connector.
 4. Select `Sign in with Google`.
-5. Log in and Authorize to the Instagram account and click `Set up source`.
+5. Log in and Authorize to the Google account and click `Set up source`.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 
 At this moment the `Google Sheets Destination` works only with Airbyte Cloud.
 
@@ -46,10 +45,13 @@ Each worksheet in the selected spreadsheet will be the output as a separate sour
 Airbyte only supports replicating `Grid Sheets`, which means the text raw data only could be replicated to the target spreadsheet. See the [Google Sheets API docs](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) for more info on all available sheet types.
 
 #### Note:
-* The output columns are ordered alphabetically. The output columns should not be reordered manually after the sync, this could cause the data corruption for all next syncs.
-* The underlying process of record normalization is applied to avoid data corruption during the write process. This handles two scenarios:
+
+- The output columns are ordered alphabetically. The output columns should not be reordered manually after the sync, this could cause the data corruption for all next syncs.
+- The underlying process of record normalization is applied to avoid data corruption during the write process. This handles two scenarios:
+
 1. UnderSetting - when record has less keys (columns) than catalog declares
 2. OverSetting - when record has more keys (columns) than catalog declares
+
 ```
 EXAMPLE:
 
@@ -86,17 +88,17 @@ EXAMPLE:
 ### Data type mapping
 
 | Integration Type | Airbyte Type |
-| :--- | :--- |
-| Any Type | `string` |
+| :--------------- | :----------- |
+| Any Type         | `string`     |
 
 ### Features & Supported sync modes
 
-| Feature | Supported?\(Yes/No\) |
-| :--- | :--- |
-| Ful-Refresh Overwrite | Yes |
-| Ful-Refresh Append | Yes |
-| Incremental Append | Yes |
-| Incremental Append-Deduplicate | Yes |
+| Feature                        | Supported?\(Yes/No\) |
+| :----------------------------- | :------------------- |
+| Ful-Refresh Overwrite          | Yes                  |
+| Ful-Refresh Append             | Yes                  |
+| Incremental Append             | Yes                  |
+| Incremental Append-Deduplicate | Yes                  |
 
 ### Rate Limiting & Performance Considerations
 
@@ -106,25 +108,28 @@ Please be aware of the [Google Spreadsheet limitations](#limitations) before you
 ### <a name="limitations"></a>Google Sheets Limitations
 
 During the upload process and from the data storage perspective there are some limitations that should be considered beforehands:
-* **Maximum of 5 Million Cells**
+
+- **Maximum of 5 Million Cells**
 
 A Google Sheets document can have a maximum of 5 million cells. These can be in a single worksheet or in multiple sheets.
 In case you already have the 5 million limit reached in fewer columns, it will not allow you to add more columns (and vice versa, i.e., if 5 million cells limit is reached with a certain number of rows, it will not allow more rows).
 
-* **Maximum of 18,278 Columns**
+- **Maximum of 18,278 Columns**
 
 At max, you can have 18,278 columns in Google Sheets in a worksheet.
 
-* **Up to 200 Worksheets in a Spreadsheet**
+- **Up to 200 Worksheets in a Spreadsheet**
 
 You cannot create more than 200 worksheets within single spreadsheet.
 
-
 #### Future improvements:
+
 - Handle multiple spreadsheets to split big amount of data into parts, once the main spreadsheet is full and cannot be extended more, due to [limitations](#limitations).
 
 ## Changelog
 
-| Version | Date       | Pull Request                                               | Subject                                |
-|---------|------------|------------------------------------------------------------|----------------------------------------|
-| 0.1.0  | 2022-04-26 | [12135](https://github.com/airbytehq/airbyte/pull/12135)   | Initial Release                         |
+| Version | Date       | Pull Request                                             | Subject                             |
+| ------- | ---------- | -------------------------------------------------------- | ----------------------------------- |
+| 0.1.2   | 2022-10-31 | [18729](https://github.com/airbytehq/airbyte/pull/18729) | Fix empty headers list              |
+| 0.1.1   | 2022-06-15 | [14751](https://github.com/airbytehq/airbyte/pull/14751) | Yield state only when records saved |
+| 0.1.0   | 2022-04-26 | [12135](https://github.com/airbytehq/airbyte/pull/12135) | Initial Release                     |

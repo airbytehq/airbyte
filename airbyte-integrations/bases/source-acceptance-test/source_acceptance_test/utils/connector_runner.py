@@ -39,13 +39,17 @@ class ConnectorRunner:
         self.input_folder.mkdir(parents=True)
         self.output_folder.mkdir(parents=True)
 
-        if config:
+        # using "is not None" to allow falsey config objects like {} to still write
+        if config is not None:
             with open(str(self.input_folder / "tap_config.json"), "w") as outfile:
                 json.dump(dict(config), outfile)
 
         if state:
             with open(str(self.input_folder / "state.json"), "w") as outfile:
-                json.dump(dict(state), outfile)
+                if isinstance(state, List):
+                    json.dump(state, outfile)
+                else:
+                    json.dump(dict(state), outfile)
 
         if catalog:
             with open(str(self.input_folder / "catalog.json"), "w") as outfile:
@@ -69,22 +73,22 @@ class ConnectorRunner:
         return output
 
     def call_check(self, config, **kwargs) -> List[AirbyteMessage]:
-        cmd = "check --config tap_config.json"
+        cmd = "check --config /data/tap_config.json"
         output = list(self.run(cmd=cmd, config=config, **kwargs))
         return output
 
     def call_discover(self, config, **kwargs) -> List[AirbyteMessage]:
-        cmd = "discover --config tap_config.json"
+        cmd = "discover --config /data/tap_config.json"
         output = list(self.run(cmd=cmd, config=config, **kwargs))
         return output
 
     def call_read(self, config, catalog, **kwargs) -> List[AirbyteMessage]:
-        cmd = "read --config tap_config.json --catalog catalog.json"
+        cmd = "read --config /data/tap_config.json --catalog /data/catalog.json"
         output = list(self.run(cmd=cmd, config=config, catalog=catalog, **kwargs))
         return output
 
     def call_read_with_state(self, config, catalog, state, **kwargs) -> List[AirbyteMessage]:
-        cmd = "read --config tap_config.json --catalog catalog.json --state state.json"
+        cmd = "read --config /data/tap_config.json --catalog /data/catalog.json --state /data/state.json"
         output = list(self.run(cmd=cmd, config=config, catalog=catalog, state=state, **kwargs))
         return output
 
@@ -96,7 +100,6 @@ class ConnectorRunner:
         container = self._client.containers.run(
             image=self._image,
             command=cmd,
-            working_dir="/data",
             volumes=volumes,
             network_mode="host",
             detach=True,
@@ -147,7 +150,7 @@ class ConnectorRunner:
             raise
         if exit_status["StatusCode"]:
             error = exit_status["Error"] or exception or line
-            logging.error(f"Docker container was failed, " f'code {exit_status["StatusCode"]}, error:\n{error}')
+            logging.error(f"Docker container failed, " f'code {exit_status["StatusCode"]}, error:\n{error}')
             if with_ext:
                 raise ContainerError(
                     container=container,

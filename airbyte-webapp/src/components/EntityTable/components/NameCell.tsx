@@ -2,9 +2,9 @@ import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { ConnectorIcon } from "components/ConnectorIcon";
-import StatusIcon from "components/StatusIcon";
-import { StatusIconStatus } from "components/StatusIcon/StatusIcon";
+import { ConnectorIcon } from "components/common/ConnectorIcon";
+import { StatusIcon } from "components/ui/StatusIcon";
+import { StatusIconStatus } from "components/ui/StatusIcon/StatusIcon";
 
 import { Status } from "../types";
 
@@ -28,12 +28,6 @@ const Name = styled.div<{ enabled?: boolean }>`
   text-overflow: ellipsis;
   max-width: 500px;
   color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inherit")};
-`;
-
-const Space = styled.div`
-  width: 30px;
-  height: 20px;
-  opacity: 0;
 `;
 
 const Image = styled(ConnectorIcon)`
@@ -78,8 +72,8 @@ const NameCell: React.FC<Props> = ({ value, enabled, status, icon, img }) => {
 
   return (
     <Content>
-      {status ? <StatusIcon title={title} status={statusIconStatus} /> : <Space />}
-      {icon && <Image small icon={img} />}
+      {status && <StatusIcon title={title} status={statusIconStatus} />}
+      {icon && <Image icon={img} />}
       <Name enabled={enabled}>{value}</Name>
     </Content>
   );

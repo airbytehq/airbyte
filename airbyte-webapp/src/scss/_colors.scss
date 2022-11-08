@@ -1,3 +1,6 @@
+/* stylelint-disable color-no-hex, color-hex-length  */
+$blue-30: #f4f4ff;
+$blue-40: #f0efff;
 $blue-50: #eae9ff;
 $blue-100: #cbc8ff;
 $blue-200: #a6a4ff;
@@ -21,6 +24,7 @@ $dark-blue-600: #353b7b;
 $dark-blue-700: #2d3270;
 $dark-blue-800: #262963;
 $dark-blue-900: #1a194d;
+$dark-blue-1000: #0a0a23;
 $dark-blue: $dark-blue-900;
 
 $grey-30: #fcfcfd;
@@ -60,7 +64,7 @@ $green-800: #007c84;
 $green-900: #005959;
 $green: $green-200;
 
-$red-50: #ffbac6;
+$red-50: #ffe4e8;
 $red-100: #ffbac6;
 $red-200: #ff8da1;
 $red-300: #ff5e7b;
@@ -72,12 +76,8 @@ $red-800: #bc0042;
 $red-900: #99003f;
 $red: $red-300;
 
-$beige-50: #fef9f4;
-$beige-100: #ffebd7;
-$beige: $beige-50;
-
-$black: #000;
-$white: #fff;
+$black: #000000;
+$white: #ffffff;
 
 $yellow-50: #fdf8e1;
 $yellow-100: #fbecb3;
@@ -93,11 +93,11 @@ $yellow: $yellow-500;
 
 // LEGACY - DEPRECATED
 
-$primaryColor12: rgba(103, 87, 255, 0.12);
+$primaryColor12: rgba(103, 87, 255, 12%);
 
-$shadowColor: rgba(0, 0, 0, 0.25);
-$cardShadowColor: rgba(26, 25, 77, 0.12);
+$shadowColor: rgba(0, 0, 0, 25%);
+$cardShadowColor: rgba(26, 25, 77, 12%);
 
 $lightRedColor: #ff8870;
 
-$transparentColor: rgba(255, 255, 255, 0);
+$transparentColor: rgba(255, 255, 255, 0%);

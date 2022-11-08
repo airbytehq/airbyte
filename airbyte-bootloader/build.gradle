@@ -9,9 +9,9 @@ dependencies {
     implementation project(':airbyte-db:db-lib')
     implementation project(":airbyte-json-validation")
     implementation project(':airbyte-protocol:protocol-models')
-    implementation project(':airbyte-scheduler:scheduler-persistence')
+    implementation project(':airbyte-persistence:job-persistence')
 
-    implementation 'io.temporal:temporal-sdk:1.8.1'
+    implementation libs.temporal.sdk
     implementation libs.flyway.core
 
     testImplementation libs.platform.testcontainers.postgresql
@@ -24,25 +24,15 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
-task copyGeneratedTar(type: Copy) {
-    dependsOn copyDocker
-    dependsOn distTar
-
-    from('build/distributions') {
-        include 'airbyte-bootloader-*.tar'
-    }
-    into 'build/docker/bin'
-}
-
-Task dockerBuildTask = getDockerBuildTask("bootloader", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
-dockerBuildTask.dependsOn(copyGeneratedTar)
-assemble.dependsOn(dockerBuildTask)
-
 // produce reproducible archives
 // (see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives)
 tasks.withType(AbstractArchiveTask) {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
+}
+
+tasks.named("buildDockerImage") {
+    dependsOn copyGeneratedTar
 }
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

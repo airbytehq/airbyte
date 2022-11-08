@@ -4,7 +4,11 @@
 
 package io.airbyte.integrations.destination.oracle;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static io.airbyte.integrations.util.HostPortResolver.resolveHost;
+import static io.airbyte.integrations.util.HostPortResolver.resolvePort;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -22,11 +26,12 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.jooq.DSLContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -43,13 +48,13 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   private JsonNode getConfig(final OracleContainer db) {
 
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, resolveHost(db))
+        .put(JdbcUtils.PORT_KEY, resolvePort(db))
         .put("sid", db.getSid())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("schemas", List.of("JDBC_SPACE"))
-        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.SCHEMAS_KEY, List.of("JDBC_SPACE"))
+        .put(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "unencrypted")
             .build()))
         .build());
@@ -123,11 +128,9 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
       throws SQLException {
     try (final DSLContext dslContext = getDSLContext(config)) {
       final List<org.jooq.Record> result = getDatabase(dslContext)
-          .query(ctx -> ctx.fetch(
+          .query(ctx -> new ArrayList<>(ctx.fetch(
               String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-                  OracleDestination.COLUMN_NAME_EMITTED_AT))
-              .stream()
-              .collect(Collectors.toList()));
+                  OracleDestination.COLUMN_NAME_EMITTED_AT))));
       return result
           .stream()
           .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
@@ -138,10 +141,10 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
 
   private static DSLContext getDSLContext(final JsonNode config) {
     return DSLContextFactory.create(
-        config.get("username").asText(), config.get("password").asText(), DatabaseDriver.ORACLE.getDriverClassName(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(), config.get(JdbcUtils.PASSWORD_KEY).asText(), DatabaseDriver.ORACLE.getDriverClassName(),
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get("sid").asText()),
         null);
   }
@@ -167,7 +170,7 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
           ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
       database.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
 
-      ((ObjectNode) config).put("schema", dbName);
+      ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, dbName);
     }
   }
 
@@ -182,10 +185,11 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
     final JsonNode config = getConfig();
 
     final DataSource dataSource =
-        DataSourceFactory.create(config.get("username").asText(), config.get("password").asText(), DatabaseDriver.ORACLE.getDriverClassName(),
+        DataSourceFactory.create(config.get(JdbcUtils.USERNAME_KEY).asText(), config.get(JdbcUtils.PASSWORD_KEY).asText(),
+            DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-                config.get("host").asText(),
-                config.get("port").asInt(),
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
                 config.get("sid").asText()));
     final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
@@ -193,8 +197,8 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
     final List<JsonNode> collect = database.queryJsons(networkServiceBanner);
 
-    assertTrue(collect.get(1).get("NETWORK_SERVICE_BANNER").asText()
-        .contains("Oracle Advanced Security: encryption"));
+    assertThat(collect.get(1).get("NETWORK_SERVICE_BANNER").asText(),
+        is(equalTo("Encryption service for Linux: Version 18.0.0.0.0 - Production")));
   }
 
 }

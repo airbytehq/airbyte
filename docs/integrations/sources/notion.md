@@ -1,69 +1,93 @@
 # Notion
 
-## Overview
+This page contains the setup guide and reference information for the Notion source connector.
 
-Notion is a productivity and project management software. It was designed to help organizations coordinate deadlines, objectives, and assignments.
+## Setup guide​
 
-## Setup Guide
+### Step 1: Set up Notion​
 
-### For Airbyte OSS:
+1. Create a new integration on the [My integrations](https://www.notion.so/my-integrations) page.
 
-1. Login to your Notion account and go to https://www.notion.so/my-integrations.
-2. Create a new integration. Make sure to check the `Read content` capability.
-3. Check the appropriate user capability depending on your use case.
-4. Click `Submit`.
-5. Copy the access token from the next screen.
-6. On Airbyte, go to the sources option on the left and click the `+ New source` option.
-7. Select the Notion source and provide the start date.
-8. Paste the access token from the Notion integration page.
-9. Click the `Setup source` button. You should be able to start getting data.
+:::note
 
+You must be the owner of a Notion workspace to create a new integration.
 
-## Connector Reference
+:::
 
-### Supported features
-| Feature | Supported? | Notes
-| :--- | :--- | :---
-| Full Refresh Sync | Yes |
-| Incremental - Append Sync | Yes | Not supported for `Users` stream
-| SSL connection | Yes |
-| Namespaces | No |
+2. Fill out the form. Make sure to check **Read content** and check any other [capabilities](https://developers.notion.com/reference/capabilities) you want to authorize.
+3. Click **Submit**.
+4. In the **Integration type** section, select either **Internal integration** (token authorization) or **Public integration** (OAuth2.0 authentication).
+5. Check the capabilities you want to authorize.
+6. If you select **Public integration**, fill out the fields in the **OAuth Domain & URIs** section.
+7. Click **Save changes**.
+8. Copy the Internal Access Token if you are using the [internal integration](https://developers.notion.com/docs/authorization#authorizing-internal-integrations), or copy the `access_token`, `client_id`, and `client_secret` if you are using the [public integration](https://developers.notion.com/docs/authorization#authorizing-public-integrations).
 
-### Output schema
+### Step 2: Set up the Notion connector in Airbyte
 
-This Source is capable of syncing the following core streams:
+#### For Airbyte Cloud
 
-| Stream name                  | Schema |
-|:-----------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Blocks             | `{"object":"block","id":"50a5304c-db79-4ff0-be31-1d92e7329b5b","created_time":"2022-03-29T02:35:00.000Z","last_edited_time":"2022-03-29T02:35:00.000Z","created_by":{"object":"user","id":"8e308f26-bc66-434b-b126-ed666a3c30fc"},"last_edited_by":{"object":"user","id":"8e308f26-bc66-434b-b126-ed666a3c30fc"},"has_children":false,"archived":false,"type":"quote","quote":{"color":"default","text":[{"type":"text","text":{"content":"This is a quote","link":null},"annotations":{"bold":false,"italic":false,"strikethrough":false,"underline":false,"code":false,"color":"default"},"plain_text":"This is a quote","href":null}]}}` |
-| Databases              | `{"object":"database","id":"3b3d40b6-9ef9-495b-8317-db33cb913999","cover":null,"icon":{"type":"emoji","emoji":"♠️"},"created_time":"2022-03-26T23:52:00.000Z","created_by":{"object":"user","id":"8e308f26-bc66-434b-b126-ed666a3c30fc"},"last_edited_by":{"object":"user","id":"8e308f26-bc66-434b-b126-ed666a3c30fc"},"last_edited_time":"2022-03-29T02:29:00.000Z","title":[{"type":"text","text":{"content":"My Database","link":null},"annotations":{"bold":false,"italic":false,"strikethrough":false,"underline":false,"code":false,"color":"default"},"plain_text":"My Database","href":null}],"properties":{"Value Column":{"id":"fvtR","name":"Value Column","type":"rich_text","rich_text":{}},"Tags":{"id":"l%3Emj","name":"Tags","type":"multi_select","multi_select":{"options":[{"id":"5e942851-00ed-4a1b-af6a-1e1a73c6873b","name":"awesome","color":"blue"},{"id":"6924c772-0662-4132-a0a5-614161021691","name":"airbyte","color":"gray"}]}},"Date column":{"id":"%7Cz%3D~","name":"Date column","type":"date","date":{}},"Name":{"id":"title","name":"Name","type":"title","title":{}}},"parent":{"type":"workspace","workspace":true},"url":"https://www.notion.so/3b3d40b69ef9495b8317db33cb913999","archived":false}` |
-| Pages                        | `{"object":"page","id":"f309eed2-9c54-4e89-8d2e-947c18462c85","created_time":"2022-03-27T02:10:00.000Z","last_edited_time":"2022-03-29T02:34:00.000Z","created_by":{"object":"user","id":"8e308f26-bc66-434b-b126-ed666a3c30fc"},"last_edited_by":{"object":"user","id":"8e308f26-bc66-434b-b126-ed666a3c30fc"},"cover":null,"icon":{"type":"emoji","emoji":"📎"},"parent":{"type":"workspace","workspace":true},"archived":false,"properties":{"title":{"id":"title","type":"title","title":[{"type":"text","text":{"content":"My sample page","link":null},"annotations":{"bold":false,"italic":false,"strikethrough":false,"underline":false,"code":false,"color":"default"},"plain_text":"My sample page","href":null}]}},"url":"https://www.notion.so/My-sample-page-f309eed29c544e898d2e947c18462c85"}` |
-| Users                    | `{"object":"user","id":"8e308f26-bc66-434b-b126-ed666a3c30fc","name":"John Doe","avatar_url":"https://host.com/profile-notion.jpg","type":"person","person":{"email":"john.doe@company.io"}}` |
+1. Log in to your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Notion** from the **Source type** dropdown.
+4. Enter a name for your source.
+5. Choose the method of authentication:
+      * If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
+      * If you select **OAuth2.0** authorization, click **Authenticate your Notion account**.
+          * Log in and Authorize the Notion account. Select the permissions you want to allow Airbyte.
+6. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. Click **Set up source**.
 
+#### For Airbyte Open Source
 
-The `Databases` and `Pages` streams are using same `Search` endpoint.
+1. Log in to your Airbyte Open Source account.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Notion** from the **Source type** dropdown.
+4. Enter a name for your source.
+5. Choose the method of authentication:
+      * If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
+      * If you select **OAuth2.0** authorization, paste the client ID, access token, and client secret from [Step 8](#step-1-set-up-notion​).
+6. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. Click **Set up source**.
 
-Notion stores `Blocks` in hierarchical structure, so we use recursive request to get list of blocks.
+## Supported sync modes
 
+The Notion source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (partially)
+* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
-### Performance considerations
+## Supported Streams
 
-The connector is restricted by normal Notion [rate limits and size limits](https://developers.notion.com/reference/errors#request-limits).
+The Notion source connector supports the following streams. For more information, see the [Notion API](https://developers.notion.com/reference/intro).
 
-The Notion connector should not run into Notion API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+* [blocks](https://developers.notion.com/reference/retrieve-a-block)
+* [databases](https://developers.notion.com/reference/retrieve-a-database)
+* [pages](https://developers.notion.com/reference/retrieve-a-page)
+* [users](https://developers.notion.com/reference/get-user)
+      
+:::note
 
-### Sync considerations
+The users stream does not support Incremental - Append sync mode.
 
-In order for your connection to successfully sync the pages and blocks you expect, you should share the corresponding pages with your Notion integration first. That also applies to child pages. You won't be able to see blocks from child pages if you explicitly don't share them with your integration.
+:::
 
+## Performance considerations
+
+The connector is restricted by Notion [request limits](https://developers.notion.com/reference/request-limits). The Notion connector should not run into Notion API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.3 | 2022-04-22 | [11452](https://github.com/airbytehq/airbyte/pull/11452) | Use pagination for User stream |
-| 0.1.2 | 2022-01-11 | [9084](https://github.com/airbytehq/airbyte/pull/9084) | Fix documentation URL |
-| 0.1.1 | 2021-12-30 | [9207](https://github.com/airbytehq/airbyte/pull/9207) | Update connector fields title/description |
-| 0.1.0 | 2021-10-17 | [7092](https://github.com/airbytehq/airbyte/pull/7092) | Initial Release |
-
-
+| Version | Date       | Pull Request                                             | Subject                                                         |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------- |
+| 0.1.10  | 2022-09-28 | [17298](https://github.com/airbytehq/airbyte/pull/17298) | Use "Retry-After" header for backoff                            |
+| 0.1.9   | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state                                     |
+| 0.1.8   | 2022-09-05 | [16272](https://github.com/airbytehq/airbyte/pull/16272) | Update spec description to include working timestamp example    |
+| 0.1.7   | 2022-07-26 | [15042](https://github.com/airbytehq/airbyte/pull/15042) | Update `additionalProperties` field to true from shared schemas |
+| 0.1.6   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas and spec       |
+| 0.1.5   | 2022-07-14 | [14706](https://github.com/airbytehq/airbyte/pull/14706) | Added OAuth2.0 authentication                                   |
+| 0.1.4   | 2022-07-07 | [14505](https://github.com/airbytehq/airbyte/pull/14505) | Fixed bug when normalization didn't run through                 |
+| 0.1.3   | 2022-04-22 | [11452](https://github.com/airbytehq/airbyte/pull/11452) | Use pagination for User stream                                  |
+| 0.1.2   | 2022-01-11 | [9084](https://github.com/airbytehq/airbyte/pull/9084)   | Fix documentation URL                                           |
+| 0.1.1   | 2021-12-30 | [9207](https://github.com/airbytehq/airbyte/pull/9207)   | Update connector fields title/description                       |
+| 0.1.0   | 2021-10-17 | [7092](https://github.com/airbytehq/airbyte/pull/7092)   | Initial Release                                                 |

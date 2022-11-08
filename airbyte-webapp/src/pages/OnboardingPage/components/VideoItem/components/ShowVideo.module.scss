@@ -1,0 +1,13 @@
+@use "../../../../../scss/colors";
+
+.closeButton {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  color: colors.$white;
+  font-size: 20px;
+
+  &:hover {
+    border: none;
+  }
+}

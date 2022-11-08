@@ -4,5 +4,21 @@
  */
 
 export interface Experiments {
+  "onboarding.hideOnboarding": boolean;
+  "connector.inviteUsersHint.visible": boolean;
+  "connector.inviteUsersHint.linkToUsersPage": boolean;
   "connector.orderOverwrite": Record<string, number>;
+  "connector.frequentlyUsedDestinationIds": string[];
+  "connector.startWithDestinationId": string;
+  "authPage.rightSideUrl": string | undefined;
+  "authPage.hideSelfHostedCTA": boolean;
+  "authPage.signup.hideName": boolean;
+  "authPage.signup.hideCompanyName": boolean;
+  "authPage.oauth.google": boolean;
+  "authPage.oauth.github": boolean;
+  "authPage.oauth.google.signUpPage": boolean;
+  "authPage.oauth.github.signUpPage": boolean;
+  "onboarding.speedyConnection": boolean;
+  "authPage.signup.sourceSelector": boolean;
+  "authPage.oauth.position": "top" | "bottom";
 }

@@ -5,19 +5,22 @@
 package io.airbyte.config.persistence;
 
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG_FETCH_EVENT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION_WORKSPACE_GRANT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OPERATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.ActorCatalogFetchEvent;
+import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.Geography;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -26,8 +29,10 @@ import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
+import io.airbyte.config.persistence.ConfigRepository.SourceAndDefinition;
 import io.airbyte.db.Database;
+import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.init.DatabaseInitializationException;
@@ -43,6 +48,7 @@ import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +62,7 @@ import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,7 +77,6 @@ class ConfigRepositoryE2EReadWriteTest {
   private Database database;
   private ConfigRepository configRepository;
   private DatabaseConfigPersistence configPersistence;
-  private JsonSecretsProcessor jsonSecretsProcessor;
   private Flyway flyway;
   private final static String DOCKER_IMAGE_TAG = "1.2.0";
   private final static String CONFIG_HASH = "ConfigHash";
@@ -85,21 +91,21 @@ class ConfigRepositoryE2EReadWriteTest {
   }
 
   @BeforeEach
-  void setup() throws IOException, JsonValidationException, SQLException, DatabaseInitializationException {
+  void setup() throws IOException, JsonValidationException, SQLException, DatabaseInitializationException, InterruptedException {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
+    flyway = FlywayFactory.create(dataSource, ConfigRepositoryE2EReadWriteTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
         ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
     database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(false);
-    jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
-    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
-    configRepository = spy(new ConfigRepository(configPersistence, database));
+    configPersistence = spy(new DatabaseConfigPersistence(database));
+    configRepository = spy(new ConfigRepository(configPersistence, database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
+        new StandardSyncPersistence(database)));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, flyway);
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
     MigrationDevHelper.runLastMigration(devDatabaseMigrator);
     for (final StandardWorkspace workspace : MockData.standardWorkspaces()) {
-      configRepository.writeStandardWorkspace(workspace);
+      configRepository.writeStandardWorkspaceNoSecrets(workspace);
     }
     for (final StandardSourceDefinition sourceDefinition : MockData.standardSourceDefinitions()) {
       configRepository.writeStandardSourceDefinition(sourceDefinition);
@@ -139,7 +145,7 @@ class ConfigRepositoryE2EReadWriteTest {
   void testWorkspaceCountConnections() throws IOException {
 
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
-    assertEquals(4, configRepository.countConnectionsForWorkspace(workspaceId));
+    assertEquals(3, configRepository.countConnectionsForWorkspace(workspaceId));
     assertEquals(2, configRepository.countDestinationsForWorkspace(workspaceId));
     assertEquals(2, configRepository.countSourcesForWorkspace(workspaceId));
   }
@@ -148,6 +154,22 @@ class ConfigRepositoryE2EReadWriteTest {
   void testWorkspaceCountConnectionsDeprecated() throws IOException {
     final UUID workspaceId = MockData.standardWorkspaces().get(1).getWorkspaceId();
     assertEquals(1, configRepository.countConnectionsForWorkspace(workspaceId));
+  }
+
+  @Test
+  void testFetchActorsUsingDefinition() throws IOException {
+    final UUID destinationDefinitionId = MockData.publicDestinationDefinition().getDestinationDefinitionId();
+    final UUID sourceDefinitionId = MockData.publicSourceDefinition().getSourceDefinitionId();
+    final List<DestinationConnection> destinationConnections = configRepository.listDestinationsForDefinition(
+        destinationDefinitionId);
+    final List<SourceConnection> sourceConnections = configRepository.listSourcesForDefinition(
+        sourceDefinitionId);
+
+    assertThat(destinationConnections)
+        .containsExactlyElementsOf(MockData.destinationConnections().stream().filter(d -> d.getDestinationDefinitionId().equals(
+            destinationDefinitionId) && !d.getTombstone()).collect(Collectors.toList()));
+    assertThat(sourceConnections).containsExactlyElementsOf(MockData.sourceConnections().stream().filter(d -> d.getSourceDefinitionId().equals(
+        sourceDefinitionId) && !d.getTombstone()).collect(Collectors.toList()));
   }
 
   @Test
@@ -199,10 +221,19 @@ class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  void testListWorkspaceStandardSync() throws IOException {
+  void testListWorkspaceStandardSyncAll() throws IOException {
+    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 4);
+    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId(), true);
 
-    final List<StandardSync> syncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId());
-    assertThat(MockData.standardSyncs().subList(0, 4)).hasSameElementsAs(syncs);
+    assertSyncsMatch(expectedSyncs, actualSyncs);
+  }
+
+  @Test
+  void testListWorkspaceStandardSyncExcludeDeleted() throws IOException {
+    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 3);
+    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId(), false);
+
+    assertSyncsMatch(expectedSyncs, actualSyncs);
   }
 
   @Test
@@ -278,6 +309,24 @@ class ConfigRepositoryE2EReadWriteTest {
   void testListPublicSourceDefinitions() throws IOException {
     final List<StandardSourceDefinition> actualDefinitions = configRepository.listPublicSourceDefinitions(false);
     assertEquals(List.of(MockData.publicSourceDefinition()), actualDefinitions);
+  }
+
+  @Test
+  void testListWorkspaceSources() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(1).getWorkspaceId();
+    final List<SourceConnection> expectedSources = MockData.sourceConnections().stream()
+        .filter(source -> source.getWorkspaceId().equals(workspaceId)).collect(Collectors.toList());
+    final List<SourceConnection> sources = configRepository.listWorkspaceSourceConnection(workspaceId);
+    assertThat(sources).hasSameElementsAs(expectedSources);
+  }
+
+  @Test
+  void testListWorkspaceDestinations() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final List<DestinationConnection> expectedDestinations = MockData.destinationConnections().stream()
+        .filter(destination -> destination.getWorkspaceId().equals(workspaceId)).collect(Collectors.toList());
+    final List<DestinationConnection> destinations = configRepository.listWorkspaceDestinationConnection(workspaceId);
+    assertThat(destinations).hasSameElementsAs(expectedDestinations);
   }
 
   @Test
@@ -405,12 +454,35 @@ class ConfigRepositoryE2EReadWriteTest {
   @Test
   void testGetStandardSyncUsingOperation() throws IOException {
     final UUID operationId = MockData.standardSyncOperations().get(0).getOperationId();
-    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 4);
+    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 3);
+    final List<StandardSync> actualSyncs = configRepository.listStandardSyncsUsingOperation(operationId);
 
-    final List<StandardSync> syncs = configRepository.listStandardSyncsUsingOperation(operationId);
+    assertSyncsMatch(expectedSyncs, actualSyncs);
+  }
 
-    assertThat(syncs).hasSameElementsAs(expectedSyncs);
+  private void assertSyncsMatch(final List<StandardSync> expectedSyncs, final List<StandardSync> actualSyncs) {
+    assertEquals(expectedSyncs.size(), actualSyncs.size());
 
+    for (final StandardSync expected : expectedSyncs) {
+
+      final Optional<StandardSync> maybeActual = actualSyncs.stream().filter(s -> s.getConnectionId().equals(expected.getConnectionId())).findFirst();
+      if (maybeActual.isEmpty()) {
+        Assertions.fail(String.format("Expected to find connectionId %s in result, but actual connectionIds are %s",
+            expected.getConnectionId(),
+            actualSyncs.stream().map(StandardSync::getConnectionId).collect(Collectors.toList())));
+      }
+      final StandardSync actual = maybeActual.get();
+
+      // operationIds can be ordered differently in the query result than in the mock data, so they need
+      // to be verified separately
+      // from the rest of the sync.
+      assertThat(actual.getOperationIds()).hasSameElementsAs(expected.getOperationIds());
+
+      // now, clear operationIds so the rest of the sync can be compared
+      expected.setOperationIds(null);
+      actual.setOperationIds(null);
+      assertEquals(expected, actual);
+    }
   }
 
   @Test
@@ -430,6 +502,111 @@ class ConfigRepositoryE2EReadWriteTest {
         }
       }
     }
+  }
+
+  @Test
+  void testGetSourceAndDefinitionsFromSourceIds() throws IOException {
+    final List<UUID> sourceIds = MockData.sourceConnections().subList(0, 2).stream().map(SourceConnection::getSourceId).toList();
+
+    final List<SourceAndDefinition> expected = List.of(
+        new SourceAndDefinition(MockData.sourceConnections().get(0), MockData.standardSourceDefinitions().get(0)),
+        new SourceAndDefinition(MockData.sourceConnections().get(1), MockData.standardSourceDefinitions().get(1)));
+
+    final List<SourceAndDefinition> actual = configRepository.getSourceAndDefinitionsFromSourceIds(sourceIds);
+    assertThat(actual).hasSameElementsAs(expected);
+  }
+
+  @Test
+  void testGetDestinationAndDefinitionsFromDestinationIds() throws IOException {
+    final List<UUID> destinationIds = MockData.destinationConnections().subList(0, 2).stream().map(DestinationConnection::getDestinationId).toList();
+
+    final List<DestinationAndDefinition> expected = List.of(
+        new DestinationAndDefinition(MockData.destinationConnections().get(0), MockData.standardDestinationDefinitions().get(0)),
+        new DestinationAndDefinition(MockData.destinationConnections().get(1), MockData.standardDestinationDefinitions().get(1)));
+
+    final List<DestinationAndDefinition> actual = configRepository.getDestinationAndDefinitionsFromDestinationIds(destinationIds);
+    assertThat(actual).hasSameElementsAs(expected);
+  }
+
+  @Test
+  void testGetGeographyForConnection() throws IOException {
+    final StandardSync sync = MockData.standardSyncs().get(0);
+    final Geography expected = sync.getGeography();
+    final Geography actual = configRepository.getGeographyForConnection(sync.getConnectionId());
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  void testGetMostRecentActorCatalogFetchEventForSource() throws SQLException, IOException, JsonValidationException {
+    for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
+      configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
+    }
+
+    final OffsetDateTime now = OffsetDateTime.now();
+    final OffsetDateTime yesterday = now.minusDays(1l);
+
+    final List<ActorCatalogFetchEvent> fetchEvents = MockData.actorCatalogFetchEventsSameSource();
+    final ActorCatalogFetchEvent fetchEvent1 = fetchEvents.get(0);
+    final ActorCatalogFetchEvent fetchEvent2 = fetchEvents.get(1);
+
+    database.transaction(ctx -> {
+      insertCatalogFetchEvent(
+          ctx,
+          fetchEvent1.getActorId(),
+          fetchEvent1.getActorCatalogId(),
+          yesterday);
+      insertCatalogFetchEvent(
+          ctx,
+          fetchEvent2.getActorId(),
+          fetchEvent2.getActorCatalogId(),
+          now);
+
+      return null;
+    });
+
+    final Optional<ActorCatalogFetchEvent> result =
+        configRepository.getMostRecentActorCatalogFetchEventForSource(fetchEvent1.getActorId());
+
+    assertEquals(fetchEvent2.getActorCatalogId(), result.get().getActorCatalogId());
+  }
+
+  @Test
+  void testGetMostRecentActorCatalogFetchEventForSources() throws SQLException, IOException, JsonValidationException {
+    for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
+      configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
+    }
+
+    database.transaction(ctx -> {
+      MockData.actorCatalogFetchEventsForAggregationTest().forEach(actorCatalogFetchEvent -> insertCatalogFetchEvent(
+          ctx,
+          actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorId(),
+          actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorCatalogId(),
+          actorCatalogFetchEvent.getCreatedAt()));
+
+      return null;
+    });
+
+    final Map<UUID, ActorCatalogFetchEvent> result =
+        configRepository.getMostRecentActorCatalogFetchEventForSources(List.of(MockData.SOURCE_ID_1,
+            MockData.SOURCE_ID_2));
+
+    assertEquals(MockData.ACTOR_CATALOG_ID_1, result.get(MockData.SOURCE_ID_1).getActorCatalogId());
+    assertEquals(MockData.ACTOR_CATALOG_ID_3, result.get(MockData.SOURCE_ID_2).getActorCatalogId());
+  }
+
+  private void insertCatalogFetchEvent(final DSLContext ctx, final UUID sourceId, final UUID catalogId, final OffsetDateTime creationDate) {
+    ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
+        .columns(
+            ACTOR_CATALOG_FETCH_EVENT.ID,
+            ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID,
+            ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID,
+            ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH,
+            ACTOR_CATALOG_FETCH_EVENT.ACTOR_VERSION,
+            ACTOR_CATALOG_FETCH_EVENT.CREATED_AT,
+            ACTOR_CATALOG_FETCH_EVENT.MODIFIED_AT)
+        .values(UUID.randomUUID(), sourceId, catalogId, "", "", creationDate, creationDate)
+        .execute();
   }
 
 }

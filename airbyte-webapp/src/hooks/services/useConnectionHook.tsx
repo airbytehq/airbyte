@@ -1,26 +1,32 @@
-import { QueryClient, useMutation, useQueryClient } from "react-query";
+import { useCallback } from "react";
+import { useMutation, useQueryClient } from "react-query";
 
-import { getFrequencyConfig } from "config/utils";
+import { Action, Namespace } from "core/analytics";
+import { getFrequencyFromScheduleData } from "core/analytics/utils";
 import { SyncSchema } from "core/domain/catalog";
 import { WebBackendConnectionService } from "core/domain/connection";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useInitService } from "services/useInitService";
 
 import { useConfig } from "../../config";
 import {
-  ConnectionSchedule,
+  ConnectionScheduleData,
+  ConnectionScheduleType,
+  ConnectionStatus,
   DestinationRead,
   NamespaceDefinitionType,
   OperationCreate,
   SourceDefinitionRead,
   SourceRead,
+  WebBackendConnectionListItem,
   WebBackendConnectionRead,
+  WebBackendConnectionReadList,
   WebBackendConnectionUpdate,
 } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
+import { useAnalyticsService } from "./Analytics";
 import { useCurrentWorkspace } from "./useWorkspace";
 
 export const connectionsKeys = {
@@ -33,7 +39,8 @@ export const connectionsKeys = {
 
 export interface ValuesProps {
   name?: string;
-  schedule?: ConnectionSchedule;
+  scheduleData: ConnectionScheduleData | undefined;
+  scheduleType: ConnectionScheduleType;
   prefix: string;
   syncCatalog: SyncSchema;
   namespaceDefinition: NamespaceDefinitionType;
@@ -50,56 +57,33 @@ interface CreateConnectionProps {
   sourceCatalogId: string | undefined;
 }
 
-export interface ListConnection {
-  connections: WebBackendConnectionRead[];
-}
-
-function useWebConnectionService() {
+export const useWebConnectionService = () => {
   const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(
     () => new WebBackendConnectionService(config.apiUrl, middlewares),
     [config.apiUrl, middlewares]
   );
-}
+};
 
-function useConnectionService() {
+export function useConnectionService() {
   const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(() => new ConnectionService(config.apiUrl, middlewares), [config.apiUrl, middlewares]);
 }
 
-export const useConnectionLoad = (
-  connectionId: string
-): {
-  connection: WebBackendConnectionRead;
-  refreshConnectionCatalog: () => Promise<WebBackendConnectionRead>;
-} => {
-  const connection = useGetConnection(connectionId);
-  const connectionService = useWebConnectionService();
-
-  const refreshConnectionCatalog = async () => await connectionService.getConnection(connectionId, true);
-
-  return {
-    connection,
-    refreshConnectionCatalog,
-  };
-};
-
 export const useSyncConnection = () => {
   const service = useConnectionService();
   const analyticsService = useAnalyticsService();
 
-  return useMutation((connection: WebBackendConnectionRead) => {
-    const frequency = getFrequencyConfig(connection.schedule);
-
-    analyticsService.track("Source - Action", {
-      action: "Full refresh sync",
+  return useMutation((connection: WebBackendConnectionRead | WebBackendConnectionListItem) => {
+    analyticsService.track(Namespace.CONNECTION, Action.SYNC, {
+      actionDescription: "Manual triggered sync",
       connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceDefinitionId,
-      connector_destination: connection.destination?.name,
+      connector_source_definition_id: connection.source?.sourceDefinitionId,
+      connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: frequency?.type,
+      frequency: getFrequencyFromScheduleData(connection.scheduleData),
     });
 
     return service.sync(connection.connectionId);
@@ -142,11 +126,9 @@ const useCreateConnection = () => {
 
       const enabledStreams = values.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
 
-      const frequencyData = getFrequencyConfig(values.schedule);
-
-      analyticsService.track("New Connection - Action", {
-        action: "Set up connection",
-        frequency: frequencyData?.type,
+      analyticsService.track(Namespace.CONNECTION, Action.CREATE, {
+        actionDescription: "New connection created",
+        frequency: getFrequencyFromScheduleData(values.scheduleData),
         connector_source_definition: source?.sourceName,
         connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
         connector_destination_definition: destination?.destinationName,
@@ -159,7 +141,7 @@ const useCreateConnection = () => {
     },
     {
       onSuccess: (data) => {
-        queryClient.setQueryData(connectionsKeys.lists(), (lst: ListConnection | undefined) => ({
+        queryClient.setQueryData<WebBackendConnectionReadList>(connectionsKeys.lists(), (lst) => ({
           connections: [data, ...(lst?.connections ?? [])],
         }));
       },
@@ -170,17 +152,22 @@ const useCreateConnection = () => {
 const useDeleteConnection = () => {
   const service = useConnectionService();
   const queryClient = useQueryClient();
+  const analyticsService = useAnalyticsService();
 
-  return useMutation((connectionId: string) => service.delete(connectionId), {
-    onSuccess: (_data, connectionId) => {
-      queryClient.removeQueries(connectionsKeys.detail(connectionId));
-      queryClient.setQueryData(
-        connectionsKeys.lists(),
-        (lst: ListConnection | undefined) =>
-          ({
-            connections: lst?.connections.filter((conn) => conn.connectionId !== connectionId) ?? [],
-          } as ListConnection)
-      );
+  return useMutation((connection: WebBackendConnectionRead) => service.delete(connection.connectionId), {
+    onSuccess: (_data, connection) => {
+      analyticsService.track(Namespace.CONNECTION, Action.DELETE, {
+        actionDescription: "Connection deleted",
+        connector_source: connection.source?.sourceName,
+        connector_source_definition_id: connection.source?.sourceDefinitionId,
+        connector_destination: connection.destination?.destinationName,
+        connector_destination_definition_id: connection.destination?.destinationDefinitionId,
+      });
+
+      queryClient.removeQueries(connectionsKeys.detail(connection.connectionId));
+      queryClient.setQueryData<WebBackendConnectionReadList>(connectionsKeys.lists(), (lst) => ({
+        connections: lst?.connections.filter((conn) => conn.connectionId !== connection.connectionId) ?? [],
+      }));
     },
   });
 };
@@ -189,31 +176,71 @@ const useUpdateConnection = () => {
   const service = useWebConnectionService();
   const queryClient = useQueryClient();
 
-  return useMutation(
-    (connectionUpdate: WebBackendConnectionUpdate) => {
-      const withRefreshedCatalogCleaned = connectionUpdate.withRefreshedCatalog
-        ? { withRefreshedCatalog: connectionUpdate.withRefreshedCatalog }
-        : null;
-
-      return service.update({ ...connectionUpdate, ...withRefreshedCatalogCleaned });
+  return useMutation((connectionUpdate: WebBackendConnectionUpdate) => service.update(connectionUpdate), {
+    onSuccess: (updatedConnection) => {
+      queryClient.setQueryData(connectionsKeys.detail(updatedConnection.connectionId), updatedConnection);
+      // Update the connection inside the connections list response
+      queryClient.setQueryData<WebBackendConnectionReadList>(connectionsKeys.lists(), (ls) => ({
+        ...ls,
+        connections:
+          ls?.connections.map((conn) => {
+            if (conn.connectionId === updatedConnection.connectionId) {
+              return updatedConnection;
+            }
+            return conn;
+          }) ?? [],
+      }));
     },
+  });
+};
+
+/**
+ * Sets the enable/disable status of a connection. It will use the useConnectionUpdate method
+ * to make sure all caches are properly updated, but in addition will trigger the Reenable/Disable
+ * analytic event.
+ */
+export const useEnableConnection = () => {
+  const analyticsService = useAnalyticsService();
+  const { mutateAsync: updateConnection } = useUpdateConnection();
+
+  return useMutation(
+    ({ connectionId, enable }: { connectionId: WebBackendConnectionUpdate["connectionId"]; enable: boolean }) =>
+      updateConnection({ connectionId, status: enable ? ConnectionStatus.active : ConnectionStatus.inactive }),
     {
       onSuccess: (connection) => {
-        queryClient.setQueryData(connectionsKeys.detail(connection.connectionId), connection);
+        const action = connection.status === ConnectionStatus.active ? Action.REENABLE : Action.DISABLE;
+
+        analyticsService.track(Namespace.CONNECTION, action, {
+          frequency: getFrequencyFromScheduleData(connection.scheduleData),
+          connector_source: connection.source?.sourceName,
+          connector_source_definition_id: connection.source?.sourceDefinitionId,
+          connector_destination: connection.destination?.destinationName,
+          connector_destination_definition_id: connection.destination?.destinationDefinitionId,
+        });
       },
     }
   );
 };
 
-const useConnectionList = (): ListConnection => {
+export const useRemoveConnectionsFromList = (): ((connectionIds: string[]) => void) => {
+  const queryClient = useQueryClient();
+
+  return useCallback(
+    (connectionIds: string[]) => {
+      queryClient.setQueryData<WebBackendConnectionReadList>(connectionsKeys.lists(), (ls) => ({
+        ...ls,
+        connections: ls?.connections.filter((c) => !connectionIds.includes(c.connectionId)) ?? [],
+      }));
+    },
+    [queryClient]
+  );
+};
+
+const useConnectionList = () => {
   const workspace = useCurrentWorkspace();
   const service = useWebConnectionService();
 
   return useSuspenseQuery(connectionsKeys.lists(), () => service.list(workspace.workspaceId));
-};
-
-const invalidateConnectionsList = async (queryClient: QueryClient) => {
-  await queryClient.invalidateQueries(connectionsKeys.lists());
 };
 
 const useGetConnectionState = (connectionId: string) => {
@@ -228,6 +255,5 @@ export {
   useUpdateConnection,
   useCreateConnection,
   useDeleteConnection,
-  invalidateConnectionsList,
   useGetConnectionState,
 };

@@ -4,6 +4,7 @@
 title: AirbyteProtocol
 type: object
 description: AirbyteProtocol structs
+version: 0.3.2
 properties:
   airbyte_message:
     "$ref": "#/definitions/AirbyteMessage"
@@ -27,6 +28,7 @@ definitions:
           - CONNECTION_STATUS
           - CATALOG
           - TRACE
+          - CONTROL
       log:
         description: "log message: any kind of logging you want the platform to know about."
         "$ref": "#/definitions/AirbyteLogMessage"
@@ -47,6 +49,9 @@ definitions:
       trace:
         description: "trace message: a message to communicate information about the status and performance of a connector"
         "$ref": "#/definitions/AirbyteTraceMessage"
+      control:
+        description: "connector config message: a message to communicate an updated configuration from a connector that should be persisted"
+        "$ref": "#/definitions/AirbyteControlMessage"
   AirbyteRecordMessage:
     type: object
     additionalProperties: true
@@ -130,10 +135,9 @@ definitions:
         type: string
   AirbyteStateBlob:
     type: object
-    description: "the state data"
     additionalProperties: true
+    description: "the state data"
     existingJavaType: com.fasterxml.jackson.databind.JsonNode
-
   AirbyteLogMessage:
     type: object
     additionalProperties: true
@@ -154,6 +158,9 @@ definitions:
       message:
         description: "log message"
         type: string
+      stack_trace:
+        description: "an optional stack trace if the log message corresponds to an exception"
+        type: string
   AirbyteTraceMessage:
     type: object
     additionalProperties: true
@@ -167,12 +174,16 @@ definitions:
         type: string
         enum:
           - ERROR
+          - ESTIMATE
       emitted_at:
         description: "the time in ms that the message was emitted"
         type: number
       error:
         description: "error trace message: the error object"
         "$ref": "#/definitions/AirbyteErrorTraceMessage"
+      estimate:
+        description: "Estimate trace message: a guess at how much data will be produced in this sync"
+        "$ref": "#/definitions/AirbyteEstimateTraceMessage"
   AirbyteErrorTraceMessage:
     type: object
     additionalProperties: true
@@ -194,9 +205,64 @@ definitions:
         enum:
           - system_error
           - config_error
-  AirbyteConnectionStatus:
-    description: Airbyte connection status
+  AirbyteEstimateTraceMessage:
     type: object
+    additionalProperties: true
+    required:
+      - name
+      - type
+    properties:
+      name:
+        description: The name of the stream
+        type: string
+      type:
+        title: "estimate type" # this title is required to avoid python codegen conflicts with the "type" parameter in AirbyteMessage. See https://github.com/airbytehq/airbyte/pull/12581
+        description: The type of estimate
+        type: string
+        enum:
+          - STREAM
+          - SYNC
+      namespace:
+        description: The namespace of the stream
+        type: string
+      row_estimate:
+        description: The estimated number of rows to be emitted by this sync for this stream
+        type: integer
+      byte_estimate:
+        description: The estimated number of bytes to be emitted by this sync for this stream
+        type: integer
+  AirbyteControlMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - emitted_at
+    properties:
+      type:
+        title: orchestrator type
+        description: "the type of orchestrator message"
+        type: string
+        enum:
+          - CONNECTOR_CONFIG
+      emitted_at:
+        description: "the time in ms that the message was emitted"
+        type: number
+      connectorConfig:
+        description: "connector config orchestrator message: the updated config for the platform to store for this connector"
+        "$ref": "#/definitions/AirbyteControlConnectorConfigMessage"
+  AirbyteControlConnectorConfigMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - config
+    properties:
+      config:
+        description: "the config items from this connector's spec to update"
+        type: object
+        additionalProperties: true
+  AirbyteConnectionStatus:
+    type: object
+    description: Airbyte connection status
     additionalProperties: true
     required:
       - status
@@ -209,9 +275,9 @@ definitions:
       message:
         type: string
   AirbyteCatalog:
-    description: Airbyte stream schema catalog
     type: object
     additionalProperties: true
+    description: Airbyte stream schema catalog
     required:
       - streams
     properties:
@@ -225,8 +291,7 @@ definitions:
     required:
       - name
       - json_schema
-      # todo (cgardens) - make required once sources are migrated
-      # - supported_sync_modes
+      - supported_sync_modes
     properties:
       name:
         type: string
@@ -236,7 +301,9 @@ definitions:
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
       supported_sync_modes:
+        description: List of sync modes supported by this stream.
         type: array
+        minItems: 1
         items:
           "$ref": "#/definitions/SyncMode"
       source_defined_cursor:
@@ -258,9 +325,9 @@ definitions:
         description: Optional Source-defined namespace. Currently only used by JDBC destinations to determine what schema to write to. Airbyte streams from the same sources should have the same namespace.
         type: string
   ConfiguredAirbyteCatalog:
-    description: Airbyte stream schema catalog
     type: object
     additionalProperties: true
+    description: Airbyte stream schema catalog
     required:
       - streams
     properties:
@@ -309,9 +376,9 @@ definitions:
       #- upsert_dedup # TODO chris: SCD Type 1 can be implemented later
       - append_dedup # SCD Type 1 & 2
   OAuth2Specification:
-    description: An object containing any metadata needed to describe this connector's Oauth flow. Deprecated, switching to advanced_auth instead
     type: object
     additionalProperties: true
+    description: An object containing any metadata needed to describe this connector's Oauth flow. Deprecated, switching to advanced_auth instead
     properties:
       rootObject:
         description:
@@ -355,11 +422,11 @@ definitions:
           items:
             type: string
   ConnectorSpecification:
-    description: Specification of a connector (source/destination)
     type: object
+    additionalProperties: true
+    description: Specification of a connector (source/destination)
     required:
       - connectionSpecification
-    additionalProperties: true
     properties:
       # todo - split ConnectorSpecification into general vs connector type sections of properties
       # General Properties (Common to all connectors)
@@ -428,8 +495,12 @@ definitions:
             type: string
           oauth_config_specification:
             "$ref": "#/definitions/OAuthConfigSpecification"
+      protocol_version:
+        description: "the Airbyte Protocol version supported by the connector. Protocol versioning uses SemVer. "
+        type: string
   OAuthConfigSpecification:
     type: object
+    additionalProperties: true
     properties:
       oauth_user_input_from_connector_config_specification:
         description: |-

@@ -2,6 +2,12 @@
 
 This page guides you through the process of setting up the Amazon Seller Partner source connector.
 
+:::caution
+
+Authenticating this Alpha connector is currently blocked. This is a known issue being tracked here: https://github.com/airbytehq/airbyte/issues/14734
+
+:::
+
 ## Prerequisites
 
 - app_id
@@ -32,7 +38,7 @@ This page guides you through the process of setting up the Amazon Seller Partner
 6. Paste all other data to required fields using your IAM user.
 7. Click `Set up source`.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 
 1. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token. 
 2. Go to local Airbyte page.
@@ -58,6 +64,8 @@ This source is capable of syncing the following tables and their data:
 - [FBA Orders Reports](https://sellercentral.amazon.com/gp/help/help.html?itemID=200989110)
 - [FBA Shipments Reports](https://sellercentral.amazon.com/gp/help/help.html?itemID=200989100)
 - [FBA Replacements Reports](https://sellercentral.amazon.com/help/hub/reference/200453300)
+- [FBA Storage Fees Report](https://sellercentral.amazon.com/help/hub/reference/G202086720)
+- [Restock Inventory Reports](https://sellercentral.amazon.com/help/hub/reference/202105670)
 - [Flat File Open Listings Reports](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [Flat File Orders Reports](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [Flat File Orders Reports By Last Update](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(incremental\)
@@ -75,6 +83,32 @@ This source is capable of syncing the following tables and their data:
 - [Browse tree report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#browse-tree-report)
 - [Financial Event Groups](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialeventgroups)
 - [Financial Events](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialevents)
+- [FBA Fee Preview Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [FBA Daily Inventory History Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [FBA Promotions Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [FBA Inventory Adjustments Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [FBA Received Inventory Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [FBA Inventory Event Detail Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [FBA Monthly Inventory History Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [FBA Manage Inventory](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [Subscribe and Save Forecast Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [Subscribe and Save Performance Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [Flat File Archived Orders Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [Flat File Returns Report by Return Date](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [Canceled Listings Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [Active Listings Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [Open Listings Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [Suppressed Listings Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [Inactive Listings Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [FBA Stranded Inventory Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [Inventory Ledger Report - Detailed View](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [FBA Manage Inventory Health Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [Inventory Ledger Report - Summary View](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+
+## Report options
+
+Make sure to configure the [required parameters](https://developer-docs.amazon.com/sp-api/docs/report-type-values) in the report options setting for the reports configured.
 
 ## Data type mapping
 
@@ -92,6 +126,11 @@ This source is capable of syncing the following tables and their data:
 
 | Version  | Date       | Pull Request                                               | Subject                                                                |
 |:---------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------|
+| `0.2.28` | 2022-10-20 | [\#18283](https://github.com/airbytehq/airbyte/pull/18283) | Added multiple (22) report types                                       |
+| `0.2.26` | 2022-09-24 | [\#16629](https://github.com/airbytehq/airbyte/pull/16629) | Report API version to 2021-06-30, added multiple (5) report types      |
+| `0.2.25` | 2022-07-27 | [\#15063](https://github.com/airbytehq/airbyte/pull/15063) | Add Restock Inventory Report                                           |
+| `0.2.24` | 2022-07-12 | [\#14625](https://github.com/airbytehq/airbyte/pull/14625) | Add FBA Storage Fees Report                                            |
+| `0.2.23` | 2022-06-08 | [\#13604](https://github.com/airbytehq/airbyte/pull/13604) | Add new streams: Fullfiments returns and Settlement reports            |
 | `0.2.22` | 2022-06-15 | [\#13633](https://github.com/airbytehq/airbyte/pull/13633) | Fix - handle start date for financial stream                           |
 | `0.2.21` | 2022-06-01 | [\#13364](https://github.com/airbytehq/airbyte/pull/13364) | Add financial streams                                                  |
 | `0.2.20` | 2022-05-30 | [\#13059](https://github.com/airbytehq/airbyte/pull/13059) | Add replication end date to config                                     |
