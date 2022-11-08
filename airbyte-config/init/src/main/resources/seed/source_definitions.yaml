@@ -1156,6 +1156,13 @@
   icon: searchmetrics.svg
   sourceType: api
   releaseStage: alpha
+- name: Secoda
+  sourceDefinitionId: da9fc6b9-8059-4be0-b204-f56e22e4d52d
+  dockerRepository: airbyte/source-secoda
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/secoda
+  sourceType: api
+  releaseStage: alpha
 - name: Sendgrid
   sourceDefinitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
   dockerRepository: airbyte/source-sendgrid
