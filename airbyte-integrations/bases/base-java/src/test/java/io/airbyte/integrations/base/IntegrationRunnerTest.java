@@ -267,6 +267,26 @@ class IntegrationRunnerTest {
   }
 
   @Test
+  void testCheckRuntimeException() throws Exception {
+    final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
+    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("Runtime Error");
+    final RuntimeException runtimeException = new RuntimeException("Runtime Error");
+
+    when(cliParser.parse(ARGS)).thenReturn(intConfig);
+    when(source.check(CONFIG)).thenThrow(runtimeException);
+
+    final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
+    when(source.spec()).thenReturn(expectedConnSpec);
+    when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
+
+    verify(source).check(CONFIG);
+    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
+    verify(jsonSchemaValidator).validate(any(), any());
+  }
+
+  @Test
   void testWrite() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.write(configPath, configuredCatalogPath);
     final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
