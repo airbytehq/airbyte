@@ -51,12 +51,18 @@ definitions:
     $options:
       name: "users"
       path: "/users"
+  goals_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "goals"
+      path: "/goals"
 
 streams:
   - "*ref(definitions.features_stream)"
   - "*ref(definitions.products_stream)"
   - "*ref(definitions.ideas_stream)"
   - "*ref(definitions.users_stream)"
+  - "*ref(definitions.goals_stream)"
 
 check:
   stream_names:
@@ -64,3 +70,4 @@ check:
     - "products"
     - "ideas"
     - "users"
+    - "goals"
