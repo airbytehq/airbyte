@@ -329,11 +329,12 @@ class Issues(IncrementalJiraStream):
     parse_response_root = "issues"
     use_cache = True
 
-    def __init__(self, additional_fields: List[str], expand_changelog: bool = False, render_fields: bool = False, **kwargs):
+    def __init__(self, additional_fields: List[str], expand_changelog: bool = False, render_fields: bool = False,sync_all_fields:bool = False, **kwargs):
         super().__init__(**kwargs)
         self._additional_fields = additional_fields
         self._expand_changelog = expand_changelog
         self._render_fields = render_fields
+        self._sync_all_fields= sync_all_fields
 
     def path(self, **kwargs) -> str:
         return "search"
@@ -380,11 +381,14 @@ class Issues(IncrementalJiraStream):
             "subtasks",
             "summary",
             "updated",
-        ]
-        additional_field_names = ["Development", "Story Points", "Story point estimate", "Epic Link", "Sprint"]
-        for name in additional_field_names + self._additional_fields:
-            if name in field_ids_by_name:
-                fields.extend(field_ids_by_name[name])
+        ] if not self._sync_all_fields else ["*all"];
+
+        if(not self._sync_all_fields):
+            additional_field_names = ["Development", "Story Points", "Story point estimate", "Epic Link", "Sprint"]
+            for name in additional_field_names + self._additional_fields:
+                if name in field_ids_by_name:
+                    fields.extend(field_ids_by_name[name])
+
         projects_stream = Projects(**stream_args)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(

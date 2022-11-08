@@ -56,6 +56,12 @@
         "description": "List of additional fields to include in replicating issues.",
         "examples": ["customfield_10096", "customfield_10071"]
       },
+      "sync_all_fields": {
+        "type": "boolean",
+        "title": "Sync All Fields",
+        "description": "Sync all fields in issue stream",
+        "default": false
+      },
       "expand_issue_changelog": {
         "type": "boolean",
         "title": "Expand Issue Changelog",
