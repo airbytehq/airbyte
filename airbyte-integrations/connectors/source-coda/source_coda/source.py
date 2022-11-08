@@ -136,20 +136,6 @@ class Tables(CodaStream):
 
 
 
-class Columns(CodaStream):
-
-    primary_key = "COLUMNS"
-
-    def __init__(self, doc_id, **kwargs):
-        super().__init__(**kwargs)
-        self._doc_id = doc_id
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"docs/{self._doc_id}/columns"
-
-
 class Formulas(CodaStream):
 
     primary_key = "FORMULAS"
@@ -258,9 +244,7 @@ class SourceCoda(AbstractSource):
         try:
             token = config.get("auth_token")
             headers = {"Authorization": f"Bearer {token}"}
-            response = requests.get(f"{BASE_URL}whoami",headers=headers)
-            user_details_stream = UserDetails(authenticator=TokenAuthenticator(token=config.get("auth_token")))
-            next(user_details_stream.read_records(sync_mode=SyncMode.full_refresh))
+            response = requests.get(f"{BASE_URL}whoami", headers=headers)
             return True, None
         except Exception as e:
             return False, e
@@ -286,6 +270,4 @@ class SourceCoda(AbstractSource):
             Tables(**additional_args),
             Formulas(**additional_args),
             Controls(**additional_args),
-            Columns(**additional_args),
-
         ]
