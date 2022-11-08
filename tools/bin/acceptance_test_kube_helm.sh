@@ -9,10 +9,10 @@ assert_root
 
 # Since KIND does not have access to the local docker agent, manually load the minimum images required for the Kubernetes Acceptance Tests.
 # See https://kind.sigs.k8s.io/docs/user/quick-start/#loading-an-image-into-your-cluster.
-if [ -n "$CI" ]; then
-  echo "Loading images into k3d..."
-  k3d image load airbyte/server:dev airbyte/webapp:dev airbyte/worker:dev airbyte/db:dev airbyte/container-orchestrator:dev airbyte/bootloader:dev airbyte/cron:dev -c helm-testing 
-fi
+# if [ -n "$CI" ]; then
+#   echo "Loading images into k3d..."
+#   k3d image load airbyte/server:dev airbyte/webapp:dev airbyte/worker:dev airbyte/db:dev airbyte/container-orchestrator:dev airbyte/bootloader:dev airbyte/cron:dev -c helm-testing 
+# fi
 
 # eval $(minikube docker-env)
 
@@ -88,8 +88,8 @@ SUB_BUILD=PLATFORM LOG_LEVEL=DEBUG  ./gradlew :airbyte-workers:integrationTest -
 #  df -h
 #
 #  echo "Printing docker disk usage after pruning..."
-#  docker system df
 #fi
+#  docker system df
 
 echo "Running e2e tests via gradle..."
 AIRBYTE_PORT=30080 KUBE=true LOG_LEVEL=DEBUG SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan

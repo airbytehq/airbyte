@@ -880,11 +880,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Delete default old docker and replace it with a new one
-        shell: bash
-        run: |
-          sudo apt-get remove docker.io || sudo apt-get remove docker
-          curl -fsSL https://get.docker.com | bash -
+      # - name: Delete default old docker and replace it with a new one
+      #   shell: bash
+      #   run: |
+      #     sudo apt-get remove docker.io || sudo apt-get remove docker
+      #     curl -fsSL https://get.docker.com | bash -
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -914,11 +914,25 @@ jobs:
         with:
           version: 'v1.21.2' # default is latest stable
 
-      - uses: AbsaOSS/k3d-action@v2
-        name: "Create Single Cluster"
+      # - uses: AbsaOSS/k3d-action@v2
+      #   name: "Create Single Cluster"
+      #   with:
+      #     cluster-name: "helm-testing"
+      #     args: --agents 1 -p "30080:30080@server:0" -i docker.io/rancher/k3s:v1.21.2-k3s1
+      - name: Fix EC-2 Runner
+        run: |
+          mkdir -p /home/runner
+
+      - name: Start a local k8s cluster
+        uses: jupyterhub/action-k3s-helm@v3
         with:
-          cluster-name: "helm-testing"
-          args: --agents 1 -p "30080:30080@server:0" -i docker.io/rancher/k3s:v1.21.2-k3s1
+          # See available:
+          # - k3s release channels at https://github.com/k3s-io/k3s/blob/HEAD/channel.yaml
+          # - k3s versions at https://github.com/k3s-io/k3s/tags
+          # - helm versions at https://github.com/helm/helm/tags
+          # k3s-channel: latest
+          k3s-version: v1.21.2+k3s1
+          helm-version: v3.9.4
       - name: Try the cluster !
         run: kubectl get pods -A
 
