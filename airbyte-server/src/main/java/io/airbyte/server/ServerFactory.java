@@ -31,6 +31,9 @@ import io.airbyte.server.apis.OperationApiController;
 import io.airbyte.server.apis.SchedulerApiController;
 import io.airbyte.server.apis.SourceApiController;
 import io.airbyte.server.apis.SourceDefinitionApiController;
+import io.airbyte.server.apis.SourceOauthApiController;
+import io.airbyte.server.apis.StateApiController;
+import io.airbyte.server.apis.WebBackendApiController;
 import io.airbyte.server.apis.binders.AttemptApiBinder;
 import io.airbyte.server.apis.binders.ConnectionApiBinder;
 import io.airbyte.server.apis.binders.DbMigrationBinder;
@@ -48,6 +51,8 @@ import io.airbyte.server.apis.binders.SchedulerApiBinder;
 import io.airbyte.server.apis.binders.SourceApiBinder;
 import io.airbyte.server.apis.binders.SourceDefinitionApiBinder;
 import io.airbyte.server.apis.binders.SourceOauthApiBinder;
+import io.airbyte.server.apis.binders.StateApiBinder;
+import io.airbyte.server.apis.binders.WebBackendApiBinder;
 import io.airbyte.server.apis.factories.AttemptApiFactory;
 import io.airbyte.server.apis.factories.ConnectionApiFactory;
 import io.airbyte.server.apis.factories.DbMigrationApiFactory;
@@ -65,6 +70,8 @@ import io.airbyte.server.apis.factories.SchedulerApiFactory;
 import io.airbyte.server.apis.factories.SourceApiFactory;
 import io.airbyte.server.apis.factories.SourceDefinitionApiFactory;
 import io.airbyte.server.apis.factories.SourceOauthApiFactory;
+import io.airbyte.server.apis.factories.StateApiFactory;
+import io.airbyte.server.apis.factories.WebBackendApiFactory;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DbMigrationHandler;
@@ -79,6 +86,9 @@ import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
+import io.airbyte.server.handlers.StateHandler;
+import io.airbyte.server.handlers.WebBackendConnectionsHandler;
+import io.airbyte.server.handlers.WebBackendGeographiesHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
@@ -121,7 +131,10 @@ public interface ServerFactory {
                         final SchedulerHandler schedulerHandler,
                         final SourceHandler sourceHandler,
                         final SourceDefinitionsHandler sourceDefinitionsHandler,
-                        final WorkspacesHandler workspacesHandler);
+                        final StateHandler stateHandler,
+                        final WorkspacesHandler workspacesHandler,
+                        final WebBackendConnectionsHandler webBackendConnectionsHandler,
+                        final WebBackendGeographiesHandler webBackendGeographiesHandler);
 
   class Api implements ServerFactory {
 
@@ -156,7 +169,10 @@ public interface ServerFactory {
                                  final SchedulerHandler schedulerHandler,
                                  final SourceHandler sourceHandler,
                                  final SourceDefinitionsHandler sourceDefinitionsHandler,
-                                 final WorkspacesHandler workspacesHandler) {
+                                 final StateHandler stateHandler,
+                                 final WorkspacesHandler workspacesHandler,
+                                 final WebBackendConnectionsHandler webBackendConnectionsHandler,
+                                 final WebBackendGeographiesHandler webBackendGeographiesHandler) {
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
       // set static values for factory
@@ -218,6 +234,10 @@ public interface ServerFactory {
 
       SourceDefinitionApiFactory.setValues(sourceDefinitionsHandler);
 
+      StateApiFactory.setValues(stateHandler);
+
+      WebBackendApiFactory.setValues(webBackendConnectionsHandler, webBackendGeographiesHandler);
+
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(
           ConfigurationApi.class,
@@ -237,7 +257,9 @@ public interface ServerFactory {
           SchedulerApiController.class,
           SourceApiController.class,
           SourceDefinitionApiController.class,
-          SourceOauthApiFactory.class);
+          SourceOauthApiController.class,
+          StateApiController.class,
+          WebBackendApiController.class);
 
       final Set<Object> components = Set.of(
           new CorsFilter(),
@@ -258,7 +280,9 @@ public interface ServerFactory {
           new SchedulerApiBinder(),
           new SourceApiBinder(),
           new SourceDefinitionApiBinder(),
-          new SourceOauthApiBinder());
+          new SourceOauthApiBinder(),
+          new StateApiBinder(),
+          new WebBackendApiBinder());
 
       // construct server
       return new ServerApp(airbyteVersion, componentClasses, components);
