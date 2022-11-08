@@ -51,6 +51,7 @@ def migrate_to_high_test_strictness_level(config_path):
     new_config = migrate_legacy_configuration(config_path)
     new_config = set_high_test_strictness_level(new_config)
     write_new_config(new_config, config_path)
+    return config_path
 
 
 if __name__ == "__main__":
