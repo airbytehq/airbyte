@@ -8,7 +8,7 @@ import re
 from collections import Counter, defaultdict
 from functools import reduce
 from logging import Logger
-from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set
+from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set, Tuple
 from xmlrpc.client import Boolean
 
 import dpath.util
@@ -149,6 +149,84 @@ class TestSpec(BaseTest):
 
     def test_secret_never_in_the_output(self):
         """This test should be injected into any docker command it needs to know current config and spec"""
+
+    def test_secret_is_properly_marked(self, actual_connector_spec: ConnectorSpecification, detailed_logger):
+        def is_property_name_secret(path: str) -> Tuple[str, bool]:
+            reserved_keywords = ("anyOf", "oneOf", "allOf", "not", "properties", "items")
+            name = None
+            for part in reversed(path.split("/")[:-1]):
+                if part.isdigit() or part in reserved_keywords:
+                    continue
+                name = part
+                break
+            return name, name.lower() in (
+                "client_token",
+                "access_token",
+                "api_token",
+                "token",
+                "secret",
+                "client_secret",
+                "password",
+                "key",
+                "service_account_info",
+                "service_account",
+                "tenant_id",
+                "certificate",
+                "jwt",
+                "credentials",
+                "app_id",
+                "appid",
+                "refresh_token",
+            )
+
+        def can_hide_a_secret(prop: dict) -> bool:
+            # Null type as well as boolean can not hold a secret value.
+            # A string, a number or an integer type can always hide secrets.
+            # Objects and arrays can hide a secret in case they are generic.
+            unsecure_types = {"string", "integer", "number"}
+            type_ = prop["type"]
+            # type_ is a scalar value
+            return any(
+                [
+                    isinstance(type_, str) and type_ in unsecure_types,
+                    type_ == "object" and "properties" not in prop,
+                    type_ == "array" and "items" not in prop,
+                    isinstance(type_, list) and (set(type_) & unsecure_types),
+                ]
+            )
+
+        def is_marked_secret(prop: dict):
+            return prop.get("airbyte_secret", False)
+
+        secrets_exposed = []
+        non_secrets_hidden = []
+        spec_properties = actual_connector_spec.connectionSpecification["properties"]
+        for type_path, value in dpath.util.search(spec_properties, "**/type", yielded=True):
+            name, is_secret_name = is_property_name_secret(type_path)
+            if not is_secret_name:
+                continue
+            absolute_path = f"/{type_path}"
+            property_path, _ = absolute_path.rsplit(sep="/", maxsplit=1)
+            property_definition = dpath.util.get(spec_properties, property_path)
+            marked_as_secret, possibly_a_secret = is_marked_secret(property_definition), can_hide_a_secret(property_definition)
+            if marked_as_secret and not possibly_a_secret:
+                non_secrets_hidden.append(property_path)
+            if not marked_as_secret and possibly_a_secret:
+                secrets_exposed.append(property_path)
+
+        if non_secrets_hidden:
+            properties = "\n".join(non_secrets_hidden)
+            detailed_logger.warning(
+                f"""Some properties are marked with `airbyte_secret` although they probably should not be.
+                Please double check them. If they're okay, please fix this test.
+                {properties}"""
+            )
+        if secrets_exposed:
+            properties = "\n".join(secrets_exposed)
+            pytest.fail(
+                f"""The following properties should be marked with `airbyte_secret!`
+                    {properties}"""
+            )
 
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
         """Checking for the presence of unresolved `$ref`s values within each json spec file"""

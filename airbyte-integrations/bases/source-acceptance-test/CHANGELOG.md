@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.17
+Test connector specification against exposed secret fields. [#00000](https://github.com/airbytehq/airbyte/pull/00000).
+
 ## 0.2.16
 Run `basic_read` on the discovered catalog in `high` `test_strictness_level`. [#18937](https://github.com/airbytehq/airbyte/pull/18937).
 

@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict
 
 import pytest
 from airbyte_cdk.models import ConnectorSpecification
+from source_acceptance_test import conftest
 from source_acceptance_test.tests.test_core import TestSpec as _TestSpec
 
 from .conftest import does_not_raise
@@ -605,3 +606,55 @@ def test_additional_properties_is_true(connector_spec, expectation):
     t = _TestSpec()
     with expectation:
         t.test_additional_properties_is_true(connector_spec)
+
+
+@pytest.mark.parametrize(
+    "connector_spec, should_fail",
+    (
+        (
+            ConnectorSpecification(
+                connectionSpecification={"type": "object", "properties": {"api_token": {"type": "string", "airbyte_secret": True}}}
+            ),
+            False,
+        ),
+        (
+            ConnectorSpecification(connectionSpecification={"type": "object", "properties": {"api_token": {"type": "null"}}}),
+            False,
+        ),
+        (
+            ConnectorSpecification(connectionSpecification={"type": "object", "properties": {"jwt": {"type": "object"}}}),
+            True,
+        ),
+        (
+            ConnectorSpecification(
+                connectionSpecification={"type": "object", "properties": {"refresh_token": {"type": ["null", "string"]}}}
+            ),
+            True,
+        ),
+        (
+            ConnectorSpecification(connectionSpecification={"type": "object", "properties": {"credentials": {"type": "array"}}}),
+            True,
+        ),
+        (
+            ConnectorSpecification(
+                connectionSpecification={"type": "object", "properties": {"credentials": {"type": "array", "items": {"type": "string"}}}}
+            ),
+            True,
+        ),
+        (
+            ConnectorSpecification(
+                connectionSpecification={"type": "object", "properties": {"auth": {"oneOf": [{"api_token": {"type": "string"}}]}}}
+            ),
+            True,
+        ),
+    ),
+)
+def test_airbyte_secret(mocker, connector_spec, should_fail):
+    mocker.patch.object(conftest.pytest, "fail")
+    t = _TestSpec()
+    logger = mocker.Mock()
+    t.test_secret_is_properly_marked(connector_spec, logger)
+    if should_fail:
+        conftest.pytest.fail.assert_called_once()
+    else:
+        conftest.pytest.fail.assert_not_called()
