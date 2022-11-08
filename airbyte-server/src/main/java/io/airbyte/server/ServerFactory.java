@@ -11,7 +11,6 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
-import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.server.apis.AttemptApiController;
@@ -32,6 +31,8 @@ import io.airbyte.server.apis.SchedulerApiController;
 import io.airbyte.server.apis.SourceApiController;
 import io.airbyte.server.apis.SourceDefinitionApiController;
 import io.airbyte.server.apis.SourceDefinitionSpecificationApiController;
+import io.airbyte.server.apis.SourceOauthApiController;
+import io.airbyte.server.apis.StateApiController;
 import io.airbyte.server.apis.WebBackendApiController;
 import io.airbyte.server.apis.WorkspaceApiController;
 import io.airbyte.server.apis.binders.AttemptApiBinder;
@@ -52,6 +53,7 @@ import io.airbyte.server.apis.binders.SourceApiBinder;
 import io.airbyte.server.apis.binders.SourceDefinitionApiBinder;
 import io.airbyte.server.apis.binders.SourceDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.SourceOauthApiBinder;
+import io.airbyte.server.apis.binders.StateApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
 import io.airbyte.server.apis.binders.WorkspaceApiBinder;
 import io.airbyte.server.apis.factories.AttemptApiFactory;
@@ -179,25 +181,7 @@ public interface ServerFactory {
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
       // set static values for factory
-      ConfigurationApiFactory.setValues(
-          configRepository,
-          secretsRepositoryReader,
-          secretsRepositoryWriter,
-          jobPersistence,
-          synchronousSchedulerClient,
-          new StatePersistence(configsDatabase),
-          mdc,
-          configsDatabase,
-          jobsDatabase,
-          trackingClient,
-          workerEnvironment,
-          logConfigs,
-          airbyteVersion,
-          workspaceRoot,
-          httpClient,
-          eventRunner,
-          configsFlyway,
-          jobsFlyway);
+      ConfigurationApiFactory.setValues(mdc);
 
       AttemptApiFactory.setValues(attemptHandler, mdc);
 
@@ -265,7 +249,8 @@ public interface ServerFactory {
           SourceApiController.class,
           SourceDefinitionApiController.class,
           SourceDefinitionSpecificationApiController.class,
-          SourceOauthApiFactory.class,
+          SourceOauthApiController.class,
+          StateApiController.class,
           WebBackendApiController.class,
           WorkspaceApiController.class);
 
@@ -290,6 +275,7 @@ public interface ServerFactory {
           new SourceDefinitionApiBinder(),
           new SourceDefinitionSpecificationApiBinder(),
           new SourceOauthApiBinder(),
+          new StateApiBinder(),
           new WebBackendApiBinder(),
           new WorkspaceApiBinder());
 
