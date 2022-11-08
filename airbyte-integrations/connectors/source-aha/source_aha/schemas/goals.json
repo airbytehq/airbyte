@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "goals": {
+      "type": "object",
+      "properties": {
+        "id":{
+          "type": ["null", "string"]
+      
+        },
+        "name":{
+          "type": ["null", "string"]
+      
+        },
+        "reference_num":{
+          "type": ["null", "string"]
+      
+        },
+        "effort":{
+          "type": ["null", "string"]
+      
+        },
+        "value":{
+          "type": ["null", "string"]
+      
+        },
+        "position":{
+          "type": ["null", "string"]
+      
+        },
+        "created_at":{
+          "type": ["null", "string"]
+      
+        },
+        "updated_at":{
+          "type": ["null", "string"]
+      
+        },
+        "product_id":{
+          "type": ["null", "string"]
+      
+        },
+        "progress":{
+          "type": ["null", "string"]
+      
+        },
+        "progress_source":{
+          "type": ["null", "string"]
+      
+        },
+        "url":{
+          "type": ["null", "string"]
+      
+        },
+        "resource":{
+          "type": ["null", "string"]
+      
+        },
+        "description":{
+          "type": ["null", "object"]
+      
+        },
+        "success_metric":{
+          "type": ["null", "object"]
+      
+        },
+        "project":{
+          "type": ["null", "object"]
+      
+        },
+        "timeframe":{
+          "type": ["null", "object"]
+      
+        },
+        "initiatives":{
+          "type": ["null", "array"]
+      
+        },
+        "comments_count":{
+          "type": ["null", "integer"]
+      
+        },
+        "features":{
+          "type": ["null", "array"]
+      
+        },
+        "releases":{
+          "type": ["null", "string"]
+      
+        },
+        "custom_fields":{
+          "type": ["null", "string"]
+      
+        }
+
+       
+      }
+    },
+    "pagination": {
+      "type": "object",
+      "properties": {
+        "total_records":{
+          "type": ["null", "integer"]
+      
+        },
+        "total_pages":{
+          "type": ["null", "integer"]
+      
+        },
+        "current_page":{
+          "type": ["null", "integer"]
+      
+        }
+      }
+      
+    }
+  }
+}

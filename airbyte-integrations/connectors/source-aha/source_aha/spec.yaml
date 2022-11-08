@@ -11,8 +11,8 @@ connectionSpecification:
     api_key:
       type: string
       description: API Key
-      title: API BEARER TOKEN
+      title: API Bearer Token
     url:
       type: string
       description: URL
-      title: AHA URL INSTANCE
+      title: Aha Url Instance

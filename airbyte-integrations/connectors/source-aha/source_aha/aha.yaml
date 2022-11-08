@@ -5,7 +5,7 @@ definitions:
     extractor:
       field_pointer: []
   requester:
-    url_base: "{{ config['url'] }}"
+    url_base: "{{ config['url'] }}/api/v1"
     http_method: "GET"
     authenticator:
       type: "BearerAuthenticator"
@@ -25,8 +25,6 @@ definitions:
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
-    paginator:
-      type: NoPagination
     requester:
       $ref: "*ref(definitions.requester)"
 
@@ -37,18 +35,32 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "features"
-      path: "/api/v1/features"
+      path: "/features"
   products_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "products"
-      path: "/api/v1/products"
+      path: "/products"
+  ideas_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "ideas"
+      path: "/ideas"
+  users_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "users"
+      path: "/users"
 
 streams:
   - "*ref(definitions.features_stream)"
   - "*ref(definitions.products_stream)"
+  - "*ref(definitions.ideas_stream)"
+  - "*ref(definitions.users_stream)"
 
 check:
   stream_names:
     - "features"
     - "products"
+    - "ideas"
+    - "users"
