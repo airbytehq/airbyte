@@ -9,10 +9,9 @@
   z-index: 3;
   font-size: 12px;
   line-height: 30px;
-  color: colors.$black;
 
   & a {
-    color: colors.$black;
+    color: inherit;
   }
 }
 
@@ -23,4 +22,5 @@
 
 .red {
   background-color: colors.$red;
+  color: colors.$black;
 }

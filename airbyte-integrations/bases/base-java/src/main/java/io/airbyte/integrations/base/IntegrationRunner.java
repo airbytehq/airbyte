@@ -9,11 +9,14 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions.Procedure;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.base.errors.messages.ErrorMessage;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -105,51 +108,90 @@ public class IntegrationRunner {
     LOGGER.info("Command: {}", parsed.getCommand());
     LOGGER.info("Integration config: {}", parsed);
 
-    switch (parsed.getCommand()) {
-      // common
-      case SPEC -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.SPEC).withSpec(integration.spec()));
-      case CHECK -> {
-        final JsonNode config = parseConfig(parsed.getConfigPath());
-        try {
-          validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
-        } catch (final Exception e) {
-          // if validation fails don't throw an exception, return a failed connection check message
-          outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
-              new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getMessage())));
-        }
+    try {
+      switch (parsed.getCommand()) {
+        // common
+        case SPEC -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.SPEC).withSpec(integration.spec()));
+        case CHECK -> {
+          final JsonNode config = parseConfig(parsed.getConfigPath());
+          try {
+            validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
+          } catch (final Exception e) {
+            // if validation fails don't throw an exception, return a failed connection check message
+            outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
+                new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getMessage())));
+          }
 
-        outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config)));
-      }
-      // source only
-      case DISCOVER -> {
-        final JsonNode config = parseConfig(parsed.getConfigPath());
-        validateConfig(integration.spec().getConnectionSpecification(), config, "DISCOVER");
-        outputRecordCollector.accept(new AirbyteMessage().withType(Type.CATALOG).withCatalog(source.discover(config)));
-      }
-      // todo (cgardens) - it is incongruous that that read and write return airbyte message (the
-      // envelope) while the other commands return what goes inside it.
-      case READ -> {
-        final JsonNode config = parseConfig(parsed.getConfigPath());
-        validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
-        final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-        final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
-        try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
-          produceMessages(messageIterator);
+          outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config)));
         }
-      }
-      // destination only
-      case WRITE -> {
-        final JsonNode config = parseConfig(parsed.getConfigPath());
-        validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
-        final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-        try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
-          runConsumer(consumer);
+        // source only
+        case DISCOVER -> {
+          final JsonNode config = parseConfig(parsed.getConfigPath());
+          validateConfig(integration.spec().getConnectionSpecification(), config, "DISCOVER");
+          outputRecordCollector.accept(new AirbyteMessage().withType(Type.CATALOG).withCatalog(source.discover(config)));
         }
+        // todo (cgardens) - it is incongruous that that read and write return airbyte message (the
+        // envelope) while the other commands return what goes inside it.
+        case READ -> {
+          final JsonNode config = parseConfig(parsed.getConfigPath());
+          validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
+          final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
+          final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
+          try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
+            produceMessages(messageIterator);
+          }
+        }
+        // destination only
+        case WRITE -> {
+          final JsonNode config = parseConfig(parsed.getConfigPath());
+          validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
+          final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
+          try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
+            runConsumer(consumer);
+          }
+        }
+        default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
       }
-      default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
+    } catch (final Exception e) {
+      final String displayMessage = getDisplayMessage(e);
+      // If the source connector throws a config error, a trace message with the relevant message should
+      // be surfaced.
+      if (isConfigError(e)) {
+        AirbyteTraceMessageUtility.emitConfigErrorTrace(e, displayMessage);
+      }
+      if (parsed.getCommand().equals(Command.CHECK)) {
+        // Currently, special handling is required for the SPEC case since the user display information in
+        // the trace message is
+        // not properly surfaced to the FE. In the future, we can remove this and just throw an exception.
+        outputRecordCollector
+            .accept(
+                new AirbyteMessage()
+                    .withType(Type.CONNECTION_STATUS)
+                    .withConnectionStatus(
+                        new AirbyteConnectionStatus()
+                            .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                            .withMessage(displayMessage)));
+        return;
+      }
+      throw e;
     }
 
     LOGGER.info("Completed integration: {}", integration.getClass().getName());
+  }
+
+  private boolean isConfigError(final Exception e) {
+    return e instanceof ConfigErrorException || e instanceof ConnectionErrorException;
+  }
+
+  private String getDisplayMessage(final Exception e) {
+    if (e instanceof ConfigErrorException) {
+      return ((ConfigErrorException) e).getDisplayMessage();
+    } else if (e instanceof ConnectionErrorException) {
+      final ConnectionErrorException connEx = (ConnectionErrorException) e;
+      return ErrorMessage.getErrorMessage(connEx.getStateCode(), connEx.getErrorCode(), connEx.getExceptionMessage(), e);
+    } else {
+      return "Could not connect with provided configuration. Error: " + e.getMessage();
+    }
   }
 
   private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator) throws Exception {
