@@ -40,6 +40,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer impor
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
+from dateutil.relativedelta import relativedelta
 from jsonschema import ValidationError
 
 factory = DeclarativeComponentFactory()
@@ -261,7 +262,7 @@ def test_datetime_stream_slicer():
     assert stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
     assert stream_slicer.start_datetime.min_datetime.string == "{{ config['start_time'] + day_delta(2) }}"
     assert stream_slicer.end_datetime.datetime.string == "{{ config['end_time'] }}"
-    assert stream_slicer._step == datetime.timedelta(days=10)
+    assert stream_slicer._step == relativedelta(days=10)
     assert stream_slicer.cursor_field.string == "created"
     assert stream_slicer.lookback_window.string == "5d"
     assert stream_slicer.start_time_option.inject_into == RequestOptionType.request_parameter
@@ -445,31 +446,31 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
         (
             "test_option_in_selector",
             """
-                          extractor:
-                            type: DpathExtractor
-                            field_pointer: ["{{ options['name'] }}"]
-                          selector:
-                            class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
-                            $options:
-                              name: "selector"
-                            extractor: "*ref(extractor)"
-                        """,
+                      extractor:
+                        type: DpathExtractor
+                        field_pointer: ["{{ options['name'] }}"]
+                      selector:
+                        class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+                        $options:
+                          name: "selector"
+                        extractor: "*ref(extractor)"
+                    """,
             "selector",
         ),
         (
             "test_option_in_extractor",
             """
-                          extractor:
-                            type: DpathExtractor
-                            $options:
-                              name: "extractor"
-                            field_pointer: ["{{ options['name'] }}"]
-                          selector:
-                            class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
-                            $options:
-                              name: "selector"
-                            extractor: "*ref(extractor)"
-                        """,
+                      extractor:
+                        type: DpathExtractor
+                        $options:
+                          name: "extractor"
+                        field_pointer: ["{{ options['name'] }}"]
+                      selector:
+                        class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+                        $options:
+                          name: "selector"
+                        extractor: "*ref(extractor)"
+                    """,
             "extractor",
         ),
     ],
@@ -487,38 +488,38 @@ def test_options_propagation(test_name, content, expected_field_pointer_value):
         (
             "test_create_requester_constant_error_handler",
             """
-      error_handler:
-        backoff_strategies:
-          - type: "ConstantBackoffStrategy"
-            backoff_time_in_seconds: 5
-                """,
+  error_handler:
+    backoff_strategies:
+      - type: "ConstantBackoffStrategy"
+        backoff_time_in_seconds: 5
+            """,
         ),
         (
             "test_create_requester_exponential_error_handler",
             """
-      error_handler:
-        backoff_strategies:
-          - type: "ExponentialBackoffStrategy"
-            factor: 5
-                """,
+  error_handler:
+    backoff_strategies:
+      - type: "ExponentialBackoffStrategy"
+        factor: 5
+            """,
         ),
         (
             "test_create_requester_wait_time_from_header_error_handler",
             """
-      error_handler:
-        backoff_strategies:
-          - type: "WaitTimeFromHeader"
-            header: "a_header"
-                """,
+  error_handler:
+    backoff_strategies:
+      - type: "WaitTimeFromHeader"
+        header: "a_header"
+            """,
         ),
         (
             "test_create_requester_wait_time_until_from_header_error_handler",
             """
-      error_handler:
-        backoff_strategies:
-          - type: "WaitUntilTimeFromHeader"
-            header: "a_header"
-                """,
+  error_handler:
+    backoff_strategies:
+      - type: "WaitUntilTimeFromHeader"
+        header: "a_header"
+            """,
         ),
         (
             "test_create_requester_no_error_handler",
