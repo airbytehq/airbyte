@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -229,12 +230,15 @@ class BigQueryDestinationTest {
   void testCheckFailure(final DatasetIdResetter resetDatasetId) {
     ((ObjectNode) config).put(BigQueryConsts.CONFIG_PROJECT_ID, "fake");
     resetDatasetId.accept(config);
-    final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
-    final String actualMessage = actual.getMessage();
+
+    // Assert that check throws exception. Later it will be handled by IntegrationRunner
+    final Exception ex = assertThrows(RuntimeException.class, () -> {
+      new BigQueryDestination().check(config);
+    });
+
+    final String actualMessage = ex.getMessage();
     LOGGER.info("Checking expected failure message:" + actualMessage);
-    assertTrue(actualMessage.contains("Access Denied:"));
-    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("");
-    assertEquals(expected, actual.withMessage(""));
+    assertThat(actualMessage).contains("Access Denied");
   }
 
   @ParameterizedTest
@@ -242,9 +246,10 @@ class BigQueryDestinationTest {
   void testCheckFailureInsufficientPermissionForCreateDataset(final DatasetIdResetter resetDatasetId) throws IOException {
 
     if (!Files.exists(CREDENTIALS_WITHMISSED_CREATE_DATASET_ROLE_PATH)) {
-      throw new IllegalStateException(
-          "Must provide path to a big query credentials file. By default {module-root}/config/credentialsWithMissedDatasetCreationRole.json. "
-              + "Override by setting setting path with the CREDENTIALS_WITHMISSED_CREATE_DATASET_ROLE_PATH constant.");
+      throw new IllegalStateException("""
+                                      Json config not found. Must provide path to a big query credentials file,
+                                       please add file with creds to
+                                      ../destination-bigquery/secrets/credentialsWithMissedDatasetCreationRole.json.""");
     }
     final String fullConfigAsString = Files.readString(CREDENTIALS_WITHMISSED_CREATE_DATASET_ROLE_PATH);
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
@@ -263,12 +268,15 @@ class BigQueryDestinationTest {
 
     resetDatasetId.accept(insufficientRoleConfig);
 
-    final AirbyteConnectionStatus actual = new BigQueryDestination().check(insufficientRoleConfig);
-    final String actualMessage = actual.getMessage();
+    // Assert that check throws exception. Later it will be handled by IntegrationRunner
+    final Exception ex = assertThrows(RuntimeException.class, () -> {
+      new BigQueryDestination().check(insufficientRoleConfig);
+    });
+
+    final String actualMessage = ex.getMessage();
     LOGGER.info("Checking expected failure message:" + actualMessage);
-    assertTrue(actualMessage.contains("Access Denied:"));
-    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("");
-    assertEquals(expected, actual.withMessage(""));
+    assertThat(actualMessage)
+        .contains("Project dataline-integration-testing: User does not have bigquery.datasets.create permission");
   }
 
   @ParameterizedTest

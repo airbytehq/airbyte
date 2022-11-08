@@ -14,6 +14,7 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.base.Charsets;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.BaseConnector;
@@ -95,21 +96,18 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .build();
 
       if (UploadingMethod.GCS.equals(uploadingMethod)) {
-        final AirbyteConnectionStatus airbyteConnectionStatus = checkGcsPermission(config);
-        if (Status.FAILED == airbyteConnectionStatus.getStatus()) {
-          return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(airbyteConnectionStatus.getMessage());
-        }
+        checkGcsPermission(config);
       }
 
       final ImmutablePair<Job, String> result = BigQueryUtils.executeQuery(bigquery, queryConfig);
       if (result.getLeft() != null) {
         return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
       } else {
-        return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(result.getRight());
+        throw new ConfigErrorException(result.getRight());
       }
     } catch (final Exception e) {
       LOGGER.error("Check failed.", e);
-      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
+      throw new ConfigErrorException(e.getMessage() != null ? e.getMessage() : e.toString());
     }
   }
 
@@ -151,11 +149,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       message.append(" Please make sure the service account can access the bucket path, and the HMAC keys are correct.");
 
       LOGGER.error(message.toString(), e);
-
-      return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could access the GCS bucket with the provided configuration.\n" + e
-              .getMessage());
+      throw new ConfigErrorException("Could access the GCS bucket with the provided configuration.\n", e);
     }
   }
 
