@@ -45,7 +45,7 @@ const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = ({ workspace }) =
     <MainView>
       <ApiErrorBoundary>
         <Routes>
-          <Route path={`${RoutePaths.Destination}`}>
+          <Route path={RoutePaths.Destination}>
             <Route index element={<AllDestinationsPage />} />
             <Route path={DestinationPaths.NewDestination} element={<CreateDestinationPage />} />
             <Route path={DestinationPaths.NewConnection} element={<CreationFormPage />} />
