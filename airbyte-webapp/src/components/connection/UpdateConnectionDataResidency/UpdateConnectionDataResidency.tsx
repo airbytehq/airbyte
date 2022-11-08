@@ -66,7 +66,7 @@ export const UpdateConnectionDataResidency: React.FC = () => {
             <DataGeographyDropdown
               isDisabled={connectionUpdating}
               geographies={geographies}
-              value={selectedValue || connection.geography}
+              value={selectedValue || connection.geography || geographies[0]}
               onChange={handleSubmit}
             />
           </div>

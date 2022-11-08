@@ -4,6 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { DataGeographyDropdown } from "components/common/DataGeographyDropdown";
 import { ControlLabels } from "components/LabeledControl";
 
+import { Geography } from "core/request/AirbyteClient";
 import { useAvailableGeographies } from "packages/cloud/services/geographies/GeographiesService";
 import { links } from "utils/links";
 import { Section } from "views/Connection/ConnectionForm/components/Section";
@@ -22,7 +23,7 @@ export const DataResidency: React.FC<DataResidencyProps> = ({ name = "geography"
   return (
     <Section title={formatMessage({ id: "connection.geographyTitle" })}>
       <Field name={name}>
-        {({ field, form }: FieldProps<string>) => (
+        {({ field, form }: FieldProps<Geography>) => (
           <div className={styles.flexRow}>
             <div className={styles.leftFieldCol}>
               <ControlLabels

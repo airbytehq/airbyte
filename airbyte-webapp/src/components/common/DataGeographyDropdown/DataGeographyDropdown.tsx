@@ -14,8 +14,7 @@ interface DataGeographyDropdownProps {
   geographies: Geography[];
   isDisabled?: boolean;
   onChange: (value: Geography) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any; // our current dropdown types options as any anyway
+  value: Geography;
 }
 
 const CustomMenuList: React.FC<MenuListProps> = ({ children, ...rest }) => {
