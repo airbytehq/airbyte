@@ -38,8 +38,8 @@ const baseUseFormikOauthAdapterValues = {
 jest.mock("views/Connector/ConnectorForm/connectorFormContext");
 const mockUseConnectorForm = useConnectorForm as unknown as jest.Mock<Partial<typeof useConnectorForm>>;
 const baseUseConnectorFormValues: Partial<ReturnType<typeof useConnectorForm>> = {
-  selectedConnectorDefinition: { sourceDefinitionId: "abcde", name: "Acme" } as unknown as ConnectorDefinition,
-  selectedConnectorDefinitionSpecification: {} as unknown as ConnectorDefinitionSpecification,
+  selectedConnectorDefinition: { sourceDefinitionId: "abcde", name: "Acme" } as ConnectorDefinition,
+  selectedConnectorDefinitionSpecification: {} as ConnectorDefinitionSpecification,
 };
 
 jest.mock("views/Connector/ConnectorForm/useAuthentication");
