@@ -308,8 +308,19 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .withCommand(List.of(
             "sh",
             "-c",
-            String.format(
-                "i=0; until [ $i -gt 60 ]; do if [ -f \"%s/%s\" ]; then exit 0; fi; sleep 1; ((i++)); done; exit 1;",
+            String.format("""
+                          i=0
+                          until [ $i -gt 60 ]
+                          do
+                            echo i: $i
+                            if [ -f "%s/%s" ]; then
+                              exit 0
+                            fi
+                            i=$((i+1))
+                            sleep 1
+                          done
+                          exit 1
+                          """,
                 KubePodProcess.CONFIG_DIR,
                 KubePodProcess.SUCCESS_FILE_NAME)))
         .build();
@@ -350,9 +361,9 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     kubernetesClient.pods()
         .inNamespace(kubePodInfo.namespace())
         .withName(kubePodInfo.name())
-        .waitUntilCondition(p -> {
-          return !p.getStatus().getContainerStatuses().isEmpty() && p.getStatus().getContainerStatuses().get(0).getState().getWaiting() == null;
-        }, 5, TimeUnit.MINUTES);
+        .waitUntilCondition(p -> !p.getStatus().getInitContainerStatuses().isEmpty()
+            && p.getStatus().getInitContainerStatuses().get(0).getState().getWaiting() == null,
+            5, TimeUnit.MINUTES);
 
     final var podStatus = kubernetesClient.pods()
         .inNamespace(kubePodInfo.namespace())
