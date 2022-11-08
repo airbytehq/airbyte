@@ -1,5 +1,5 @@
-@use "../../../../scss/colors";
-@use "../../../../scss/variables";
+@use "scss/colors";
+@use "scss/variables";
 
 .headerCell {
   margin-right: variables.$spacing-xl;
@@ -12,7 +12,7 @@
     border-radius: 9px;
     align-items: center;
     height: 50px;
-    padding: 0 variables.$spacing-md !important;
+    padding: 0 variables.$spacing-sm !important;
     justify-content: center;
     flex: 0 !important;
   }

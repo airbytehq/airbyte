@@ -27,7 +27,6 @@ import {
   FormikConnectionFormValues,
 } from "views/Connection/ConnectionForm/formConfig";
 
-import { EditControlsServiceProvider } from "../../../../hooks/services/EditControls/BulkEditService";
 import styles from "./ConnectionReplicationTab.module.scss";
 import { ResetWarningModal } from "./ResetWarningModal";
 
@@ -38,7 +37,6 @@ export const ConnectionReplicationTab: React.FC = () => {
 
   const { formatMessage } = useIntl();
   const { openModal } = useModalService();
-  const [editControlsVisible, setEditControlsVisible] = useState<boolean>(false);
 
   const [saved, setSaved] = useState(false);
 
@@ -156,30 +154,29 @@ export const ConnectionReplicationTab: React.FC = () => {
         <SchemaError schemaError={schemaError} />
       ) : !schemaRefreshing && connection ? (
         <Formik
+          initialStatus={{ editControlsVisible: true }}
           initialValues={initialValues}
           validationSchema={createConnectionValidationSchema({ mode, allowSubOneHourCronExpressions })}
           onSubmit={onFormSubmit}
           enableReinitialize
         >
-          {({ values, isSubmitting, isValid, dirty, resetForm }) => (
+          {({ values, isSubmitting, isValid, dirty, resetForm, status }) => (
             <Form>
-              <EditControlsServiceProvider setVisible={setEditControlsVisible}>
-                <ConnectionFormFields values={values} isSubmitting={isSubmitting} dirty={dirty} />
-                {editControlsVisible && (
-                  <EditControls
-                    isSubmitting={isSubmitting}
-                    submitDisabled={!isValid}
-                    dirty={dirty}
-                    resetForm={async () => {
-                      resetForm();
-                      setSchemaHasBeenRefreshed(false);
-                    }}
-                    successMessage={saved && !dirty && <FormattedMessage id="form.changesSaved" />}
-                    errorMessage={getErrorMessage(isValid, dirty)}
-                    enableControls={schemaHasBeenRefreshed || dirty}
-                  />
-                )}
-              </EditControlsServiceProvider>
+              <ConnectionFormFields values={values} isSubmitting={isSubmitting} dirty={dirty} />
+              {status.editControlsVisible && (
+                <EditControls
+                  isSubmitting={isSubmitting}
+                  submitDisabled={!isValid}
+                  dirty={dirty}
+                  resetForm={async () => {
+                    resetForm();
+                    setSchemaHasBeenRefreshed(false);
+                  }}
+                  successMessage={saved && !dirty && <FormattedMessage id="form.changesSaved" />}
+                  errorMessage={getErrorMessage(isValid, dirty)}
+                  enableControls={schemaHasBeenRefreshed || dirty}
+                />
+              )}
             </Form>
           )}
         </Formik>
