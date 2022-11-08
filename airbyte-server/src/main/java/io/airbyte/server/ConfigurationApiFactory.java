@@ -31,7 +31,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static SecretsRepositoryReader secretsRepositoryReader;
   private static SecretsRepositoryWriter secretsRepositoryWriter;
   private static SynchronousSchedulerClient synchronousSchedulerClient;
-  private static StatePersistence statePersistence;
   private static Map<String, String> mdc;
   private static TrackingClient trackingClient;
   private static WorkerEnvironment workerEnvironment;
@@ -69,7 +68,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.logConfigs = logConfigs;
     ConfigurationApiFactory.airbyteVersion = airbyteVersion;
     ConfigurationApiFactory.eventRunner = eventRunner;
-    ConfigurationApiFactory.statePersistence = statePersistence;
   }
 
   @Override
@@ -82,7 +80,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.secretsRepositoryReader,
         ConfigurationApiFactory.secretsRepositoryWriter,
         ConfigurationApiFactory.synchronousSchedulerClient,
-        ConfigurationApiFactory.statePersistence,
         ConfigurationApiFactory.trackingClient,
         ConfigurationApiFactory.workerEnvironment,
         ConfigurationApiFactory.logConfigs,
