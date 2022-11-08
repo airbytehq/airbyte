@@ -1,5 +1,6 @@
 import React from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
+import { ReactQueryDevtools } from "react-query/devtools";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -14,7 +15,7 @@ const queryClient = new QueryClient({
 
 const StoreProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <QueryClientProvider client={queryClient}>
-    {/* <ReactQueryDevtools initialIsOpen={false} position="bottom-right" /> */}
+    <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
     {children}
   </QueryClientProvider>
 );
