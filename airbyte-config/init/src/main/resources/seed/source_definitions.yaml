@@ -169,6 +169,13 @@
   icon: braintree.svg
   sourceType: api
   releaseStage: alpha
+- name: Breezometer
+  sourceDefinitionId: 7c37685e-8512-4901-addf-9afbef6c0de9
+  dockerRepository: airbyte/source-breezometer
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/breezometer
+  sourceType: api
+  releaseStage: alpha
 - name: Cart.com
   sourceDefinitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
   dockerRepository: airbyte/source-cart
