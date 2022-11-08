@@ -52,7 +52,7 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
   };
 
   return (
-    <Formik // TODO extract to parent component, see if that helps with input focus issues
+    <Formik
       onSubmit={onSubmit}
       initialValues={{ jobs: dbtCloudJobs }}
       validationSchema={dbtCloudJobListSchema}
@@ -185,7 +185,6 @@ const NoDbtIntegration = () => {
   return (
     <div className={classNames(styles.jobListContainer)}>
       <Text className={styles.contextExplanation}>
-        {/* Go to your <Link to={dbtSettingsPath}>settings</Link> to connect a dbt Cloud account */}
         <FormattedMessage
           id="connection.dbtCloudJobs.noIntegration"
           values={{
