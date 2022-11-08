@@ -16,10 +16,14 @@ interface Context {
   jsonManifest: StreamsListRequestBodyManifest;
   streams: StreamsListReadStreamsItem[];
   selectedStream: StreamsListReadStreamsItem;
+  selectedSlice: number;
+  selectedPage: number;
   configString: string;
   configJson: StreamReadRequestBodyConfig;
   setYamlManifest: (yamlValue: string) => void;
   setSelectedStream: (streamName: string) => void;
+  setSelectedSlice: (sliceIndex: number) => void;
+  setSelectedPage: (pageIndex: number) => void;
   setConfigString: (configString: string) => void;
 }
 
@@ -45,7 +49,7 @@ const useYamlManifest = () => {
   return { yamlManifest, jsonManifest, setYamlManifest };
 };
 
-const useStreams = () => {
+const useSelected = () => {
   const { jsonManifest } = useYamlManifest();
   const streamListRead = useListStreams({ manifest: jsonManifest });
   const streams = streamListRead.streams;
@@ -56,7 +60,23 @@ const useStreams = () => {
     url: "",
   };
 
-  return { streams, selectedStream, setSelectedStream };
+  const [streamToSelectedSlice, setStreamToSelectedSlice] = useState({ [selectedStreamName]: 0 });
+  const setSelectedSlice = (sliceIndex: number) => {
+    setStreamToSelectedSlice((prev) => {
+      return { ...prev, [selectedStreamName]: sliceIndex };
+    });
+  };
+  const selectedSlice = streamToSelectedSlice[selectedStreamName] ?? 0;
+
+  const [streamToSelectedPage, setStreamToSelectedPage] = useState({ [selectedStreamName]: 0 });
+  const setSelectedPage = (pageIndex: number) => {
+    setStreamToSelectedPage((prev) => {
+      return { ...prev, [selectedStreamName]: pageIndex };
+    });
+  };
+  const selectedPage = streamToSelectedPage[selectedStreamName] ?? 0;
+
+  return { streams, selectedStream, selectedSlice, selectedPage, setSelectedStream, setSelectedSlice, setSelectedPage };
 };
 
 const useConfig = () => {
@@ -76,20 +96,14 @@ const useConfig = () => {
 };
 
 export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
-  const { yamlManifest, jsonManifest, setYamlManifest } = useYamlManifest();
-  const { streams, selectedStream, setSelectedStream } = useStreams();
-  const { configString, configJson, setConfigString } = useConfig();
+  const yamlManifest = useYamlManifest();
+  const selected = useSelected();
+  const config = useConfig();
 
   const ctx = {
-    yamlManifest,
-    jsonManifest,
-    streams,
-    selectedStream,
-    configString,
-    configJson,
-    setYamlManifest,
-    setSelectedStream,
-    setConfigString,
+    ...yamlManifest,
+    ...selected,
+    ...config,
   };
 
   return <ConnectorBuilderStateContext.Provider value={ctx}>{children}</ConnectorBuilderStateContext.Provider>;
