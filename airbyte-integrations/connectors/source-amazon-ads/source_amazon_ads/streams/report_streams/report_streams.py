@@ -409,7 +409,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         if isinstance(exception, ReportGenerationInProgress):
-            return f'Report(s) generation time took more than {self.report_wait_timeout} minutes, please increase the "report_wait_timeout" parameter in configuration.'
+            return f'Report(s) generation time took more than {self.report_wait_timeout} minutes and failed because of Amazon API issues. Please wait some time and run synchronization again.'
         return super().get_error_display_message(exception)
 
     def _get_response_error_details(self, response) -> Optional[str]:
