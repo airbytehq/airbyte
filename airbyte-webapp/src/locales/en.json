@@ -370,6 +370,7 @@
   "connection.catalogTree.destinationSchema": "'<destination schema>",
 
   "connection.geographyTitle": "Data residency",
+  "connection.requestNewGeography": "Request a new geography",
   "connection.geographyDescription": "Depending on your network configuration, you may need to <lnk>add IP addresses</lnk> to your allowlist.",
   "connection.geography.auto": "Airbyte Default",
   "connection.geography.us": "United States",
@@ -523,6 +524,7 @@
   "settings.defaultDataResidency": "Default Data Residency",
   "settings.defaultGeography": "Geography",
   "settings.defaultDataResidencyDescription": "Choose the default preferred data processing location for all of your connections. The default data residency setting only affects new connections. Existing connections will retain their data residency setting. <lnk>Learn more</lnk>.",
+  "settings.defaultDataResidencyUpdateError": "There was an error updating the default data residency for this workspace.",
 
   "connector.requestConnectorBlock": "Request a new connector",
   "connector.requestConnector": "Request a new connector",
