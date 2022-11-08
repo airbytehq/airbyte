@@ -1072,6 +1072,13 @@
   icon: recharge.svg
   sourceType: api
   releaseStage: generally_available
+- name: Recruitee
+  sourceDefinitionId: 3b046ac7-d8d3-4eb3-b122-f96b2a16d8a8
+  dockerRepository: airbyte/source-recruitee
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/recruitee
+  sourceType: api
+  releaseStage: alpha
 - name: Recurly
   sourceDefinitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
   dockerRepository: airbyte/source-recurly
