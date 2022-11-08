@@ -16,12 +16,13 @@ This page contains the setup guide and reference information for the Amazon Ads 
 ### Step 1: Set up Amazon Ads
 Create an [Amazon user](https://www.amazon.com) with access to [Amazon Ads account](https://advertising.amazon.com).
 
-### Airbyte Open Source additional setup steps
+<!-- env:oss -->
 To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you must first complete the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview). The onboarding process has several steps and may take several days to complete. After completing all steps you will have to get Amazon client application `Client ID`, `Client Secret` and `Refresh Token`.
+<!-- /env:oss -->
 
 ### Step 2: Set up the Amazon Ads connector in Airbyte
-**For Airbyte Cloud:**
 
+<!-- env:cloud -->
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Amazon Ads** from the Source type dropdown and enter a name for this connector.
@@ -33,12 +34,13 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 9. **Start Date (Optional)** is used for generating reports starting from the specified start date. Should be in YYYY-MM-DD format and not more than 60 days in the past. If not specified today's date is used. The date is treated in the timezone of the processed profile.
 10. **Profile IDs (Optional)** you want to fetch data for. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 11. Click `Set up source`.
+<!-- /env:cloud -->
 
-**For Airbyte Open Source:**
-
+<!-- env:oss -->
 1. **Client ID** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 2. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 3. **Refresh Token**. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
+<!-- /env:oss -->
 
 ## Supported sync modes
 The Amazon Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
