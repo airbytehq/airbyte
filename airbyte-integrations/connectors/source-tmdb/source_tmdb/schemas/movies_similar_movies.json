@@ -30,7 +30,7 @@
           "backdrop_path": {
             "$id": "#root/results/items/backdrop_path",
             "title": "Backdrop_path",
-            "type": ["string","null"],
+            "type": ["string", "null"],
             "default": null
           },
           "genre_ids": {
@@ -82,7 +82,7 @@
           "poster_path": {
             "$id": "#root/results/items/poster_path",
             "title": "Poster_path",
-            "type": ["string","null"],
+            "type": ["string", "null"],
             "default": null
           },
           "popularity": {
@@ -107,7 +107,7 @@
           "vote_average": {
             "$id": "#root/results/items/vote_average",
             "title": "Vote_average",
-            "type": ["number","integer","string"],
+            "type": ["number", "integer", "string"],
             "default": 0
           },
           "vote_count": {

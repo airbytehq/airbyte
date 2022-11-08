@@ -1,4 +1,4 @@
-documentationUrl: https://docs.airbyte.com/integrations/sources/tmdb.md
+documentationUrl: https://docs.airbyte.com/integrations/sources/tmdb
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Tmdb Spec
@@ -15,14 +15,18 @@ connectionSpecification:
       description: API Key from tmdb account
       airbyte_secret: true
     movie_id:
-      title: Optional movie ID for targeting movies 
+      title: Optional movie ID for targeting movies
       type: string
       description: Target movie ID, Mandate for movie streams (Example is 550)
     query:
-      title: Optional Query for search streams 
+      title: Optional Query for search streams
       type: string
       description: Target movie ID, Mandate for search streams (Example is Marvel)
     language:
       title: Optional language for filtering
       type: string
+<<<<<<< HEAD
       description: Language expressed in ISO 639-1 scheme, Mandate for required streams (Example en-US) 
+=======
+      description: Language expressed in ISO 639-1 scheme, Default would be en-US for required streams
+>>>>>>> 972678c282a90864b5a021998080e975cbe75512

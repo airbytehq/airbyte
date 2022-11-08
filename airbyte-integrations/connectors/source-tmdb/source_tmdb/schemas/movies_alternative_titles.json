@@ -14,12 +14,12 @@
     "titles": {
       "$id": "#root/titles",
       "title": "Titles",
-      "type": ["array","null","object"],
+      "type": ["array", "null", "object"],
       "default": [],
       "items": {
         "$id": "#root/titles/items",
         "title": "Items",
-        "type": ["array","null","object"],
+        "type": ["array", "null", "object"],
         "properties": {
           "iso_3166_1": {
             "$id": "#root/titles/items/iso_3166_1",

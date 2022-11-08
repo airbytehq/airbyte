@@ -22,14 +22,14 @@
     "instagram_id": {
       "$id": "#root/instagram_id",
       "title": "Instagram_id",
-      "type": ["null","string"],
+      "type": ["null", "string"],
       "default": "",
       "pattern": "^.*$"
     },
     "twitter_id": {
       "$id": "#root/twitter_id",
       "title": "Twitter_id",
-      "type": ["null","string"],
+      "type": ["null", "string"],
       "default": "",
       "pattern": "^.*$"
     },

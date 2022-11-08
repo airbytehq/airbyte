@@ -14,14 +14,14 @@
     "backdrop_path": {
       "$id": "#root/backdrop_path",
       "title": "Backdrop_path",
-      "type": ["null","string"],
+      "type": ["null", "string"],
       "default": "",
       "pattern": "^.*$"
     },
     "belongs_to_collection": {
       "$id": "#root/belongs_to_collection",
       "title": "Belongs_to_collection",
-      "type": ["null","object"],
+      "type": ["null", "object"],
       "default": null
     },
     "budget": {
@@ -33,7 +33,7 @@
     "genres": {
       "$id": "#root/genres",
       "title": "Genres",
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "default": [],
       "items": {
         "$id": "#root/genres/items",
@@ -59,7 +59,7 @@
     "homepage": {
       "$id": "#root/homepage",
       "title": "Homepage",
-      "type": ["null","string"],
+      "type": ["null", "string"],
       "default": "",
       "pattern": "^.*$"
     },
@@ -93,7 +93,7 @@
     "overview": {
       "$id": "#root/overview",
       "title": "Overview",
-      "type": ["null","string"],
+      "type": ["null", "string"],
       "default": "",
       "pattern": "^.*$"
     },
@@ -106,13 +106,13 @@
     "poster_path": {
       "$id": "#root/poster_path",
       "title": "Poster_path",
-      "type": ["string","null"],
+      "type": ["string", "null"],
       "default": null
     },
     "production_companies": {
       "$id": "#root/production_companies",
       "title": "Production_companies",
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "default": [],
       "items": {
         "$id": "#root/production_companies/items",
@@ -152,7 +152,7 @@
     "production_countries": {
       "$id": "#root/production_countries",
       "title": "Production_countries",
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "default": [],
       "items": {
         "$id": "#root/production_countries/items",
@@ -192,13 +192,13 @@
     "runtime": {
       "$id": "#root/runtime",
       "title": "Runtime",
-      "type": ["null","integer"],
+      "type": ["null", "integer"],
       "default": 0
     },
     "spoken_languages": {
       "$id": "#root/spoken_languages",
       "title": "Spoken_languages",
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "default": [],
       "items": {
         "$id": "#root/spoken_languages/items",
@@ -232,7 +232,7 @@
     "tagline": {
       "$id": "#root/tagline",
       "title": "Tagline",
-      "type": ["null","string"],
+      "type": ["null", "string"],
       "default": "",
       "pattern": "^.*$"
     },

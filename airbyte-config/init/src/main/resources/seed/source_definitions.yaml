@@ -1270,6 +1270,13 @@
   icon: timely.svg
   sourceType: api
   releaseStage: alpha
+- name: TMDb
+  sourceDefinitionId: 6240848f-f795-45eb-8f5e-c7542822fc03
+  dockerRepository: airbyte/source-tmdb
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/tmdb
+  sourceType: api
+  releaseStage: alpha
 - name: Trello
   sourceDefinitionId: 8da67652-004c-11ec-9a03-0242ac130003
   dockerRepository: airbyte/source-trello

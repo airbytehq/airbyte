@@ -8,12 +8,12 @@
     "changes": {
       "$id": "#root/changes",
       "title": "Changes",
-      "type": ["object","array","null"],
+      "type": ["object", "array", "null"],
       "default": [],
       "items": {
         "$id": "#root/changes/items",
         "title": "Items",
-        "type": ["object","array","null"],
+        "type": ["object", "array", "null"],
         "properties": {
           "key": {
             "$id": "#root/changes/items/key",
@@ -25,7 +25,7 @@
           "items": {
             "$id": "#root/changes/items/items",
             "title": "Items",
-            "type": ["object","array","null"],
+            "type": ["object", "array", "null"],
             "default": [],
             "items": {
               "$id": "#root/changes/items/items/items",

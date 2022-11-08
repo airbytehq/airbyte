@@ -100,7 +100,7 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_lists"
-      path: "/movie/{{ config['movie_id'] }}/lists"
+      path: "/movie/{{ config['movie_id'] or '550' }}/lists?api_key={{ config['api_key'] }}"
       
   movies_recommendations_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -113,7 +113,7 @@ definitions:
     $options:
       name: "movies_releases_dates"
       path: "/movie/{{ config['movie_id'] }}/release_dates"
-      
+
   movies_reviews_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -125,7 +125,7 @@ definitions:
     $options:
       name: "movies_similar_movies"
       path: "/movie/{{ config['movie_id'] }}/similar"
-  
+
   movies_translations_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -161,7 +161,7 @@ definitions:
     $options:
       name: "movies_popular"
       path: "/movie/popular"
-      
+
   movies_top_rated_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -220,8 +220,7 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "search_tv_shows"
-      path: "/search/tv?query={{ config['query'] }}&language={{ config['language'] or 'en-US' }}&include_adult=false"
-
+      path: "/search/tv?query={{ config['query'] }}&language={{ config['language'] or 'en-US' }}&page=1&include_adult=false"
 
 streams:
   - "*ref(definitions.certification_movie_stream)"
