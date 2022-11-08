@@ -48,6 +48,11 @@ will result in the following configuration on the UI:
 ![Screen Shot 2021-11-18 at 7 14 04 PM](https://user-images.githubusercontent.com/6246757/142558797-135f6c73-f05d-479f-9d88-e20cae85870c.png)
 
 
+:::info
+
+Within an object definition, if some fields have the `order` property defined, and others don't, then the fields without the `order` property defined should be rendered last in the UI. Among those elements (which don't have `order` defined), no ordering is guaranteed. 
+
+:::
 
 
 ### Multi-line String inputs
