@@ -6,6 +6,7 @@ from pathlib import Path
 from config_migration import migrate_to_high_test_strictness_level
 from definitions import GA_DEFINITIONS
 from git import Repo
+from git.exc import GitCommandError
 
 CONNECTORS_DIRECTORY = "../../../../connectors"
 REPO_ROOT = "../../../../../"
@@ -27,7 +28,12 @@ def main():
     migrate_acceptance_test_config(connector_name)
     relative_config_path = f"airbyte-integrations/connectors/{connector_name}/acceptance-test-config.yml"
     airbyte_repo.git.add(relative_config_path)
-    airbyte_repo.git.commit(m=f"Migrated config for {connector_name}")
+    try:
+        airbyte_repo.git.commit(m=f"Migrated config for {connector_name}")
+    except GitCommandError:
+        airbyte_repo.git.add(relative_config_path)
+        airbyte_repo.git.commit(m="format")
+
     airbyte_repo.git.push("--set-upstream", "origin", new_branch)
     original_branch.checkout()
 
