@@ -28,7 +28,7 @@ definitions:
       $ref: "*ref(definitions.selector)"
     request_options_provider:
       request_parameters:
-        date: "{{stream_slice['start_time'] or 'latest'}}"
+        start: "{{stream_slice['start_time'] or 'latest'}}"
     paginator:
       type: DefaultPaginator
       url_base: "*ref(definitions.requester.url_base)"
@@ -45,6 +45,7 @@ definitions:
       $ref: "*ref(definitions.requester)"
     stream_slicer:
       $ref: "*ref(definitions.stream_slicer)"
+
   retriever_non_incremental:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -80,31 +81,21 @@ definitions:
       name: "answers"
       primary_key: "form_answer_id"
       path: "/v2/answers"
-      stream_cursor_field: "date"
+      stream_cursor_field: "start"
   lists_stream:
-    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever_non_incremental)"
     $options:
       name: "lists"
       primary_key: "id"
       path: "/metadata_objects"
-      stream_cursor_field: "date"
   notifications_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "notifications"
       primary_key: "id"
       path: "/notifications"
-      stream_cursor_field: "date"
-    requester_notifications: #notification stream uses start instead of date as incremental parameter
-      $ref: "*ref(definitions.requester)"
-      request_options_provider:
-        request_parameters:
-          start: "{{stream_slice['start'] or 'latest'}}"
-    retriever:
-        $ref: "*ref(definitions.retriever)"
-        requester:
-            $ref: "*ref(definitions.notifications_stream.requester_notifications)"
-
+      stream_cursor_field: "start"
 streams:
   - "*ref(definitions.location_stream)"
   - "*ref(definitions.answers_stream)"
