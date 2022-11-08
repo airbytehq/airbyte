@@ -15,9 +15,7 @@ from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelecto
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
-from airbyte_cdk.sources.declarative.requesters.request import Request
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
-from airbyte_cdk.sources.declarative.requesters.response import Response
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -416,15 +414,14 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
 
     def _create_trace_message_from_request(self, request: requests.PreparedRequest):
         # FIXME: this should return some sort of trace message
-        request_object = Request(url=request.url, headers=request.headers, body=self._safe_request_body(request.body))
-        log_message = filter_secrets(f"request:{str(request_object)}")
+        request_dict = {"url": request.url, "headers": dict(request.headers), "body": self._safe_request_body(request.body)}
+        log_message = filter_secrets(f"request:{json.dumps(request_dict)}")
         return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))
 
     def _create_trace_message_from_response(self, response: requests.Response):
         # FIXME: this should return some sort of trace message
-        response_object = Response(body=self._safe_response_json(response), headers=response.headers, status_code=response.status_code)
-
-        log_message = filter_secrets(f"response:{response_object}")
+        response_dict = {"body": self._safe_response_json(response), "headers": dict(response.headers), "status_code": response.status_code}
+        log_message = filter_secrets(f"response:{json.dumps(response_dict)}")
         return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))
 
     @staticmethod
