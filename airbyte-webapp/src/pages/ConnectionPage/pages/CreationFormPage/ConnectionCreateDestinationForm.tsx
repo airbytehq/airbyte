@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 // TODO: create separate component for source and destinations forms
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { DestinationForm } from "components/destination/DestinationForm";
+
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
-import { DestinationForm } from "pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 

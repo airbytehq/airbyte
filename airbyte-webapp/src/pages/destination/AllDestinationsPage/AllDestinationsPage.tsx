@@ -7,16 +7,16 @@ import { useNavigate } from "react-router-dom";
 import { EmptyResourceListView } from "components/common/EmptyResourceListView";
 import { HeadTitle } from "components/common/HeadTitle";
 import { MainPageWithScroll } from "components/common/MainPageWithScroll";
+import { DestinationsTable } from "components/destination/DestinationsTable";
 import { Button } from "components/ui/Button";
 import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useDestinationList } from "hooks/services/useDestinationHook";
 
-import { RoutePaths } from "../../../routePaths";
-import DestinationsTable from "./components/DestinationsTable";
+import { RoutePaths } from "../../routePaths";
 
-const AllDestinationsPage: React.FC = () => {
+export const AllDestinationsPage: React.FC = () => {
   const navigate = useNavigate();
   const { formatMessage } = useIntl();
   const { destinations } = useDestinationList();
@@ -53,5 +53,3 @@ const AllDestinationsPage: React.FC = () => {
     />
   );
 };
-
-export default AllDestinationsPage;

@@ -17,3 +17,10 @@ export enum RoutePaths {
 
   ConnectorBuilder = "connector-builder",
 }
+
+export enum DestinationPaths {
+  Root = ":id/*",
+  Settings = "settings",
+  NewDestination = "new-destination",
+  NewConnection = "new-connection",
+}

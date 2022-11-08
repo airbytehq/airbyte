@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { CloudInviteUsersHint } from "components/CloudInviteUsersHint";
 import { HeadTitle } from "components/common/HeadTitle";
 import { FormPageContent } from "components/ConnectorBlocks";
+import { DestinationForm } from "components/destination/DestinationForm";
 import { PageHeader } from "components/ui/PageHeader";
 
 import { ConnectionConfiguration } from "core/domain/connection";
@@ -12,8 +13,6 @@ import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
-
-import { DestinationForm } from "./components/DestinationForm";
 
 export const CreateDestinationPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.DESTINATION_NEW);

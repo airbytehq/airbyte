@@ -15,11 +15,16 @@ import MainView from "views/layout/MainView";
 
 import { WorkspaceRead } from "../core/request/AirbyteClient";
 import ConnectionPage from "./ConnectionPage";
+import CreationFormPage from "./ConnectionPage/pages/CreationFormPage";
 import { ConnectorBuilderPage } from "./ConnectorBuilderPage/ConnectorBuilderPage";
-import DestinationPage from "./DestinationPage";
+import { AllDestinationsPage } from "./destination/AllDestinationsPage";
+import CreateDestinationPage from "./destination/CreateDestinationPage";
+import { DestinationItemPage } from "./destination/DestinationItemPage";
+import { DestinationOverviewPage } from "./destination/DestinationOverviewPage";
+import { DestinationSettingsPage } from "./destination/DestinationSettingsPage";
 import OnboardingPage from "./OnboardingPage";
 import PreferencesPage from "./PreferencesPage";
-import { RoutePaths } from "./routePaths";
+import { RoutePaths, DestinationPaths } from "./routePaths";
 import SettingsPage from "./SettingsPage";
 import SourcesPage from "./SourcesPage";
 
@@ -40,7 +45,15 @@ const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = ({ workspace }) =
     <MainView>
       <ApiErrorBoundary>
         <Routes>
-          <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
+          <Route path={`${RoutePaths.Destination}`}>
+            <Route index element={<AllDestinationsPage />} />
+            <Route path={DestinationPaths.NewDestination} element={<CreateDestinationPage />} />
+            <Route path={DestinationPaths.NewConnection} element={<CreationFormPage />} />
+            <Route path={DestinationPaths.Root} element={<DestinationItemPage />}>
+              <Route path={DestinationPaths.Settings} element={<DestinationSettingsPage />} />
+              <Route index element={<DestinationOverviewPage />} />
+            </Route>
+          </Route>
           <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
           <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
           <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />

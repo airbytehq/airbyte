@@ -1,0 +1,1 @@
+export { DestinationItemPage } from "./DestinationItemPage";

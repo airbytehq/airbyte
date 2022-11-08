@@ -19,7 +19,12 @@ import { CreditsPage } from "packages/cloud/views/credits";
 import MainView from "packages/cloud/views/layout/MainView";
 import { WorkspacesPage } from "packages/cloud/views/workspaces";
 import ConnectionPage from "pages/ConnectionPage";
-import DestinationPage from "pages/DestinationPage";
+import CreationFormPage from "pages/ConnectionPage/pages/CreationFormPage";
+import { AllDestinationsPage } from "pages/destination/AllDestinationsPage";
+import CreateDestinationPage from "pages/destination/CreateDestinationPage";
+import { DestinationItemPage } from "pages/destination/DestinationItemPage";
+import { DestinationOverviewPage } from "pages/destination/DestinationOverviewPage";
+import { DestinationSettingsPage } from "pages/destination/DestinationSettingsPage";
 import OnboardingPage from "pages/OnboardingPage";
 import SourcesPage from "pages/SourcesPage";
 import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
@@ -27,7 +32,7 @@ import { setSegmentAnonymousId, useGetSegmentAnonymousId } from "utils/crossDoma
 import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
-import { RoutePaths } from "../../pages/routePaths";
+import { RoutePaths, DestinationPaths } from "../../pages/routePaths";
 import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
 import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly";
 import { useGetCloudWorkspace } from "./services/workspaces/CloudWorkspacesService";
@@ -90,7 +95,15 @@ const MainRoutes: React.FC = () => {
   return (
     <ApiErrorBoundary>
       <Routes>
-        <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
+        <Route path={RoutePaths.Destination}>
+          <Route index element={<AllDestinationsPage />} />
+          <Route path={DestinationPaths.NewDestination} element={<CreateDestinationPage />} />
+          <Route path={DestinationPaths.NewConnection} element={<CreationFormPage />} />
+          <Route path={DestinationPaths.Root} element={<DestinationItemPage />}>
+            <Route path={DestinationPaths.Settings} element={<DestinationSettingsPage />} />
+            <Route index element={<DestinationOverviewPage />} />
+          </Route>
+        </Route>
         <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
         <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
         <Route path={`${RoutePaths.Settings}/*`} element={<CloudSettingsPage />} />

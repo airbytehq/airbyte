@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 import { Button } from "components/ui/Button";
 
-import { RoutePaths } from "pages/routePaths";
+import { RoutePaths, DestinationPaths } from "pages/routePaths";
 import { useCreateDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useCreateSourceDefinition } from "services/connector/SourceDefinitionService";
 
@@ -61,7 +61,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
 
       navigate(
         {
-          pathname: `${RoutePaths.Destination}${RoutePaths.DestinationNew}`,
+          pathname: `${RoutePaths.Destination}${DestinationPaths.NewDestination}`,
         },
         { state: { destinationDefinitionId: result.destinationDefinitionId } }
       );
