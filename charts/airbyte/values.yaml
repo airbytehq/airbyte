@@ -108,6 +108,7 @@ global:
       limits: {}
 
     kube:
+      service_account: default
       ## JOB_KUBE_ANNOTATIONS
       ## pod annotations of the sync job and the default pod annotations fallback for others jobs
       ##  jobs.kube.annotations [object] key/value annotations applied to kube jobs

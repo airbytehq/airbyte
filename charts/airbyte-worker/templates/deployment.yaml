@@ -119,6 +119,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: JOB_KUBE_NAMESPACE
+          value: "{{ .Values.global.jobs.kube.service_account }}"
         {{- if $.Values.global.jobs.kube.annotations }}
         - name: JOB_KUBE_ANNOTATIONS
           valueFrom:
