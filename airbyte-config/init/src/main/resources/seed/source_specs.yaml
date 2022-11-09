@@ -3021,6 +3021,26 @@
     supportsDBT: false
     supported_destination_sync_modes: []
     protocol_version: "0.2.1"
+- dockerImage: "airbyte/source-emailoctopus:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/emailoctopus"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "EmailOctopus Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          title: "EmailOctopus API key"
+          description: "EmailOctopus API Key. See the <a href=\"https://help.emailoctopus.com/article/165-how-to-create-and-delete-api-keys\"\
+            >docs</a> for information on how to generate this key."
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-exchange-rates:1.2.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/exchangeratesapi"
