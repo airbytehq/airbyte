@@ -54,11 +54,6 @@ public interface Configs {
    */
   Version getAirbyteProtocolVersionMin();
 
-  /**
-   * Defines whether we should automatically upgrade connectors
-   */
-  boolean getAutoUpgradeConnectors();
-
   String getAirbyteVersionOrWarning();
 
   /**

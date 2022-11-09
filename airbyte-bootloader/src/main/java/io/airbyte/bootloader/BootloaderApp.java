@@ -79,6 +79,13 @@ public class BootloaderApp {
   private final DSLContext configsDslContext;
   private final DSLContext jobsDslContext;
 
+  // This controls how we check the protocol version compatibility
+  // True means that the connectors will be forcefully upgraded regardless of whether they are used in
+  // an active sync or not.
+  // This should be moved to a Configs, however, this behavior is currently forced through hooks that
+  // are passed as the postLoadExecution.
+  private final boolean autoUpgradeConnectors;
+
   /**
    * This method is exposed for Airbyte Cloud consumption. This lets us override the seed loading
    * logic and customise Cloud connector versions. Please check with the Platform team before making
@@ -98,7 +105,8 @@ public class BootloaderApp {
                        final DSLContext jobsDslContext,
                        final Flyway configsFlyway,
                        final Flyway jobsFlyway,
-                       final DefinitionsProvider definitionsProvider) {
+                       final DefinitionsProvider definitionsProvider,
+                       final boolean autoUpgradeConnectors) {
     this.configs = configs;
     this.postLoadExecution = postLoadExecution;
     this.featureFlags = featureFlags;
@@ -108,6 +116,7 @@ public class BootloaderApp {
     this.jobsDslContext = jobsDslContext;
     this.jobsFlyway = jobsFlyway;
     this.definitionsProvider = definitionsProvider;
+    this.autoUpgradeConnectors = autoUpgradeConnectors;
 
     initPersistences(configsDslContext, jobsDslContext);
   }
@@ -130,6 +139,7 @@ public class BootloaderApp {
     this.configsFlyway = configsFlyway;
     this.jobsDslContext = jobsDslContext;
     this.jobsFlyway = jobsFlyway;
+    this.autoUpgradeConnectors = false;
 
     try {
       this.definitionsProvider = getLocalDefinitionsProvider();
@@ -147,7 +157,8 @@ public class BootloaderApp {
                        final DSLContext jobsDslContext,
                        final Flyway configsFlyway,
                        final Flyway jobsFlyway,
-                       final DefinitionsProvider definitionsProvider) {
+                       final DefinitionsProvider definitionsProvider,
+                       final boolean autoUpgradeConnectors) {
     this.configs = configs;
     this.featureFlags = featureFlags;
     this.secretMigrator = secretMigrator;
@@ -156,6 +167,7 @@ public class BootloaderApp {
     this.jobsDslContext = jobsDslContext;
     this.jobsFlyway = jobsFlyway;
     this.definitionsProvider = definitionsProvider;
+    this.autoUpgradeConnectors = autoUpgradeConnectors;
 
     initPersistences(configsDslContext, jobsDslContext);
 
@@ -193,7 +205,7 @@ public class BootloaderApp {
 
     final ProtocolVersionChecker protocolVersionChecker =
         new ProtocolVersionChecker(jobPersistence, configs, configRepository, definitionsProvider);
-    assertNonBreakingProtocolVersionConstraints(protocolVersionChecker, configs, jobPersistence);
+    assertNonBreakingProtocolVersionConstraints(protocolVersionChecker, jobPersistence, autoUpgradeConnectors);
 
     // TODO Will be converted to an injected singleton during DI migration
     final DatabaseMigrator configDbMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
@@ -282,7 +294,8 @@ public class BootloaderApp {
       final DefinitionsProvider definitionsProvider = getLocalDefinitionsProvider();
 
       final var bootloader =
-          new BootloaderApp(configs, featureFlags, secretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway, definitionsProvider);
+          new BootloaderApp(configs, featureFlags, secretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway, definitionsProvider,
+              false);
       bootloader.load();
     }
   }
@@ -341,10 +354,10 @@ public class BootloaderApp {
   }
 
   private static void assertNonBreakingProtocolVersionConstraints(final ProtocolVersionChecker protocolVersionChecker,
-                                                                  final Configs configs,
-                                                                  final JobPersistence jobPersistence)
+                                                                  final JobPersistence jobPersistence,
+                                                                  final boolean autoUpgradeConnectors)
       throws Exception {
-    final Optional<AirbyteProtocolVersionRange> newProtocolRange = protocolVersionChecker.validate(configs.getAutoUpgradeConnectors());
+    final Optional<AirbyteProtocolVersionRange> newProtocolRange = protocolVersionChecker.validate(autoUpgradeConnectors);
     if (newProtocolRange.isEmpty()) {
       throw new RuntimeException(
           "Aborting bootloader to avoid breaking existing connection after an upgrade. " +
