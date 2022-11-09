@@ -11,7 +11,6 @@ import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.count;
 import static org.jooq.impl.SQLDataType.VARCHAR;
 
-import io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.AttemptStatus;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
