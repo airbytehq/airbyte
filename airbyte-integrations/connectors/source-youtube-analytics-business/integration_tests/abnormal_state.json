@@ -1,0 +1,56 @@
+{
+  "channel_annotations_a1": {
+    "date": 99999999
+  },
+  "channel_basic_a2": {
+    "date": 99999999
+  },
+  "channel_cards_a1": {
+    "date": 99999999
+  },
+  "channel_combined_a2": {
+    "date": 99999999
+  },
+  "channel_demographics_a1": {
+    "date": 99999999
+  },
+  "channel_device_os_a2": {
+    "date": 99999999
+  },
+  "channel_end_screens_a1": {
+    "date": 99999999
+  },
+  "channel_playback_location_a2": {
+    "date": 99999999
+  },
+  "channel_province_a2": {
+    "date": 99999999
+  },
+  "channel_sharing_service_a1": {
+    "date": 99999999
+  },
+  "channel_subtitles_a2": {
+    "date": 99999999
+  },
+  "channel_traffic_source_a2": {
+    "date": 99999999
+  },
+  "playlist_basic_a1": {
+    "date": 99999999
+  },
+  "playlist_combined_a1": {
+    "date": 99999999
+  },
+  "playlist_device_os_a1": {
+    "date": 99999999
+  },
+  "playlist_playback_location_a1": {
+    "date": 99999999
+  },
+  "playlist_province_a1": {
+    "date": 99999999
+  },
+  "playlist_traffic_source_a1": {
+    "date": 99999999
+  }
+}
