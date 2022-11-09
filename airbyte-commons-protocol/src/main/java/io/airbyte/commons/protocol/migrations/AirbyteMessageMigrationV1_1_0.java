@@ -55,13 +55,14 @@ public class AirbyteMessageMigrationV1_1_0 implements AirbyteMessageMigration<Ai
     if (oldMessage.getType() == Type.CATALOG) {
       for (AirbyteStream stream : newMessage.getCatalog().getStreams()) {
         JsonNode schema = stream.getJsonSchema();
-        mutate(
+        mutateSchemas(
             this::isPrimitiveTypeDeclaration,
             this::upgradeTypeDeclaration,
             schema);
       }
     } else if (oldMessage.getType() == Type.RECORD) {
       // TODO upgrade record
+      JsonNode data = newMessage.getRecord().getData();
     }
     return newMessage;
   }
@@ -147,36 +148,30 @@ public class AirbyteMessageMigrationV1_1_0 implements AirbyteMessageMigration<Ai
    * @param matcher A function which returns true on any schema node that needs to be transformed
    * @param transformer A function which mutates a schema node
    */
-  private static void mutate(Function<JsonNode, Boolean> matcher, Consumer<JsonNode> transformer, JsonNode schema) {
+  private static void mutateSchemas(Function<JsonNode, Boolean> matcher, Consumer<JsonNode> transformer, JsonNode schema) {
     if (schema.isBoolean()) {
-      // We never want to modoify a schema of `true` or `false` (e.g. additionalProperties: true)
+      // We never want to modify a schema of `true` or `false` (e.g. additionalProperties: true)
       // so just return immediately
       return;
     }
     if (matcher.apply(schema)) {
-      // If this schema has a primitive type, then we need to mutate it
+      // Base case: If this schema has a primitive type, then we need to mutate it
       transformer.accept(schema);
     } else {
-      // Otherwise, we need to find all of the subschemas and mutate them.
+      // Otherwise, we need to find all the subschemas and mutate them.
       // technically, it might be more correct to do something like:
       //   if schema["type"] == "array": find subschemas for items, additionalItems, contains
-      //   else if schema["type"] == "object": find subschemas for properties, additionalProperties
+      //   else if schema["type"] == "object": find subschemas for properties, patternProperties, additionalProperties
       //   else if oneof, allof, etc
-      // but that sounds really verbose :shrug:
+      // but that sounds really verbose for no real benefit
       List<JsonNode> subschemas = new ArrayList<>();
 
+      // array schemas
       findSubschemas(subschemas, schema, "items");
       findSubschemas(subschemas, schema, "additionalItems");
       findSubschemas(subschemas, schema, "contains");
 
-      findSubschemas(subschemas, schema, "additionalProperties");
-
-      // destinations have limited support for combining restrictions, but we should handle the schemas correctly anyway
-      findSubschemas(subschemas, schema, "allOf");
-      findSubschemas(subschemas, schema, "oneOf");
-      findSubschemas(subschemas, schema, "anyOf");
-      findSubschemas(subschemas, schema, "not");
-
+      // object schemas
       if (schema.hasNonNull("properties")) {
         ObjectNode propertiesNode = (ObjectNode)schema.get("properties");
         Iterator<Entry<String, JsonNode>> propertiesIterator = propertiesNode.fields();
@@ -193,13 +188,36 @@ public class AirbyteMessageMigrationV1_1_0 implements AirbyteMessageMigration<Ai
           subschemas.add(property.getValue());
         }
       }
+      findSubschemas(subschemas, schema, "additionalProperties");
 
-      subschemas.forEach(subschema -> mutate(matcher, transformer, subschema));
+      // combining restrictions - destinations have limited support for these, but we should handle the schemas correctly anyway
+      findSubschemas(subschemas, schema, "allOf");
+      findSubschemas(subschemas, schema, "oneOf");
+      findSubschemas(subschemas, schema, "anyOf");
+      findSubschemas(subschemas, schema, "not");
+
+      // recurse into each subschema
+      for (JsonNode subschema : subschemas) {
+        mutateSchemas(matcher, transformer, subschema);
+      }
     }
   }
 
   /**
    * If schema contains key, then grab the subschema(s) at schema[key] and add them to the subschemas list.
+   *
+   * For example:
+   * schema = {"items": [{"type": "string}]}
+   * key = "items"
+   * -> add {"type": "string"} to subschemas
+   *
+   * schema = {"items": {"type": "string"}}
+   * key = "items"
+   * -> add {"type": "string"} to subschemas
+   *
+   * schema = {"additionalProperties": true}
+   * key = "additionalProperties"
+   * -> add nothing to subschemas (technically `true` is a valid JsonSchema, but we don't want to modify it)
    */
   private static void findSubschemas(List<JsonNode> subschemas, JsonNode schema, String key) {
     if (schema.hasNonNull(key)) {
