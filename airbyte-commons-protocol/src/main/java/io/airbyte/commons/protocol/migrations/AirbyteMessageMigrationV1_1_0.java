@@ -79,22 +79,87 @@ public class AirbyteMessageMigrationV1_1_0 implements AirbyteMessageMigration<Ai
   private void upgradeTypeDeclaration(JsonNode schema) {
     ObjectNode schemaNode = (ObjectNode)schema;
 
-    // TODO handle when schema["type"] is a list
-    String type = schema.get("type").asText();
-    switch (type) {
-      case "string" -> {
-        // TODO handle date/time/etc
-        schemaNode.removeAll();
-        schemaNode.put("$ref", "WellKnownTypes.json#definitions/String");
+    if (schemaNode.hasNonNull("airbyte_type")) {
+      // airbyte_type always wins
+      switch (schemaNode.get("airbyte_type").asText()) {
+        case "timestamp_with_timezone" -> {
+          schemaNode.removeAll();
+          schemaNode.put("$ref", "WellKnownTypes.json#definitions/TimestampWithTimezone");
+        }
+        case "timestamp_without_timezone" -> {
+          schemaNode.removeAll();
+          schemaNode.put("$ref", "WellKnownTypes.json#definitions/TimestampWithoutTimezone");
+        }
+        case "time_with_timezone" -> {
+          schemaNode.removeAll();
+          schemaNode.put("$ref", "WellKnownTypes.json#definitions/TimeWithTimezone");
+        }
+        case "time_without_timezone" -> {
+          schemaNode.removeAll();
+          schemaNode.put("$ref", "WellKnownTypes.json#definitions/TimeWithoutTimezone");
+        }
+        case "date" -> {
+          schemaNode.removeAll();
+          schemaNode.put("$ref", "WellKnownTypes.json#definitions/Date");
+        }
+        case "integer" -> {
+          schemaNode.removeAll();
+          schemaNode.put("$ref", "WellKnownTypes.json#definitions/Integer");
+        }
+        // string, number, and boolean never actually use airbyte_type, but including them for consistency
+        case "string" -> {
+          schemaNode.removeAll();
+          schemaNode.put("$ref", "WellKnownTypes.json#definitions/String");
+        }
+        case "number" -> {
+          schemaNode.removeAll();
+          schemaNode.put("$ref", "WellKnownTypes.json#definitions/Number");
+        }
+        case "boolean" -> {
+          schemaNode.removeAll();
+          schemaNode.put("$ref", "WellKnownTypes.json#definitions/Boolean");
+        }
+        // TODO does a default case make sense? should never happen.
       }
-      case "integer" -> {
-
-      }
-      case "number" -> {
-
-      }
-      case "boolean" -> {
-
+    } else {
+      // TODO handle when schema["type"] is a list
+      String type = schemaNode.get("type").asText();
+      switch (type) {
+        case "string" -> {
+          if (schemaNode.hasNonNull("format")) {
+            // TODO handle when format is a list
+            switch (schemaNode.get("format").asText()) {
+              case "date" -> {
+                schemaNode.removeAll();
+                schemaNode.put("$ref", "WellKnownTypes.json#definitions/Date");
+              }
+              // In these two cases, we default to the "with timezone" type, rather than "without timezone".
+              case "date-time" -> {
+                schemaNode.removeAll();
+                schemaNode.put("$ref", "WellKnownTypes.json#definitions/TimestampWithTimezone");
+              }
+              case "time" -> {
+                schemaNode.removeAll();
+                schemaNode.put("$ref", "WellKnownTypes.json#definitions/TimeWithTimezone");
+              }
+            }
+          } else {
+            schemaNode.removeAll();
+            schemaNode.put("$ref", "WellKnownTypes.json#definitions/String");
+          }
+        }
+        case "integer" -> {
+          schemaNode.removeAll();
+          schemaNode.put("$ref", "WellKnownTypes.json#definitions/Integer");
+        }
+        case "number" -> {
+          schemaNode.removeAll();
+          schemaNode.put("$ref", "WellKnownTypes.json#definitions/Number");
+        }
+        case "boolean" -> {
+          schemaNode.removeAll();
+          schemaNode.put("$ref", "WellKnownTypes.json#definitions/Boolean");
+        }
       }
     }
   }
