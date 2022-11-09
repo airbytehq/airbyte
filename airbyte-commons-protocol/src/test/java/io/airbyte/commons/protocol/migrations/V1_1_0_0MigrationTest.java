@@ -288,7 +288,7 @@ public class V1_1_0_0MigrationTest {
   }
 
   @Test
-  public void testUpgradeUniversalSchemas() {
+  public void testUpgradeBooleanSchemas() {
     // Most of these should never happen in reality, but let's handle them just in case
     // The only ones that we're _really_ expecting are additionalItems and additionalProperties
     String schemaString = """
@@ -323,6 +323,56 @@ public class V1_1_0_0MigrationTest {
                 "integer_.*": true
               },
               "additionalProperties": true
+            }
+          }
+        }
+        """;
+    JsonNode oldSchema = Jsons.deserialize(schemaString);
+
+    io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
+
+    JsonNode expectedSchema = Jsons.deserialize(schemaString);
+    assertEquals(
+        expectedSchema,
+        upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema()
+    );
+  }
+
+  @Test
+  public void testUpgradeEmptySchema() {
+    // Sources shouldn't do this, but we should have handling for it anyway, since it's not currently enforced by SATs
+    String schemaString = """
+        {
+          "type": "object",
+          "properties": {
+            "basic_array": {
+              "items": {}
+            },
+            "tuple_array": {
+              "items": [{}],
+              "additionalItems": {},
+              "contains": {}
+            },
+            "nested_object": {
+              "properties": {
+                "id": {},
+                "nested_oneof": {
+                  "oneOf": [{}]
+                },
+                "nested_anyof": {
+                  "anyOf": [{}]
+                },
+                "nested_allof": {
+                  "allOf": [{}]
+                },
+                "nested_not": {
+                  "not": [{}]
+                }
+              },
+              "patternProperties": {
+                "integer_.*": {}
+              },
+              "additionalProperties": {}
             }
           }
         }
