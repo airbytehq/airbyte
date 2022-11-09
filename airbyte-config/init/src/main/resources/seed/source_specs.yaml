@@ -5916,6 +5916,26 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-k6-cloud:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/k6-cloud"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "K6 Cloud Spec"
+      type: "object"
+      required:
+      - "api_token"
+      additionalProperties: true
+      properties:
+        api_token:
+          title: "Api Token"
+          type: "string"
+          description: "Your API Token. See <a href=\"https://k6.io/docs/cloud/integrations/token/\"\
+            >here</a>. The key is case sensitive."
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-kafka:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/kafka"
