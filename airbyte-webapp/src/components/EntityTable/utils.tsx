@@ -3,10 +3,12 @@ import {
   DestinationDefinitionRead,
   DestinationRead,
   JobStatus,
+  SchemaChange,
   SourceDefinitionRead,
   SourceRead,
   WebBackendConnectionListItem,
-} from "../../core/request/AirbyteClient";
+} from "core/request/AirbyteClient";
+
 import { EntityTableDataItem, ITableDataItem, Status as ConnectionSyncStatus } from "./types";
 
 const getConnectorTypeName = (connectorSpec: DestinationRead | SourceRead) => {
@@ -75,10 +77,19 @@ export function getEntityTableData<
   return mappedEntities;
 }
 
-export const getConnectionTableData = (
-  connections: WebBackendConnectionListItem[],
-  type: "source" | "destination" | "connection"
-): ITableDataItem[] => {
+export type ConnectionTableDataType = "source" | "destination" | "connection";
+
+interface GetConnectionTableDataParams {
+  connections: WebBackendConnectionListItem[];
+  type: ConnectionTableDataType;
+  isSchemaChangesFeatureEnabled: boolean;
+}
+
+export const getConnectionTableData = ({
+  connections,
+  type,
+  isSchemaChangesFeatureEnabled,
+}: GetConnectionTableDataParams): ITableDataItem[] => {
   const connectType = type === "source" ? "destination" : "source";
 
   return connections.map((connection) => ({
@@ -93,7 +104,9 @@ export const getConnectionTableData = (
         ? `${connection.destination?.destinationName} - ${connection.destination?.name}`
         : getConnectorTypeName(connection[connectType]),
     lastSync: connection.latestSyncJobCreatedAt,
-    enabled: connection.status === ConnectionStatus.active,
+    enabled:
+      connection.status === ConnectionStatus.active &&
+      (!isSchemaChangesFeatureEnabled || connection.schemaChange !== SchemaChange.breaking),
     scheduleData: connection.scheduleData,
     scheduleType: connection.scheduleType,
     status: connection.status,

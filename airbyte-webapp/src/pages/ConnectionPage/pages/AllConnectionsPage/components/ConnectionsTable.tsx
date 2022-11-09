@@ -4,9 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { ConnectionTable } from "components/EntityTable";
 import useSyncActions from "components/EntityTable/hooks";
 import { ITableDataItem } from "components/EntityTable/types";
-import { getConnectionTableData } from "components/EntityTable/utils";
 
-import { WebBackendConnectionListItem } from "../../../../../core/request/AirbyteClient";
+import { WebBackendConnectionListItem } from "core/request/AirbyteClient";
+import { useConnectionsTableData } from "hooks/connection/useConnectionTableData";
 
 interface IProps {
   connections: WebBackendConnectionListItem[];
@@ -16,7 +16,7 @@ const ConnectionsTable: React.FC<IProps> = ({ connections }) => {
   const navigate = useNavigate();
   const { syncManualConnection } = useSyncActions();
 
-  const data = getConnectionTableData(connections, "connection");
+  const data = useConnectionsTableData(connections, "connection");
 
   const onSync = useCallback(
     async (connectionId: string) => {

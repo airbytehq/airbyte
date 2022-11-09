@@ -1,4 +1,5 @@
 import classNames from "classnames";
+import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -15,16 +16,18 @@ import styles from "./SchemaChangesDetected.module.scss";
 export const useSchemaChanges = (schemaChange: SchemaChange) => {
   const isSchemaChangesFeatureEnabled = process.env.REACT_APP_AUTO_DETECT_SCHEMA_CHANGES === "true" ?? false;
 
-  const hasSchemaChanges = isSchemaChangesFeatureEnabled && schemaChange !== SchemaChange.no_change;
-  const hasBreakingSchemaChange = hasSchemaChanges && schemaChange === SchemaChange.breaking;
-  const hasNonBreakingSchemaChange = hasSchemaChanges && schemaChange === SchemaChange.non_breaking;
+  return useMemo(() => {
+    const hasSchemaChanges = isSchemaChangesFeatureEnabled && schemaChange !== SchemaChange.no_change;
+    const hasBreakingSchemaChange = hasSchemaChanges && schemaChange === SchemaChange.breaking;
+    const hasNonBreakingSchemaChange = hasSchemaChanges && schemaChange === SchemaChange.non_breaking;
 
-  return {
-    schemaChange,
-    hasSchemaChanges,
-    hasBreakingSchemaChange,
-    hasNonBreakingSchemaChange,
-  };
+    return {
+      schemaChange,
+      hasSchemaChanges,
+      hasBreakingSchemaChange,
+      hasNonBreakingSchemaChange,
+    };
+  }, [isSchemaChangesFeatureEnabled, schemaChange]);
 };
 
 export const SchemaChangesDetected: React.FC = () => {
