@@ -23,6 +23,7 @@ definitions:
       inject_into: "request_parameter"
     url_base: "*ref(definitions.requester.url_base)"
 
+
   retriever:
     requester:
       $ref: "*ref(definitions.requester)"
@@ -30,10 +31,11 @@ definitions:
   schema_loader:
     type: JsonSchema
     file_path: "./source_zoom/schemas/{{ options['name'] }}.json"
+    
 
   users_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "*ref(definitions.schema_loader)"  
     retriever:
       paginator:
         $ref: "*ref(definitions.zoom_paginator)"
@@ -47,6 +49,7 @@ definitions:
       primary_key: "id"
       path: "/users"
 
+
   meetings_list_tmp_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -55,7 +58,7 @@ definitions:
       primary_key: "id"
     retriever:
       paginator:
-        $ref: "*ref(definitions.zoom_paginator)"
+        $ref: "*ref(definitions.zoom_paginator)"    
       record_selector:
         extractor:
           type: DpathExtractor
@@ -70,6 +73,8 @@ definitions:
           - stream: "*ref(definitions.users_stream)"
             parent_key: "id"
             stream_slice_field: "parent_id"
+
+
 
   meetings_stream:
     schema_loader:
@@ -95,6 +100,7 @@ definitions:
             parent_key: "id"
             stream_slice_field: "parent_id"
 
+
   meeting_registrants_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -103,7 +109,7 @@ definitions:
       primary_key: "id"
     retriever:
       paginator:
-        $ref: "*ref(definitions.zoom_paginator)"
+        $ref: "*ref(definitions.zoom_paginator)"    
       record_selector:
         extractor:
           type: DpathExtractor
@@ -133,6 +139,7 @@ definitions:
           - path: ["meeting_id"]
             value: "{{ stream_slice.parent_id }}"
 
+
   meeting_polls_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -156,7 +163,7 @@ definitions:
           error_handlers:
             - type: DefaultErrorHandler
               response_filters:
-                - http_codes: [400]
+                - http_codes: [400] 
                   action: IGNORE
             - type: DefaultErrorHandler
       stream_slicer:
@@ -170,6 +177,7 @@ definitions:
         fields:
           - path: ["meeting_id"]
             value: "{{ stream_slice.parent_id }}"
+
 
   meeting_poll_results_stream:
     schema_loader:
@@ -194,7 +202,7 @@ definitions:
               response_filters:
                 # 400 error is thrown for meetings created an year ago
                 # 404 error is thrown if the meeting has not enabled polls (from observation, not written in docs)
-                - http_codes: [400, 404]
+                - http_codes: [400,404] 
                   action: IGNORE
             - type: DefaultErrorHandler
       stream_slicer:
@@ -209,6 +217,7 @@ definitions:
           - path: ["meeting_uuid"]
             value: "{{ stream_slice.parent_id }}"
 
+
   meeting_registration_questions_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -220,7 +229,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: []
+          field_pointer: []        
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
@@ -246,6 +255,7 @@ definitions:
           - path: ["meeting_id"]
             value: "{{ stream_slice.parent_id }}"
 
+
   webinars_list_tmp_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -254,7 +264,7 @@ definitions:
       primary_key: "id"
     retriever:
       paginator:
-        $ref: "*ref(definitions.zoom_paginator)"
+        $ref: "*ref(definitions.zoom_paginator)"    
       record_selector:
         extractor:
           type: DpathExtractor
@@ -302,9 +312,9 @@ definitions:
           error_handlers:
             - type: DefaultErrorHandler
               response_filters:
-                # When parent stream throws error; then ideally we should have an empty array, and no /webinars/{id} should be called. But somehow we're calling it right now with None. :(
-                # More context: https://github.com/airbytehq/airbyte/issues/18046
-                - http_codes: [400, 404]
+                  # When parent stream throws error; then ideally we should have an empty array, and no /webinars/{id} should be called. But somehow we're calling it right now with None. :(
+                  # More context: https://github.com/airbytehq/airbyte/issues/18046 
+                - http_codes: [400,404]
                   action: IGNORE
             - type: DefaultErrorHandler
       stream_slicer:
@@ -336,8 +346,8 @@ definitions:
           error_handlers:
             - type: DefaultErrorHandler
               response_filters:
-                # Same problem as "webinars_stream" for 404! and we get 400 error if the account isn't PRO.
-                - http_codes: [400, 404]
+                  # Same problem as "webinars_stream" for 404! and we get 400 error if the account isn't PRO.
+                - http_codes: [400,404]
                   action: IGNORE
             - type: DefaultErrorHandler
       stream_slicer:
@@ -352,6 +362,7 @@ definitions:
           - path: ["webinar_id"]
             value: "{{ stream_slice.parent_id }}"
 
+
   webinar_registrants_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -359,7 +370,7 @@ definitions:
       name: "webinar_registrants"
     retriever:
       paginator:
-        $ref: "*ref(definitions.zoom_paginator)"
+        $ref: "*ref(definitions.zoom_paginator)"    
       record_selector:
         extractor:
           type: DpathExtractor
@@ -374,8 +385,8 @@ definitions:
           error_handlers:
             - type: DefaultErrorHandler
               response_filters:
-                # Same problem as "webinars_stream" for 404! 400 is for non PRO accounts.
-                - http_codes: [400, 404]
+                  # Same problem as "webinars_stream" for 404! 400 is for non PRO accounts.
+                - http_codes: [400,404]
                   action: IGNORE
             - type: DefaultErrorHandler
       stream_slicer:
@@ -390,6 +401,7 @@ definitions:
           - path: ["webinar_id"]
             value: "{{ stream_slice.parent_id }}"
 
+
   webinar_absentees_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -398,7 +410,7 @@ definitions:
       primary_key: "id"
     retriever:
       paginator:
-        $ref: "*ref(definitions.zoom_paginator)"
+        $ref: "*ref(definitions.zoom_paginator)"    
       record_selector:
         extractor:
           type: DpathExtractor
@@ -413,8 +425,8 @@ definitions:
           error_handlers:
             - type: DefaultErrorHandler
               response_filters:
-                # Same problem as "webinars_stream" for 404! 400 is for non PRO accounts.
-                - http_codes: [400, 404]
+                  # Same problem as "webinars_stream" for 404! 400 is for non PRO accounts.
+                - http_codes: [400,404]
                   action: IGNORE
             - type: DefaultErrorHandler
       stream_slicer:
@@ -428,6 +440,7 @@ definitions:
         fields:
           - path: ["webinar_uuid"]
             value: "{{ stream_slice.parent_uuid }}"
+
 
   webinar_polls_stream:
     schema_loader:
@@ -451,8 +464,8 @@ definitions:
           error_handlers:
             - type: DefaultErrorHandler
               response_filters:
-                # Same problem as "webinars_stream" for 404! 400 is for non PRO accounts.
-                - http_codes: [400, 404]
+                  # Same problem as "webinars_stream" for 404! 400 is for non PRO accounts.
+                - http_codes: [400,404]
                   action: IGNORE
             - type: DefaultErrorHandler
       stream_slicer:
@@ -466,6 +479,8 @@ definitions:
         fields:
           - path: ["webinar_id"]
             value: "{{ stream_slice.parent_id }}"
+
+
 
   webinar_poll_results_stream:
     schema_loader:
@@ -488,7 +503,7 @@ definitions:
           error_handlers:
             - type: DefaultErrorHandler
               response_filters:
-                - http_codes: [404]
+                - http_codes: [404] 
                   action: IGNORE
             - type: DefaultErrorHandler
       stream_slicer:
@@ -503,6 +518,7 @@ definitions:
           - path: ["webinar_uuid"]
             value: "{{ stream_slice.parent_id }}"
 
+
   webinar_registration_questions_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -514,7 +530,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: []
+          field_pointer: []        
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
@@ -525,7 +541,7 @@ definitions:
             - type: DefaultErrorHandler
               response_filters:
                 # the docs says 404 code, but that's incorrect (from observation);
-                - http_codes: [400]
+                - http_codes: [400] 
                   action: IGNORE
             - type: DefaultErrorHandler
       stream_slicer:
@@ -540,6 +556,8 @@ definitions:
           - path: ["webinar_id"]
             value: "{{ stream_slice.parent_id }}"
 
+
+
   webinar_tracking_sources_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -552,7 +570,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["tracking_sources"]
+          field_pointer: ["tracking_sources"]        
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
@@ -577,6 +595,7 @@ definitions:
           - path: ["webinar_id"]
             value: "{{ stream_slice.parent_id }}"
 
+
   webinar_qna_results_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -588,7 +607,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["questions"]
+          field_pointer: ["questions"]        
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
@@ -598,7 +617,7 @@ definitions:
           error_handlers:
             - type: DefaultErrorHandler
               response_filters:
-                - http_codes: [400, 404]
+                - http_codes: [400,404]
                   action: IGNORE
             - type: DefaultErrorHandler
       stream_slicer:
@@ -612,6 +631,8 @@ definitions:
         fields:
           - path: ["webinar_uuid"]
             value: "{{ stream_slice.parent_id }}"
+
+
 
   report_meetings_stream:
     schema_loader:
@@ -650,6 +671,10 @@ definitions:
           - path: ["meeting_uuid"]
             value: "{{ stream_slice.parent_id }}"
 
+
+
+
+
   report_meeting_participants_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -658,7 +683,7 @@ definitions:
       primary_key: "id"
     retriever:
       paginator:
-        $ref: "*ref(definitions.zoom_paginator)"
+        $ref: "*ref(definitions.zoom_paginator)"    
       record_selector:
         extractor:
           type: DpathExtractor
@@ -686,6 +711,7 @@ definitions:
         fields:
           - path: ["meeting_uuid"]
             value: "{{ stream_slice.parent_id }}"
+
 
   report_webinars_stream:
     schema_loader:
@@ -723,6 +749,8 @@ definitions:
           - path: ["webinar_uuid"]
             value: "{{ stream_slice.parent_id }}"
 
+
+
   report_webinar_participants_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -730,7 +758,7 @@ definitions:
       name: "report_webinar_participants"
     retriever:
       paginator:
-        $ref: "*ref(definitions.zoom_paginator)"
+        $ref: "*ref(definitions.zoom_paginator)"    
       record_selector:
         extractor:
           type: DpathExtractor
@@ -759,6 +787,7 @@ definitions:
           - path: ["webinar_uuid"]
             value: "{{ stream_slice.parent_id }}"
 
+
 streams:
   - "*ref(definitions.users_stream)"
   - "*ref(definitions.meetings_stream)"
@@ -779,6 +808,7 @@ streams:
   - "*ref(definitions.report_meeting_participants_stream)"
   - "*ref(definitions.report_webinars_stream)"
   - "*ref(definitions.report_webinar_participants_stream)"
+
 
 check:
   stream_names:

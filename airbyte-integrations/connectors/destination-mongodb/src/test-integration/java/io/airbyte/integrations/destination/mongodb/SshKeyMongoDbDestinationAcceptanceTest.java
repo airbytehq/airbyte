@@ -13,5 +13,4 @@ public class SshKeyMongoDbDestinationAcceptanceTest extends SshMongoDbDestinatio
   public SshTunnel.TunnelMethod getTunnelMethod() {
     return TunnelMethod.SSH_KEY_AUTH;
   }
-
 }
