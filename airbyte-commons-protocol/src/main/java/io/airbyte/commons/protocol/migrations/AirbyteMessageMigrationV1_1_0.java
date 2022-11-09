@@ -116,23 +116,15 @@ public class AirbyteMessageMigrationV1_1_0 implements AirbyteMessageMigration<Ai
     return switch (type) {
       case "string" -> {
         if (schemaNode.hasNonNull("format")) {
-          switch (schemaNode.get("format").asText()) {
-            case "date" -> {
-              yield "WellKnownTypes.json#definitions/Date";
-            }
+          yield switch (schemaNode.get("format").asText()) {
+            case "date" -> "WellKnownTypes.json#definitions/Date";
             // In these two cases, we default to the "with timezone" type, rather than "without timezone".
             // This matches existing behavior in normalization.
-            case "date-time" -> {
-              yield "WellKnownTypes.json#definitions/TimestampWithTimezone";
-            }
-            case "time" -> {
-              yield "WellKnownTypes.json#definitions/TimeWithTimezone";
-            }
+            case "date-time" -> "WellKnownTypes.json#definitions/TimestampWithTimezone";
+            case "time" -> "WellKnownTypes.json#definitions/TimeWithTimezone";
             // If we don't recognize the format, just use a plain string
-            default -> {
-              yield "WellKnownTypes.json#definitions/String";
-            }
-          }
+            default -> "WellKnownTypes.json#definitions/String";
+          };
         } else {
           yield "WellKnownTypes.json#definitions/String";
         }
