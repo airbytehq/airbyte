@@ -29,7 +29,9 @@ public class DynamodbUtils {
         dynamoDbClientBuilder.credentialsProvider(StaticCredentialsProvider.create(
             AwsBasicCredentials.create(dynamodbConfig.accessKey(), dynamodbConfig.secretKey())));
 
-        dynamoDbClientBuilder.region(dynamodbConfig.region());
+        if (dynamodbConfig.region() != null) {
+            dynamoDbClientBuilder.region(dynamodbConfig.region());
+        }
 
         if (dynamodbConfig.endpoint() != null) {
             dynamoDbClientBuilder.endpointOverride(dynamodbConfig.endpoint());

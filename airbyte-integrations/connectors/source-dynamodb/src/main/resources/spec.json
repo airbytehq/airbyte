@@ -5,7 +5,6 @@
     "title": "Dynamodb Source Spec",
     "type": "object",
     "required": [
-      "region",
       "access_key_id",
       "secret_access_key"
     ],
@@ -15,9 +14,9 @@
         "title": "Dynamodb Endpoint",
         "type": "string",
         "default": "",
-        "description": "Dynamodb endpoint url mostly useful for testing. Can be left blank for aws production deployments",
+        "description": "the URL of the Dynamodb database",
         "examples": [
-          "http://localhost:9000"
+          "https://{aws_dynamo_db_url}.com"
         ]
       },
       "region": {
