@@ -9,17 +9,6 @@
       "type": ["null", "array"],
       "items": {}
     },
-    "attributes": {
-      "type": ["null", "object", "array"],
-      "properties": {
-        "Project Due On": {
-          "type": ["null", "string"]
-        },
-        "Project Start On": {
-          "type": ["null", "string"]
-        }
-      }
-    },
     "id": {
       "type": ["null", "string"]
     },
