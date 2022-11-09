@@ -1,0 +1,67 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "url": {
+        "type": "string"
+      },
+      "iteration": {
+        "type": "string"
+      },
+      "projects": {
+        "type": "array",
+        "items": {}
+      },
+      "createdAt": {
+        "type": "string"
+      },
+      "dueOn": {
+        "type": "string"
+      },
+      "labels": {
+        "type": "array",
+        "items": {}
+      },
+      "time": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "users": {
+            "type": "object",
+            "properties": {
+              "1016297": {
+                "type": "integer"
+              }
+            }
+          },
+          "timerTime": {
+            "type": "integer"
+          }
+        }
+      },
+      "completed": {
+        "type": "boolean"
+      },
+      "completedAt": {
+        "type": "string"
+      },
+      "assignees": {
+        "type": "array",
+        "items": {}
+      }
+    }
+  }
