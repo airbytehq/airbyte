@@ -62,7 +62,7 @@ jobs:
         run: |-
           set -x
 
-          commit_sha=$(git rev-parse --short=7 HEAD)
+          commit_sha=$(git rev-parse --short=10 HEAD)
 
           # set dev_tag
           # AirbyteVersion.java allows versions that have a prefix of 'dev'
