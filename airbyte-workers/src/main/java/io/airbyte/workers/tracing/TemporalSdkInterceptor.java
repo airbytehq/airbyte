@@ -29,7 +29,7 @@ public class TemporalSdkInterceptor implements TraceInterceptor {
   /**
    * Error message tag key name that contains the Temporal exit error message.
    */
-  static final String ERROR_MESSAGE_TAG_KEY = "error.message";
+  static final String ERROR_MESSAGE_TAG_KEY = "error.msg";
 
   /**
    * Temporal exit error message text.

@@ -32,7 +32,7 @@ class TemporalSdkInterceptorTest {
     final var otherError = new DummySpan();
     otherError.setError(true);
     otherError.setOperationName(WORKFLOW_TRACE_OPERATION_NAME);
-    otherError.setTag("error.message", "some other error");
+    otherError.setTag(ERROR_MESSAGE_TAG_KEY, "some other error");
 
     final var temporalExitMsgOperationNameError = new DummySpan();
     temporalExitMsgOperationNameError.setError(true);
