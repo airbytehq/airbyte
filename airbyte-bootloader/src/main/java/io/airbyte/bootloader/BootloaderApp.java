@@ -70,7 +70,7 @@ public class BootloaderApp {
   private final FeatureFlags featureFlags;
   private final SecretMigrator secretMigrator;
   private ConfigRepository configRepository;
-  private DefinitionsProvider localDefinitionsProvider;
+  private DefinitionsProvider definitionsProvider;
   private Database configDatabase;
   private Database jobDatabase;
   private JobPersistence jobPersistence;
@@ -97,6 +97,30 @@ public class BootloaderApp {
                        final DSLContext configsDslContext,
                        final DSLContext jobsDslContext,
                        final Flyway configsFlyway,
+                       final Flyway jobsFlyway,
+                       final DefinitionsProvider definitionsProvider) {
+    this.configs = configs;
+    this.postLoadExecution = postLoadExecution;
+    this.featureFlags = featureFlags;
+    this.secretMigrator = secretMigrator;
+    this.configsDslContext = configsDslContext;
+    this.configsFlyway = configsFlyway;
+    this.jobsDslContext = jobsDslContext;
+    this.jobsFlyway = jobsFlyway;
+    this.definitionsProvider = definitionsProvider;
+
+    initPersistences(configsDslContext, jobsDslContext);
+  }
+
+  // Temporary duplication of constructor, to remove once Cloud has been migrated to the one above.
+  @Deprecated(forRemoval = true)
+  public BootloaderApp(final Configs configs,
+                       final Runnable postLoadExecution,
+                       final FeatureFlags featureFlags,
+                       final SecretMigrator secretMigrator,
+                       final DSLContext configsDslContext,
+                       final DSLContext jobsDslContext,
+                       final Flyway configsFlyway,
                        final Flyway jobsFlyway) {
     this.configs = configs;
     this.postLoadExecution = postLoadExecution;
@@ -107,6 +131,12 @@ public class BootloaderApp {
     this.jobsDslContext = jobsDslContext;
     this.jobsFlyway = jobsFlyway;
 
+    try {
+      this.definitionsProvider = getLocalDefinitionsProvider();
+    } catch (final IOException e) {
+      LOGGER.error("Unable to initialize persistence.", e);
+    }
+
     initPersistences(configsDslContext, jobsDslContext);
   }
 
@@ -116,7 +146,8 @@ public class BootloaderApp {
                        final DSLContext configsDslContext,
                        final DSLContext jobsDslContext,
                        final Flyway configsFlyway,
-                       final Flyway jobsFlyway) {
+                       final Flyway jobsFlyway,
+                       final DefinitionsProvider definitionsProvider) {
     this.configs = configs;
     this.featureFlags = featureFlags;
     this.secretMigrator = secretMigrator;
@@ -124,12 +155,13 @@ public class BootloaderApp {
     this.configsFlyway = configsFlyway;
     this.jobsDslContext = jobsDslContext;
     this.jobsFlyway = jobsFlyway;
+    this.definitionsProvider = definitionsProvider;
 
     initPersistences(configsDslContext, jobsDslContext);
 
     postLoadExecution = () -> {
       try {
-        final ApplyDefinitionsHelper applyDefinitionsHelper = new ApplyDefinitionsHelper(configRepository, localDefinitionsProvider);
+        final ApplyDefinitionsHelper applyDefinitionsHelper = new ApplyDefinitionsHelper(configRepository, this.definitionsProvider);
         applyDefinitionsHelper.apply();
 
         if (featureFlags.forceSecretMigration() || !jobPersistence.isSecretMigrated()) {
@@ -160,7 +192,7 @@ public class BootloaderApp {
     assertNonBreakingMigration(jobPersistence, currAirbyteVersion);
 
     final ProtocolVersionChecker protocolVersionChecker =
-        new ProtocolVersionChecker(jobPersistence, configs, configRepository, localDefinitionsProvider);
+        new ProtocolVersionChecker(jobPersistence, configs, configRepository, definitionsProvider);
     assertNonBreakingProtocolVersionConstraints(protocolVersionChecker, configs, jobPersistence);
 
     // TODO Will be converted to an injected singleton during DI migration
@@ -190,7 +222,7 @@ public class BootloaderApp {
     return new Database(dslContext);
   }
 
-  private static DefinitionsProvider getLocalDefinitionsProvider() throws IOException {
+  static DefinitionsProvider getLocalDefinitionsProvider() throws IOException {
     return new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
   }
 
@@ -206,7 +238,6 @@ public class BootloaderApp {
     try {
       configDatabase = getConfigDatabase(configsDslContext);
       configRepository = new ConfigRepository(configDatabase);
-      localDefinitionsProvider = getLocalDefinitionsProvider();
       jobDatabase = getJobDatabase(jobsDslContext);
       jobPersistence = getJobPersistence(jobDatabase);
     } catch (final IOException e) {
@@ -248,7 +279,10 @@ public class BootloaderApp {
       // Ensure that the database resources are closed on application shutdown
       CloseableShutdownHook.registerRuntimeShutdownHook(configsDataSource, jobsDataSource, configsDslContext, jobsDslContext);
 
-      final var bootloader = new BootloaderApp(configs, featureFlags, secretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
+      final DefinitionsProvider definitionsProvider = getLocalDefinitionsProvider();
+
+      final var bootloader =
+          new BootloaderApp(configs, featureFlags, secretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway, definitionsProvider);
       bootloader.load();
     }
   }

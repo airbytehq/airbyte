@@ -132,7 +132,8 @@ class BootloaderAppTest {
       val jobDatabase = new JobsDatabaseTestProvider(jobsDslContext, jobsFlyway).create(false);
 
       val bootloader =
-          new BootloaderApp(mockedConfigs, mockedFeatureFlags, mockedSecretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
+          new BootloaderApp(mockedConfigs, mockedFeatureFlags, mockedSecretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway,
+              BootloaderApp.getLocalDefinitionsProvider());
       bootloader.load();
 
       val jobsMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
@@ -200,7 +201,8 @@ class BootloaderAppTest {
       environmentVariables.set("DATABASE_URL", container.getJdbcUrl());
 
       // Bootstrap the database for the test
-      val initBootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags, null, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
+      val initBootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags, null, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway,
+          BootloaderApp.getLocalDefinitionsProvider());
       initBootloader.load();
 
       final DefinitionsProvider localDefinitions = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
@@ -241,7 +243,8 @@ class BootloaderAppTest {
 
       // Perform secrets migration
       var bootloader =
-          new BootloaderApp(mockedConfigs, mockedFeatureFlags, spiedSecretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
+          new BootloaderApp(mockedConfigs, mockedFeatureFlags, spiedSecretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway,
+              BootloaderApp.getLocalDefinitionsProvider());
       boolean isMigrated = jobsPersistence.isSecretMigrated();
 
       assertFalse(isMigrated);
@@ -261,7 +264,8 @@ class BootloaderAppTest {
       reset(spiedSecretMigrator);
       // We need to re-create the bootloader because it is closing the persistence after running load
       bootloader =
-          new BootloaderApp(mockedConfigs, mockedFeatureFlags, spiedSecretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
+          new BootloaderApp(mockedConfigs, mockedFeatureFlags, spiedSecretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway,
+              BootloaderApp.getLocalDefinitionsProvider());
       bootloader.load();
       verifyNoInteractions(spiedSecretMigrator);
 
@@ -270,7 +274,8 @@ class BootloaderAppTest {
       when(mockedFeatureFlags.forceSecretMigration()).thenReturn(true);
       // We need to re-create the bootloader because it is closing the persistence after running load
       bootloader =
-          new BootloaderApp(mockedConfigs, mockedFeatureFlags, spiedSecretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
+          new BootloaderApp(mockedConfigs, mockedFeatureFlags, spiedSecretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway,
+              BootloaderApp.getLocalDefinitionsProvider());
       bootloader.load();
       verify(spiedSecretMigrator).migrateSecrets();
     }
