@@ -14,8 +14,18 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 logger = AirbyteLogger()
 
+MAP_REGION_DOMAIN = { "US": ".com", "Europe": ".eu", "Canada": "ca.com" }
 
-class GenerateReportStream(HttpStream):
+class BaseStream(HttpStream):
+
+
+    @property
+    def url_base(self) -> str:
+        region_domain = MAP_REGION_DOMAIN.get(self.region)
+        return f"https://api.talkdeskapp{region_domain}/data/"
+
+
+class GenerateReportStream(BaseStream):
     """This stream is specifically for generating the report in Talkdesk.
     - HTTP method: POST
     - Returns: ID of the generated report
@@ -30,13 +40,6 @@ class GenerateReportStream(HttpStream):
         self.start_date = start_date
         self.timezone = timezone
         self.region = region
-
-    @property
-    def url_base(self, **kwargs) -> str:
-        # Can we remove **kwargs here?
-        region_dict = {"US": ".com", "Europe": ".eu", "Canada": "ca.com"}
-        region_domain = region_dict.get(self.region)
-        return f"https://api.talkdeskapp{region_domain}/data/"
 
     @property
     def http_method(self) -> str:
@@ -73,7 +76,7 @@ class GenerateReportStream(HttpStream):
         return [id_obj]
 
 
-class ReadReportStream(HttpStream):
+class ReadReportStream(BaseStream):
     primary_key = None
 
     def __init__(self, start_date, timezone, region, **kwargs):
@@ -81,13 +84,6 @@ class ReadReportStream(HttpStream):
         self.start_date = start_date
         self.timezone = timezone
         self.region = region
-
-    @property
-    def url_base(self, **kwargs) -> str:
-        # Can we remove **kwargs here?
-        region_dict = {"US": ".com", "Europe": ".eu", "Canada": "ca.com"}
-        region_domain = region_dict.get(self.region)
-        return f"https://api.talkdeskapp{region_domain}/data/"
 
     def path(self, **kwargs) -> str:
         latest_state = kwargs.get("stream_state").get(self.cursor_field, None)
