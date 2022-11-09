@@ -377,8 +377,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         )
         for record in records_generator:
             self.stream_slicer.update_cursor(stream_slice, last_record=record)
-            if isinstance(record, dict) or self.logger.isEnabledFor(logging.DEBUG):
-                yield record
+            yield record
         else:
             last_record = self._last_records[-1] if self._last_records else None
             self.stream_slicer.update_cursor(stream_slice, last_record=last_record)
@@ -408,8 +407,10 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         self.stream_slicer.update_cursor(value)
 
     def parse_records_and_emit_request_and_responses(self, request, response, stream_slice, stream_state) -> Iterable[StreamData]:
-        yield self._create_trace_message_from_request(request)
-        yield self._create_trace_message_from_response(response)
+        # Only emit requests and responses when running in debug mode
+        if self.logger.isEnabledFor(logging.DEBUG):
+            yield self._create_trace_message_from_request(request)
+            yield self._create_trace_message_from_response(response)
         # Not great to need to call _read_pages which is a private method
         # A better approach would be to extract the HTTP client from the HttpStream and call it directly from the HttpRequester
         yield from self._read_pages(
