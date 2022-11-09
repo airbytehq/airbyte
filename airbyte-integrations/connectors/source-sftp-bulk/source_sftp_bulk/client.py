@@ -2,13 +2,13 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import csv
 import io
 import logging
 import os
 import re
 import socket
 import stat
-import csv
 from datetime import datetime
 from typing import Any, Dict, List, Mapping, Tuple
 
