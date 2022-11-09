@@ -173,6 +173,11 @@ public class AirbyteMessageMigrationV1_1_0 implements AirbyteMessageMigration<Ai
    * @param transformer A function which mutates a schema node
    */
   private static void mutate(Function<JsonNode, Boolean> matcher, Consumer<JsonNode> transformer, JsonNode schema) {
+    if (schema.isBoolean()) {
+      // We never want to modoify a schema of `true` or `false` (e.g. additionalProperties: true)
+      // so just return immediately
+      return;
+    }
     if (matcher.apply(schema)) {
       // If this schema has a primitive type, then we need to mutate it
       transformer.accept(schema);
@@ -230,10 +235,6 @@ public class AirbyteMessageMigrationV1_1_0 implements AirbyteMessageMigration<Ai
         }
       } else if (subschemaNode.isObject()) {
         subschemas.add(subschemaNode);
-      } else {
-        // TODO is this case possible?
-
-        // additionalProperties: true/false
       }
     }
   }

@@ -287,6 +287,57 @@ public class V1_1_0_0MigrationTest {
     );
   }
 
+  @Test
+  public void testUpgradeUniversalSchemas() {
+    // Most of these should never happen in reality, but let's handle them just in case
+    // The only ones that we're _really_ expecting are additionalItems and additionalProperties
+    String schemaString = """
+        {
+          "type": "object",
+          "properties": {
+            "basic_array": {
+              "items": true
+            },
+            "tuple_array": {
+              "items": [true],
+              "additionalItems": true,
+              "contains": true
+            },
+            "nested_object": {
+              "properties": {
+                "id": true,
+                "nested_oneof": {
+                  "oneOf": [true]
+                },
+                "nested_anyof": {
+                  "anyOf": [true]
+                },
+                "nested_allof": {
+                  "allOf": [true]
+                },
+                "nested_not": {
+                  "not": [true]
+                }
+              },
+              "patternProperties": {
+                "integer_.*": true
+              },
+              "additionalProperties": true
+            }
+          }
+        }
+        """;
+    JsonNode oldSchema = Jsons.deserialize(schemaString);
+
+    io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
+
+    JsonNode expectedSchema = Jsons.deserialize(schemaString);
+    assertEquals(
+        expectedSchema,
+        upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema()
+    );
+  }
+
   private AirbyteMessage createCatalogMessage(JsonNode schema) {
     return new AirbyteMessage()
         .withType(Type.CATALOG)
