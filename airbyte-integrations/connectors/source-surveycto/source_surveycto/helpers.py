@@ -21,7 +21,7 @@ class Helpers(object):
 
     @staticmethod
     def call_survey_cto(config, form_id):
-        time.sleep(3)
+        # time.sleep(15)
         print(f'{config}')
         print(f'{form_id}')
         server_name = config['server_name']
@@ -44,7 +44,26 @@ class Helpers(object):
         schema_map, error_logs = generator.deduce_schema(input_data=data)
         schema = generator.flatten_schema(schema_map)
         schema_json = converter(schema)
-        schema_json_properties=schema_json['definitions']['element']['properties']
-        schema = json.dumps(schema_json_properties)
-        
+        schema=schema_json['definitions']['element']['properties']
+        print(f'-------------------SCHEMATYPE------------------{type(schema)}')
+    
         return schema
+
+    @staticmethod
+    def get_json_schema(schema):
+
+        json_schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": schema,
+        }
+        return json_schema
+
+    @staticmethod
+    def get_airbyte_stream(form_id: str, json_schema: Dict[str, Any]) -> AirbyteStream:
+        return AirbyteStream(
+            name=form_id,
+            json_schema=json_schema,
+            supported_sync_modes=[SyncMode.full_refresh],
+            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append_dedup],
+        )

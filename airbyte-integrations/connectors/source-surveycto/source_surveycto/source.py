@@ -21,6 +21,8 @@ import asyncio
 import base64
 import time
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import AirbyteCatalog
 from airbyte_cdk.sources.streams import Stream, IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, NoAuth
@@ -61,7 +63,6 @@ class SurveyStream(HttpStream, ABC):
 
 
 class SurveyctoStream(SurveyStream):
-    time.sleep(2)
 
     primary_key = None
 
@@ -76,12 +77,8 @@ class SurveyctoStream(SurveyStream):
     #     return base64.b64encode(string.encode("ascii")).decode("ascii")
 
     def get_json_schema(self):  
-        return {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "additionalProperties": True,
-            "type": "object",
-            "properties": self.schema
-        }
+        return self.schema
+        print(f'======================================sssss============{self.schema}')
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -105,6 +102,7 @@ class SurveyctoStream(SurveyStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         self.response_json = response.json()
+        print(f'=====================------------==========sssssss=======sssss============{self.response_json}')
     
         for data in self.response_json:
             try:
@@ -120,15 +118,26 @@ class SourceSurveycto(AbstractSource):
         return True, None
 
     def no_auth(self):
-        return NoAuth()     
+        return NoAuth()  
+
+    def discover(self, logger: AirbyteLogger, config) -> AirbyteCatalog:
+        forms = config.get("form_id", [])
+        streams = []
+        for form_id in forms:
+            schema_res = Helpers.call_survey_cto(config, form_id)
+            schema = Helpers.get_json_schema(schema_res)
+            airbyte_stream = Helpers.get_airbyte_stream(form_id, schema)
+            streams.append(airbyte_stream)
+        return AirbyteCatalog(streams=streams)
 
     def generate_streams(self, config: str) -> List[Stream]:
         forms = config.get("form_id", [])
         streams = []
+        time.sleep(10)
         for form_id in forms:
             schema = Helpers.call_survey_cto(config, form_id)
-            print(schema)
-            stream = SurveyctoStream(config=config,form_id=form_id,schema={})
+            schema_res = Helpers.get_json_schema(schema)
+            stream = SurveyctoStream(config=config,form_id=form_id,schema=schema_res)
             streams.append(stream)
         return streams
 
