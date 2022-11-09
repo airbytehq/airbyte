@@ -8,6 +8,8 @@ $icon-size: 15px;
   padding: variables.$spacing-xl calc(variables.$spacing-lg * 2) 0;
   height: 43px;
   align-items: center;
+  overflow: hidden;
+  scrollbar-gutter: stable;
 }
 
 .connector {

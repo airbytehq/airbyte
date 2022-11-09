@@ -6,8 +6,11 @@
 }
 
 .headerContainer {
-  margin: variables.$spacing-xl variables.$spacing-md variables.$spacing-lg variables.$spacing-sm;
+  margin: variables.$spacing-md variables.$spacing-md variables.$spacing-sm variables.$spacing-sm;
   gap: variables.$spacing-sm;
+  overflow: hidden;
+  scrollbar-gutter: stable;
+  min-height: 33px;
 }
 
 .checkboxCell {
