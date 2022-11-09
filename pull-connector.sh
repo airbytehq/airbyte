@@ -41,6 +41,7 @@ else
     result="$(diff --color=always "$file" "master-upstream/$file")"
     set -e
     if [[ -n "$result" ]]; then
+      echo "$file"
       echo "$result"
       echo "Lines starting with < are local and lines starting with > are from airbyte/master."
       echo "Which version would you like to keep? (< or >)"

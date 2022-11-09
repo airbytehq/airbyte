@@ -1,4 +1,6 @@
 *
+!*.patch.json
+!streams
 !Dockerfile
 !Dockerfile.test
 !main.py

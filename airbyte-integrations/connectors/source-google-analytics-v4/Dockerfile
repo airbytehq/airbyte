@@ -8,6 +8,10 @@ COPY setup.py ./
 RUN pip install .
 COPY source_google_analytics_v4 ./source_google_analytics_v4
 COPY main.py ./
+COPY documentation_url.patch.json ./
+COPY spec.patch.json ./
+COPY oauth2.patch.json ./
+COPY streams/* ./streams/
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./

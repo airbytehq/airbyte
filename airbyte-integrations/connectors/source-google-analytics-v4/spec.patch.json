@@ -1,0 +1,13 @@
+{
+  "properties": {
+    "view_id": {
+      "description": "The ID for the Google Analytics View you want to fetch data from. This can be found in Google Analytics: https://go.estuary.dev/6utILS"
+    },
+    "custom_reports": {
+      "description": "A JSON array describing the custom reports you want to sync from GA. Check out the docs to get more information about this field: https://go.estuary.dev/6PgxMK"
+    },
+    "window_in_days": {
+      "description": "The amount of days each stream slice would consist of beginning from start_date. Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364, as for a Year)."
+    }
+  }
+}
