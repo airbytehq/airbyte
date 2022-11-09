@@ -20,9 +20,15 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
           - name: bounces
-            bypass_reason: "The bounces stream"
-          - name: message-streams
-            bypass_reason: "The bounces stream"
+            bypass_reason: "Is empty in test data"
+          - name: messages
+            bypass_reason: "Is empty in test data"
+          - name: deliverystats
+            bypass_reason: "Is empty in test data"
+          - name: servers
+            bypass_reason: "Is empty in test data"
+          - name: domains
+            bypass_reason: "Is empty in test data"
         expect_records:
           path: "integration_tests/expected_records.txt"
           extra_fields: no

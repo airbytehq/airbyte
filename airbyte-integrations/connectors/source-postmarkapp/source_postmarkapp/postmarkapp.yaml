@@ -4,6 +4,21 @@ definitions:
   selector:
     extractor:
       field_pointer: []
+  selector_bounces:
+    extractor:
+      field_pointer: [ "Bounces" ]
+  selector_domains:
+    extractor:
+      field_pointer: [ "Domains" ]
+  selector_servers:
+    extractor:
+      field_pointer: [ "Servers" ]
+  selector_message_streams:
+    extractor:
+      field_pointer: [ "MessageStreams" ]
+  selector_messages:
+    extractor:
+      field_pointer: [ "Messages" ]
   requester:
     url_base: "https://api.postmarkapp.com"
     http_method: "GET"
@@ -71,31 +86,51 @@ definitions:
     retriever:
       $ref: "*ref(definitions.retriever_account)"
   deliverystats:
-    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector_bounces)"
     $options:
       name: "deliverystats"
-      primary_key: "Type"
+      primary_key: "Name"
       path: "/deliverystats"
   message-streams:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector_message_streams)"
     $options:
       name: "message-streams"
       primary_key: "ID"
       path: "/message-streams"
   bounces:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector_bounces)"
     $options:
       name: "bounces"
       primary_key: "ID"
       path: "/bounces"
+
   servers:
     $ref: "*ref(definitions.base_stream_account)"
+    retriever:
+      $ref: "*ref(definitions.retriever_account)"
+      record_selector:
+        $ref: "*ref(definitions.selector_servers)"
     $options:
       name: "servers"
       primary_key: "ID"
       path: "/servers"
   messages:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector_messages)"
     $options:
       name: "messages"
       primary_key: "MessageID"
@@ -106,6 +141,10 @@ definitions:
       name: "domains"
       primary_key: "ID"
       path: "/domains"
+    retriever:
+      $ref: "*ref(definitions.retriever_account)"
+      record_selector:
+        $ref: "*ref(definitions.selector_domains)"
 streams:
   - "*ref(definitions.deliverystats)"
   - "*ref(definitions.message-streams)"
@@ -117,4 +156,4 @@ streams:
 
 check:
   stream_names:
-    - "servers"
+    - "message-streams"
