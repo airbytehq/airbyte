@@ -44,7 +44,13 @@ def test_read_small_random_data():
     logger = None
     config = {"count": 10}
     catalog = ConfiguredAirbyteCatalog(
-        streams=[{"stream": {"name": "Users", "json_schema": {}}, "sync_mode": "full_refresh", "destination_sync_mode": "overwrite"}]
+        streams=[
+            {
+                "stream": {"name": "Users", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                "sync_mode": "full_refresh",
+                "destination_sync_mode": "overwrite",
+            }
+        ]
     )
     state = {}
     iterator = source.read(logger, config, catalog, state)
@@ -70,8 +76,16 @@ def test_read_big_random_data():
     config = {"count": 1000, "records_per_slice": 100, "records_per_sync": 1000}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
-            {"stream": {"name": "Users", "json_schema": {}}, "sync_mode": "full_refresh", "destination_sync_mode": "overwrite"},
-            {"stream": {"name": "Products", "json_schema": {}}, "sync_mode": "full_refresh", "destination_sync_mode": "overwrite"},
+            {
+                "stream": {"name": "Users", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                "sync_mode": "full_refresh",
+                "destination_sync_mode": "overwrite",
+            },
+            {
+                "stream": {"name": "Products", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                "sync_mode": "full_refresh",
+                "destination_sync_mode": "overwrite",
+            },
         ]
     )
     state = {}
@@ -98,9 +112,21 @@ def test_with_purchases():
     config = {"count": 1000, "records_per_sync": 1000}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
-            {"stream": {"name": "Users", "json_schema": {}}, "sync_mode": "full_refresh", "destination_sync_mode": "overwrite"},
-            {"stream": {"name": "Products", "json_schema": {}}, "sync_mode": "full_refresh", "destination_sync_mode": "overwrite"},
-            {"stream": {"name": "Purchases", "json_schema": {}}, "sync_mode": "full_refresh", "destination_sync_mode": "overwrite"},
+            {
+                "stream": {"name": "Users", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                "sync_mode": "full_refresh",
+                "destination_sync_mode": "overwrite",
+            },
+            {
+                "stream": {"name": "Products", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                "sync_mode": "full_refresh",
+                "destination_sync_mode": "overwrite",
+            },
+            {
+                "stream": {"name": "Purchases", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                "sync_mode": "full_refresh",
+                "destination_sync_mode": "overwrite",
+            },
         ]
     )
     state = {}
@@ -128,7 +154,13 @@ def test_sync_ends_with_limit():
     logger = None
     config = {"count": 100, "records_per_sync": 5}
     catalog = ConfiguredAirbyteCatalog(
-        streams=[{"stream": {"name": "Users", "json_schema": {}}, "sync_mode": "full_refresh", "destination_sync_mode": "overwrite"}]
+        streams=[
+            {
+                "stream": {"name": "Users", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                "sync_mode": "full_refresh",
+                "destination_sync_mode": "overwrite",
+            }
+        ]
     )
     state = {}
     iterator = source.read(logger, config, catalog, state)
@@ -157,7 +189,13 @@ def test_read_with_seed():
     logger = None
     config = {"count": 1, "seed": 100}
     catalog = ConfiguredAirbyteCatalog(
-        streams=[{"stream": {"name": "Users", "json_schema": {}}, "sync_mode": "full_refresh", "destination_sync_mode": "overwrite"}]
+        streams=[
+            {
+                "stream": {"name": "Users", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                "sync_mode": "full_refresh",
+                "destination_sync_mode": "overwrite",
+            }
+        ]
     )
     state = {}
     iterator = source.read(logger, config, catalog, state)

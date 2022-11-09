@@ -13,13 +13,17 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
+    AirbyteEstimateTraceMessage,
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateMessage,
     AirbyteStream,
+    AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
+    EstimateType,
     Status,
+    TraceType,
     Type,
 )
 from airbyte_cdk.sources import Source
@@ -42,7 +46,11 @@ class SourceFaker(Source):
         """
 
         # As this is an in-memory source, it always succeeds
-        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+        if type(config["count"]) == int or type(config["count"]) == float:
+            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+        else:
+            yield AirbyteConnectionStatus(status=Status.FAILED)
+            exit(1)
 
     def discover(self, logger: AirbyteLogger, config: Dict[str, any]) -> AirbyteCatalog:
         """
@@ -136,6 +144,10 @@ class SourceFaker(Source):
                 records_in_sync = 0
                 records_in_page = 0
 
+                users_estimate = count - cursor
+                yield generate_estimate(stream.stream.name, users_estimate, 450)
+                yield generate_estimate("Purchases", users_estimate * 1.5, 230)  # a fuzzy guess, some users have purchases, some don't
+
                 for i in range(cursor, count):
                     user = generate_user(person, dt, i)
                     yield generate_record(stream, user)
@@ -162,6 +174,7 @@ class SourceFaker(Source):
 
             elif stream.stream.name == "Products":
                 products = generate_products()
+                yield generate_estimate(stream.stream.name, len(products), 180)
                 for p in products:
                     yield generate_record(stream, p)
                 yield generate_state(state, stream, {"product_count": len(products)})
@@ -202,6 +215,14 @@ def log_stream(stream_name: str):
             emitted_at=int(datetime.datetime.now().timestamp()) * 1000,
         ),
     )
+
+
+def generate_estimate(stream_name: str, total: int, bytes_per_row: int):
+    emitted_at = int(datetime.datetime.now().timestamp() * 1000)
+    estimate = AirbyteEstimateTraceMessage(
+        type=EstimateType.STREAM, name=stream_name, row_estimate=round(total), byte_estimate=round(total * bytes_per_row)
+    )
+    return AirbyteMessage(type=Type.TRACE, trace=AirbyteTraceMessage(type=TraceType.ESTIMATE, emitted_at=emitted_at, estimate=estimate))
 
 
 def generate_state(state: Dict[str, any], stream: any, data: any):
