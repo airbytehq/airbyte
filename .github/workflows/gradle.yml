@@ -639,7 +639,7 @@ jobs:
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
           label: ${{ needs.start-platform-build-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-platform-build-runner.outputs.ec2-instance-id }}
-
+  
   ## Kube Acceptance Tests
   # Docker acceptance tests run as part of the build job.
   # In case of self-hosted EC2 errors, remove this block.
