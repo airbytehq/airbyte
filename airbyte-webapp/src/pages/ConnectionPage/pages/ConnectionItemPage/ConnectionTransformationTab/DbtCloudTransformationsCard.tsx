@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { Field, Form, Formik, FieldArray, FieldProps, FormikHelpers } from "formik";
 import { ReactNode } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import * as yup from "yup";
 
@@ -140,6 +140,7 @@ const DbtJobsList = ({
 
 // TODO give feedback on validation errors (red outline and validation message)
 const JobsListItem = ({ jobIndex, removeJob }: { jobIndex: number; removeJob: () => void }) => {
+  const { formatMessage } = useIntl();
   return (
     <Card className={styles.jobListItem}>
       <div className={styles.jobListItemIntegrationName}>
@@ -171,9 +172,15 @@ const JobsListItem = ({ jobIndex, removeJob }: { jobIndex: number; removeJob: ()
             )}
           </Field>
         </div>
-        <button type="button" className={styles.jobListItemDelete} onClick={removeJob} aria-label="Delete job">
+        <Button
+          variant="clear"
+          size="lg"
+          className={styles.jobListItemDelete}
+          onClick={removeJob}
+          aria-label={formatMessage({ id: "connection.dbtCloudJobs.job.deleteButton" })}
+        >
           <FontAwesomeIcon icon={faXmark} />
-        </button>
+        </Button>
       </div>
     </Card>
   );

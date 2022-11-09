@@ -67,6 +67,7 @@
   "connection.dbtCloudJobs.job.title": "dbt Cloud transform",
   "connection.dbtCloudJobs.job.accountId": "Account ID",
   "connection.dbtCloudJobs.job.jobId": "Job ID",
+  "connection.dbtCloudJobs.job.deleteButton": "Delete job",
   "connection.dbtCloudJobs.noIntegration": "Go to your <settingsLink>settings</settingsLink> to connect a dbt Cloud account",
 
   "settings.accountSettings.logoutLabel": "Sign out",
