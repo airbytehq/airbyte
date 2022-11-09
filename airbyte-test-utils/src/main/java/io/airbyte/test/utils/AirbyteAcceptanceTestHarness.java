@@ -158,7 +158,7 @@ public class AirbyteAcceptanceTestHarness {
   private static boolean useExternalDeployment;
 
   /**
-   * When the acceptance tests are run against a local instance of docker-compose or KUBE then these
+   * When the acceptance tests are run against a local instance of docker compose or KUBE then these
    * test containers are used. When we run these tests in GKE, we spawn a source and destination
    * postgres database ane use them for testing.
    */

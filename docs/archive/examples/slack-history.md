@@ -44,7 +44,7 @@ Make sure you have Docker and Docker Compose installed. If you haven’t set Doc
 ```bash
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
-docker-compose up
+docker compose up
 ```
 
 If you run into any problems, feel free to check out our more extensive [Getting Started FAQ](https://discuss.airbyte.io/c/faq/15) for help.

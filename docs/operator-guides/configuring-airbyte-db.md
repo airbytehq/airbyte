@@ -27,7 +27,7 @@ Let's walk through what is required to use a Postgres instance that is not manag
 docker run --rm --name airbyte-postgres -e POSTGRES_PASSWORD=password -p 3000:5432 -d postgres
 ```
 
-In order to configure Airbyte services with this new database, we need to edit the following environment variables declared in the `.env` file \(used by the docker-compose command afterward\):
+In order to configure Airbyte services with this new database, we need to edit the following environment variables declared in the `.env` file \(used by the docker compose command afterward\):
 
 ```bash
 DATABASE_USER=postgres

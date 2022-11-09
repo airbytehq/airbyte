@@ -49,7 +49,7 @@ sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-comp
 
 sudo chmod +x /usr/local/bin/docker-compose
 
-sudo /usr/local/bin/docker-compose --version
+sudo /usr/local/bin/docker compose --version
 ```
 
 ## Install and start Airbyte
@@ -70,7 +70,7 @@ Download the Airbyte repository and deploy it on the VM:
 
     which docker-compose
 
-    sudo /usr/local/bin/docker-compose up -d
+    sudo /usr/local/bin/docker compose up -d
 
     ``` 
 

@@ -110,7 +110,7 @@ jobs:
           mkdir secrets
           mkdir result
       - name: Run Airbyte
-        run: docker-compose up -d
+        run: docker compose up -d
       - name: Connect to secret manager
         uses: jsdaniell/create-json@1.1.2
         with:

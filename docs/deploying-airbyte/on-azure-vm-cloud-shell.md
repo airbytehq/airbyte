@@ -43,7 +43,7 @@ Install Docker and Docker Compose in the VM:
 5. Check Docker Compose version:
 
     ```bash
-    docker-compose --version
+    docker compose --version
     ```
 
 6. Close the SSH connection to ensure that the group modification is considered:
@@ -84,7 +84,7 @@ Download Airbyte and deploy it in the VM using Docker Compose:
 4. Start Airbyte by running the following command:
 
     ```bash
-    sudo docker-compose up -d
+    sudo docker compose up -d
     ```
     This step takes about two minutes to complete. When done, you will see the cursor prompt.
 

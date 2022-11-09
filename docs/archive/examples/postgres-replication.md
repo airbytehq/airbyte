@@ -17,7 +17,7 @@ Once Docker is installed successfully, run the following commands:
 ```text
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
-docker-compose up
+docker compose up
 ```
 
 Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000/](http://localhost:8000/).

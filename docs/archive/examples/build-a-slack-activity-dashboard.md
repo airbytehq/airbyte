@@ -32,7 +32,7 @@ There are several easy ways to deploy Airbyte, as listed [here](https://docs.air
 # In your workstation terminal
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
-docker-compose up
+docker compose up
 ```
 
 The above command will make the Airbyte app available on `localhost:8000`. Visit the URL on your favorite browser, and you should see Airbyte’s dashboard \(if this is your first time, you will be prompted to enter your email to get started\).
@@ -223,7 +223,7 @@ cd..
 Then run:
 
 ```text
-docker-compose up
+docker compose up
 ```
 
 This will download the Docker images Superset needs and build containers and start services Superset needs to run locally on your machine.

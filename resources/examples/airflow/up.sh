@@ -3,20 +3,20 @@ trap 'kill $ABID; kill $AFID; kill $SSID; kill $PGID; exit' INT
 (
     cd ../../..
     echo "Starting Airbyte..."
-    docker-compose down -v
-    docker-compose up -d
+    docker compose down -v
+    docker compose up -d
 )&
 ABID=$!
 (
     echo "Starting Airflow..."
-    docker-compose -f docker-compose-airflow.yaml down -v
-    docker-compose -f docker-compose-airflow.yaml up -d
+    docker compose -f docker-compose-airflow.yaml down -v
+    docker compose -f docker-compose-airflow.yaml up -d
 )&
 AFID=$!
 (
     echo "Starting Superset..."
-    docker-compose -f superset/docker-compose-superset.yaml down -v
-    docker-compose -f superset/docker-compose-superset.yaml up -d
+    docker compose -f superset/docker-compose-superset.yaml down -v
+    docker compose -f superset/docker-compose-superset.yaml up -d
 )&
 SSID=$!
 (

@@ -24,7 +24,7 @@ dnf install docker-ce --nobest
 systemctl enable --now docker
 usermod -aG docker $USER
 ```
-You'll need to get docker-compose separately.
+You'll need to get docker compose separately.
 ```
 dnf install wget git curl
 curl -L https://github.com/docker/compose/releases/download/1.25.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
@@ -35,6 +35,6 @@ Now we can install Airbyte. In this example, we will install it under `/opt/`
 cd /opt
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
-docker-compose up
-docker-compose ps
+docker compose up
+docker compose ps
 ```

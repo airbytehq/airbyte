@@ -33,7 +33,7 @@ To deploy Airbyte Open Source on DigitalOcean:
 ```bash
     sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
     sudo chmod +x /usr/local/bin/docker-compose
-    docker-compose --version
+    docker compose --version
 ```
 
 ## Install Airbyte
@@ -45,7 +45,7 @@ To install and start Airbyte :
 ```bash
   mkdir airbyte && cd airbyte
   wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
-  docker-compose up -d
+  docker compose up -d
 ```
 
 2. Verify that Airbyte is running:

@@ -7,7 +7,7 @@ There are two approaches you can take while jumping on connector development pro
 This guide focuses on the second approach and assumes the following:
 * You followed our other guides and tutorials about connector developments.
 * You finished your connector development, running it locally on an Airbyte development instance.
-* You want to deploy this connector to a production Airbyte instance running on a VM with docker-compose or on a Kubernetes cluster.
+* You want to deploy this connector to a production Airbyte instance running on a VM with docker compose or on a Kubernetes cluster.
 
 If you prefer video tutorials, [we recorded a demo about uploading connectors images to a GCP Artifact Registry](https://www.youtube.com/watch?v=4YF20PODv30&ab_channel=Airbyte).
 
@@ -29,7 +29,7 @@ To push and pull images to your private Docker registry, you need to authenticat
 * Your local or CI environment (where you build your connector image) must be able to **push** images to your registry.
 * Your Airbyte instance must be able to **pull** images from your registry.
 
-### For Docker-compose Airbyte deployments
+### For docker compose Airbyte deployments
 #### On GCP - Artifact Registry:
 GCP offers the `gcloud` credential helper to log in to your Artifact registry.
 Please run the command detailed [here](https://cloud.google.com/artifact-registry/docs/docker/quickstart#auth) to authenticate your local environment/CI environment to your Artifact registry.

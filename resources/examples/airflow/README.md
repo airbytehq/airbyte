@@ -1,7 +1,7 @@
 # Airflow Airbyte Plugin Demo Example
 
 ## Running the Script
-Simply run `up.sh` to bring up the Airbyte and Airflow containers. You don't need to worry about cleaning up the containers, as we run a `docker-compose down -v` before attempting to recreate them.
+Simply run `up.sh` to bring up the Airbyte and Airflow containers. You don't need to worry about cleaning up the containers, as we run a `docker compose down -v` before attempting to recreate them.
 
 After Airbyte starts running, head over to http://localhost:8000 and set up a connection. The script will then prompt you for an Airbyte connection id. You can find this in the URL after clicking on your connection.
 
@@ -29,4 +29,4 @@ docker exec airbyte-destination psql -U postgres -c "UPDATE stargazers SET starr
 ```
 
 ## Cleaning Up
-Run `down.sh` to clean up the containers. Or run `docker-compose down -v` here and in the root directory, your call.
+Run `down.sh` to clean up the containers. Or run `docker compose down -v` here and in the root directory, your call.

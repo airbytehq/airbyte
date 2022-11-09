@@ -30,7 +30,7 @@ Let’s get started by replicating Zoom data using Airbyte.
 
 In order to replicate Zoom data, we will need to use [Airbyte’s Zoom connector](https://docs.airbyte.io/integrations/sources/zoom). To do this, you need to start off Airbyte’s web app by opening up your terminal and navigating to Airbyte and running:
 
-`docker-compose up`
+`docker compose up`
 
 You can find more details about this in the [Getting Started FAQ](https://discuss.airbyte.io/c/faq/15) on our Discourse Forum.
 

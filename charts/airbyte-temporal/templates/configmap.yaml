@@ -7,7 +7,7 @@ metadata:
     {{- include "airbyte.labels" . | nindent 4 }}
 data:
   "development.yaml": |
-    # when modifying, remember to update the docker-compose version of this file in temporal/dynamicconfig/development.yaml
+    # when modifying, remember to update the docker compose version of this file in temporal/dynamicconfig/development.yaml
     frontend.enableClientVersionCheck:
       - value: true
         constraints: {}

@@ -17,7 +17,7 @@ One workaround is to manually pull the latest version of every connector you'll 
 1. Decide which connectors you'd like to use. For this example let's say you want the Postgres source and the Snowflake destination.
 2. Find the Docker image name of those connectors. Look [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/init/src/main/resources/seed/source_definitions.yaml) for sources and [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/init/src/main/resources/seed/destination_definitions.yaml) for destinations. For each of the connectors you'd like to use, copy the value of the `dockerRepository` and `dockerImageTag` fields. For example, for the Postgres source this would be `airbyte/source-postgres` and e.g `0.1.6`.
 3. For **each of the connectors** you'd like to use, from your shell run `docker pull <repository>:<tag>`, replacing `<repository>` and `<tag>` with the values copied from the step above e.g: `docker pull airbyte/source-postgres:0.1.6`.
-4. Once you've finished downloading all the images, from the Airbyte repository root run `docker-compose down -v` followed by `docker-compose up`.
+4. Once you've finished downloading all the images, from the Airbyte repository root run `docker compose down -v` followed by `docker compose up`.
 5. The issue should be resolved.
 
 If the above workaround does not fix your problem, please report it [here](https://github.com/airbytehq/airbyte/issues/1462) or in our [Slack](https://slack.airbyte.io).
@@ -30,7 +30,7 @@ If you are running into connection refused errors when running Airbyte via Docke
 
 ## I don’t see a form when selecting a connector
 
-We’ve had that issue once. \(no spinner & 500 http error\). We don’t know why. Resolution: try to stop airbyte \(`docker-compose down`\) & restart \(`docker-compose up`\)
+We’ve had that issue once. \(no spinner & 500 http error\). We don’t know why. Resolution: try to stop airbyte \(`docker compose down`\) & restart \(`docker compose up`\)
 
 ## Connection hangs when trying to run the discovery step
 

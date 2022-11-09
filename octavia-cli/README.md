@@ -109,7 +109,7 @@ docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octa
 
 ### Using `docker-compose`
 
-Using octavia in docker-compose could be convenient for automatic `apply` on start-up.
+Using octavia in docker compose could be convenient for automatic `apply` on start-up.
 
 Add another entry in the services key of your Airbyte `docker-compose.yml`
 
@@ -130,7 +130,7 @@ services:
 Other commands besides `apply` can be run like so:
 
 ```bash
-docker-compose run octavia-cli <command>`
+docker compose run octavia-cli <command>`
 ```
 
 ## Commands reference

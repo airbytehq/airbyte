@@ -41,7 +41,7 @@ sudo usermod -a -G docker $USER
 ```
 sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
-docker-compose --version
+docker compose --version
 ```
 
 4. To close the SSH connection, run the following command in your SSH session on the instance terminal:
@@ -65,7 +65,7 @@ ssh -i $SSH_KEY ec2-user@$INSTANCE_IP
 ```
 mkdir airbyte && cd airbyte
 wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
-docker-compose up -d # run the Docker container
+docker compose up -d # run the Docker container
 ```
 
 ## Connect to Airbyte
