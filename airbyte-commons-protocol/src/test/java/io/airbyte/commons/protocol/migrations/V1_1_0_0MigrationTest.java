@@ -175,6 +175,119 @@ public class V1_1_0_0MigrationTest {
     );
   }
 
+  @Test
+  public void testUpgradeNestedFields() {
+    JsonNode oldSchema = Jsons.deserialize("""
+        {
+          "type": "object",
+          "properties": {
+            "basic_array": {
+              "items": {
+                "type": "string"
+              }
+            },
+            "tuple_array": {
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "nested_object": {
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+               "nested_oneof": {
+                 "oneOf": [
+                   {"type": "string"},
+                   {"type": "integer"}
+                 ]
+               },
+               "nested_anyof": {
+                 "anyOf": [
+                   {"type": "string"},
+                   {"type": "integer"}
+                 ]
+               },
+               "nested_allof": {
+                 "allOf": [
+                   {"type": "string"},
+                   {"type": "integer"}
+                 ]
+               }
+              },
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+        """);
+
+    io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
+
+    JsonNode expectedSchema = Jsons.deserialize(
+        """
+            {
+              "type": "object",
+              "properties": {
+                "basic_array": {
+                  "items": {
+                    "$ref": "WellKnownTypes.json#definitions/String"
+                  }
+                },
+                "tuple_array": {
+                  "items": [
+                    {
+                      "$ref": "WellKnownTypes.json#definitions/String"
+                    },
+                    {
+                      "$ref": "WellKnownTypes.json#definitions/Integer"
+                    }
+                  ]
+                },
+                "nested_object": {
+                  "properties": {
+                    "id": {
+                      "$ref": "WellKnownTypes.json#definitions/Integer"
+                    },
+                   "nested_oneof": {
+                     "oneOf": [
+                       {"$ref": "WellKnownTypes.json#definitions/String"},
+                       {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                     ]
+                   },
+                   "nested_anyof": {
+                     "anyOf": [
+                       {"$ref": "WellKnownTypes.json#definitions/String"},
+                       {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                     ]
+                   },
+                   "nested_allof": {
+                     "allOf": [
+                       {"$ref": "WellKnownTypes.json#definitions/String"},
+                       {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                     ]
+                   }
+                  },
+                  "additionalProperties": {
+                    "$ref": "WellKnownTypes.json#definitions/String"
+                  }
+                }
+              }
+            }
+            """
+    );
+    assertEquals(
+        expectedSchema,
+        upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema()
+    );
+  }
+
   private AirbyteMessage createCatalogMessage(JsonNode schema) {
     return new AirbyteMessage()
         .withType(Type.CATALOG)
