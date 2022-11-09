@@ -18,6 +18,7 @@ $icon-size: 15px;
   flex: none;
   align-self: stretch;
   align-items: center;
+  gap: variables.$spacing-sm;
 }
 
 .source {
@@ -33,7 +34,6 @@ $icon-size: 15px;
 .icon {
   width: $icon-size;
   height: $icon-size;
-  padding-right: variables.$spacing-sm;
 }
 
 .arrowContainer {
