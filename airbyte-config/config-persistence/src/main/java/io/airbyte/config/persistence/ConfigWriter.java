@@ -53,6 +53,10 @@ public class ConfigWriter {
         .collect(Collectors.toSet());
   }
 
+  /**
+   * Get a map of connector to protocol version for all the connectors that are used in a standard
+   * syncs.
+   */
   static Map<UUID, Entry<io.airbyte.config.ActorType, Version>> getActorDefinitionsInUseToProtocolVersion(final DSLContext ctx) {
     return getActorDefinitionsInUse(ctx)
         .collect(Collectors.toMap(Record4::value1,
