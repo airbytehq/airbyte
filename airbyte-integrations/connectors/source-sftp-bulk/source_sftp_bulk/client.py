@@ -8,6 +8,7 @@ import os
 import re
 import socket
 import stat
+import csv
 from datetime import datetime
 from typing import Any, Dict, List, Mapping, Tuple
 
@@ -168,15 +169,22 @@ class SFTPClient:
 
         return sorted_files
 
+    def peek_line(self, f):
+        pos = f.tell()
+        line = f.readline()
+        f.seek(pos)
+        return line
+
     @backoff.on_exception(backoff.expo, (socket.timeout), max_tries=5, factor=2)
     def fetch_file(self, fn: Mapping[str, Any], file_type="csv") -> pd.DataFrame:
         try:
-            with self._connection.open(fn["filepath"], "rb") as f:
+            with self._connection.open(fn["filepath"], "r") as f:
                 df: pd.DataFrame = None
 
+                dialect = csv.Sniffer().sniff(self.peek_line(f=f))
                 # Using pandas to make reading files in different formats easier
                 if file_type == "csv":
-                    df = pd.read_csv(f)
+                    df = pd.read_csv(f, engine="python", sep=dialect.delimiter)
                 elif file_type == "json":
                     df = pd.read_json(f, lines=True)
                 else:
