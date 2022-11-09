@@ -27,6 +27,7 @@ import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
@@ -232,7 +233,7 @@ class BigQueryDestinationTest {
     resetDatasetId.accept(config);
 
     // Assert that check throws exception. Later it will be handled by IntegrationRunner
-    final Exception ex = assertThrows(RuntimeException.class, () -> {
+    final ConfigErrorException ex = assertThrows(ConfigErrorException.class, () -> {
       new BigQueryDestination().check(config);
     });
 
@@ -269,7 +270,7 @@ class BigQueryDestinationTest {
     resetDatasetId.accept(insufficientRoleConfig);
 
     // Assert that check throws exception. Later it will be handled by IntegrationRunner
-    final Exception ex = assertThrows(RuntimeException.class, () -> {
+    final ConfigErrorException ex = assertThrows(ConfigErrorException.class, () -> {
       new BigQueryDestination().check(insufficientRoleConfig);
     });
 
