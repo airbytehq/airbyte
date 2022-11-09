@@ -19,7 +19,7 @@ export enum RoutePaths {
 }
 
 export enum DestinationPaths {
-  Root = ":id/*",
+  Root = ":id/*", // currently our tabs rely on this * wildcard to detect which tab is currently active
   Settings = "settings",
   NewDestination = "new-destination",
   NewConnection = "new-connection",
