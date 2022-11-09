@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "userid": {
+      "type": ["null", "string"]
+    },
+    "dashboardId": {
+      "type": ["null", "integer"]
+    },
+    "dashboardName": {
+      "type": ["null", "string"]
+    },
+    "dashboardUid": {
+      "type": ["null","string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "recipients": {
+      "type": ["null", "string"]
+    },
+    "replyTo": {
+      "type": ["null", "string"]
+    },
+    "message": {
+      "type": ["null", "string"]
+    },
+    "schedule": {
+      "type": ["null", "object"]
+    },
+    "options": {
+      "type": ["null", "object"]
+    },
+    "enableDashboardUrl": {
+      "type": ["null", "boolean"]
+    },
+    "enableCsv": {
+      "type": ["null", "boolean"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "dashboards": {
+      "type":  "array"
+    },
+    "formats": {
+      "type": "array"
+    },
+    "created": {
+      "type": ["null", "string"]
+    },
+    "updated": {
+      "type": ["null", "string"]
+    }
+    
+  }
+}
