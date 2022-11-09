@@ -48,7 +48,11 @@ fn main() -> anyhow::Result<()> {
         .build()
         .context("building tokio runtime")?;
 
-    let result = runtime.block_on(run_airbyte_source_connector(connector_entrypoint, operation));
+    let result = runtime.block_on(run_airbyte_source_connector(
+        connector_entrypoint,
+        operation,
+        &log_args,
+    ));
 
     // Explicitly call Runtime::shutdown_background as an alternative to calling Runtime::Drop.
     // This shuts down the runtime without waiting for blocking background tasks to complete,

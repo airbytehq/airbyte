@@ -1,5 +1,6 @@
 use std::{pin::Pin, sync::{Arc}, ops::DerefMut};
 
+use flow_cli_common::LogArgs;
 use futures::{channel::oneshot, stream, StreamExt};
 use tokio::{io::{AsyncWrite, copy}, process::{ChildStdout, ChildStdin, Child}, sync::Mutex};
 use tokio_util::io::{ReaderStream, StreamReader};
@@ -30,15 +31,17 @@ pub fn parse_child(mut child: Child) -> Result<(Child, ChildStdin, ChildStdout),
 
 pub async fn run_airbyte_source_connector(
     entrypoint: String,
-    op: FlowCaptureOperation
+    op: FlowCaptureOperation,
+    log_args: &LogArgs,
 ) -> Result<(), Error> {
     let mut airbyte_interceptor = AirbyteSourceInterceptor::new();
 
     let args = airbyte_interceptor.adapt_command_args(&op);
     let full_entrypoint = format!("{} \"{}\"", entrypoint, args.join("\" \""));
+    let log_level = log_args.level.to_string();
 
     let (mut child, child_stdin, child_stdout) =
-        parse_child(invoke_connector_delayed(full_entrypoint)?)?;
+        parse_child(invoke_connector_delayed(full_entrypoint, log_level)?)?;
 
     // std::thread::sleep(std::time::Duration::from_secs(400));
     let adapted_request_stream = airbyte_interceptor.adapt_request_stream(
