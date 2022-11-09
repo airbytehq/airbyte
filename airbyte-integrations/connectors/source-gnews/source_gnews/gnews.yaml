@@ -11,14 +11,14 @@ definitions:
       type: "CompositeErrorHandler"
       error_handlers:
         - response_filters:
-          - http_codes: [ 429 ]
-            action: RETRY
+            - http_codes: [429]
+              action: RETRY
           backoff_strategies:
             - type: "ConstantBackoffStrategy"
               backoff_time_in_seconds: 1.0
         - response_filters:
-          - http_codes: [ 403 ]
-            action: RETRY
+            - http_codes: [403]
+              action: RETRY
           backoff_strategies:
             - class_name: "source_gnews.WaitUntilMidnightBackoffStrategy"
   base_retriever:
