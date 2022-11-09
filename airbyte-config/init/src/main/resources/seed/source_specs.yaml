@@ -2523,6 +2523,31 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-convex:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/convex"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Convex Source Spec"
+      type: "object"
+      required:
+      - "deployment_url"
+      - "access_key"
+      properties:
+        deployment_url:
+          type: "string"
+          title: "Deployment Url"
+          examples:
+          - "https://murky-swan-635.convex.cloud"
+          - "https://cluttered-owl-337.convex.cloud"
+        access_key:
+          type: "string"
+          title: "Access Key"
+          description: "API access key used to retrieve data from Convex."
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-courier:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/courier"
@@ -2996,6 +3021,26 @@
     supportsDBT: false
     supported_destination_sync_modes: []
     protocol_version: "0.2.1"
+- dockerImage: "airbyte/source-emailoctopus:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/emailoctopus"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "EmailOctopus Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          title: "EmailOctopus API key"
+          description: "EmailOctopus API Key. See the <a href=\"https://help.emailoctopus.com/article/165-how-to-create-and-delete-api-keys\"\
+            >docs</a> for information on how to generate this key."
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-exchange-rates:1.2.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/exchangeratesapi"
@@ -9374,6 +9419,39 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-partnerstack:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/partnerstack"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Partnerstack Spec"
+      type: "object"
+      required:
+      - "public_key"
+      - "private_key"
+      additionalProperties: true
+      properties:
+        public_key:
+          type: "string"
+          title: "Partnerstack Public key"
+          description: "The Live Public Key for a Partnerstack account."
+          airbyte_secret: true
+        private_key:
+          type: "string"
+          title: "Partnerstack Private key"
+          description: "The Live Private Key for a Partnerstack account."
+          airbyte_secret: true
+        start_date:
+          type: "string"
+          title: "Start date"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
+            \ data before this date will not be replicated."
+          examples:
+          - "2017-01-25T00:00:00Z"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-paypal-transaction:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/paypal-transactions"
@@ -12777,6 +12855,78 @@
           title: "Bearer token"
           type: "string"
           description: "Timely bearer token"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-the-guardian-api:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/the-guardian-api"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "The Guardian Api Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "start_date"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API Key"
+          type: "string"
+          description: "Your API Key. See <a href=\"https://open-platform.theguardian.com/access/\"\
+            >here</a>. The key is case sensitive."
+          airbyte_secret: true
+        start_date:
+          title: "Start Date"
+          type: "string"
+          description: "Use this to set the minimum date (YYYY-MM-DD) of the results.\
+            \ Results older than the start_date will not be shown."
+          pattern: "^([1-9][0-9]{3})\\-(0?[1-9]|1[012])\\-(0?[1-9]|[12][0-9]|3[01])$"
+          examples:
+          - "YYYY-MM-DD"
+        query:
+          title: "Query"
+          type: "string"
+          description: "(Optional) The query (q) parameter filters the results to\
+            \ only those that include that search term. The q parameter supports AND,\
+            \ OR and NOT operators."
+          examples:
+          - "environment AND NOT water"
+          - "environment AND political"
+          - "amusement park"
+          - "political"
+        tag:
+          title: "Tag"
+          type: "string"
+          description: "(Optional) A tag is a piece of data that is used by The Guardian\
+            \ to categorise content. Use this parameter to filter results by showing\
+            \ only the ones matching the entered tag. See <a href=\"https://content.guardianapis.com/tags?api-key=test\"\
+            >here</a> for a list of all tags, and <a href=\"https://open-platform.theguardian.com/documentation/tag\"\
+            >here</a> for the tags endpoint documentation."
+          examples:
+          - "environment/recycling"
+          - "environment/plasticbags"
+          - "environment/energyefficiency"
+        section:
+          title: "Section"
+          type: "string"
+          description: "(Optional) Use this to filter the results by a particular\
+            \ section. See <a href=\"https://content.guardianapis.com/sections?api-key=test\"\
+            >here</a> for a list of all sections, and <a href=\"https://open-platform.theguardian.com/documentation/section\"\
+            >here</a> for the sections endpoint documentation."
+          examples:
+          - "media"
+          - "technology"
+          - "housing-network"
+        end_date:
+          title: "End Date"
+          type: "string"
+          description: "(Optional) Use this to set the maximum date (YYYY-MM-DD) of\
+            \ the results. Results newer than the end_date will not be shown. Default\
+            \ is set to the current date (today) for incremental syncs."
+          pattern: "^([1-9][0-9]{3})\\-(0?[1-9]|1[012])\\-(0?[1-9]|[12][0-9]|3[01])$"
+          examples:
+          - "YYYY-MM-DD"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []

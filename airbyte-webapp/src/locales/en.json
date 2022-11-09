@@ -605,5 +605,8 @@
   "connectorBuilder.requestTab": "Request",
   "connectorBuilder.responseTab": "Response",
   "connectorBuilder.resultsPlaceholder": "Click Test to fetch data for this stream",
-  "connectorBuilder.sliceLabel": "Slice"
+  "connectorBuilder.sliceLabel": "Slice",
+  "connectorBuilder.connectorLogs": "Connector logs",
+  "connectorBuilder.invalidYamlDownload": "Cannot download while YAML content is invalid.",
+  "connectorBuilder.invalidYamlTest": "Cannot test stream while YAML content is invalid."
 }

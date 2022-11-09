@@ -269,6 +269,14 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/convertkit
   sourceType: api
   releaseStage: alpha
+- name: Convex
+  sourceDefinitionId: c332628c-f55c-4017-8222-378cfafda9b2
+  dockerRepository: airbyte/source-convex
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/convex
+  icon: convex.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Courier
   sourceDefinitionId: 0541b2cd-2367-4986-b5f1-b79ff55439e4
   dockerRepository: airbyte/source-courier
@@ -344,6 +352,13 @@
   dockerImageTag: 2.1.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/e2e-test
   icon: airbyte.svg
+  sourceType: api
+  releaseStage: alpha
+- name: EmailOctopus
+  sourceDefinitionId: 46b25e70-c980-4590-a811-8deaf50ee09f
+  dockerRepository: airbyte/source-emailoctopus
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/emailoctopus
   sourceType: api
   releaseStage: alpha
 - name: Exchange Rates Api
@@ -953,6 +968,13 @@
   icon: pagerduty.svg
   sourceType: api
   releaseStage: alpha
+- name: PartnerStack
+  sourceDefinitionId: d30fb809-6456-484d-8e2c-ee12e0f6888d
+  dockerRepository: airbyte/source-partnerstack
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/partnerstack
+  sourceType: api
+  releaseStage: alpha
 - name: Paypal Transaction
   sourceDefinitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
   dockerRepository: airbyte/source-paypal-transaction
@@ -1310,6 +1332,13 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/timely
   icon: timely.svg
+  sourceType: api
+  releaseStage: alpha
+- name: The Guardian API
+  sourceDefinitionId: d42bd69f-6bf0-4d0b-9209-16231af07a92
+  dockerRepository: airbyte/source-the-guardian-api
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/the-guardian-api
   sourceType: api
   releaseStage: alpha
 - name: Trello
