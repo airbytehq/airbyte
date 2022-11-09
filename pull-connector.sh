@@ -18,6 +18,16 @@ if [[ ! -d "$connector_dir" ]]; then
   echo "new connector, checking out $connector_dir from airbyte/master"
   git checkout airbyte/master -- $connector_dir
 
+  echo "You need to make sure the Dockerfile of this connector uses airbyte-to-flow, see other connectors as an example"
+  echo "If you intend to patch the connector, these files can be placed in the root directory of the connector"
+  echo "and copied in Dockerfile. The following files are supported:"
+  echo "spec.patch.json -> to patch the connector's endpoint_spec, the patch is applied per RFC7396 JSON Merge"
+  echo "spec.map.json -> to map fields from endpoint_spec. Keys and values are JSON pointers. Each key: value in this file is processed by moving whatever is at the value pointer to the key pointer"
+  echo "oauth2.patch.json -> to patch the connector's oauth2 spec. This patch overrides the connector's oauth2 spec"
+  echo "documentation_url.patch.json -> to patch the connector's documentation_url. Expects a single key with a string value \`documentation_url\`"
+  echo "streams/<stream-name>.patch.json -> to patch a specific stream's document schema"
+  echo "streams/<stream-name>.pk.json -> to patch a specific stream's primary key, expects an array of strings"
+  echo ""
   echo "to build images for this image, you need to add this connector name to .github/workflows/connectors.yml"
   echo "jobs.build_connectors.strategy.matrix.connector is the place to add the new connector"
 else
