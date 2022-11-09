@@ -43,7 +43,7 @@ Feel free to share your use cases with the community in [#octavia-cli](https://a
 
 ### 1. Generate local YAML files for sources or destinations
 
-1. Retrieve the _definition id_ of the connector you want to use using `octavia list command`.
+1. Retrieve the _definition id_ of the connector you want to use using `octavia list` command.
 2. Generate YAML configuration running `octavia generate source <DEFINITION_ID> <SOURCE_NAME>` or `octavia generate destination <DEFINITION_ID> <DESTINATION_NAME>`.
 
 ### 2. Edit your local YAML configurations
