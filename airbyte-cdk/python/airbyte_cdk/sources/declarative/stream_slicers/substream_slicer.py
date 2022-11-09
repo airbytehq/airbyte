@@ -138,6 +138,7 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
                     for parent_record in parent_stream.read_records(
                         sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
                     ):
+                        # Skip non-records (eg AirbyteLogMessage)
                         if isinstance(parent_record, AirbyteMessage):
                             if parent_record.type == Type.RECORD:
                                 parent_record = parent_record.record.data
