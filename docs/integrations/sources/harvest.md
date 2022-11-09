@@ -10,6 +10,8 @@ To set up the Harvest source connector, you'll need the [Harvest Account ID and 
 
 <!-- env:cloud -->
 
+**For Airbyte Cloud:**
+
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces).
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Harvest** from the Source type dropdown.
@@ -21,6 +23,8 @@ To set up the Harvest source connector, you'll need the [Harvest Account ID and 
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
+**For Airbyte Open Source:**
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.

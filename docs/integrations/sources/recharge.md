@@ -18,6 +18,8 @@ Please read [How to generate your API token](https://support.rechargepayments.co
 
 <!-- env:cloud -->
 
+**For Airbyte Cloud:**
+
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Recharge** from the Source type dropdown and enter a name for this connector.
@@ -27,6 +29,8 @@ Please read [How to generate your API token](https://support.rechargepayments.co
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
+**For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.

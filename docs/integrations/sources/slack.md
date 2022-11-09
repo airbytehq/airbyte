@@ -61,6 +61,8 @@ This tutorial assumes that you are an administrator on your slack instance. If y
 
 <!-- env:oss -->
 
+**Airbyte Open Source additional setup steps**
+
 You can no longer create "Legacy" API Keys, but if you already have one, you can use it with this source. Fill it into the API key section.
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
@@ -70,6 +72,8 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 ### Step 2: Set up the Slack connector in Airbyte
 
 <!-- env:cloud -->
+
+**For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
@@ -83,6 +87,8 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
+**For Airbyte Open Source:**
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.

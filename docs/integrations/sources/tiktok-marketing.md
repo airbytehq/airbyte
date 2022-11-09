@@ -6,10 +6,14 @@ This page guides you through the process of setting up the TikTok Marketing sour
 
 <!-- env:cloud -->
 
+**For Airbyte Cloud:**
+
 - A Tiktok Ads Business account with permission to access data from accounts you want to sync
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
+**For Airbyte Open Source:**
 
 For the Production environment:
 
@@ -27,21 +31,27 @@ To access the Sandbox environment:
 
 ### Step 1: Set up TikTok
 
+<!-- env:cloud -->
+
+**For Airbyte Cloud:**
+
+1. Create a TikTok For Business account: [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1702715936951297)
+<!-- /env:cloud -->
+
 <!-- env:oss -->
+
+**For Airbyte Open Source:**
 
 1. Create a TikTok For Business account: [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1702715936951297)
 2. Create developer application: [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1702716474845185)
+3. For a sandbox environment: create a Sandbox Ad Account [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1701890920013825)
 <!-- /env:oss -->
-
-<!-- env:cloud -->
-
-1. Create a TikTok For Business account: [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1702715936951297)
-2. For a sandbox environment: create a Sandbox Ad Account [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1701890920013825)
-<!-- /env:cloud -->
 
 ### Step 2: Set up the source connector in Airbyte
 
 <!-- env:cloud -->
+
+**For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
@@ -53,6 +63,8 @@ To access the Sandbox environment:
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
+**For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.

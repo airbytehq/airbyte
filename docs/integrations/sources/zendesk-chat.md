@@ -5,13 +5,19 @@ This page contains the setup guide and reference information for the Zendesk Cha
 ## Prerequisites
 
 - A Zendesk Account with permission to access data from accounts you want to sync.
+
 <!-- env:oss -->
-- For Airbyte Open Source, you'll need an Access Token (https://developer.zendesk.com/rest_api/docs/chat/auth). We recommend creating a restricted, read-only key specifically for Airbyte access to allow you to control which resources Airbyte should be able to access.
+
+**For Airbyte Open Source:**
+
+- An Access Token (https://developer.zendesk.com/rest_api/docs/chat/auth). We recommend creating a restricted, read-only key specifically for Airbyte access to allow you to control which resources Airbyte should be able to access.
 <!-- /env:oss -->
 
 ## Setup guide
 
 <!-- env:cloud -->
+
+**For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
@@ -24,6 +30,8 @@ This page contains the setup guide and reference information for the Zendesk Cha
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
+**For Airbyte Open Source:**
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.

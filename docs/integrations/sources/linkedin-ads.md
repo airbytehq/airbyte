@@ -7,10 +7,14 @@ The LinkedIn Ads source connector is based on a [Airbyte CDK](https://docs.airby
 
 <!-- env:cloud -->
 
+**For Airbyte Cloud:**
+
 - The LinkedIn Ads account with permission to access data from accounts you want to sync.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
+**For Airbyte Open Source:**
 
 - The LinkedIn Ads account with permission to access data from accounts you want to sync.
 - Authentication Options:
@@ -104,6 +108,8 @@ To edit these roles, sign into Campaign Manager and follow [these instructions](
 
 <!-- env:cloud -->
 
+**For Airbyte Cloud:**
+
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **LinkedIn Ads** from the Source type dropdown and enter a name for this connector.
@@ -115,6 +121,8 @@ To edit these roles, sign into Campaign Manager and follow [these instructions](
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
+**For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.

@@ -12,6 +12,8 @@ OAuth for Survey Monkey is officially supported only for the US. We are testing 
 
 ## Prerequisites
 
+**For Airbyte Open Source:**
+
 - Access Token
 <!-- /env:oss -->
 
@@ -25,6 +27,8 @@ Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-start
 
 <!-- env:cloud -->
 
+**For Airbyte Cloud:**
+
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **SurveyMonkey** from the Source type dropdown and enter a name for this connector.
@@ -35,6 +39,8 @@ Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-start
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
+**For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.

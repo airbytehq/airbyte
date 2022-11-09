@@ -21,6 +21,8 @@ Create an [Amazon user](https://www.amazon.com) with access to [Amazon Ads accou
 
 <!-- env:oss -->
 
+**Airbyte Open Source additional setup steps**
+
 To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you must first complete the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview). The onboarding process has several steps and may take several days to complete. After completing all steps you will have to get Amazon client application `Client ID`, `Client Secret` and `Refresh Token`.
 
 <!-- /env:oss -->
@@ -28,6 +30,8 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 ### Step 2: Set up the Amazon Ads connector in Airbyte
 
 <!-- env:cloud -->
+
+**For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
@@ -43,6 +47,8 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
+**For Airbyte Open Source:**
 
 1. **Client ID** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 2. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.

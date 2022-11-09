@@ -10,6 +10,8 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
 
 <!-- env:cloud -->
 
+**For Airbyte Cloud:**
+
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Pinterest** from the Source type dropdown.
@@ -20,6 +22,8 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
+**For Airbyte Open Source:**
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
@@ -69,7 +73,7 @@ The connector is restricted by the Pinterest [requests limitation](https://devel
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
-| 0.1.9   | 2022-09-06 | [15074](https://github.com/airbytehq/airbyte/pull/15074) | Added filter based on statuses |
+| 0.1.9   | 2022-09-06 | [15074](https://github.com/airbytehq/airbyte/pull/15074) | Added filter based on statuses                                                                          |
 | 0.1.8   | 2022-10-21 | [18285](https://github.com/airbytehq/airbyte/pull/18285) | Fix type of `start_date`                                                                                |
 | 0.1.7   | 2022-09-29 | [17387](https://github.com/airbytehq/airbyte/pull/17387) | Set `start_date` dynamically based on API restrictions.                                                 |
 | 0.1.6   | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Use CDK 0.1.89                                                                                          |

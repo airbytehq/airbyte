@@ -21,6 +21,8 @@ This page guides you through the process of setting up the Snapchat Marketing so
 
 <!-- env:oss -->
 
+**For Airbyte Open Source:**
+
 2. [Activate Access to the Snapchat Marketing API](https://businesshelp.snapchat.com/s/article/api-apply?language=en_US)
 3. Add the OAuth2 app:
    - Adding the OAuth2 app requires the `redirect_url` parameter.
@@ -51,6 +53,8 @@ The useful link to Authentication process is [here](https://marketingapi.snapcha
 
 <!-- env:cloud -->
 
+**For Airbyte Cloud:**
+
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Snapchat Marketing** from the Source type dropdown and enter a name for this connector.
@@ -61,6 +65,8 @@ The useful link to Authentication process is [here](https://marketingapi.snapcha
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
+**For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.

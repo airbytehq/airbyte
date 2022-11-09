@@ -20,6 +20,8 @@ Another option is to use OAuth2.0 for authentication. See [Zendesk docs](https:/
 
 ### Step 2: Set up the Zendesk Talk connector in Airbyte
 
+**For Airbyte Cloud:**
+
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Zendesk Talk connector and select **Zendesk Talk** from the Source type dropdown.

@@ -6,14 +6,14 @@ This page contains the setup guide and reference information for the Google Ads 
 
 - A [Google Ads Account](https://support.google.com/google-ads/answer/6366720) [linked](https://support.google.com/google-ads/answer/7459601) to a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/)
 <!-- env:oss -->
-- [A developer token](#step-1-for-airbyte-oss-apply-for-a-developer-token)
+- (For Airbyte Open Source) [A developer token](#step-1-for-airbyte-oss-apply-for-a-developer-token)
 <!-- /env:oss -->
 
 ## Setup guide
 
 <!-- env:oss -->
 
-### Step 1: Apply for a developer token
+### Step 1: (For Airbyte Open Source) Apply for a developer token
 
 :::note
 You'll need to create a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/) since Google Ads accounts cannot generate a developer token.
@@ -32,7 +32,7 @@ When you apply for a token, make sure to mention:
 
 ### Step 2: Set up the Google Ads connector in Airbyte
 
-To set up Google Ads as a source in Airbyte Open Source:
+**For Airbyte Open Source:**
 
 1. Log into your Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
@@ -51,7 +51,7 @@ To set up Google Ads as a source in Airbyte Open Source:
 
 <!-- env:cloud -->
 
-To set up Google Ads as a source in Airbyte Cloud:
+**For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. Click **Sources** and then click **+ New source**.

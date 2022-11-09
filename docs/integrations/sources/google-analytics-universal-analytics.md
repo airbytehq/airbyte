@@ -8,6 +8,8 @@ This connector supports Universal Analytics properties through the [Reporting AP
 
 <!-- env:cloud -->
 
+**For Airbyte Cloud:**
+
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, select **Google Analytics** from the **Source type** dropdown.
@@ -21,6 +23,8 @@ This connector supports Universal Analytics properties through the [Reporting AP
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
+**For Airbyte Open Source:**
 
 1. Go to the [Google Analytics Reporting API dashboard](https://console.developers.google.com/apis/api/analyticsreporting.googleapis.com/overview) in the project for your service user and enable the Reporting API for your account. Then go to the [Google Analytics API dashboard](https://console.developers.google.com/apis/api/analytics.googleapis.com/overview) in the project for your service user and enable the API for your account.
 2. Go to the Airbyte UI and click **Sources** and then click **+ New source**.
@@ -151,42 +155,43 @@ Incremental sync is supported only if you add `ga:date` dimension to your custom
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                      |
+| Version | Date | Pull Request | Subject |
 <<<<<<< HEAD
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
-| 0.1.32  | 2022-11-04 | [18965](https://github.com/airbytehq/airbyte/pull/18965) | Fix for `discovery` stage, when `custom_reports` are provided with single stream as `dict`   |
-| 0.1.31  | 2022-10-30 | [18670](https://github.com/airbytehq/airbyte/pull/18670) | Add `Custom Reports` schema validation on `check connection`                                 |
+| 0.1.32 | 2022-11-04 | [18965](https://github.com/airbytehq/airbyte/pull/18965) | Fix for `discovery` stage, when `custom_reports` are provided with single stream as `dict` |
+| 0.1.31 | 2022-10-30 | [18670](https://github.com/airbytehq/airbyte/pull/18670) | Add `Custom Reports` schema validation on `check connection` |
 =======
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| 0.1.32  | 2022-11-04 | [18965](https://github.com/airbytehq/airbyte/pull/18965) | Fix for `discovery` stage, when `custom_reports` are provided with single stream as `dict` |  
-| 0.1.31  | 2022-10-30 | [18670](https://github.com/airbytehq/airbyte/pull/18670) | Add `Custom Reports` schema validation on `check connection`                                                                               |
->>>>>>> c1a81696185fceec5a4c7b64c8ac5fee62272232
-| 0.1.30  | 2022-10-13 | [17943](https://github.com/airbytehq/airbyte/pull/17943) | Fix pagination                                                                               |
-| 0.1.29  | 2022-10-12 | [17905](https://github.com/airbytehq/airbyte/pull/17905) | Handle exceeded daily quota gracefully                                                       |
-| 0.1.28  | 2022-09-24 | [16920](https://github.com/airbytehq/airbyte/pull/16920) | Added segments and filters to custom reports                                                 |
-| 0.1.27  | 2022-10-07 | [17717](https://github.com/airbytehq/airbyte/pull/17717) | Improve CHECK by using `ga:hits` metric.                                                     |
-| 0.1.26  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/15087) | Migrate to per-stream states.                                                                |
-| 0.1.25  | 2022-07-27 | [15087](https://github.com/airbytehq/airbyte/pull/15087) | Fix documentationUrl                                                                         |
-| 0.1.24  | 2022-07-26 | [15042](https://github.com/airbytehq/airbyte/pull/15042) | Update `additionalProperties` field to true from schemas                                     |
-| 0.1.23  | 2022-07-22 | [14949](https://github.com/airbytehq/airbyte/pull/14949) | Add handle request daily quota error                                                         |
-| 0.1.22  | 2022-06-30 | [14298](https://github.com/airbytehq/airbyte/pull/14298) | Specify integer type for ga:dateHourMinute dimension                                         |
-| 0.1.21  | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                             |
-| 0.1.20  | 2022-04-28 | [12426](https://github.com/airbytehq/airbyte/pull/12426) | Expose `isDataGOlden` field and always resync data two days back to make sure it is golden   |
-| 0.1.19  | 2022-04-19 | [12150](https://github.com/airbytehq/airbyte/pull/12150) | Minor changes to documentation                                                               |
-| 0.1.18  | 2022-04-07 | [11803](https://github.com/airbytehq/airbyte/pull/11803) | Improved documentation                                                                       |
-| 0.1.17  | 2022-03-31 | [11512](https://github.com/airbytehq/airbyte/pull/11512) | Improved Unit and Acceptance tests coverage, fixed `read` with abnormally large state values |
-| 0.1.16  | 2022-01-26 | [9480](https://github.com/airbytehq/airbyte/pull/9480)   | Reintroduce `window_in_days` and log warning when sampling occurs                            |
-| 0.1.15  | 2021-12-28 | [9165](https://github.com/airbytehq/airbyte/pull/9165)   | Update titles and descriptions                                                               |
-| 0.1.14  | 2021-12-09 | [8656](https://github.com/airbytehq/airbyte/pull/8656)   | Fix date format in schemas                                                                   |
-| 0.1.13  | 2021-12-09 | [8676](https://github.com/airbytehq/airbyte/pull/8676)   | Fix `window_in_days` validation issue                                                        |
-| 0.1.12  | 2021-12-03 | [8175](https://github.com/airbytehq/airbyte/pull/8175)   | Fix validation of unknown metric(s) or dimension(s) error                                    |
-| 0.1.11  | 2021-11-30 | [8264](https://github.com/airbytehq/airbyte/pull/8264)   | Corrected date range                                                                         |
-| 0.1.10  | 2021-11-19 | [8087](https://github.com/airbytehq/airbyte/pull/8087)   | Support `start_date` before the account has any data                                         |
-| 0.1.9   | 2021-10-27 | [7410](https://github.com/airbytehq/airbyte/pull/7410)   | Add check for correct permission for requested `view_id`                                     |
-| 0.1.8   | 2021-10-13 | [7020](https://github.com/airbytehq/airbyte/pull/7020)   | Add intermediary auth config support                                                         |
-| 0.1.7   | 2021-10-07 | [6414](https://github.com/airbytehq/airbyte/pull/6414)   | Declare OAuth parameters in Google sources                                                   |
-| 0.1.6   | 2021-09-27 | [6459](https://github.com/airbytehq/airbyte/pull/6459)   | Update OAuth Spec File                                                                       |
-| 0.1.3   | 2021-09-21 | [6357](https://github.com/airbytehq/airbyte/pull/6357)   | Fix OAuth workflow parameters                                                                |
-| 0.1.2   | 2021-09-20 | [6306](https://github.com/airbytehq/airbyte/pull/6306)   | Support of Airbyte OAuth initialization flow                                                 |
-| 0.1.1   | 2021-08-25 | [5655](https://github.com/airbytehq/airbyte/pull/5655)   | Corrected validation of empty custom report                                                  |
-| 0.1.0   | 2021-08-10 | [5290](https://github.com/airbytehq/airbyte/pull/5290)   | Initial Release                                                                              |
+| 0.1.32 | 2022-11-04 | [18965](https://github.com/airbytehq/airbyte/pull/18965) | Fix for `discovery` stage, when `custom_reports` are provided with single stream as `dict` |  
+| 0.1.31 | 2022-10-30 | [18670](https://github.com/airbytehq/airbyte/pull/18670) | Add `Custom Reports` schema validation on `check connection` |
+
+> > > > > > > c1a81696185fceec5a4c7b64c8ac5fee62272232
+> > > > > > > | 0.1.30 | 2022-10-13 | [17943](https://github.com/airbytehq/airbyte/pull/17943) | Fix pagination |
+> > > > > > > | 0.1.29 | 2022-10-12 | [17905](https://github.com/airbytehq/airbyte/pull/17905) | Handle exceeded daily quota gracefully |
+> > > > > > > | 0.1.28 | 2022-09-24 | [16920](https://github.com/airbytehq/airbyte/pull/16920) | Added segments and filters to custom reports |
+> > > > > > > | 0.1.27 | 2022-10-07 | [17717](https://github.com/airbytehq/airbyte/pull/17717) | Improve CHECK by using `ga:hits` metric. |
+> > > > > > > | 0.1.26 | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/15087) | Migrate to per-stream states. |
+> > > > > > > | 0.1.25 | 2022-07-27 | [15087](https://github.com/airbytehq/airbyte/pull/15087) | Fix documentationUrl |
+> > > > > > > | 0.1.24 | 2022-07-26 | [15042](https://github.com/airbytehq/airbyte/pull/15042) | Update `additionalProperties` field to true from schemas |
+> > > > > > > | 0.1.23 | 2022-07-22 | [14949](https://github.com/airbytehq/airbyte/pull/14949) | Add handle request daily quota error |
+> > > > > > > | 0.1.22 | 2022-06-30 | [14298](https://github.com/airbytehq/airbyte/pull/14298) | Specify integer type for ga:dateHourMinute dimension |
+> > > > > > > | 0.1.21 | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy |
+> > > > > > > | 0.1.20 | 2022-04-28 | [12426](https://github.com/airbytehq/airbyte/pull/12426) | Expose `isDataGOlden` field and always resync data two days back to make sure it is golden |
+> > > > > > > | 0.1.19 | 2022-04-19 | [12150](https://github.com/airbytehq/airbyte/pull/12150) | Minor changes to documentation |
+> > > > > > > | 0.1.18 | 2022-04-07 | [11803](https://github.com/airbytehq/airbyte/pull/11803) | Improved documentation |
+> > > > > > > | 0.1.17 | 2022-03-31 | [11512](https://github.com/airbytehq/airbyte/pull/11512) | Improved Unit and Acceptance tests coverage, fixed `read` with abnormally large state values |
+> > > > > > > | 0.1.16 | 2022-01-26 | [9480](https://github.com/airbytehq/airbyte/pull/9480) | Reintroduce `window_in_days` and log warning when sampling occurs |
+> > > > > > > | 0.1.15 | 2021-12-28 | [9165](https://github.com/airbytehq/airbyte/pull/9165) | Update titles and descriptions |
+> > > > > > > | 0.1.14 | 2021-12-09 | [8656](https://github.com/airbytehq/airbyte/pull/8656) | Fix date format in schemas |
+> > > > > > > | 0.1.13 | 2021-12-09 | [8676](https://github.com/airbytehq/airbyte/pull/8676) | Fix `window_in_days` validation issue |
+> > > > > > > | 0.1.12 | 2021-12-03 | [8175](https://github.com/airbytehq/airbyte/pull/8175) | Fix validation of unknown metric(s) or dimension(s) error |
+> > > > > > > | 0.1.11 | 2021-11-30 | [8264](https://github.com/airbytehq/airbyte/pull/8264) | Corrected date range |
+> > > > > > > | 0.1.10 | 2021-11-19 | [8087](https://github.com/airbytehq/airbyte/pull/8087) | Support `start_date` before the account has any data |
+> > > > > > > | 0.1.9 | 2021-10-27 | [7410](https://github.com/airbytehq/airbyte/pull/7410) | Add check for correct permission for requested `view_id` |
+> > > > > > > | 0.1.8 | 2021-10-13 | [7020](https://github.com/airbytehq/airbyte/pull/7020) | Add intermediary auth config support |
+> > > > > > > | 0.1.7 | 2021-10-07 | [6414](https://github.com/airbytehq/airbyte/pull/6414) | Declare OAuth parameters in Google sources |
+> > > > > > > | 0.1.6 | 2021-09-27 | [6459](https://github.com/airbytehq/airbyte/pull/6459) | Update OAuth Spec File |
+> > > > > > > | 0.1.3 | 2021-09-21 | [6357](https://github.com/airbytehq/airbyte/pull/6357) | Fix OAuth workflow parameters |
+> > > > > > > | 0.1.2 | 2021-09-20 | [6306](https://github.com/airbytehq/airbyte/pull/6306) | Support of Airbyte OAuth initialization flow |
+> > > > > > > | 0.1.1 | 2021-08-25 | [5655](https://github.com/airbytehq/airbyte/pull/5655) | Corrected validation of empty custom report |
+> > > > > > > | 0.1.0 | 2021-08-10 | [5290](https://github.com/airbytehq/airbyte/pull/5290) | Initial Release |

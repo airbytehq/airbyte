@@ -29,6 +29,8 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 
 <!-- env:cloud -->
 
+**For Airbyte Cloud:**
+
 1. Log in to your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Bing Ads** from the **Source type** dropdown.
@@ -42,6 +44,8 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
+**For Airbyte Open Source:**
 
 1. Log in to your Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.

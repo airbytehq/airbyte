@@ -10,6 +10,8 @@ The Google Sheets source connector pulls data from a single Google Sheets spread
 
 <!-- env:cloud -->
 
+**For Airbyte Cloud:**
+
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, select **Google Sheets** from the **Source type** dropdown.
@@ -22,6 +24,8 @@ The Google Sheets source connector pulls data from a single Google Sheets spread
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
+**For Airbyte Open Source:**
 
 1. [Enable the Google Cloud Platform APIs for your personal or organization account](https://support.google.com/googleapi/answer/6158841?hl=en).
 
