@@ -80,8 +80,7 @@
           "type": "string"
         },
         "email": {
-          "type": "string",
-          "format": "email"
+          "type": "string"
         }
       },
       "required": [
@@ -129,8 +128,7 @@
           "type": "string"
         },
         "email": {
-          "type": "string",
-          "format": "email"
+          "type": "string"
         }
       },
       "required": [
@@ -178,8 +176,7 @@
           "type": "string"
         },
         "email": {
-          "type": "string",
-          "format": "email"
+          "type": "string"
         }
       },
       "required": [

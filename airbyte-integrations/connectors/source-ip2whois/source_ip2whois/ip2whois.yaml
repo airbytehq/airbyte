@@ -9,7 +9,7 @@ definitions:
     http_method: "GET"
     request_options_provider:
       request_parameters:
-        key: "{{ config['access_key'] }}"
+        key: "{{ config['api_key'] }}"
         domain: "{{ config['domain'] }}"
   retriever:
     record_selector:
