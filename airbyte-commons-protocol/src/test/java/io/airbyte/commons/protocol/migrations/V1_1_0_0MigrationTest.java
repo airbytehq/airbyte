@@ -405,13 +405,10 @@ public class V1_1_0_0MigrationTest {
               "format": "date-time",
               "airbyte_type": "timestamp_with_timezone"
             },
-            "bad_timestamptz_implicit": {
-              "type": ["boolean", "string"],
-              "format": "date-time"
-            },
             "bad_integer": {
-              "type": "integer",
-              "format": "date-time"
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "integer"
             }
           }
         }
@@ -424,7 +421,6 @@ public class V1_1_0_0MigrationTest {
           "type": "object",
           "properties": {
             "bad_timestamptz": {"$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"},
-            "bad_timestamptz_implicit": {"$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"},
             "bad_integer": {"$ref": "WellKnownTypes.json#definitions/Integer"}
           }
         }
