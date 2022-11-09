@@ -4,7 +4,6 @@
 
 package io.airbyte.server.apis;
 
-import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.generated.AttemptNormalizationStatusReadList;
 import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.CheckOperationRead;
@@ -102,27 +101,9 @@ import io.airbyte.api.model.generated.WorkspaceRead;
 import io.airbyte.api.model.generated.WorkspaceReadList;
 import io.airbyte.api.model.generated.WorkspaceUpdate;
 import io.airbyte.api.model.generated.WorkspaceUpdateName;
-import io.airbyte.commons.version.AirbyteVersion;
-import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.SecretsRepositoryReader;
-import io.airbyte.config.persistence.SecretsRepositoryWriter;
-import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
 import io.airbyte.server.errors.IdNotFoundKnownException;
-import io.airbyte.server.handlers.ConnectionsHandler;
-import io.airbyte.server.handlers.DestinationDefinitionsHandler;
-import io.airbyte.server.handlers.DestinationHandler;
-import io.airbyte.server.handlers.JobHistoryHandler;
-import io.airbyte.server.handlers.SchedulerHandler;
-import io.airbyte.server.handlers.SourceDefinitionsHandler;
-import io.airbyte.server.handlers.SourceHandler;
-import io.airbyte.server.scheduler.EventRunner;
-import io.airbyte.server.scheduler.SynchronousSchedulerClient;
-import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
@@ -134,63 +115,7 @@ import org.apache.commons.lang3.NotImplementedException;
 @Slf4j
 public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
-  private final SourceDefinitionsHandler sourceDefinitionsHandler;
-  private final SourceHandler sourceHandler;
-  private final DestinationDefinitionsHandler destinationDefinitionsHandler;
-  private final DestinationHandler destinationHandler;
-  private final ConnectionsHandler connectionsHandler;
-  private final SchedulerHandler schedulerHandler;
-  private final JobHistoryHandler jobHistoryHandler;
-
-  public ConfigurationApi(final ConfigRepository configRepository,
-                          final JobPersistence jobPersistence,
-                          final SecretsRepositoryReader secretsRepositoryReader,
-                          final SecretsRepositoryWriter secretsRepositoryWriter,
-                          final SynchronousSchedulerClient synchronousSchedulerClient,
-                          final TrackingClient trackingClient,
-                          final WorkerEnvironment workerEnvironment,
-                          final LogConfigs logConfigs,
-                          final AirbyteVersion airbyteVersion,
-                          final EventRunner eventRunner) {
-
-    final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
-
-    final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
-
-    connectionsHandler = new ConnectionsHandler(
-        configRepository,
-        workspaceHelper,
-        trackingClient,
-        eventRunner);
-
-    schedulerHandler = new SchedulerHandler(
-        configRepository,
-        secretsRepositoryReader,
-        secretsRepositoryWriter,
-        synchronousSchedulerClient,
-        jobPersistence,
-        workerEnvironment,
-        logConfigs,
-        eventRunner,
-        connectionsHandler);
-
-    sourceHandler = new SourceHandler(
-        configRepository,
-        secretsRepositoryReader,
-        secretsRepositoryWriter,
-        schemaValidator,
-        connectionsHandler);
-    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, synchronousSchedulerClient, sourceHandler);
-    destinationHandler = new DestinationHandler(
-        configRepository,
-        secretsRepositoryReader,
-        secretsRepositoryWriter,
-        schemaValidator,
-        connectionsHandler);
-    destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, synchronousSchedulerClient, destinationHandler);
-    jobHistoryHandler = new JobHistoryHandler(jobPersistence, workerEnvironment, logConfigs, connectionsHandler, sourceHandler,
-        sourceDefinitionsHandler, destinationHandler, destinationDefinitionsHandler, airbyteVersion);
-  }
+  public ConfigurationApi() {}
 
   // WORKSPACE
 
@@ -405,9 +330,14 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   // SOURCE SPECIFICATION
 
+  /**
+   * This implementation has been moved to {@link SourceDefinitionSpecificationApiController}. Since
+   * the path of {@link SourceDefinitionSpecificationApiController} is more granular, it will override
+   * this implementation
+   */
   @Override
   public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
-    return execute(() -> schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdWithWorkspaceId));
+    throw new NotImplementedException();
   }
 
   // OAUTH
@@ -1066,7 +996,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
    */
   @Override
   public AttemptNormalizationStatusReadList getAttemptNormalizationStatusesForJob(final JobIdRequestBody jobIdRequestBody) {
-    return execute(() -> jobHistoryHandler.getAttemptNormalizationStatuses(jobIdRequestBody));
+    throw new NotImplementedException();
   }
 
   /**

@@ -269,6 +269,14 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/convertkit
   sourceType: api
   releaseStage: alpha
+- name: Convex
+  sourceDefinitionId: c332628c-f55c-4017-8222-378cfafda9b2
+  dockerRepository: airbyte/source-convex
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/convex
+  icon: convex.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Courier
   sourceDefinitionId: 0541b2cd-2367-4986-b5f1-b79ff55439e4
   dockerRepository: airbyte/source-courier
@@ -344,6 +352,13 @@
   dockerImageTag: 2.1.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/e2e-test
   icon: airbyte.svg
+  sourceType: api
+  releaseStage: alpha
+- name: EmailOctopus
+  sourceDefinitionId: 46b25e70-c980-4590-a811-8deaf50ee09f
+  dockerRepository: airbyte/source-emailoctopus
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/emailoctopus
   sourceType: api
   releaseStage: alpha
 - name: Exchange Rates Api
@@ -465,6 +480,13 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/glassfrog
   icon: glassfrog.svg
+  sourceType: api
+  releaseStage: alpha
+- name: GNews
+  sourceDefinitionId: ce38aec4-5a77-439a-be29-9ca44fd4e811
+  dockerRepository: airbyte/source-gnews
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gnews
   sourceType: api
   releaseStage: alpha
 - name: GoCardless
@@ -622,6 +644,13 @@
   icon: intercom.svg
   sourceType: api
   releaseStage: generally_available
+- name: IP2Whois
+  sourceDefinitionId: f23b7b7c-d705-49a3-9042-09add3b104a5
+  dockerRepository: airbyte/source-ip2whois
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/ip2whois
+  sourceType: api
+  releaseStage: alpha
 - name: Iterable
   sourceDefinitionId: 2e875208-0c0b-4ee4-9e92-1cb3156ea799
   dockerRepository: airbyte/source-iterable
@@ -644,6 +673,13 @@
   dockerImageTag: 0.2.23
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   icon: jira.svg
+  sourceType: api
+  releaseStage: alpha
+- name: K6 Cloud
+  sourceDefinitionId: e300ece7-b073-43a3-852e-8aff36a57f13
+  dockerRepository: airbyte/source-k6-cloud
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/k6-cloud
   sourceType: api
   releaseStage: alpha
 - name: Kafka
@@ -953,6 +989,13 @@
   icon: pagerduty.svg
   sourceType: api
   releaseStage: alpha
+- name: PartnerStack
+  sourceDefinitionId: d30fb809-6456-484d-8e2c-ee12e0f6888d
+  dockerRepository: airbyte/source-partnerstack
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/partnerstack
+  sourceType: api
+  releaseStage: alpha
 - name: Paypal Transaction
   sourceDefinitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
   dockerRepository: airbyte/source-paypal-transaction
@@ -1171,6 +1214,13 @@
   icon: sendgrid.svg
   sourceType: api
   releaseStage: beta
+- name: Senseforce
+  sourceDefinitionId: 39de93cb-1511-473e-a673-5cbedb9436af
+  dockerRepository: airbyte/source-senseforce
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/senseforce
+  sourceType: api
+  releaseStage: alpha
 - name: Shopify
   sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   dockerRepository: airbyte/source-shopify
@@ -1195,6 +1245,13 @@
   icon: slack.svg
   sourceType: api
   releaseStage: generally_available
+- name: Smaily
+  sourceDefinitionId: 781f8b1d-4e20-4842-a2c3-cd9b119d65fa
+  dockerRepository: airbyte/source-smaily
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/smaily
+  sourceType: api
+  releaseStage: alpha
 - name: Smartsheets
   sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
   dockerRepository: airbyte/source-smartsheets
@@ -1312,6 +1369,13 @@
   icon: timely.svg
   sourceType: api
   releaseStage: alpha
+- name: The Guardian API
+  sourceDefinitionId: d42bd69f-6bf0-4d0b-9209-16231af07a92
+  dockerRepository: airbyte/source-the-guardian-api
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/the-guardian-api
+  sourceType: api
+  releaseStage: alpha
 - name: Trello
   sourceDefinitionId: 8da67652-004c-11ec-9a03-0242ac130003
   dockerRepository: airbyte/source-trello
@@ -1360,6 +1424,14 @@
   icon: youtube.svg
   sourceType: api
   releaseStage: beta
+- sourceDefinitionId: 78752073-6d96-447d-8a93-2b6953f3c787
+  name: YouTube Analytics Business
+  dockerRepository: airbyte/source-youtube-analytics-business
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/youtube-analytics-business
+  icon: youtube.svg
+  sourceType: api
+  releaseStage: alpha
 - name: VictorOps
   sourceDefinitionId: 7e20ce3e-d820-4327-ad7a-88f3927fd97a
   dockerRepository: farosai/airbyte-victorops-source
@@ -1559,6 +1631,13 @@
   dockerRepository: airbyte/source-yandex-metrica
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/yandex-metrica
+  sourceType: api
+  releaseStage: alpha
+- name: Younium
+  sourceDefinitionId: 9c74c2d7-531a-4ebf-b6d8-6181f805ecdc
+  dockerRepository: airbyte/source-younium
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/younium
   sourceType: api
   releaseStage: alpha
 - name: Zoom
