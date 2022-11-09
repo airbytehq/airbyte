@@ -3,26 +3,36 @@
 #
 
 import json
+import logging
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
+from dataclasses_jsonschema import JsonSchemaMixin
+
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, \
+    SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.exceptions import ReadException
-from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
-from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
-from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
+from airbyte_cdk.sources.declarative.extractors.http_selector import \
+    HttpSelector
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import \
+    ResponseAction
+from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import \
+    NoPagination
+from airbyte_cdk.sources.declarative.requesters.paginators.paginator import \
+    Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
-from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
-from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.stream_slicers.single_slice import \
+    SingleSlice
+from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import \
+    StreamSlicer
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice, \
+    StreamState
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
@@ -127,12 +137,12 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         return self.requester.interpret_response_status(response).error_message
 
     def _get_request_options(
-        self,
-        stream_slice: Optional[StreamSlice],
-        next_page_token: Optional[Mapping[str, Any]],
-        requester_method,
-        paginator_method,
-        stream_slicer_method,
+            self,
+            stream_slice: Optional[StreamSlice],
+            next_page_token: Optional[Mapping[str, Any]],
+            requester_method,
+            paginator_method,
+            stream_slicer_method,
     ):
         """
         Get the request_option from the requester and from the paginator
@@ -153,16 +163,16 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         stream_slicer_mapping_keys = set(stream_slicer_mapping.keys())
 
         intersection = (
-            (requester_mapping_keys & paginator_mapping_keys)
-            | (requester_mapping_keys & stream_slicer_mapping_keys)
-            | (paginator_mapping_keys & stream_slicer_mapping_keys)
+                (requester_mapping_keys & paginator_mapping_keys)
+                | (requester_mapping_keys & stream_slicer_mapping_keys)
+                | (paginator_mapping_keys & stream_slicer_mapping_keys)
         )
         if intersection:
             raise ValueError(f"Duplicate keys found: {intersection}")
         return {**requester_mapping, **paginator_mapping, **stream_slicer_mapping}
 
     def request_headers(
-        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
+            self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
     ) -> Mapping[str, Any]:
         """
         Specifies request headers.
@@ -178,10 +188,10 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         return {str(k): str(v) for k, v in headers.items()}
 
     def request_params(
-        self,
-        stream_state: StreamSlice,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
+            self,
+            stream_state: StreamSlice,
+            stream_slice: Optional[StreamSlice] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         """
         Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
@@ -197,10 +207,10 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         )
 
     def request_body_data(
-        self,
-        stream_state: StreamState,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
+            self,
+            stream_state: StreamState,
+            stream_slice: Optional[StreamSlice] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Union[Mapping, str]]:
         """
         Specifies how to populate the body of the request with a non-JSON payload.
@@ -232,10 +242,10 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         )
 
     def request_body_json(
-        self,
-        stream_state: StreamState,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
+            self,
+            stream_state: StreamState,
+            stream_slice: Optional[StreamSlice] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
         """
         Specifies how to populate the body of the request with a JSON payload.
@@ -252,10 +262,10 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         )
 
     def request_kwargs(
-        self,
-        stream_state: StreamState,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
+            self,
+            stream_state: StreamState,
+            stream_slice: Optional[StreamSlice] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         """
         Specifies how to configure a mapping of keyword arguments to be used when creating the HTTP request.
@@ -266,11 +276,11 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         return self.requester.request_kwargs(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
 
     def path(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
+            self,
+            *,
+            stream_state: Optional[StreamState] = None,
+            stream_slice: Optional[StreamSlice] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         """
         Return the path the submit the next request to.
@@ -302,12 +312,12 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         return self.requester.use_cache
 
     def parse_response(
-        self,
-        response: requests.Response,
-        *,
-        stream_state: StreamState,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
+            self,
+            response: requests.Response,
+            *,
+            stream_state: StreamState,
+            stream_slice: Optional[StreamSlice] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Record]:
         # if fail -> raise exception
         # if ignore -> ignore response and return no records
@@ -349,11 +359,11 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         return self.paginator.next_page_token(response, self._last_records)
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        stream_state: Optional[StreamState] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: Optional[List[str]] = None,
+            stream_slice: Optional[StreamSlice] = None,
+            stream_state: Optional[StreamState] = None,
     ) -> Iterable[StreamData]:
         # Warning: use self.state instead of the stream_state passed as argument!
         stream_slice = stream_slice or {}  # None-check
@@ -367,14 +377,15 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         )
         for record in records_generator:
             self.stream_slicer.update_cursor(stream_slice, last_record=record)
-            yield record
+            if isinstance(record, dict) or self.logger.isEnabledFor(logging.DEBUG):
+                yield record
         else:
             last_record = self._last_records[-1] if self._last_records else None
             self.stream_slicer.update_cursor(stream_slice, last_record=last_record)
             yield from []
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Optional[StreamState] = None
+            self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Optional[StreamState] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Specifies the slices for this stream. See the stream slicing section of the docs for more information.
