@@ -85,7 +85,7 @@ public class ProtocolVersionChecker {
     final Map<ActorType, Set<UUID>> conflicts = getConflictingActorDefinitions(targetRange);
 
     if (conflicts.isEmpty()) {
-      log.info("No conflicts");
+      log.info("No protocol version conflict detected.");
       return Optional.of(targetRange);
     }
 
@@ -199,7 +199,7 @@ public class ProtocolVersionChecker {
             return String.format("Source: %s: %s: protocol version: %s",
                 sourceDef.getSourceDefinitionId(), sourceDef.getName(), sourceDef.getProtocolVersion());
           } catch (Exception e) {
-            log.info("Failed to getStandardSourceDefinition for " + defId, e);
+            log.info("Failed to getStandardSourceDefinition for {}", defId, e);
             return String.format("Source: %s: Failed to fetch details...", defId);
           }
         }),
@@ -209,7 +209,7 @@ public class ProtocolVersionChecker {
             return String.format("Destination: %s: %s: protocol version: %s",
                 destDef.getDestinationDefinitionId(), destDef.getName(), destDef.getProtocolVersion());
           } catch (Exception e) {
-            log.info("Failed to getStandardDestinationDefinition for " + defId, e);
+            log.info("Failed to getStandardDestinationDefinition for {}", defId, e);
             return String.format("Source: %s: Failed to fetch details...", defId);
           }
         }));
