@@ -161,7 +161,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     return "CREATE SCHEMA " + schemaName;
   }
 
-  //TODO : Delete this Override when MSSQL supports individual table snapshot
+  // TODO : Delete this Override when MSSQL supports individual table snapshot
   @Override
   public void newTableSnapshotTest() throws Exception {
     // Do nothing
