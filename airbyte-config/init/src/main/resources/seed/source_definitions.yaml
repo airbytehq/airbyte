@@ -1633,6 +1633,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/yandex-metrica
   sourceType: api
   releaseStage: alpha
+- name: Younium
+  sourceDefinitionId: 9c74c2d7-531a-4ebf-b6d8-6181f805ecdc
+  dockerRepository: airbyte/source-younium
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/younium
+  sourceType: api
+  releaseStage: alpha
 - name: Zoom
   sourceDefinitionId: cbfd9856-1322-44fb-bcf1-0b39b7a8e92e
   dockerRepository: airbyte/source-zoom
