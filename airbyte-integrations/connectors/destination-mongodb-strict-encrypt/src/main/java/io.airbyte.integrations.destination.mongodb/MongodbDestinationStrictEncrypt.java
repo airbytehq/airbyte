@@ -30,7 +30,8 @@ public class MongodbDestinationStrictEncrypt extends SpecModifyingDestination im
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     final JsonNode instanceConfig = config.get(MongoUtils.INSTANCE_TYPE);
     final MongoInstanceType instance = MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
-    // If the MongoDb destination connector is not set up to use a TLS connection, then check should fail
+    // If the MongoDb destination connector is not set up to use a TLS connection, then check should
+    // fail
     if (instance.equals(MongoInstanceType.STANDALONE) && !MongoUtils.tlsEnabledForStandaloneInstance(config, instanceConfig)) {
       throw new ConfigErrorException("TLS connection must be used to read from MongoDB.");
     }
