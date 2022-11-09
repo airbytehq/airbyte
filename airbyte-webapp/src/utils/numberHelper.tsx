@@ -1,6 +1,10 @@
 import { FormattedMessage } from "react-intl";
 
 export const formatBytes = (bytes?: number) => {
+  if (bytes && bytes < 0) {
+    bytes = 0;
+  }
+
   if (!bytes) {
     return <FormattedMessage id="sources.countBytes" values={{ count: bytes || 0 }} />;
   }
