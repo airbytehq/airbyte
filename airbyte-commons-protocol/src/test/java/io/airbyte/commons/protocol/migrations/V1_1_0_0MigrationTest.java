@@ -124,48 +124,48 @@ public class V1_1_0_0MigrationTest {
     io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
 
     JsonNode expectedSchema = Jsons.deserialize("""
-            {
-              "type": "object",
-              "properties": {
-                "example_string": {
-                  "$ref": "WellKnownTypes.json#definitions/String"
-                },
-                "example_number": {
-                  "$ref": "WellKnownTypes.json#definitions/Number"
-                },
-                "example_integer": {
-                  "$ref": "WellKnownTypes.json#definitions/Integer"
-                },
-                "example_airbyte_integer": {
-                  "$ref": "WellKnownTypes.json#definitions/Integer"
-                },
-                "example_boolean": {
-                  "$ref": "WellKnownTypes.json#definitions/Boolean"
-                },
-                "example_timestamptz": {
-                  "$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"
-                },
-                "example_timestamptz_implicit": {
-                  "$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"
-                },
-                "example_timestamp_without_tz": {
-                  "$ref": "WellKnownTypes.json#definitions/TimestampWithoutTimezone"
-                },
-                "example_timez": {
-                  "$ref": "WellKnownTypes.json#definitions/TimeWithTimezone"
-                },
-                "example_timetz_implicit": {
-                  "$ref": "WellKnownTypes.json#definitions/TimeWithTimezone"
-                },
-                "example_time_without_tz": {
-                  "$ref": "WellKnownTypes.json#definitions/TimeWithoutTimezone"
-                },
-                "example_date": {
-                  "$ref": "WellKnownTypes.json#definitions/Date"
-                }
-              }
+        {
+          "type": "object",
+          "properties": {
+            "example_string": {
+              "$ref": "WellKnownTypes.json#definitions/String"
+            },
+            "example_number": {
+              "$ref": "WellKnownTypes.json#definitions/Number"
+            },
+            "example_integer": {
+              "$ref": "WellKnownTypes.json#definitions/Integer"
+            },
+            "example_airbyte_integer": {
+              "$ref": "WellKnownTypes.json#definitions/Integer"
+            },
+            "example_boolean": {
+              "$ref": "WellKnownTypes.json#definitions/Boolean"
+            },
+            "example_timestamptz": {
+              "$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"
+            },
+            "example_timestamptz_implicit": {
+              "$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"
+            },
+            "example_timestamp_without_tz": {
+              "$ref": "WellKnownTypes.json#definitions/TimestampWithoutTimezone"
+            },
+            "example_timez": {
+              "$ref": "WellKnownTypes.json#definitions/TimeWithTimezone"
+            },
+            "example_timetz_implicit": {
+              "$ref": "WellKnownTypes.json#definitions/TimeWithTimezone"
+            },
+            "example_time_without_tz": {
+              "$ref": "WellKnownTypes.json#definitions/TimeWithoutTimezone"
+            },
+            "example_date": {
+              "$ref": "WellKnownTypes.json#definitions/Date"
             }
-            """
+          }
+        }
+        """
     );
     assertEquals(
         expectedSchema,
@@ -230,56 +230,56 @@ public class V1_1_0_0MigrationTest {
     io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
 
     JsonNode expectedSchema = Jsons.deserialize("""
-            {
-              "type": "object",
+        {
+          "type": "object",
+          "properties": {
+            "basic_array": {
+              "items": {"$ref": "WellKnownTypes.json#definitions/String"}
+            },
+            "tuple_array": {
+              "items": [
+                {"$ref": "WellKnownTypes.json#definitions/String"},
+                {"$ref": "WellKnownTypes.json#definitions/Integer"}
+              ],
+              "additionalItems": {"$ref": "WellKnownTypes.json#definitions/String"},
+              "contains": {"$ref": "WellKnownTypes.json#definitions/Integer"}
+            },
+            "nested_object": {
               "properties": {
-                "basic_array": {
-                  "items": {"$ref": "WellKnownTypes.json#definitions/String"}
-                },
-                "tuple_array": {
-                  "items": [
+                "id": {"$ref": "WellKnownTypes.json#definitions/Integer"},
+                "nested_oneof": {
+                  "oneOf": [
                     {"$ref": "WellKnownTypes.json#definitions/String"},
                     {"$ref": "WellKnownTypes.json#definitions/Integer"}
-                  ],
-                  "additionalItems": {"$ref": "WellKnownTypes.json#definitions/String"},
-                  "contains": {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                  ]
                 },
-                "nested_object": {
-                  "properties": {
-                    "id": {"$ref": "WellKnownTypes.json#definitions/Integer"},
-                    "nested_oneof": {
-                      "oneOf": [
-                        {"$ref": "WellKnownTypes.json#definitions/String"},
-                        {"$ref": "WellKnownTypes.json#definitions/Integer"}
-                      ]
-                    },
-                    "nested_anyof": {
-                      "anyOf": [
-                        {"$ref": "WellKnownTypes.json#definitions/String"},
-                        {"$ref": "WellKnownTypes.json#definitions/Integer"}
-                      ]
-                    },
-                    "nested_allof": {
-                      "allOf": [
-                        {"$ref": "WellKnownTypes.json#definitions/String"},
-                        {"$ref": "WellKnownTypes.json#definitions/Integer"}
-                      ]
-                    },
-                    "nested_not": {
-                      "not": [
-                        {"$ref": "WellKnownTypes.json#definitions/String"},
-                        {"$ref": "WellKnownTypes.json#definitions/Integer"}
-                      ]
-                    }
-                  },
-                  "patternProperties": {
-                    "integer_.*": {"$ref": "WellKnownTypes.json#definitions/Integer"}
-                  },
-                  "additionalProperties": {"$ref": "WellKnownTypes.json#definitions/String"}
+                "nested_anyof": {
+                  "anyOf": [
+                    {"$ref": "WellKnownTypes.json#definitions/String"},
+                    {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                  ]
+                },
+                "nested_allof": {
+                  "allOf": [
+                    {"$ref": "WellKnownTypes.json#definitions/String"},
+                    {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                  ]
+                },
+                "nested_not": {
+                  "not": [
+                    {"$ref": "WellKnownTypes.json#definitions/String"},
+                    {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                  ]
                 }
-              }
+              },
+              "patternProperties": {
+                "integer_.*": {"$ref": "WellKnownTypes.json#definitions/Integer"}
+              },
+              "additionalProperties": {"$ref": "WellKnownTypes.json#definitions/String"}
             }
-            """
+          }
+        }
+        """
     );
     assertEquals(
         expectedSchema,
