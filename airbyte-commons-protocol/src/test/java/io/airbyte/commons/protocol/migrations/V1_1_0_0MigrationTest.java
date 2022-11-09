@@ -216,6 +216,12 @@ public class V1_1_0_0MigrationTest {
                    {"type": "string"},
                    {"type": "integer"}
                  ]
+               },
+               "nested_not": {
+                 "not": [
+                   {"type": "string"},
+                   {"type": "integer"}
+                 ]
                }
               },
               "additionalProperties": {
@@ -266,6 +272,12 @@ public class V1_1_0_0MigrationTest {
                    },
                    "nested_allof": {
                      "allOf": [
+                       {"$ref": "WellKnownTypes.json#definitions/String"},
+                       {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                     ]
+                   },
+                   "nested_not": {
+                     "not": [
                        {"$ref": "WellKnownTypes.json#definitions/String"},
                        {"$ref": "WellKnownTypes.json#definitions/Integer"}
                      ]

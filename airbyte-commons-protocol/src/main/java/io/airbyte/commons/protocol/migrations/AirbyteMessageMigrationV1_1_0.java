@@ -180,10 +180,12 @@ public class AirbyteMessageMigrationV1_1_0 implements AirbyteMessageMigration<Ai
       // Otherwise, we need to find all of the subschemas and mutate them.
       List<JsonNode> subschemas = new ArrayList<>();
       findSubschemas(subschemas, schema, "items");
+      findSubschemas(subschemas, schema, "additionalProperties");
+      // destinations have limited support for combinig restrictions, but we should handle the schemas correctly anyway
       findSubschemas(subschemas, schema, "allOf");
       findSubschemas(subschemas, schema, "oneOf");
       findSubschemas(subschemas, schema, "anyOf");
-      findSubschemas(subschemas, schema, "additionalProperties");
+      findSubschemas(subschemas, schema, "not");
 
       if (schema.hasNonNull("properties")) {
         ObjectNode propertiesNode = (ObjectNode)schema.get("properties");
@@ -214,7 +216,6 @@ public class AirbyteMessageMigrationV1_1_0 implements AirbyteMessageMigration<Ai
         // TODO is this case possible?
 
         // additionalProperties: true/false
-        // is it possible to have items: ["string"] ?
       }
     }
   }
