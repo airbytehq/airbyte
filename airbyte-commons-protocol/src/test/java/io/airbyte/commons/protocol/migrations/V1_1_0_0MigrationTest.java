@@ -91,6 +91,10 @@ public class V1_1_0_0MigrationTest {
               "format": "date-time",
               "airbyte_type": "timestamp_with_timezone"
             },
+            "example_timestamptz_implicit": {
+              "type": "string",
+              "format": "date-time"
+            },
             "example_timestamp_without_tz": {
               "type": "string",
               "format": "date-time",
@@ -100,6 +104,10 @@ public class V1_1_0_0MigrationTest {
               "type": "string",
               "format": "time",
               "airbyte_type": "time_with_timezone"
+            },
+            "example_timetz_implicit": {
+              "type": "string",
+              "format": "time"
             },
             "example_time_without_tz": {
               "type": "string",
@@ -139,10 +147,16 @@ public class V1_1_0_0MigrationTest {
                 "example_timestamptz": {
                   "$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"
                 },
+                "example_timestamptz_implicit": {
+                  "$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"
+                },
                 "example_timestamp_without_tz": {
                   "$ref": "WellKnownTypes.json#definitions/TimestampWithoutTimezone"
                 },
                 "example_timez": {
+                  "$ref": "WellKnownTypes.json#definitions/TimeWithTimezone"
+                },
+                "example_timetz_implicit": {
                   "$ref": "WellKnownTypes.json#definitions/TimeWithTimezone"
                 },
                 "example_time_without_tz": {
