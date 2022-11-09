@@ -47,6 +47,13 @@ spec:
         imagePullPolicy: "{{ .Values.image.pullPolicy }}"
         env:
         {{- if eq .Values.global.deploymentMode "oss"  }}
+        # Unified Service Tags for DataDog APM agent
+        - name: DD_ENV
+          value: "{{ $.Values.global.env }}"
+        - name: DD_SERVICE
+          value: "airbyte-{{ .Chart.Name }}"
+        - name: DD_VERSION
+          value: "{{ .Values.image.tag | default .Values.global.image.tag }}"
         - name: AIRBYTE_VERSION
           valueFrom:
             configMapKeyRef:
