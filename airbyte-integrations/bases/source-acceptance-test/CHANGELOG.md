@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.17
+Make `incremental.future_state` mandatory in `high` `test_strictness_level`. [#19085](https://github.com/airbytehq/airbyte/pull/19085/).
+
+## 0.2.16
+Run `basic_read` on the discovered catalog in `high` `test_strictness_level`. [#18937](https://github.com/airbytehq/airbyte/pull/18937).
+
+## 0.2.15
+Make `expect_records` mandatory in `high` `test_strictness_level`. [#18497](https://github.com/airbytehq/airbyte/pull/18497/).
+
 ## 0.2.14
 Fail basic read in `high` `test_strictness_level` if no `bypass_reason` is set on empty_streams. [#18425](https://github.com/airbytehq/airbyte/pull/18425/).
 

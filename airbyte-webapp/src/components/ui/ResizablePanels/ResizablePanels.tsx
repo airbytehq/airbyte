@@ -1,24 +1,24 @@
-import { faGripLinesVertical } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 
-import { Text } from "../Text";
+import { Heading } from "components/ui/Heading";
+
 import styles from "./ResizablePanels.module.scss";
 
 interface ResizablePanelsProps {
   className?: string;
-  hideRightPanel?: boolean;
-  leftPanel: PanelProps;
-  rightPanel: PanelProps;
+  orientation?: "vertical" | "horizontal";
+  firstPanel: PanelProps;
+  secondPanel: PanelProps;
+  hideSecondPanel?: boolean;
 }
 
 interface PanelProps {
   children: React.ReactNode;
   minWidth: number;
   className?: string;
-  startingFlex?: number;
+  flex?: number;
   overlay?: Overlay;
 }
 
@@ -49,14 +49,14 @@ const PanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = (
     <div className={classNames(className, styles.panelContainer)}>
       {overlay && width <= overlay.displayThreshold && (
         <div className={styles.lightOverlay}>
-          <Text
+          <Heading
             as="h2"
             className={classNames(styles.rotatedHeader, {
               [styles.counterClockwise]: overlay?.rotation === "counter-clockwise",
             })}
           >
             {overlay.header}
-          </Text>
+          </Heading>
         </div>
       )}
       {children}
@@ -66,39 +66,50 @@ const PanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = (
 
 export const ResizablePanels: React.FC<ResizablePanelsProps> = ({
   className,
-  hideRightPanel = false,
-  leftPanel,
-  rightPanel,
+  orientation = "vertical",
+  firstPanel,
+  secondPanel,
+  hideSecondPanel = false,
 }) => {
   return (
-    <ReflexContainer className={className} orientation="vertical">
+    <ReflexContainer className={className} orientation={orientation}>
       <ReflexElement
         className={styles.panelStyle}
         propagateDimensions
-        minSize={leftPanel.minWidth}
-        flex={leftPanel.startingFlex}
+        minSize={firstPanel.minWidth}
+        flex={firstPanel.flex}
       >
-        <PanelContainer className={leftPanel.className} overlay={leftPanel.overlay}>
-          {leftPanel.children}
+        <PanelContainer className={firstPanel.className} overlay={firstPanel.overlay}>
+          {firstPanel.children}
         </PanelContainer>
       </ReflexElement>
       {/* NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately. */}
-      {!hideRightPanel && (
+      {!hideSecondPanel && (
         <ReflexSplitter className={styles.splitter}>
-          <div className={styles.panelGrabber}>
-            <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
+          <div
+            className={classNames({
+              [styles.panelGrabberVertical]: orientation === "vertical",
+              [styles.panelGrabberHorizontal]: orientation === "horizontal",
+            })}
+          >
+            <div
+              className={classNames(styles.handleIcon, {
+                [styles.handleIconVertical]: orientation === "vertical",
+                [styles.handleIconHorizontal]: orientation === "horizontal",
+              })}
+            />
           </div>
         </ReflexSplitter>
       )}
-      {!hideRightPanel && (
+      {!hideSecondPanel && (
         <ReflexElement
           className={styles.panelStyle}
           propagateDimensions
-          minSize={rightPanel.minWidth}
-          flex={rightPanel.startingFlex}
+          minSize={secondPanel.minWidth}
+          flex={secondPanel.flex}
         >
-          <PanelContainer className={rightPanel.className} overlay={rightPanel.overlay}>
-            {rightPanel.children}
+          <PanelContainer className={secondPanel.className} overlay={secondPanel.overlay}>
+            {secondPanel.children}
           </PanelContainer>
         </ReflexElement>
       )}

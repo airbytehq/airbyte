@@ -38,16 +38,6 @@ To remove a user from your workspace:
 
 4. The **Remove user** dialog displays. Click **Remove**.
 
-### Switch between multiple workspaces
-
-To switch between workspaces:
-
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click the current workspace name under the Airbyte logo in the navigation bar.
-
-2. Click **View all workspaces**.
-
-3. Click the name of the workspace you want to switch to.
-
 ### Rename a workspace
 
 To rename a workspace:
@@ -83,6 +73,39 @@ You can use one or multiple workspaces with Airbyte Cloud.
 |----------------------|-------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | Single               | You can use the same payment method for all purchases.                        | Credits pay for the use of resources in a workspace when you run a sync. Resource usage cannot be divided and paid for separately (for example, you cannot bill different departments in your organization for the usage of some credits in one workspace).                                     |
 | Multiple             | Workspaces are independent of each other, so you can use a different payment method card for each workspace (for example,  different credit cards per department in your organization). | You can use the same payment method for different workspaces, but each workspace is billed separately. Managing billing for each workspace can become complicated if you have many workspaces. |
+
+### Switch between multiple workspaces
+
+To switch between workspaces:
+
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click the current workspace name under the Airbyte logo in the navigation bar.
+
+2. Click **View all workspaces**.
+
+3. Click the name of the workspace you want to switch to.
+
+### Choose your default data residency
+Default data residency allows you to choose where your data is processed. When you set the default data residency, it is applied to all new connections, but it does not affect existing connections. 
+
+Your data is processed on a data plane in the chosen data residency, but configuration data, like data associated with sync mode, cursor, and primary key, is stored on our control plane in the US. Because of this, data that must stay in the chosen data residency should not be used as a stream’s cursor or primary key. 
+
+For individual connections, you can choose a data residency that is different from the default. You can do this in the [connection settings](#choose-the-data-residency-for-a-connection) or when you create a [new connection](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-connection).
+
+To choose your default data residency:
+
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings** in the navigation bar.
+
+2. In the Workspace settings sidebar, click **Data Residency**.
+
+3. Click the dropdown and choose the location for your default data residency.
+
+4. Click **Save changes**. 
+
+:::info 
+
+Depending on your network configuration, you may need to add [IP addresses](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#allowlist-ip-address) to your allowlist.   
+
+:::
 
 ## Manage Airbyte Cloud notifications
 
@@ -258,6 +281,25 @@ To display **Connection State**:
 5. Click the **Settings** tab on the Connection page.
 
     The **Connection State** displays. 
+
+## Choose the data residency for a connection
+You can choose the data residency for your connection in the connection settings. You can also choose data residency when creating a [new connection](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-connection), or you can set the [default data residency](#choose-your-default-data-residency) for your workspace.
+
+To choose the data residency for your connection: 
+
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** in the navigation bar and then click the connection that you want to change. 
+
+    The Connection page displays. 
+
+2. Click the **Settings** tab. 
+
+3. Click the **Data residency** dropdown and choose the location for your default data residency.
+
+:::note 
+
+Changes to data residency will not affect any currently running sync. 
+
+:::
 
 ## Buy credits
 
