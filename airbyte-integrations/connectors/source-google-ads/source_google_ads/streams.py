@@ -87,7 +87,6 @@ def chunk_date_range(
 
 class GoogleAdsStream(Stream, ABC):
     CATCH_API_ERRORS = True
-    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, api: GoogleAds, customers: List[Customer]):
         self.google_ads_client = api
@@ -258,6 +257,7 @@ class Campaigns(IncrementalGoogleAdsStream):
     Campaigns stream: https://developers.google.com/google-ads/api/fields/v11/campaign
     """
 
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     primary_key = ["campaign.id", "segments.date"]
 
 
