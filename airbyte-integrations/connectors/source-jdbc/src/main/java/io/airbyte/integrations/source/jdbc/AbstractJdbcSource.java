@@ -141,9 +141,9 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
 
   @Override
   protected AutoCloseableIterator<JsonNode> queryTableFullRefresh(final JdbcDatabase database,
-      final List<String> columnNames,
-      final String schemaName,
-      final String tableName) {
+                                                                  final List<String> columnNames,
+                                                                  final String schemaName,
+                                                                  final String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return queryTable(database, String.format("SELECT %s FROM %s",
         enquoteIdentifierList(columnNames, getQuoteString()),
