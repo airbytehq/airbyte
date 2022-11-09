@@ -161,7 +161,7 @@ public class BootloaderApp {
 
     final ProtocolVersionChecker protocolVersionChecker =
         new ProtocolVersionChecker(jobPersistence, configs, configRepository, localDefinitionsProvider);
-    final Optional<AirbyteProtocolVersionRange> newProtocolRange = protocolVersionChecker.validate(false);
+    final Optional<AirbyteProtocolVersionRange> newProtocolRange = protocolVersionChecker.validate(configs.getAutoUpgradeConnectors());
     if (newProtocolRange.isEmpty()) {
       throw new RuntimeException(
           "Aborting bootloader to avoid breaking existing connection after an upgrade. " +

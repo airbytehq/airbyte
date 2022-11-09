@@ -44,6 +44,7 @@ public class EnvConfigs implements Configs {
   public static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
   public static final String AIRBYTE_PROTOCOL_VERSION_MAX = "AIRBYTE_PROTOCOL_VERSION_MAX";
   public static final String AIRBYTE_PROTOCOL_VERSION_MIN = "AIRBYTE_PROTOCOL_VERSION_MIN";
+  public static final String AUTO_UPGRADE_CONNECTORS = "AUTO_UPGRADE_CONNECTORS";
   public static final String INTERNAL_API_HOST = "INTERNAL_API_HOST";
   public static final String AIRBYTE_API_AUTH_HEADER_NAME = "AIRBYTE_API_AUTH_HEADER_NAME";
   public static final String AIRBYTE_API_AUTH_HEADER_VALUE = "AIRBYTE_API_AUTH_HEADER_VALUE";
@@ -298,6 +299,11 @@ public class EnvConfigs implements Configs {
   @Override
   public Version getAirbyteProtocolVersionMin() {
     return new Version(getEnvOrDefault(AIRBYTE_PROTOCOL_VERSION_MIN, "0.0.0"));
+  }
+
+  @Override
+  public boolean getAutoUpgradeConnectors() {
+    return getEnvOrDefault(AUTO_UPGRADE_CONNECTORS, false);
   }
 
   @Override
