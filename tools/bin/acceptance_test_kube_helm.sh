@@ -7,6 +7,16 @@ set -e
 assert_root
 
 
+echo "Getting docker internal host ip"
+DOCKER_HOST_IP=$(ip -f inet add show docker0 | sed -En -e 's/.*inet ([0-9.]+).*/\1/p')
+
+echo "Patching coredns configmap NodeHosts with new entry for docker host"
+kubectl patch configmap/coredns \
+  -n kube-system \
+  --type merge \
+  -p ‘{“data”:{“Nodehosts”: "${DOCKER_HOST_IP} host.docker.internal" }}’
+
+
 # Since KIND does not have access to the local docker agent, manually load the minimum images required for the Kubernetes Acceptance Tests.
 # See https://kind.sigs.k8s.io/docs/user/quick-start/#loading-an-image-into-your-cluster.
 # if [ -n "$CI" ]; then
