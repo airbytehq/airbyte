@@ -224,8 +224,8 @@ class PostgresSourceSSLTest {
         .put(JdbcUtils.SSL_KEY, true)
         .put(JdbcUtils.SSL_MODE_KEY, Map.of(JdbcUtils.MODE_KEY, sslMode))
         .put("replication_method", Map.of("method", "CDC",
-                "replication_slot", "slot",
-                "publication", "ab_pub"))
+            "replication_slot", "slot",
+            "publication", "ab_pub"))
         .build());
   }
 

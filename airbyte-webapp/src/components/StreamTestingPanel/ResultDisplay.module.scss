@@ -1,34 +1,39 @@
 @use "scss/colors";
 @use "scss/variables";
 
-.displayBox {
-  padding: variables.$spacing-md;
-  border-radius: variables.$border-radius-xs;
-  overflow-x: auto;
-}
-
 .container {
   display: flex;
   flex-direction: column;
-  gap: variables.$spacing-md;
+  gap: variables.$spacing-lg;
+  padding-bottom: variables.$spacing-md;
+  height: 100%;
 }
 
-.slice {
-  background-color: colors.$blue-200;
+.sliceSelector {
+  flex: 0 0 auto;
 }
 
-.page {
-  background-color: colors.$blue-100;
+.pageDisplay {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-sm;
 }
 
-.pageData {
-  background-color: colors.$blue-50;
+.paginator {
+  display: flex;
+  gap: 2px;
+  align-self: center;
+  justify-self: flex-end;
+  margin-top: auto;
+  margin-bottom: 0;
+  flex: 0 0 auto;
 }
 
-.state {
-  background-color: colors.$orange-50;
-}
-
-.logs {
-  background-color: colors.$grey-200;
+.pageLabel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-size: 10px;
 }
