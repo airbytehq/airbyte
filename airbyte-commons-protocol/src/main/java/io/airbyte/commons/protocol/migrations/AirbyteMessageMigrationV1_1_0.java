@@ -94,50 +94,55 @@ public class AirbyteMessageMigrationV1_1_0 implements AirbyteMessageMigration<Ai
     ObjectNode schemaNode = (ObjectNode)schema;
 
     if (schemaNode.hasNonNull("airbyte_type")) {
-      // airbyte_type always wins
+      // If airbyte_type is defined, always respect it
       String referenceType = AIRBYTE_TYPE_TO_REFERENCE_TYPE.get(schemaNode.get("airbyte_type").asText());
       schemaNode.removeAll();
       schemaNode.put("$ref", referenceType);
     } else {
+      // Otherwise, fall back to type/format
       // TODO handle when schema["type"] is a list
       String type = schemaNode.get("type").asText();
-      switch (type) {
-        case "string" -> {
-          if (schemaNode.hasNonNull("format")) {
-            switch (schemaNode.get("format").asText()) {
-              case "date" -> {
-                schemaNode.removeAll();
-                schemaNode.put("$ref", "WellKnownTypes.json#definitions/Date");
-              }
-              // In these two cases, we default to the "with timezone" type, rather than "without timezone".
-              case "date-time" -> {
-                schemaNode.removeAll();
-                schemaNode.put("$ref", "WellKnownTypes.json#definitions/TimestampWithTimezone");
-              }
-              case "time" -> {
-                schemaNode.removeAll();
-                schemaNode.put("$ref", "WellKnownTypes.json#definitions/TimeWithTimezone");
-              }
+      String referenceType = getReferenceType(type, schemaNode);
+      schemaNode.removeAll();
+      schemaNode.put("$ref", referenceType);
+    }
+  }
+
+  /**
+   * Given a primitive (string/int/num/bool) type declaration _without_ an airbyte_type,
+   * get the appropriate $ref type.
+   */
+  private String getReferenceType(String type, ObjectNode schemaNode) {
+    return switch (type) {
+      case "string" -> {
+        if (schemaNode.hasNonNull("format")) {
+          switch (schemaNode.get("format").asText()) {
+            case "date" -> {
+              yield "WellKnownTypes.json#definitions/Date";
             }
-          } else {
-            schemaNode.removeAll();
-            schemaNode.put("$ref", "WellKnownTypes.json#definitions/String");
+            // In these two cases, we default to the "with timezone" type, rather than "without timezone".
+            // This matches existing behavior in normalization.
+            case "date-time" -> {
+              yield "WellKnownTypes.json#definitions/TimestampWithTimezone";
+            }
+            case "time" -> {
+              yield "WellKnownTypes.json#definitions/TimeWithTimezone";
+            }
+            // If we don't recognize the format, just use a plain string
+            default -> {
+              yield "WellKnownTypes.json#definitions/String";
+            }
           }
-        }
-        case "integer" -> {
-          schemaNode.removeAll();
-          schemaNode.put("$ref", "WellKnownTypes.json#definitions/Integer");
-        }
-        case "number" -> {
-          schemaNode.removeAll();
-          schemaNode.put("$ref", "WellKnownTypes.json#definitions/Number");
-        }
-        case "boolean" -> {
-          schemaNode.removeAll();
-          schemaNode.put("$ref", "WellKnownTypes.json#definitions/Boolean");
+        } else {
+          yield "WellKnownTypes.json#definitions/String";
         }
       }
-    }
+      case "integer" -> "WellKnownTypes.json#definitions/Integer";
+      case "number" -> "WellKnownTypes.json#definitions/Number";
+      case "boolean" -> "WellKnownTypes.json#definitions/Boolean";
+      // This is impossible, because we'll only call this method on string/integer/number/boolean
+      default -> "WellKnownTypes.json#definitions/String";
+    };
   }
 
   /**
