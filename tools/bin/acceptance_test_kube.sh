@@ -11,6 +11,7 @@ assert_root
 if [ -n "$CI" ]; then
   echo "Loading images into KIND..."
   kind load docker-image airbyte/server:dev --name chart-testing &
+  kind load docker-image airbyte/api-server:dev --name chart-testing &
   kind load docker-image airbyte/webapp:dev --name chart-testing &
   kind load docker-image airbyte/worker:dev --name chart-testing &
   kind load docker-image airbyte/db:dev --name chart-testing &
@@ -56,6 +57,7 @@ if [ -n "$CI" ]; then
 fi
 
 kubectl port-forward svc/airbyte-server-svc 8001:8001 &
+kubectl port-forward svc/api-server-svc 8080:8080 &
 
 echo "Running worker integration tests..."
 SUB_BUILD=PLATFORM  ./gradlew :airbyte-workers:integrationTest --scan
