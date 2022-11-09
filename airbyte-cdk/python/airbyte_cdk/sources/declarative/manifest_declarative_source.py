@@ -41,7 +41,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
     VALID_TOP_LEVEL_FIELDS = {"check", "definitions", "spec", "streams", "version"}
 
-    def __init__(self, source_config: ConnectionDefinition, debug: bool):
+    def __init__(self, source_config: ConnectionDefinition, debug: bool = False):
         """
         :param source_config(Mapping[str, Any]): The manifest of low-code components that describe the source connector
         :param debug(bool): True if debug mode is enabled
