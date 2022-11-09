@@ -42,10 +42,10 @@
           "type": "string"
         },
         "COORDINATES": {
-          "type": "array",
+          "type": ["array","null"],
           "items": 
             {
-              "type": "number"
+              "type":["string", "number","null"]
             }
         }
       }

@@ -104,13 +104,13 @@
       
     },
     "MEMBERTOURS": {
-      "type": "array",
+      "type": ["null","array"],
       "items": 
         {
           "type": "object",
           "properties": {
             "MemberTourID": {
-              "type": "integer"
+              "type": ["string","integer","null"]
             }
           }
         }

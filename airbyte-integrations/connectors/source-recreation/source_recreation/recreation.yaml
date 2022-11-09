@@ -15,6 +15,7 @@ definitions:
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
+      #type: "NoPagination"
       type: "DefaultPaginator"
       $options:
         url_base: "*ref(definitions.requester.url_base)"
