@@ -41,7 +41,7 @@ public class ConnectionManagerUtils {
           client.newWorkflowStub(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
       connectionManagerWorkflow.deleteConnection();
     } catch (final Exception e) {
-      log.warn("The workflow is not reachable when trying to cancel it");
+      log.warn("The workflow is not reachable when trying to cancel it", e);
     }
 
   }
