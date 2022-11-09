@@ -354,6 +354,13 @@
   icon: airbyte.svg
   sourceType: api
   releaseStage: alpha
+- name: EmailOctopus
+  sourceDefinitionId: 46b25e70-c980-4590-a811-8deaf50ee09f
+  dockerRepository: airbyte/source-emailoctopus
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/emailoctopus
+  sourceType: api
+  releaseStage: alpha
 - name: Exchange Rates Api
   sourceDefinitionId: e2b40e36-aa0e-4bed-b41b-bcea6fa348b1
   dockerRepository: airbyte/source-exchange-rates
@@ -959,6 +966,13 @@
   dockerImageTag: 0.1.23
   documentationUrl: https://docs.airbyte.com/integrations/sources/pagerduty
   icon: pagerduty.svg
+  sourceType: api
+  releaseStage: alpha
+- name: PartnerStack
+  sourceDefinitionId: d30fb809-6456-484d-8e2c-ee12e0f6888d
+  dockerRepository: airbyte/source-partnerstack
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/partnerstack
   sourceType: api
   releaseStage: alpha
 - name: Paypal Transaction
