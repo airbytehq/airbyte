@@ -3,7 +3,6 @@
 #
 
 import json
-import logging
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
@@ -370,8 +369,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         for message in records_generator:
             if message.type == MessageType.RECORD:
                 self.stream_slicer.update_cursor(stream_slice, last_record=message.record.data)
-            if message.type == MessageType.RECORD or self.logger.isEnabledFor(logging.DEBUG):
-                yield message
+            yield message
         else:
             last_record = self._last_records[-1] if self._last_records else None
             self.stream_slicer.update_cursor(stream_slice, last_record=last_record)
