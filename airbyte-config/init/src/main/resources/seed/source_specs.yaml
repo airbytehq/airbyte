@@ -15153,6 +15153,40 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-younium:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/younium"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Younium Spec"
+      type: "object"
+      required:
+      - "username"
+      - "password"
+      - "legal_entity"
+      properties:
+        username:
+          title: "Username"
+          type: "string"
+          description: "Username for Younium account"
+        password:
+          title: "Password"
+          type: "string"
+          description: "Account password for younium account API key"
+          airbyte_secret: true
+        legal_entity:
+          title: "Legal Entity"
+          type: "string"
+          description: "Legal Entity that data should be pulled from"
+        playground:
+          title: "Playground environment"
+          type: "boolean"
+          description: "Property defining if connector is used against playground\
+            \ or production environment"
+          default: false
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-zoom:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zoom"
