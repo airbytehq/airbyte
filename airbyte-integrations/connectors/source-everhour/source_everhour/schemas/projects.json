@@ -7,7 +7,7 @@
     },
     "users": {
       "type": ["null", "array"],
-      "items": {}
+      "items": { "type": "string" }
     },
     "id": {
       "type": ["null", "string"]

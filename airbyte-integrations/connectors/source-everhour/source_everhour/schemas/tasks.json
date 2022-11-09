@@ -22,7 +22,7 @@
       },
       "projects": {
         "type": "array",
-        "items": {}
+        "items": {"type": "string"}
       },
       "createdAt": {
         "type": "string"
@@ -32,7 +32,7 @@
       },
       "labels": {
         "type": "array",
-        "items": {}
+        "items": {"type": "string"}
       },
       "time": {
         "type": "object",
@@ -41,12 +41,8 @@
             "type": "integer"
           },
           "users": {
-            "type": "object",
-            "properties": {
-              "1016297": {
-                "type": "integer"
-              }
-            }
+            "type": "array",
+            "items": {"type": "string"}
           },
           "timerTime": {
             "type": "integer"
@@ -61,7 +57,7 @@
       },
       "assignees": {
         "type": "array",
-        "items": {}
+        "items": {"type": "string"}
       }
     }
   }
