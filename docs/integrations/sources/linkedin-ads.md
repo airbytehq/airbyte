@@ -11,7 +11,7 @@ This page guides you through the process of setting up the LinkedIn Ads source c
 
 ## Step 1: Set up LinkedIn Ads
 
-1. [Log in to LinkedIn](https://developer.linkedin.com/) with a developer account.
+1. [Login to LinkedIn](https://developer.linkedin.com/) with a developer account.
 2. Click the **Create App** icon on the center of the page or [use here](https://www.linkedin.com/developers/apps). Fill in the required fields:
    <ol type=" I">
     <li>For <b>App Name</b>, enter a name.</li>
@@ -102,7 +102,7 @@ To edit these roles, sign in to Campaign Manager and follow [these instructions]
 4. Add `Start Date` - the starting point for your data replication.
 5. Add your `Account IDs (Optional)` if required.
 6. Click **Authenticate your account**.
-7. Log in and Authorize the LinkedIn Ads account
+7. Login and Authorize the LinkedIn Ads account
 8. Click **Set up source**.
 
 **For Airbyte Open Source:**
