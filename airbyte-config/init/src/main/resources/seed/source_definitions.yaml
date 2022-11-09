@@ -482,6 +482,13 @@
   icon: glassfrog.svg
   sourceType: api
   releaseStage: alpha
+- name: GNews
+  sourceDefinitionId: ce38aec4-5a77-439a-be29-9ca44fd4e811
+  dockerRepository: airbyte/source-gnews
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gnews
+  sourceType: api
+  releaseStage: alpha
 - name: GoCardless
   sourceDefinitionId: ba15ac82-5c6a-4fb2-bf24-925c23a1180c
   dockerRepository: airbyte/source-gocardless
@@ -666,6 +673,13 @@
   dockerImageTag: 0.2.23
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   icon: jira.svg
+  sourceType: api
+  releaseStage: alpha
+- name: K6 Cloud
+  sourceDefinitionId: e300ece7-b073-43a3-852e-8aff36a57f13
+  dockerRepository: airbyte/source-k6-cloud
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/k6-cloud
   sourceType: api
   releaseStage: alpha
 - name: Kafka
@@ -1403,6 +1417,14 @@
   icon: youtube.svg
   sourceType: api
   releaseStage: beta
+- sourceDefinitionId: 78752073-6d96-447d-8a93-2b6953f3c787
+  name: YouTube Analytics Business
+  dockerRepository: airbyte/source-youtube-analytics-business
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/youtube-analytics-business
+  icon: youtube.svg
+  sourceType: api
+  releaseStage: alpha
 - name: VictorOps
   sourceDefinitionId: 7e20ce3e-d820-4327-ad7a-88f3927fd97a
   dockerRepository: farosai/airbyte-victorops-source
