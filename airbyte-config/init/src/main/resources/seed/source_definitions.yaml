@@ -1214,6 +1214,13 @@
   icon: sendgrid.svg
   sourceType: api
   releaseStage: beta
+- name: Senseforce
+  sourceDefinitionId: 39de93cb-1511-473e-a673-5cbedb9436af
+  dockerRepository: airbyte/source-senseforce
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/senseforce
+  sourceType: api
+  releaseStage: alpha
 - name: Shopify
   sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   dockerRepository: airbyte/source-shopify
