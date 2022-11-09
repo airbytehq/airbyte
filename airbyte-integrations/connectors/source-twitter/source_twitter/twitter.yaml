@@ -18,7 +18,19 @@ definitions:
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
-      type: NoPagination
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response.meta.next_token }}"
+        stop_condition: "{{ 'next_token' not in response['meta'] }}"
+        page_size: 100
+      page_size_option:
+        field_name: "max_results"
+        inject_into: "request_parameter"
+      page_token_option:
+        field_name: "next_token"
+        inject_into: "request_parameter"
+      url_base: "*ref(definitions.requester.url_base)"
     requester:
       $ref: "*ref(definitions.requester)"
   base_stream:
@@ -30,7 +42,6 @@ definitions:
     $options:
       name: "recent_search_tweets"
       path: "/search/recent"
-  
 streams:
   - "*ref(definitions.recent_search_tweets_stream)"
 

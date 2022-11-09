@@ -11,9 +11,9 @@ connectionSpecification:
     api_key:
       type: string
       description: API Key
-      title: API KEY BEARER TOKEN
+      title: API Key Token
       airbyte_secret: true
     query:
       type: string
       description: Twitter Search query 
-      title: TWITTER SEARCH QUERY
+      title: Twitter Search Query
