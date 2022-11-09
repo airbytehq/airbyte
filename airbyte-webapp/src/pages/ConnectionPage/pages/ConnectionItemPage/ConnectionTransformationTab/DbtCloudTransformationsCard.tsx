@@ -117,7 +117,7 @@ const DbtJobsList = ({
         <Text className={styles.contextExplanation}>
           <FormattedMessage id="connection.dbtCloudJobs.explanation" />
         </Text>
-        {jobs.map((_j, i) => (
+        {jobs.map((_, i) => (
           <JobsListItem key={i} jobIndex={i} removeJob={() => remove(i)} />
         ))}
       </>
