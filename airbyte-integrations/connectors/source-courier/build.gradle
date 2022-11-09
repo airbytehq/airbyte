@@ -7,7 +7,3 @@ plugins {
 airbytePython {
     moduleDirectory 'source_courier'
 }
-
-airbyteDocker {
-    followSymlinks true
-}
