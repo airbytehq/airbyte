@@ -3,10 +3,15 @@
 #
 
 
+import os
+
 from setuptools import find_packages, setup
 
+AIRBYTE_ROOT = os.environ.get("AIRBYTE_ROOT") or "/".join(os.getcwd().split("/")[:-3])
+PATH_TO_CDK = f"{AIRBYTE_ROOT}/airbyte-cdk/python#egg=airbyte_cdk"
+
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1",
+    f"airbyte-cdk @ file://{PATH_TO_CDK}#egg=airbyte_cdk",
 ]
 
 TEST_REQUIREMENTS = [
