@@ -86,15 +86,21 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
       </Cell>
       {/* <Cell>{fieldCount}</Cell> */}
       <Cell flex={1} ellipsis title={stream.stream?.namespace || ""}>
-        <Text size="md">{stream.stream?.namespace || <FormattedMessage id="form.noNamespace" />}</Text>
+        <Text size="md" className={styles.cellText}>
+          {stream.stream?.namespace || <FormattedMessage id="form.noNamespace" />}
+        </Text>
       </Cell>
       <Cell flex={1} ellipsis title={stream.stream?.name || ""}>
-        <Text size="md">{stream.stream?.name}</Text>
+        <Text size="md" className={styles.cellText}>
+          {stream.stream?.name}
+        </Text>
       </Cell>
       <Cell flex={2}>
         {disabled ? (
           <Cell ellipsis title={syncSchema.syncMode}>
-            <Text size="md">{syncSchema.syncMode}</Text>
+            <Text size="md" className={styles.cellText}>
+              {syncSchema.syncMode}
+            </Text>
           </Cell>
         ) : (
           // todo: SyncModeSelect should probably have a Tooltip, append/dedupe ends up ellipsing
@@ -124,10 +130,15 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
       </Cell>
       <FontAwesomeIcon icon={faArrowRight} className={styles.arrowCell} />
       <Cell flex={1} ellipsis title={destNamespace}>
-        <Text size="md"> {destNamespace}</Text>
+        <Text size="md" className={styles.cellText}>
+          {" "}
+          {destNamespace}
+        </Text>
       </Cell>
       <Cell flex={1} ellipsis title={destName}>
-        <Text size="md"> {destName}</Text>
+        <Text size="md" className={styles.cellText}>
+          {destName}
+        </Text>
       </Cell>
     </Row>
   );
