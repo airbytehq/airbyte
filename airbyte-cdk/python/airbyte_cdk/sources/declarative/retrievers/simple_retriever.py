@@ -5,7 +5,8 @@
 import json
 import logging
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, \
+    Union, Dict
 
 import requests
 from dataclasses_jsonschema import JsonSchemaMixin
@@ -441,7 +442,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
             raise ValueError(f"Unexpected request body type: {type(request_body)}")
 
     @staticmethod
-    def _safe_response_json(response: requests.Response) -> dict:
+    def _safe_response_json(response: requests.Response) -> Union[Dict, List]:
         try:
             return response.json()
         except requests.exceptions.JSONDecodeError:
