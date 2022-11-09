@@ -41,8 +41,7 @@ public class V1_1_0_0MigrationTest {
 
     io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
 
-    io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
-        """
+    io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize("""
             {
               "type": "CATALOG",
               "catalog": {
@@ -124,8 +123,7 @@ public class V1_1_0_0MigrationTest {
 
     io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
 
-    JsonNode expectedSchema = Jsons.deserialize(
-        """
+    JsonNode expectedSchema = Jsons.deserialize("""
             {
               "type": "object",
               "properties": {
@@ -230,8 +228,7 @@ public class V1_1_0_0MigrationTest {
 
     io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
 
-    JsonNode expectedSchema = Jsons.deserialize(
-        """
+    JsonNode expectedSchema = Jsons.deserialize("""
             {
               "type": "object",
               "properties": {
