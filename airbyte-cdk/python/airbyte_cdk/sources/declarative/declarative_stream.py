@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice
-from airbyte_cdk.sources.streams.core import Stream, StreamData
+from airbyte_cdk.sources.streams.core import Stream
 from dataclasses_jsonschema import JsonSchemaMixin
 
 
@@ -111,13 +111,9 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[StreamData]:
-        for message_or_record in self.retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state):
-            # Only apply transformations if `message_or_record` is record data
-            print(f"type: {type(message_or_record)}")
-            if isinstance(message_or_record, dict):
-                message_or_record = self._apply_transformations(message_or_record, self.config, stream_slice)
-            yield message_or_record
+    ) -> Iterable[Mapping[str, Any]]:
+        for record in self.retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            yield self._apply_transformations(record, self.config, stream_slice)
 
     def _apply_transformations(self, record: Mapping[str, Any], config: Config, stream_slice: StreamSlice):
         output_record = record
