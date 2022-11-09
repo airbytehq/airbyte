@@ -38,6 +38,11 @@ dependencies {
     implementation 'org.glassfish.jersey.ext:jersey-bean-validation'
     implementation 'org.quartz-scheduler:quartz:2.3.2'
 
+    annotationProcessor platform(libs.micronaut.bom)
+    annotationProcessor libs.bundles.micronaut.annotation.processor
+
+    implementation platform(libs.micronaut.bom)
+    implementation libs.bundles.micronaut
 
     testImplementation project(':airbyte-test-utils')
     testImplementation libs.postgresql
