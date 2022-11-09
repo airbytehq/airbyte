@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from http import HTTPStatus
@@ -23,9 +23,10 @@ def test_request_params(patch_base_class):
     expected_params = {"PageSize": 100}
     assert stream.request_params(**inputs) == expected_params
 
+
 def test_request_params_with_next_page_token(patch_base_class):
     stream = YouniumStream(authenticator=None)
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {"pageNumber":2}}
+    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {"pageNumber": 2}}
     expected_params = {"PageSize": 100, "pageNumber": 2}
     assert stream.request_params(**inputs) == expected_params
 
@@ -34,6 +35,8 @@ def test_playground_url_base(patch_base_class):
     stream = YouniumStream(authenticator=None, playground=True)
     expected_url_base = "https://apisandbox.younium.com"
     assert stream.url_base == expected_url_base
+
+
 def test_use_playground_url_base(patch_base_class):
     stream = YouniumStream(authenticator=None, playground=True)
     expected_url_base = "https://apisandbox.younium.com"

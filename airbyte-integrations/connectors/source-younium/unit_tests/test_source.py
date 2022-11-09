@@ -1,8 +1,10 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from http import HTTPStatus
 from unittest.mock import MagicMock
+
 import responses
 from source_younium.source import SourceYounium
 
@@ -21,9 +23,14 @@ def test_check_connection(mocker):
         mock_url1 = "https://younium-identity-server.azurewebsites.net/connect/token"
         mock_url2 = "https://api.younium.com/Invoices?PageSize=1"
     # Mock the POST to get the access token
-    responses.add(responses.POST, mock_url1, json={
-        "access_token": "dummy_token",
-    }, status=HTTPStatus.OK, )
+    responses.add(
+        responses.POST,
+        mock_url1,
+        json={
+            "access_token": "dummy_token",
+        },
+        status=HTTPStatus.OK,
+    )
 
     # Mock the GET to get the first page of the stream
     responses.add(responses.GET, mock_url2, json={}, status=HTTPStatus.OK)
