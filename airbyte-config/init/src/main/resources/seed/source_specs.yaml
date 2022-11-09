@@ -11695,6 +11695,35 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
+- dockerImage: "airbyte/source-smaily:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/smaily"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Smaily Spec"
+      type: "object"
+      required:
+      - "api_subdomain"
+      - "api_username"
+      - "api_password"
+      additionalProperties: true
+      properties:
+        api_subdomain:
+          type: "string"
+          title: "API Subdomain"
+          description: "API Subdomain. See https://smaily.com/help/api/general/create-api-user/"
+        api_username:
+          type: "string"
+          title: "API User Username"
+          description: "API user username. See https://smaily.com/help/api/general/create-api-user/"
+        api_password:
+          type: "string"
+          title: "API User Password"
+          description: "API user password. See https://smaily.com/help/api/general/create-api-user/"
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-smartsheets:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/smartsheets"
