@@ -41,7 +41,7 @@ N/A
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
-| 0.2.1   | 2022-10-14 | [xxx](https://github.com/airbytehq/airbyte/pull/xxx)     | Emit `AirbyteEstimateTraceMessage`                        |
+| 0.2.1   | 2022-10-14 | [19197](https://github.com/airbytehq/airbyte/pull/19197) | Emit `AirbyteEstimateTraceMessage`                        |
 | 0.2.0   | 2022-10-14 | [18021](https://github.com/airbytehq/airbyte/pull/18021) | Move to mimesis for speed!                                |
 | 0.1.8   | 2022-10-12 | [17889](https://github.com/airbytehq/airbyte/pull/17889) | Bump to test publish command (2)                          |
 | 0.1.7   | 2022-10-11 | [17848](https://github.com/airbytehq/airbyte/pull/17848) | Bump to test publish command                              |
