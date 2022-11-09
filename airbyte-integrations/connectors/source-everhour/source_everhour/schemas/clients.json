@@ -1,0 +1,47 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+      "projects": {
+        "type": ["null", "array"],
+        "items": {}
+      },
+      "id": {
+        "type": ["null", "integer"]
+      },
+      "name": {
+        "type": ["null", "string"]
+      },
+      "createdAt": {
+        "type": ["null", "string"]
+      },
+      "lineItemMask": {
+        "type": ["null", "string"]
+      },
+      "paymentDueDays": {
+        "type": ["null", "integer"]
+      },
+      "reference": {
+        "type": ["null", "string"]
+      },
+      "businessDetails": {
+        "type": ["null", "string"]
+      },
+      "invoicePublicNotes": {
+        "type": ["null", "string"]
+      },
+      "excludedLabels": {
+        "type": ["null", "array"],
+        "items": {}
+      },
+      "status": {
+        "type": ["null", "string"]
+      },
+      "enableResourcePlanner": {
+        "type": ["null", "boolean"]
+      },
+      "favorite": {
+        "type": ["null", "boolean"]
+      }
+    }
+  }
