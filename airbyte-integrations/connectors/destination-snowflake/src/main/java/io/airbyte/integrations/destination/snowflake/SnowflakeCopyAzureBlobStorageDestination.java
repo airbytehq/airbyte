@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
@@ -61,6 +63,15 @@ public class SnowflakeCopyAzureBlobStorageDestination extends CopyDestination {
   @Override
   public SqlOperations getSqlOperations() {
     return new SnowflakeSqlOperations();
+  }
+
+  @Override
+  protected void performCreateInsertTestOnDestination(final String outputSchema,
+                                                      final JdbcDatabase database,
+                                                      final NamingConventionTransformer nameTransformer)
+      throws Exception {
+    AbstractJdbcDestination.attemptTableOperations(outputSchema, database, nameTransformer,
+        getSqlOperations(), true);
   }
 
   private String getConfiguredSchema(final JsonNode config) {
