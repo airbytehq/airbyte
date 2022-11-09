@@ -180,25 +180,19 @@ public class V1_1_0_0MigrationTest {
           "type": "object",
           "properties": {
             "basic_array": {
-              "items": {
-                "type": "string"
-              }
+              "items": {"type": "string"}
             },
             "tuple_array": {
               "items": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "integer"
-                }
-              ]
+                {"type": "string"},
+                {"type": "integer"}
+              ],
+              "additionalItems": {"type": "string"},
+              "contains": {"type": "integer"}
             },
             "nested_object": {
               "properties": {
-                "id": {
-                  "type": "integer"
-                },
+                "id": {"type": "integer"},
                 "nested_oneof": {
                   "oneOf": [
                     {"type": "string"},
@@ -224,9 +218,10 @@ public class V1_1_0_0MigrationTest {
                   ]
                 }
               },
-              "additionalProperties": {
-                "type": "string"
-              }
+              "patternProperties": {
+                "integer_.*": {"type": "integer"}
+              },
+              "additionalProperties": {"type": "string"}
             }
           }
         }
@@ -239,25 +234,19 @@ public class V1_1_0_0MigrationTest {
               "type": "object",
               "properties": {
                 "basic_array": {
-                  "items": {
-                    "$ref": "WellKnownTypes.json#definitions/String"
-                  }
+                  "items": {"$ref": "WellKnownTypes.json#definitions/String"}
                 },
                 "tuple_array": {
                   "items": [
-                    {
-                      "$ref": "WellKnownTypes.json#definitions/String"
-                    },
-                    {
-                      "$ref": "WellKnownTypes.json#definitions/Integer"
-                    }
-                  ]
+                    {"$ref": "WellKnownTypes.json#definitions/String"},
+                    {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                  ],
+                  "additionalItems": {"$ref": "WellKnownTypes.json#definitions/String"},
+                  "contains": {"$ref": "WellKnownTypes.json#definitions/Integer"}
                 },
                 "nested_object": {
                   "properties": {
-                    "id": {
-                      "$ref": "WellKnownTypes.json#definitions/Integer"
-                    },
+                    "id": {"$ref": "WellKnownTypes.json#definitions/Integer"},
                     "nested_oneof": {
                       "oneOf": [
                         {"$ref": "WellKnownTypes.json#definitions/String"},
@@ -283,9 +272,10 @@ public class V1_1_0_0MigrationTest {
                       ]
                     }
                   },
-                  "additionalProperties": {
-                    "$ref": "WellKnownTypes.json#definitions/String"
-                  }
+                  "patternProperties": {
+                    "integer_.*": {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                  },
+                  "additionalProperties": {"$ref": "WellKnownTypes.json#definitions/String"}
                 }
               }
             }

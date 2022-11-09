@@ -178,10 +178,20 @@ public class AirbyteMessageMigrationV1_1_0 implements AirbyteMessageMigration<Ai
       transformer.accept(schema);
     } else {
       // Otherwise, we need to find all of the subschemas and mutate them.
+      // technically, it might be more correct to do something like:
+      //   if schema["type"] == "array": find subschemas for items, additionalItems, contains
+      //   else if schema["type"] == "object": find subschemas for properties, additionalProperties
+      //   else if oneof, allof, etc
+      // but that sounds really verbose :shrug:
       List<JsonNode> subschemas = new ArrayList<>();
+
       findSubschemas(subschemas, schema, "items");
+      findSubschemas(subschemas, schema, "additionalItems");
+      findSubschemas(subschemas, schema, "contains");
+
       findSubschemas(subschemas, schema, "additionalProperties");
-      // destinations have limited support for combinig restrictions, but we should handle the schemas correctly anyway
+
+      // destinations have limited support for combining restrictions, but we should handle the schemas correctly anyway
       findSubschemas(subschemas, schema, "allOf");
       findSubschemas(subschemas, schema, "oneOf");
       findSubschemas(subschemas, schema, "anyOf");
@@ -189,6 +199,14 @@ public class AirbyteMessageMigrationV1_1_0 implements AirbyteMessageMigration<Ai
 
       if (schema.hasNonNull("properties")) {
         ObjectNode propertiesNode = (ObjectNode)schema.get("properties");
+        Iterator<Entry<String, JsonNode>> propertiesIterator = propertiesNode.fields();
+        while (propertiesIterator.hasNext()) {
+          Entry<String, JsonNode> property = propertiesIterator.next();
+          subschemas.add(property.getValue());
+        }
+      }
+      if (schema.hasNonNull("patternProperties")) {
+        ObjectNode propertiesNode = (ObjectNode)schema.get("patternProperties");
         Iterator<Entry<String, JsonNode>> propertiesIterator = propertiesNode.fields();
         while (propertiesIterator.hasNext()) {
           Entry<String, JsonNode> property = propertiesIterator.next();
