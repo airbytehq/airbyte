@@ -119,7 +119,7 @@ public class AirbyteMessageMigrationV1_1_0 implements AirbyteMessageMigration<Ai
           schemaNode.removeAll();
           schemaNode.put("$ref", "WellKnownTypes.json#definitions/Boolean");
         }
-        // TODO does a default case make sense? should never happen.
+        // No default case - sources should never generate airbyte_type outside of these values
       }
     } else {
       // TODO handle when schema["type"] is a list
@@ -127,7 +127,6 @@ public class AirbyteMessageMigrationV1_1_0 implements AirbyteMessageMigration<Ai
       switch (type) {
         case "string" -> {
           if (schemaNode.hasNonNull("format")) {
-            // TODO handle when format is a list
             switch (schemaNode.get("format").asText()) {
               case "date" -> {
                 schemaNode.removeAll();
@@ -237,43 +236,6 @@ public class AirbyteMessageMigrationV1_1_0 implements AirbyteMessageMigration<Ai
         subschemas.add(subschemaNode);
       }
     }
-  }
-
-  /**
-   * Returns a copy of schema, with the primitive types replaced by the $ref types.
-   */
-  private static JsonNode upgradeSchema(JsonNode schema) {
-    JsonNode typeNode = schema.get("type");
-    if (typeNode == null || typeNode.isNull()) {
-      // this shouldn't happen in a well-formed schema, but we should have handling for it just in case
-      // just return the schema unmodified - this will probably blow up in the destination,
-      // but we don't have any information about what it's _supposed_ to be, so we can't do anything here.
-      return schema;
-    }
-    if (typeNode.isArray()) {
-      ArrayNode typesArray = (ArrayNode) typeNode;
-      List<String> types = new ArrayList<>();
-      for (JsonNode typeElement : typesArray) {
-        String type = typeElement.asText();
-        if (!"null".equals(type)) {
-          types.add(type);
-        }
-      }
-      // TODO convert multi-type things into oneOf
-    } else {
-      String type = typeNode.asText();
-      // TODO handle primitive vs non-primitive
-      if (PRIMITIVE_TYPES.contains(type)) {
-        return upgradePrimitiveSchema(schema);
-      } else {
-
-      }
-    }
-    return null;
-  }
-
-  private static JsonNode upgradePrimitiveSchema(JsonNode primitiveSchema) {
-    return null;
   }
 
   @Override
