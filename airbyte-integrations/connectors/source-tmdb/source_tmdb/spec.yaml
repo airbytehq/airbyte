@@ -18,11 +18,20 @@ connectionSpecification:
       title: Optional movie ID for targeting movies
       type: string
       description: Target movie ID, Mandate for movie streams (Example is 550)
+      examples: 
+        - 550
+        - 560
     query:
       title: Optional Query for search streams
       type: string
-      description: Target movie ID, Mandate for search streams (Example is Marvel)
+      description: Target movie ID, Mandate for search streams
+      examples: 
+        - Marvel
+        - DC
     language:
       title: Optional language for filtering
       type: string
-      description: Language expressed in ISO 639-1 scheme, Mandate for required streams (Example en-US) 
+      description: Language expressed in ISO 639-1 scheme, Mandate for required streams (Example en-US)
+      examples: 
+        - en-US
+        - en-UK

@@ -71,7 +71,7 @@
             "title": "Overview",
             "type": "string",
             "default": "",
-            "pattern": "^.*$"
+            "pattern": "^.*"
           },
           "poster_path": {
             "$id": "#root/results/items/poster_path",
