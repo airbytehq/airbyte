@@ -129,5 +129,15 @@ export const Control: React.FC<ControlProps> = ({
   }
   const inputType = property.type === "integer" ? "number" : "text";
 
-  return <Input {...field} autoComplete="off" type={inputType} value={value ?? ""} disabled={disabled} error={error} />;
+  return (
+    <Input
+      {...field}
+      placeholder={inputType === "number" ? property.default?.toString() : undefined}
+      autoComplete="off"
+      type={inputType}
+      value={value ?? ""}
+      disabled={disabled}
+      error={error}
+    />
+  );
 };
