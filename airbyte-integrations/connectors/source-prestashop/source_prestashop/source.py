@@ -13,8 +13,19 @@ WARNING: Do not modify this file.
 import logging
 from typing import Any, Iterator, List, Mapping, MutableMapping, Union
 
-from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import (
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    AirbyteStateMessage,
+    ConfiguredAirbyteCatalog,
+    Status,
+)
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+
+
+class ConfigException(Exception):
+    pass
 
 
 # Declarative Source
@@ -25,7 +36,7 @@ class SourcePrestashop(YamlDeclarativeSource):
     def _validate_and_transform(self, config: Mapping[str, Any]):
         if not config.get("_allow_http"):
             if not config["url"].lower().startswith("https://"):
-                raise Exception(f"Invalid url: {config['url']}, only https scheme is allowed")
+                raise ConfigException(f"Invalid url: {config['url']}, only https scheme is allowed")
         return config
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
@@ -33,7 +44,10 @@ class SourcePrestashop(YamlDeclarativeSource):
         return super().discover(logger, config)
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        config = self._validate_and_transform(config)
+        try:
+            config = self._validate_and_transform(config)
+        except ConfigException as e:
+            return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
         return super().check(logger, config)
 
     def read(
