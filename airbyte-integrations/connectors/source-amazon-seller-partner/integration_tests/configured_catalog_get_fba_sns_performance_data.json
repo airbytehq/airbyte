@@ -1,0 +1,44 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "GET_FBA_SNS_PERFORMANCE_DATA",
+        "json_schema": {
+          "title": "Subscribe and Save Performance Report",
+          "description": "",
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "offer-state": { "type": ["null", "string"] },
+            "snapshot-date": { "type": ["null", "string"] },
+            "sku": { "type": ["null", "string"] },
+            "fnsku": { "type": ["null", "string"] },
+            "asin": { "type": ["null", "string"] },
+            "product-name": { "type": ["null", "string"] },
+            "country": { "type": ["null", "string"] },
+            "week-1-start-date": { "type": ["null", "string"] },
+            "sns-units-shipped-week-1": { "type": ["null", "string"] },
+            "oos-rate-week-1": { "type": ["null", "string"] },
+            "sns-sale-price-week-1": { "type": ["null", "string"] },
+            "sns-discount-week-1": { "type": ["null", "string"] },
+            "sns-units-shipped-week-2": { "type": ["null", "string"] },
+            "oos-rate-week-2": { "type": ["null", "string"] },
+            "sns-sale-price-week-2": { "type": ["null", "string"] },
+            "sns-discount-week-2": { "type": ["null", "string"] },
+            "sns-units-shipped-week-3": { "type": ["null", "string"] },
+            "oos-rate-week-3": { "type": ["null", "string"] },
+            "sns-sale-price-week-3": { "type": ["null", "string"] },
+            "sns-discount-week-3": { "type": ["null", "string"] },
+            "sns-units-shipped-week-4": { "type": ["null", "string"] },
+            "oos-rate-week-4": { "type": ["null", "string"] },
+            "sns-sale-price-week-4": { "type": ["null", "string"] },
+            "sns-discount-week-4": { "type": ["null", "string"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

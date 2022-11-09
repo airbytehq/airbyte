@@ -16,6 +16,7 @@ import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.RetryableException;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
@@ -23,11 +24,9 @@ import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
-import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
-import io.airbyte.config.SyncStats;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -140,7 +139,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
         }
 
         final Optional<Long> jobIdOptional =
-            jobCreator.createResetConnectionJob(destination, standardSync, destinationImageName, standardSyncOperations, streamsToReset);
+            jobCreator.createResetConnectionJob(destination, standardSync, destinationImageName, new Version(destinationDef.getProtocolVersion()),
+                standardSyncOperations, streamsToReset);
 
         final long jobId = jobIdOptional.isEmpty()
             ? jobPersistence.getLastReplicationJob(standardSync.getConnectionId()).orElseThrow(() -> new RuntimeException("No job available")).getId()
@@ -227,9 +227,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
       if (input.getStandardSyncOutput() != null) {
         final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
-        final SyncStats syncStats = jobOutput.getSync().getStandardSyncSummary().getTotalStats();
-        final NormalizationSummary normalizationSummary = jobOutput.getSync().getNormalizationSummary();
-        jobPersistence.writeOutput(jobId, attemptId, jobOutput, syncStats, normalizationSummary);
+        jobPersistence.writeOutput(jobId, attemptId, jobOutput);
       } else {
         log.warn("The job {} doesn't have any output for the attempt {}", jobId, attemptId);
       }
@@ -261,8 +259,6 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public void jobFailure(final JobFailureInput input) {
     try {
-      ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, input.getJobId()));
-
       final long jobId = input.getJobId();
       jobPersistence.failJob(jobId);
       final Job job = jobPersistence.getJob(jobId);
@@ -271,9 +267,11 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_FAILED_BY_RELEASE_STAGE, jobId);
 
       final UUID connectionId = UUID.fromString(job.getScope());
+      ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionId, JOB_ID_KEY, jobId));
       final JobSyncConfig jobSyncConfig = job.getConfig().getSync();
-      final SyncJobReportingContext jobContext =
-          new SyncJobReportingContext(jobId, jobSyncConfig.getSourceDockerImage(), jobSyncConfig.getDestinationDockerImage());
+      final String sourceDockerImage = jobSyncConfig != null ? jobSyncConfig.getSourceDockerImage() : null;
+      final String destinationDockerImage = jobSyncConfig != null ? jobSyncConfig.getDestinationDockerImage() : null;
+      final SyncJobReportingContext jobContext = new SyncJobReportingContext(jobId, sourceDockerImage, destinationDockerImage);
       job.getLastFailedAttempt().flatMap(Attempt::getFailureSummary)
           .ifPresent(failureSummary -> jobErrorReporter.reportSyncJobFailure(connectionId, failureSummary, jobContext));
       trackCompletion(job, JobStatus.FAILED);
@@ -298,9 +296,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
       if (input.getStandardSyncOutput() != null) {
         final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
-        final SyncStats syncStats = jobOutput.getSync().getStandardSyncSummary().getTotalStats();
-        final NormalizationSummary normalizationSummary = jobOutput.getSync().getNormalizationSummary();
-        jobPersistence.writeOutput(jobId, attemptId, jobOutput, syncStats, normalizationSummary);
+        jobPersistence.writeOutput(jobId, attemptId, jobOutput);
       }
 
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.ATTEMPT_FAILED_BY_RELEASE_STAGE, jobId);

@@ -73,7 +73,8 @@ class ExpectedRecordsConfig(BaseModel):
     class Config:
         extra = "forbid"
 
-    path: Path = Field(description="File with expected records")
+    bypass_reason: Optional[str] = Field(description="Reason why this test is bypassed.")
+    path: Optional[Path] = Field(description="File with expected records")
     extra_fields: bool = Field(False, description="Allow records to have other fields")
     exact_order: bool = Field(False, description="Ensure that records produced in exact same order")
     extra_records: bool = Field(
@@ -91,6 +92,14 @@ class ExpectedRecordsConfig(BaseModel):
         if "extra_fields" in values and values["extra_fields"] and extra_records:
             raise ValueError("extra_records must be off if extra_fields enabled")
         return extra_records
+
+    @validator("path", always=True)
+    def no_bypass_reason_when_path_is_set(cls, path, values):
+        if path and values.get("bypass_reason"):
+            raise ValueError("You can't set a bypass_reason if a path is set")
+        if not path and not values.get("bypass_reason"):
+            raise ValueError("A path or a bypass_reason must be set")
+        return path
 
 
 class EmptyStreamConfiguration(BaseConfig):
@@ -132,13 +141,18 @@ class FullRefreshConfig(BaseConfig):
     )
 
 
+class FutureStateConfig(BaseConfig):
+    future_state_path: Optional[str] = Field(description="Path to a state file with values in far future")
+    missing_streams: List[EmptyStreamConfiguration] = Field(default=[], description="List of missings streams with valid bypass reasons.")
+
+
 class IncrementalConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: Optional[str] = configured_catalog_path
     cursor_paths: Optional[Mapping[str, List[str]]] = Field(
         description="For each stream, the path of its cursor field in the output state messages."
     )
-    future_state_path: Optional[str] = Field(description="Path to a state file with values in far future")
+    future_state: Optional[FutureStateConfig] = Field(description="Configuration for the future state.")
     timeout_seconds: int = timeout_seconds
     threshold_days: int = Field(
         description="Allow records to be emitted with a cursor value this number of days before the state cursor",
@@ -221,6 +235,9 @@ class Config(BaseConfig):
                 basic_read_tests["empty_streams"] = [
                     {"name": empty_stream_name} for empty_stream_name in basic_read_tests.get("empty_streams", [])
                 ]
+        for incremental_test in migrated_config["acceptance_tests"].get("incremental", {}).get("tests", []):
+            if "future_state_path" in incremental_test:
+                incremental_test["future_state"] = {"future_state_path": incremental_test.pop("future_state_path")}
         return migrated_config
 
     @root_validator(pre=True)

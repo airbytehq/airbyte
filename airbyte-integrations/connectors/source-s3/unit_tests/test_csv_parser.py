@@ -10,8 +10,10 @@ import string
 from pathlib import Path
 from typing import Any, List, Mapping, Tuple
 
+import pendulum
 import pytest
 from smart_open import open as smart_open
+from source_s3.source_files_abstract.file_info import FileInfo
 from source_s3.source_files_abstract.formats.csv_parser import CsvParser
 
 from .abstract_test_parser import AbstractTestParser, memory_limit
@@ -403,7 +405,7 @@ class TestCsvParser(AbstractTestParser):
             next(expected_file)
             read_count = 0
             with smart_open(filepath, self._get_readmode({"AbstractFileParser": parser})) as f:
-                for record in parser.stream_records(f):
+                for record in parser.stream_records(f, FileInfo(key=filepath, size=file_size, last_modified=pendulum.now())):
                     record_line = ",".join("" if v is None else str(v) for v in record.values())
                     expected_line = next(expected_file).strip("\n")
                     assert record_line == expected_line

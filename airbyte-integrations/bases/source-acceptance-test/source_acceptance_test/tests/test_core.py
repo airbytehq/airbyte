@@ -8,7 +8,8 @@ import re
 from collections import Counter, defaultdict
 from functools import reduce
 from logging import Logger
-from typing import Any, Dict, List, Mapping, MutableMapping, Set
+from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set
+from xmlrpc.client import Boolean
 
 import dpath.util
 import jsonschema
@@ -27,10 +28,23 @@ from airbyte_cdk.models import (
 from docker.errors import ContainerError
 from jsonschema._utils import flatten
 from source_acceptance_test.base import BaseTest
-from source_acceptance_test.config import BasicReadTestConfig, Config, ConnectionTestConfig, DiscoveryTestConfig, SpecTestConfig
+from source_acceptance_test.config import (
+    BasicReadTestConfig,
+    Config,
+    ConnectionTestConfig,
+    DiscoveryTestConfig,
+    EmptyStreamConfiguration,
+    ExpectedRecordsConfig,
+    SpecTestConfig,
+)
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
 from source_acceptance_test.utils.backward_compatibility import CatalogDiffChecker, SpecDiffChecker, validate_previous_configs
-from source_acceptance_test.utils.common import find_all_values_for_key_in_schema, find_keyword_schema
+from source_acceptance_test.utils.common import (
+    build_configured_catalog_from_custom_catalog,
+    build_configured_catalog_from_discovered_catalog_and_empty_streams,
+    find_all_values_for_key_in_schema,
+    find_keyword_schema,
+)
 from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
 
 
@@ -435,14 +449,17 @@ class TestBasicRead(BaseTest):
         assert not stream_name_to_empty_fields_mapping, msg
 
     def _validate_expected_records(
-        self, records: List[AirbyteRecordMessage], expected_records: List[AirbyteRecordMessage], flags, detailed_logger: Logger
+        self,
+        records: List[AirbyteRecordMessage],
+        expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
+        flags,
+        detailed_logger: Logger,
     ):
         """
         We expect some records from stream to match expected_records, partially or fully, in exact or any order.
         """
         actual_by_stream = self.group_by_stream(records)
-        expected_by_stream = self.group_by_stream(expected_records)
-        for stream_name, expected in expected_by_stream.items():
+        for stream_name, expected in expected_records_by_stream.items():
             actual = actual_by_stream.get(stream_name, [])
             detailed_logger.info(f"Actual records for stream {stream_name}:")
             detailed_logger.log_json_list(actual)
@@ -459,26 +476,71 @@ class TestBasicRead(BaseTest):
                 detailed_logger=detailed_logger,
             )
 
+    @pytest.fixture(name="should_validate_schema")
+    def should_validate_schema_fixture(self, inputs: BasicReadTestConfig, test_strictness_level: Config.TestStrictnessLevel):
+        if not inputs.validate_schema and test_strictness_level is Config.TestStrictnessLevel.high:
+            pytest.fail("High strictness level error: validate_schema must be set to true in the basic read test configuration.")
+        else:
+            return inputs.validate_schema
+
+    @pytest.fixture(name="should_validate_data_points")
+    def should_validate_data_points_fixture(self, inputs: BasicReadTestConfig) -> Boolean:
+        # TODO: we might want to enforce this when Config.TestStrictnessLevel.high
+        return inputs.validate_data_points
+
+    @pytest.fixture(name="configured_catalog")
+    def configured_catalog_fixture(
+        self,
+        test_strictness_level: Config.TestStrictnessLevel,
+        configured_catalog_path: Optional[str],
+        discovered_catalog: MutableMapping[str, AirbyteStream],
+        empty_streams: Set[EmptyStreamConfiguration],
+    ) -> ConfiguredAirbyteCatalog:
+        """Build a configured catalog for basic read only.
+        We discard the use of custom configured catalog if:
+        - No custom configured catalog is declared with configured_catalog_path.
+        - We are in high test strictness level.
+        When a custom configured catalog is discarded we use the discovered catalog from which we remove the declared empty streams.
+        We use a custom configured catalog if a configured_catalog_path is declared and we are not in high test strictness level.
+        Args:
+            test_strictness_level (Config.TestStrictnessLevel): The current test strictness level according to the global test configuration.
+            configured_catalog_path (Optional[str]): Path to a JSON file containing a custom configured catalog.
+            discovered_catalog (MutableMapping[str, AirbyteStream]): The discovered catalog.
+            empty_streams (Set[EmptyStreamConfiguration]): The empty streams declared in the test configuration.
+
+        Returns:
+            ConfiguredAirbyteCatalog: the configured Airbyte catalog.
+        """
+        if test_strictness_level is Config.TestStrictnessLevel.high or not configured_catalog_path:
+            if configured_catalog_path:
+                pytest.fail(
+                    "High strictness level error: you can't set a custom configured catalog on the basic read test when strictness level is high."
+                )
+            return build_configured_catalog_from_discovered_catalog_and_empty_streams(discovered_catalog, empty_streams)
+        else:
+            return build_configured_catalog_from_custom_catalog(configured_catalog_path, discovered_catalog)
+
     def test_read(
         self,
         connector_config,
         configured_catalog,
-        inputs: BasicReadTestConfig,
-        expected_records: List[AirbyteRecordMessage],
+        expect_records_config: ExpectedRecordsConfig,
+        should_validate_schema: Boolean,
+        should_validate_data_points: Boolean,
+        empty_streams: Set[EmptyStreamConfiguration],
+        expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
         docker_runner: ConnectorRunner,
         detailed_logger,
-        test_strictness_level: Config.TestStrictnessLevel,
     ):
-        self.enforce_strictness_level(test_strictness_level, inputs)
         output = docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in filter_output(output, Type.RECORD)]
 
         assert records, "At least one record should be read using provided catalog"
 
-        if inputs.validate_schema:
+        if should_validate_schema:
             self._validate_schema(records=records, configured_catalog=configured_catalog)
 
-        self._validate_empty_streams(records=records, configured_catalog=configured_catalog, allowed_empty_streams=inputs.empty_streams)
+        self._validate_empty_streams(records=records, configured_catalog=configured_catalog, allowed_empty_streams=empty_streams)
         for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):
             for pk_path, pk_value in pks.items():
                 assert (
@@ -486,12 +548,15 @@ class TestBasicRead(BaseTest):
                 ), f"Primary key subkeys {repr(pk_path)} have null values or not present in {record.stream} stream records."
 
         # TODO: remove this condition after https://github.com/airbytehq/airbyte/issues/8312 is done
-        if inputs.validate_data_points:
+        if should_validate_data_points:
             self._validate_field_appears_at_least_once(records=records, configured_catalog=configured_catalog)
 
-        if expected_records:
+        if expected_records_by_stream:
             self._validate_expected_records(
-                records=records, expected_records=expected_records, flags=inputs.expect_records, detailed_logger=detailed_logger
+                records=records,
+                expected_records_by_stream=expected_records_by_stream,
+                flags=expect_records_config,
+                detailed_logger=detailed_logger,
             )
 
     def test_airbyte_trace_message_on_failure(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):
@@ -581,11 +646,3 @@ class TestBasicRead(BaseTest):
             result[record.stream].append(record.data)
 
         return result
-
-    @staticmethod
-    def enforce_strictness_level(test_strictness_level: Config.TestStrictnessLevel, inputs: BasicReadTestConfig):
-        if test_strictness_level is Config.TestStrictnessLevel.high:
-            if inputs.empty_streams:
-                all_empty_streams_have_bypass_reasons = all([bool(empty_stream.bypass_reason) for empty_stream in inputs.empty_streams])
-                if not all_empty_streams_have_bypass_reasons:
-                    pytest.fail("A bypass_reason must be filled in for all empty streams when test_strictness_level is set to high.")
