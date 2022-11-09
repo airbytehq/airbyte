@@ -932,6 +932,25 @@ jobs:
       #     cluster-name: "helm-testing"
       #     args: --agents 1 -p "30080:30080@server:0" -i docker.io/rancher/k3s:v1.21.2-k3s1
 
+      - name: Install tmate and it's dependencies
+        shell: bash
+        run: |
+          sudo rm /var/lib/dpkg/lock
+          sudo rm /var/lib/dpkg/lock-frontend
+          sudo apt-get -y install tmate
+          sudo rm -f /var/lib/dpkg/lock
+          sudo rm -f /var/lib/dpkg/lock-frontend
+      
+      - name: Start tmate session in background
+        shell: bash
+        run: |  
+          tmate -S /tmp/tmate.sock new-session -d               # Launch tmate in a headless mode
+          tmate -S /tmp/tmate.sock wait tmate-ready             # Blocks until the SSH connection is established
+          tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'    # Prints the SSH connection string
+          tmate -S /tmp/tmate.sock display -p '#{tmate_ssh_ro}' # Prints the read-only SSH connection string
+          tmate -S /tmp/tmate.sock display -p '#{tmate_web}'    # Prints the web connection string
+          tmate -S /tmp/tmate.sock display -p '#{tmate_web_ro}' # Prints the read-only web connection string
+
       - name: Start a local k8s cluster
         uses: jupyterhub/action-k3s-helm@v3
         with:
@@ -1015,16 +1034,16 @@ jobs:
         shell: bash
         run: kubectl logs airbyte-airbyte-bootloader
 
-      - name: unlock frontend
-        shell: bash
-        if: always()
-        run: |
-          sudo rm /var/lib/dpkg/lock
-          sudo rm /var/lib/dpkg/lock-frontend
+      # - name: Install tmate and it's dependencies
+      #   shell: bash
+      #   run: |
+      #     sudo rm /var/lib/dpkg/lock
+      #     sudo rm /var/lib/dpkg/lock-frontend
+      #     sudo apt-get install tmate
       
-      - name: Init tmate session
-        if: always()
-        uses: mxschmitt/action-tmate@v3
+      # - name: Init tmate session
+      #   if: always()
+      #   uses: mxschmitt/action-tmate@v3
           
 
 
