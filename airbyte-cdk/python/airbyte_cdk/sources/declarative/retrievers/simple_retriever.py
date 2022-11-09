@@ -414,7 +414,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
 
     def _create_trace_message_from_request(self, request: requests.PreparedRequest):
         # FIXME: this should return some sort of trace message
-        request_dict = {"url": request.url, "headers": dict(request.headers), "body": self._safe_request_body(request.body)}
+        request_dict = {"url": request.url, "headers": dict(request.headers), "body": request.body}
         log_message = filter_secrets(f"request:{json.dumps(request_dict)}")
         return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))
 
@@ -423,14 +423,3 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         response_dict = {"body": response.text, "headers": dict(response.headers), "status_code": response.status_code}
         log_message = filter_secrets(f"response:{json.dumps(response_dict)}")
         return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))
-
-    @staticmethod
-    def _safe_request_body(request_body: Union[str, bytes]) -> dict:
-        if not request_body:
-            return {}
-        if isinstance(request_body, bytes):
-            request_body = request_body.decode("utf-8")
-        if isinstance(request_body, str):
-            return json.loads(request_body)
-        else:
-            raise ValueError(f"Unexpected request body type: {type(request_body)}")
