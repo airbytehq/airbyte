@@ -5,7 +5,7 @@
 import json
 import logging
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
@@ -420,7 +420,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
 
     def _create_trace_message_from_response(self, response: requests.Response):
         # FIXME: this should return some sort of trace message
-        response_dict = {"body": self._safe_response_json(response), "headers": dict(response.headers), "status_code": response.status_code}
+        response_dict = {"body": response.text, "headers": dict(response.headers), "status_code": response.status_code}
         log_message = filter_secrets(f"response:{json.dumps(response_dict)}")
         return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))
 
@@ -434,10 +434,3 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
             return json.loads(request_body)
         else:
             raise ValueError(f"Unexpected request body type: {type(request_body)}")
-
-    @staticmethod
-    def _safe_response_json(response: requests.Response) -> Union[Dict, List]:
-        try:
-            return response.json()
-        except requests.exceptions.JSONDecodeError:
-            return {}
