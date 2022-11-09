@@ -33,7 +33,7 @@ public class SlackConfigActivityImpl implements SlackConfigActivity {
         return Optional.of(new SlackNotificationConfiguration().withWebhook(notification.getSlackConfiguration().getWebhook()));
       }
     }
-    return Optional.ofNullable(null);
+    return Optional.empty();
   }
 
 }
