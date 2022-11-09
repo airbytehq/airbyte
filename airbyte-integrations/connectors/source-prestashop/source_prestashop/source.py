@@ -11,7 +11,6 @@ WARNING: Do not modify this file.
 """
 
 import logging
-import re
 from typing import Any, Iterator, List, Mapping, MutableMapping, Union
 
 from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
@@ -25,7 +24,7 @@ class SourcePrestashop(YamlDeclarativeSource):
 
     def _validate_and_transform(self, config: Mapping[str, Any]):
         if not config.get("_allow_http"):
-            if re.match(r"^http://", config["url"], re.I):
+            if not config["url"].lower().startswith("https://"):
                 raise Exception(f"Invalid url: {config['url']}, only https scheme is allowed")
         return config
 
