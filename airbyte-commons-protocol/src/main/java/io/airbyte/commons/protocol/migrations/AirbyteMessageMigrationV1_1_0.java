@@ -79,7 +79,7 @@ public class AirbyteMessageMigrationV1_1_0 implements AirbyteMessageMigration<Ai
     }
     JsonNode typeNode = schema.get("type");
     if (typeNode.isArray()) {
-      return StreamSupport.stream(typeNode.iterator().next().spliterator(), false)
+      return StreamSupport.stream(typeNode.spliterator(), false)
           .anyMatch(n -> PRIMITIVE_TYPES.contains(n.asText()));
     } else {
       return PRIMITIVE_TYPES.contains(typeNode.asText());

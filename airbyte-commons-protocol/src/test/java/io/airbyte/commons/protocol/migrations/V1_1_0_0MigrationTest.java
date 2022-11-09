@@ -327,15 +327,7 @@ public class V1_1_0_0MigrationTest {
           }
         }
         """;
-    JsonNode oldSchema = Jsons.deserialize(schemaString);
-
-    io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
-
-    JsonNode expectedSchema = Jsons.deserialize(schemaString);
-    assertEquals(
-        expectedSchema,
-        upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema()
-    );
+    assertUpgradeIsNoop(schemaString);
   }
 
   @Test
@@ -377,11 +369,143 @@ public class V1_1_0_0MigrationTest {
           }
         }
         """;
-    JsonNode oldSchema = Jsons.deserialize(schemaString);
+    assertUpgradeIsNoop(schemaString);
+  }
+
+  @Test
+  public void testUpgradeLiteralSchema() {
+    // Verify that we do _not_ recurse into places we shouldn't
+    String schemaString = """
+        {
+          "type": "object",
+          "properties": {
+            "example_schema": {
+              "type": "object",
+              "default": {"type": "string"},
+              "enum": [{"type": "string"}],
+              "const": {"type": "string"}
+            }
+          }
+        }
+        """;
+    assertUpgradeIsNoop(schemaString);
+  }
+
+  @Test
+  public void testUpgradeMalformedSchemas() {
+    // These schemas are "wrong" in some way. For example, normalization will currently treat bad_timestamptz as a string timestamp_with_timezone,
+    // i.e. it will disregard the option for a boolean.
+    // Generating this sort of schema is just wrong; sources shouldn't do this to begin with. But let's verify that we behave mostly correctly here.
+    JsonNode oldSchema = Jsons.deserialize("""
+        {
+          "type": "object",
+          "properties": {
+            "bad_timestamptz": {
+              "type": ["boolean", "string"],
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "bad_timestamptz_implicit": {
+              "type": ["boolean", "string"],
+              "format": "date-time"
+            },
+            "bad_integer": {
+              "type": "integer",
+              "format": "date-time"
+            }
+          }
+        }
+        """);
 
     io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
 
-    JsonNode expectedSchema = Jsons.deserialize(schemaString);
+    JsonNode expectedSchema = Jsons.deserialize("""
+        {
+          "type": "object",
+          "properties": {
+            "bad_timestamptz": {"$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"},
+            "bad_timestamptz_implicit": {"$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"},
+            "bad_integer": {"$ref": "WellKnownTypes.json#definitions/Integer"}
+          }
+        }
+        """
+    );
+    assertEquals(
+        expectedSchema,
+        upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema()
+    );
+  }
+
+  @Test
+  public void testUpgradeMultiTypeFields() {
+    JsonNode oldSchema = Jsons.deserialize("""
+        {
+          "type": "object",
+          "properties": {
+            "multityped_field": {
+              "type": ["string", "object", "array"],
+              "properties": {
+                "id": {"type": "string"}
+              },
+              "patternProperties": {
+                "integer_.*": {"type": "integer"}
+              },
+              "additionalProperties": {"type": "string"},
+              "items": {"type": "string"},
+              "contains": {"type": "string"}
+            },
+            "nullable_multityped_field": {
+              "type": ["null", "string", "array"],
+              "items": [{"type": "string"}, {"type": "integer"}],
+              "contains": {"type": "string"}
+            }
+          }
+        }
+        """);
+
+    io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
+
+    JsonNode expectedSchema = Jsons.deserialize("""
+        {
+          "type": "object",
+          "properties": {
+            "multityped_field": {
+              "oneOf": [
+                {"$ref": "WellKnownTypes.json#definitions/String"},
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {"$ref": "WellKnownTypes.json#definitions/String"}
+                  },
+                  "patternProperties": {
+                    "integer_.*": {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                  },
+                  "additionalProperties": {"$ref": "WellKnownTypes.json#definitions/String"}
+                },
+                {
+                  "type": "array",
+                  "items": {"$ref": "WellKnownTypes.json#definitions/String"},
+                  "contains": {"$ref": "WellKnownTypes.json#definitions/String"}
+                }
+              ]
+            },
+            "nullable_multityped_field": {
+              "oneOf": [
+                {"$ref": "WellKnownTypes.json#definitions/String"},
+                {
+                  "type": "array",
+                  "items": [
+                    {"$ref": "WellKnownTypes.json#definitions/String"},
+                    {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                  ],
+                  "contains": {"$ref": "WellKnownTypes.json#definitions/String"}
+                }
+              ]
+            }
+          }
+        }
+        """
+    );
     assertEquals(
         expectedSchema,
         upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema()
@@ -394,4 +518,17 @@ public class V1_1_0_0MigrationTest {
         .withCatalog(new AirbyteCatalog()
             .withStreams(List.of(new AirbyteStream().withJsonSchema(schema))));
   }
+
+  private void assertUpgradeIsNoop(String schemaString) {
+    JsonNode oldSchema = Jsons.deserialize(schemaString);
+
+    io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
+
+    JsonNode expectedSchema = Jsons.deserialize(schemaString);
+    assertEquals(
+        expectedSchema,
+        upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema()
+    );
+  }
+
 }
