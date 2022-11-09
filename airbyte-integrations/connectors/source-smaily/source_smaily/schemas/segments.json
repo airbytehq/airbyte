@@ -11,7 +11,5 @@
       "type": ["integer", "null"]
     }
   },
-  "required": [
-    "id"
-  ]
+  "required": ["id"]
 }
