@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface ConnectionsRepository extends GenericRepository<Connection, UUID> {
 
-  void sync(UUID connectionId, String xEndpointAPIUserInfo);
+  void sync(UUID connectionId);
 
   void reset(UUID connectionId);
 

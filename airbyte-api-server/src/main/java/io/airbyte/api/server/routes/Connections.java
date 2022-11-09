@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Connections implements ConnectionApi {
 
-  // unused for now as the api-server does not currently touch underlying data sources
+  // unused for now as the ConnectionsRepository does not currently touch underlying data sources
   final ConnectionsRepository connectionsRepository;
   final InternalApiWrapper internalApiWrapper;
 
