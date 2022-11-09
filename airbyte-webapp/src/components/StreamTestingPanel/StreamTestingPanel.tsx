@@ -49,6 +49,11 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
             children: <LogsDisplay logs={streamReadData.logs} onTitleClick={handleLogsTitleClick} />,
             minWidth: 30,
             flex: logsFlex,
+            onStopResize: (newFlex) => {
+              if (newFlex) {
+                setLogsFlex(newFlex);
+              }
+            },
           }}
           hideSecondPanel={streamReadData.logs.length === 0}
         />
