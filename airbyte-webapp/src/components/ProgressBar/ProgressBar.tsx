@@ -151,9 +151,7 @@ export const ProgressBar = ({
               </div>
               <div>
                 {formatBytes(numeratorBytes)}{" "}
-                {displayProgressBar ? (
-                  ""
-                ) : (
+                {displayProgressBar && (
                   <>
                     <span>/ </span>
                     {formatBytes(denominatorBytes)}
