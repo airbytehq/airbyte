@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useIntl } from "react-intl";
 
 import { getJobStatus } from "components/JobItem/JobItem";
+import { Button } from "components/ui/Button";
 
 import { AttemptRead, JobConfigType, SynchronousJobRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
@@ -114,7 +115,7 @@ export const ProgressBar = ({
 
   // chose to estimate time remaining based on records rather than bytes
   if (latestAttempt && latestAttempt.status === Status.RUNNING && displayProgressBar) {
-    elapsedTimeMS = new Date().getTime() - latestAttempt.createdAt * 1000;
+    elapsedTimeMS = Date.now() - latestAttempt.createdAt * 1000;
     timeRemaining = Math.floor(elapsedTimeMS / totalPercentRecords) * (100 - totalPercentRecords); // in ms
     const minutesRemaining = Math.ceil(timeRemaining / 1000 / 60);
     const hoursRemaining = Math.ceil(minutesRemaining / 60);
@@ -167,19 +168,17 @@ export const ProgressBar = ({
           {latestAttempt.streamStats && !showStreams && (
             <div>
               <br />
-              <button
-                style={buttonUnStyle}
+              <Button
+                variant="clear"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowStreams(true);
                 }}
               >
-                <i>
-                  {formatMessage({
-                    id: "estimate.viewStreamStats",
-                  })}
-                </i>
-              </button>
+                {formatMessage({
+                  id: "estimate.viewStreamStats",
+                })}
+              </Button>
               <br />
             </div>
           )}
