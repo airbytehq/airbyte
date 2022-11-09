@@ -81,6 +81,16 @@ class TestSpec(BaseTest):
             docker_runner.entry_point
         ), "env should be equal to space-joined entrypoint"
 
+    def test_enum_usage(self, actual_connector_spec: ConnectorSpecification):
+        """Check that enum lists in specs contain distinct values."""
+
+        schema_helper = JsonSchemaHelper(actual_connector_spec.connectionSpecification)
+        enum_paths = schema_helper.find_nodes(keys=["enum"])
+
+        for path in enum_paths:
+            enum_list = schema_helper.get_node(path)
+            assert len(set(enum_list)) == len(enum_list), f"Enum lists should not contain duplicate values. Misconfigured enum array: {enum_list}."
+
     def test_oneof_usage(self, actual_connector_spec: ConnectorSpecification):
         """Check that if spec contains oneOf it follows the rules according to reference
         https://docs.airbyte.io/connector-development/connector-specification-reference
