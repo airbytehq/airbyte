@@ -42,7 +42,7 @@ export const DestinationOverviewPage = () => {
   );
 
   const onSelect = (data: DropDownOptionDataItem) => {
-    const path = `../${DestinationPaths.NewConnection}`;
+    const path = `../../${DestinationPaths.NewConnection}`;
     const state =
       data.value === "create-new-item"
         ? { destinationId: destination.destinationId }
