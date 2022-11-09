@@ -42,11 +42,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "iana_id",
-        "name",
-        "url"
-      ],
+      "required": ["iana_id", "name", "url"],
       "additionalProperties": true
     },
     "registrant": {
