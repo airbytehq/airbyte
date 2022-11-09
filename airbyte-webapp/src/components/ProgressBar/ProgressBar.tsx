@@ -79,7 +79,7 @@ export const ProgressBar = ({
   }
 
   if (isJobsWithJobs(job) && job.attempts) {
-    latestAttempt = job.attempts[job.attempts?.length - 1];
+    latestAttempt = job.attempts[job.attempts.length - 1];
     let countTotalsFromStreams = true;
     if (
       latestAttempt.totalStats?.recordsEmitted &&
