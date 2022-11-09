@@ -6,8 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_sap import SourceSap
+from source_sap_fieldglass import SourceSapFieldglass
 
 if __name__ == "__main__":
-    source = SourceSap()
+    source = SourceSapFieldglass()
     launch(source, sys.argv[1:])

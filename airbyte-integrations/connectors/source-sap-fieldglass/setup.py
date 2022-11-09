@@ -16,8 +16,8 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_sap",
-    description="Source implementation for Sap.",
+    name="source_sap_fieldglass",
+    description="Source implementation for Sap Fieldglass.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),

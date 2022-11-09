@@ -1,7 +1,7 @@
-# Sap Source
+# Sap Fieldglass Source
 
-This is the repository for the Sap configuration based source connector.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/sap).
+This is the repository for the Sap Fieldglass configuration based source connector.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/sap-fieldglass).
 
 ## Local development
 
@@ -10,16 +10,16 @@ You can also build the connector in Gradle. This is typically used in CI and not
 
 To build using Gradle, from the Airbyte repository root, run:
 ```
-./gradlew :airbyte-integrations:connectors:source-sap:build
+./gradlew :airbyte-integrations:connectors:source-sap-fieldglass:build
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/sap)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_sap/spec.yaml` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/sap-fieldglass)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_sap_fieldglass/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source sap test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source sap-fieldglass test creds`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector docker image
@@ -27,12 +27,12 @@ and place them into `secrets/config.json`.
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/source-sap:dev
+docker build . -t airbyte/source-sap-fieldglass:dev
 ```
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-sap:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-sap-fieldglass:airbyteDocker
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -40,10 +40,10 @@ the Dockerfile.
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-sap:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-sap:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-sap:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-sap:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-sap-fieldglass:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-sap-fieldglass:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-sap-fieldglass:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-sap-fieldglass:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing
 
@@ -57,11 +57,11 @@ To run your integration tests with docker
 All commands should be run from airbyte project root.
 To run unit tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-sap:unitTest
+./gradlew :airbyte-integrations:connectors:source-sap-fieldglass:unitTest
 ```
 To run acceptance and custom integration tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-sap:integrationTest
+./gradlew :airbyte-integrations:connectors:source-sap-fieldglass:integrationTest
 ```
 
 ## Dependency Management

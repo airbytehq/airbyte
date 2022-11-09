@@ -9,7 +9,10 @@
   "eslint.format.enable": true,
   "eslint.run": "onType",
   "stylelint.enable": true,
-  "stylelint.validate": ["css", "scss"],
+  "stylelint.validate": [
+    "css",
+    "scss"
+  ],
   "[javascript]": {
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "dbaeumer.vscode-eslint",
@@ -33,7 +36,7 @@
   },
   "[json]": {
     "editor.formatOnSave": true,
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "vscode.json-language-features"
   },
   "[scss]": {
     "editor.formatOnSave": true,
