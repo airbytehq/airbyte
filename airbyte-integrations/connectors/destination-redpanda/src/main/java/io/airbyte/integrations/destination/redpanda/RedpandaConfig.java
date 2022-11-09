@@ -47,14 +47,14 @@ public class RedpandaConfig {
     public static RedpandaConfig createConfig(JsonNode jsonConfig) {
         return new RedpandaConfig(
             jsonConfig.get("bootstrap_servers").asText(),
-            jsonConfig.get("buffer_memory").asLong(),
-            jsonConfig.get("compression_type").asText(),
-            jsonConfig.get("retries").asInt(),
-            jsonConfig.get("batch_size").asInt(),
-            Optional.of(jsonConfig.get("topic_num_partitions").asInt()),
-            Optional.of(jsonConfig.get("topic_replication_factor").shortValue()),
-            jsonConfig.get("socket_connection_setup_timeout_ms").asInt(),
-            jsonConfig.get("socket_connection_setup_timeout_max_ms").asInt()
+            jsonConfig.get("buffer_memory").asLong(33554432L),
+            jsonConfig.get("compression_type").asText("none"),
+            jsonConfig.get("retries").asInt(5),
+            jsonConfig.get("batch_size").asInt(16384),
+            Optional.of(jsonConfig.get("topic_num_partitions").asInt(1)),
+            Optional.of(((Integer) jsonConfig.get("topic_replication_factor").asInt(1)).shortValue()),
+            jsonConfig.get("socket_connection_setup_timeout_ms").asInt(10000),
+            jsonConfig.get("socket_connection_setup_timeout_max_ms").asInt(30000)
         );
     }
 
