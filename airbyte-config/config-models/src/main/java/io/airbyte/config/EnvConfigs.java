@@ -87,6 +87,7 @@ public class EnvConfigs implements Configs {
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
   private static final String TEMPORAL_HISTORY_RETENTION_IN_DAYS = "TEMPORAL_HISTORY_RETENTION_IN_DAYS";
   public static final String JOB_KUBE_NAMESPACE = "JOB_KUBE_NAMESPACE";
+  public static final String JOB_KUBE_SERVICE_ACCOUNT = "JOB_KUBE_SERVICE_ACCOUNT";
   public static final String JOB_MAIN_CONTAINER_CPU_REQUEST = "JOB_MAIN_CONTAINER_CPU_REQUEST";
   public static final String JOB_MAIN_CONTAINER_CPU_LIMIT = "JOB_MAIN_CONTAINER_CPU_LIMIT";
   public static final String JOB_MAIN_CONTAINER_MEMORY_REQUEST = "JOB_MAIN_CONTAINER_MEMORY_REQUEST";
@@ -184,6 +185,7 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
   private static final String DEFAULT_GITHUB_STORE_BRANCH = "master";
   private static final String DEFAULT_JOB_KUBE_NAMESPACE = "default";
+  private static final String DEFAULT_JOB_KUBE_SERVICE_ACCOUNT = "default";
   private static final String DEFAULT_JOB_CPU_REQUIREMENT = null;
   private static final String DEFAULT_JOB_MEMORY_REQUIREMENT = null;
   private static final String DEFAULT_JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
@@ -739,6 +741,11 @@ public class EnvConfigs implements Configs {
   @Override
   public String getJobKubeNamespace() {
     return getEnvOrDefault(JOB_KUBE_NAMESPACE, DEFAULT_JOB_KUBE_NAMESPACE);
+  }
+
+  @Override
+  public String getJobKubeServiceAccount() {
+    return getEnvOrDefault(JOB_KUBE_SERVICE_ACCOUNT, DEFAULT_JOB_KUBE_SERVICE_ACCOUNT);
   }
 
   @Override

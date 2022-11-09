@@ -352,6 +352,7 @@ public class KubePodProcess extends Process implements KubePod {
                         final KubernetesClient fabricClient,
                         final String podName,
                         final String namespace,
+                        final String serviceAccount,
                         final String image,
                         final String imagePullPolicy,
                         final String sidecarImagePullPolicy,
@@ -501,9 +502,9 @@ public class KubePodProcess extends Process implements KubePod {
         .withLabels(labels)
         .withAnnotations(annotations)
         .endMetadata()
-        .withNewSpec();
-
-    podBuilder = podBuilder.withServiceAccount("airbyte-admin").withAutomountServiceAccountToken(true);
+        .withNewSpec()
+        .withServiceAccount(isOrchestrator ? "airbyte-admin" : serviceAccount)
+        .withAutomountServiceAccountToken(true);
 
     final Pod pod = podBuilder.withTolerations(buildPodTolerations(tolerations))
         .withImagePullSecrets(new LocalObjectReference(imagePullSecret)) // An empty string turns this into a no-op setting.

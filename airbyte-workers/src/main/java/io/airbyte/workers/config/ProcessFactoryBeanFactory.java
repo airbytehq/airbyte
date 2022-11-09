@@ -56,10 +56,12 @@ public class ProcessFactoryBeanFactory {
   public ProcessFactory checkKubernetesProcessFactory(
                                                       @Named("checkWorkerConfigs") final WorkerConfigs workerConfigs,
                                                       @Value("${airbyte.worker.job.kube.namespace}") final String kubernetesNamespace,
+                                                      @Value("${airbyte.worker.job.kube.service.account") final String kubernetesServiceAccount,
                                                       @Value("${micronaut.server.port}") final Integer serverPort)
       throws UnknownHostException {
     return createKubernetesProcessFactory(workerConfigs,
         kubernetesNamespace,
+        kubernetesServiceAccount,
         serverPort);
   }
 
@@ -88,10 +90,12 @@ public class ProcessFactoryBeanFactory {
   public ProcessFactory defaultKubernetesProcessFactory(
                                                         @Named("defaultWorkerConfigs") final WorkerConfigs workerConfigs,
                                                         @Value("${airbyte.worker.job.kube.namespace}") final String kubernetesNamespace,
+                                                        @Value("${airbyte.worker.job.kube.service.account") final String kubernetesServiceAccount,
                                                         @Value("${micronaut.server.port}") final Integer serverPort)
       throws UnknownHostException {
     return createKubernetesProcessFactory(workerConfigs,
         kubernetesNamespace,
+        kubernetesServiceAccount,
         serverPort);
   }
 
@@ -122,10 +126,12 @@ public class ProcessFactoryBeanFactory {
   public ProcessFactory discoverKubernetesProcessFactory(
                                                          @Named("discoverWorkerConfigs") final WorkerConfigs workerConfigs,
                                                          @Value("${airbyte.worker.job.kube.namespace}") final String kubernetesNamespace,
+                                                         @Value("${airbyte.worker.job.kube.service.account") final String kubernetesServiceAccount,
                                                          @Value("${micronaut.server.port}") final Integer serverPort)
       throws UnknownHostException {
     return createKubernetesProcessFactory(workerConfigs,
         kubernetesNamespace,
+        kubernetesServiceAccount,
         serverPort);
   }
 
@@ -154,10 +160,12 @@ public class ProcessFactoryBeanFactory {
   public ProcessFactory replicationKubernetesProcessFactory(
                                                             @Named("replicationWorkerConfigs") final WorkerConfigs workerConfigs,
                                                             @Value("${airbyte.worker.job.kube.namespace}") final String kubernetesNamespace,
+                                                            @Value("${airbyte.worker.job.kube.service.account") final String kubernetesServiceAccount,
                                                             @Value("${micronaut.server.port}") final Integer serverPort)
       throws UnknownHostException {
     return createKubernetesProcessFactory(workerConfigs,
         kubernetesNamespace,
+        kubernetesServiceAccount,
         serverPort);
   }
 
@@ -188,10 +196,12 @@ public class ProcessFactoryBeanFactory {
   public ProcessFactory specKubernetesProcessFactory(
                                                      @Named("specWorkerConfigs") final WorkerConfigs workerConfigs,
                                                      @Value("${airbyte.worker.job.kube.namespace}") final String kubernetesNamespace,
+                                                     @Value("${airbyte.worker.job.kube.service.account") final String kubernetesServiceAccount,
                                                      @Value("${micronaut.server.port}") final Integer serverPort)
       throws UnknownHostException {
     return createKubernetesProcessFactory(workerConfigs,
         kubernetesNamespace,
+        kubernetesServiceAccount,
         serverPort);
   }
 
@@ -211,6 +221,7 @@ public class ProcessFactoryBeanFactory {
 
   private ProcessFactory createKubernetesProcessFactory(final WorkerConfigs workerConfigs,
                                                         final String kubernetesNamespace,
+                                                        final String kubernetesServiceAccount,
                                                         final Integer serverPort)
       throws UnknownHostException {
     final KubernetesClient fabricClient = new DefaultKubernetesClient();
@@ -218,6 +229,7 @@ public class ProcessFactoryBeanFactory {
     final String kubeHeartbeatUrl = localIp + ":" + serverPort;
     return new KubeProcessFactory(workerConfigs,
         kubernetesNamespace,
+        kubernetesServiceAccount,
         fabricClient,
         kubeHeartbeatUrl,
         false);

@@ -241,6 +241,7 @@ public class ContainerOrchestratorApp {
 
       return new KubeProcessFactory(workerConfigs,
           configs.getJobKubeNamespace(),
+          configs.getJobKubeServiceAccount(),
           fabricClient,
           kubeHeartbeatUrl,
           false);
