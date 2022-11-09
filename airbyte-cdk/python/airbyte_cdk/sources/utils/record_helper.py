@@ -5,18 +5,17 @@
 import datetime
 from typing import Any, Mapping
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, \
-    AirbyteRecordMessage, AirbyteTraceMessage
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, AirbyteTraceMessage
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 def stream_data_to_airbyte_message(
-        stream_name: str,
-        data_or_message: StreamData,
-        transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform),
-        schema: Mapping[str, Any] = None,
+    stream_name: str,
+    data_or_message: StreamData,
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform),
+    schema: Mapping[str, Any] = None,
 ) -> AirbyteMessage:
     if schema is None:
         schema = {}

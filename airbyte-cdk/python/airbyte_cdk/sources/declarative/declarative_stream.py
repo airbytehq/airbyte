@@ -5,8 +5,6 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from dataclasses_jsonschema import JsonSchemaMixin
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
@@ -14,6 +12,7 @@ from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice
 from airbyte_cdk.sources.streams.core import Stream, StreamData
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
@@ -49,8 +48,7 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
     def __post_init__(self, options: Mapping[str, Any]):
         self.stream_cursor_field = self.stream_cursor_field or []
         self.transformations = self.transformations or []
-        self._schema_loader = self.schema_loader if self.schema_loader else DefaultSchemaLoader(
-            config=self.config, options=options)
+        self._schema_loader = self.schema_loader if self.schema_loader else DefaultSchemaLoader(config=self.config, options=options)
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -108,11 +106,11 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
         return self.stream_cursor_field
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:
         # Set the log level on the retriever if it has a logger
         # FIXME: Add logger to the retriever's interface so we can remove this awkward check
@@ -121,15 +119,13 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
 
         for message_or_record in self.retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state):
             if isinstance(message_or_record, dict):
-                message_or_record = self._apply_transformations(
-                    message_or_record, self.config, stream_slice)
+                message_or_record = self._apply_transformations(message_or_record, self.config, stream_slice)
             yield message_or_record
 
     def _apply_transformations(self, record: Mapping[str, Any], config: Config, stream_slice: StreamSlice):
         output_record = record
         for transformation in self.transformations:
-            output_record = transformation.transform(
-                record, config=config, stream_state=self.state, stream_slice=stream_slice)
+            output_record = transformation.transform(record, config=config, stream_state=self.state, stream_slice=stream_slice)
 
         return output_record
 
@@ -143,7 +139,7 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
         return self._schema_loader.get_json_schema()
 
     def stream_slices(
-            self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Override to define the slices for this stream. See the stream slicing section of the docs for more information.
