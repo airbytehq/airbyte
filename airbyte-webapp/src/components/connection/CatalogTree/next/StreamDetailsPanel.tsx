@@ -1,4 +1,5 @@
 import { Dialog } from "@headlessui/react";
+import React from "react";
 
 import { Overlay } from "components/ui/Overlay";
 
@@ -6,7 +7,7 @@ import { AirbyteStream } from "core/request/AirbyteClient";
 
 import { StreamConnectionHeader } from "./StreamConnectionHeader";
 import styles from "./StreamDetailsPanel.module.scss";
-import { StreamFieldsTable, StreamFieldsTableProps } from "./StreamFieldsTable";
+import { StreamFieldsTable, StreamFieldsTableProps } from "./StreamFieldsTable/StreamFieldsTable";
 import { StreamPanelHeader } from "./StreamPanelHeader";
 
 interface StreamDetailsPanelProps extends StreamFieldsTableProps {

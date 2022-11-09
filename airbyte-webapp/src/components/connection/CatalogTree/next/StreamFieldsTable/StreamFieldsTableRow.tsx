@@ -11,11 +11,11 @@ import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
 import { equal } from "utils/objects";
 import { useTranslateDataType } from "utils/useTranslateDataType";
 
-import DataTypeCell from "../DataTypeCell";
-import { pathDisplayName } from "../PathPopout";
-import { NameContainer } from "../styles";
+import DataTypeCell from "../../DataTypeCell";
+import { pathDisplayName } from "../../PathPopout";
+import { NameContainer } from "../../styles";
 
-interface StreamFieldsTableRowProps {
+export interface StreamFieldsTableRowProps {
   isPrimaryKeyEnabled: boolean;
   isCursorEnabled: boolean;
 
@@ -25,6 +25,7 @@ interface StreamFieldsTableRowProps {
   config: AirbyteStreamConfiguration | undefined;
 }
 
+// Obsolete streams' table row component
 const StreamFieldsTableRowComponent: React.FC<StreamFieldsTableRowProps> = ({
   onPrimaryKeyChange,
   onCursorChange,

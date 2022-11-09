@@ -1,0 +1,7 @@
+@use "scss/colors";
+
+.headerCell {
+  margin: 10px;
+  color: colors.$grey;
+  background-color: colors.$grey-50;
+}
