@@ -1075,6 +1075,13 @@
   icon: postgresql.svg
   sourceType: database
   releaseStage: generally_available
+- name: Postmark App
+  sourceDefinitionId: cde75ca1-1e28-4a0f-85bb-90c546de9f1f
+  dockerRepository: airbyte/source-postmarkapp
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/postmarkapp
+  sourceType: api
+  releaseStage: alpha
 - name: Prestashop
   sourceDefinitionId: d60a46d4-709f-4092-a6b7-2457f7d455f5
   dockerRepository: airbyte/source-prestashop
