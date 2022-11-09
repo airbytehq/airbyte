@@ -10,7 +10,7 @@
       "items": {}
     },
     "attributes": {
-      "type": ["null", "object"],
+      "type": ["null", "object", "array"],
       "properties": {
         "Project Due On": {
           "type": ["null", "string"]
