@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useIntl } from "react-intl";
 
 import { ResizablePanels } from "components/ui/ResizablePanels";
@@ -19,6 +20,12 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
     stream: selectedStream.name,
     config: configJson,
   });
+  const [logsFlex, setLogsFlex] = useState(0);
+
+  const handleLogsTitleClick = () => {
+    // expand to 50% if it is currently less than 50%, otherwise minimize it
+    setLogsFlex((prevFlex) => (prevFlex < 0.5 ? 0.5 : 0));
+  };
 
   return (
     <div className={styles.container}>
@@ -39,9 +46,9 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
           }}
           secondPanel={{
             className: styles.logsContainer,
-            children: <LogsDisplay logs={streamReadData.logs} />,
+            children: <LogsDisplay logs={streamReadData.logs} onTitleClick={handleLogsTitleClick} />,
             minWidth: 30,
-            flex: 0,
+            flex: logsFlex,
           }}
           hideSecondPanel={streamReadData.logs.length === 0}
         />
