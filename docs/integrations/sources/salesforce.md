@@ -120,7 +120,8 @@ Now that you have set up the Salesforce source connector, check out the followin
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+|:--------| :--------- |:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.24  | 2022-11-01 | [18799](https://github.com/airbytehq/airbyte/pull/18799) | Update list of unsupported Bulk API objects                                                                                      |
 | 1.0.23  | 2022-11-01 | [18753](https://github.com/airbytehq/airbyte/pull/18753) | Add error_display_message for ConnectionError                                                                                    |
 | 1.0.22  | 2022-10-12 | [17615](https://github.com/airbytehq/airbyte/pull/17615) | Make paging work, if `cursor_field` is not changed inside one page                                                               |
 | 1.0.21  | 2022-10-10 | [17778](https://github.com/airbytehq/airbyte/pull/17778) | Add `EventWhoRelation` to the list of unsupported Bulk API objects.                                                              |

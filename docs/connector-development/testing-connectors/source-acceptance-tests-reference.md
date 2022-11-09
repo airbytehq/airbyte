@@ -272,7 +272,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "integration_tests/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
   full_refresh:
     tests:
       - config_path: "integration_tests/config.json"
@@ -294,7 +293,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: secrets/config.json
-        configured_catalog_path: integration_tests/streams_with_output_records_catalog.json
         empty_streams:
           - name: collections
             bypass_reason: "This stream can't be seeded in our sandbox account"
@@ -309,3 +307,46 @@ In `high` test strictness level we expect the `expect_records` subtest to be set
 If you can't create an `expected_records.json` with all the existing stream you need to declare the missing streams in the `empty_streams` section.
 If you can't get an `expected_records.json` file at all, you must fill in a `bypass_reason`.
 
+#### Basic read: no `configured_catalog_path` can be set
+In `high` test strictness level we want to run the `basic_read` test on a configured catalog created from the discovered catalog from which we remove declared empty streams. Declaring `configured_catalog_path` in the test configuration is not allowed.
+
+
+
+```yaml
+connector_image: airbyte/source-recharge:dev
+test_strictness_level: high
+acceptance_tests:
+  basic_read:
+    tests:
+      - config_path: secrets/config.json
+        empty_streams:
+          - name: collections
+            bypass_reason: "This stream can't be seeded in our sandbox account"
+          - name: discounts
+            bypass_reason: "This stream can't be seeded in our sandbox account"
+        timeout_seconds: 1200
+...
+```
+
+#### Incremental: `future_state` must be set
+In `high` test strictness level we expect the `future_state` configuration to be set.
+The future state JSON file (usually `abnormal_states.json`) must contain one state for each stream declared in the configured catalog.
+`missing_streams` can be set to ignore a subset of the streams with a valid bypass reason. E.G:
+
+```yaml
+test_strictness_level: high
+connector_image: airbyte/source-my-connector:dev
+acceptance_tests:
+  ...
+  incremental:
+    tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/configured_catalog.json
+        cursor_paths:
+          ... 
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json
+          missing_streams:
+            - name: my_missing_stream
+              bypass_reason: "Please fill a good reason"
+```
