@@ -4,13 +4,13 @@ import { useIntl } from "react-intl";
 import { ConnectorCard } from "components";
 import { SlickSlider } from "components/ui/SlickSlider";
 
-import { ConnectorCard as ConnectorCardType } from "../../types";
+import { SuggestedConnector } from "../../types";
 import styles from "./FrequentlyUsedConnectorsCard.module.scss";
 
 export interface FrequentlyUsedConnectorsCardProps {
-  connectors: ConnectorCardType[];
+  connectors: SuggestedConnector[];
   connectorType: "source" | "destination";
-  onConnectorSelect: (id: string, connectorName: string) => void;
+  onConnectorSelect: (connectorDefinitionId: string, connectorName: string) => void;
 }
 
 export const FrequentlyUsedConnectorsCard: React.FC<FrequentlyUsedConnectorsCardProps> = ({
@@ -31,8 +31,8 @@ export const FrequentlyUsedConnectorsCard: React.FC<FrequentlyUsedConnectorsCard
           id: `${connectorType}s.frequentlyUsed`,
         })}
       >
-        {connectors.map(({ id, name, icon, releaseStage }, index) => (
-          <button key={index} className={styles.card} onClick={() => onConnectorSelect(id, name)}>
+        {connectors.map(({ connectorDefinitionId, name, icon, releaseStage }, index) => (
+          <button key={index} className={styles.card} onClick={() => onConnectorSelect(connectorDefinitionId, name)}>
             <ConnectorCard connectionName={name} icon={icon} releaseStage={releaseStage} fullWidth />
           </button>
         ))}
