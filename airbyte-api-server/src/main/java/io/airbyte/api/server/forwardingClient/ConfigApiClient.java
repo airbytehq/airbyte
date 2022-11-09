@@ -2,12 +2,13 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.api.server.repositories.clients;
+package io.airbyte.api.server.forwardingClient;
 
-import static io.airbyte.api.server.repositories.impl.ConnectionsRepositoryRESTImpl.GATEWAY_AUTH_HEADER;
+import static io.airbyte.api.server.forwardingClient.InternalApiWrapper.GATEWAY_AUTH_HEADER;
 import static io.micronaut.http.HttpHeaders.ACCEPT;
 import static io.micronaut.http.HttpHeaders.USER_AGENT;
 
+import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Body;
@@ -25,11 +26,11 @@ public interface ConfigApiClient {
 
   @Post(value = "/api/v1/connections/sync",
         processes = MediaType.APPLICATION_JSON)
-  HttpResponse<String> sync(@Body SyncDto connectionId, @Header(name = GATEWAY_AUTH_HEADER) String xEndpointAPIUserInfo);
+  HttpResponse<String> sync(@Body ConnectionIdRequestBody connectionId, @Header(name = GATEWAY_AUTH_HEADER) String xEndpointAPIUserInfo);
 
   @Post(value = "/api/v1/connections/reset",
         processes = MediaType.APPLICATION_JSON)
-  HttpResponse<String> reset(@Body SyncDto connectionId);
+  HttpResponse<String> reset(@Body ConnectionIdRequestBody connectionId);
 
   @Get("/health")
   HttpResponse<String> healthCheck();

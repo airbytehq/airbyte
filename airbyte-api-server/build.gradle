@@ -14,6 +14,8 @@ repositories {
 }
 
 dependencies {
+    implementation project(':airbyte-api')
+
     annotationProcessor("io.micronaut:micronaut-http-validation")
     annotationProcessor("io.micronaut.jaxrs:micronaut-jaxrs-processor")
     annotationProcessor("io.micronaut.data:micronaut-data-processor")
@@ -75,7 +77,7 @@ micronaut {
 }
 
 task generateApiServer(type: GenerateTask) {
-    def serverOutputDir = "$buildDir/generated/api/server"
+    def serverOutputDir = "$buildDir/generated/public-api/server"
 
     inputs.file specFile
     outputs.dir serverOutputDir
@@ -84,9 +86,9 @@ task generateApiServer(type: GenerateTask) {
     inputSpec = specFile
     outputDir = serverOutputDir
 
-    apiPackage = "io.airbyte.api.server.generated"
-    invokerPackage = "io.airbyte.api.server.invoker.generated"
-    modelPackage = "io.airbyte.api.server.model.generated"
+    apiPackage = "io.airbyte.public-api.server.generated"
+    invokerPackage = "io.airbyte.public-api.server.invoker.generated"
+    modelPackage = "io.airbyte.public-api.server.model.generated"
 
     generateApiDocumentation = false
 
@@ -107,13 +109,49 @@ task generateApiServer(type: GenerateTask) {
             useTags: "true"
     ]
 }
-
 compileJava.dependsOn tasks.generateApiServer
+
+task generateApiClient(type: GenerateTask) {
+    def clientOutputDir = "$buildDir/generated/public-api/client"
+
+    inputs.file specFile
+    outputs.dir clientOutputDir
+
+    generatorName = "java"
+    inputSpec = specFile
+    outputDir = clientOutputDir
+
+    apiPackage = "io.airbyte.public-api.client.generated"
+    invokerPackage = "io.airbyte.public-api.client.invoker.generated"
+    modelPackage = "io.airbyte.public-api.client.model.generated"
+
+    schemaMappings = [
+            'OAuthConfiguration'                : 'com.fasterxml.jackson.databind.JsonNode',
+            'SourceDefinitionSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
+            'SourceConfiguration'               : 'com.fasterxml.jackson.databind.JsonNode',
+            'DestinationDefinitionSpecification': 'com.fasterxml.jackson.databind.JsonNode',
+            'DestinationConfiguration'          : 'com.fasterxml.jackson.databind.JsonNode',
+            'StreamJsonSchema'                  : 'com.fasterxml.jackson.databind.JsonNode',
+            'StateBlob'                         : 'com.fasterxml.jackson.databind.JsonNode',
+            'FieldSchema'                       : 'com.fasterxml.jackson.databind.JsonNode',
+    ]
+
+    library = "native"
+
+    generateApiDocumentation = false
+
+    configOptions = [
+            dateLibrary  : "java8",
+            generatePom  : "false",
+            interfaceOnly: "true"
+    ]
+}
+compileJava.dependsOn tasks.generateApiClient
 
 sourceSets {
     main {
         java {
-            srcDirs "$buildDir/generated/api/server/src/gen/java", "$projectDir/src/main/java"
+            srcDirs "$buildDir/generated/public-api/server/src/gen/java", "$buildDir/generated/public-api/client/src/main/java", "$projectDir/src/main/java"
         }
         resources {
             srcDir "$projectDir/src/main/openapi/"

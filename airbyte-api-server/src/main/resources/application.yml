@@ -1,6 +1,6 @@
 micronaut:
   application:
-    name: airbyteApiServer
+    name: airbyte-api-server
 #  http:
 #    services:
 #      config-api:
@@ -18,7 +18,4 @@ airbyte:
   configServerUrl: "localhost:8080"
   internal:
     api:
-      auth-header:
-        name: ${AIRBYTE_API_AUTH_HEADER_NAME:}
-        value: ${AIRBYTE_API_AUTH_HEADER_VALUE:}
       host: ${INTERNAL_API_HOST}

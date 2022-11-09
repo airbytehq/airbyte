@@ -4,15 +4,14 @@
 
 package io.airbyte.api.server.repositories;
 
-import io.airbyte.api.server.model.generated.Connection;
+import io.airbyte.public_api.server.model.generated.Connection;
 import io.micronaut.data.repository.GenericRepository;
-import io.micronaut.http.HttpResponse;
 import java.util.UUID;
 
 public interface ConnectionsRepository extends GenericRepository<Connection, UUID> {
 
-  HttpResponse<String> sync(UUID connection, String xEndpointAPIUserInfo);
+  void sync(UUID connectionId, String xEndpointAPIUserInfo);
 
-  HttpResponse<String> reset(UUID connection);
+  void reset(UUID connectionId);
 
 }
