@@ -49,7 +49,7 @@ public class ConfigWriter {
    */
   static Set<String> getConnectorRepositoriesInUse(final DSLContext ctx) {
     return getActorDefinitionsInUse(ctx)
-        .map(Record4::value2)
+        .map(r -> r.get(ACTOR_DEFINITION.DOCKER_REPOSITORY))
         .collect(Collectors.toSet());
   }
 
@@ -59,9 +59,10 @@ public class ConfigWriter {
    */
   static Map<UUID, Entry<io.airbyte.config.ActorType, Version>> getActorDefinitionsInUseToProtocolVersion(final DSLContext ctx) {
     return getActorDefinitionsInUse(ctx)
-        .collect(Collectors.toMap(Record4::value1,
-            r -> Map.entry(r.value3() == ActorType.source ? io.airbyte.config.ActorType.SOURCE : io.airbyte.config.ActorType.DESTINATION,
-                AirbyteProtocolVersion.getWithDefault(r.value4()))));
+        .collect(Collectors.toMap(r -> r.get(ACTOR_DEFINITION.ID),
+            r -> Map.entry(
+                r.get(ACTOR_DEFINITION.ACTOR_TYPE) == ActorType.source ? io.airbyte.config.ActorType.SOURCE : io.airbyte.config.ActorType.DESTINATION,
+                AirbyteProtocolVersion.getWithDefault(r.get(ACTOR_DEFINITION.PROTOCOL_VERSION)))));
   }
 
   private static Stream<Record4<UUID, String, ActorType, String>> getActorDefinitionsInUse(final DSLContext ctx) {
