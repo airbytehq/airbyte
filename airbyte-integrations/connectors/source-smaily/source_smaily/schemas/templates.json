@@ -20,7 +20,5 @@
       "type": ["string", "null"]
     }
   },
-  "required": [
-    "id"
-  ]
+  "required": ["id"]
 }
