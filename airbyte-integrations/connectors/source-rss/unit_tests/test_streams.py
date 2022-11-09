@@ -5,7 +5,9 @@
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
+import os
 import pytest
+import time
 from source_rss.source import RssStream
 
 
@@ -45,7 +47,7 @@ def test_parse_response(patch_base_class):
                             <title>Test Title</title>
                             <link>http://testlink</link>
                             <description>Test Description</description>
-                            <pubDate>Fri, 08 Nov 2022 01:16 EDT</pubDate>
+                            <pubDate>Fri, 28 Oct 2022 11:16 EDT</pubDate>
                         </item>
                     </channel>
                 </rss>
@@ -55,9 +57,17 @@ def test_parse_response(patch_base_class):
         "title": "Test Title",
         "link": "http://testlink",
         "description": "Test Description",
-        "published": "2022-11-08T06:16:00+00:00",
+        "published": "2022-10-28T15:16:00+00:00",
     }
 
+    assert next(stream.parse_response(response=SampleResponse(), stream_state={})) == expected_parsed_object
+
+    # test that the local timezone doesn't impact how this is computed
+    os.environ['TZ'] = 'Africa/Accra'
+    time.tzset()
+    assert next(stream.parse_response(response=SampleResponse(), stream_state={})) == expected_parsed_object
+    os.environ['TZ'] = 'Asia/Tokyo'
+    time.tzset()
     assert next(stream.parse_response(response=SampleResponse(), stream_state={})) == expected_parsed_object
 
 

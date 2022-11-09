@@ -4,8 +4,8 @@
 
 
 from abc import ABC
+from calendar import timegm
 from datetime import datetime
-from time import mktime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import feedparser
@@ -39,7 +39,7 @@ def convert_item_to_mapping(item) -> Mapping:
 
     try:
         # get datetime in UTC
-        dt = datetime.fromtimestamp(mktime(item.published_parsed))
+        dt = datetime.utcfromtimestamp(timegm(item.published_parsed))
         # make sure that the output string is labeled as UTC
         dt_tz = dt.replace(tzinfo=pytz.UTC)
         mapping["published"] = dt_tz.isoformat()
