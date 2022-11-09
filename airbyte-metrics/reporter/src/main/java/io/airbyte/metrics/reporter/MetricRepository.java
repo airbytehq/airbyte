@@ -65,7 +65,7 @@ class MetricRepository {
         .fetchOne(0, int.class);
   }
 
-  Map<GeographyType, Double> oldestPendingJobAgeSecsByGeography() {
+  Map<String, Double> oldestPendingJobAgeSecsByGeography() {
     final var query =
         """
         SELECT cast(connection.geography as varchar) AS geography, MAX(EXTRACT(EPOCH FROM (current_timestamp - jobs.created_at))) AS run_duration_seconds
@@ -76,7 +76,7 @@ class MetricRepository {
         GROUP BY geography;
         """;
     final var result = ctx.fetch(query);
-    return (Map<GeographyType, Double>) result.intoMap(0, 1);
+    return (Map<String, Double>) result.intoMap(0, 1);
   }
 
   Map<String, Double> oldestRunningJobAgeSecsByTaskQueue() {

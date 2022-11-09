@@ -105,7 +105,7 @@ class EmitterTest {
 
   @Test
   void TestOldestPendingJob() {
-    final var value = Map.of(GeographyType.AUTO, 101.0, GeographyType.EU, 20.0);
+    final var value = Map.of("AUTO", 101.0, "EU", 20.0);
     when(repo.oldestPendingJobAgeSecsByGeography()).thenReturn(value);
 
     final var emitter = new OldestPendingJob(client, repo);
