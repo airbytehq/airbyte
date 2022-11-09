@@ -210,7 +210,7 @@ services:
       - workspace:${WORKSPACE_ROOT}
     networks:
       - airbyte_internal
-  #airbyte-connector-builder-servcer: #FIXME: Uncomment this block when enabling airbyte-connector-builder
+  #airbyte-connector-builder-server: #FIXME: Uncomment this block when enabling airbyte-connector-builder
   #  image: airbyte/connector-builder-server:${VERSION}
   #  logging: *default-logging
   #  container_name: airbyte-connector-builder-server
