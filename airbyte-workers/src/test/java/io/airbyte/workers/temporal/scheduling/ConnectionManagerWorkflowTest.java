@@ -486,6 +486,7 @@ class ConnectionManagerWorkflowTest {
       Mockito.verifyNoInteractions(mJobCreationAndStatusUpdateActivity);
     }
 
+    // TODO: delete when the signal method can be removed
     @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
@@ -533,7 +534,7 @@ class ConnectionManagerWorkflowTest {
                   && changedStateEvent.isValue())
           .isEmpty();
 
-      Mockito.verify(mConnectionDeletionActivity, Mockito.times(1)).deleteConnection(Mockito.any());
+      Mockito.verify(mConnectionDeletionActivity, Mockito.times(0)).deleteConnection(Mockito.any());
     }
 
     @Test
