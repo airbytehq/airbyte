@@ -16,7 +16,6 @@ Server-API
 - [Message-Streams](https://postmarkapp.com/developer/api/message-streams-api#list-message-streams): Lets you manage message streams for a specific server. Please note: A Server may have up to 10 Streams, including the default ones. Default Streams cannot be deleted, and Servers can only have 1 Inbound Stream.
 - [Outbound stats](https://account.postmarkapp.com/servers/9708911/credentials): Lets you get all of the statistics of your outbound emails for a specific server. These statistics are stored permantently and do not expire. All stats use EST timezone
 
-TODO:
 Account-API
 - [Servers](https://postmarkapp.com/developer/api/servers-api): Lets you manage servers for a specific account.
 - [Domains](https://postmarkapp.com/developer/api/domains-api): Gets a list of domains containing an overview of the domain and authentication status.
@@ -57,4 +56,4 @@ The Postmarkapp source connector supports the following [sync modes](https://doc
 
 | Version | Date | Pull Request | Subject                                    |
 | :------ |:-----|:-------------| :----------------------------------------- |
-| 0.1.0   | TBA  | TBA          | 🎉 New Source: Postmarkapp API [low-code CDK] |
+| 0.1.0   | 2022-11-09  | 18220  | 🎉 New Source: Postmarkapp API [low-code CDK] |
