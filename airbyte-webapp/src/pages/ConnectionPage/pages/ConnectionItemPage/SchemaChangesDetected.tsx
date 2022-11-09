@@ -14,7 +14,7 @@ import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
 import styles from "./SchemaChangesDetected.module.scss";
 
 export const useSchemaChanges = (schemaChange: SchemaChange) => {
-  const isSchemaChangesFeatureEnabled = process.env.REACT_APP_AUTO_DETECT_SCHEMA_CHANGES === "true" ?? false;
+  const isSchemaChangesFeatureEnabled = process.env.REACT_APP_AUTO_DETECT_SCHEMA_CHANGES === "true";
 
   return useMemo(() => {
     const hasSchemaChanges = isSchemaChangesFeatureEnabled && schemaChange !== SchemaChange.no_change;
