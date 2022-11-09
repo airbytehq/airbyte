@@ -176,7 +176,7 @@
                 "picture": {
                   "$id": "#root/videos/items/video_pictures/items/picture",
                   "title": "Picture",
-                  "type": "string",
+                  "type": ["null","string"],
                   "default": "",
                   "pattern": "^.*$"
                 },
