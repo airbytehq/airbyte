@@ -41,8 +41,8 @@ public class DataArgumentsProvider implements ArgumentsProvider {
 
   public static class CatalogMessageTestConfigPair {
 
-    final String catalogFile;
-    final String messageFile;
+    public final String catalogFile;
+    public final String messageFile;
 
     public CatalogMessageTestConfigPair(final String catalogFile, final String messageFile) {
       this.catalogFile = catalogFile;
