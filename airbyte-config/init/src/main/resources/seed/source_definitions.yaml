@@ -1417,6 +1417,14 @@
   icon: youtube.svg
   sourceType: api
   releaseStage: beta
+- sourceDefinitionId: 78752073-6d96-447d-8a93-2b6953f3c787
+  name: YouTube Analytics Business
+  dockerRepository: airbyte/source-youtube-analytics-business
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/youtube-analytics-business
+  icon: youtube.svg
+  sourceType: api
+  releaseStage: alpha
 - name: VictorOps
   sourceDefinitionId: 7e20ce3e-d820-4327-ad7a-88f3927fd97a
   dockerRepository: farosai/airbyte-victorops-source
