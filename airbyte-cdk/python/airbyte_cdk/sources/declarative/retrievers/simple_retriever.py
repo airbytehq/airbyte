@@ -374,10 +374,9 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
             stream_slice,
             stream_state,
         )
-        for message in records_generator:
-            if message.type == MessageType.RECORD:
-                self.stream_slicer.update_cursor(stream_slice, last_record=message.record.data)
-            yield message
+        for record in records_generator:
+            self.stream_slicer.update_cursor(stream_slice, last_record=record)
+            yield record
         else:
             last_record = self._last_records[-1] if self._last_records else None
             self.stream_slicer.update_cursor(stream_slice, last_record=last_record)

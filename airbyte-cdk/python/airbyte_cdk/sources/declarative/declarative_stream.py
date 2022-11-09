@@ -8,7 +8,6 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from dataclasses_jsonschema import JsonSchemaMixin
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
@@ -120,11 +119,11 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
         if hasattr(self.logger, "level") and hasattr(self.retriever, "logger"):
             self.retriever.logger.setLevel(self.logger.level)
 
-        for message in self.retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state):
-            if message.type == MessageType.RECORD:
-                message.record.data = self._apply_transformations(
-                    message.record.data, self.config, stream_slice)
-            yield message
+        for message_or_record in self.retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            if isinstance(message_or_record, dict):
+                message_or_record = self._apply_transformations(
+                    message_or_record, self.config, stream_slice)
+            yield message_or_record
 
     def _apply_transformations(self, record: Mapping[str, Any], config: Config, stream_slice: StreamSlice):
         output_record = record
