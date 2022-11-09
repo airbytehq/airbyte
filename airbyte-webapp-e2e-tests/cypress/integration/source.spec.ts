@@ -5,22 +5,16 @@ import { goToSourcePage, openNewSourceForm } from "pages/sourcePage";
 import { openHomepage } from "pages/sidebar";
 import { selectServiceType } from "pages/createConnectorPage";
 import { fillPokeAPIForm } from "commands/connector";
-import { should } from "chai";
-
 
 describe("Source main actions", () => {
-  beforeEach(() => {
-    initialSetupCompleted();
-  });
+  beforeEach(() => initialSetupCompleted());
 
   it("Create new source", () => {
     cy.intercept("/api/v1/sources/create").as("createSource");
     createPostgresSource("Test source cypress");
 
     cy.wait("@createSource", {timeout: 30000}).then((interception) => {
-      assert("include", `/source/` + interception.response?.body.Id)});
-
-    //cy.url().should("include", `/source/`);
+      assert("include", `/source/${interception.response?.body.Id}`)});
   });
 
   //TODO: add update source on some other connector or create 1 more user for pg
@@ -44,9 +38,7 @@ describe("Source main actions", () => {
 });
 
 describe("Unsaved changes modal", () => {
-  beforeEach(() => {
-    initialSetupCompleted();
-  });
+  beforeEach(() => initialSetupCompleted());
 
   it("Check leaving Source page without any changes", () => {
     goToSourcePage();
@@ -54,7 +46,7 @@ describe("Unsaved changes modal", () => {
 
     openHomepage();
 
-    cy.url().should("include", `/onboarding`);
+    cy.url().should("include", "/onboarding");
   });
 
   it("Check leaving Source page without any changes after selection type", () => {
@@ -64,7 +56,7 @@ describe("Unsaved changes modal", () => {
 
     openHomepage();
 
-    cy.url().should("include", `/onboarding`);
+    cy.url().should("include", "/onboarding");
   });
 
   it("Check leaving Source page without any changes", () => {
@@ -74,10 +66,10 @@ describe("Unsaved changes modal", () => {
 
     openHomepage();
 
-    cy.get("#headlessui-portal-root h5").should("exist");
-    cy.get("#headlessui-portal-root h5").should("have.text", "Discard changes");
-    cy.get("#headlessui-portal-root [class*='ConfirmationModal_content']")
-      .should("have.text", "There are unsaved changes. Are you sure you want to discard your changes?CancelDiscard changes");
+    cy.get("[data-testid='confirmationModal']").should("exist");
+    cy.get("[data-testid='confirmationModal']").contains("Discard changes");
+    cy.get("[data-testid='confirmationModal']")
+      .contains("There are unsaved changes. Are you sure you want to discard your changes?");
   });
 
   //BUG - https://github.com/airbytehq/airbyte/issues/18246
@@ -93,9 +85,9 @@ describe("Unsaved changes modal", () => {
 
     openHomepage();
 
-    cy.get("#headlessui-portal-root h5").should("exist");
-    cy.get("#headlessui-portal-root h5").should("have.text", "Discard changes");
-    cy.get("#headlessui-portal-root [class*='ConfirmationModal_content']")
-      .should("have.text", "There are unsaved changes. Are you sure you want to discard your changes?CancelDiscard changes");
+    cy.get("[data-testid='confirmationModal']").should("exist");
+    cy.get("[data-testid='confirmationModal']").contains("Discard changes");
+    cy.get("[data-testid='confirmationModal']")
+      .contains("There are unsaved changes. Are you sure you want to discard your changes?");
   });
 });
