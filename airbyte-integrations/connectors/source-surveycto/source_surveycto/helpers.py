@@ -12,6 +12,10 @@ import json
 import asyncio
 import time
 
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
+
 
 class Helpers(object):
 
@@ -34,8 +38,18 @@ class Helpers(object):
         print(f'=========================>>>>{auth_token}')
         
         url = f"https://{server_name}.surveycto.com/api/v2/forms/data/wide/json/{form_id}?date={start_date}"
-        
-        response = requests.get(url, headers = {'Authorization': 'Basic ' + auth_token })
+
+        retry_strategy = Retry(
+            total=3,
+            status_forcelist=[429, 409],
+            method_whitelist=["HEAD", "GET", "OPTIONS"]
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        http = requests.Session()
+        http.mount("https://", adapter)
+        http.mount("http://", adapter)
+
+        response = http.get(url, headers = {'Authorization': 'Basic ' + auth_token })
         print(f'=========================>>>>{response}')
         data = response.json()
         print(f'=========================>>>>{data}')
