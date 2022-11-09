@@ -5,16 +5,13 @@
 from unittest import mock
 from unittest.mock import MagicMock, call
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteTraceMessage, Level, SyncMode, TraceType, Type
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteTraceMessage, Level, SyncMode, TraceType
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 def test_declarative_stream():
     name = "stream"
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform)
     primary_key = "pk"
     cursor_field = ["created_at"]
 
@@ -24,17 +21,15 @@ def test_declarative_stream():
 
     state = MagicMock()
     records = [
-        stream_data_to_airbyte_message(name, {"pk": 1234, "field": "value"}, transformer, json_schema),
-        stream_data_to_airbyte_message(name, {"pk": 4567, "field": "different_value"}, transformer, json_schema),
-        stream_data_to_airbyte_message(
-            name, AirbyteLogMessage(level=Level.INFO, message="This is a log  message"), transformer, json_schema
-        ),
-        stream_data_to_airbyte_message(name, AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=12345), transformer, json_schema),
+        {"pk": 1234, "field": "value"},
+        {"pk": 4567, "field": "different_value"},
+        AirbyteLogMessage(level=Level.INFO, message="This is a log  message"),
+        AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=12345),
     ]
     stream_slices = [
-        stream_data_to_airbyte_message(name, {"date": "2021-01-01"}, transformer, json_schema),
-        stream_data_to_airbyte_message(name, {"date": "2021-01-02"}, transformer, json_schema),
-        stream_data_to_airbyte_message(name, {"date": "2021-01-03"}, transformer, json_schema),
+        {"date": "2021-01-01"},
+        {"date": "2021-01-02"},
+        {"date": "2021-01-03"},
     ]
     checkpoint_interval = 1000
 
@@ -75,8 +70,6 @@ def test_declarative_stream():
             len(transformation.transform.call_args_list) == len(records) - 2
         )  # don't include the AirbyteLogMessage and the AirbyteTraceMessage
         expected_calls = [
-            call(record.record.data, config=config, stream_slice=input_slice, stream_state=state)
-            for record in records
-            if record.type == Type.RECORD
+            call(record, config=config, stream_slice=input_slice, stream_state=state) for record in records if isinstance(record, dict)
         ]
         transformation.transform.assert_has_calls(expected_calls, any_order=False)

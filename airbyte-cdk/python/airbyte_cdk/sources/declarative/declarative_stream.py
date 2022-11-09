@@ -114,6 +114,7 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
     ) -> Iterable[StreamData]:
         for message_or_record in self.retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state):
             # Only apply transformations if `message_or_record` is record data
+            print(f"type: {type(message_or_record)}")
             if isinstance(message_or_record, dict):
                 message_or_record = self._apply_transformations(message_or_record, self.config, stream_slice)
             yield message_or_record
