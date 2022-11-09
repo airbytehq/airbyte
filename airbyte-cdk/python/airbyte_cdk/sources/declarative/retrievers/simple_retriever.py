@@ -55,7 +55,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
     config: Config
     options: InitVar[Mapping[str, Any]]
     name: str
-    _name: str = field(init=False, repr=False, default="")
+    _name: Union[InterpolatedString, str] = field(init=False, repr=False, default="")
     primary_key: Optional[Union[str, List[str], List[List[str]]]]
     _primary_key: str = field(init=False, repr=False, default="")
     paginator: Optional[Paginator] = None
@@ -67,13 +67,14 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         self._last_response = None
         self._last_records = None
         self._options = options
+        self.name = InterpolatedString(self._name, options=options)
 
     @property
     def name(self) -> str:
         """
         :return: Stream name
         """
-        return InterpolatedString(self._name, options=self._options).eval({})
+        return self._name.eval({})
 
     @name.setter
     def name(self, value: str) -> None:
