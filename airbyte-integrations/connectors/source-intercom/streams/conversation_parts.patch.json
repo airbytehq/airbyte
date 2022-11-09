@@ -1,0 +1,16 @@
+{
+  "properties": {
+    "attachments": {
+      "items": {
+        "properties": {
+          "height": {
+            "type": ["null", "string"]
+          },
+          "width": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}
