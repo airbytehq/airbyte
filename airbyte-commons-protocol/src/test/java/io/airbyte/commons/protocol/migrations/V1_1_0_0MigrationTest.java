@@ -42,25 +42,20 @@ public class V1_1_0_0MigrationTest {
     io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
 
     io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize("""
-            {
-              "type": "CATALOG",
-              "catalog": {
-                "streams": [
-                  {
-                    "json_schema": {
-                      "$ref": "WellKnownTypes.json#definitions/String"
-                    }
-                  }
-                ]
+        {
+          "type": "CATALOG",
+          "catalog": {
+            "streams": [
+              {
+                "json_schema": {
+                  "$ref": "WellKnownTypes.json#definitions/String"
+                }
               }
-            }
-            """,
-        io.airbyte.protocol.models.v0.AirbyteMessage.class
-    );
-    assertEquals(
-        expectedMessage,
-        upgradedMessage
-    );
+            ]
+          }
+        }
+        """, io.airbyte.protocol.models.v0.AirbyteMessage.class);
+    assertEquals(expectedMessage, upgradedMessage);
   }
 
   @Test
@@ -165,12 +160,8 @@ public class V1_1_0_0MigrationTest {
             }
           }
         }
-        """
-    );
-    assertEquals(
-        expectedSchema,
-        upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema()
-    );
+        """);
+    assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
   }
 
   @Test
@@ -279,12 +270,8 @@ public class V1_1_0_0MigrationTest {
             }
           }
         }
-        """
-    );
-    assertEquals(
-        expectedSchema,
-        upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema()
-    );
+        """);
+    assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
   }
 
   @Test
@@ -424,12 +411,8 @@ public class V1_1_0_0MigrationTest {
             "bad_integer": {"$ref": "WellKnownTypes.json#definitions/Integer"}
           }
         }
-        """
-    );
-    assertEquals(
-        expectedSchema,
-        upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema()
-    );
+        """);
+    assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
   }
 
   @Test
@@ -500,19 +483,13 @@ public class V1_1_0_0MigrationTest {
             }
           }
         }
-        """
-    );
-    assertEquals(
-        expectedSchema,
-        upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema()
-    );
+        """);
+    assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
   }
 
   private AirbyteMessage createCatalogMessage(JsonNode schema) {
-    return new AirbyteMessage()
-        .withType(Type.CATALOG)
-        .withCatalog(new AirbyteCatalog()
-            .withStreams(List.of(new AirbyteStream().withJsonSchema(schema))));
+    return new AirbyteMessage().withType(Type.CATALOG)
+        .withCatalog(new AirbyteCatalog().withStreams(List.of(new AirbyteStream().withJsonSchema(schema))));
   }
 
   private void assertUpgradeIsNoop(String schemaString) {
@@ -521,10 +498,7 @@ public class V1_1_0_0MigrationTest {
     io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
 
     JsonNode expectedSchema = Jsons.deserialize(schemaString);
-    assertEquals(
-        expectedSchema,
-        upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema()
-    );
+    assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
   }
 
 }
