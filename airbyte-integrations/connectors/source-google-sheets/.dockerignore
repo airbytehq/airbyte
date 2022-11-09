@@ -1,7 +1,5 @@
 *
-!documentation_url.patch.json
-!spec.patch.json
-!oauth2.patch.json
+!*.patch.json
 !Dockerfile
 !main.py
 !google_sheets_source

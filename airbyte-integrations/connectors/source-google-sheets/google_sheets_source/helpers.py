@@ -37,13 +37,7 @@ class Helpers(object):
     def get_authenticated_google_credentials(credentials: Dict[str, str], scopes: List[str] = SCOPES):
         auth_type = credentials.pop("auth_type")
         if auth_type == "Service":
-            try:
-                service_account_json = json.loads(credentials["service_account_info"])
-                return service_account.Credentials.from_service_account_info(service_account_json, scopes=scopes)
-            except json.JSONDecodeError:
-                logger.error("Failed to parse Service Account JSON credentials, please make sure the input is valid JSON.")
-                raise
-
+            return service_account.Credentials.from_service_account_info(json.loads(credentials["service_account_info"]), scopes=scopes)
         elif auth_type == "Client":
             return client_account.Credentials.from_authorized_user_info(info=credentials)
 
@@ -61,7 +55,6 @@ class Helpers(object):
 
         props = {field: {"type": "string"} for field in fields}
         props["row_id"] = {"type": "integer"}
-
         sheet_json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
@@ -219,7 +212,7 @@ class Helpers(object):
         if re.match(r"(http://)|(https://)", id_or_url):
             # This is a URL
             m = re.search(r"(/)([-\w]{40,})([/]?)", id_or_url)
-            if m.group(2):
+            if m is not None and m.group(2):
                 return m.group(2)
         else:
             return id_or_url
