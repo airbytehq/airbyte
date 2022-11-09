@@ -220,7 +220,9 @@ export const ProgressBar = ({
                         })} (${formatNumber(localNumerator)} / ${formatNumber(localDenominator)} ${formatMessage({
                           id: "estimate.recordsSynced",
                         })})`
-                      : `${localNumerator} ${formatMessage({ id: "estimate.recordsSyncedThusFar" })} (no estimate)`}
+                      : `${localNumerator} ${formatMessage({ id: "estimate.recordsSyncedThusFar" })} (${formatMessage({
+                          id: "estimate.noEstimate",
+                        })})`}
                   </div>
                 );
               })}
