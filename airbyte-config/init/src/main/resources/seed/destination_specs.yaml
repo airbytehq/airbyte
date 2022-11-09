@@ -2587,6 +2587,7 @@
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes:
     - "append"
     - "append_dedup"
@@ -6442,6 +6443,7 @@
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
@@ -6511,6 +6513,7 @@
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes:
     - "overwrite"
     - "append"

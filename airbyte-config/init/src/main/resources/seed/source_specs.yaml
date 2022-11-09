@@ -22,6 +22,7 @@
           description: "Account Username"
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-adjust:0.1.0"
   spec:
@@ -277,6 +278,7 @@
           order: 5
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-alloydb:1.0.17"
   spec:
@@ -1431,6 +1433,7 @@
           - "2017-01-25T00:00:00Z"
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-auth0:0.1.0"
   spec:
@@ -1514,6 +1517,7 @@
                 airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-azure-table:0.1.3"
   spec:
@@ -1890,6 +1894,7 @@
           - 50
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-cart:0.2.0"
   spec:
@@ -2409,6 +2414,7 @@
           default: 100
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-coinmarketcap:0.1.1"
   spec:
@@ -2450,6 +2456,7 @@
           - "BTC"
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-commercetools:0.1.0"
   spec:
@@ -2549,6 +2556,7 @@
           airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-convex:0.1.0"
   spec:
@@ -2574,6 +2582,7 @@
           airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-courier:0.1.0"
   spec:
@@ -2618,6 +2627,7 @@
           airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "farosai/airbyte-customer-io-source:0.1.23"
   spec:
@@ -2699,6 +2709,7 @@
           order: 6
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-delighted:0.1.4"
   spec:
@@ -3075,6 +3086,7 @@
           airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-exchange-rates:1.2.7"
   spec:
@@ -3577,6 +3589,7 @@
           airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-fauna:dev"
   spec:
@@ -4113,6 +4126,7 @@
           description: "ID of a grid, or can be ID of a branch"
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-github:0.3.7"
   spec:
@@ -5137,6 +5151,7 @@
           description: "Optional, Available params- json, media, proto"
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-google-workspace-admin-reports:0.1.8"
   spec:
@@ -6322,6 +6337,7 @@
           airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-klaviyo:0.1.10"
   spec:
@@ -6785,6 +6801,7 @@
           description: "Lokalise project ID. Available at Project Settings > General."
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-looker:0.2.7"
   spec:
@@ -6952,6 +6969,7 @@
           airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-mailjet-sms:0.1.0"
   spec:
@@ -6988,6 +7006,7 @@
           - 1666281656
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-mailerlite:0.1.0"
   spec:
@@ -7007,6 +7026,7 @@
           airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-mailgun:0.1.0"
   spec:
@@ -8348,6 +8368,7 @@
             >here</a>"
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-nasa:0.1.0"
   spec:
@@ -8402,6 +8423,7 @@
             \ If an APOD is not a video, this parameter is ignored."
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-netsuite:0.1.1"
   spec:
@@ -8664,6 +8686,7 @@
           order: 11
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-notion:0.1.10"
   spec:
@@ -8886,6 +8909,7 @@
           airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-onesignal:0.1.2"
   spec:
@@ -9421,6 +9445,7 @@
           order: 2
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-outreach:0.1.2"
   spec:
@@ -9552,6 +9577,7 @@
           - "2017-01-25T00:00:00Z"
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-paypal-transaction:0.1.10"
   spec:
@@ -10462,6 +10488,7 @@
       properties: {}
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-qualaroo:0.1.2"
   spec:
@@ -10639,6 +10666,7 @@
             \ tokens page</a>."
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-recurly:0.4.1"
   spec:
@@ -10906,6 +10934,7 @@
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
     authSpecification:
       auth_type: "oauth2.0"
@@ -11498,6 +11527,7 @@
           airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-sendgrid:0.2.16"
   spec:
@@ -12185,6 +12215,7 @@
           - "YYYY-MM-DD"
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-spacex-api:0.1.0"
   spec:
@@ -12206,6 +12237,7 @@
             \ launches-latest, upcoming, past"
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-square:0.1.4"
   spec:
@@ -12581,6 +12613,7 @@
           description: "A List of your survey ids for survey-specific stream"
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-talkdesk-explore:0.1.0"
   spec:
@@ -13091,6 +13124,7 @@
           - "global"
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-twilio:0.1.13"
   spec:
@@ -13330,6 +13364,7 @@
           airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-xkcd:0.1.1"
   spec:
@@ -13467,6 +13502,7 @@
           - "20221115T225616Z"
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-wrike:0.1.0"
   spec:
@@ -13524,6 +13560,7 @@
           airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-zendesk-chat:0.1.11"
   spec:
@@ -13669,6 +13706,7 @@
           airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-zendesk-sunshine:0.1.1"
   spec:
@@ -14538,6 +14576,7 @@
           order: 8
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-firebolt:0.1.0"
   spec:
@@ -14693,6 +14732,7 @@
           airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-wikipedia-pageviews:0.1.0"
   spec:
@@ -14770,6 +14810,7 @@
           - "IN"
     supportsNormalization: false
     supportsDBT: false
+    allowed_hosts: []
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-yandex-metrica:0.1.0"
   spec:
