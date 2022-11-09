@@ -8,7 +8,6 @@ import styled from "styled-components";
 
 import { Button } from "components/ui/Button";
 
-import { useConfig } from "config";
 import { Action, Namespace } from "core/analytics";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -18,6 +17,7 @@ import {
   useGetCloudWorkspace,
   useInvalidateCloudWorkspace,
 } from "packages/cloud/services/workspaces/CloudWorkspacesService";
+import { links } from "utils/links";
 
 interface Props {
   selfServiceCheckoutEnabled: boolean;
@@ -60,7 +60,6 @@ function hasRecentCreditIncrease(cloudWorkspace: CloudWorkspace): boolean {
 
 const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
   const retryIntervalId = useRef<number>();
-  const config = useConfig();
   const currentWorkspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(currentWorkspace.workspaceId);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -135,7 +134,7 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
         >
           <FormattedMessage id="credits.buyCredits" />
         </Button>
-        <Button size="xs" onClick={() => window.open(config.links.contactSales, "_blank")}>
+        <Button size="xs" onClick={() => window.open(links.contactSales, "_blank")}>
           <FormattedMessage id="credits.talkToSales" />
         </Button>
       </Actions>

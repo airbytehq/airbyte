@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/gitlab",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/gitlab",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source GitLab Singer Spec",

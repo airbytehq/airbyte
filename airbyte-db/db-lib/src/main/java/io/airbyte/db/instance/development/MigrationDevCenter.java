@@ -16,6 +16,8 @@ import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.ext.ScriptUtils;
+import org.testcontainers.jdbc.JdbcDatabaseDelegate;
 
 /**
  * Helper class for migration development. See README for details.
@@ -47,6 +49,9 @@ public abstract class MigrationDevCenter {
         .withUsername("docker")
         .withPassword("docker");
     container.start();
+
+    initializeDatabase(container);
+
     return container;
   }
 
@@ -104,6 +109,12 @@ public abstract class MigrationDevCenter {
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static void initializeDatabase(final PostgreSQLContainer container) {
+    final var containerDelegate = new JdbcDatabaseDelegate(container, "");
+    ScriptUtils.runInitScript(containerDelegate, "configs_database/schema.sql");
+    ScriptUtils.runInitScript(containerDelegate, "jobs_database/schema.sql");
   }
 
   public static void main(final String[] args) {

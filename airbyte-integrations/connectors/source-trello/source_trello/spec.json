@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/trello",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/trello",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Trello Spec",

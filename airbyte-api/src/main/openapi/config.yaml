@@ -63,6 +63,8 @@ tags:
     description: Export/Import Airbyte Configuration and Database resources.
   - name: attempt
     description: Interactions with attempt related resources.
+  - name: state
+    description: Interactions with state related resources.
 
 paths:
   /v1/workspaces/create:
@@ -1389,7 +1391,7 @@ paths:
   /v1/state/get:
     post:
       tags:
-        - connection
+        - state
       summary: Fetch the current state for a connection.
       operationId: getState
       requestBody:
@@ -1412,7 +1414,7 @@ paths:
   /v1/state/create_or_update:
     post:
       tags:
-        - connection
+        - state
         - internal
       summary: Create or update the state for a connection.
       operationId: createOrUpdateState
@@ -1994,7 +1996,7 @@ paths:
   /v1/web_backend/state/get_type:
     post:
       tags:
-        - connection
+        - web_backend
       summary: Fetch the current state type for a connection.
       operationId: getStateType
       requestBody:
@@ -2036,6 +2038,24 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/web_backend/geographies/list:
+    post:
+      tags:
+        - web_backend
+      description: Returns all available geographies in which a data sync can run.
+      summary: |
+        Returns available geographies can be selected to run data syncs in a particular geography. 
+        The 'auto' entry indicates that the sync will be automatically assigned to a geography according 
+        to the platform default behavior. Entries other than 'auto' are two-letter country codes that 
+        follow the ISO 3166-1 alpha-2 standard.
+      operationId: webBackendListGeographies
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendGeographiesListResult"
   /v1/jobs/list:
     post:
       tags:
@@ -2151,6 +2171,26 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/jobs/get_normalization_status:
+    post:
+      tags:
+        - jobs
+        - internal
+      summary: Get normalization status to determine if we can bypass normalization phase
+      operationId: getAttemptNormalizationStatusesForJob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobIdRequestBody"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttemptNormalizationStatusReadList"
+
   /v1/health:
     get:
       tags:
@@ -2224,6 +2264,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalOperationResult"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -2260,6 +2301,24 @@ components:
             $ref: "#/components/schemas/Notification"
         displaySetupWizard:
           type: boolean
+        defaultGeography:
+          $ref: "#/components/schemas/Geography"
+        webhookConfigs:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookConfigWrite"
+    WebhookConfigWrite:
+      type: object
+      properties:
+        name:
+          type: string
+          description: human readable name for this webhook e.g. for UI display.
+        authToken:
+          type: string
+          description: an auth token, to be passed as the value for an HTTP Authorization header.
+        validationUrl:
+          type: string
+          description: if supplied, the webhook config will be validated by checking that this URL returns a 2xx response.
     Notification:
       type: object
       required:
@@ -2362,6 +2421,25 @@ components:
           type: boolean
         feedbackDone:
           type: boolean
+        defaultGeography:
+          $ref: "#/components/schemas/Geography"
+        webhookConfigs:
+          type: array
+          items:
+            # Note: this omits any sensitive info e.g. auth token
+            $ref: "#/components/schemas/WebhookConfigRead"
+    WebhookConfigRead:
+      type: object
+      description: the readable info for a webhook config; omits sensitive info e.g. auth token
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: human-readable name e.g. for display in UI
     WorkspaceUpdateName:
       type: object
       required:
@@ -2397,6 +2475,12 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Notification"
+        defaultGeography:
+          $ref: "#/components/schemas/Geography"
+        webhookConfigs:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookConfigWrite"
     WorkspaceGiveFeedback:
       type: object
       required:
@@ -2424,6 +2508,15 @@ components:
           type: boolean
         hasDestinations:
           type: boolean
+    WebBackendGeographiesListResult:
+      type: object
+      required:
+        - geographies
+      properties:
+        geographies:
+          type: array
+          items:
+            $ref: "#/components/schemas/Geography"
     # SLUG
     SlugRequestBody:
       type: object
@@ -2432,6 +2525,13 @@ components:
       properties:
         slug:
           type: string
+    # Geography
+    Geography:
+      type: string
+      enum:
+        - auto
+        - us
+        - eu
     # SourceDefinition
     SourceDefinitionId:
       type: string
@@ -2691,11 +2791,14 @@ components:
       required:
         - sourceDefinitionId
         - connectionConfiguration
+        - workspaceId
       properties:
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
         connectionConfiguration:
           $ref: "#/components/schemas/SourceConfiguration"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
     SourceCreate:
       type: object
       required:
@@ -2987,6 +3090,8 @@ components:
           $ref: "#/components/schemas/DestinationDefinitionId"
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
     DestinationCreate:
       type: object
       required:
@@ -3159,6 +3264,12 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+        geography:
+          $ref: "#/components/schemas/Geography"
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
     WebBackendConnectionCreate:
       type: object
       required:
@@ -3206,6 +3317,8 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+        geography:
+          $ref: "#/components/schemas/Geography"
     ConnectionStateCreateOrUpdate:
       type: object
       required:
@@ -3256,6 +3369,12 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+        geography:
+          $ref: "#/components/schemas/Geography"
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
     WebBackendConnectionUpdate:
       type: object
       description: Used to apply a patch-style update to a connection, which means that null properties remain unchanged
@@ -3298,6 +3417,12 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+        geography:
+          $ref: "#/components/schemas/Geography"
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
     ConnectionRead:
       type: object
       required:
@@ -3307,6 +3432,7 @@ components:
         - destinationId
         - syncCatalog
         - status
+        - breakingChange
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -3345,6 +3471,20 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+        geography:
+          $ref: "#/components/schemas/Geography"
+        breakingChange:
+          type: boolean
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
+    SchemaChange:
+      enum:
+        - no_change
+        - non_breaking
+        - breaking
+      type: string
     ConnectionSearch:
       type: object
       properties:
@@ -3551,14 +3691,16 @@ components:
           $ref: "#/components/schemas/OperatorNormalization"
         dbt:
           $ref: "#/components/schemas/OperatorDbt"
+        webhook:
+          $ref: "#/components/schemas/OperatorWebhook"
     OperatorType:
       type: string
       enum:
         # - destination
         - normalization
         - dbt
+        - webhook
       # - docker
-      # - webhook
     OperatorNormalization:
       type: object
       properties:
@@ -3580,6 +3722,21 @@ components:
           type: string
         dbtArguments:
           type: string
+    OperatorWebhook:
+      type: object
+      required:
+        - executionUrl
+      properties:
+        executionUrl:
+          type: string
+          description: The URL to call to execute the webhook operation via POST request.
+        executionBody:
+          type: string
+          description: If populated, this will be sent with the POST request.
+        webhookConfigId:
+          type: string
+          format: uuid
+          description: The id of the webhook configs to use from the workspace.
     CheckOperationRead:
       type: object
       required:
@@ -4154,6 +4311,7 @@ components:
       required:
         - transformType
         - fieldName
+        - breaking
       properties:
         transformType:
           type: string
@@ -4163,6 +4321,8 @@ components:
             - update_field_schema
         fieldName:
           $ref: "#/components/schemas/FieldName"
+        breaking:
+          type: boolean
         addField:
           $ref: "#/components/schemas/FieldAdd"
         removeField:
@@ -4528,6 +4688,7 @@ components:
         - destination
         - status
         - isSyncing
+        - schemaChange
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -4553,6 +4714,8 @@ components:
           $ref: "#/components/schemas/JobStatus"
         isSyncing:
           type: boolean
+        schemaChange:
+          $ref: "#/components/schemas/SchemaChange"
     WebBackendConnectionRead:
       type: object
       required:
@@ -4565,6 +4728,9 @@ components:
         - source
         - destination
         - isSyncing
+        - schemaChange
+        - notifySchemaChanges
+        - nonBreakingChangesPreference
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -4619,6 +4785,19 @@ components:
           format: uuid
         catalogDiff:
           $ref: "#/components/schemas/CatalogDiff"
+        geography:
+          $ref: "#/components/schemas/Geography"
+        schemaChange:
+          $ref: "#/components/schemas/SchemaChange"
+        notifySchemaChanges:
+          type: boolean
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
+    NonBreakingChangesPreference:
+      enum:
+        - ignore
+        - disable
+      type: string
     WebBackendConnectionReadList:
       type: object
       required:
@@ -4699,6 +4878,9 @@ components:
           $ref: "#/components/schemas/AttemptNumber"
         workflowId:
           $ref: "#/components/schemas/WorkflowId"
+        processingTaskQueue:
+          type: string
+          default: ""
     InternalOperationResult:
       type: object
       required:
@@ -4706,6 +4888,26 @@ components:
       properties:
         succeeded:
           type: boolean
+    AttemptNormalizationStatusReadList:
+      type: object
+      properties:
+        attemptNormalizationStatuses:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptNormalizationStatusRead"
+    AttemptNormalizationStatusRead:
+      type: object
+      properties:
+        attemptNumber:
+          $ref: "#/components/schemas/AttemptNumber"
+        hasRecordsCommitted:
+          type: boolean
+        recordsCommitted:
+          type: integer
+          format: int64
+        hasNormalizationFailed:
+          type: boolean
+
     InvalidInputProperty:
       type: object
       required:

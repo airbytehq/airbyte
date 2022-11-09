@@ -219,54 +219,39 @@
       "properties": {
         "categories": {
           "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
               }
             }
-          ]
+          }
         },
         "images": {
           "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
               }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
-              },
-              "required": ["id"]
             }
-          ]
+          }
         },
         "stock_availables": {
           "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "id_product_attribute": {
-                  "type": "string"
-                }
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "id_product_attribute": {
+                "type": "string"
               }
             }
-          ]
+          }
         }
       }
     }

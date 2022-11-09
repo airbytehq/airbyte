@@ -8,13 +8,11 @@ import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CLIENT_KEY_
 import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CLIENT_KEY_STORE_URL;
 import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.SSL_MODE;
 import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.TRUST_KEY_STORE_PASS;
-import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.TRUST_KEY_STORE_URL;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.debezium.internals.PostgresConverter;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource.SslMode;
 import java.net.URI;
 import java.nio.file.Path;
@@ -23,7 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PostgresCdcProperties {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcProperties.class);
+
   static Properties getDebeziumDefaultProperties(final JdbcDatabase database) {
     final JsonNode sourceConfig = database.getSourceConfig();
     final Properties props = commonProperties(database);
