@@ -66,9 +66,7 @@ def test_declarative_stream():
     assert stream.stream_slices(sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_state=None) == stream_slices
     assert stream.state_checkpoint_interval == checkpoint_interval
     for transformation in transformations:
-        assert (
-            len(transformation.transform.call_args_list) == len(records) - 2
-        )  # don't include the AirbyteLogMessage and the AirbyteTraceMessage
+        assert len(transformation.transform.call_args_list) == len(records)
         expected_calls = [
             call(record, config=config, stream_slice=input_slice, stream_state=state) for record in records if isinstance(record, dict)
         ]
