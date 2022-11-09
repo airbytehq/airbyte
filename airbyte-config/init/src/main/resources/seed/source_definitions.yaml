@@ -637,6 +637,13 @@
   icon: intercom.svg
   sourceType: api
   releaseStage: generally_available
+- name: IP2Whois
+  sourceDefinitionId: f23b7b7c-d705-49a3-9042-09add3b104a5
+  dockerRepository: airbyte/source-ip2whois
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/ip2whois
+  sourceType: api
+  releaseStage: alpha
 - name: Iterable
   sourceDefinitionId: 2e875208-0c0b-4ee4-9e92-1cb3156ea799
   dockerRepository: airbyte/source-iterable
