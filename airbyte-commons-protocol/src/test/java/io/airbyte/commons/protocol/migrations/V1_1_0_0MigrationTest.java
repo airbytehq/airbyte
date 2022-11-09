@@ -199,30 +199,30 @@ public class V1_1_0_0MigrationTest {
                 "id": {
                   "type": "integer"
                 },
-               "nested_oneof": {
-                 "oneOf": [
-                   {"type": "string"},
-                   {"type": "integer"}
-                 ]
-               },
-               "nested_anyof": {
-                 "anyOf": [
-                   {"type": "string"},
-                   {"type": "integer"}
-                 ]
-               },
-               "nested_allof": {
-                 "allOf": [
-                   {"type": "string"},
-                   {"type": "integer"}
-                 ]
-               },
-               "nested_not": {
-                 "not": [
-                   {"type": "string"},
-                   {"type": "integer"}
-                 ]
-               }
+                "nested_oneof": {
+                  "oneOf": [
+                    {"type": "string"},
+                    {"type": "integer"}
+                  ]
+                },
+                "nested_anyof": {
+                  "anyOf": [
+                    {"type": "string"},
+                    {"type": "integer"}
+                  ]
+                },
+                "nested_allof": {
+                  "allOf": [
+                    {"type": "string"},
+                    {"type": "integer"}
+                  ]
+                },
+                "nested_not": {
+                  "not": [
+                    {"type": "string"},
+                    {"type": "integer"}
+                  ]
+                }
               },
               "additionalProperties": {
                 "type": "string"
@@ -258,30 +258,30 @@ public class V1_1_0_0MigrationTest {
                     "id": {
                       "$ref": "WellKnownTypes.json#definitions/Integer"
                     },
-                   "nested_oneof": {
-                     "oneOf": [
-                       {"$ref": "WellKnownTypes.json#definitions/String"},
-                       {"$ref": "WellKnownTypes.json#definitions/Integer"}
-                     ]
-                   },
-                   "nested_anyof": {
-                     "anyOf": [
-                       {"$ref": "WellKnownTypes.json#definitions/String"},
-                       {"$ref": "WellKnownTypes.json#definitions/Integer"}
-                     ]
-                   },
-                   "nested_allof": {
-                     "allOf": [
-                       {"$ref": "WellKnownTypes.json#definitions/String"},
-                       {"$ref": "WellKnownTypes.json#definitions/Integer"}
-                     ]
-                   },
-                   "nested_not": {
-                     "not": [
-                       {"$ref": "WellKnownTypes.json#definitions/String"},
-                       {"$ref": "WellKnownTypes.json#definitions/Integer"}
-                     ]
-                   }
+                    "nested_oneof": {
+                      "oneOf": [
+                        {"$ref": "WellKnownTypes.json#definitions/String"},
+                        {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                      ]
+                    },
+                    "nested_anyof": {
+                      "anyOf": [
+                        {"$ref": "WellKnownTypes.json#definitions/String"},
+                        {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                      ]
+                    },
+                    "nested_allof": {
+                      "allOf": [
+                        {"$ref": "WellKnownTypes.json#definitions/String"},
+                        {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                      ]
+                    },
+                    "nested_not": {
+                      "not": [
+                        {"$ref": "WellKnownTypes.json#definitions/String"},
+                        {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                      ]
+                    }
                   },
                   "additionalProperties": {
                     "$ref": "WellKnownTypes.json#definitions/String"
