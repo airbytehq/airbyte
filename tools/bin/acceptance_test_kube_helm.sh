@@ -14,7 +14,7 @@ echo "Patching coredns configmap NodeHosts with new entry for docker host"
 kubectl patch configmap/coredns \
   -n kube-system \
   --type merge \
-  -p ‘{“data”:{“Nodehosts”: "${DOCKER_HOST_IP} host.docker.internal" }}’
+  -p '{"data":{"Nodehosts": "${DOCKER_HOST_IP} host.docker.internal" }}'
 
 
 # Since KIND does not have access to the local docker agent, manually load the minimum images required for the Kubernetes Acceptance Tests.
@@ -82,7 +82,7 @@ kubectl expose $(kubectl get po -l app.kubernetes.io/name=server -o name) --name
 # ./tools/bin/health_check.sh &
 
 echo "Running worker integration tests..."
-SUB_BUILD=PLATFORM LOG_LEVEL=DEBUG  ./gradlew :airbyte-workers:integrationTest --scan
+KUBE=true SUB_BUILD=PLATFORM LOG_LEVEL=DEBUG  ./gradlew :airbyte-workers:integrationTest --scan
 
 #echo "Printing system disk usage..."
 #df -h
