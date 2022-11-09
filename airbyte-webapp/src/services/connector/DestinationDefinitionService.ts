@@ -4,6 +4,7 @@ import { useConfig } from "config";
 import { DestinationDefinitionService } from "core/domain/connector/DestinationDefinitionService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
+import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
 
 import { DestinationDefinitionCreate, DestinationDefinitionRead } from "../../core/request/AirbyteClient";
@@ -35,9 +36,10 @@ const useDestinationDefinitionList = (): {
   destinationDefinitions: DestinationDefinitionReadWithLatestTag[];
 } => {
   const service = useGetDestinationDefinitionService();
+  const workspaceId = useCurrentWorkspaceId();
 
   return useSuspenseQuery(destinationDefinitionKeys.lists(), async () => {
-    const [definition, latestDefinition] = await Promise.all([service.list(), service.listLatest()]);
+    const [definition, latestDefinition] = await Promise.all([service.list(workspaceId), service.listLatest()]);
 
     const destinationDefinitions: DestinationDefinitionRead[] = definition.destinationDefinitions.map(
       (destination: DestinationDefinitionRead) => {
@@ -69,9 +71,10 @@ const useDestinationDefinition = <T extends string | undefined>(
 const useCreateDestinationDefinition = () => {
   const service = useGetDestinationDefinitionService();
   const queryClient = useQueryClient();
+  const workspaceId = useCurrentWorkspaceId();
 
   return useMutation<DestinationDefinitionRead, Error, DestinationDefinitionCreate>(
-    (destinationDefinition) => service.create(destinationDefinition),
+    (destinationDefinition) => service.create({ workspaceId, destinationDefinition }),
     {
       onSuccess: (data) => {
         queryClient.setQueryData(
