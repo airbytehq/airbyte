@@ -6,6 +6,23 @@ on:
     - cron:  '0 14 * * *'
 
 jobs:
+  find_valid_pat:
+    name: "Find a PAT with room for actions"
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    outputs:
+      pat: ${{ steps.variables.outputs.pat }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Check PAT rate limits
+        id: variables
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
   validate-frontend-links:
     name: "Validate frontend links"
     runs-on: ubuntu-latest
@@ -21,6 +38,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: "lts/gallium"
+          token: ${{ needs.find_valid_pat.outputs.pat }}
 
       - name: Set up CI Gradle Properties
         run: |

@@ -15,9 +15,29 @@ on:
         required: true
 
 jobs:
+  find_valid_pat:
+    name: "Find a PAT with room for actions"
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    outputs:
+      pat: ${{ steps.variables.outputs.pat }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Check PAT rate limits
+        id: variables
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
+
   single-test-runner:
     timeout-minutes: 300
-    needs: start-platform-build-runner # required to start the main job when the runner is ready
+    needs: 
+      - start-platform-build-runner # required to start the main job when the runner is ready
+      - find_valid_pat
     runs-on: ${{ needs.start-platform-build-runner.outputs.label }} # run the job on the newly created runner
     environment: more-secrets
     steps:
@@ -53,6 +73,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 'lts/gallium'
+          token: ${{ needs.find_valid_pat.outputs.pat }}
 
       - name: Build
         id: run-specific-test

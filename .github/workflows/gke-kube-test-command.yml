@@ -83,6 +83,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: "lts/gallium"
+          token: ${{ needs.find_valid_pat.outputs.pat }}
 
       - name: Fix EC-2 Runner
         run: |

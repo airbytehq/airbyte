@@ -68,6 +68,7 @@ jobs:
               - 'airbyte-api/src/main/openapi/config.yaml'
               - 'airbyte-webapp/**'
               - 'airbyte-webapp-e2e-tests/**'
+ 
   find_valid_pat:
     name: "Find a PAT with room for actions"
     timeout-minutes: 10
@@ -181,7 +182,9 @@ jobs:
 
   build-connectors-base:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: start-connectors-base-build-runner # required to start the main job when the runner is ready
+    needs: 
+      - start-connectors-base-build-runner # required to start the main job when the runner is ready
+      - find_valid_pat
     runs-on: ${{ needs.start-connectors-base-build-runner.outputs.label }} # run the job on the newly created runner
     name: "Connectors Base: Build"
     timeout-minutes: 90
@@ -201,6 +204,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: "lts/gallium"
+          token: ${{ needs.find_valid_pat.outputs.pat }}
 
       - uses: actions/setup-python@v2
         with:
@@ -356,6 +360,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: "lts/gallium"
+          token: ${{ needs.find_valid_pat.outputs.pat }}
 
       - name: Set up CI Gradle Properties
         run: |
@@ -388,6 +393,7 @@ jobs:
     name: "Frontend: Run End-to-End Tests"
     needs:
       - start-frontend-runner # required to have runner started
+      - find_valid_pat
     runs-on: ${{ needs.start-frontend-runner.outputs.label }} # run the job on the newly created runner
     timeout-minutes: 120
     steps:
@@ -407,6 +413,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: "lts/gallium"
+          token: ${{ needs.find_valid_pat.outputs.pat }}
 
       - name: Set up CI Gradle Properties
         run: |
@@ -485,7 +492,9 @@ jobs:
   platform-build:
     name: "Platform: Build"
     # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
-    needs: start-platform-build-runner # required to start the main job when the runner is ready
+    needs: 
+      - start-platform-build-runner # required to start the main job when the runner is ready
+      - find_valid_pat
     runs-on: ${{ needs.start-platform-build-runner.outputs.label }} # run the job on the newly created runner
     timeout-minutes: 90
     steps:
@@ -505,6 +514,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: "lts/gallium"
+          token: ${{ needs.find_valid_pat.outputs.pat }}
 
       - name: Set up CI Gradle Properties
         run: |
@@ -668,7 +678,9 @@ jobs:
   kube-acceptance-test:
     name: "Platform: Acceptance Tests (Kube)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: start-kube-acceptance-test-runner # required to start the main job when the runner is ready
+    needs: 
+      - start-kube-acceptance-test-runner # required to start the main job when the runner is ready
+      - find_valid_pat
     runs-on: ${{ needs.start-kube-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
     environment: more-secrets
     timeout-minutes: 40
@@ -689,6 +701,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: "lts/gallium"
+          token: ${{ needs.find_valid_pat.outputs.pat }}
 
       - name: Fix EC-2 Runner
         run: |
@@ -887,6 +900,7 @@ jobs:
 #      - uses: actions/setup-node@v2
 #        with:
 #          node-version: "lts/gallium"
+#          token: ${{ needs.find_valid_pat.outputs.pat }}
 #
 #      - name: Install unzip
 #        shell: bash
