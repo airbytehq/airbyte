@@ -32,7 +32,7 @@ public class V1_1_0_0MigrationTest {
   @Test
   public void testBasicUpgrade() {
     // This isn't actually a valid stream schema (since it's not an object)
-    // but
+    // but this test case is mostly about preserving the message structure, so it's not super relevant
     JsonNode oldSchema = Jsons.deserialize("""
         {
           "type": "string"
