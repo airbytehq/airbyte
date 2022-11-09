@@ -1217,6 +1217,13 @@
   icon: slack.svg
   sourceType: api
   releaseStage: generally_available
+- name: Smaily
+  sourceDefinitionId: 781f8b1d-4e20-4842-a2c3-cd9b119d65fa
+  dockerRepository: airbyte/source-smaily
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/smaily
+  sourceType: api
+  releaseStage: alpha
 - name: Smartsheets
   sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
   dockerRepository: airbyte/source-smartsheets
