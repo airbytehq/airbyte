@@ -27,6 +27,8 @@ DESTINATION_SIZE_LIMITS = {
     DestinationType.MSSQL.value: 64,
     # https://stackoverflow.com/questions/68358686/what-is-the-maximum-length-of-a-column-in-clickhouse-can-it-be-modified
     DestinationType.CLICKHOUSE.value: 63,
+
+    DestinationType.TERADATA.value: 255,
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
@@ -230,6 +232,8 @@ class DestinationNameTransformer:
                 result = input_name.upper()
         elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
             pass
+        elif self.destination_type.value == DestinationType.TERADATA.value:
+            pass
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result
@@ -267,6 +271,8 @@ class DestinationNameTransformer:
             else:
                 result = input_name.upper()
         elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
+            pass
+        elif self.destination_type.value == DestinationType.TERADATA.value:
             pass
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")

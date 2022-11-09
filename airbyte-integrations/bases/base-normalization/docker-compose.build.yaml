@@ -50,3 +50,10 @@ services:
       context: .
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
+  normalization-teradata:
+    image: airbyte/normalization-teradata:${VERSION}
+    build:
+      dockerfile: teradata.Dockerfile
+      context: .
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}

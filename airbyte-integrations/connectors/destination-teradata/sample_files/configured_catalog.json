@@ -1,0 +1,25 @@
+{
+  "streams": [
+    {
+      "destination_sync_mode": "append",
+      "sync_mode": "full_refresh",
+      "stream": {
+        "name": "airbyte_acceptance_table",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "type": "object",
+          "required": ["name"],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "age": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

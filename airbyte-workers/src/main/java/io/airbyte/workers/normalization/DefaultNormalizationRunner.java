@@ -63,7 +63,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     POSTGRES,
     REDSHIFT,
     SNOWFLAKE,
-    CLICKHOUSE
+    CLICKHOUSE,
+    TERADATA
   }
 
   public DefaultNormalizationRunner(final WorkerConfigs workerConfigs,

@@ -58,6 +58,7 @@ class TransformConfig:
             DestinationType.ORACLE.value: self.transform_oracle,
             DestinationType.MSSQL.value: self.transform_mssql,
             DestinationType.CLICKHOUSE.value: self.transform_clickhouse,
+            DestinationType.TERADATA.value: self.transform_teradata,
         }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
@@ -188,6 +189,24 @@ class TransformConfig:
                 client_key = TransformConfig.create_file("client.key", ssl_mode["client_key"])
                 subprocess.call("openssl pkcs8 -topk8 -inform PEM -in client.key -outform DER -out client.pk8 -nocrypt", shell=True)
                 dbt_config["sslkey"] = client_key.replace("client.key", "client.pk8")
+
+        return dbt_config
+    @staticmethod
+    def transform_teradata(config: Dict[str, Any]):
+        print("transform_teradata")
+
+        if TransformConfig.is_ssh_tunnelling(config):
+            config = TransformConfig.get_ssh_altered_config(config, port_key="port", host_key="host")
+
+        # https://docs.getdbt.com/reference/warehouse-setups/teradata-setup
+        dbt_config = {
+            "type": "teradata",
+            "host": config["host"],
+            "user": config["username"],
+            "pass": config.get("password", ""),
+            "schema": config["schema"],
+            "threads": 8,
+        }
 
         return dbt_config
 

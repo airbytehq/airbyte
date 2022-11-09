@@ -34,6 +34,7 @@ public class NormalizationRunnerFactory {
           .put("airbyte/destination-postgres-strict-encrypt", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DestinationType.POSTGRES))
           .put("airbyte/destination-redshift", ImmutablePair.of("airbyte/normalization-redshift", DestinationType.REDSHIFT))
           .put("airbyte/destination-snowflake", ImmutablePair.of("airbyte/normalization-snowflake", DestinationType.SNOWFLAKE))
+          .put("airbyte/destination-teradata", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DestinationType.TERADATA))
           .build();
 
   public static NormalizationRunner create(final WorkerConfigs workerConfigs,
