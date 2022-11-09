@@ -5,6 +5,8 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "source_prestashop/spec.yaml"
+        # unfortunately timeout plugin takes into account setup code as well (docker setup)
+        timeout_seconds: 300
   connection:
     tests:
       - config_path: "secrets/config.json"
