@@ -13,19 +13,17 @@
     },
     "To": {
       "type": "array",
-      "items":
-        {
-          "type": "object",
-          "properties": {
-            "Email": {
-              "type": "string"
-            },
-            "Name": {
-              "type": "null"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "Email": {
+            "type": "string"
+          },
+          "Name": {
+            "type": "null"
           }
         }
-
+      }
     },
     "Cc": {
       "type": "array",
@@ -37,11 +35,9 @@
     },
     "Recipients": {
       "type": "array",
-      "items":
-        {
-          "type": "string"
-        }
-
+      "items": {
+        "type": "string"
+      }
     },
     "ReceivedAt": {
       "type": "string"

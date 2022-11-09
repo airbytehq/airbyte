@@ -14,7 +14,7 @@ connectionSpecification:
       description: API Key for server
       airbyte_secret: true
     X-Postmark-Account-Token:
-        title: X-Postmark-Account-Token
-        type: string
-        description: API Key for account
-        airbyte_secret: true
+      title: X-Postmark-Account-Token
+      type: string
+      description: API Key for account
+      airbyte_secret: true

@@ -6,27 +6,27 @@ definitions:
       field_pointer: []
   selector_bounces:
     extractor:
-      field_pointer: [ "Bounces" ]
+      field_pointer: ["Bounces"]
   selector_domains:
     extractor:
-      field_pointer: [ "Domains" ]
+      field_pointer: ["Domains"]
   selector_servers:
     extractor:
-      field_pointer: [ "Servers" ]
+      field_pointer: ["Servers"]
   selector_message_streams:
     extractor:
-      field_pointer: [ "MessageStreams" ]
+      field_pointer: ["MessageStreams"]
   selector_messages:
     extractor:
-      field_pointer: [ "Messages" ]
+      field_pointer: ["Messages"]
   requester:
     url_base: "https://api.postmarkapp.com"
     http_method: "GET"
     request_options_provider:
       request_body_json:
-          Accept: "application/json"
+        Accept: "application/json"
       request_parameters:
-        count: '500'
+        count: "500"
     authenticator:
       type: "ApiKeyAuthenticator"
       header: "X-Postmark-Server-Token"
@@ -36,9 +36,9 @@ definitions:
     http_method: "GET"
     request_options_provider:
       request_body_json:
-          Accept: "application/json"
+        Accept: "application/json"
       request_parameters:
-        count: '500'
+        count: "500"
     authenticator:
       type: "ApiKeyAuthenticator"
       header: "X-Postmark-Account-Token"
@@ -152,7 +152,6 @@ streams:
   - "*ref(definitions.messages)"
   - "*ref(definitions.bounces)"
   - "*ref(definitions.servers)"
-
 
 check:
   stream_names:

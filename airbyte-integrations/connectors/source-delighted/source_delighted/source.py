@@ -118,7 +118,7 @@ class Bounces(IncrementalDelightedStream):
     primary_key = "person_id"
 
     def path(self, **kwargs) -> str:
-        return "deliverystats.json"
+        return "bounces.json"
 
 
 class SurveyResponses(IncrementalDelightedStream):
