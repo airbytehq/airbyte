@@ -63,8 +63,6 @@ definitions:
     $options:
       name: "dataset"
       primary_key:
-        - "timestamp"
-        - "thing"
         - "id"
       path: "/api/dataset/execute/{{ config['dataset_id']}}"
       stream_cursor_field: "airbyte_cursor"
