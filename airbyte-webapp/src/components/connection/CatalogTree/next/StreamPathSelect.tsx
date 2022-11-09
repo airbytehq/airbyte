@@ -14,9 +14,10 @@ export type IndexerType = null | "required" | "sourceDefined";
 
 interface StreamPathSelectBaseProps {
   paths: Path[];
-  pathType: "required" | "sourceDefined";
+  pathType: "required" | "sourceDefined" | null;
   placeholder?: React.ReactNode;
   variant?: PillButtonVariant;
+  disabled?: boolean;
 }
 
 interface StreamPathSelectMultiProps {
@@ -55,6 +56,7 @@ export const StreamPathSelect: React.FC<PathPopoutProps> = (props) => {
 
   return (
     <PillSelect
+      disabled={props.disabled}
       variant={props.variant}
       className={styles.pillSelect}
       options={options}

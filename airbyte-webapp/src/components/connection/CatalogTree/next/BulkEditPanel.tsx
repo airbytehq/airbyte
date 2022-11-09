@@ -128,42 +128,36 @@ export const BulkEditPanel: React.FC = () => {
         </div>
       </HeaderCell>
       <HeaderCell flex={1}>
-        {cursorType && (
-          <>
-            <p className={classNames(styles.text, styles.headerText)}>
-              <FormattedMessage id="form.cursorField" />
-            </p>
-            <div className={styles.syncCellContent}>
-              <StreamPathSelect
-                variant="strong-blue"
-                isMulti={false}
-                onPathChange={(path) => onChangeOption({ cursorField: path })}
-                pathType={cursorType}
-                paths={paths}
-                path={options.cursorField}
-              />
-            </div>
-          </>
-        )}
+        <p className={classNames(styles.text, styles.headerText)}>
+          <FormattedMessage id="form.cursorField" />
+        </p>
+        <div className={styles.syncCellContent}>
+          <StreamPathSelect
+            disabled={!cursorType}
+            variant="strong-blue"
+            isMulti={false}
+            onPathChange={(path) => onChangeOption({ cursorField: path })}
+            pathType={cursorType}
+            paths={paths}
+            path={options.cursorField}
+          />
+        </div>
       </HeaderCell>
       <HeaderCell flex={1}>
-        {pkType && (
-          <>
-            <p className={classNames(styles.text, styles.headerText)}>
-              <FormattedMessage id="form.primaryKey" />
-            </p>
-            <div className={styles.syncCellContent}>
-              <StreamPathSelect
-                variant="strong-blue"
-                isMulti
-                onPathChange={(path) => onChangeOption({ primaryKey: path })}
-                pathType={pkType}
-                paths={paths}
-                path={options.primaryKey}
-              />
-            </div>
-          </>
-        )}
+        <p className={classNames(styles.text, styles.headerText)}>
+          <FormattedMessage id="form.primaryKey" />
+        </p>
+        <div className={styles.syncCellContent}>
+          <StreamPathSelect
+            disabled={!pkType}
+            variant="strong-blue"
+            isMulti
+            onPathChange={(path) => onChangeOption({ primaryKey: path })}
+            pathType={pkType}
+            paths={paths}
+            path={options.primaryKey}
+          />
+        </div>
       </HeaderCell>
       <HeaderCell flex={0} className={styles.buttonCell}>
         <Button className={styles.cancelButton} size="xs" variant="secondary" onClick={onCancel}>
