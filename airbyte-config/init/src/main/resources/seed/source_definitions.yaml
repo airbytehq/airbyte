@@ -1270,6 +1270,13 @@
   icon: timely.svg
   sourceType: api
   releaseStage: alpha
+- name: The Guardian API
+  sourceDefinitionId: d42bd69f-6bf0-4d0b-9209-16231af07a92
+  dockerRepository: airbyte/source-the-guardian-api
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/the-guardian-api
+  sourceType: api
+  releaseStage: alpha
 - name: Trello
   sourceDefinitionId: 8da67652-004c-11ec-9a03-0242ac130003
   dockerRepository: airbyte/source-trello
