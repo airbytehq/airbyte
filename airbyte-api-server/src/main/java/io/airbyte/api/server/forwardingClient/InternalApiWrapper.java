@@ -5,13 +5,13 @@
 package io.airbyte.api.server.forwardingClient;
 
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
-import io.micronaut.context.annotation.Bean;
 import io.micronaut.http.HttpResponse;
+import jakarta.inject.Singleton;
 import java.util.UUID;
 import javax.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 
-@Bean
+@Singleton
 @Slf4j
 public class InternalApiWrapper {
 
