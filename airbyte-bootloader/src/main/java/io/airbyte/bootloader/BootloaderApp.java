@@ -161,13 +161,7 @@ public class BootloaderApp {
 
     final ProtocolVersionChecker protocolVersionChecker =
         new ProtocolVersionChecker(jobPersistence, configs, configRepository, localDefinitionsProvider);
-    final Optional<AirbyteProtocolVersionRange> newProtocolRange = protocolVersionChecker.validate(configs.getAutoUpgradeConnectors());
-    if (newProtocolRange.isEmpty()) {
-      throw new RuntimeException(
-          "Aborting bootloader to avoid breaking existing connection after an upgrade. " +
-              "Please address airbyte protocol version support issues in the connectors before retrying.");
-    }
-    trackProtocolVersion(newProtocolRange.get());
+    assertNonBreakingProtocolVersionConstraints(protocolVersionChecker, configs, jobPersistence);
 
     // TODO Will be converted to an injected singleton during DI migration
     final DatabaseMigrator configDbMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
@@ -312,7 +306,21 @@ public class BootloaderApp {
     }
   }
 
-  private void trackProtocolVersion(final AirbyteProtocolVersionRange protocolVersionRange) throws IOException {
+  private static void assertNonBreakingProtocolVersionConstraints(final ProtocolVersionChecker protocolVersionChecker,
+                                                                  final Configs configs,
+                                                                  final JobPersistence jobPersistence)
+      throws Exception {
+    final Optional<AirbyteProtocolVersionRange> newProtocolRange = protocolVersionChecker.validate(configs.getAutoUpgradeConnectors());
+    if (newProtocolRange.isEmpty()) {
+      throw new RuntimeException(
+          "Aborting bootloader to avoid breaking existing connection after an upgrade. " +
+              "Please address airbyte protocol version support issues in the connectors before retrying.");
+    }
+    trackProtocolVersion(jobPersistence, newProtocolRange.get());
+  }
+
+  private static void trackProtocolVersion(final JobPersistence jobPersistence, final AirbyteProtocolVersionRange protocolVersionRange)
+      throws IOException {
     jobPersistence.setAirbyteProtocolVersionMin(protocolVersionRange.min());
     jobPersistence.setAirbyteProtocolVersionMax(protocolVersionRange.max());
     LOGGER.info("AirbyteProtocol version support range [{}:{}]", protocolVersionRange.min().serialize(), protocolVersionRange.max().serialize());

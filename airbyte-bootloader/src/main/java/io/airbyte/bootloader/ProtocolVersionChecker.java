@@ -6,6 +6,7 @@ package io.airbyte.bootloader;
 
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.AirbyteProtocolVersionRange;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorType;
 import io.airbyte.config.Configs;
@@ -59,15 +60,25 @@ public class ProtocolVersionChecker {
    * @throws IOException
    */
   public Optional<AirbyteProtocolVersionRange> validate(final boolean supportAutoUpgrade) throws IOException {
+    final Optional<AirbyteVersion> currentAirbyteVersion = getCurrentAirbyteVersion();
     final AirbyteProtocolVersionRange currentRange = getCurrentProtocolVersionRange();
     final AirbyteProtocolVersionRange targetRange = getTargetProtocolVersionRange();
 
-    if (currentRange.equals(targetRange)) {
-      log.info("Using AirbyteProtocolVersion range [{}..{}]", targetRange.min().serialize(), targetRange.max().serialize());
+    // Checking if there is a pre-existing version of airbyte.
+    // Without this check, the first run of the validation would fail because we do not have the tables
+    // set yet
+    // which means that the actor definitions lookup will throw SQLExceptions.
+    if (currentAirbyteVersion.isEmpty()) {
+      log.info("No previous version of Airbyte detected, assuming this is a fresh deploy.");
       return Optional.of(targetRange);
     }
 
-    log.info("Detected an AirbyteProtocolVersion range change from [{}..{}] to [{}..{}]",
+    if (currentRange.equals(targetRange)) {
+      log.info("Using AirbyteProtocolVersion range [{}:{}]", targetRange.min().serialize(), targetRange.max().serialize());
+      return Optional.of(targetRange);
+    }
+
+    log.info("Detected an AirbyteProtocolVersion range change from [{}:{}] to [{}:{}]",
         currentRange.min().serialize(), currentRange.max().serialize(),
         targetRange.min().serialize(), targetRange.max().serialize());
 
@@ -106,6 +117,10 @@ public class ProtocolVersionChecker {
     log.info("The following connectors will be upgraded");
     formatActorDefinitionForLogging(destConflicts, sourceConflicts).forEach(log::info);
     return Optional.of(targetRange);
+  }
+
+  protected Optional<AirbyteVersion> getCurrentAirbyteVersion() throws IOException {
+    return jobPersistence.getVersion().map(AirbyteVersion::new);
   }
 
   protected AirbyteProtocolVersionRange getCurrentProtocolVersionRange() throws IOException {

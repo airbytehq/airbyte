@@ -43,12 +43,23 @@ class ProtocolVersionCheckerTest {
   final Version V2_0_0 = new Version("2.0.0");
 
   @BeforeEach
-  void beforeEach() {
+  void beforeEach() throws IOException {
     configs = mock(Configs.class);
     configRepository = mock(ConfigRepository.class);
     definitionsProvider = mock(DefinitionsProvider.class);
     jobPersistence = mock(JobPersistence.class);
     protocolVersionChecker = new ProtocolVersionChecker(jobPersistence, configs, configRepository, definitionsProvider);
+
+    when(jobPersistence.getVersion()).thenReturn(Optional.of("1.2.3"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  void testFirstInstallCheck(final boolean supportAutoUpgrade) throws IOException {
+    when(jobPersistence.getVersion()).thenReturn(Optional.empty());
+    setTargetProtocolRangeRange(V0_0_0, V1_0_0);
+
+    assertEquals(Optional.of(new AirbyteProtocolVersionRange(V0_0_0, V1_0_0)), protocolVersionChecker.validate(supportAutoUpgrade));
   }
 
   @Test
