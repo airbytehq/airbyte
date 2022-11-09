@@ -44,7 +44,7 @@ class FreshdeskStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return parse.urljoin(f"https://{self.domain.rstrip('/')}", "/api/v2")
+        return parse.urljoin(f"https://{self.domain.rstrip('/')}", "/api/v2/")
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == requests.codes.too_many_requests:

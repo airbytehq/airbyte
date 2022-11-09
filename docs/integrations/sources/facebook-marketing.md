@@ -1,11 +1,5 @@
 # Facebook Marketing
 
-:::warning
-We are currently experiencing an issue for anyone setting up a Facebook Marketing Source Connector who's Facebook Graph API has been updated to v15.0. Our team is blocked until the v15.0 SDK is made available, but once we have access to it we will begin working on a fix. 
-
-Thank you for your patience and understanding! 
-:::
-
 This page guides you through the process of setting up the Facebook Marketing source connector.
 
 ## Prerequisites
@@ -133,6 +127,7 @@ Please be informed that the connector uses the `lookback_window` parameter to pe
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.72  | 2022-11-04 | [18971](https://github.com/airbytehq/airbyte/pull/18971) | handle FacebookBadObjectError for empty results on async jobs                                                                                                                                                                                                                                     |
 | 0.2.71  | 2022-10-31 | [18734](https://github.com/airbytehq/airbyte/pull/18734) | Reduce request record limit on retry                                                                                                                                                                                                                                                              |
 | 0.2.70  | 2022-10-26 | [18045](https://github.com/airbytehq/airbyte/pull/18045) | Upgrade FB SDK to v15.0                                                                                                                                                                                                                                                                           |
 | 0.2.69  | 2022-10-17 | [18045](https://github.com/airbytehq/airbyte/pull/18045) | Remove "pixel" field from the Custom Conversions stream schema                                                                                                                                                                                                                                    |
