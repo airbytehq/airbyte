@@ -4,8 +4,8 @@
 
 from unittest.mock import MagicMock
 
-from pytest import fixture, raises
-from source_tplcentral.source import ConfigurationError, SourceTplcentral
+from pytest import fixture
+from source_tplcentral.source import SourceTplcentral
 
 
 @fixture
@@ -19,13 +19,6 @@ def config():
         "customer_id": 4,
         "facility_id": 5,
         "start_date": "2021-10-01",
-    }
-
-
-@fixture
-def http_config():
-    return {
-        "url_base": "http://secure-wms.com",
     }
 
 
@@ -43,12 +36,6 @@ def test_check_connection(requests_mock, config):
         },
     )
     assert source.check_connection(logger_mock, config) == (True, None)
-
-
-def test_auth_raises_configuration_error(http_config):
-    source = SourceTplcentral()
-    with raises(ConfigurationError):
-        source._auth(http_config)
 
 
 def test_streams(config):
