@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.2
+Low-code: Allow `grant_type` to be specified for OAuthAuthenticator
+
 ## 0.7.1
 Low-code: Decouple yaml manifest parsing from the declarative source implementation
 
