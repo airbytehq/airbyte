@@ -19,6 +19,7 @@ from  dateutil.parser import parse
 import requests
 import asyncio
 import base64
+import time
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream, IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -26,15 +27,18 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, NoAuth
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.sources.streams.core import Stream
 
+from .helpers import Helpers
+
 
 
 class SurveyStream(HttpStream, ABC):
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    def __init__(self, config: Mapping[str, Any], form_id, **kwargs):
+    def __init__(self, config: Mapping[str, Any], form_id, schema, **kwargs):
         super().__init__()
 
         self.config = config
+        self.schema = schema
         self.server_name = config['server_name']
         self.form_id = form_id
         self.start_date = config['start_date']
@@ -55,47 +59,9 @@ class SurveyStream(HttpStream, ABC):
         
         return {}
 
-class CollectionSchema(SurveyStream):
-
-    primary_key = None
-
-
-    @property
-    def name(self) -> str:
-        return self.form_id
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
-
-    def _base64_encode(self,string:str) -> str:
-        return base64.b64encode(string.encode("ascii")).decode("ascii")
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-         return {'date': self.start_date}
-
-    def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
-        return {'Authorization': 'Basic ' + self.auth_token }
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-         return self.form_id
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        self.response_json = response.json()
-       
-        return self.response_json
-
 
 class SurveyctoStream(SurveyStream):
+    time.sleep(2)
 
     primary_key = None
 
@@ -106,36 +72,16 @@ class SurveyctoStream(SurveyStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    def _base64_encode(self,string:str) -> str:
-        return base64.b64encode(string.encode("ascii")).decode("ascii")
+    # def _base64_encode(self,string:str) -> str:
+    #     return base64.b64encode(string.encode("ascii")).decode("ascii")
 
-    # def list_data_one(self):
-    #     schema = CollectionSchema(config = self.config, form_id = self.form_id)
-    #     schema_records = schema.read_records(sync_mode="full_refresh")
-    #     print(f'------------>>>>>>{schema_records}')
-    #     list_data = []
-    #     for i in schema_records:
-    #         list_data.append(i)
-    #     return list_data
-        
-
-    # def get_json_schema(self):
-    #     data = self.list_data_one()
-    #     generator = SchemaGenerator(input_format='dict', infer_mode='NULLABLE',preserve_input_sort_order='true')
-
-    #     schema_map, error_logs = generator.deduce_schema(input_data=data)
-    #     schema = generator.flatten_schema(schema_map)
-    #     schema_json = converter(schema)
-    #     schema_json_properties=schema_json['definitions']['element']['properties']
-    #     b = json.dumps(schema_json_properties)
-    #     print(f'==============================================>>>>{b}')
-  
-    #     return {
-    #         "$schema": "http://json-schema.org/draft-07/schema#",
-    #         "additionalProperties": True,
-    #         "type": "object",
-    #         "properties": b
-    #     }
+    def get_json_schema(self):  
+        return {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "additionalProperties": True,
+            "type": "object",
+            "properties": self.schema
+        }
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -145,6 +91,7 @@ class SurveyctoStream(SurveyStream):
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
+        print(f'---->>{self.auth_token}')
         return {'Authorization': 'Basic ' + self.auth_token }
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -177,17 +124,15 @@ class SourceSurveycto(AbstractSource):
 
     def generate_streams(self, config: str) -> List[Stream]:
         forms = config.get("form_id", [])
+        streams = []
         for form_id in forms:
-            yield SurveyctoStream(
-                config=config,
-                form_id=form_id
-            )
+            schema = Helpers.call_survey_cto(config, form_id)
+            print(schema)
+            stream = SurveyctoStream(config=config,form_id=form_id,schema={})
+            streams.append(stream)
+        return streams
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        # auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
-        # return [Customers(authenticator=auth), Employees(authenticator=auth)]
-        # auth = NoAuth()        
-
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:    
         streams = self.generate_streams(config=config)
         return streams
 
