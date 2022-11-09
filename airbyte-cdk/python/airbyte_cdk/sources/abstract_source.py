@@ -310,6 +310,7 @@ class AbstractSource(Source, ABC):
         Necessary because we use different loggers at the source and stream levels. We must
         apply the source's log level to each stream's logger.
         """
+        print(f"_apply_log_level_to_stream_logger {logger} to {stream_instance.logger}")
         if hasattr(logger, "level"):
             stream_instance.logger.setLevel(logger.level)
 

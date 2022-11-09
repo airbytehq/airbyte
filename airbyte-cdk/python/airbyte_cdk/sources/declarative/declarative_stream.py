@@ -112,11 +112,6 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:
-        # Set the log level on the retriever if it has a logger
-        # FIXME: Add logger to the retriever's interface so we can remove this awkward check
-        if hasattr(self.logger, "level") and hasattr(self.retriever, "logger"):
-            self.retriever.logger.setLevel(self.logger.level)
-
         for message_or_record in self.retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state):
             if isinstance(message_or_record, dict):
                 message_or_record = self._apply_transformations(message_or_record, self.config, stream_slice)
