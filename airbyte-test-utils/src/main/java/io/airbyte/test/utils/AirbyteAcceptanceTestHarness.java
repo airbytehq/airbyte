@@ -616,7 +616,7 @@ public class AirbyteAcceptanceTestHarness {
     } else if (isMac) {
       dbConfig.put(JdbcUtils.HOST_KEY, "host.docker.internal");
     } else {
-      dbConfig.put(JdbcUtils.HOST_KEY, "host.docker.internal");
+      dbConfig.put(JdbcUtils.HOST_KEY, "localhost");
     }
 
     if (hiddenPassword) {
