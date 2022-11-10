@@ -56,68 +56,70 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
         <Section title={<FormattedMessage id="connection.transfer" />}>
           <ScheduleField />
         </Section>
-        <Section>
-          <Heading as="h2" size="sm">
-            <FormattedMessage id="connection.streams" />
-          </Heading>
-          <span className={readonlyClass}>
-            <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
-          </span>
-          {values.namespaceDefinition === NamespaceDefinitionType.customformat && (
-            <Field name="namespaceFormat">
-              {({ field, meta }: FieldProps<string>) => (
+        {!isNewStreamsTableEnabled && (
+          <Section>
+            <Heading as="h2" size="sm">
+              <FormattedMessage id="connection.streams" />
+            </Heading>
+            <span className={readonlyClass}>
+              <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
+            </span>
+            {values.namespaceDefinition === NamespaceDefinitionType.customformat && (
+              <Field name="namespaceFormat">
+                {({ field, meta }: FieldProps<string>) => (
+                  <div className={styles.flexRow}>
+                    <div className={styles.leftFieldCol}>
+                      <ControlLabels
+                        className={styles.namespaceFormatLabel}
+                        nextLine
+                        error={!!meta.error}
+                        label={<FormattedMessage id="connectionForm.namespaceFormat.title" />}
+                        message={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
+                      />
+                    </div>
+                    <div className={classNames(styles.rightFieldCol, readonlyClass)}>
+                      <Input
+                        {...field}
+                        error={!!meta.error}
+                        placeholder={formatMessage({
+                          id: "connectionForm.namespaceFormat.placeholder",
+                        })}
+                      />
+                    </div>
+                  </div>
+                )}
+              </Field>
+            )}
+            <Field name="prefix">
+              {({ field }: FieldProps<string>) => (
                 <div className={styles.flexRow}>
                   <div className={styles.leftFieldCol}>
                     <ControlLabels
-                      className={styles.namespaceFormatLabel}
                       nextLine
-                      error={!!meta.error}
-                      label={<FormattedMessage id="connectionForm.namespaceFormat.title" />}
-                      message={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
+                      label={formatMessage({
+                        id: "form.prefix",
+                      })}
+                      message={formatMessage({
+                        id: "form.prefix.message",
+                      })}
                     />
                   </div>
-                  <div className={classNames(styles.rightFieldCol, readonlyClass)}>
+                  <div className={styles.rightFieldCol}>
                     <Input
                       {...field}
-                      error={!!meta.error}
+                      type="text"
                       placeholder={formatMessage({
-                        id: "connectionForm.namespaceFormat.placeholder",
+                        id: `form.prefix.placeholder`,
                       })}
+                      data-testid="prefixInput"
+                      style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}
                     />
                   </div>
                 </div>
               )}
             </Field>
-          )}
-          <Field name="prefix">
-            {({ field }: FieldProps<string>) => (
-              <div className={styles.flexRow}>
-                <div className={styles.leftFieldCol}>
-                  <ControlLabels
-                    nextLine
-                    label={formatMessage({
-                      id: "form.prefix",
-                    })}
-                    message={formatMessage({
-                      id: "form.prefix.message",
-                    })}
-                  />
-                </div>
-                <div className={styles.rightFieldCol}>
-                  <Input
-                    {...field}
-                    type="text"
-                    placeholder={formatMessage({
-                      id: `form.prefix.placeholder`,
-                    })}
-                    data-testid="prefixInput"
-                    style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}
-                  />
-                </div>
-              </div>
-            )}
-          </Field>
-        </Section>
+          </Section>
+        )}
         <Section className={isNewStreamsTableEnabled ? styles.flush : undefined}>
           <Field
             name="syncCatalog.streams"

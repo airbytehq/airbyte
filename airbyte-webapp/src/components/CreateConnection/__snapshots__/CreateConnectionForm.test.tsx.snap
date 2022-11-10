@@ -438,13 +438,13 @@ exports[`CreateConnectionForm should render 1`] = `
                     class="<removed-for-snapshot-test>"
                   >
                     Source
-                    <div
+                    <span
                       class="<removed-for-snapshot-test>"
                     >
-                      <div
+                      <span
                         class="<removed-for-snapshot-test>"
                       >
-                        <div
+                        <span
                           class="<removed-for-snapshot-test>"
                         >
                           <svg
@@ -458,9 +458,9 @@ exports[`CreateConnectionForm should render 1`] = `
                               fill="currentColor"
                             />
                           </svg>
-                        </div>
-                      </div>
-                    </div>
+                        </span>
+                      </span>
+                    </span>
                   </div>
                   <div
                     class="<removed-for-snapshot-test>"
@@ -469,13 +469,13 @@ exports[`CreateConnectionForm should render 1`] = `
                     class="<removed-for-snapshot-test>"
                   >
                     Sync mode
-                    <div
+                    <span
                       class="<removed-for-snapshot-test>"
                     >
-                      <div
+                      <span
                         class="<removed-for-snapshot-test>"
                       >
-                        <div
+                        <span
                           class="<removed-for-snapshot-test>"
                         >
                           <svg
@@ -489,21 +489,21 @@ exports[`CreateConnectionForm should render 1`] = `
                               fill="currentColor"
                             />
                           </svg>
-                        </div>
-                      </div>
-                    </div>
+                        </span>
+                      </span>
+                    </span>
                   </div>
                   <div
                     class="<removed-for-snapshot-test>"
                   >
                     Cursor field
-                    <div
+                    <span
                       class="<removed-for-snapshot-test>"
                     >
-                      <div
+                      <span
                         class="<removed-for-snapshot-test>"
                       >
-                        <div
+                        <span
                           class="<removed-for-snapshot-test>"
                         >
                           <svg
@@ -517,21 +517,21 @@ exports[`CreateConnectionForm should render 1`] = `
                               fill="currentColor"
                             />
                           </svg>
-                        </div>
-                      </div>
-                    </div>
+                        </span>
+                      </span>
+                    </span>
                   </div>
                   <div
                     class="<removed-for-snapshot-test>"
                   >
                     Primary key
-                    <div
+                    <span
                       class="<removed-for-snapshot-test>"
                     >
-                      <div
+                      <span
                         class="<removed-for-snapshot-test>"
                       >
-                        <div
+                        <span
                           class="<removed-for-snapshot-test>"
                         >
                           <svg
@@ -545,21 +545,21 @@ exports[`CreateConnectionForm should render 1`] = `
                               fill="currentColor"
                             />
                           </svg>
-                        </div>
-                      </div>
-                    </div>
+                        </span>
+                      </span>
+                    </span>
                   </div>
                   <div
                     class="<removed-for-snapshot-test>"
                   >
                     Destination
-                    <div
+                    <span
                       class="<removed-for-snapshot-test>"
                     >
-                      <div
+                      <span
                         class="<removed-for-snapshot-test>"
                       >
-                        <div
+                        <span
                           class="<removed-for-snapshot-test>"
                         >
                           <svg
@@ -573,9 +573,9 @@ exports[`CreateConnectionForm should render 1`] = `
                               fill="currentColor"
                             />
                           </svg>
-                        </div>
-                      </div>
-                    </div>
+                        </span>
+                      </span>
+                    </span>
                   </div>
                   <div
                     class="<removed-for-snapshot-test>"
