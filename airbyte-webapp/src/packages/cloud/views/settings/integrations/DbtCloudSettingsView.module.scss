@@ -1,0 +1,14 @@
+@use "scss/colors";
+@use "scss/variables" as vars;
+
+$item-spacing: 25px;
+
+.controlGroup {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: $item-spacing;
+
+  .button {
+    margin-left: 1em;
+  }
+}

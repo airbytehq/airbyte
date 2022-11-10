@@ -4,8 +4,8 @@
 
 package io.airbyte.server.scheduler;
 
+import io.airbyte.commons.temporal.TemporalResponse;
 import io.airbyte.config.JobConfig.ConfigType;
-import io.airbyte.workers.temporal.TemporalResponse;
 import java.util.Objects;
 import java.util.UUID;
 

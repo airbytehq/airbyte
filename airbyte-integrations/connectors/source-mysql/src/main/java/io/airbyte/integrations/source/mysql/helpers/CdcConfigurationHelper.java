@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import java.time.Duration;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -22,8 +23,8 @@ import org.slf4j.LoggerFactory;
  * 2. checking whether binlog required from saved cdc offset is available on mysql server
  * #checkBinlog method
  * </p>
- * 3. configuring initial CDC wait time. TODO : There is a lot of shared logic for this functionality
- * between MySQL and Postgres. Refactor it to reduce code de-duplication.
+ * 3. configuring initial CDC wait time. TODO : There is a lot of shared logic for this
+ * functionality between MySQL and Postgres. Refactor it to reduce code de-duplication.
  */
 public class CdcConfigurationHelper {
 
@@ -72,6 +73,26 @@ public class CdcConfigurationHelper {
       return Optional.of(seconds);
     }
     return Optional.empty();
+  }
+
+  private static Optional<String> getCdcServerTimezone(final JsonNode config) {
+    final JsonNode replicationMethod = config.get("replication_method");
+    if (replicationMethod != null && replicationMethod.has("server_time_zone")) {
+      final String serverTimeZone = config.get("replication_method").get("server_time_zone").asText();
+      return Optional.of(serverTimeZone);
+    }
+    return Optional.empty();
+  }
+
+  public static void checkServerTimeZoneConfig(final JsonNode config) {
+    final Optional<String> serverTimeZone = getCdcServerTimezone(config);
+    if (serverTimeZone.isPresent()) {
+      final String timeZone = serverTimeZone.get();
+      if (!timeZone.isEmpty() && !ZoneId.getAvailableZoneIds().contains((timeZone))) {
+        throw new IllegalArgumentException(String.format("Given timezone %s is not valid. The given timezone must conform to the IANNA standard. "
+            + "See https://www.iana.org/time-zones for more details", serverTimeZone.get()));
+      }
+    }
   }
 
   public static void checkFirstRecordWaitTime(final JsonNode config) {

@@ -5,9 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
 import styled from "styled-components";
 
-import SortIcon from "components/EntityTable/components/SortIcon";
 import { SortOrderEnum } from "components/EntityTable/types";
-import { Table } from "components/ui/Table";
+import { Table, SortableTableHeader } from "components/ui/Table";
 
 import { useQuery } from "hooks/useQuery";
 import { CreditConsumptionByConnector } from "packages/cloud/lib/domain/cloudWorkspaces/types";
@@ -16,7 +15,6 @@ import { useSourceDefinitionList } from "services/connector/SourceDefinitionServ
 
 import ConnectionCell from "./ConnectionCell";
 import UsageCell from "./UsageCell";
-import styles from "./UsagePerConnectionTable.module.scss";
 
 const Content = styled.div`
   padding: 0 60px 0 15px;
@@ -112,10 +110,13 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
     () => [
       {
         Header: (
-          <button className={styles.tableHeaderButton} onClick={() => onSortClick("connection")}>
+          <SortableTableHeader
+            onClick={() => onSortClick("connection")}
+            isActive={sortBy === "connection"}
+            isAscending={sortOrder === SortOrderEnum.ASC}
+          >
             <FormattedMessage id="credits.connection" />
-            <SortIcon wasActive={sortBy === "connection"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
-          </button>
+          </SortableTableHeader>
         ),
         customWidth: 30,
         accessor: "sourceDefinitionName",
@@ -130,10 +131,13 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
       },
       {
         Header: (
-          <button className={styles.tableHeaderButton} onClick={() => onSortClick("usage")}>
+          <SortableTableHeader
+            onClick={() => onSortClick("usage")}
+            isActive={sortBy === "usage"}
+            isAscending={sortOrder === SortOrderEnum.ASC}
+          >
             <FormattedMessage id="credits.usage" />
-            <SortIcon wasActive={sortBy === "usage"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
-          </button>
+          </SortableTableHeader>
         ),
         accessor: "creditsConsumed",
         collapse: true,

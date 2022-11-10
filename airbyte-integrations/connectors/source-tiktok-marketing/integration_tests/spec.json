@@ -1,6 +1,6 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/tiktok-marketing",
-  "changelogUrl": "https://docs.airbyte.io/integrations/sources/tiktok-marketing",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/tiktok-marketing",
+  "changelogUrl": "https://docs.airbyte.com/integrations/sources/tiktok-marketing",
   "connectionSpecification": {
     "title": "TikTok Marketing Source Spec",
     "type": "object",

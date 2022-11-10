@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 
 connector_image: airbyte/source-tiktok-marketing:dev
@@ -68,23 +68,23 @@ tests:
   incremental:
     - config_path: "secrets/prod_config.json"
       configured_catalog_path: "integration_tests/streams_basic.json"
-      timeout_seconds: 2400
+      timeout_seconds: 7200
       future_state_path: "integration_tests/abnormal_state.json"
     - config_path: "secrets/prod_config.json"
       configured_catalog_path: "integration_tests/streams_reports_daily.json"
-      timeout_seconds: 2400
+      timeout_seconds: 7200
       future_state_path: "integration_tests/abnormal_state.json"
     # LIFETIME granularity: does not support incremental sync
 
   full_refresh:
     - config_path: "secrets/prod_config.json"
       configured_catalog_path: "integration_tests/streams_basic.json"
-      timeout_seconds: 2400
+      timeout_seconds: 7200
       ignored_fields:  # Important: sometimes some streams does not return the same records in subsequent syncs
         "ad_groups": ["dayparting", "enable_search_result", "display_mode", "schedule_infos", "feed_type", "status" ]
     - config_path: "secrets/prod_config.json"
       configured_catalog_path: "integration_tests/streams_reports_daily.json"
-      timeout_seconds: 2400
+      timeout_seconds: 7200
     - config_path: "secrets/prod_config.json"
       configured_catalog_path: "integration_tests/streams_reports_lifetime.json"
-      timeout_seconds: 2400
+      timeout_seconds: 7200
