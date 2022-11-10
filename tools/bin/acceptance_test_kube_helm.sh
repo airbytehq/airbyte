@@ -16,10 +16,10 @@ kubectl patch configmap/coredns \
   --type merge \
   -p '{"data":{"NodeHosts": "${DOCKER_HOST_IP} host.docker.internal" }}'
 
-kubectl patch configmap/coredns \
-  -n kube-system \
-  --type merge \
-  -p '{"data":{"NodeHosts": "${DOCKER_HOST_IP} localhost" }}'
+# kubectl patch configmap/coredns \
+#   -n kube-system \
+#   --type merge \
+#   -p '{"data":{"NodeHosts": "${DOCKER_HOST_IP} localhost" }}'
 
 
 # Since KIND does not have access to the local docker agent, manually load the minimum images required for the Kubernetes Acceptance Tests.
