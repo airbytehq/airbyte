@@ -46,5 +46,5 @@
   pointer-events: none;
   background-image: linear-gradient(to bottom, colors.$transparentColor, colors.$white 100%);
   width: 100%;
-  height: 2vh;
+  height: variables.$spacing-xl;
 }
