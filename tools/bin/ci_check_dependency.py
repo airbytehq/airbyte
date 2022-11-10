@@ -2,6 +2,7 @@ import sys
 import os
 import os.path
 import yaml
+from typing import Any, Dict, Text
 
 CONNECTORS_PATH = "./airbyte-integrations/connectors/"
 NORMALIZATION_PATH = "./airbyte-integrations/bases/base-normalization/"
@@ -70,7 +71,7 @@ def get_all_connectors():
     return [connector for connector in next(walk)[1]]
 
 
-def get_gradle_file_for_path(path):
+def get_gradle_file_for_path(path: str) -> Dict[Text, Any]:
     if not path.endswith("/"):
         path = path + "/"
     build_gradle_file = find_file("build.gradle", path)
