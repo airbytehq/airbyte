@@ -22,9 +22,14 @@ import lombok.extern.slf4j.Slf4j;
 public class TemporalSdkInterceptor implements TraceInterceptor {
 
   /**
-   * Trace resource name used to scope the filtering performed by this interceptor.
+   * Connection Manager trace resource name used to scope the filtering performed by this interceptor.
    */
   static final String CONNECTION_MANAGER_WORKFLOW_IMPL_RESOURCE_NAME = "ConnectionManagerWorkflowImpl.run";
+
+  /**
+   * Sync Workflow trace resource name used to scope the filtering performed by this interceptor.
+   */
+  static final String SYNC_WORKFLOW_IMPL_RESOURCE_NAME = "SyncWorkflowImpl.run";
 
   /**
    * Error message tag key name that contains the Temporal exit error message.
@@ -79,7 +84,8 @@ public class TemporalSdkInterceptor implements TraceInterceptor {
     return trace.isError() &&
         EXIT_ERROR_MESSAGE.equalsIgnoreCase(trace.getTags().getOrDefault(ERROR_MESSAGE_TAG_KEY, "").toString()) &&
         (safeEquals(trace.getOperationName(), WORKFLOW_TRACE_OPERATION_NAME)
-            || safeEquals(trace.getResourceName(), CONNECTION_MANAGER_WORKFLOW_IMPL_RESOURCE_NAME));
+            || safeEquals(trace.getResourceName(), CONNECTION_MANAGER_WORKFLOW_IMPL_RESOURCE_NAME)
+            || safeEquals(trace.getResourceName(), SYNC_WORKFLOW_IMPL_RESOURCE_NAME));
   }
 
   /**
