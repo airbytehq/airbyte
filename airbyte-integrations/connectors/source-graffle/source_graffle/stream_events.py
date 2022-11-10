@@ -9,46 +9,61 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 class EventsStream(HttpStream):
   primary_key = "id"
-  cursor_field = "page"
+  cursor_field = "id"
   page_size = 5000
+  page = 1
+  first_transaction_id = ""
+  interrupt_execution = False
   url_base = "https://prod-main-net-dashboard-api.azurewebsites.net"
     
   def __init__(self, config: Mapping[str, Any], event_id: str, **_):
     super().__init__()
     self.event_id = event_id
     self.company_id = config["company_id"]
-    self._cursor_value = config["page"]
+    self._cursor_value = ""
 
   def request_headers(self, **_) -> Mapping[str, Any]:
     return {}
 
-  def request_params(self, stream_state: Mapping[str, Any], **_) -> MutableMapping[str, Any]:
+  def request_params(self, **_) -> MutableMapping[str, Any]:
     return {
-      "page": self._cursor_value,
+      "page": self.page,
       "eventType": self.event_id,
       "pageSize": self.page_size,
     }
 
   def parse_response(self, response: requests.Response, **_) -> Iterable[Mapping]:
-
     print("############################# Extracting")
     print("#############################" + response.request.url)
     print("#############################")
 
-    lower_response = json.loads(json.dumps(response.json()).lower())
-    yield from lower_response
+    if len(response.json()) < self.page_size:
+      self._cursor_value = self.first_transaction_id
+      self.interrupt_execution = True
+
+    yield from json.loads(json.dumps(response.json()).lower())
 
   def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
 
-    if len(response.json()) < self.page_size:
+    if self.page == 1:
+      self.first_transaction_id = response.json()[0]["id"]
+
+    if self.interrupt_execution:
+      return None
+
+    self.page = self.page + 1
+    return {
+      "page": self.page,
+      "eventType": self.event_id,
+      "pageSize": self.page_size,
+    }
+
+  def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+    for record in super().read_records(*args, **kwargs):
+      if record["id"] == self._cursor_value:
+        self.interrupt_execution = True
         return None
-    else:
-      self._cursor_value = self._cursor_value + 1
-      return {
-        "page": self._cursor_value,
-        "eventType": self.event_id,
-        "pageSize": self.page_size,
-      }
+      yield record
 
   @property
   def state(self) -> Mapping[str, Any]:
@@ -56,7 +71,10 @@ class EventsStream(HttpStream):
 
   @state.setter
   def state(self, value: Mapping[str, Any]):
-    self._cursor_value = value["page"]
+    self.page = 1
+    self.first_transaction_id = ""
+    self.interrupt_execution = False
+    self._cursor_value = value["id"]
 
 
 class MintedEvents(EventsStream):
