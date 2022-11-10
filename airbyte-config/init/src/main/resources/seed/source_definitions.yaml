@@ -1115,6 +1115,13 @@
   icon: timely.svg
   sourceType: api
   releaseStage: alpha
+- name: Toggl
+  sourceDefinitionId: 7e7c844f-2300-4342-b7d3-6dd7992593cd
+  dockerRepository: airbyte/source-toggl
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/toggl
+  sourceType: api
+  releaseStage: alpha
 - name: Trello
   sourceDefinitionId: 8da67652-004c-11ec-9a03-0242ac130003
   dockerRepository: airbyte/source-trello
