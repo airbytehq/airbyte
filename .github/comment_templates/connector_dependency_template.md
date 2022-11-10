@@ -43,9 +43,9 @@ NOTE ⚠️ Changes in this PR affect the following connectors. Make sure to do 
 
 ### Other Modules
 
-{others}
-
 </summary>
+
+{others}
 
 </details>
 
