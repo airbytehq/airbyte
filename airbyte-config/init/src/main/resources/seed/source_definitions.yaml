@@ -254,6 +254,13 @@
   icon: commercetools.svg
   sourceType: api
   releaseStage: alpha
+- name: ConfigCat
+  sourceDefinitionId: 4fd7565c-8b99-439b-80d0-2d965e1d958c
+  dockerRepository: airbyte/source-configcat
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/configcat
+  sourceType: api
+  releaseStage: alpha
 - name: Confluence
   sourceDefinitionId: cf40a7f8-71f8-45ce-a7fa-fca053e4028c
   dockerRepository: airbyte/source-confluence
@@ -461,7 +468,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.3.7
+  dockerImageTag: 0.3.8
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -719,6 +726,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/kyriba
   sourceType: api
   releaseStage: alpha
+- name: LaunchDarkly
+  sourceDefinitionId: f96bb511-5e3c-48fc-b408-547953cd81a4
+  dockerRepository: airbyte/source-launchdarkly
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/launchdarkly
+  sourceType: api
+  releaseStage: alpha
 - name: Lemlist
   sourceDefinitionId: 789f8e7a-2d28-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-lemlist
@@ -909,6 +923,13 @@
   dockerRepository: airbyte/source-news-api
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/news-api
+  sourceType: api
+  releaseStage: alpha
+- name: Newsdata
+  sourceDefinitionId: 60bd11d8-2632-4daa-a688-b47336d32093
+  dockerRepository: airbyte/source-newsdata
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/newsdata
   sourceType: api
   releaseStage: alpha
 - name: Notion
@@ -1411,6 +1432,13 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/timely
   icon: timely.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Toggl
+  sourceDefinitionId: 7e7c844f-2300-4342-b7d3-6dd7992593cd
+  dockerRepository: airbyte/source-toggl
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/toggl
   sourceType: api
   releaseStage: alpha
 - name: The Guardian API
