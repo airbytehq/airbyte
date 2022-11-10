@@ -236,7 +236,7 @@ services:
     depends_on:
       - webapp
       - server
-      - airbyte-connector-builder
+      - airbyte-connector-builder-server
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}
