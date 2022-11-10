@@ -5,12 +5,33 @@ connectionSpecification:
   type: object
   required:
     - api_key
-
+    - id
+    - brewed_before
+    - brewed_after
   additionalProperties: true
   properties:
     api_key:
+      title: Punk Api Dummy Key
       type: string
       description: Dummy API Key, Just enter 123 for example
     id:
+      title: Beers with specific ID
       type: string
-      description: Optional, To extract specific data with Unique ID
+      description: To extract specific data with Unique ID
+      examples: 
+        - 1
+        - 22
+    brewed_before:
+      title: Brewed before data to get incremental reads
+      type: string
+      description: To extract specific data with Unique ID
+      pattern: ^[0-9]{2}-[0-9]{4}$
+      examples:
+        - MM-YYYY
+    brewed_after:
+      title: Brewed after data to get incremental reads
+      type: string
+      description: To extract specific data with Unique ID
+      pattern: ^[0-9]{2}-[0-9]{4}$
+      examples:
+        - MM-YYYY
