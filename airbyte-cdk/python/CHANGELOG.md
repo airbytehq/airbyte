@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.8.1
+Low-code: Don't filter failed interpolated vars for `request_options_provider.request_body_json`
+
 ## 0.8.0
 Low-code: Allow for request and response to be emitted as log messages
 
