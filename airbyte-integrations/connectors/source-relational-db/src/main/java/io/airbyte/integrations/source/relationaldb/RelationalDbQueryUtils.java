@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.relationaldb;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -9,7 +13,7 @@ import java.util.StringJoiner;
 import java.util.stream.Stream;
 
 /**
- * Utility class for methods to query a relational db. 
+ * Utility class for methods to query a relational db.
  */
 public class RelationalDbQueryUtils {
 

@@ -1,0 +1,4 @@
+build
+!build/airbyte_api_client
+.venv
+connector_builder.egg-info
