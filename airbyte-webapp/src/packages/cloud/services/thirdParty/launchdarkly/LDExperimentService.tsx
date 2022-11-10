@@ -20,7 +20,7 @@ import { rejectAfter } from "utils/promises";
  * The maximum time in milliseconds we'll wait for LaunchDarkly to finish initialization,
  * before running disabling it.
  */
-const INITIALIZATION_TIMEOUT = 1500;
+const INITIALIZATION_TIMEOUT = 5000;
 
 const FEATURE_FLAG_EXPERIMENT = "featureService.overwrites";
 

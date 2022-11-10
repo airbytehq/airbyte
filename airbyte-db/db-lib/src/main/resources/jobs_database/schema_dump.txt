@@ -90,6 +90,7 @@ create unique index "airbyte_jobs_migrations_pk" on "public"."airbyte_jobs_migra
 create index "airbyte_jobs_migrations_s_idx" on "public"."airbyte_jobs_migrations"("success" asc);
 create unique index "airbyte_metadata_pkey" on "public"."airbyte_metadata"("key" asc);
 create unique index "attempts_pkey" on "public"."attempts"("id" asc);
+create index "attempts_status_idx" on "public"."attempts"("status" asc);
 create unique index "job_attempt_idx" on "public"."attempts"(
   "job_id" asc, 
   "attempt_number" asc
@@ -97,6 +98,7 @@ create unique index "job_attempt_idx" on "public"."attempts"(
 create index "jobs_config_type_idx" on "public"."jobs"("config_type" asc);
 create unique index "jobs_pkey" on "public"."jobs"("id" asc);
 create index "jobs_scope_idx" on "public"."jobs"("scope" asc);
+create index "jobs_status_idx" on "public"."jobs"("status" asc);
 create unique index "normalization_summaries_pkey" on "public"."normalization_summaries"("id" asc);
 create index "normalization_summary_attempt_id_idx" on "public"."normalization_summaries"("attempt_id" asc);
 create index "attempt_id_idx" on "public"."sync_stats"("attempt_id" asc);

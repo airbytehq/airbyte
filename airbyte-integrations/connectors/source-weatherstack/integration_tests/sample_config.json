@@ -1,0 +1,6 @@
+{
+  "query": "London",
+  "access_key": "abc",
+  "historical_date": "2000-01-01",
+  "is_paid_account": true
+}
