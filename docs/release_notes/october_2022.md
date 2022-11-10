@@ -13,7 +13,7 @@ This page includes new features and improvements to the Airbyte Cloud and Airbyt
 
 ### Improvements
 * Since adding Basic Auth to Airbyte Open Source, we improved the `load_test` script to reflect this change. Now when the `load_test` script sources the `.env` file, it includes `BASIC_AUTH_USERNAME` and `BASIC_AUTH_PASSWORD` when calling the API. [#18273](https://github.com/airbytehq/airbyte/pull/18273)
-* Improved the Airbyte platform by updating the Apache Commons Text from 1.9 to 1.10.0 because version 1.9 was affected by [CVE 2022-42889](https://nvd.nist.gov/vuln/detail/CVE-2022-42889) (Text4Shell). [#18275](https://github.com/airbytehq/airbyte/pull/18273) 
+* Improved the Airbyte platform by updating the Apache Commons Text from 1.9 to 1.10.0 because version 1.9 was affected by [CVE 2022-42889](https://nvd.nist.gov/vuln/detail/CVE-2022-42889) (Text4Shell). [#18273](https://github.com/airbytehq/airbyte/pull/18273) 
     * We do not intend to update older versions of Airbyte because we were not affected by the vulnerable behavior:
         * Our direct usages of `commons-text` either do not use the vulnerable class or are pinned to an unaffected version.
         * Almost all of our transitive dependencies on `commons-text` are limited to test code. Runtime code has no vulnerable transitive dependencies on `commons-text`.
