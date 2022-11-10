@@ -64,6 +64,7 @@ public class BigQueryUtils {
       DateTimeFormatter.ofPattern("[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d]" +
           "[[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]]");
   private static final String USER_AGENT_FORMAT = "%s (GPN: Airbyte)";
+  private static final String CHECK_TEST_DATASET_SUFFIX = "_airbyte_check_stage_tmp";
 
   public static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
@@ -113,6 +114,20 @@ public class BigQueryUtils {
       final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
       bigquery.create(datasetInfo);
     }
+  }
+
+  public static void checkHasCreateAndDeleteDatasetRole(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
+    final String tmpTestDatasetId = datasetId + CHECK_TEST_DATASET_SUFFIX;
+    final Dataset dataset = bigquery.getDataset(tmpTestDatasetId);
+
+    // remove possible tmp datasets from previous execution
+    if (dataset != null && dataset.exists()) {
+      bigquery.delete(tmpTestDatasetId);
+    }
+
+    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(tmpTestDatasetId).setLocation(datasetLocation).build();
+    bigquery.create(datasetInfo);
+    bigquery.delete(tmpTestDatasetId);
   }
 
   // https://cloud.google.com/bigquery/docs/creating-partitioned-tables#java
