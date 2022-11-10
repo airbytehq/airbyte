@@ -30,63 +30,33 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ job, jobConfigType }) 
     return null;
   }
 
-  let numeratorRecords = -1;
-  let denominatorRecords = -1;
-  let totalPercentRecords = -1;
-  let numeratorBytes = -1;
-  let denominatorBytes = -1;
-  let elapsedTimeMS = -1;
-  let timeRemaining = -1;
-  let timeRemainingString = "";
-  const unEstimatedStreams: string[] = [];
-  let displayProgressBar = true;
   let latestAttempt: AttemptRead | undefined;
+  if (isJobsWithJobs(job) && job.attempts) {
+    latestAttempt = job.attempts[job.attempts.length - 1];
+  }
+  if (!latestAttempt) {
+    return null;
+  }
 
   const jobStatus = getJobStatus(job);
   if (["failed", "succeeded", "cancelled"].includes(jobStatus)) {
     return null;
   }
   const color = styles[jobStatus] ?? "white";
+  const {
+    displayProgressBar,
+    totalPercentRecords,
+    timeRemaining,
+    numeratorBytes,
+    numeratorRecords,
+    denominatorRecords,
+    denominatorBytes,
+    unEstimatedStreams,
+    elapsedTimeMS,
+  } = progressBarCalculations(latestAttempt);
 
-  if (isJobsWithJobs(job) && job.attempts) {
-    latestAttempt = job.attempts[job.attempts.length - 1];
-    let countTotalsFromStreams = true;
-    if (
-      latestAttempt.totalStats?.recordsEmitted &&
-      latestAttempt.totalStats?.estimatedRecords &&
-      latestAttempt.totalStats?.bytesEmitted &&
-      latestAttempt.totalStats?.estimatedBytes
-    ) {
-      countTotalsFromStreams = false;
-      numeratorRecords = latestAttempt.totalStats.recordsEmitted;
-      denominatorRecords = latestAttempt.totalStats.estimatedRecords;
-      numeratorBytes = latestAttempt.totalStats.bytesEmitted;
-      denominatorBytes = latestAttempt.totalStats.estimatedBytes;
-    }
-
-    if (latestAttempt && !latestAttempt.totalStats && latestAttempt.streamStats) {
-      for (const stream of latestAttempt.streamStats) {
-        if (!stream.stats.recordsEmitted) {
-          unEstimatedStreams.push(`${stream.streamName}`);
-        }
-        if (countTotalsFromStreams) {
-          numeratorRecords += stream.stats.recordsEmitted ?? 0;
-          denominatorRecords += stream.stats.estimatedRecords ?? 0;
-          numeratorBytes += stream.stats.bytesEmitted ?? 0;
-          denominatorBytes += stream.stats.estimatedBytes ?? 0;
-        }
-      }
-    } else if (!latestAttempt.streamStats) {
-      displayProgressBar = false;
-    }
-  }
-
-  totalPercentRecords = denominatorRecords > 0 ? Math.floor((numeratorRecords * 100) / denominatorRecords) : 0;
-
-  // chose to estimate time remaining based on records rather than bytes
-  if (latestAttempt && latestAttempt.status === Status.RUNNING && displayProgressBar) {
-    elapsedTimeMS = Date.now() - latestAttempt.createdAt * 1000;
-    timeRemaining = Math.floor(elapsedTimeMS / totalPercentRecords) * (100 - totalPercentRecords); // in ms
+  let timeRemainingString = "";
+  if (elapsedTimeMS && timeRemaining) {
     const minutesRemaining = Math.ceil(timeRemaining / 1000 / 60);
     const hoursRemaining = Math.ceil(minutesRemaining / 60);
     if (minutesRemaining <= 60) {
@@ -200,4 +170,69 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ job, jobConfigType }) 
       )}
     </div>
   );
+};
+
+export const progressBarCalculations = (latestAttempt: AttemptRead) => {
+  let numeratorRecords = -1;
+  let denominatorRecords = -1;
+  let totalPercentRecords = -1;
+  let numeratorBytes = -1;
+  let denominatorBytes = -1;
+  let elapsedTimeMS = -1;
+  let timeRemaining = -1;
+  const unEstimatedStreams: string[] = [];
+  let displayProgressBar = true;
+
+  let countTotalsFromStreams = true;
+  if (
+    latestAttempt.totalStats?.recordsEmitted &&
+    latestAttempt.totalStats?.estimatedRecords &&
+    latestAttempt.totalStats?.bytesEmitted &&
+    latestAttempt.totalStats?.estimatedBytes
+  ) {
+    countTotalsFromStreams = false;
+    numeratorRecords = latestAttempt.totalStats.recordsEmitted;
+    denominatorRecords = latestAttempt.totalStats.estimatedRecords;
+    numeratorBytes = latestAttempt.totalStats.bytesEmitted;
+    denominatorBytes = latestAttempt.totalStats.estimatedBytes;
+  } else if (!latestAttempt.totalStats && latestAttempt.streamStats) {
+    for (const stream of latestAttempt.streamStats) {
+      if (countTotalsFromStreams) {
+        numeratorRecords += stream.stats.recordsEmitted ?? 0;
+        denominatorRecords += stream.stats.estimatedRecords ?? 0;
+        numeratorBytes += stream.stats.bytesEmitted ?? 0;
+        denominatorBytes += stream.stats.estimatedBytes ?? 0;
+      }
+    }
+  }
+
+  if (latestAttempt.streamStats) {
+    for (const stream of latestAttempt.streamStats) {
+      if (!stream.stats.recordsEmitted) {
+        unEstimatedStreams.push(`${stream.streamName}`);
+      }
+    }
+  }
+
+  totalPercentRecords = denominatorRecords > 0 ? Math.floor((numeratorRecords * 100) / denominatorRecords) : 0;
+
+  // chose to estimate time remaining based on records rather than bytes
+  if (latestAttempt.status === Status.RUNNING && denominatorRecords > 0) {
+    elapsedTimeMS = Date.now() - latestAttempt.createdAt * 1000;
+    timeRemaining = Math.floor(elapsedTimeMS / totalPercentRecords) * (100 - totalPercentRecords); // in ms
+  } else {
+    displayProgressBar = false;
+  }
+
+  return {
+    displayProgressBar,
+    totalPercentRecords,
+    timeRemaining,
+    numeratorBytes,
+    numeratorRecords,
+    denominatorRecords,
+    denominatorBytes,
+    unEstimatedStreams,
+    elapsedTimeMS,
+  };
 };
