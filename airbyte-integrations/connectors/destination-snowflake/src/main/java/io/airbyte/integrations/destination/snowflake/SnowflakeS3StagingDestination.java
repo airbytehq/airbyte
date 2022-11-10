@@ -79,9 +79,9 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
   }
 
   private static void attemptStageOperations(final String outputSchema,
-                                                    final JdbcDatabase database,
-                                                    final NamingConventionTransformer namingResolver,
-                                                    final SnowflakeS3StagingSqlOperations sqlOperations)
+                                             final JdbcDatabase database,
+                                             final NamingConventionTransformer namingResolver,
+                                             final SnowflakeS3StagingSqlOperations sqlOperations)
       throws Exception {
 
     // verify we have permissions to create/drop stage

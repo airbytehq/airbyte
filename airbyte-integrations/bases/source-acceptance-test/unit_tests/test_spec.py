@@ -350,6 +350,7 @@ def test_oneof_usage(connector_spec, should_fail):
     else:
         t.test_oneof_usage(actual_connector_spec=ConnectorSpecification(connectionSpecification=connector_spec))
 
+
 @parametrize_test_case(
     {
         "test_id": "successful",
@@ -391,7 +392,6 @@ def test_enum_usage(connector_spec, should_fail):
             t.test_enum_usage(actual_connector_spec=ConnectorSpecification(connectionSpecification=connector_spec))
     else:
         t.test_enum_usage(actual_connector_spec=ConnectorSpecification(connectionSpecification=connector_spec))
-
 
 
 @pytest.mark.parametrize(
