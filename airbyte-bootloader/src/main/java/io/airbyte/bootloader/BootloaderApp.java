@@ -148,10 +148,10 @@ public class BootloaderApp {
   public void load() throws Exception {
     LOGGER.info("Initializing databases...");
     DatabaseCheckFactory.createConfigsDatabaseInitializer(configsDslContext,
-        configs.getConfigsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH)).initialize();
+        configs.getConfigsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.CONFIGS_INITIAL_SCHEMA_PATH)).initialize();
 
     DatabaseCheckFactory.createJobsDatabaseInitializer(jobsDslContext,
-        configs.getJobsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH)).initialize();
+        configs.getJobsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.JOBS_INITIAL_SCHEMA_PATH)).initialize();
     LOGGER.info("Databases initialized.");
 
     LOGGER.info("Setting up config database and default workspace...");

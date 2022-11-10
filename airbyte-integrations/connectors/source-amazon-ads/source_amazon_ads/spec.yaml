@@ -46,27 +46,6 @@ connectionSpecification:
       type: string
       default: NA
       order: 4
-    report_wait_timeout:
-      title: Report Wait Timeout
-      description: Timeout duration in minutes for Reports. Default is 60 minutes.
-      default: 60
-      examples:
-        - 60
-        - 120
-      order: 5
-      type: integer
-    report_generation_max_retries:
-      title: Report Generation Maximum Retries
-      description:
-        Maximum retries Airbyte will attempt for fetching report data.
-        Default is 5.
-      default: 5
-      examples:
-        - 5
-        - 10
-        - 15
-      order: 6
-      type: integer
     start_date:
       title: Start Date
       description:
@@ -75,14 +54,14 @@ connectionSpecification:
       examples:
         - "2022-10-10"
         - "2022-10-22"
-      order: 7
+      order: 5
       type: string
     profiles:
       title: Profile IDs
       description:
         Profile IDs you want to fetch data for. See <a href="https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles">docs</a>
         for more details.
-      order: 8
+      order: 6
       type: array
       items:
         type: integer
@@ -97,7 +76,7 @@ connectionSpecification:
           - archived
       type: array
       uniqueItems: true
-      order: 9
+      order: 7
   required:
     - client_id
     - client_secret
