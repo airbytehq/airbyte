@@ -85,13 +85,6 @@ public class ExasolDestination extends AbstractJdbcDestination implements Destin
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog configuredCatalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
-    // TODO
-    return null;
-  }
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
