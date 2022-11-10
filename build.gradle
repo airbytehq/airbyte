@@ -512,7 +512,7 @@ subprojects {
         def licenseTask = project.tasks.findByName('licenseFormatPython')
         blackFormat.dependsOn licenseTask
         isortFormat.dependsOn licenseTask
-        flakeCheck.dependsOn licenseTask
+        // flakeCheck.dependsOn licenseTask
 
         def generateFilesTask = project.tasks.findByName('generateProtocolClassFiles')
         if (generateFilesTask != null) {

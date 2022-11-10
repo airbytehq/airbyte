@@ -27,7 +27,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       base: "vs-dark",
       inherit: true,
       rules: [
-        { token: "string", foreground: styles.tokenString },
+        { token: "string", foreground: "#ffffff" },
         { token: "type", foreground: styles.tokenType },
         { token: "number", foreground: styles.tokenNumber },
         { token: "delimiter", foreground: styles.tokenDelimiter },

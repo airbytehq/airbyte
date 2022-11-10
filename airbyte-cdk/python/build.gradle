@@ -15,5 +15,5 @@ task generateProtocolClassFiles(type: Exec) {
 
 blackFormat.dependsOn generateProtocolClassFiles
 isortFormat.dependsOn generateProtocolClassFiles
-flakeCheck.dependsOn generateProtocolClassFiles
+// flakeCheck.dependsOn generateProtocolClassFiles
 installReqs.dependsOn generateProtocolClassFiles

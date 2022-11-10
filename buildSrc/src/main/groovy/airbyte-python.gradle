@@ -122,10 +122,10 @@ class AirbytePythonPlugin implements Plugin<Project> {
             outputPrefix = ''
         }
 
-        project.task('flakeCheck', type: PythonTask, dependsOn: project.blackFormat) {
-            module = "pflake8"
-            command = "--config ${project.rootProject.file('pyproject.toml').absolutePath} ./"
-        }
+        // project.task('flakeCheck', type: PythonTask, dependsOn: project.blackFormat) {
+        //     module = "pflake8"
+        //     command = "--config ${project.rootProject.file('pyproject.toml').absolutePath} ./"
+        // }
 
         project.task('flakeReport', type: PythonTask) {
             module = "pflake8"
@@ -200,7 +200,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
         project.task('airbytePythonFormat', type: DefaultTask) {
             dependsOn project.blackFormat
             dependsOn project.isortFormat
-            dependsOn project.flakeCheck
+            // dependsOn project.flakeCheck
         }
 
         project.task('airbytePythonReport', type: DefaultTask) {
