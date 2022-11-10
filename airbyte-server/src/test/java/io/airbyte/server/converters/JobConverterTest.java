@@ -22,6 +22,7 @@ import io.airbyte.api.model.generated.AttemptStreamStats;
 import io.airbyte.api.model.generated.DestinationDefinitionRead;
 import io.airbyte.api.model.generated.JobConfigType;
 import io.airbyte.api.model.generated.JobDebugRead;
+import io.airbyte.api.model.generated.JobInfoLightRead;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.JobWithAttemptsRead;
@@ -47,13 +48,13 @@ import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.persistence.job.models.Attempt;
+import io.airbyte.persistence.job.models.AttemptStatus;
+import io.airbyte.persistence.job.models.Job;
+import io.airbyte.persistence.job.models.JobStatus;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.scheduler.models.Attempt;
-import io.airbyte.scheduler.models.AttemptStatus;
-import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.models.JobStatus;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -208,6 +209,12 @@ class JobConverterTest {
   @Test
   void testGetJobInfoRead() {
     assertEquals(JOB_INFO, jobConverter.getJobInfoRead(job));
+  }
+
+  @Test
+  void testGetJobInfoLightRead() {
+    final JobInfoLightRead expected = new JobInfoLightRead().job(JOB_INFO.getJob());
+    assertEquals(expected, jobConverter.getJobInfoLightRead(job));
   }
 
   @Test

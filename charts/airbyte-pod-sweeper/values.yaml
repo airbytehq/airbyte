@@ -1,12 +1,12 @@
-## @param global.serviceAccountName Name of service account to be associated with service
-## @param deploymentMode Determines deployment mode of airbyte
-## @param secretName Overrides the secrate name with with credentials to S3 Bucket and logging
-## @param database.secretName Name of database secret
-## @param database.secretValue Value of database password key stored in secret
-## @param database.host Hostname of database
-## @param database.port Database port
+##  global.serviceAccountName Name of service account to be associated with service
+##  deploymentMode Determines deployment mode of airbyte
+##  secretName Overrides the secrate name with with credentials to S3 Bucket and logging
+##  database.secretName Name of database secret
+##  database.secretValue Value of database password key stored in secret
+##  database.host Hostname of database
+##  database.port Database port
 global:
-  imageRegistry: ""
+  
   serviceAccountName: &service-account-name "airbyte-admin"
   
   secretName: ""
@@ -16,45 +16,45 @@ global:
     host: "example.com"
     port: "5432"
   logs:
-    ## @param logs.accessKey.password Logs Access Key
-    ## @param logs.accessKey.existingSecret
-    ## @param logs.accessKey.existingSecretKey
+    ##  logs.accessKey.password Logs Access Key
+    ##  logs.accessKey.existingSecret
+    ##  logs.accessKey.existingSecretKey
     accessKey:
       password: minio
       existingSecret: ""
       existingSecretKey: ""
-    ## @param logs.secretKey.password Logs Secret Key
-    ## @param logs.secretKey.existingSecret
-    ## @param logs.secretKey.existingSecretKey
+    ##  logs.secretKey.password Logs Secret Key
+    ##  logs.secretKey.existingSecret
+    ##  logs.secretKey.existingSecretKey
     secretKey:
       password: minio123
       existingSecret: ""
       existingSecretKey: ""
 
-    ## @param logs.minio.enabled Switch to enable or disable the Minio helm chart
+    ##  logs.minio.enabled Switch to enable or disable the Minio helm chart
     minio:
       enabled: true
 
-    ## @param logs.externalMinio.enabled Switch to enable or disable an external Minio instance
-    ## @param logs.externalMinio.host External Minio Host
-    ## @param logs.externalMinio.port External Minio Port
+    ##  logs.externalMinio.enabled Switch to enable or disable an external Minio instance
+    ##  logs.externalMinio.host External Minio Host
+    ##  logs.externalMinio.port External Minio Port
     externalMinio:
       enabled: false
       host: localhost
       port: 9000
 
-    ## @param logs.s3.enabled Switch to enable or disable custom S3 Log location
-    ## @param logs.s3.bucket Bucket name where logs should be stored
-    ## @param logs.s3.bucketRegion Region of the bucket (must be empty if using minio)
+    ##  logs.s3.enabled Switch to enable or disable custom S3 Log location
+    ##  logs.s3.bucket Bucket name where logs should be stored
+    ##  logs.s3.bucketRegion Region of the bucket (must be empty if using minio)
     s3:
       enabled: false
       bucket: airbyte-dev-logs
       bucketRegion: ""
 
     ## Google Cloud Storage (GCS) Log Location Configuration
-    ## @param logs.gcs.bucket GCS bucket name
-    ## @param logs.gcs.credentials The path the GCS creds are written to
-    ## @param logs.gcs.credentialsJson Base64 encoded json GCP credentials file contents
+    ##  logs.gcs.bucket GCS bucket name
+    ##  logs.gcs.credentials The path the GCS creds are written to
+    ##  logs.gcs.credentialsJson Base64 encoded json GCP credentials file contents
     gcs:
       bucket: ""
       # If you are mounting an existing secret to extraVolumes on scheduler, server and worker
@@ -69,8 +69,8 @@ global:
     ## choice for the user. This also increases chances charts run on environments with little
     ## resources, such as Minikube. If you do want to specify resources, uncomment the following
     ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-    ## @param jobs.resources.limits [object] The resources limits for jobs
-    ## @param jobs.resources.requests [object] The requested resources for jobs
+    ##  jobs.resources.limits [object] The resources limits for jobs
+    ##  jobs.resources.requests [object] The requested resources for jobs
     resources:
       ## Example:
       ## requests:
@@ -86,16 +86,16 @@ global:
     kube:
       ## JOB_KUBE_ANNOTATIONS
       ## pod annotations of the sync job and the default pod annotations fallback for others jobs
-      ## @param jobs.kube.annotations [object] key/value annotations applied to kube jobs
+      ##  jobs.kube.annotations [object] key/value annotations applied to kube jobs
       annotations: {}
 
       ## JOB_KUBE_NODE_SELECTORS
       ## pod node selector of the sync job and the default pod node selector fallback for others jobs
-      ## @param jobs.kube.nodeSelector [object] key/value node selector applied to kube jobs
+      ##  jobs.kube.nodeSelector [object] key/value node selector applied to kube jobs
       nodeSelector: {}
 
       ## JOB_KUBE_TOLERATIONS
-      ## @param jobs.kube.tolerations [array] Tolerations for jobs.kube pod assignment.
+      ##  jobs.kube.tolerations [array] Tolerations for jobs.kube pod assignment.
       ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
       ## any boolean values should be quoted to ensure the value is passed through as a string, eg:
       ## - key: airbyte-server
@@ -106,24 +106,24 @@ global:
 
       ## JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET
       ## image pull secret to use for job pod
-      ## @param jobs.kube.main_container_image_pull_secret [string]  image pull secret to use for job pod
+      ##  jobs.kube.main_container_image_pull_secret [string]  image pull secret to use for job pod
       main_container_image_pull_secret: ""
 
 
 enabled: true
-## @param podSweeper.image.repository The image repository to use for the pod sweeper
-## @param podSweeper.image.pullPolicy The pull policy for the pod sweeper image
-## @param podSweeper.image.tag The pod sweeper image tag to use
+##  podSweeper.image.repository The image repository to use for the pod sweeper
+##  podSweeper.image.pullPolicy The pull policy for the pod sweeper image
+##  podSweeper.image.tag The pod sweeper image tag to use
 image:
   repository: bitnami/kubectl
   pullPolicy: IfNotPresent
   tag: latest
 
-## @param podSweeper.podAnnotations [object] Add extra annotations to the podSweeper pod
+##  podSweeper.podAnnotations [object] Add extra annotations to the podSweeper pod
 ##
 podAnnotations: {}
 
-## @param podSweeper.containerSecurityContext Security context for the container
+##  podSweeper.containerSecurityContext Security context for the container
 ## Examples:
 ## containerSecurityContext:
 ##    runAsNonRoot: true
@@ -133,12 +133,12 @@ containerSecurityContext: {}
 
 ## Configure extra options for the podSweeper containers' liveness and readiness probes
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
-## @param podSweeper.livenessProbe.enabled Enable livenessProbe on the podSweeper
-## @param podSweeper.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
-## @param podSweeper.livenessProbe.periodSeconds Period seconds for livenessProbe
-## @param podSweeper.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
-## @param podSweeper.livenessProbe.failureThreshold Failure threshold for livenessProbe
-## @param podSweeper.livenessProbe.successThreshold Success threshold for livenessProbe
+##  podSweeper.livenessProbe.enabled Enable livenessProbe on the podSweeper
+##  podSweeper.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+##  podSweeper.livenessProbe.periodSeconds Period seconds for livenessProbe
+##  podSweeper.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+##  podSweeper.livenessProbe.failureThreshold Failure threshold for livenessProbe
+##  podSweeper.livenessProbe.successThreshold Success threshold for livenessProbe
 ##
 livenessProbe:
   enabled: true
@@ -148,12 +148,12 @@ livenessProbe:
   failureThreshold: 3
   successThreshold: 1
 
-## @param podSweeper.readinessProbe.enabled Enable readinessProbe on the podSweeper
-## @param podSweeper.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
-## @param podSweeper.readinessProbe.periodSeconds Period seconds for readinessProbe
-## @param podSweeper.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
-## @param podSweeper.readinessProbe.failureThreshold Failure threshold for readinessProbe
-## @param podSweeper.readinessProbe.successThreshold Success threshold for readinessProbe
+##  podSweeper.readinessProbe.enabled Enable readinessProbe on the podSweeper
+##  podSweeper.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+##  podSweeper.readinessProbe.periodSeconds Period seconds for readinessProbe
+##  podSweeper.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+##  podSweeper.readinessProbe.failureThreshold Failure threshold for readinessProbe
+##  podSweeper.readinessProbe.successThreshold Success threshold for readinessProbe
 ##
 readinessProbe:
   enabled: true
@@ -169,8 +169,8 @@ readinessProbe:
 ## choice for the user. This also increases chances charts run on environments with little
 ## resources, such as Minikube. If you do want to specify resources, uncomment the following
 ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-## @param podSweeper.resources.limits [object] The resources limits for the podSweeper container
-## @param podSweeper.resources.requests [object] The requested resources for the podSweeper container
+##  podSweeper.resources.limits [object] The resources limits for the podSweeper container
+##  podSweeper.resources.requests [object] The requested resources for the podSweeper container
 resources:
   ## Example:
   ## limits:
@@ -183,22 +183,22 @@ resources:
   ##    cpu: 250m
   requests: {}
 
-## @param podSweeper.nodeSelector [object] Node labels for pod assignment
+##  podSweeper.nodeSelector [object] Node labels for pod assignment
 ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
 ##
 nodeSelector: {}
 
-## @param podSweeper.tolerations [array] Tolerations for podSweeper pod assignment.
+##  podSweeper.tolerations [array] Tolerations for podSweeper pod assignment.
 ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 ##
 tolerations: []
 
-## @param podSweeper.affinity [object] Affinity and anti-affinity for podSweeper pod assignment.
+##  podSweeper.affinity [object] Affinity and anti-affinity for podSweeper pod assignment.
 ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
 ##
 affinity: {}
 
-## @param podSweeper.extraVolumeMounts [array] Additional volumeMounts for podSweeper container(s).
+##  podSweeper.extraVolumeMounts [array] Additional volumeMounts for podSweeper container(s).
 ## Examples:
 ## extraVolumeMounts:
 ##   - name: tmpdir
@@ -206,10 +206,16 @@ affinity: {}
 ##
 extraVolumeMounts: []
 
-## @param podSweeper.extraVolumes [array] Additional volumes for podSweeper pod(s).
+##  podSweeper.extraVolumes [array] Additional volumes for podSweeper pod(s).
 ## Examples:
 ## extraVolumes:
 ##   - name: tmpdir
 ##     emptyDir: {}
 ##
 extraVolumes: []
+
+##  podSweeper.timeToDeletePods.completed Time to remove pods on completed status (minutes).
+##  podSweeper.timeToDeletePods.error Time to remove pods on error status (minutes).
+timeToDeletePods:
+  completed: 120
+  error: 1440

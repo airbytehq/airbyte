@@ -15,6 +15,7 @@ class DestinationType(Enum):
     POSTGRES = "postgres"
     REDSHIFT = "redshift"
     SNOWFLAKE = "snowflake"
+    TIDB = "tidb"    
     TERADATA = "teradata"
 
     @classmethod

@@ -5,33 +5,29 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import Status from "core/statuses";
 
-import { AttemptRead, JobConfigType } from "../../../core/request/AirbyteClient";
+import { AttemptRead } from "../../../core/request/AirbyteClient";
 import styles from "./AttemptDetails.module.scss";
 
-interface IProps {
+interface AttemptDetailsProps {
   className?: string;
   attempt: AttemptRead;
-  configType?: JobConfigType;
+  hasMultipleAttempts?: boolean;
 }
 
 const getFailureFromAttempt = (attempt: AttemptRead) => {
   return attempt.failureSummary && attempt.failureSummary.failures[0];
 };
 
-const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) => {
+const AttemptDetails: React.FC<AttemptDetailsProps> = ({ attempt, className, hasMultipleAttempts }) => {
   const { formatMessage } = useIntl();
 
   if (attempt.status !== Status.SUCCEEDED && attempt.status !== Status.FAILED) {
-    return (
-      <div className={classNames(styles.details, className)}>
-        <FormattedMessage id={`sources.${configType}`} defaultMessage={configType} />
-      </div>
-    );
+    return null;
   }
 
   const formatBytes = (bytes?: number) => {
     if (!bytes) {
-      return <FormattedMessage id="sources.countBytes" values={{ count: bytes }} />;
+      return <FormattedMessage id="sources.countBytes" values={{ count: bytes || 0 }} />;
     }
 
     const k = 1024;
@@ -69,37 +65,34 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
   const isFailed = attempt.status === Status.FAILED;
 
   return (
-    <div className={classNames(styles.details, className)}>
-      <div>
-        <span>{formatBytes(attempt?.bytesSynced)} | </span>
+    <div className={classNames(styles.container, className)}>
+      <div className={styles.details}>
+        {hasMultipleAttempts && (
+          <strong className={classNames(styles.lastAttempt, { [styles.failed]: isFailed })}>
+            <FormattedMessage id="sources.lastAttempt" />
+          </strong>
+        )}
+        <span>{formatBytes(attempt?.totalStats?.bytesEmitted)}</span>
         <span>
           <FormattedMessage
             id="sources.countEmittedRecords"
             values={{ count: attempt.totalStats?.recordsEmitted || 0 }}
-          />{" "}
-          |{" "}
+          />
         </span>
         <span>
           <FormattedMessage
             id="sources.countCommittedRecords"
             values={{ count: attempt.totalStats?.recordsCommitted || 0 }}
-          />{" "}
-          |{" "}
+          />
         </span>
         <span>
           {hours ? <FormattedMessage id="sources.hour" values={{ hour: hours }} /> : null}
           {hours || minutes ? <FormattedMessage id="sources.minute" values={{ minute: minutes }} /> : null}
           <FormattedMessage id="sources.second" values={{ second: seconds }} />
         </span>
-        {configType ? (
-          <span>
-            {" "}
-            | <FormattedMessage id={`sources.${configType}`} defaultMessage={configType} />
-          </span>
-        ) : null}
       </div>
       {isFailed && (
-        <div className={styles.truncate}>
+        <div className={styles.failedMessage}>
           {formatMessage(
             {
               id: "ui.keyValuePairV3",

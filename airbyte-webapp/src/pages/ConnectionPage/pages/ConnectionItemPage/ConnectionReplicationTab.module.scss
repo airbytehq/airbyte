@@ -1,0 +1,13 @@
+@use "../../../../scss/variables";
+
+.content {
+  max-width: 1279px;
+  margin: 0 auto;
+  padding-bottom: variables.$spacing-md;
+
+  > form {
+    display: flex;
+    flex-direction: column;
+    gap: variables.$spacing-md;
+  }
+}

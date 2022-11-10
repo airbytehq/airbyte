@@ -90,7 +90,7 @@
       "type": "string"
     },
     "defs_pinned_info": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "title": "Info for a pinned item",
       "type": "object"
     },
@@ -130,7 +130,7 @@
       "type": "string"
     },
     "objs_bot_profile": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "app_id": {
           "$ref": "#/definitions/defs_app_id"
@@ -139,7 +139,7 @@
           "type": "boolean"
         },
         "icons": {
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "image_36": {
               "format": "uri",
@@ -183,7 +183,7 @@
       "type": "object"
     },
     "objs_channel": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "accepted_user": {
           "$ref": "#/definitions/defs_user_id"
@@ -289,7 +289,7 @@
           "type": "number"
         },
         "purpose": {
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "creator": {
               "$ref": "#/definitions/defs_topic_purpose_creator"
@@ -305,7 +305,7 @@
           "type": "object"
         },
         "topic": {
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "creator": {
               "$ref": "#/definitions/defs_topic_purpose_creator"
@@ -350,7 +350,7 @@
       "type": "object"
     },
     "objs_comment": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "comment": {
           "type": "string"
@@ -404,7 +404,7 @@
     "objs_conversation": {
       "items": [
         {
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "accepted_user": {
               "$ref": "#/definitions/defs_user_id"
@@ -427,7 +427,7 @@
               "$ref": "#/definitions/defs_user_id"
             },
             "display_counts": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "display_counts": {
                   "type": "integer"
@@ -594,7 +594,7 @@
               "type": "number"
             },
             "purpose": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "creator": {
                   "$ref": "#/definitions/defs_topic_purpose_creator"
@@ -619,7 +619,7 @@
             },
             "shares": {
               "items": {
-                "additionalProperties": false,
+                "additionalProperties": true,
                 "properties": {
                   "accepted_user": {
                     "$ref": "#/definitions/defs_user_id"
@@ -645,7 +645,7 @@
               "type": "integer"
             },
             "topic": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "creator": {
                   "$ref": "#/definitions/defs_topic_purpose_creator"
@@ -702,7 +702,7 @@
           "type": "object"
         },
         {
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "accepted_user": {
               "$ref": "#/definitions/defs_user_id"
@@ -725,7 +725,7 @@
               "$ref": "#/definitions/defs_user_id"
             },
             "display_counts": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "display_counts": {
                   "type": "integer"
@@ -877,7 +877,7 @@
               "type": "number"
             },
             "purpose": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "creator": {
                   "$ref": "#/definitions/defs_topic_purpose_creator"
@@ -902,7 +902,7 @@
             },
             "shares": {
               "items": {
-                "additionalProperties": false,
+                "additionalProperties": true,
                 "properties": {
                   "accepted_user": {
                     "$ref": "#/definitions/defs_user_id"
@@ -928,7 +928,7 @@
               "type": "integer"
             },
             "topic": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "creator": {
                   "$ref": "#/definitions/defs_topic_purpose_creator"
@@ -982,7 +982,7 @@
           "type": "object"
         },
         {
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "created": {
               "type": "integer"
@@ -1051,7 +1051,7 @@
             },
             "shares": {
               "items": {
-                "additionalProperties": false,
+                "additionalProperties": true,
                 "properties": {
                   "date_create": {
                     "type": "integer"
@@ -1103,7 +1103,7 @@
       ]
     },
     "objs_enterprise_user": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "enterprise_id": {
           "$ref": "#/definitions/defs_enterprise_id"
@@ -1164,7 +1164,7 @@
       "type": "object"
     },
     "objs_file": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "channels": {
           "items": {
@@ -1296,13 +1296,13 @@
           "type": "array"
         },
         "shares": {
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "private": {
-              "additionalProperties": false
+              "additionalProperties": true
             },
             "public": {
-              "additionalProperties": false
+              "additionalProperties": true
             }
           },
           "type": "object"
@@ -1451,11 +1451,11 @@
       "type": "object"
     },
     "objs_message": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "attachments": {
           "items": {
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
               "fallback": {
                 "type": "string"
@@ -1521,7 +1521,7 @@
           "uniqueItems": true
         },
         "icons": {
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "emoji": {
               "type": "string"
@@ -1644,7 +1644,7 @@
       "type": "object"
     },
     "objs_paging": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "count": {
           "type": "integer"
@@ -1702,7 +1702,7 @@
       "type": "object"
     },
     "objs_reminder": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "complete_ts": {
           "type": "integer"
@@ -1730,7 +1730,7 @@
       "type": "object"
     },
     "objs_resources": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "excluded_ids": {
           "items": {
@@ -1769,7 +1769,7 @@
     "objs_response_metadata": {
       "items": [
         {
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "next_cursor": {
               "type": "string"
@@ -1780,7 +1780,7 @@
           "type": "object"
         },
         {
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "messages": {
               "items": {
@@ -1801,7 +1801,7 @@
           "type": "object"
         },
         {
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "messages": {
               "items": {
@@ -1835,7 +1835,7 @@
       "type": "array"
     },
     "objs_subteam": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "auto_provision": {
           "type": "boolean"
@@ -1901,7 +1901,7 @@
           "type": "string"
         },
         "prefs": {
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "channels": {
               "items": {
@@ -1959,7 +1959,7 @@
       "type": "object"
     },
     "objs_team": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "archived": {
           "type": "boolean"
@@ -2074,7 +2074,7 @@
       "type": "object"
     },
     "objs_team_profile_field": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "field_name": {
           "type": ["null", "string"]
@@ -2120,7 +2120,7 @@
       "type": "object"
     },
     "objs_team_profile_field_option": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "is_custom": {
           "type": ["null", "boolean"]
@@ -2140,7 +2140,7 @@
     "objs_user": {
       "items": [
         {
-          "additionalProperties": false,
+          "additionalProperties": true,
           "description": "user object for non enterprise type",
           "properties": {
             "color": {
@@ -2214,7 +2214,7 @@
               "$ref": "#/definitions/defs_workspace_id"
             },
             "team_profile": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "fields": {
                   "items": {
@@ -2262,7 +2262,7 @@
           "type": "object"
         },
         {
-          "additionalProperties": false,
+          "additionalProperties": true,
           "description": "enterprise user",
           "properties": {
             "color": {
@@ -2331,7 +2331,7 @@
               "$ref": "#/definitions/defs_workspace_id"
             },
             "team_profile": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "fields": {
                   "items": {
@@ -2389,7 +2389,7 @@
       ]
     },
     "objs_user_profile": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "always_active": {
           "type": "boolean"
@@ -2553,7 +2553,7 @@
       "type": "object"
     },
     "objs_user_profile_short": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "avatar_hash": {
           "type": "string"
@@ -3244,7 +3244,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response of admin.conversations.archive",
               "properties": {
                 "ok": {
@@ -3265,7 +3265,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from admin.conversations.archive",
               "properties": {
                 "error": {
@@ -3334,7 +3334,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response of admin.conversations.convertToPrivate",
               "properties": {
                 "ok": {
@@ -3355,7 +3355,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from admin.conversations.convertToPrivate",
               "properties": {
                 "error": {
@@ -3451,7 +3451,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response of admin.conversations.create",
               "properties": {
                 "channel_id": {
@@ -3475,7 +3475,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from admin.conversations.create",
               "properties": {
                 "error": {
@@ -3544,7 +3544,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response of admin.conversations.delete",
               "properties": {
                 "ok": {
@@ -3565,7 +3565,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from admin.conversations.delete",
               "properties": {
                 "error": {
@@ -3640,7 +3640,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response of admin.conversations.disconnectShared",
               "properties": {
                 "ok": {
@@ -3661,7 +3661,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from admin.conversations.disconnectShared",
               "properties": {
                 "error": {
@@ -3837,7 +3837,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response of admin.conversations.getConversationPrefs",
               "properties": {
                 "ok": {
@@ -3897,7 +3897,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from admin.conversations.getConversationPrefs",
               "properties": {
                 "error": {
@@ -3979,14 +3979,14 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response of admin.conversations.getTeams",
               "properties": {
                 "ok": {
                   "$ref": "#/definitions/defs_ok_true"
                 },
                 "response_metadata": {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "next_cursor": {
                       "type": "string"
@@ -4016,7 +4016,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from admin.conversations.getTeams",
               "properties": {
                 "error": {
@@ -4092,7 +4092,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response of admin.conversations.invite",
               "properties": {
                 "ok": {
@@ -4187,7 +4187,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response of admin.conversations.rename",
               "properties": {
                 "ok": {
@@ -4208,7 +4208,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from admin.conversations.rename",
               "properties": {
                 "error": {
@@ -4613,7 +4613,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response of admin.conversations.search",
               "properties": {
                 "channels": {
@@ -4640,7 +4640,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from admin.conversations.search",
               "properties": {
                 "error": {
@@ -4718,7 +4718,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response of admin.conversations.setConversationPrefs",
               "properties": {
                 "ok": {
@@ -4739,7 +4739,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from admin.conversations.setConversationPrefs",
               "properties": {
                 "error": {
@@ -4903,7 +4903,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response of admin.conversations.unarchive",
               "properties": {
                 "ok": {
@@ -4924,7 +4924,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from admin.conversations.unarchive",
               "properties": {
                 "error": {
@@ -8252,7 +8252,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from apps.permissions.info method",
               "properties": {
                 "info": {
@@ -8353,7 +8353,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from apps.permissions.info method",
               "properties": {
                 "callstack": {
@@ -8444,7 +8444,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from apps.permissions.request method",
               "properties": {
                 "ok": {
@@ -8465,7 +8465,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from apps.permissions.request method",
               "properties": {
                 "callstack": {
@@ -8600,7 +8600,7 @@
                   "type": "array"
                 },
                 "response_metadata": {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "next_cursor": {
                       "type": "string",
@@ -8625,7 +8625,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from apps.permissions.resources.list method",
               "properties": {
                 "callstack": {
@@ -8760,7 +8760,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from apps.permissions.scopes.list method",
               "properties": {
                 "callstack": {
@@ -9034,7 +9034,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from apps.uninstall method",
               "properties": {
                 "ok": {
@@ -9055,7 +9055,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from apps.uninstall method",
               "properties": {
                 "callstack": {
@@ -9142,7 +9142,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from auth.revoke method",
               "properties": {
                 "ok": {
@@ -9166,7 +9166,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from auth.revoke method",
               "properties": {
                 "callstack": {
@@ -9247,7 +9247,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response auth.test method",
               "properties": {
                 "bot_id": {
@@ -9289,7 +9289,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response auth.test method",
               "properties": {
                 "callstack": {
@@ -9380,11 +9380,11 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from bots.info method",
               "properties": {
                 "bot": {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "app_id": {
                       "$ref": "#/definitions/defs_app_id"
@@ -9393,7 +9393,7 @@
                       "type": "boolean"
                     },
                     "icons": {
-                      "additionalProperties": false,
+                      "additionalProperties": true,
                       "properties": {
                         "image_36": {
                           "format": "uri",
@@ -9452,7 +9452,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from bots.info method",
               "properties": {
                 "callstack": {
@@ -10091,7 +10091,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response of chat.delete method",
               "properties": {
                 "channel": {
@@ -10118,7 +10118,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from chat.delete method",
               "properties": {
                 "callstack": {
@@ -10217,7 +10217,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from chat.deleteScheduledMessage method",
               "properties": {
                 "ok": {
@@ -10238,7 +10238,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from chat.deleteScheduledMessage method",
               "properties": {
                 "callstack": {
@@ -10335,7 +10335,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response chat.getPermalink",
               "properties": {
                 "channel": {
@@ -10363,7 +10363,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from chat.getPermalink method",
               "properties": {
                 "callstack": {
@@ -10454,7 +10454,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from chat.meMessage method",
               "properties": {
                 "channel": {
@@ -10481,7 +10481,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from chat.meMessage method",
               "properties": {
                 "callstack": {
@@ -10638,7 +10638,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from chat.postEphemeral method",
               "properties": {
                 "message_ts": {
@@ -10662,7 +10662,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from chat.postEphemeral method",
               "properties": {
                 "callstack": {
@@ -10853,7 +10853,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response of chat.postMessage method",
               "properties": {
                 "channel": {
@@ -10883,7 +10883,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response chat.postMessage method",
               "properties": {
                 "callstack": {
@@ -11045,14 +11045,14 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response of chat.scheduleMessage method",
               "properties": {
                 "channel": {
                   "$ref": "#/definitions/defs_channel"
                 },
                 "message": {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "bot_id": {
                       "$ref": "#/definitions/defs_bot_id"
@@ -11112,7 +11112,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response chat.scheduleMessage method",
               "properties": {
                 "callstack": {
@@ -11245,14 +11245,14 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from chat.scheduledMessages.list method",
               "properties": {
                 "ok": {
                   "$ref": "#/definitions/defs_ok_true"
                 },
                 "response_metadata": {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "next_cursor": {
                       "type": "string"
@@ -11263,7 +11263,7 @@
                 },
                 "scheduled_messages": {
                   "items": {
-                    "additionalProperties": false,
+                    "additionalProperties": true,
                     "properties": {
                       "channel_id": {
                         "$ref": "#/definitions/defs_channel_id"
@@ -11304,7 +11304,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from chat.scheduledMessages.list method",
               "properties": {
                 "callstack": {
@@ -11421,7 +11421,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from chat.unfurl method",
               "properties": {
                 "ok": {
@@ -11442,7 +11442,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from chat.unfurl method",
               "properties": {
                 "callstack": {
@@ -11580,7 +11580,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response of chat.update method",
               "properties": {
                 "channel": {
@@ -11629,7 +11629,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response chat.update method",
               "properties": {
                 "callstack": {
@@ -11717,7 +11717,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response conversations.archive method",
               "properties": {
                 "ok": {
@@ -11738,7 +11738,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from conversations.archive method",
               "properties": {
                 "callstack": {
@@ -11838,7 +11838,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response conversations.close method",
               "properties": {
                 "already_closed": {
@@ -11865,7 +11865,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from conversations.close method",
               "properties": {
                 "callstack": {
@@ -12000,7 +12000,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response conversations.create method",
               "properties": {
                 "channel": {
@@ -12024,7 +12024,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from conversations.create method",
               "properties": {
                 "callstack": {
@@ -12176,7 +12176,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from conversations.history method",
               "properties": {
                 "channel_actions_count": {
@@ -12231,7 +12231,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from conversations.history method",
               "properties": {
                 "callstack": {
@@ -12370,7 +12370,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response conversations.info",
               "properties": {
                 "channel": {
@@ -12394,7 +12394,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from conversations.info method",
               "properties": {
                 "callstack": {
@@ -12526,7 +12526,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from conversations.invite method",
               "properties": {
                 "channel": {
@@ -12550,7 +12550,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from conversations.invite method",
               "properties": {
                 "callstack": {
@@ -12595,7 +12595,7 @@
                 },
                 "errors": {
                   "items": {
-                    "additionalProperties": false,
+                    "additionalProperties": true,
                     "properties": {
                       "error": {
                         "enum": [
@@ -12746,7 +12746,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from conversations.join method",
               "properties": {
                 "channel": {
@@ -12787,7 +12787,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from conversations.join method",
               "properties": {
                 "callstack": {
@@ -12885,7 +12885,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response conversations.kick method",
               "properties": {
                 "ok": {
@@ -12906,7 +12906,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response conversations.kick method",
               "properties": {
                 "callstack": {
@@ -13003,7 +13003,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from conversations.leave method",
               "properties": {
                 "not_in_channel": {
@@ -13028,7 +13028,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from conversations.leave method",
               "properties": {
                 "callstack": {
@@ -13216,7 +13216,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from conversations.list method",
               "properties": {
                 "channels": {
@@ -13230,7 +13230,7 @@
                   "$ref": "#/definitions/defs_ok_true"
                 },
                 "response_metadata": {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "next_cursor": {
                       "type": "string"
@@ -13254,7 +13254,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from conversations.list method",
               "properties": {
                 "callstack": {
@@ -13348,7 +13348,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response conversations.mark method",
               "properties": {
                 "ok": {
@@ -13369,7 +13369,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from conversations.mark method",
               "properties": {
                 "callstack": {
@@ -13478,7 +13478,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response conversations.members method",
               "properties": {
                 "members": {
@@ -13493,7 +13493,7 @@
                   "$ref": "#/definitions/defs_ok_true"
                 },
                 "response_metadata": {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "next_cursor": {
                       "type": "string"
@@ -13517,7 +13517,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response conversations.members method",
               "properties": {
                 "callstack": {
@@ -13618,7 +13618,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from conversations.open method when opening channels, ims, mpims",
               "properties": {
                 "already_open": {
@@ -13630,7 +13630,7 @@
                       "$ref": "#/definitions/objs_conversation"
                     },
                     {
-                      "additionalProperties": false,
+                      "additionalProperties": true,
                       "properties": {
                         "created": {
                           "type": "string"
@@ -13686,7 +13686,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from conversations.open method",
               "properties": {
                 "callstack": {
@@ -13819,7 +13819,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from conversations.rename method",
               "properties": {
                 "channel": {
@@ -13843,7 +13843,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from conversations.rename method",
               "properties": {
                 "callstack": {
@@ -14019,7 +14019,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from conversations.replies method",
               "properties": {
                 "has_more": {
@@ -14029,7 +14029,7 @@
                   "items": {
                     "items": [
                       {
-                        "additionalProperties": false,
+                        "additionalProperties": true,
                         "properties": {
                           "last_read": {
                             "$ref": "#/definitions/defs_ts"
@@ -14096,7 +14096,7 @@
                         "type": "object"
                       },
                       {
-                        "additionalProperties": false,
+                        "additionalProperties": true,
                         "properties": {
                           "is_starred": {
                             "type": "boolean"
@@ -14164,7 +14164,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from conversations.replies method",
               "properties": {
                 "callstack": {
@@ -14261,7 +14261,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from conversations.setPurpose method",
               "properties": {
                 "channel": {
@@ -14285,7 +14285,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from conversations.setPurpose method",
               "properties": {
                 "callstack": {
@@ -14386,7 +14386,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from conversations.setTopic method",
               "properties": {
                 "channel": {
@@ -14410,7 +14410,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from conversations.setTopic method",
               "properties": {
                 "callstack": {
@@ -14505,7 +14505,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from conversations.unarchive method",
               "properties": {
                 "ok": {
@@ -14526,7 +14526,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from conversations.unarchive method",
               "properties": {
                 "callstack": {
@@ -14632,7 +14632,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from dialog.open method",
               "properties": {
                 "ok": {
@@ -14653,7 +14653,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from dialog.open method",
               "properties": {
                 "callstack": {
@@ -14738,7 +14738,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from dnd.endDnd method",
               "properties": {
                 "ok": {
@@ -14759,7 +14759,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from dnd.endDnd method",
               "properties": {
                 "callstack": {
@@ -14837,7 +14837,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from dnd.endSnooze method",
               "properties": {
                 "dnd_enabled": {
@@ -14876,7 +14876,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from dnd.endSnooze method",
               "properties": {
                 "callstack": {
@@ -14960,7 +14960,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from dnd.info method",
               "properties": {
                 "dnd_enabled": {
@@ -15004,7 +15004,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from dnd.info method",
               "properties": {
                 "callstack": {
@@ -15088,7 +15088,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from dnd.setSnooze method",
               "properties": {
                 "ok": {
@@ -15123,7 +15123,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from dnd.setSnooze method",
               "properties": {
                 "callstack": {
@@ -15371,7 +15371,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response files.comments.delete method",
               "properties": {
                 "ok": {
@@ -15392,7 +15392,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response files.comments.delete method",
               "properties": {
                 "callstack": {
@@ -15471,7 +15471,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response files.delete method",
               "properties": {
                 "ok": {
@@ -15492,7 +15492,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response files.delete method",
               "properties": {
                 "callstack": {
@@ -15657,7 +15657,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from files.info method",
               "properties": {
                 "comments": {
@@ -15696,7 +15696,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from files.info method",
               "properties": {
                 "callstack": {
@@ -15905,7 +15905,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from files.list method",
               "properties": {
                 "files": {
@@ -15937,7 +15937,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from files.list method",
               "properties": {
                 "callstack": {
@@ -16582,7 +16582,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from files.revokePublicURL method",
               "properties": {
                 "file": {
@@ -16606,7 +16606,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from files.revokePublicURL method",
               "properties": {
                 "callstack": {
@@ -16690,7 +16690,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from files.sharedPublicURL method",
               "properties": {
                 "file": {
@@ -16714,7 +16714,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from files.sharedPublicURL method",
               "properties": {
                 "callstack": {
@@ -16895,7 +16895,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response files.upload method",
               "properties": {
                 "file": {
@@ -16919,7 +16919,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response files.upload method",
               "properties": {
                 "callstack": {
@@ -17066,7 +17066,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from migration.exchange method",
               "properties": {
                 "callstack": {
@@ -17470,7 +17470,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from pins.add method",
               "properties": {
                 "ok": {
@@ -17491,7 +17491,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from pins.add method",
               "properties": {
                 "callstack": {
@@ -17612,12 +17612,12 @@
               "description": "Schema for successful response from pins.list method",
               "items": [
                 {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "items": {
                       "items": [
                         {
-                          "additionalProperties": false,
+                          "additionalProperties": true,
                           "properties": {
                             "created": {
                               "type": "integer"
@@ -17637,7 +17637,7 @@
                           "type": "object"
                         },
                         {
-                          "additionalProperties": false,
+                          "additionalProperties": true,
                           "properties": {
                             "channel": {
                               "$ref": "#/definitions/defs_channel"
@@ -17671,7 +17671,7 @@
                   "type": "object"
                 },
                 {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "count": {
                       "type": "integer"
@@ -17696,7 +17696,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from pins.list method",
               "properties": {
                 "callstack": {
@@ -17783,7 +17783,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from pins.remove method",
               "properties": {
                 "ok": {
@@ -17804,7 +17804,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from pins.remove method",
               "properties": {
                 "callstack": {
@@ -17905,7 +17905,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from reactions.add method",
               "properties": {
                 "ok": {
@@ -17926,7 +17926,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from reactions.add method",
               "properties": {
                 "callstack": {
@@ -18059,7 +18059,7 @@
               "description": "Schema for successful response from reactions.get method",
               "items": [
                 {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "channel": {
                       "$ref": "#/definitions/defs_channel"
@@ -18078,7 +18078,7 @@
                   "required": ["ok", "type", "channel", "message"]
                 },
                 {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "file": {
                       "$ref": "#/definitions/objs_file"
@@ -18094,7 +18094,7 @@
                   "required": ["ok", "type", "file"]
                 },
                 {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "comment": {
                       "$ref": "#/definitions/objs_comment"
@@ -18126,7 +18126,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from reactions.get method",
               "properties": {
                 "callstack": {
@@ -18313,14 +18313,14 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from reactions.list method",
               "properties": {
                 "items": {
                   "items": {
                     "items": [
                       {
-                        "additionalProperties": false,
+                        "additionalProperties": true,
                         "properties": {
                           "channel": {
                             "$ref": "#/definitions/defs_channel"
@@ -18337,7 +18337,7 @@
                         "type": "object"
                       },
                       {
-                        "additionalProperties": false,
+                        "additionalProperties": true,
                         "properties": {
                           "file": {
                             "$ref": "#/definitions/objs_file"
@@ -18351,7 +18351,7 @@
                         "type": "object"
                       },
                       {
-                        "additionalProperties": false,
+                        "additionalProperties": true,
                         "properties": {
                           "comment": {
                             "$ref": "#/definitions/objs_comment"
@@ -18395,7 +18395,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from reactions.list method",
               "properties": {
                 "callstack": {
@@ -18501,7 +18501,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from reactions.remove method",
               "properties": {
                 "ok": {
@@ -18522,7 +18522,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from reactions.remove method",
               "properties": {
                 "callstack": {
@@ -18623,7 +18623,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from reminders.add method",
               "properties": {
                 "ok": {
@@ -18647,7 +18647,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from reminders.add method",
               "properties": {
                 "callstack": {
@@ -18735,7 +18735,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from reminders.complete method",
               "properties": {
                 "ok": {
@@ -18756,7 +18756,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from reminders.complete method",
               "properties": {
                 "callstack": {
@@ -18841,7 +18841,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from reminders.delete method",
               "properties": {
                 "ok": {
@@ -18862,7 +18862,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from reminders.delete method",
               "properties": {
                 "callstack": {
@@ -18945,7 +18945,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from reminders.info method",
               "properties": {
                 "ok": {
@@ -18969,7 +18969,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from reminders.info method",
               "properties": {
                 "callstack": {
@@ -19046,7 +19046,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from reminders.list method",
               "properties": {
                 "ok": {
@@ -19073,7 +19073,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from reminders.list method",
               "properties": {
                 "callstack": {
@@ -19172,14 +19172,14 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from rtm.connect method",
               "properties": {
                 "ok": {
                   "$ref": "#/definitions/defs_ok_true"
                 },
                 "self": {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "id": {
                       "$ref": "#/definitions/defs_user_id"
@@ -19192,7 +19192,7 @@
                   "type": "object"
                 },
                 "team": {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "domain": {
                       "type": "string"
@@ -19226,7 +19226,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from rtm.connect method",
               "properties": {
                 "callstack": {
@@ -19493,7 +19493,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from stars.add method",
               "properties": {
                 "ok": {
@@ -19514,7 +19514,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from stars.add method",
               "properties": {
                 "callstack": {
@@ -19618,14 +19618,14 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from stars.list method",
               "properties": {
                 "items": {
                   "items": {
                     "items": [
                       {
-                        "additionalProperties": false,
+                        "additionalProperties": true,
                         "properties": {
                           "channel": {
                             "$ref": "#/definitions/defs_channel"
@@ -19650,7 +19650,7 @@
                         "type": "object"
                       },
                       {
-                        "additionalProperties": false,
+                        "additionalProperties": true,
                         "properties": {
                           "date_create": {
                             "type": "integer"
@@ -19667,7 +19667,7 @@
                         "type": "object"
                       },
                       {
-                        "additionalProperties": false,
+                        "additionalProperties": true,
                         "properties": {
                           "comment": {
                             "$ref": "#/definitions/objs_comment"
@@ -19687,7 +19687,7 @@
                         "type": "object"
                       },
                       {
-                        "additionalProperties": false,
+                        "additionalProperties": true,
                         "properties": {
                           "channel": {
                             "$ref": "#/definitions/defs_channel"
@@ -19704,7 +19704,7 @@
                         "type": "object"
                       },
                       {
-                        "additionalProperties": false,
+                        "additionalProperties": true,
                         "properties": {
                           "channel": {
                             "$ref": "#/definitions/defs_dm_id"
@@ -19721,7 +19721,7 @@
                         "type": "object"
                       },
                       {
-                        "additionalProperties": false,
+                        "additionalProperties": true,
                         "properties": {
                           "channel": {
                             "$ref": "#/definitions/defs_group_id"
@@ -19762,7 +19762,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from stars.list method",
               "properties": {
                 "callstack": {
@@ -19863,7 +19863,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from stars.remove method",
               "properties": {
                 "ok": {
@@ -19884,7 +19884,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from stars.remove method",
               "properties": {
                 "callstack": {
@@ -20015,12 +20015,12 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from team.accessLogs method",
               "properties": {
                 "logins": {
                   "items": {
-                    "additionalProperties": false,
+                    "additionalProperties": true,
                     "properties": {
                       "count": {
                         "type": "integer"
@@ -20092,7 +20092,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from team.accessLogs method",
               "properties": {
                 "callstack": {
@@ -20281,7 +20281,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from team.info method",
               "properties": {
                 "ok": {
@@ -20305,7 +20305,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from team.info method",
               "properties": {
                 "callstack": {
@@ -20414,12 +20414,12 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from team.integrationLogs method",
               "properties": {
                 "logs": {
                   "items": {
-                    "additionalProperties": false,
+                    "additionalProperties": true,
                     "properties": {
                       "admin_app_id": {
                         "$ref": "#/definitions/defs_app_id"
@@ -20491,7 +20491,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from team.integrationLogs method",
               "properties": {
                 "callstack": {
@@ -20640,14 +20640,14 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from team.profile.get method",
               "properties": {
                 "ok": {
                   "$ref": "#/definitions/defs_ok_true"
                 },
                 "profile": {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "fields": {
                       "items": {
@@ -20675,7 +20675,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from team.profile.get method",
               "properties": {
                 "callstack": {
@@ -20780,7 +20780,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from usergroups.create method",
               "properties": {
                 "ok": {
@@ -20804,7 +20804,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from usergroups.create method",
               "properties": {
                 "callstack": {
@@ -20896,7 +20896,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from usergroups.disable method",
               "properties": {
                 "ok": {
@@ -20920,7 +20920,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from usergroups.disable method",
               "properties": {
                 "callstack": {
@@ -21012,7 +21012,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from usergroups.enable method",
               "properties": {
                 "ok": {
@@ -21036,7 +21036,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from usergroups.enable method",
               "properties": {
                 "callstack": {
@@ -21199,7 +21199,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from usergroups.list method",
               "properties": {
                 "ok": {
@@ -21226,7 +21226,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from usergroups.list method",
               "properties": {
                 "callstack": {
@@ -21365,7 +21365,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from usergroups.update method",
               "properties": {
                 "ok": {
@@ -21389,7 +21389,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from usergroups.update method",
               "properties": {
                 "callstack": {
@@ -21484,7 +21484,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from usergroups.users.list method",
               "properties": {
                 "ok": {
@@ -21511,7 +21511,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from usergroups.users.list method",
               "properties": {
                 "callstack": {
@@ -21633,7 +21633,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from usergroups.users.update method",
               "properties": {
                 "ok": {
@@ -21657,7 +21657,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from usergroups.users.update method",
               "properties": {
                 "callstack": {
@@ -21848,7 +21848,7 @@
                   "$ref": "#/definitions/defs_ok_true"
                 },
                 "response_metadata": {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "next_cursor": {
                       "type": "string"
@@ -21872,7 +21872,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from users.conversations method",
               "properties": {
                 "callstack": {
@@ -21957,7 +21957,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from users.deletePhoto method",
               "properties": {
                 "ok": {
@@ -21978,7 +21978,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from users.deletePhoto method",
               "properties": {
                 "callstack": {
@@ -22164,14 +22164,14 @@
               "description": "Schema for successful response from users.identity method",
               "items": [
                 {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "description": "Schema for 'identity.basic' scope",
                   "properties": {
                     "ok": {
                       "$ref": "#/definitions/defs_ok_true"
                     },
                     "team": {
-                      "additionalProperties": false,
+                      "additionalProperties": true,
                       "properties": {
                         "id": {
                           "$ref": "#/definitions/defs_team"
@@ -22181,7 +22181,7 @@
                       "type": "object"
                     },
                     "user": {
-                      "additionalProperties": false,
+                      "additionalProperties": true,
                       "properties": {
                         "id": {
                           "$ref": "#/definitions/defs_user_id"
@@ -22198,14 +22198,14 @@
                   "type": "object"
                 },
                 {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "description": "Schema for 'identity.basic,identity.email' scopes",
                   "properties": {
                     "ok": {
                       "$ref": "#/definitions/defs_ok_true"
                     },
                     "team": {
-                      "additionalProperties": false,
+                      "additionalProperties": true,
                       "properties": {
                         "id": {
                           "$ref": "#/definitions/defs_team"
@@ -22215,7 +22215,7 @@
                       "type": "object"
                     },
                     "user": {
-                      "additionalProperties": false,
+                      "additionalProperties": true,
                       "properties": {
                         "email": {
                           "format": "email",
@@ -22236,14 +22236,14 @@
                   "type": "object"
                 },
                 {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "description": "Schema for 'identity.basic,identity.avatar' scopes",
                   "properties": {
                     "ok": {
                       "$ref": "#/definitions/defs_ok_true"
                     },
                     "team": {
-                      "additionalProperties": false,
+                      "additionalProperties": true,
                       "properties": {
                         "id": {
                           "$ref": "#/definitions/defs_team"
@@ -22253,7 +22253,7 @@
                       "type": "object"
                     },
                     "user": {
-                      "additionalProperties": false,
+                      "additionalProperties": true,
                       "properties": {
                         "id": {
                           "$ref": "#/definitions/defs_user_id"
@@ -22303,14 +22303,14 @@
                   "type": "object"
                 },
                 {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "description": "Schema for 'identity.basic,identity.team' scopes",
                   "properties": {
                     "ok": {
                       "$ref": "#/definitions/defs_ok_true"
                     },
                     "team": {
-                      "additionalProperties": false,
+                      "additionalProperties": true,
                       "properties": {
                         "domain": {
                           "type": "string"
@@ -22369,7 +22369,7 @@
                       "type": "object"
                     },
                     "user": {
-                      "additionalProperties": false,
+                      "additionalProperties": true,
                       "properties": {
                         "id": {
                           "$ref": "#/definitions/defs_user_id"
@@ -22398,7 +22398,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from users.identity method",
               "properties": {
                 "callstack": {
@@ -22549,7 +22549,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from users.info method",
               "properties": {
                 "callstack": {
@@ -22722,7 +22722,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from users.list method",
               "properties": {
                 "cache_ts": {
@@ -22757,7 +22757,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from users.list method",
               "properties": {
                 "callstack": {
@@ -22901,7 +22901,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from users.lookupByEmail method",
               "properties": {
                 "callstack": {
@@ -23008,7 +23008,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from users.profile.get method",
               "properties": {
                 "ok": {
@@ -23032,7 +23032,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from users.profile.get method",
               "properties": {
                 "callstack": {
@@ -23152,7 +23152,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from users.profile.set method",
               "properties": {
                 "email_pending": {
@@ -23183,7 +23183,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from users.profile.set method",
               "properties": {
                 "callstack": {
@@ -23266,7 +23266,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from users.setActive method",
               "properties": {
                 "ok": {
@@ -23287,7 +23287,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from users.setActive method",
               "properties": {
                 "callstack": {
@@ -23387,14 +23387,14 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from users.setPhoto method",
               "properties": {
                 "ok": {
                   "$ref": "#/definitions/defs_ok_true"
                 },
                 "profile": {
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "avatar_hash": {
                       "pattern": "^[0-9a-f]{12}$",
@@ -23461,7 +23461,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from users.setPhoto method",
               "properties": {
                 "callstack": {
@@ -23561,7 +23561,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for successful response from users.setPresence method",
               "properties": {
                 "ok": {
@@ -23582,7 +23582,7 @@
               }
             },
             "schema": {
-              "additionalProperties": false,
+              "additionalProperties": true,
               "description": "Schema for error response from users.setPresence method",
               "properties": {
                 "callstack": {

@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "created_at": {
+      "type": ["string", "null"]
+    },
+    "subject": {
+      "type": ["string", "null"]
+    }
+  },
+  "required": ["id"]
+}

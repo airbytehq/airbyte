@@ -1,4 +1,4 @@
-import { ConnectionSchedule } from "../../core/request/AirbyteClient";
+import { ConnectionScheduleData, ConnectionScheduleType } from "../../core/request/AirbyteClient";
 
 interface EntityTableDataItem {
   entityId: string;
@@ -24,7 +24,8 @@ interface ITableDataItem {
   isSyncing?: boolean;
   status?: string;
   lastSync?: number | null;
-  schedule?: ConnectionSchedule;
+  scheduleData?: ConnectionScheduleData;
+  scheduleType?: ConnectionScheduleType;
   lastSyncStatus: string | null;
   connectorIcon?: string;
   entityIcon?: string;

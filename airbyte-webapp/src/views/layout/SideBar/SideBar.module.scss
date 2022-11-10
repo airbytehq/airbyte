@@ -1,8 +1,46 @@
 @use "../../../scss/colors";
 @use "../../../scss/variables";
+@use "../../../scss/z-indices";
+
+.nav {
+  z-index: z-indices.$sidebar;
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  width: 100px;
+  min-width: 65px;
+  background-color: colors.$white;
+  padding: 23px 4px 15px;
+  text-align: center;
+  box-shadow: 0 2px 4px 0 rgba(colors.$dark-blue, 5%);
+}
+
+.text {
+  margin-top: 7px;
+}
+
+.helpIcon {
+  font-size: 21px;
+  line-height: 21px;
+}
+
+.menu {
+  width: 100%;
+  padding: 0;
+  margin: variables.$spacing-xl 0 0;
+
+  li {
+    margin-top: 7px;
+  }
+}
 
 .menuItem {
-  color: colors.$grey-30;
+  background-color: transparent;
+  appearance: none;
+  border: none;
+  color: colors.$dark-blue;
   width: 100%;
   cursor: pointer;
   border-radius: 12px;
@@ -14,42 +52,30 @@
   font-weight: normal;
   font-size: 12px;
   line-height: 15px;
-  margin-top: 7px;
   text-decoration: none;
   position: relative;
+  transition: all variables.$transition-out;
 
   &:hover,
   &:focus-visible {
-    background: colors.$dark-blue-800;
-    transition: variables.$transition-out;
+    background: colors.$grey-50;
   }
 
   &.active {
-    color: colors.$white;
-    background: colors.$blue-400;
-    transition: variables.$transition-out;
+    background: colors.$blue-100;
 
     &:hover,
     &:focus-visible {
-      color: colors.$white;
-      background: colors.$blue-300;
-      transition: variables.$transition-out;
+      background: colors.$blue-100;
     }
   }
 
   &.activeChild {
-    color: colors.$white;
-    background: colors.$dark-blue-600;
+    background: colors.$blue-30;
 
     &:hover,
     &:focus-visible {
-      color: colors.$white;
-      background: colors.$dark-blue-400;
+      background: colors.$blue-100;
     }
-  }
-
-  &.popoutOpen {
-    background: colors.$dark-blue-600;
-    transition: variables.$transition-out;
   }
 }

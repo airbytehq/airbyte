@@ -5,10 +5,14 @@ tests:
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
+    - config_path: "secrets/old_config.json"
+      status: "succeed"
+    - config_path: "integration_tests/invalid_time.json"
+      status: "failed"
+    - config_path: "integration_tests/invalid_api_key.json"
       status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
+    - config_path: "secrets/old_config.json"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/no_spam_reports_configured_catalog.json"

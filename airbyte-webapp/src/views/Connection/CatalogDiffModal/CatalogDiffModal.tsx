@@ -1,11 +1,13 @@
 import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
+import { useUnmount } from "react-use";
 
-import { Button } from "components";
+import { Button } from "components/ui/Button";
+import { ModalBody, ModalFooter } from "components/ui/Modal";
 
 import { AirbyteCatalog, CatalogDiff } from "core/request/AirbyteClient";
+import { useModalService } from "hooks/services/Modal";
 
-import { ModalBody, ModalFooter } from "../../../components/Modal";
 import styles from "./CatalogDiffModal.module.scss";
 import { DiffSection } from "./components/DiffSection";
 import { FieldSection } from "./components/FieldSection";
@@ -18,10 +20,15 @@ interface CatalogDiffModalProps {
 }
 
 export const CatalogDiffModal: React.FC<CatalogDiffModalProps> = ({ catalogDiff, catalog, onClose }) => {
+  const { closeModal } = useModalService();
   const { newItems, removedItems, changedItems } = useMemo(
     () => getSortedDiff(catalogDiff.transforms),
     [catalogDiff.transforms]
   );
+
+  useUnmount(() => {
+    closeModal();
+  });
 
   return (
     <>

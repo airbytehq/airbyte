@@ -27,8 +27,13 @@ DESTINATION_SIZE_LIMITS = {
     DestinationType.MSSQL.value: 64,
     # https://stackoverflow.com/questions/68358686/what-is-the-maximum-length-of-a-column-in-clickhouse-can-it-be-modified
     DestinationType.CLICKHOUSE.value: 63,
+<<<<<<< HEAD
 
     DestinationType.TERADATA.value: 255,
+=======
+    # https://docs.pingcap.com/tidb/stable/tidb-limitations
+    DestinationType.TIDB.value: 64,
+>>>>>>> master
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
@@ -166,7 +171,11 @@ class DestinationNameTransformer:
         if truncate:
             result = self.truncate_identifier_name(input_name=result, conflict=conflict, conflict_level=conflict_level)
         if self.needs_quotes(result):
-            if self.destination_type.value != DestinationType.MYSQL.value:
+            if self.destination_type.value == DestinationType.CLICKHOUSE.value:
+                result = result.replace('"', "_")
+                result = result.replace("`", "_")
+                result = result.replace("'", "_")
+            elif self.destination_type.value != DestinationType.MYSQL.value and self.destination_type.value != DestinationType.TIDB.value:
                 result = result.replace('"', '""')
             else:
                 result = result.replace("`", "_")
@@ -231,9 +240,13 @@ class DestinationNameTransformer:
             else:
                 result = input_name.upper()
         elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
-            pass
+            pass        
+        elif self.destination_type.value == DestinationType.TIDB.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
         elif self.destination_type.value == DestinationType.TERADATA.value:
-            pass
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result
@@ -271,9 +284,11 @@ class DestinationNameTransformer:
             else:
                 result = input_name.upper()
         elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
-            pass
+            pass        
+        elif self.destination_type.value == DestinationType.TIDB.value:
+            result = input_name.lower()
         elif self.destination_type.value == DestinationType.TERADATA.value:
-            pass
+            result = input_name.lower()
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result

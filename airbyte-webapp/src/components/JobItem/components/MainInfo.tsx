@@ -1,18 +1,19 @@
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import React from "react";
+import React, { useMemo } from "react";
 import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 
-import { StatusIcon } from "components";
 import { Cell, Row } from "components/SimpleTableComponents";
+import { StatusIcon } from "components/ui/StatusIcon";
 
 import { AttemptRead, JobStatus, SynchronousJobRead } from "core/request/AirbyteClient";
-import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
+import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 
 import { getJobStatus } from "../JobItem";
 import AttemptDetails from "./AttemptDetails";
 import styles from "./MainInfo.module.scss";
+import { ResetStreamsDetails } from "./ResetStreamDetails";
 
 const getJobConfig = (job: SynchronousJobRead | JobsWithJobs) =>
   (job as SynchronousJobRead).configType ?? (job as JobsWithJobs).job.configType;
@@ -37,24 +38,45 @@ interface MainInfoProps {
 
 const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpand, isFailed }) => {
   const jobStatus = getJobStatus(job);
+  const jobConfigType = getJobConfig(job);
+  const streamsToReset = "job" in job ? job.job.resetConfig?.streamsToReset : undefined;
   const isPartialSuccess = partialSuccessCheck(attempts);
 
-  const statusIcon = () => {
-    switch (true) {
-      case jobStatus === JobStatus.cancelled:
-        return <StatusIcon status="error" />;
-      case jobStatus === JobStatus.running:
-        return <StatusIcon status="loading" />;
-      case jobStatus === JobStatus.succeeded:
-        return <StatusIcon status="success" />;
-      case isPartialSuccess:
-        return <StatusIcon status="warning" />;
-      case !isPartialSuccess && isFailed:
-        return <StatusIcon status="error" />;
-      default:
-        return null;
+  const statusIcon = useMemo(() => {
+    if (jobStatus === JobStatus.cancelled || (!isPartialSuccess && isFailed)) {
+      return <StatusIcon status="error" />;
+    } else if (jobStatus === JobStatus.running) {
+      return <StatusIcon status="loading" />;
+    } else if (jobStatus === JobStatus.succeeded) {
+      return <StatusIcon status="success" />;
+    } else if (isPartialSuccess) {
+      return <StatusIcon status="warning" />;
     }
-  };
+    return null;
+  }, [isFailed, isPartialSuccess, jobStatus]);
+
+  const label = useMemo(() => {
+    let status = "";
+    if (jobStatus === JobStatus.failed) {
+      status = "failed";
+    } else if (jobStatus === JobStatus.cancelled) {
+      status = "cancelled";
+    } else if (jobStatus === JobStatus.running) {
+      status = "running";
+    } else if (jobStatus === JobStatus.succeeded) {
+      status = "succeeded";
+    } else if (isPartialSuccess) {
+      status = "partialSuccess";
+    } else {
+      return <FormattedMessage id="jobs.jobStatus.unknown" />;
+    }
+    return (
+      <FormattedMessage
+        values={{ count: streamsToReset?.length || 0 }}
+        id={`jobs.jobStatus.${jobConfigType}.${status}`}
+      />
+    );
+  }, [isPartialSuccess, jobConfigType, jobStatus, streamsToReset?.length]);
 
   return (
     <Row
@@ -62,21 +84,16 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
       onClick={onExpand}
     >
       <Cell className={styles.titleCell}>
-        <div className={styles.statusIcon}>{statusIcon()}</div>
+        <div className={styles.statusIcon}>{statusIcon}</div>
         <div className={styles.justification}>
-          {isPartialSuccess ? (
-            <FormattedMessage id="sources.partialSuccess" />
-          ) : (
-            <FormattedMessage id={`sources.${getJobStatus(job)}`} />
-          )}
+          {label}
           {attempts.length > 0 && (
             <>
-              {attempts.length > 1 && (
-                <div className={styles.lastAttempt}>
-                  <FormattedMessage id="sources.lastAttempt" />
-                </div>
+              {jobConfigType === "reset_connection" ? (
+                <ResetStreamsDetails isOpen={isOpen} names={streamsToReset?.map((stream) => stream.name)} />
+              ) : (
+                <AttemptDetails attempt={attempts[attempts.length - 1]} hasMultipleAttempts={attempts.length > 1} />
               )}
-              <AttemptDetails attempt={attempts[attempts.length - 1]} configType={getJobConfig(job)} />
             </>
           )}
         </div>

@@ -1,44 +1,80 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { ContentCard } from "components";
 import { JobItem } from "components/JobItem/JobItem";
+import { Card } from "components/ui/Card";
 
-import { Action, Namespace } from "core/analytics";
-import { Connector, ConnectorT } from "core/domain/connector";
-import { CheckConnectionRead, SynchronousJobRead } from "core/request/AirbyteClient";
+import {
+  Connector,
+  ConnectorDefinition,
+  ConnectorDefinitionSpecification,
+  ConnectorSpecification,
+  ConnectorT,
+} from "core/domain/connector";
+import { SynchronousJobRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { useAnalyticsService } from "hooks/services/Analytics";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
+import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
+import { generateMessageFromError } from "utils/errorStatusMessage";
+import { ConnectorCardValues, ConnectorForm, ConnectorFormValues } from "views/Connector/ConnectorForm";
 
+import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
+import { ConnectorDefinitionTypeControl } from "../ConnectorForm/components/Controls/ConnectorServiceTypeControl";
+import styles from "./ConnectorCard.module.scss";
+import { useAnalyticsTrackFunctions } from "./useAnalyticsTrackFunctions";
 import { useTestConnector } from "./useTestConnector";
 
-export interface ConnectorCardProvidedProps {
-  isTestConnectionInProgress: boolean;
-  isSuccess: boolean;
-  onStopTesting: () => void;
-  testConnector: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
+// TODO: need to clean up the ConnectorCard and ConnectorForm props,
+// since some of props are used in both components, and some of them used just as a prop-drill
+// https://github.com/airbytehq/airbyte/issues/18553
+interface ConnectorCardBaseProps {
+  title?: React.ReactNode;
+  full?: boolean;
+  jobInfo?: SynchronousJobRead | null;
+  additionalSelectorComponent?: React.ReactNode;
+  onSubmit: (values: ConnectorCardValues) => Promise<void> | void;
+  onConnectorDefinitionSelect?: (id: string) => void;
+  availableConnectorDefinitions: ConnectorDefinition[];
+
+  // used in ConnectorCard and ConnectorForm
+  formType: "source" | "destination";
+  selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
+  isEditMode?: boolean;
+
+  // used in ConnectorForm
+  formId?: string;
+  fetchingConnectorError?: Error | null;
+  errorMessage?: React.ReactNode;
+  successMessage?: React.ReactNode;
+  hasSuccess?: boolean;
+  isLoading?: boolean;
 }
 
-export const ConnectorCard: React.FC<
-  {
-    title?: React.ReactNode;
-    full?: boolean;
-    jobInfo?: SynchronousJobRead | null;
-  } & Omit<ServiceFormProps, keyof ConnectorCardProvidedProps> &
-    (
-      | {
-          isEditMode: true;
-          connector: ConnectorT;
-        }
-      | { isEditMode?: false }
-    )
-> = ({ title, full, jobInfo, onSubmit, ...props }) => {
+interface ConnectorCardCreateProps extends ConnectorCardBaseProps {
+  isEditMode?: false;
+}
+
+interface ConnectorCardEditProps extends ConnectorCardBaseProps {
+  isEditMode: true;
+  connector: ConnectorT;
+}
+
+export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEditProps> = ({
+  title,
+  full,
+  jobInfo,
+  onSubmit,
+  additionalSelectorComponent,
+  ...props
+}) => {
   const [saved, setSaved] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(null);
+  const [isFormSubmitting, setIsFormSubmitting] = useState(false);
+  const [advancedMode] = useAdvancedModeSetting();
 
+  const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
   const { testConnector, isTestConnectionInProgress, onStopTesting, error, reset } = useTestConnector(props);
+  const { trackTestConnectorFailure, trackTestConnectorSuccess, trackTestConnectorStarted } =
+    useAnalyticsTrackFunctions(props.formType);
 
   useEffect(() => {
     // Whenever the selected connector changed, reset the check connection call and other errors
@@ -46,63 +82,109 @@ export const ConnectorCard: React.FC<
     setErrorStatusRequest(null);
   }, [props.selectedConnectorDefinitionSpecification, reset]);
 
-  const analyticsService = useAnalyticsService();
+  const {
+    selectedConnectorDefinitionSpecification,
+    onConnectorDefinitionSelect,
+    availableConnectorDefinitions,
+    isEditMode,
+  } = props;
 
-  const onHandleSubmit = async (values: ServiceFormValues) => {
+  const selectedConnectorDefinitionSpecificationId =
+    selectedConnectorDefinitionSpecification && ConnectorSpecification.id(selectedConnectorDefinitionSpecification);
+
+  const selectedConnectorDefinition = useMemo(
+    () => availableConnectorDefinitions.find((s) => Connector.id(s) === selectedConnectorDefinitionSpecificationId),
+    [availableConnectorDefinitions, selectedConnectorDefinitionSpecificationId]
+  );
+
+  // Handle Doc panel
+  useEffect(() => {
+    if (!selectedConnectorDefinition) {
+      return;
+    }
+
+    setDocumentationUrl(selectedConnectorDefinition?.documentationUrl ?? "");
+    setDocumentationPanelOpen(true);
+  }, [
+    selectedConnectorDefinitionSpecification,
+    selectedConnectorDefinition,
+    setDocumentationPanelOpen,
+    setDocumentationUrl,
+  ]);
+
+  const onHandleSubmit = async (values: ConnectorFormValues) => {
+    if (!selectedConnectorDefinition) {
+      return;
+    }
     setErrorStatusRequest(null);
+    setIsFormSubmitting(true);
 
-    const connector = props.availableServices.find((item) => Connector.id(item) === values.serviceType);
-
-    const trackAction = (actionType: Action, actionDescription: string) => {
-      if (!connector) {
-        return;
-      }
-
-      const namespace = props.formType === "source" ? Namespace.SOURCE : Namespace.DESTINATION;
-
-      analyticsService.track(namespace, actionType, {
-        actionDescription,
-        connector: connector?.name,
-        connector_definition_id: Connector.id(connector),
-      });
+    //  combine the "ConnectorFormValues" and serviceType to make "ConnectorFormValues"
+    const connectorCardValues: ConnectorCardValues = {
+      ...values,
+      serviceType: Connector.id(selectedConnectorDefinition),
     };
 
     const testConnectorWithTracking = async () => {
-      trackAction(Action.TEST, "Test a connector");
+      trackTestConnectorStarted(selectedConnectorDefinition);
       try {
-        await testConnector(values);
-        trackAction(Action.SUCCESS, "Tested connector - success");
+        await testConnector(connectorCardValues);
+        trackTestConnectorSuccess(selectedConnectorDefinition);
       } catch (e) {
-        trackAction(Action.FAILURE, "Tested connector - failure");
+        trackTestConnectorFailure(selectedConnectorDefinition);
         throw e;
       }
     };
 
     try {
       await testConnectorWithTracking();
-      await onSubmit(values);
+      onSubmit(connectorCardValues);
       setSaved(true);
     } catch (e) {
       setErrorStatusRequest(e);
+      setIsFormSubmitting(false);
     }
   };
 
   const job = jobInfo || LogsRequestError.extractJobInfo(errorStatusRequest);
 
+  // Fill form with existing connector values otherwise set the default service name
+  const formValues = isEditMode ? props.connector : { name: selectedConnectorDefinition?.name };
+
   return (
-    <ContentCard title={title} full={full}>
-      <ServiceForm
-        {...props}
-        errorMessage={props.errorMessage || (error && createFormErrorMessage(error))}
-        isTestConnectionInProgress={isTestConnectionInProgress}
-        onStopTesting={onStopTesting}
-        testConnector={testConnector}
-        onSubmit={onHandleSubmit}
-        successMessage={
-          props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
-        }
-      />
-      {job && <JobItem job={job} />}
-    </ContentCard>
+    <Card title={title} fullWidth={full}>
+      <div className={styles.cardForm}>
+        <div className={styles.connectorSelectControl}>
+          <ConnectorDefinitionTypeControl
+            formType={props.formType}
+            isEditMode={isEditMode}
+            disabled={isFormSubmitting}
+            availableConnectorDefinitions={availableConnectorDefinitions}
+            selectedConnectorDefinition={selectedConnectorDefinition}
+            selectedConnectorDefinitionSpecificationId={selectedConnectorDefinitionSpecificationId}
+            onChangeConnectorDefinition={onConnectorDefinitionSelect}
+          />
+        </div>
+        {additionalSelectorComponent}
+        <div>
+          <ConnectorForm
+            {...props}
+            selectedConnectorDefinition={selectedConnectorDefinition}
+            selectedConnectorDefinitionSpecification={selectedConnectorDefinitionSpecification}
+            isTestConnectionInProgress={isTestConnectionInProgress}
+            onStopTesting={onStopTesting}
+            testConnector={testConnector}
+            onSubmit={onHandleSubmit}
+            formValues={formValues}
+            errorMessage={props.errorMessage || (error && generateMessageFromError(error))}
+            successMessage={
+              props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
+            }
+          />
+          {/* Show the job log only if advanced mode is turned on or the actual job failed (not the check inside the job) */}
+          {job && (advancedMode || !job.succeeded) && <JobItem job={job} />}
+        </div>
+      </div>
+    </Card>
   );
 };

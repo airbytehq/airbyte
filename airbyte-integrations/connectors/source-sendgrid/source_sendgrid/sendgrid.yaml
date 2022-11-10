@@ -1,9 +1,10 @@
+version: "0.1.0"
 definitions:
   page_size: 50
   step: "30d"
 
   schema_loader:
-    type: JsonSchema
+    type: JsonFileSchemaLoader
     file_path: "./source_sendgrid/schemas/{{ options.name }}.json"
 
   requester:
@@ -15,7 +16,7 @@ definitions:
       type: "BearerAuthenticator"
       api_token: "{{ config.apikey }}"
   cursor_paginator:
-    type: LimitPaginator
+    type: DefaultPaginator
     url_base: "*ref(definitions.requester.url_base)"
     page_size: "*ref(definitions.page_size)"
     limit_option:
@@ -27,7 +28,7 @@ definitions:
       type: "CursorPagination"
       cursor_value: "{{ response._metadata.next }}"
   offset_paginator:
-    type: LimitPaginator
+    type: DefaultPaginator
     $options:
       url_base: "*ref(definitions.requester.url_base)"
       page_size: "*ref(definitions.page_size)"
@@ -66,7 +67,7 @@ definitions:
       datetime: "{{ config['start_time'] }}"
       datetime_format: "%s"
     end_datetime:
-      datetime: "{{ now_utc() }}}"
+      datetime: "{{ now_utc() }}"
       datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
     step: "*ref(definitions.step)"
     cursor_field: "{{ options.stream_cursor_field }}"
@@ -247,7 +248,7 @@ streams:
         $ref: "*ref(definitions.requester)"
         request_options_provider:
           request_parameters:
-            limit: 1000
+            limit: "1000"
             query: 'last_event_time BETWEEN TIMESTAMP "{{stream_slice.start_time}}" AND TIMESTAMP "{{stream_slice.end_time}}"'
       stream_slicer:
         $ref: "*ref(definitions.messages_stream_slicer)"

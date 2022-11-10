@@ -1,6 +1,6 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/klaviyo",
-  "changelogUrl": "https://docs.airbyte.io/integrations/sources/klaviyo",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/klaviyo",
+  "changelogUrl": "https://docs.airbyte.com/integrations/sources/klaviyo",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Klaviyo Spec",
@@ -8,7 +8,7 @@
     "properties": {
       "api_key": {
         "title": "Api Key",
-        "description": "Klaviyo API Key. See our <a href=\"https://docs.airbyte.io/integrations/sources/klaviyo\">docs</a> if you need help finding this key.",
+        "description": "Klaviyo API Key. See our <a href=\"https://docs.airbyte.com/integrations/sources/klaviyo\">docs</a> if you need help finding this key.",
         "airbyte_secret": true,
         "type": "string"
       },

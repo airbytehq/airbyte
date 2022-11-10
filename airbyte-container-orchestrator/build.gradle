@@ -5,20 +5,24 @@ plugins {
 dependencies {
     implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation 'org.apache.commons:commons-text:1.9'
+    implementation 'org.apache.commons:commons-text:1.10.0'
     implementation 'org.eclipse.jetty:jetty-server:9.4.31.v20200723'
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.31.v20200723'
-
+    implementation libs.bundles.datadog
 
     implementation project(':airbyte-api')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
+    implementation project(':airbyte-commons-protocol')
+    implementation project(':airbyte-commons-temporal')
+    implementation project(':airbyte-commons-worker')
+    implementation project(':airbyte-config:init')
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-protocol:protocol-models')
-    implementation project(':airbyte-scheduler:scheduler-persistence')
-    implementation project(':airbyte-workers')
+    implementation project(':airbyte-persistence:job-persistence')
     implementation project(':airbyte-metrics:metrics-lib')
+    implementation project(':airbyte-worker-models')
 
     testImplementation 'org.mockito:mockito-inline:2.13.0'
     testImplementation libs.postgresql
@@ -36,16 +40,6 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
-task copyGeneratedTar(type: Copy) {
-    dependsOn copyDocker
-    dependsOn distTar
-
-    from('build/distributions') {
-        include 'airbyte-container-orchestrator-*.tar'
-    }
-    into 'build/docker/bin'
+tasks.named("buildDockerImage") {
+    dependsOn copyGeneratedTar
 }
-
-Task dockerBuildTask = getDockerBuildTask("container-orchestrator", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
-dockerBuildTask.dependsOn(copyGeneratedTar)
-assemble.dependsOn(dockerBuildTask)

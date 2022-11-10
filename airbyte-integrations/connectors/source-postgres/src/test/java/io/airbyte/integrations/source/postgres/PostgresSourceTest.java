@@ -7,6 +7,8 @@ package io.airbyte.integrations.source.postgres;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.map;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.setEmittedAtToNull;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -16,6 +18,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -29,11 +32,14 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -134,17 +140,18 @@ class PostgresSourceTest {
     try (final DSLContext dslContext = getDslContext(config)) {
       final Database database = getDatabase(dslContext);
       database.query(ctx -> {
-        ctx.fetch("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
+        ctx.fetch(
+            "CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));");
         ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
         ctx.fetch(
             "INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
-        ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
+        ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);");
         ctx.fetch(
             "INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
         ctx.fetch(
-            "CREATE TABLE names(first_name VARCHAR(200), last_name VARCHAR(200), power double precision, PRIMARY KEY (first_name, last_name));");
+            "CREATE TABLE names(first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (first_name, last_name));");
         ctx.fetch(
             "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
         return null;
@@ -425,6 +432,11 @@ class PostgresSourceTest {
       }
 
       final AirbyteCatalog actual = new PostgresSource().discover(getConfig(db, "new_test_user", "new_pass"));
+      actual.getStreams().stream().forEach(airbyteStream -> {
+        assertEquals(2, airbyteStream.getSupportedSyncModes().size());
+        assertTrue(airbyteStream.getSupportedSyncModes().contains(SyncMode.FULL_REFRESH));
+        assertTrue(airbyteStream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL));
+      });
       final Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
       final Set<String> expectedVisibleNames = Sets.newHashSet(
           "table_granted_by_role",
@@ -500,6 +512,63 @@ class PostgresSourceTest {
         JdbcUtils.USERNAME_KEY, username + "@airbyte",
         JdbcUtils.JDBC_URL_KEY, "jdbc:postgresql://airbyte.azure.com:5432:airbyte"));
     assertEquals(username, PostgresSource.getUsername(azureConfig));
+  }
+
+  @Test
+  public void tableWithInvalidCursorShouldThrowException() throws Exception {
+    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
+      db.start();
+      final JsonNode config = getConfig(db);
+      try (final DSLContext dslContext = getDslContext(config)) {
+        final Database database = new Database(dslContext);
+        final ConfiguredAirbyteStream tableWithInvalidCursorType = createTableWithInvalidCursorType(database);
+        final ConfiguredAirbyteCatalog configuredAirbyteCatalog =
+            new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(tableWithInvalidCursorType));
+
+        final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new PostgresSource().read(config, configuredAirbyteCatalog, null)));
+        assertThat(throwable).isInstanceOf(ConfigErrorException.class)
+            .hasMessageContaining(
+                "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering as a cursor. {tableName='public.test_table', cursorColumnName='id', cursorSqlType=OTHER}");
+      } finally {
+        db.stop();
+      }
+    }
+  }
+
+  private ConfiguredAirbyteStream createTableWithInvalidCursorType(final Database database) throws SQLException {
+    database.query(ctx -> {
+      ctx.fetch("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";");
+      ctx.fetch("CREATE TABLE IF NOT EXISTS public.test_table(id uuid PRIMARY KEY DEFAULT uuid_generate_v4());");
+      return null;
+    });
+
+    return new ConfiguredAirbyteStream().withSyncMode(SyncMode.INCREMENTAL)
+        .withCursorField(Lists.newArrayList("id"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withStream(CatalogHelpers.createAirbyteStream(
+            "test_table",
+            "public",
+            Field.of("id", JsonSchemaType.STRING))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
+
+  }
+
+  @Test
+  void testJdbcUrlWithEscapedDatabaseName() {
+    final JsonNode jdbcConfig = new PostgresSource().toDatabaseConfig(buildConfigEscapingNeeded());
+    assertEquals(EXPECTED_JDBC_ESCAPED_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+  }
+
+  private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:postgresql://localhost:1111/db%2Ffoo?";
+
+  private JsonNode buildConfigEscapingNeeded() {
+    return Jsons.jsonNode(ImmutableMap.of(
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1111,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db/foo"));
   }
 
 }

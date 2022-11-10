@@ -1,11 +1,23 @@
-{
-  "events": {
-    "timestamp": 9621295127
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "timestamp": 9621295127 },
+      "stream_descriptor": { "name": "events" }
+    }
   },
-  "global_exclusions": {
-    "timestamp": "2120-10-10T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "timestamp": "2120-10-10T00:00:00Z" },
+      "stream_descriptor": { "name": "global_exclusions" }
+    }
   },
-  "flows": {
-    "created": "2120-10-10 00:00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": "2120-10-10 00:00:00" },
+      "stream_descriptor": { "name": "flows" }
+    }
   }
-}
+]

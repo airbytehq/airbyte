@@ -2,6 +2,7 @@ version: "0.1.0"
 
 definitions:
   schema_loader:
+    type: JsonFileSchemaLoader
     file_path: "./source_greenhouse/schemas/{{ options['name'] }}.json"
   selector:
     type: RecordSelector
@@ -13,6 +14,15 @@ definitions:
     name: "{{ options['name'] }}"
     url_base: "https://harvest.greenhouse.io/v1/"
     http_method: "GET"
+    error_handler:
+      type: CompositeErrorHandler
+      # ignore 403 error but retry default retriable http errors (429, 500 - 600)
+      error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+            - http_codes: [403]
+              action: IGNORE
+        - type: DefaultErrorHandler
     authenticator:
       type: BasicHttpAuthenticator
       username: "{{ config['api_key'] }}"
@@ -23,13 +33,13 @@ definitions:
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
-      type: LimitPaginator
-      page_size: 100
+      type: DefaultPaginator
       pagination_strategy:
         type: "CursorPagination"
         cursor_value: "{{ headers['link']['next']['url'] }}"
         stop_condition: "{{ 'next' not in headers['link'] }}"
-      limit_option:
+        page_size: 100
+      page_size_option:
         field_name: "per_page"
         inject_into: "request_parameter"
       page_token_option:
@@ -45,18 +55,34 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
-  applications_stream:
+  base_incremental_stream:
     $ref: "*ref(definitions.base_stream)"
+    stream_cursor_field: "updated_at"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester: "*ref(definitions.requester)"
+      stream_slicer:
+        request_cursor_field: "updated_after"
+        cursor_field: "updated_at"
+        class_name: source_greenhouse.components.GreenHouseSlicer
+  applications_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
     $options:
       name: "applications"
       path: "applications"
-    primary_key: "id"
+    stream_cursor_field: "applied_at"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester: "*ref(definitions.requester)"
+      stream_slicer:
+        request_cursor_field: "created_after"
+        cursor_field: "applied_at"
+        class_name: source_greenhouse.components.GreenHouseSlicer
   candidates_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "*ref(definitions.base_incremental_stream)"
     $options:
       name: "candidates"
       path: "candidates"
-    primary_key: "id"
   close_reasons_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -74,7 +100,7 @@ definitions:
       name: "departments"
       path: "departments"
   jobs_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "*ref(definitions.base_incremental_stream)"
     $options:
       name: "jobs"
       path: "jobs"
@@ -96,39 +122,39 @@ definitions:
             parent_key: "id"
             stream_slice_field: "parent_id"
   applications_demographics_answers_stream:
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "applications_demographics_answers"
-    primary_key: "id"
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+    stream_cursor_field: "updated_at"
     retriever:
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
         path: "applications/{{ stream_slice.parent_id }}/demographics/answers"
       stream_slicer:
-        type: SubstreamSlicer
-        parent_stream_configs:
-          - stream: "*ref(definitions.applications_stream)"
-            parent_key: "id"
-            stream_slice_field: "parent_id"
+        class_name: source_greenhouse.components.GreenHouseSubstreamSlicer
+        parent_stream: "*ref(definitions.applications_stream)"
+        request_cursor_field: "updated_after"
+        stream_slice_field: "parent_id"
+        cursor_field: "updated_at"
+        parent_key: "id"
   applications_interviews_stream:
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "applications_interviews"
-    primary_key: "id"
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+    stream_cursor_field: "updated_at"
     retriever:
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
         path: "applications/{{ stream_slice.parent_id }}/scheduled_interviews"
       stream_slicer:
-        type: SubstreamSlicer
-        parent_stream_configs:
-          - stream: "*ref(definitions.applications_stream)"
-            parent_key: "id"
-            stream_slice_field: "parent_id"
+        class_name: source_greenhouse.components.GreenHouseSubstreamSlicer
+        parent_stream: "*ref(definitions.applications_stream)"
+        request_cursor_field: "updated_after"
+        stream_slice_field: "parent_id"
+        cursor_field: "updated_at"
+        parent_key: "id"
   custom_fields_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -179,39 +205,40 @@ definitions:
               parent_key: "id"
               stream_slice_field: "parent_id"
   interviews_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "*ref(definitions.base_incremental_stream)"
     $options:
       name: "interviews"
       path: "scheduled_interviews"
   job_posts_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "*ref(definitions.base_incremental_stream)"
     $options:
       name: "job_posts"
       path: "job_posts"
   job_stages_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "*ref(definitions.base_incremental_stream)"
     $options:
       name: "job_stages"
       path: "job_stages"
   jobs_stages_stream:
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "jobs_stages"
-      primary_key: "id"
-      schema_loader:
-        $ref: "*ref(definitions.schema_loader)"
-      retriever:
-        $ref: "*ref(definitions.retriever)"
-        requester:
-          $ref: "*ref(definitions.requester)"
-          path: "jobs/{{ stream_slice.parent_id }}/stages"
-        stream_slicer:
-          type: SubstreamSlicer
-          parent_stream_configs:
-            - stream: "*ref(definitions.jobs_stream)"
-              parent_key: "id"
-              stream_slice_field: "parent_id"
+      path: "jobs/{{ stream_slice.parent_id }}/stages"
+      stream_cursor_field: "updated_at"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "jobs/{{ stream_slice.parent_id }}/stages"
+      stream_slicer:
+        class_name: source_greenhouse.components.GreenHouseSubstreamSlicer
+        parent_stream: "*ref(definitions.jobs_stream)"
+        request_cursor_field: "updated_after"
+        stream_slice_field: "parent_id"
+        cursor_field: "updated_at"
+        parent_key: "id"
   offers_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "*ref(definitions.base_incremental_stream)"
     $options:
       name: "offers"
       path: "offers"
@@ -221,7 +248,7 @@ definitions:
       name: "rejection_reasons"
       path: "rejection_reasons"
   scorecards_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "*ref(definitions.base_incremental_stream)"
     $options:
       name: "scorecards"
       path: "scorecards"
@@ -231,12 +258,12 @@ definitions:
       name: "sources"
       path: "sources"
   users_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "*ref(definitions.base_incremental_stream)"
     $options:
       name: "users"
       path: "users"
   demographics_answers_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "*ref(definitions.base_incremental_stream)"
     $options:
       name: "demographics_answers"
       path: "demographics/answers"

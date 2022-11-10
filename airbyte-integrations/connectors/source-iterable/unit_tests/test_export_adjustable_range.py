@@ -45,7 +45,7 @@ def read_from_source(catalog):
 
 @responses.activate
 @pytest.mark.parametrize("catalog", (["email_send"]), indirect=True)
-def test_email_stream(catalog, time_mock):
+def test_email_stream(mock_lists_resp, catalog, time_mock):
     DAYS_DURATION = 100
     DAYS_PER_MINUTE_RATE = 8
 
@@ -59,12 +59,14 @@ def test_email_stream(catalog, time_mock):
         time_mock.tick(delta=datetime.timedelta(minutes=days / DAYS_PER_MINUTE_RATE))
         return (200, {}, json.dumps({"createdAt": "2020"}))
 
+    responses.add(responses.GET, "https://api.iterable.com/api/lists/getUsers?listId=1", json={"lists": [{"id": 1}]}, status=200)
     responses.add_callback("GET", "https://api.iterable.com/api/export/data.json", callback=response_cb)
 
     records = read_from_source(catalog)
     assert records
     assert sum(ranges) == DAYS_DURATION
-    assert len(responses.calls) == len(ranges)
+    # since read is called on source instance, under the hood .streams() is called which triggers one more http call
+    assert len(responses.calls) == len(ranges) + 1
     assert ranges == [
         AdjustableSliceGenerator.INITIAL_RANGE_DAYS,
         *([int(DAYS_PER_MINUTE_RATE / AdjustableSliceGenerator.REQUEST_PER_MINUTE_LIMIT)] * 35),
@@ -85,7 +87,8 @@ def test_email_stream(catalog, time_mock):
     ],
     indirect=["catalog"],
 )
-def test_email_stream_chunked_encoding(catalog, days_duration, days_per_minute_rate, time_mock):
+def test_email_stream_chunked_encoding(mocker, mock_lists_resp, catalog, days_duration, days_per_minute_rate, time_mock):
+    mocker.patch("time.sleep")
     time_mock.move_to(pendulum.parse(TEST_START_DATE) + pendulum.Duration(days=days_duration))
 
     ranges: List[int] = []
@@ -103,28 +106,11 @@ def test_email_stream_chunked_encoding(catalog, days_duration, days_per_minute_r
         time_mock.tick(delta=datetime.timedelta(minutes=days / days_per_minute_rate))
         return (200, {}, json.dumps({"createdAt": "2020"}))
 
+    responses.add(responses.GET, "https://api.iterable.com/api/lists/getUsers?listId=1", json={"lists": [{"id": 1}]}, status=200)
     responses.add_callback("GET", "https://api.iterable.com/api/export/data.json", callback=response_cb)
 
     records = read_from_source(catalog)
     assert sum(ranges) == days_duration
     assert len(ranges) == len(records)
-    assert len(responses.calls) == 3 * len(ranges)
-
-
-@responses.activate
-@pytest.mark.parametrize("catalog", (["email_send"]), indirect=True)
-def test_email_stream_chunked_encoding_exception(catalog, time_mock):
-    TEST_START_DATE = "2020"
-    DAYS_DURATION = 100
-
-    time_mock.move_to(pendulum.parse(TEST_START_DATE) + pendulum.Duration(days=DAYS_DURATION))
-
-    responses.add(
-        "GET",
-        "https://api.iterable.com/api/export/data.json",
-        body=ChunkedEncodingError(),
-    )
-
-    with pytest.raises(Exception, match="ChunkedEncodingError: Reached maximum number of retires: 3"):
-        read_from_source(catalog)
-    assert len(responses.calls) == 3
+    # since read is called on source instance, under the hood .streams() is called which triggers one more http call
+    assert len(responses.calls) == 3 * len(ranges) + 1

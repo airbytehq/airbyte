@@ -1,5 +1,7 @@
 name: GKE Kube Acceptance Test
 on:
+  schedule:
+    - cron: '0 0 * * 0' # runs at midnight UTC every Sunday
   workflow_dispatch:
     inputs:
       repo:
@@ -64,15 +66,15 @@ jobs:
         if: github.event.inputs.comment-id
         uses: peter-evans/create-or-update-comment@v1
         with:
-          comment-id: ${{ github.event.inputs.comment-id }}
+          comment-id: ${{ github.event.inputs.comment-id || ""}}
           body: |
             > :clock2: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
 
       - name: Checkout Airbyte
         uses: actions/checkout@v2
         with:
-          repository: ${{ github.event.inputs.repo }}
-          ref: ${{ github.event.inputs.gitref }}
+          repository: ${{ github.event.inputs.repo || "airbytehq/airbyte" }}
+          ref: ${{ github.event.inputs.gitref || "master" }}
 
       - uses: actions/setup-java@v1
         with:

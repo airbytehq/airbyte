@@ -8,6 +8,7 @@ import io.airbyte.api.model.generated.ConnectionScheduleData;
 import io.airbyte.api.model.generated.ConnectionScheduleType;
 import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.Cron;
+import io.airbyte.config.Schedule;
 import io.airbyte.config.ScheduleData;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.ScheduleType;
@@ -33,7 +34,12 @@ public class ConnectionScheduleHelper {
     }
     switch (scheduleType) {
       // NOTE: the `manual` column is marked required, so we populate it until it's removed.
-      case MANUAL -> standardSync.withScheduleType(ScheduleType.MANUAL).withManual(true);
+      case MANUAL -> {
+        standardSync.withScheduleType(ScheduleType.MANUAL).withScheduleData(null).withManual(true);
+
+        // explicitly null out the legacy `schedule` column until it's removed.
+        standardSync.withSchedule(null);
+      }
       case BASIC -> {
         if (scheduleData.getBasicSchedule() == null) {
           throw new JsonValidationException("if schedule type is basic, then scheduleData.basic must be populated");
@@ -44,6 +50,14 @@ public class ConnectionScheduleHelper {
                 new BasicSchedule().withTimeUnit(ApiPojoConverters.toBasicScheduleTimeUnit(scheduleData.getBasicSchedule().getTimeUnit()))
                     .withUnits(scheduleData.getBasicSchedule().getUnits())))
             .withManual(false);
+        // Populate the legacy format for now as well, since some places still expect it to exist.
+        // TODO(https://github.com/airbytehq/airbyte/issues/11432): remove.
+        final Schedule schedule = new Schedule()
+            .withTimeUnit(ApiPojoConverters.toLegacyScheduleTimeUnit(scheduleData.getBasicSchedule().getTimeUnit()))
+            .withUnits(scheduleData.getBasicSchedule().getUnits());
+        standardSync
+            .withManual(false)
+            .withSchedule(schedule);
       }
       case CRON -> {
         if (scheduleData.getCron() == null) {
@@ -73,6 +87,9 @@ public class ConnectionScheduleHelper {
                 .withCronExpression(cronExpression)
                 .withCronTimeZone(cronTimeZone)))
             .withManual(false);
+
+        // explicitly null out the legacy `schedule` column until it's removed.
+        standardSync.withSchedule(null);
       }
     }
   }

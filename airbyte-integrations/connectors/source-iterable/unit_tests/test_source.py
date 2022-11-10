@@ -2,40 +2,27 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import json
-import math
-from unittest import mock
+from unittest.mock import MagicMock, patch
 
-import freezegun
-import pendulum
 import pytest
 import responses
-from source_iterable.iterable_streams import RangeSliceGenerator
 from source_iterable.source import SourceIterable
-
-
-@pytest.fixture
-def response_mock():
-    with responses.RequestsMock() as resp_mock:
-        record_js = {"profileUpdatedAt": "2020"}
-        resp_body = "\n".join([json.dumps(record_js)])
-        responses.add("GET", "https://api.iterable.com/api/export/data.json", body=resp_body)
-        yield resp_mock
+from source_iterable.streams import Lists
 
 
 @responses.activate
-@freezegun.freeze_time("2021-01-01")
-@pytest.mark.parametrize("catalog", (["users"]), indirect=True)
-def test_stream_correct(response_mock, catalog):
-    TEST_START_DATE = "2020"
-    chunks = math.ceil((pendulum.today() - pendulum.parse(TEST_START_DATE)).days / RangeSliceGenerator.RANGE_LENGTH_DAYS)
-    source = SourceIterable()
-    records = list(
-        source.read(
-            mock.MagicMock(),
-            {"start_date": TEST_START_DATE, "api_key": "api_key"},
-            catalog,
-            None,
-        )
-    )
-    assert len(records) == chunks
+@pytest.mark.parametrize("body, status, expected_streams", ((b"", 401, 7), (b"", 200, 44), (b"alpha@gmail.com\nbeta@gmail.com", 200, 44)))
+def test_source_streams(mock_lists_resp, config, body, status, expected_streams):
+    responses.add(responses.GET, "https://api.iterable.com/api/lists/getUsers?listId=1", body=body, status=status)
+    streams = SourceIterable().streams(config=config)
+    assert len(streams) == expected_streams
+
+
+def test_source_check_connection_ok(config):
+    with patch.object(Lists, "read_records", return_value=iter([{"id": 1}])):
+        assert SourceIterable().check_connection(MagicMock(), config=config) == (True, None)
+
+
+def test_source_check_connection_failed(config):
+    with patch.object(Lists, "read_records", return_value=iter([])):
+        assert SourceIterable().check_connection(MagicMock(), config=config)[0] is False

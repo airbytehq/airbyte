@@ -30,3 +30,9 @@ class PaginationStrategy(JsonSchemaMixin):
         """
         Reset the pagination's inner state
         """
+
+    @abstractmethod
+    def get_page_size(self) -> Optional[int]:
+        """
+        :return: page size: The number of records to fetch in a page. Returns None if unspecified
+        """

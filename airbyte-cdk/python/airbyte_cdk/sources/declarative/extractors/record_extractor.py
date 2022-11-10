@@ -2,16 +2,17 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from dataclasses import dataclass
 from typing import List
 
 import requests
 from airbyte_cdk.sources.declarative.types import Record
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class RecordExtractor(ABC):
+class RecordExtractor(JsonSchemaMixin):
     """
     Responsible for translating an HTTP response into a list of records by extracting records from the response.
     """

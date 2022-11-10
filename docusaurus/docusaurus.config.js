@@ -41,7 +41,18 @@ const config = {
                             from: '/integrations/sources/google-analytics-data-api',
                             to: '/integrations/sources/google-analytics-v4',
                         },
-
+                        {
+                            from: '/project-overview/security',
+                            to: '/operator-guides/security',
+                        },
+                        {
+                            from: '/operator-guides/securing-airbyte',
+                            to: '/operator-guides/security',
+                        },
+                        {
+                            from: '/connector-development/config-based/',
+                            to: '/connector-development/config-based/low-code-cdk-overview',
+                        },
 //                        {
 //                         from: '/some-lame-path',
 //                         to: '/a-much-cooler-uri',

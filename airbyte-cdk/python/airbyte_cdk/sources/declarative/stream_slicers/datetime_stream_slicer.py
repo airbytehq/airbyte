@@ -5,7 +5,7 @@
 import datetime
 import re
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Iterable, Mapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
@@ -16,6 +16,7 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from dataclasses_jsonschema import JsonSchemaMixin
+from dateutil.relativedelta import relativedelta
 
 
 @dataclass
@@ -30,20 +31,22 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     `"<number><unit>"`
 
     where unit can be one of
+    - years, y
+    - months, m
     - weeks, w
     - days, d
 
-    For example, "1d" will produce windows of 1 day, and 2weeks windows of 2 weeks.
+    For example, "1d" will produce windows of 1 day, and "2w" windows of 2 weeks.
 
     The timestamp format accepts the same format codes as datetime.strfptime, which are
     all the format codes required by the 1989 C standard.
     Full list of accepted format codes: https://man7.org/linux/man-pages/man3/strftime.3.html
 
     Attributes:
-        start_datetime (MinMaxDatetime): the datetime that determines the earliest record that should be synced
-        end_datetime (MinMaxDatetime): the datetime that determines the last record that should be synced
+        start_datetime (Union[MinMaxDatetime, str]): the datetime that determines the earliest record that should be synced
+        end_datetime (Union[MinMaxDatetime, str]): the datetime that determines the last record that should be synced
         step (str): size of the timewindow
-        cursor_field (InterpolatedString): record's cursor field
+        cursor_field (Union[InterpolatedString, str]): record's cursor field
         datetime_format (str): format of the datetime
         config (Config): connection config
         start_time_option (Optional[RequestOption]): request option for start time
@@ -53,10 +56,10 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         lookback_window (Optional[InterpolatedString]): how many days before start_datetime to read data for
     """
 
-    start_datetime: MinMaxDatetime
-    end_datetime: MinMaxDatetime
+    start_datetime: Union[MinMaxDatetime, str]
+    end_datetime: Union[MinMaxDatetime, str]
     step: str
-    cursor_field: InterpolatedString
+    cursor_field: Union[InterpolatedString, str]
     datetime_format: str
     config: Config
     options: InitVar[Mapping[str, Any]]
@@ -66,11 +69,18 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     end_time_option: Optional[RequestOption] = None
     stream_state_field_start: Optional[str] = None
     stream_state_field_end: Optional[str] = None
-    lookback_window: Optional[InterpolatedString] = None
+    lookback_window: Optional[Union[InterpolatedString, str]] = None
 
-    timedelta_regex = re.compile(r"((?P<weeks>[\.\d]+?)w)?" r"((?P<days>[\.\d]+?)d)?$")
+    timedelta_regex = re.compile(
+        r"((?P<years>[\.\d]+?)y)?" r"((?P<months>[\.\d]+?)m)?" r"((?P<weeks>[\.\d]+?)w)?" r"((?P<days>[\.\d]+?)d)?$"
+    )
 
     def __post_init__(self, options: Mapping[str, Any]):
+        if not isinstance(self.start_datetime, MinMaxDatetime):
+            self.start_datetime = MinMaxDatetime(self.start_datetime, options)
+        if not isinstance(self.end_datetime, MinMaxDatetime):
+            self.end_datetime = MinMaxDatetime(self.end_datetime, options)
+
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
 
@@ -183,14 +193,14 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         Parse a time string e.g. (2h13m) into a timedelta object.
         Modified from virhilo's answer at https://stackoverflow.com/a/4628148/851699
         :param time_str: A string identifying a duration. (eg. 2h13m)
-        :return datetime.timedelta: A datetime.timedelta object
+        :return relativedelta: A relativedelta object
         """
         parts = cls.timedelta_regex.match(time_str)
 
         assert parts is not None
 
         time_params = {name: float(param) for name, param in parts.groupdict().items() if param}
-        return datetime.timedelta(**time_params)
+        return relativedelta(**time_params)
 
     def get_request_params(
         self,

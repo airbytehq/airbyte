@@ -38,7 +38,11 @@ export class GoogleAuthService {
   }
 
   async loginWithOAuth(provider: OAuthProviders) {
-    await signInWithPopup(this.auth, provider === "github" ? new GithubAuthProvider() : new GoogleAuthProvider());
+    // Instantiate the appropriate auth provider. For Google we're specifying the `hd` parameter, to only show
+    // Google accounts in the selector that are linked to a business (GSuite) account.
+    const authProvider =
+      provider === "github" ? new GithubAuthProvider() : new GoogleAuthProvider().setCustomParameters({ hd: "*" });
+    await signInWithPopup(this.auth, authProvider);
   }
 
   async login(email: string, password: string): Promise<UserCredential> {
@@ -100,7 +104,7 @@ export class GoogleAuthService {
   }
 
   async updateEmail(email: string, password: string): Promise<void> {
-    const user = await this.getCurrentUser();
+    const user = this.getCurrentUser();
 
     if (user) {
       await this.reauthenticate(email, password);

@@ -1,5 +1,7 @@
 name: Connector Integration Tests
 
+# Launches the connector integration tests
+
 on:
   workflow_dispatch:
   schedule:

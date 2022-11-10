@@ -12,6 +12,7 @@ import static org.mockito.Mockito.mock;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.Geography;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -48,6 +49,7 @@ class BaseDatabaseConfigPersistenceTest {
   static PostgreSQLContainer<?> container;
   static Database database;
   static DatabaseConfigPersistence configPersistence;
+  static StandardSyncPersistence standardSyncPersistence;
   static JsonSecretsProcessor jsonSecretsProcessor;
   static DataSource dataSource;
   static DSLContext dslContext;
@@ -61,6 +63,7 @@ class BaseDatabaseConfigPersistenceTest {
       .withDocumentationUrl("https://docs.airbyte.io/integrations/sources/github")
       .withIcon("github.svg")
       .withSourceType(SourceType.API)
+      .withProtocolVersion("0.2.0")
       .withTombstone(false);
   protected static final StandardSourceDefinition SOURCE_POSTGRES = new StandardSourceDefinition()
       .withName("Postgres")
@@ -88,6 +91,7 @@ class BaseDatabaseConfigPersistenceTest {
       .withDockerRepository("airbyte/destination-snowflake")
       .withDockerImageTag("0.3.16")
       .withDocumentationUrl("https://docs.airbyte.io/integrations/destinations/snowflake")
+      .withProtocolVersion("0.2.0")
       .withTombstone(false);
   protected static final StandardDestinationDefinition DESTINATION_S3 = new StandardDestinationDefinition()
       .withName("S3")
@@ -95,6 +99,7 @@ class BaseDatabaseConfigPersistenceTest {
       .withDockerRepository("airbyte/destination-s3")
       .withDockerImageTag("0.1.12")
       .withDocumentationUrl("https://docs.airbyte.io/integrations/destinations/s3")
+      .withProtocolVersion("0.2.0")
       .withTombstone(false);
   protected static final StandardDestinationDefinition DESTINATION_CUSTOM = new StandardDestinationDefinition()
       .withName("Custom")
@@ -143,7 +148,8 @@ class BaseDatabaseConfigPersistenceTest {
         .withWorkspaceId(workspaceId)
         .withName(CANNOT_BE_NULL)
         .withSlug(CANNOT_BE_NULL)
-        .withInitialSetupComplete(true);
+        .withInitialSetupComplete(true)
+        .withDefaultGeography(Geography.AUTO);
     configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), workspace);
 
     final SourceConnection sourceConnection = new SourceConnection()
@@ -169,7 +175,8 @@ class BaseDatabaseConfigPersistenceTest {
         .withWorkspaceId(workspaceId)
         .withName(CANNOT_BE_NULL)
         .withSlug(CANNOT_BE_NULL)
-        .withInitialSetupComplete(true);
+        .withInitialSetupComplete(true)
+        .withDefaultGeography(Geography.AUTO);
     configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), workspace);
 
     final DestinationConnection destinationConnection = new DestinationConnection()

@@ -2,6 +2,10 @@ upstream api-server {
     server $INTERNAL_API_HOST;
 }
 
+# upstream connector-builder-server { #FIXME: Uncomment this block when enabling the connector-builder
+#    server $CONNECTOR_BUILDER_API_HOST;
+# }
+
 server {
     listen       80;
     listen  [::]:80;
@@ -19,10 +23,8 @@ server {
         sub_filter </head>
                 '</head><script language="javascript"\>
                 window.TRACKING_STRATEGY = "$TRACKING_STRATEGY";
-                window.FULLSTORY = "$FULLSTORY";
                 window.AIRBYTE_VERSION = "$AIRBYTE_VERSION";
                 window.API_URL = "$API_URL";
-                window.IS_DEMO = "$IS_DEMO";
                 </script>';
         sub_filter_once on;
     }
@@ -42,4 +44,11 @@ server {
         client_max_body_size 200M;
         proxy_pass http://api-server/api/;
     }
+
+    #location /connector-builder-api/ { #FIXME: Uncomment this block when enabling the connector-builder
+    #    fastcgi_read_timeout 1h;
+    #    proxy_read_timeout 1h;
+    #    client_max_body_size 200M;
+    #    proxy_pass http://connector-builder-server/;
+    #}
 }

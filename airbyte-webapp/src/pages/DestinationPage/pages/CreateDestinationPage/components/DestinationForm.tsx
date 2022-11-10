@@ -1,15 +1,17 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { useLocation } from "react-router-dom";
 
-import { Action, Namespace } from "core/analytics";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationDefinitionRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { useAnalyticsService } from "hooks/services/Analytics";
-import useRouter from "hooks/useRouter";
+import { useExperiment } from "hooks/services/Experiment";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { ConnectorCardValues, FrequentlyUsedConnectors, StartWithDestination } from "views/Connector/ConnectorForm";
+
+import styles from "./DestinationForm.module.scss";
 
 interface DestinationFormProps {
   onSubmit: (values: {
@@ -18,10 +20,9 @@ interface DestinationFormProps {
     destinationDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => void;
-  afterSelectConnector?: () => void;
   destinationDefinitions: DestinationDefinitionRead[];
   hasSuccess?: boolean;
-  error?: { message?: string; status?: number } | null;
+  error?: FormError | null;
 }
 
 const hasDestinationDefinitionId = (state: unknown): state is { destinationDefinitionId: string } => {
@@ -37,10 +38,8 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
   destinationDefinitions,
   error,
   hasSuccess,
-  afterSelectConnector,
 }) => {
-  const { location } = useRouter();
-  const analyticsService = useAnalyticsService();
+  const location = useLocation();
 
   const [destinationDefinitionId, setDestinationDefinitionId] = useState(
     hasDestinationDefinitionId(location.state) ? location.state.destinationDefinitionId : null
@@ -54,43 +53,52 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
 
   const onDropDownSelect = (destinationDefinitionId: string) => {
     setDestinationDefinitionId(destinationDefinitionId);
-
-    const connector = destinationDefinitions.find((item) => item.destinationDefinitionId === destinationDefinitionId);
-
-    if (afterSelectConnector) {
-      afterSelectConnector();
-    }
-
-    analyticsService.track(Namespace.DESTINATION, Action.SELECT, {
-      actionDescription: "Destination connector type selected",
-      connector_destination: connector?.name,
-      connector_destination_definition_id: destinationDefinitionId,
-    });
   };
 
-  const onSubmitForm = async (values: { name: string; serviceType: string }) => {
-    await onSubmit({
+  const onSubmitForm = async (values: ConnectorCardValues) => {
+    onSubmit({
       ...values,
       destinationDefinitionId: destinationDefinitionSpecification?.destinationDefinitionId,
     });
   };
 
-  const errorMessage = error ? createFormErrorMessage(error) : null;
+  const errorMessage = error ? generateMessageFromError(error) : null;
+
+  const frequentlyUsedDestinationIds = useExperiment("connector.frequentlyUsedDestinationIds", [
+    "22f6c74f-5699-40ff-833c-4a879ea40133",
+    "424892c4-daac-4491-b35d-c6688ba547ba",
+  ]);
+  const frequentlyUsedDestinationsComponent = !isLoading && !destinationDefinitionId && (
+    <FrequentlyUsedConnectors
+      connectorType="destination"
+      onConnectorSelect={onDropDownSelect}
+      availableServices={destinationDefinitions}
+      connectorIds={frequentlyUsedDestinationIds}
+    />
+  );
+  const startWithDestinationComponent = !isLoading && !destinationDefinitionId && (
+    <div className={styles.startWithDestinationContainer}>
+      <StartWithDestination onDestinationSelect={onDropDownSelect} availableServices={destinationDefinitions} />
+    </div>
+  );
 
   return (
-    <ConnectorCard
-      onServiceSelect={onDropDownSelect}
-      fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
-      onSubmit={onSubmitForm}
-      formType="destination"
-      availableServices={destinationDefinitions}
-      selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
-      hasSuccess={hasSuccess}
-      errorMessage={errorMessage}
-      isLoading={isLoading}
-      formValues={destinationDefinitionId ? { serviceType: destinationDefinitionId } : undefined}
-      title={<FormattedMessage id="onboarding.destinationSetUp" />}
-      jobInfo={LogsRequestError.extractJobInfo(error)}
-    />
+    <>
+      <ConnectorCard
+        formType="destination"
+        title={<FormattedMessage id="onboarding.destinationSetUp" />}
+        isLoading={isLoading}
+        hasSuccess={hasSuccess}
+        errorMessage={errorMessage}
+        fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
+        availableConnectorDefinitions={destinationDefinitions}
+        onConnectorDefinitionSelect={onDropDownSelect}
+        selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
+        onSubmit={onSubmitForm}
+        jobInfo={LogsRequestError.extractJobInfo(error)}
+        additionalSelectorComponent={frequentlyUsedDestinationsComponent}
+      />
+      {startWithDestinationComponent}
+    </>
   );
 };

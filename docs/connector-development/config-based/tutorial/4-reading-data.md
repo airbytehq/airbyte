@@ -1,7 +1,7 @@
 # Step 4: Reading data
 
 Now that we're able to authenticate to the source API, we'll want to select data from the HTTP responses.
-Let's first add the stream to the configured catalog in `source-exchange_rates-tutorial/integration_tests/configured_catalog.json`
+Let's first add the stream to the configured catalog in `source-exchange-rates-tutorial/integration_tests/configured_catalog.json`
 
 ```json
 {
@@ -29,20 +29,20 @@ Let's define the stream schema in `source-exchange-rates-tutorial/source_exchang
 You can download the JSON file describing the output schema with all currencies [here](https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/exchange_rates.json) for convenience and place it in `schemas/`.
 
 ```bash
-$ curl https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/exchange_rates.json > source_exchange_rates_tutorial/schemas/rates.json
+curl https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/exchange_rates.json > source_exchange_rates_tutorial/schemas/rates.json
 ```
 
 We can also delete the boilerplate schema files
 
 ```bash
-$ rm source_exchange_rates_tutorial/schemas/customers.json
-$ rm source_exchange_rates_tutorial/schemas/employees.json
+rm source_exchange_rates_tutorial/schemas/customers.json
+rm source_exchange_rates_tutorial/schemas/employees.json
 ```
 
 Reading from the source can be done by running the `read` operation
 
 ```bash
-$ python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 The logs should show that 1 record was read from the stream.
@@ -55,7 +55,7 @@ The logs should show that 1 record was read from the stream.
 The `--debug` flag can be set to print out debug information, including the outgoing request and its associated response
 
 ```bash
-$ python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json --debug
+python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json --debug
 ```
 
 ## Next steps
@@ -66,5 +66,5 @@ Next, we'll [enhance the connector to read data for a given date, which will ena
 
 ## More readings
 
-- [Record selector](../record-selector.md)
+- [Record selector](../understanding-the-yaml-file/record-selector.md)
 - [Catalog guide](https://docs.airbyte.io/understanding-airbyte/beginners-guide-to-catalog)

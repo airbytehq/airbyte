@@ -8,10 +8,10 @@ If this is the case on your machine, substitute the `python` commands with `pyth
 The subsequent `python` invocations will use the virtual environment created for the connector.
 
 ```bash
-$ cd ../../connectors/source-exchange-rates-tutorial
-$ python -m venv .venv
-$ source .venv/bin/activate
-$ pip install -r requirements.txt
+cd ../../connectors/source-exchange-rates-tutorial
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
 These steps create an initial python environment, and install the dependencies required to run an API Source connector.
@@ -19,7 +19,7 @@ These steps create an initial python environment, and install the dependencies r
 Let's verify everything works as expected by running the Airbyte `spec` operation:
 
 ```bash
-$ python main.py spec
+python main.py spec
 ```
 
 You should see an output similar to the one below:

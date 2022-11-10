@@ -1,12 +1,39 @@
 # Zendesk Talk
 
-## Sync overview
+## Prerequisites
 
-The Zendesk Talk source supports Full Refresh syncs.
+* Zendesk API Token or Zendesk OAuth Client
+* Zendesk Email (For API Token authentication)
+* Zendesk Subdomain
 
-This source can sync data for the [Zendesk Talk API](https://developer.zendesk.com/rest_api/docs/voice-api/introduction).
+## Setup guide
 
-### Output schema
+Generate a API access token as described in [Zendesk docs](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token-)
+
+We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
+
+Another option is to use OAuth2.0 for authentication. See [Zendesk docs](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application) for details.
+
+## Step 2: Set up the Zendesk Talk connector in Airbyte
+
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. On the Set up the source page, enter the name for the Zendesk Talk connector and select **Zendesk Talk** from the Source type dropdown.
+4. Fill in the rest of the fields:
+   - *Subdomain*
+   - *Authentication (API Token / OAuth2.0)*
+   - *Start Date*
+5. Click **Set up source**
+
+## Supported sync modes
+
+The **Zendesk Talk** source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+* Full Refresh
+* Incremental Sync
+
+## Supported Streams
 
 This Source is capable of syncing the following core Streams:
 
@@ -24,45 +51,27 @@ This Source is capable of syncing the following core Streams:
 * [IVR Routes](https://developer.zendesk.com/rest_api/docs/voice-api/ivr_routes#list-ivr-routes)
 * [Phone Numbers](https://developer.zendesk.com/rest_api/docs/voice-api/phone_numbers#list-phone-numbers)
 
-### Data type mapping
-
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `number` | `number` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
-
-### Features
-
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes |  |
-| Namespaces | No |  |
-
-### Performance considerations
+## Performance considerations
 
 The connector is restricted by normal Zendesk [requests limitation](https://developer.zendesk.com/rest_api/docs/voice-api/introduction#rate-limits).
 
 The Zendesk connector should not run into Zendesk API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
-## Getting started
+## Data type map
 
-### Requirements
+| Integration Type | Airbyte Type | Notes |
+| :------- | :------- | :--- |
+| `string` | `string` |      |
+| `number` | `number` |      |
+| `array`  | `array`  |      |
+| `object` | `object` |      |
 
-* Zendesk API Token 
-* Zendesk Email 
-* Zendesk Subdomain 
 
-### Setup guide
+## Changelog
 
-Generate a API access token as described in [Zendesk docs](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token-)
 
-We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
-
-### CHANGELOG
-
-| Version | Date | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| `0.1.3` | 2021-11-11 | [7173](https://github.com/airbytehq/airbyte/pull/7173) | Fix pagination and migrate to CDK |
+| Version | Date       | Pull Request | Subject                           |
+|:--------|:-----------| :-----       |:----------------------------------|
+| `0.1.5` | 2022-09-29 | [17362](https://github.com/airbytehq/airbyte/pull/17362) | always use the latest CDK version |
+| `0.1.4` | 2022-08-19 | [15764](https://github.com/airbytehq/airbyte/pull/15764) | Support OAuth2.0                  |
+| `0.1.3` | 2021-11-11 | [7173](https://github.com/airbytehq/airbyte/pull/7173)   | Fix pagination and migrate to CDK |

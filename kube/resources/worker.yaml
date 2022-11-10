@@ -65,11 +65,6 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: WORKSPACE_ROOT
-            - name: WORKER_ENVIRONMENT
-              valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
-                  key: WORKER_ENVIRONMENT
             - name: LOCAL_ROOT
               valueFrom:
                 configMapKeyRef:
@@ -280,6 +275,21 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: USE_STREAM_CAPABLE_STATE
+            - name: MICRONAUT_ENVIRONMENTS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WORKERS_MICRONAUT_ENVIRONMENTS
+            - name: WORKER_LOGS_STORAGE_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WORKER_LOGS_STORAGE_TYPE
+            - name: WORKER_STATE_STORAGE_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WORKER_STATE_STORAGE_TYPE
           ports:
             - containerPort: 9000 # for heartbeat server
             - containerPort: 9001 # start temporal worker port pool

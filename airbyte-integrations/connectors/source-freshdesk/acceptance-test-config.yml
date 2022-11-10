@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-freshdesk:dev
 tests:
@@ -11,6 +11,9 @@ tests:
       status: "failed"
   discovery:
     - config_path: "secrets/config.json"
+    # please remove the backward_capability checks bypass, once updated to the newer version
+      backward_compatibility_tests_config:
+        disable_for_version: "0.3.4"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

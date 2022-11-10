@@ -1,12 +1,10 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-greenhouse:dev
 tests:
   spec:
     - spec_path: "source_greenhouse/spec.json"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
     - config_path: "secrets/config.json"
       status: "succeed"
     - config_path: "integration_tests/config_invalid.json"
@@ -19,13 +17,22 @@ tests:
       configured_catalog_path: "integration_tests/configured_catalog.json"
       expect_records:
         path: "integration_tests/expected_records.txt"
-        extra_fields: yes
-        exact_order: yes
-        extra_records: no
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_users_only.json"
+    - config_path: "secrets/config_users_only.json"
+      # test we do not fail when encounter 403 error
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      empty_streams: [
+        "applications", "applications_demographics_answers", "applications_interviews", "candidates", "close_reasons",
+        "custom_fields", "degrees", "demographics_answers", "demographics_answer_options", "questions",
+        "demographics_answers_answer_options", "demographics_question_sets", "demographics_question_sets_questions",
+        "departments", "jobs", "jobs_openings", "interviews", "job_posts", "job_stages", "jobs_stages", "offers",
+        "rejection_reasons", "scorecards", "sources", "demographics_questions"
+      ]
   full_refresh:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_const_records.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
     - config_path: "secrets/config_users_only.json"
       configured_catalog_path: "integration_tests/configured_catalog_users_only.json"
+  incremental:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
+      future_state_path: "integration_tests/abnormal_state.json"

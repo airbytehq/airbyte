@@ -4,10 +4,13 @@ concurrency:
 
 on:
   push:
-    branches: 
-      - 'master'
+    branches:
+      - "master"
     paths:
-      - 'charts/**'
+      - "charts/**"
+      - "!charts/**/Chart.yaml"
+      - "!charts/**/Chart.lock"
+      - "!charts/**/README.md"
   workflow_dispatch:
 
 jobs:
@@ -15,26 +18,36 @@ jobs:
     name: Generate semantic version
     runs-on: ubuntu-22.04
     outputs:
-      next-version: ${{ steps.sem-ver.outputs.version }}
+      next-version: ${{ steps.ver.outputs.fragment }}
+      tag: ${{ steps.sem-ver.outputs.version_tag }}
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      
+
       - uses: paulhatch/semantic-version@v4.0.3
         id: sem-ver
         with:
           tag_prefix: "v"
-          major_pattern: "feat:"
+          major_pattern: "feat!:"
           minor_pattern: "fix:"
           format: "${major}.${minor}.${patch}"
           change_path: "./charts"
           bump_each_commit: true
+          namespace: helm
+
+      - name: "Remove -helm from ver number"
+        shell: bash
+        env:
+          VERSION: ${{ steps.sem-ver.outputs.version }}
+        id: ver
+        run: echo "fragment=${VERSION%%-*}" >> $GITHUB_OUTPUT
 
   release-chart:
     name: Chart release
     runs-on: ubuntu-22.04
     needs: ["generate-semantic-version"]
+    permissions: write-all
     steps:
       - uses: actions/checkout@v3
         with:
@@ -51,24 +64,26 @@ jobs:
         shell: bash
         working-directory: ./airbyte/charts
         run: |
-          sed -i "s/    version: placeholder/    version: ${{ needs.generate-semantic-version.outputs.next-version }}/g" airbyte/Chart.yaml
+          sed -i -E "s/    version: [[:digit:]].[[:digit:]].[[:digit:]]/    version: ${{ needs.generate-semantic-version.outputs.next-version }}/g" airbyte/Chart.yaml
+          sed -i -E 's/version: [0-9]+\.[0-9]+\.[0-9]+/version: ${{ needs.generate-semantic-version.outputs.next-version }}/' airbyte/Chart.yaml
 
       - name: "Helm package"
         shell: bash
         run: |
-          declare -a StringArray=("airbyte-bootloader" "airbyte-server" "airbyte-temporal" "airbyte-webapp" "airbyte-pod-sweeper" "airbyte-worker")
+          declare -a StringArray=("airbyte-bootloader" "airbyte-server" "airbyte-temporal" "airbyte-webapp" "airbyte-pod-sweeper" "airbyte-worker" "airbyte-metrics" "airbyte-cron")
           for val in ${StringArray[@]}; do
             cd ./airbyte/charts/${val} && helm dep update && cd $GITHUB_WORKSPACE
+            sed -i -E  's/version: \"[0-9]+\.[0-9]+\.[0-9]+\"/version: \"${{ needs.generate-semantic-version.outputs.next-version }}\"/' ./airbyte/charts/${val}/Chart.yaml
             helm package ./airbyte/charts/${val} -d airbyte-oss  --version ${{ needs.generate-semantic-version.outputs.next-version }}
           done
           helm repo index airbyte-oss/
-      
+
       - name: Commit and push changes
         uses: EndBug/add-and-commit@v9
         with:
-          message: 'Bump release to ${{ needs.generate-semantic-version.outputs.next-version }}'
-          add: '.'
-          cwd: './airbyte-oss/'
+          message: "Bump release to ${{ needs.generate-semantic-version.outputs.next-version }}"
+          add: "."
+          cwd: "./airbyte-oss/"
 
       - name: "Helm package main chart"
         shell: bash
@@ -85,7 +100,38 @@ jobs:
       - name: Commit and push changes
         uses: EndBug/add-and-commit@v9
         with:
-          message: 'Bump release to ${{ needs.generate-semantic-version.outputs.next-version }}'
-          add: '.'
-          cwd: './airbyte-oss/'
-      
+          message: "Bump release to ${{ needs.generate-semantic-version.outputs.next-version }}"
+          add: "."
+          cwd: "./airbyte-oss/"
+
+      - name: "Generate changelog"
+        shell: bash
+        id: changelog
+        run: |
+          cd ./airbyte/
+          changelog=$(PAGER=cat git log $(git describe --tags --match "*-helm" $(git rev-list --tags --max-count=1))..HEAD --oneline --decorate=no)
+          echo "changelog<<EOF" >> $GITHUB_ENV
+          echo "$changelog" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          path: ./airbyte/
+          branch: update-helm-chart-version-ref
+          branch-suffix: random
+          title: Bump helm chart version reference to ${{ needs.generate-semantic-version.outputs.next-version }}
+          body: |
+            ## What
+            Bump version reference in all Chart.yaml files to ${{ needs.generate-semantic-version.outputs.next-version }}
+            CHANGELOG:
+            ${{ env.changelog }}
+          commit-message: Bump helm chart version reference to ${{ needs.generate-semantic-version.outputs.next-version }}
+          delete-branch: true
+
+      - name: Create tag
+        shell: bash
+        run: |
+          cd ./airbyte/
+          git tag ${{ needs.generate-semantic-version.outputs.tag }}
+          git push origin ${{ needs.generate-semantic-version.outputs.tag }}

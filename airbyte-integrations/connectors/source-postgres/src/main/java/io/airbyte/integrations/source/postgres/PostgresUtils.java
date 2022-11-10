@@ -4,13 +4,36 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static java.sql.JDBCType.BIGINT;
+import static java.sql.JDBCType.DATE;
+import static java.sql.JDBCType.DECIMAL;
+import static java.sql.JDBCType.DOUBLE;
+import static java.sql.JDBCType.FLOAT;
+import static java.sql.JDBCType.INTEGER;
+import static java.sql.JDBCType.LONGVARCHAR;
+import static java.sql.JDBCType.NUMERIC;
+import static java.sql.JDBCType.NVARCHAR;
+import static java.sql.JDBCType.REAL;
+import static java.sql.JDBCType.SMALLINT;
+import static java.sql.JDBCType.TIME;
+import static java.sql.JDBCType.TIMESTAMP;
+import static java.sql.JDBCType.TIMESTAMP_WITH_TIMEZONE;
+import static java.sql.JDBCType.TIME_WITH_TIMEZONE;
+import static java.sql.JDBCType.TINYINT;
+import static java.sql.JDBCType.VARCHAR;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import java.sql.JDBCType;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PostgresUtils {
+
+  public static final Set<JDBCType> ALLOWED_CURSOR_TYPES = Set.of(TIMESTAMP, TIMESTAMP_WITH_TIMEZONE, TIME, TIME_WITH_TIMEZONE,
+      DATE, TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, NVARCHAR, VARCHAR, LONGVARCHAR);
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresUtils.class);
 

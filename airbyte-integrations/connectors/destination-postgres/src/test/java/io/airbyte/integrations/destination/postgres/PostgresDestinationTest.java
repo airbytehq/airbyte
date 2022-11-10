@@ -5,14 +5,17 @@
 package io.airbyte.integrations.destination.postgres;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -29,6 +32,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,6 +41,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public class PostgresDestinationTest {
 
   private static PostgreSQLContainer<?> PSQL_DB;
+
+  private static final String USERNAME = "new_user";
+  private static final String DATABASE = "new_db";
+  private static final String PASSWORD = "new_password";
 
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
@@ -61,8 +69,18 @@ public class PostgresDestinationTest {
         JdbcUtils.PORT_KEY, 1337,
         JdbcUtils.USERNAME_KEY, "user",
         JdbcUtils.DATABASE_KEY, "db",
-        "ssl", true,
+        JdbcUtils.SSL_KEY, true,
         "ssl_mode", ImmutableMap.of("mode", "require")));
+  }
+
+  private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:postgresql://localhost:1337/db%2Ffoo?";
+
+  private JsonNode buildConfigEscapingNeeded() {
+    return Jsons.jsonNode(ImmutableMap.of(
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1337,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db/foo"));
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
@@ -106,6 +124,12 @@ public class PostgresDestinationTest {
   }
 
   @Test
+  void testJdbcUrlWithEscapedDatabaseName() {
+    final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(buildConfigEscapingNeeded());
+    assertEquals(EXPECTED_JDBC_ESCAPED_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+  }
+
+  @Test
   void testJdbcUrlEmptyExtraParams() {
     final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(""));
     assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
@@ -130,6 +154,77 @@ public class PostgresDestinationTest {
     final Map<String, String> defaultProperties = new PostgresDestination().getDefaultConnectionProperties(
         buildConfigNoJdbcParameters());
     assertEquals(SSL_JDBC_PARAMETERS, defaultProperties);
+  }
+
+  @Test
+  void testCheckIncorrectPasswordFailure() {
+    final var config = buildConfigNoJdbcParameters();
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
+    final PostgresDestination destination = new PostgresDestination();
+    final var actual = destination.check(config);
+    assertTrue(actual.getMessage().contains("State code: 08001;"));
+  }
+
+  @Test
+  public void testCheckIncorrectUsernameFailure() {
+    final var config = buildConfigNoJdbcParameters();
+    ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "");
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
+    final PostgresDestination destination = new PostgresDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertTrue(status.getMessage().contains("State code: 08001;"));
+  }
+
+  @Test
+  public void testCheckIncorrectHostFailure() {
+    final var config = buildConfigNoJdbcParameters();
+    ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
+    final PostgresDestination destination = new PostgresDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertTrue(status.getMessage().contains("State code: 08001;"));
+  }
+
+  @Test
+  public void testCheckIncorrectPortFailure() {
+    final var config = buildConfigNoJdbcParameters();
+    ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "30000");
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
+    final PostgresDestination destination = new PostgresDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertTrue(status.getMessage().contains("State code: 08001;"));
+  }
+
+  @Test
+  public void testCheckIncorrectDataBaseFailure() {
+    final var config = buildConfigNoJdbcParameters();
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
+    final PostgresDestination destination = new PostgresDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertTrue(status.getMessage().contains("State code: 08001;"));
+  }
+
+  @Test
+  public void testUserHasNoPermissionToDataBase() throws Exception {
+    final JdbcDatabase database = PostgreSQLContainerHelper.getJdbcDatabaseFromConfig(PostgreSQLContainerHelper.getDataSourceFromConfig(config));
+
+    database.execute(connection -> connection.createStatement()
+        .execute(String.format("create user %s with password '%s';", USERNAME, PASSWORD)));
+    database.execute(connection -> connection.createStatement()
+        .execute(String.format("create database %s;", DATABASE)));
+    // deny access for database for all users from group public
+    database.execute(connection -> connection.createStatement()
+        .execute(String.format("revoke all on database %s from public;", DATABASE)));
+
+    ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, USERNAME);
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, PASSWORD);
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, DATABASE);
+
+    final Destination destination = new PostgresDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
   }
 
   // This test is a bit redundant with PostgresIntegrationTest. It makes it easy to run the

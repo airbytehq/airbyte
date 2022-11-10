@@ -50,6 +50,7 @@ public class ConfigWriter {
                     : Enums.toEnum(standardSourceDefinition.getSourceType().value(),
                         SourceType.class).orElseThrow())
             .set(Tables.ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getSpec())))
+            .set(Tables.ACTOR_DEFINITION.PROTOCOL_VERSION, standardSourceDefinition.getProtocolVersion())
             .set(Tables.ACTOR_DEFINITION.TOMBSTONE, standardSourceDefinition.getTombstone())
             .set(Tables.ACTOR_DEFINITION.PUBLIC, standardSourceDefinition.getPublic())
             .set(Tables.ACTOR_DEFINITION.CUSTOM, standardSourceDefinition.getCustom())
@@ -79,6 +80,7 @@ public class ConfigWriter {
                     : Enums.toEnum(standardSourceDefinition.getSourceType().value(),
                         SourceType.class).orElseThrow())
             .set(Tables.ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getSpec())))
+            .set(Tables.ACTOR_DEFINITION.PROTOCOL_VERSION, standardSourceDefinition.getProtocolVersion())
             .set(Tables.ACTOR_DEFINITION.TOMBSTONE, standardSourceDefinition.getTombstone() != null && standardSourceDefinition.getTombstone())
             .set(Tables.ACTOR_DEFINITION.PUBLIC, standardSourceDefinition.getPublic())
             .set(Tables.ACTOR_DEFINITION.CUSTOM, standardSourceDefinition.getCustom())
@@ -115,6 +117,7 @@ public class ConfigWriter {
             .set(Tables.ACTOR_DEFINITION.ICON, standardDestinationDefinition.getIcon())
             .set(Tables.ACTOR_DEFINITION.ACTOR_TYPE, ActorType.destination)
             .set(Tables.ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getSpec())))
+            .set(Tables.ACTOR_DEFINITION.PROTOCOL_VERSION, standardDestinationDefinition.getProtocolVersion())
             .set(Tables.ACTOR_DEFINITION.TOMBSTONE, standardDestinationDefinition.getTombstone())
             .set(Tables.ACTOR_DEFINITION.PUBLIC, standardDestinationDefinition.getPublic())
             .set(Tables.ACTOR_DEFINITION.CUSTOM, standardDestinationDefinition.getCustom())
@@ -127,6 +130,9 @@ public class ConfigWriter {
                 standardDestinationDefinition.getResourceRequirements() == null ? null
                     : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getResourceRequirements())))
             .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_REPOSITORY, standardDestinationDefinition.getNormalizationRepository())
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_TAG, standardDestinationDefinition.getNormalizationTag())
+            .set(Tables.ACTOR_DEFINITION.SUPPORTS_DBT, standardDestinationDefinition.getSupportsDbt())
             .where(Tables.ACTOR_DEFINITION.ID.eq(standardDestinationDefinition.getDestinationDefinitionId()))
             .execute();
 
@@ -140,6 +146,7 @@ public class ConfigWriter {
             .set(Tables.ACTOR_DEFINITION.ICON, standardDestinationDefinition.getIcon())
             .set(Tables.ACTOR_DEFINITION.ACTOR_TYPE, ActorType.destination)
             .set(Tables.ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getSpec())))
+            .set(Tables.ACTOR_DEFINITION.PROTOCOL_VERSION, standardDestinationDefinition.getProtocolVersion())
             .set(Tables.ACTOR_DEFINITION.TOMBSTONE,
                 standardDestinationDefinition.getTombstone() != null && standardDestinationDefinition.getTombstone())
             .set(Tables.ACTOR_DEFINITION.PUBLIC, standardDestinationDefinition.getPublic())
@@ -155,6 +162,9 @@ public class ConfigWriter {
                     : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getResourceRequirements())))
             .set(Tables.ACTOR_DEFINITION.CREATED_AT, timestamp)
             .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_REPOSITORY, standardDestinationDefinition.getNormalizationRepository())
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_TAG, standardDestinationDefinition.getNormalizationTag())
+            .set(Tables.ACTOR_DEFINITION.SUPPORTS_DBT, standardDestinationDefinition.getSupportsDbt())
             .execute();
       }
     });

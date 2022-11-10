@@ -1,0 +1,151 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "number"]
+    },
+    "amount": {
+      "type": ["null", "number"]
+    },
+    "children_amount": {
+      "type": ["null", "number"]
+    },
+    "placed": {
+      "type": ["null", "number"]
+    },
+    "placed_manually": {
+      "type": ["null", "number"]
+    },
+    "start": {
+      "type": ["null", "number"]
+    },
+    "end": {
+      "type": ["null", "number"]
+    },
+    "length": {
+      "type": ["null", "number"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "arrived": {
+      "type": ["null", "number"]
+    },
+    "all_seated": {
+      "type": ["null", "number"]
+    },
+    "guest_left": {
+      "type": ["null", "number"]
+    },
+    "comment": {
+      "type": ["null", "string"]
+    },
+    "confirmed": {
+      "type": ["null", "number"]
+    },
+    "waitinbar": {
+      "type": ["null", "number"]
+    },
+    "internet_booking": {
+      "type": ["null", "number"]
+    },
+    "internet_booking_confirmed": {
+      "type": ["null", "number"]
+    },
+    "paid": {
+      "type": ["null", "number"]
+    },
+    "langid": {
+      "type": ["null", "number"]
+    },
+    "meal": {
+      "type": ["null", "string"]
+    },
+    "tables": {
+      "type": ["null", "number"]
+    },
+    "meal_abbr": {
+      "type": ["null", "string"]
+    },
+    "table_ids": {
+      "type": ["null", "number"]
+    },
+    "products": {
+      "type": ["null", "number"]
+    },
+    "waitinlist": {
+      "type": ["null", "number"]
+    },
+    "date": {
+      "type": ["null", "string"]
+    },
+    "time": {
+      "type": ["null", "string"]
+    },
+    "guest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["null", "number"]
+        },
+        "firstname": {
+          "type": ["null", "string"]
+        },
+        "lastname": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "address": {
+          "type": ["null", "string"]
+        },
+        "postalcode": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "company": {
+          "type": ["null", "string"]
+        },
+        "telephone": {
+          "type": ["null", "string"]
+        },
+        "mobile": {
+          "type": ["null", "string"]
+        },
+        "email": {
+          "type": ["null", "string"]
+        },
+        "comment": {
+          "type": ["null", "string"]
+        },
+        "other_contact": {
+          "type": ["null", "string"]
+        },
+        "restaurant_newsletter": {
+          "type": ["null", "boolean"]
+        }
+      }
+    },
+    "booking_date": {
+      "type": ["null", "number"]
+    },
+    "payStarted": {
+      "type": ["null", "boolean"]
+    },
+    "payClosed": {
+      "type": ["null", "boolean"]
+    },
+    "payCharged": {
+      "type": ["null", "boolean"]
+    },
+    "payActivated": {
+      "type": ["null", "boolean"]
+    },
+    "has_message": {
+      "type": ["null", "number"]
+    }
+  }
+}

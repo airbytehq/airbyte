@@ -4,8 +4,6 @@
 
 package io.airbyte.config.persistence;
 
-import static org.mockito.Mockito.mock;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
@@ -18,7 +16,7 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.init.DatabaseInitializationException;
@@ -275,7 +273,7 @@ class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                         .withStreamState(null),
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1"))
-                        .withStreamState(null)))));;
+                        .withStreamState(null)))));
 
     statePersistence.updateOrCreateState(connectionId, state0);
     statePersistence.updateOrCreateState(connectionId, fullReset);
@@ -530,7 +528,7 @@ class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   void beforeEach() throws DatabaseInitializationException, IOException, JsonValidationException {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(),
+    flyway = FlywayFactory.create(dataSource, StatePersistenceTest.class.getName(),
         ConfigsDatabaseMigrator.DB_IDENTIFIER, ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
     database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(true);
     setupTestData();
@@ -548,8 +546,10 @@ class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
   private void setupTestData() throws JsonValidationException, IOException {
     configRepository = new ConfigRepository(
-        new DatabaseConfigPersistence(database, mock(JsonSecretsProcessor.class)),
-        database);
+        new DatabaseConfigPersistence(database),
+        database,
+        new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
+        new StandardSyncPersistence(database));
 
     final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
     final StandardSourceDefinition sourceDefinition = MockData.publicSourceDefinition();
@@ -558,7 +558,7 @@ class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     final DestinationConnection destinationConnection = MockData.destinationConnections().get(0);
     final StandardSync sync = MockData.standardSyncs().get(0);
 
-    configRepository.writeStandardWorkspace(workspace);
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
     configRepository.writeStandardSourceDefinition(sourceDefinition);
     configRepository.writeSourceConnectionNoSecrets(sourceConnection);
     configRepository.writeStandardDestinationDefinition(destinationDefinition);

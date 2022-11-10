@@ -1,97 +1,72 @@
-import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
+import { faSlack } from "@fortawesome/free-brands-svg-icons";
+import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
+import { faDesktop, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import { FormattedMessage, FormattedNumber } from "react-intl";
+import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import { NavLink } from "react-router-dom";
-import styled from "styled-components";
 
 import { Link } from "components";
 import { CreditsIcon } from "components/icons/CreditsIcon";
+import { DocsIcon } from "components/icons/DocsIcon";
+import { Text } from "components/ui/Text";
 
+import { useExperiment } from "hooks/services/Experiment";
 import { FeatureItem, IfFeatureEnabled } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
-import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
+import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
+import { links } from "utils/links";
+import { ReactComponent as AirbyteLogo } from "views/layout/SideBar/airbyteLogo.svg";
 import ChatIcon from "views/layout/SideBar/components/ChatIcon";
 import ConnectionsIcon from "views/layout/SideBar/components/ConnectionsIcon";
 import DestinationIcon from "views/layout/SideBar/components/DestinationIcon";
-import DocsIcon from "views/layout/SideBar/components/DocsIcon";
 import OnboardingIcon from "views/layout/SideBar/components/OnboardingIcon";
 import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
-import SidebarPopout, { Icon, Item } from "views/layout/SideBar/components/SidebarPopout";
+import { SidebarDropdownMenu, SidebarDropdownMenuItemType } from "views/layout/SideBar/components/SidebarDropdownMenu";
 import SourceIcon from "views/layout/SideBar/components/SourceIcon";
+import StatusIcon from "views/layout/SideBar/components/StatusIcon";
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
-import { useCalculateSidebarStyles, getPopoutStyles } from "views/layout/SideBar/SideBar";
+import { useCalculateSidebarStyles } from "views/layout/SideBar/SideBar";
 
 import { RoutePaths } from "../../../../../pages/routePaths";
-
-const Bar = styled.nav`
-  width: 100px;
-  min-width: 65px;
-  height: 100%;
-  background: ${({ theme }) => theme.darkPrimaryColor};
-  padding: 23px 3px 15px 4px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-  z-index: 9999;
-`;
-
-const Menu = styled.ul`
-  padding: 0;
-  margin: 20px 0 0;
-  width: 100%;
-`;
-
-const Text = styled.div`
-  margin-top: 7px;
-`;
-
-const WorkspaceButton = styled.div`
-  font-size: 9px;
-  line-height: 21px;
-  font-weight: 400;
-  height: 21px;
-  color: ${({ theme }) => theme.whiteColor};
-  border-radius: 10px;
-  margin-top: 13px;
-  background: rgba(255, 255, 255, 0.2);
-  cursor: pointer;
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 0 8px;
-  text-align: center;
-`;
+import styles from "./SideBar.module.scss";
 
 const SideBar: React.FC = () => {
+  const navLinkClassName = useCalculateSidebarStyles();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
   const { show } = useIntercom();
   const handleChatUs = () => show();
-
-  const navLinkClassName = useCalculateSidebarStyles();
+  const hideOnboardingExperiment = useExperiment("onboarding.hideOnboarding", false);
+  const { formatMessage } = useIntl();
 
   return (
-    <Bar>
+    <nav className={styles.nav}>
       <div>
-        <Link to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}>
-          <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
+        <Link
+          to={
+            workspace.displaySetupWizard && !hideOnboardingExperiment ? RoutePaths.Onboarding : RoutePaths.Connections
+          }
+          aria-label={formatMessage({ id: "sidebar.homepage" })}
+        >
+          <AirbyteLogo height={33} width={33} />
         </Link>
         <WorkspacePopout>
-          {({ onOpen, value }) => <WorkspaceButton onClick={onOpen}>{value}</WorkspaceButton>}
+          {({ onOpen, value }) => (
+            <button className={styles.workspaceButton} onClick={onOpen}>
+              {value}
+            </button>
+          )}
         </WorkspacePopout>
-        <Menu>
-          {workspace.displaySetupWizard ? (
+        <ul className={styles.menu}>
+          {workspace.displaySetupWizard && !hideOnboardingExperiment ? (
             <li>
               <NavLink className={navLinkClassName} to={RoutePaths.Onboarding}>
                 <OnboardingIcon />
-                <Text>
+                <Text className={styles.text} size="sm">
                   <FormattedMessage id="sidebar.onboarding" />
                 </Text>
               </NavLink>
@@ -100,7 +75,7 @@ const SideBar: React.FC = () => {
           <li>
             <NavLink className={navLinkClassName} to={RoutePaths.Connections}>
               <ConnectionsIcon />
-              <Text>
+              <Text className={styles.text} size="sm">
                 <FormattedMessage id="sidebar.connections" />
               </Text>
             </NavLink>
@@ -108,7 +83,7 @@ const SideBar: React.FC = () => {
           <li>
             <NavLink className={navLinkClassName} to={RoutePaths.Source}>
               <SourceIcon />
-              <Text>
+              <Text className={styles.text} size="sm">
                 <FormattedMessage id="sidebar.sources" />
               </Text>
             </NavLink>
@@ -116,60 +91,74 @@ const SideBar: React.FC = () => {
           <li>
             <NavLink className={navLinkClassName} to={RoutePaths.Destination}>
               <DestinationIcon />
-              <Text>
+              <Text className={styles.text} size="sm">
                 <FormattedMessage id="sidebar.destinations" />
               </Text>
             </NavLink>
           </li>
-        </Menu>
+        </ul>
       </div>
-      <Menu>
+      <ul className={styles.menu}>
         <li>
           <NavLink className={navLinkClassName} to={CloudRoutes.Credits}>
             <CreditsIcon />
-            <Text>
+            <Text className={styles.text} size="sm">
               <FormattedNumber value={cloudWorkspace.remainingCredits} />
             </Text>
           </NavLink>
         </li>
         <li>
-          <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "status" }, { value: "recipes" }]}>
-            {({ onOpen, isOpen }) => (
-              <div className={getPopoutStyles(isOpen)} onClick={onOpen}>
-                <DocsIcon />
-                <Text>
-                  <FormattedMessage id="sidebar.resources" />
-                </Text>
-              </div>
-            )}
-          </SidebarPopout>
-        </li>
-        <li>
-          <SidebarPopout
+          <SidebarDropdownMenu
+            label={{ icon: <DocsIcon />, displayName: <FormattedMessage id="sidebar.resources" /> }}
             options={[
-              { value: "ticket" },
               {
-                value: "chat",
-                label: (
-                  <Item onClick={handleChatUs}>
-                    <Icon>
-                      <ChatIcon />
-                    </Icon>
-                    <FormattedMessage id="sidebar.chat" />
-                  </Item>
-                ),
+                type: SidebarDropdownMenuItemType.LINK,
+                href: links.docsLink,
+                icon: <DocsIcon />,
+                displayName: <FormattedMessage id="sidebar.documentation" />,
+              },
+              {
+                type: SidebarDropdownMenuItemType.LINK,
+                href: links.slackLink,
+                icon: <FontAwesomeIcon icon={faSlack} />,
+                displayName: <FormattedMessage id="sidebar.joinSlack" />,
+              },
+              {
+                type: SidebarDropdownMenuItemType.LINK,
+                href: links.statusLink,
+                icon: <StatusIcon />,
+                displayName: <FormattedMessage id="sidebar.status" />,
+              },
+              {
+                type: SidebarDropdownMenuItemType.LINK,
+                href: links.demoLink,
+                icon: <FontAwesomeIcon icon={faDesktop} />,
+                displayName: <FormattedMessage id="sidebar.demo" />,
               },
             ]}
-          >
-            {({ onOpen, isOpen }) => (
-              <div className={getPopoutStyles(isOpen)} onClick={onOpen}>
-                <FontAwesomeIcon icon={faQuestionCircle} size="2x" />
-                <Text>
-                  <FormattedMessage id="sidebar.support" />
-                </Text>
-              </div>
-            )}
-          </SidebarPopout>
+          />
+        </li>
+        <li>
+          <SidebarDropdownMenu
+            label={{
+              icon: <FontAwesomeIcon icon={faQuestionCircle} size="2x" />,
+              displayName: <FormattedMessage id="sidebar.support" />,
+            }}
+            options={[
+              {
+                type: SidebarDropdownMenuItemType.LINK,
+                href: links.supportTicketLink,
+                icon: <FontAwesomeIcon icon={faEnvelope} />,
+                displayName: <FormattedMessage id="sidebar.supportTicket" />,
+              },
+              {
+                type: SidebarDropdownMenuItemType.BUTTON,
+                onClick: handleChatUs,
+                icon: <ChatIcon />,
+                displayName: <FormattedMessage id="sidebar.chat" />,
+              },
+            ]}
+          />
         </li>
         <li>
           <NavLink className={navLinkClassName} to={RoutePaths.Settings}>
@@ -179,13 +168,13 @@ const SideBar: React.FC = () => {
               </React.Suspense>
             </IfFeatureEnabled>
             <SettingsIcon />
-            <Text>
+            <Text className={styles.text} size="sm">
               <FormattedMessage id="sidebar.settings" />
             </Text>
           </NavLink>
         </li>
-      </Menu>
-    </Bar>
+      </ul>
+    </nav>
   );
 };
 

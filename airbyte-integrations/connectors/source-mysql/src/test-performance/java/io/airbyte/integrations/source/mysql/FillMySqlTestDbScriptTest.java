@@ -11,7 +11,6 @@ import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
 import java.util.Map;
@@ -38,13 +37,17 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
 
   @Override
   protected Database setupDatabase(final String dbName) throws Exception {
+
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+        .put("method", "STANDARD")
+        .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, "your_host")
         .put(JdbcUtils.PORT_KEY, 3306)
         .put(JdbcUtils.DATABASE_KEY, dbName) // set your db name
         .put(JdbcUtils.USERNAME_KEY, "your_username")
         .put(JdbcUtils.PASSWORD_KEY, "your_pass")
-        .put("replication_method", ReplicationMethod.STANDARD)
+        .put("replication_method", replicationMethod)
         .build());
 
     final Database database = new Database(

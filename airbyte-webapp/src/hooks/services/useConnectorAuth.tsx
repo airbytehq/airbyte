@@ -9,7 +9,7 @@ import { SourceAuthService } from "core/domain/connector/SourceAuthService";
 import { DestinationOauthConsentRequest, SourceOauthConsentRequest } from "core/request/AirbyteClient";
 
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
-import useRouter from "../useRouter";
+import { useQuery } from "../useQuery";
 import { useCurrentWorkspace } from "./useWorkspace";
 
 let windowObjectReference: Window | null = null; // global variable
@@ -167,7 +167,7 @@ export function useRunOauthFlow(
 }
 
 export function useResolveNavigate(): void {
-  const { query } = useRouter();
+  const query = useQuery();
 
   useEffectOnce(() => {
     window.opener.postMessage(query);

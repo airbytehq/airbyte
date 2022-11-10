@@ -175,7 +175,7 @@ jobs:
           stripped_connector="$(echo "${{ github.event.inputs.connector }}" | tr -d ' ')"
           middle=${stripped_connector//,/$replace}
           full="$start$middle$end"
-          echo "::set-output name=connectorjson::$full"
+          echo "connectorjson=$full" >> $GITHUB_OUTPUT
   write-initial-output-to-comment:
     name: Set up git comment
     if: github.event.inputs.comment-id
@@ -343,7 +343,7 @@ jobs:
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
           git add -u
-          git commit -m "auto-bump connector version [ci skip]"
+          git commit -m "auto-bump connector version"
           git pull origin ${{ github.event.inputs.gitref }}
           git push origin ${{ github.event.inputs.gitref }}
         id: auto-bump

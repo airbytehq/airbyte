@@ -13,28 +13,28 @@ global:
 
 
 enabled: true
-## @param temporal.replicaCount The number of temporal replicas to deploy
+##  temporal.replicaCount The number of temporal replicas to deploy
 replicaCount: 1
 
-## @param temporal.image.repository The temporal image repository to use
-## @param temporal.image.pullPolicy The pull policy for the temporal image
-## @param temporal.image.tag The temporal image tag to use
+##  temporal.image.repository The temporal image repository to use
+##  temporal.image.pullPolicy The pull policy for the temporal image
+##  temporal.image.tag The temporal image tag to use
 image:
   repository: temporalio/auto-setup
   pullPolicy: IfNotPresent
   tag: "1.7.0"
 
-## @param temporal.service.type The Kubernetes Service Type
-## @param temporal.service.port The temporal port and exposed kubernetes port
+##  temporal.service.type The Kubernetes Service Type
+##  temporal.service.port The temporal port and exposed kubernetes port
 service:
   type: ClusterIP
   port: 7233
 
-## @param temporal.podAnnotations [object] Add extra annotations to the temporal pod
+##  temporal.podAnnotations [object] Add extra annotations to the temporal pod
 ##
 podAnnotations: {}
 
-## @param temporal.containerSecurityContext Security context for the container
+##  temporal.containerSecurityContext Security context for the container
 ## Examples:
 ## containerSecurityContext:
 ##    runAsNonRoot: true
@@ -42,7 +42,7 @@ podAnnotations: {}
 ##    readOnlyRootFilesystem: true
 containerSecurityContext: {}
 
-## @param temporal.extraInitContainers Additional InitContainers to initialize the pod
+##  temporal.extraInitContainers Additional InitContainers to initialize the pod
 ## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
 ## extraInitContainers:
 ##   - name: config-loader
@@ -59,12 +59,12 @@ extraInitContainers: []
 
 ## Configure extra options for the temporal containers' liveness and readiness probes
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
-## @param temporal.livenessProbe.enabled Enable livenessProbe on the temporal
-## @param temporal.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
-## @param temporal.livenessProbe.periodSeconds Period seconds for livenessProbe
-## @param temporal.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
-## @param temporal.livenessProbe.failureThreshold Failure threshold for livenessProbe
-## @param temporal.livenessProbe.successThreshold Success threshold for livenessProbe
+##  temporal.livenessProbe.enabled Enable livenessProbe on the temporal
+##  temporal.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+##  temporal.livenessProbe.periodSeconds Period seconds for livenessProbe
+##  temporal.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+##  temporal.livenessProbe.failureThreshold Failure threshold for livenessProbe
+##  temporal.livenessProbe.successThreshold Success threshold for livenessProbe
 ##
 livenessProbe:
   enabled: true
@@ -74,12 +74,12 @@ livenessProbe:
   failureThreshold: 3
   successThreshold: 1
 
-## @param temporal.readinessProbe.enabled Enable readinessProbe on the temporal
-## @param temporal.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
-## @param temporal.readinessProbe.periodSeconds Period seconds for readinessProbe
-## @param temporal.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
-## @param temporal.readinessProbe.failureThreshold Failure threshold for readinessProbe
-## @param temporal.readinessProbe.successThreshold Success threshold for readinessProbe
+##  temporal.readinessProbe.enabled Enable readinessProbe on the temporal
+##  temporal.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+##  temporal.readinessProbe.periodSeconds Period seconds for readinessProbe
+##  temporal.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+##  temporal.readinessProbe.failureThreshold Failure threshold for readinessProbe
+##  temporal.readinessProbe.successThreshold Success threshold for readinessProbe
 ##
 readinessProbe:
   enabled: true
@@ -89,22 +89,22 @@ readinessProbe:
   failureThreshold: 3
   successThreshold: 1
 
-## @param temporal.nodeSelector [object] Node labels for temporal pod assignment
+##  temporal.nodeSelector [object] Node labels for temporal pod assignment
 ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
 ##
 nodeSelector: {}
 
-## @param temporal.tolerations [array] Tolerations for temporal pod assignment.
+##  temporal.tolerations [array] Tolerations for temporal pod assignment.
 ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 ##
 tolerations: []
 
-## @param temporal.affinity [object] Affinity and anti-affinity for temporal pod assignment.
+##  temporal.affinity [object] Affinity and anti-affinity for temporal pod assignment.
 ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
 ##
 affinity: {}
 
-## @param temporal.extraEnv [array] Additional env vars for temporal pod(s).
+##  temporal.extraEnv [array] Additional env vars for temporal pod(s).
 ## Example:
 ##
 ## extraEnv:
@@ -112,7 +112,7 @@ affinity: {}
 ##   value: "key=sample-value"
 extraEnv: []
 
-## @param temporal.extraVolumeMounts [array] Additional volumeMounts for temporal container(s).
+##  temporal.extraVolumeMounts [array] Additional volumeMounts for temporal container(s).
 ## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
 ## extraVolumeMounts:
 ##   - name: tmpdir
@@ -122,7 +122,7 @@ extraEnv: []
 ##
 extraVolumeMounts: []
 
-## @param temporal.extraVolumes [array] Additional volumes for temporal pod(s).
+##  temporal.extraVolumes [array] Additional volumes for temporal pod(s).
 ## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
 ## extraVolumes:
 ##   - name: tmpdir
@@ -138,8 +138,8 @@ extraVolumes: []
 ## choice for the user. This also increases chances charts run on environments with little
 ## resources, such as Minikube. If you do want to specify resources, uncomment the following
 ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-## @param temporal.resources.limits [object] The resources limits for temporal pod(s)
-## @param temporal.resources.requests [object] The requested resources for temporal pod(s)
+##  temporal.resources.limits [object] The resources limits for temporal pod(s)
+##  temporal.resources.requests [object] The requested resources for temporal pod(s)
 resources:
   ## Example:
   ## requests:
@@ -153,3 +153,24 @@ resources:
   limits: {}
 
 extraContainers: []
+
+
+##  secrets [object] Supply additional secrets to container
+## Example:
+## secrets:
+##   DATABASE_PASSWORD: strong-password
+##   DATABASE_USER: my-db-user
+secrets: {}
+
+##  env_vars [object] Supply extra env variables to main container using simplified notation
+## Example with default vars for webapp:
+# env_vars:
+
+#   # Airbyte Internal Database, see https://docs.airbyte.io/operator-guides/configuring-airbyte-db
+#   DB: airbyte-db-svc
+#   DB_PORT: 5432
+#   DATABASE_DB: airbyte
+#   POSTGRES_USER: airbyte
+#   POSTGRES_PWD: 12345
+
+env_vars: {}

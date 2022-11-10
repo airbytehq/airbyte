@@ -17,8 +17,15 @@ import io.airbyte.api.model.generated.ConnectionScheduleData;
 import io.airbyte.api.model.generated.ConnectionScheduleDataBasicSchedule;
 import io.airbyte.api.model.generated.ConnectionScheduleType;
 import io.airbyte.api.model.generated.ConnectionStatus;
+import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.Geography;
+import io.airbyte.api.model.generated.JobStatus;
 import io.airbyte.api.model.generated.ResourceRequirements;
+import io.airbyte.api.model.generated.SchemaChange;
+import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SyncMode;
+import io.airbyte.api.model.generated.WebBackendConnectionListItem;
+import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.text.Names;
 import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
@@ -50,6 +57,8 @@ public class ConnectionHelpers {
   private static final String BASIC_SCHEDULE_DATA_TIME_UNITS = "days";
   private static final long BASIC_SCHEDULE_DATA_UNITS = 1L;
   private static final String ONE_HUNDRED_G = "100g";
+  private static final String STANDARD_SYNC_NAME = "presto to hudi";
+  private static final String STANDARD_SYNC_PREFIX = "presto_to_hudi";
 
   public static final StreamDescriptor STREAM_DESCRIPTOR = new StreamDescriptor().withName(STREAM_NAME);
 
@@ -66,10 +75,10 @@ public class ConnectionHelpers {
 
     return new StandardSync()
         .withConnectionId(connectionId)
-        .withName("presto to hudi")
+        .withName(STANDARD_SYNC_NAME)
         .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
         .withNamespaceFormat(null)
-        .withPrefix("presto_to_hudi")
+        .withPrefix(STANDARD_SYNC_PREFIX)
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
         .withSourceId(sourceId)
@@ -77,7 +86,8 @@ public class ConnectionHelpers {
         .withOperationIds(List.of(UUID.randomUUID()))
         .withManual(false)
         .withSchedule(generateBasicSchedule())
-        .withResourceRequirements(TESTING_RESOURCE_REQUIREMENTS);
+        .withResourceRequirements(TESTING_RESOURCE_REQUIREMENTS)
+        .withBreakingChange(false);
   }
 
   public static StandardSync generateSyncWithDestinationId(final UUID destinationId) {
@@ -85,16 +95,35 @@ public class ConnectionHelpers {
 
     return new StandardSync()
         .withConnectionId(connectionId)
-        .withName("presto to hudi")
+        .withName(STANDARD_SYNC_NAME)
         .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
         .withNamespaceFormat(null)
-        .withPrefix("presto_to_hudi")
+        .withPrefix(STANDARD_SYNC_PREFIX)
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
         .withSourceId(UUID.randomUUID())
         .withDestinationId(destinationId)
         .withOperationIds(List.of(UUID.randomUUID()))
         .withManual(true);
+  }
+
+  public static StandardSync generateSyncWithSourceAndDestinationId(final UUID sourceId, final UUID destinationId, final boolean isBroken) {
+    final UUID connectionId = UUID.randomUUID();
+
+    return new StandardSync()
+        .withConnectionId(connectionId)
+        .withName(STANDARD_SYNC_NAME)
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(null)
+        .withPrefix(STANDARD_SYNC_PREFIX)
+        .withStatus(StandardSync.Status.ACTIVE)
+        .withCatalog(generateBasicConfiguredAirbyteCatalog())
+        .withSourceCatalogId(UUID.randomUUID())
+        .withSourceId(sourceId)
+        .withDestinationId(destinationId)
+        .withOperationIds(List.of(UUID.randomUUID()))
+        .withManual(true)
+        .withBreakingChange(isBroken);
   }
 
   public static ConnectionSchedule generateBasicConnectionSchedule() {
@@ -124,7 +153,9 @@ public class ConnectionHelpers {
                                                               final UUID sourceId,
                                                               final UUID destinationId,
                                                               final List<UUID> operationIds,
-                                                              final UUID sourceCatalogId) {
+                                                              final UUID sourceCatalogId,
+                                                              final Geography geography,
+                                                              final boolean breaking) {
 
     return new ConnectionRead()
         .connectionId(connectionId)
@@ -145,7 +176,9 @@ public class ConnectionHelpers {
             .cpuLimit(TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
             .memoryRequest(TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
             .memoryLimit(TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()))
-        .sourceCatalogId(sourceCatalogId);
+        .sourceCatalogId(sourceCatalogId)
+        .geography(geography)
+        .breakingChange(breaking);
   }
 
   public static ConnectionRead generateExpectedConnectionRead(final StandardSync standardSync) {
@@ -154,7 +187,9 @@ public class ConnectionHelpers {
         standardSync.getSourceId(),
         standardSync.getDestinationId(),
         standardSync.getOperationIds(),
-        standardSync.getSourceCatalogId());
+        standardSync.getSourceCatalogId(),
+        Enums.convertTo(standardSync.getGeography(), Geography.class),
+        standardSync.getBreakingChange());
 
     if (standardSync.getSchedule() == null) {
       connectionRead.schedule(null);
@@ -177,7 +212,9 @@ public class ConnectionHelpers {
         .name(standardSync.getName())
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
-        .sourceCatalogId(standardSync.getSourceCatalogId());
+        .sourceCatalogId(standardSync.getSourceCatalogId())
+        .geography(ApiPojoConverters.toApiGeography(standardSync.getGeography()))
+        .breakingChange(standardSync.getBreakingChange());
 
     if (standardSync.getNamespaceDefinition() != null) {
       connectionRead
@@ -201,21 +238,60 @@ public class ConnectionHelpers {
     return connectionRead;
   }
 
+  public static WebBackendConnectionListItem generateExpectedWebBackendConnectionListItem(
+                                                                                          final StandardSync standardSync,
+                                                                                          final SourceRead source,
+                                                                                          final DestinationRead destination,
+                                                                                          final boolean isSyncing,
+                                                                                          final Long latestSyncJobCreatedAt,
+                                                                                          final JobStatus latestSynJobStatus,
+                                                                                          final SchemaChange schemaChange) {
+
+    final WebBackendConnectionListItem connectionListItem = new WebBackendConnectionListItem()
+        .connectionId(standardSync.getConnectionId())
+        .name(standardSync.getName())
+        .sourceId(standardSync.getSourceId())
+        .destinationId(standardSync.getDestinationId())
+        .source(source)
+        .destination(destination)
+        .status(ApiPojoConverters.toApiStatus(standardSync.getStatus()))
+        .isSyncing(isSyncing)
+        .latestSyncJobCreatedAt(latestSyncJobCreatedAt)
+        .latestSyncJobStatus(latestSynJobStatus)
+        .scheduleType(ApiPojoConverters.toApiConnectionScheduleType(standardSync))
+        .scheduleData(ApiPojoConverters.toApiConnectionScheduleData(standardSync))
+        .schemaChange(schemaChange);
+
+    return connectionListItem;
+  }
+
   public static JsonNode generateBasicJsonSchema() {
     return CatalogHelpers.fieldsToJsonSchema(Field.of(FIELD_NAME, JsonSchemaType.STRING));
   }
 
   public static ConfiguredAirbyteCatalog generateBasicConfiguredAirbyteCatalog() {
-    final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream()
-        .withStream(generateBasicAirbyteStream())
+    return new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(generateBasicConfiguredStream(null)));
+  }
+
+  public static ConfiguredAirbyteCatalog generateMultipleStreamsConfiguredAirbyteCatalog(final int streamsCount) {
+    final List<ConfiguredAirbyteStream> configuredStreams = new ArrayList<>();
+    for (int i = 0; i < streamsCount; i++) {
+      configuredStreams.add(generateBasicConfiguredStream(String.valueOf(i)));
+    }
+    return new ConfiguredAirbyteCatalog().withStreams(configuredStreams);
+  }
+
+  public static ConfiguredAirbyteStream generateBasicConfiguredStream(final String nameSuffix) {
+    return new ConfiguredAirbyteStream()
+        .withStream(generateBasicAirbyteStream(nameSuffix))
         .withCursorField(Lists.newArrayList(FIELD_NAME))
         .withSyncMode(io.airbyte.protocol.models.SyncMode.INCREMENTAL)
         .withDestinationSyncMode(DestinationSyncMode.APPEND);
-    return new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
   }
 
-  private static io.airbyte.protocol.models.AirbyteStream generateBasicAirbyteStream() {
-    return CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaType.STRING))
+  private static io.airbyte.protocol.models.AirbyteStream generateBasicAirbyteStream(final String nameSuffix) {
+    return CatalogHelpers.createAirbyteStream(
+        nameSuffix == null ? STREAM_NAME : STREAM_NAME_BASE + nameSuffix, Field.of(FIELD_NAME, JsonSchemaType.STRING))
         .withDefaultCursorField(Lists.newArrayList(FIELD_NAME))
         .withSourceDefinedCursor(false)
         .withSupportedSyncModes(List.of(io.airbyte.protocol.models.SyncMode.FULL_REFRESH, io.airbyte.protocol.models.SyncMode.INCREMENTAL));
@@ -224,7 +300,7 @@ public class ConnectionHelpers {
   public static AirbyteCatalog generateBasicApiCatalog() {
     return new AirbyteCatalog().streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
         .stream(generateBasicApiStream(null))
-        .config(generateBasicApiStreamConfig())));
+        .config(generateBasicApiStreamConfig(null))));
   }
 
   public static AirbyteCatalog generateMultipleStreamsApiCatalog(final int streamsCount) {
@@ -232,18 +308,18 @@ public class ConnectionHelpers {
     for (int i = 0; i < streamsCount; i++) {
       streamAndConfigurations.add(new AirbyteStreamAndConfiguration()
           .stream(generateBasicApiStream(String.valueOf(i)))
-          .config(generateBasicApiStreamConfig()));
+          .config(generateBasicApiStreamConfig(String.valueOf(i))));
     }
     return new AirbyteCatalog().streams(streamAndConfigurations);
   }
 
-  private static AirbyteStreamConfiguration generateBasicApiStreamConfig() {
+  private static AirbyteStreamConfiguration generateBasicApiStreamConfig(final String nameSuffix) {
     return new AirbyteStreamConfiguration()
         .syncMode(SyncMode.INCREMENTAL)
         .cursorField(Lists.newArrayList(FIELD_NAME))
         .destinationSyncMode(io.airbyte.api.model.generated.DestinationSyncMode.APPEND)
         .primaryKey(Collections.emptyList())
-        .aliasName(Names.toAlphanumericAndUnderscore(STREAM_NAME))
+        .aliasName(Names.toAlphanumericAndUnderscore(nameSuffix == null ? STREAM_NAME : STREAM_NAME_BASE + nameSuffix))
         .selected(true);
   }
 
@@ -253,6 +329,7 @@ public class ConnectionHelpers {
         .jsonSchema(generateBasicJsonSchema())
         .defaultCursorField(Lists.newArrayList(FIELD_NAME))
         .sourceDefinedCursor(false)
+        .sourceDefinedPrimaryKey(Collections.emptyList())
         .supportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
   }
 
