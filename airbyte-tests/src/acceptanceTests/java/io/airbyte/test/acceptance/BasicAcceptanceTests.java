@@ -661,7 +661,6 @@ class BasicAcceptanceTests {
 
   }
 
-  @Disabled
   @Test
   @Order(14)
   void testDeleteConnection() throws Exception {

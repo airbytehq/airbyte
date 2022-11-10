@@ -88,7 +88,6 @@ jobs:
             ${{ secrets.SUPERTOPHER_PAT }} \
             ${{ secrets.DAVINCHIA_PAT }}
 
-
   # Uncomment to debug.
   #  changes-output:
   #    name: "Debug Change Detection Logic"
@@ -250,7 +249,7 @@ jobs:
           json_file: connectors_base_results.json
           json_test_case_results: true
           check_name: "Connectors Base Test Results"
-          
+
       - name: Setup Google Cloud SDK
         if: always()
         uses: google-github-actions/setup-gcloud@v0
@@ -262,22 +261,22 @@ jobs:
         if: always()
         run: |
           python tools/bin/prep_test_results_for_gcs.py --json connectors_base_results.json  --jobid $GITHUB_JOB --runid $GITHUB_RUN_ID
-        
+
       - name: Upload Test Results to GCS
         if: always()
-        run: | 
+        run: |
           gcs_bucket_name="dev-ab-ci-run-results"
           filename=$(echo "${{ fromJSON( steps.connectors-test-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
           echo "$filename"
           gsutil -h "Cache-Control:public" cp connectors_base_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
-        
+
       - name: Generate Test Report
         uses: dorny/test-reporter@v1
         if: always()
         with:
           name: Connectors Base Test Report
           # Specify top-level and second-level modules. Note there cannot be a space between the comma.
-          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml'
+          path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
           reporter: java-junit
 
   # In case of self-hosted EC2 errors, remove this block.
@@ -359,6 +358,10 @@ jobs:
         with:
           node-version: "lts/gallium"
 
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+
       - name: Set up CI Gradle Properties
         run: |
           mkdir -p ~/.gradle/
@@ -385,7 +388,6 @@ jobs:
           autoAcceptChanges: true
           exitOnceUploaded: true
 
-
   frontend-test:
     name: "Frontend: Run End-to-End Tests"
     needs:
@@ -409,6 +411,10 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: "lts/gallium"
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
 
       - name: Set up CI Gradle Properties
         run: |
@@ -504,6 +510,10 @@ jobs:
         with:
           java-version: "17"
 
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+
       - uses: actions/setup-node@v2
         with:
           node-version: "lts/gallium"
@@ -548,9 +558,9 @@ jobs:
         if: success() && github.ref == 'refs/heads/master'
         run: ./tools/site/link_checker.sh check_docs
 
-#       This is only required on the usual github runner. The usual runner does not contain enough disk space for our use.
-#      - name: Get Docker Space
-#        run: docker run --rm busybox df -h
+      #       This is only required on the usual github runner. The usual runner does not contain enough disk space for our use.
+      #      - name: Get Docker Space
+      #        run: docker run --rm busybox df -h
 
       - name: Run End-to-End Acceptance Tests
         run: ./tools/bin/acceptance_test.sh
@@ -580,39 +590,38 @@ jobs:
         with:
           service_account_key: ${{ secrets.GKE_TEST_SA_KEY }}
           export_default_credentials: true
-      
+
       - name: Prep Test Results For GCS
         if: always()
         run: |
           python tools/bin/prep_test_results_for_gcs.py --json platform_results.json  --jobid $GITHUB_JOB --runid $GITHUB_RUN_ID
-        
+
       - name: Upload Test Results to GCS
         if: always()
-        run: | 
+        run: |
           gcs_bucket_name="dev-ab-ci-run-results"
           filename=$(echo "${{ fromJSON( steps.platform-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
           echo "$filename"
           gsutil -h "Cache-Control:public" cp platform_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
-        
+
       - name: Generate Test Report
         uses: dorny/test-reporter@v1
-        if: always()    # run this step even if previous step failed
+        if: always() # run this step even if previous step failed
         with:
           name: Platform Test Report with Docker E2E Test
           # Specify top-level and second-level modules. Note there cannot be a space between the comma.
-          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml'
+          path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
           reporter: java-junit
 
       - name: Upload test results to BuildPulse for flaky test detection
-        if: '!cancelled()' # Run this step even when the tests fail. Skip if the workflow is cancelled.
+        if: "!cancelled()" # Run this step even when the tests fail. Skip if the workflow is cancelled.
         uses: Workshop64/buildpulse-action@main
         with:
           account: 59758427
           repository: 283046497
-          path: '/actions-runner/_work/airbyte/airbyte/*'
+          path: "/actions-runner/_work/airbyte/airbyte/*"
           key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
           secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
-          
   # In case of self-hosted EC2 errors, remove this block.
   stop-platform-build-runner:
     name: "Platform: Stop Build EC2 Runner"
@@ -692,6 +701,10 @@ jobs:
         with:
           node-version: "lts/gallium"
 
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+
       - name: Fix EC-2 Runner
         run: |
           mkdir -p /home/runner
@@ -760,51 +773,49 @@ jobs:
           json_file: kube_results.json
           json_test_case_results: true
           check_name: "Kube Test Results"
-      
+
       - name: Setup Google Cloud SDK
         if: always()
         uses: google-github-actions/setup-gcloud@v0
         with:
           service_account_key: ${{ secrets.GKE_TEST_SA_KEY }}
           export_default_credentials: true
-      
+
       - name: Prep Test Results For GCS
         if: always()
         run: |
           python tools/bin/prep_test_results_for_gcs.py --json kube_results.json  --jobid $GITHUB_JOB --runid $GITHUB_RUN_ID
-        
+
       - name: Upload Test Results to GCS
         if: always()
-        run: | 
+        run: |
           gcs_bucket_name="dev-ab-ci-run-results"
           filename=$(echo "${{ fromJSON( steps.kube-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
           echo "$filename"
           gsutil -h "Cache-Control:public" cp kube_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
-      
+
       - name: Generate Test Report
         uses: dorny/test-reporter@v1
-        if: always()    # run this step even if previous step failed
+        if: always() # run this step even if previous step failed
         with:
           name: Platform Kubernetes E2E Test Report
-          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml'
+          path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml"
           reporter: java-junit
 
       - name: Upload test results to BuildPulse for flaky test detection
-        if: '!cancelled()' # Run this step even when the tests fail. Skip if the workflow is cancelled.
+        if: "!cancelled()" # Run this step even when the tests fail. Skip if the workflow is cancelled.
         uses: Workshop64/buildpulse-action@main
         with:
           account: 59758427
           repository: 283046497
-          path: '/actions-runner/_work/airbyte/airbyte/*'
+          path: "/actions-runner/_work/airbyte/airbyte/*"
           key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
           secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
-          
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
           name: Kubernetes Logs
           path: /tmp/kubernetes_logs/*
-
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-kube-acceptance-test-runner:
