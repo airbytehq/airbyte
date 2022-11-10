@@ -36,7 +36,7 @@ Make sure your TiDB database can be accessed by Airbyte. If your database is wit
 
 #### **Permissions**
 
-You need a user with `CREATE, INSERT, SELECT, DROP` permissions. We highly recommend creating an Airbyte-specific user for this purpose.
+You need a user with `CREATE, INSERT, SELECT, DROP, CREATE VIEW, ALTER` permissions. We highly recommend creating an Airbyte-specific user for this purpose.
 
 To create a dedicated database user, run the following commands against your database:
 
@@ -47,7 +47,7 @@ CREATE USER 'airbyte'@'%' IDENTIFIED BY 'your_password_here';
 Then give it access to the relevant database:
 
 ```sql
-GRANT CREATE, INSERT, SELECT, DROP ON <database name>.* TO 'airbyte'@'%';
+GRANT CREATE, INSERT, SELECT, DROP, CREATE VIEW, ALTER ON <database name>.* TO 'airbyte'@'%';
 ```
 
 #### Target Database

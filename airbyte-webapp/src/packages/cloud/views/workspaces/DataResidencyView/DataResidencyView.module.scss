@@ -1,0 +1,39 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.cardContent {
+  padding: variables.$spacing-xl;
+}
+
+.description {
+  color: colors.$grey-300;
+  margin-bottom: variables.$spacing-md;
+  font-size: 12px;
+
+  a:link,
+  a:visited {
+    color: colors.$grey-300;
+  }
+}
+
+.geographyRow {
+  margin-top: variables.$spacing-xl;
+  display: flex;
+  justify-content: space-between;
+}
+
+.defaultGeographyDropdown {
+  flex: 0 0 300px;
+}
+
+.buttonGroup {
+  margin-top: variables.$spacing-xl;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+
+  & > button {
+    margin-left: variables.$spacing-md;
+  }
+}

@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKFLOW_TRACE_OPERATION_NAME;
@@ -116,6 +117,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private static final String CHECK_JOB_OUTPUT_TAG = "check_job_output";
   private static final int CHECK_JOB_OUTPUT_TAG_CURRENT_VERSION = 1;
 
+  private static final String DONT_DELETE_IN_TEMPORAL_TAG = "dont_delete_in_temporal";
+  private static final int DONT_DELETE_IN_TEMPORAL_TAG_CURRENT_VERSION = 1;
+
   private static final String DELETE_RESET_JOB_STREAMS_TAG = "delete_reset_job_streams";
   private static final int DELETE_RESET_JOB_STREAMS_CURRENT_VERSION = 1;
   private static final String RECORD_METRIC_TAG = "record_metric";
@@ -182,10 +186,17 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       if (workflowState.isDeleted()) {
         if (workflowState.isRunning()) {
           log.info("Cancelling the current running job because a connection deletion was requested");
+          // This call is not needed anymore since this will be cancel using the the cancellation state
           reportCancelled(connectionUpdaterInput.getConnectionId());
         }
-        log.info("Workflow deletion was requested. Calling deleteConnection activity before terminating the workflow.");
-        deleteConnectionBeforeTerminatingTheWorkflow();
+
+        final int dontDeleteInTemporal =
+            Workflow.getVersion(DONT_DELETE_IN_TEMPORAL_TAG, Workflow.DEFAULT_VERSION, DONT_DELETE_IN_TEMPORAL_TAG_CURRENT_VERSION);
+
+        if (dontDeleteInTemporal < DONT_DELETE_IN_TEMPORAL_TAG_CURRENT_VERSION) {
+          log.info("Workflow deletion was requested. Calling deleteConnection activity before terminating the workflow.");
+          deleteConnectionBeforeTerminatingTheWorkflow();
+        }
         return;
       }
 
@@ -357,6 +368,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
     final int maxAttempt = configFetchActivity.getMaxAttempt().getMaxAttempt();
     final int attemptNumber = connectionUpdaterInput.getAttemptNumber();
+    ApmTraceUtils.addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, attemptNumber));
 
     final FailureType failureType =
         standardSyncOutput != null ? standardSyncOutput.getFailures().isEmpty() ? null : standardSyncOutput.getFailures().get(0).getFailureType()
@@ -503,6 +515,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     cancellableSyncWorkflow.cancel();
   }
 
+  // TODO: Delete when the don't delete in temporal is removed
   @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
   public void deleteConnection() {
@@ -558,9 +571,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
   public JobInformation getJobInformation() {
+    traceConnectionId();
     final Long jobId = workflowInternalState.getJobId() != null ? workflowInternalState.getJobId() : NON_RUNNING_JOB_ID;
     final Integer attemptNumber = workflowInternalState.getAttemptNumber();
-    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionId, JOB_ID_KEY, jobId));
+    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobId));
     return new JobInformation(
         jobId,
         attemptNumber == null ? NON_RUNNING_ATTEMPT_ID : attemptNumber);

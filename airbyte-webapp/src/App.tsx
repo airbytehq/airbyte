@@ -3,6 +3,8 @@ import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter as Router } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 
+import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
+
 import { ApiServices } from "core/ApiServices";
 import { I18nProvider } from "core/i18n";
 import { ServicesProvider } from "core/servicesProvider";
@@ -14,7 +16,6 @@ import NotificationService from "hooks/services/Notification";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 import { StoreProvider } from "views/common/StoreProvider";
 
-import ApiErrorBoundary from "./components/ApiErrorBoundary";
 import LoadingPage from "./components/LoadingPage";
 import {
   Config,
@@ -24,17 +25,13 @@ import {
   ValueProvider,
   windowConfigProvider,
 } from "./config";
-import GlobalStyle from "./global-styles";
 import en from "./locales/en.json";
 import { Routing } from "./pages/routes";
 import { WorkspaceServiceProvider } from "./services/workspaces/WorkspacesService";
 import { theme } from "./theme";
 
 const StyleProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
-  <ThemeProvider theme={theme}>
-    <GlobalStyle />
-    {children}
-  </ThemeProvider>
+  <ThemeProvider theme={theme}>{children}</ThemeProvider>
 );
 
 const configProviders: ValueProvider<Config> = [envConfigProvider, windowConfigProvider];
