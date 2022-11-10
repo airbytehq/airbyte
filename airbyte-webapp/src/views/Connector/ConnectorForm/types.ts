@@ -20,4 +20,7 @@ export type SourceConnectorCard = Pick<
   "sourceDefinitionId" | "name" | "icon" | "releaseStage"
 >;
 
-export type ConnectorCard = (DestinationConnectorCard | SourceConnectorCard) & { id: string };
+export type SuggestedConnector = (
+  | Omit<DestinationConnectorCard, "destinationDefinitionId">
+  | Omit<SourceConnectorCard, "sourceDefinitionId">
+) & { connectorDefinitionId: string };
