@@ -5,11 +5,11 @@ definitions:
     extractor:
       field_pointer: []
   requester:
-    url_base: "https://example.com"
+    url_base: "https://api.chartmogul.com"
     http_method: "GET"
     authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config['api_key'] }}"
+      type: BasicHttpAuthenticator
+      username: "{{ config['api_key'] }}"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -25,7 +25,7 @@ definitions:
     $options:
       name: "customers"
       primary_key: "id"
-      path: "/example"
+      path: "/v1/customers"
 
 streams:
   - "*ref(definitions.customers_stream)"
