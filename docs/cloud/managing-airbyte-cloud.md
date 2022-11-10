@@ -85,11 +85,22 @@ To switch between workspaces:
 3. Click the name of the workspace you want to switch to.
 
 ### Choose your default data residency
-Default data residency allows you to choose where your data is processed. When you set the default data residency, it is applied to all new connections, but it does not affect existing connections. 
 
-Your data is processed on a data plane in the chosen data residency, but configuration data, like data associated with sync mode, cursor, and primary key, is stored on our control plane in the US. Because of this, data that must stay in the chosen data residency should not be used as a stream’s cursor or primary key. 
+Default data residency allows you to choose where your data is processed.
 
-For individual connections, you can choose a data residency that is different from the default. You can do this in the [connection settings](#choose-the-data-residency-for-a-connection) or when you create a [new connection](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-connection).
+:::note 
+
+Configuring default data residency only applies it to new connections and does not affect existing connections.   
+
+:::
+
+For individual connections, you can choose a data residency that is different from the default through [connection settings](#choose-the-data-residency-for-a-connection) or when you create a [new connection](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-connection).
+
+:::note 
+
+While the data is processed in a data plane in the chosen residency, the cursor and primary key data is stored in the US control plane. If you have data that cannot be stored in the US, do not use it as a cursor or primary key.
+
+:::
 
 To choose your default data residency:
 
@@ -297,7 +308,7 @@ To choose the data residency for your connection:
 
 :::note 
 
-Changes to data residency will not affect any currently running sync. 
+Changes to data residency will not affect any sync in progress. 
 
 :::
 
