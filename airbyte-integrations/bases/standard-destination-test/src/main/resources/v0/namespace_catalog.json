@@ -5,7 +5,7 @@
       "json_schema": {
         "properties": {
           "field1": {
-            "$ref":  "WellKnownTypes.json#definitions/Boolean"
+            "$ref": "WellKnownTypes.json#definitions/Boolean"
           }
         }
       }

@@ -62,7 +62,7 @@
       "json_schema": {
         "properties": {
           "deleted": {
-            "$ref":  "WellKnownTypes.json#definitions/Boolean"
+            "$ref": "WellKnownTypes.json#definitions/Boolean"
           }
         }
       }
@@ -92,7 +92,7 @@
       "json_schema": {
         "properties": {
           "ProperCase": {
-            "$ref":  "WellKnownTypes.json#definitions/Boolean"
+            "$ref": "WellKnownTypes.json#definitions/Boolean"
           }
         }
       }

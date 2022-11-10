@@ -43,7 +43,8 @@ public class DataTypeTestArgumentProvider implements ArgumentsProvider {
   }
 
   private Arguments getArguments(CatalogMessageTestConfigWithCompatibility testConfig) {
-    return Arguments.of(testConfig.getMessageFileVersion(protocolVersion), testConfig.getCatalogFileVersion(protocolVersion), testConfig.testCompatibility);
+    return Arguments.of(testConfig.getMessageFileVersion(protocolVersion), testConfig.getCatalogFileVersion(protocolVersion),
+        testConfig.testCompatibility);
   }
 
   public record TestCompatibility(boolean requireBasicCompatibility,

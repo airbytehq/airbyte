@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.standardtest.destination.argproviders;
 
-import static io.airbyte.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil.prefixFileNameByVersion;
 import static io.airbyte.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil.getProtocolVersion;
+import static io.airbyte.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil.prefixFileNameByVersion;
 
 import io.airbyte.integrations.standardtest.destination.ProtocolVersion;
 import java.util.stream.Stream;

@@ -7,19 +7,19 @@
           "array_number": {
             "type": ["array"],
             "items": {
-              "$ref":  "WellKnownTypes.json#definitions/Number"
+              "$ref": "WellKnownTypes.json#definitions/Number"
             }
           },
           "array_float": {
             "type": ["array"],
             "items": {
-              "$ref":  "WellKnownTypes.json#definitions/Number"
+              "$ref": "WellKnownTypes.json#definitions/Number"
             }
           },
           "array_integer": {
             "type": ["array"],
             "items": {
-              "$ref":  "WellKnownTypes.json#definitions/Integer"
+              "$ref": "WellKnownTypes.json#definitions/Integer"
             }
           }
         }

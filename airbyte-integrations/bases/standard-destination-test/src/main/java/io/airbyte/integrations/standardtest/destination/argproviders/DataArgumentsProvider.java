@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.standardtest.destination.argproviders;
 
-import static io.airbyte.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil.prefixFileNameByVersion;
 import static io.airbyte.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil.getProtocolVersion;
+import static io.airbyte.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil.prefixFileNameByVersion;
 
 import io.airbyte.integrations.standardtest.destination.ProtocolVersion;
 import java.util.stream.Stream;
@@ -28,7 +28,7 @@ public class DataArgumentsProvider implements ArgumentsProvider {
       new CatalogMessageTestConfigPair("namespace_catalog.json", "namespace_messages.txt");
 
   @Override
-  public Stream<? extends Arguments> provideArguments(final ExtensionContext context) throws Exception{
+  public Stream<? extends Arguments> provideArguments(final ExtensionContext context) throws Exception {
     ProtocolVersion protocolVersion = getProtocolVersion(context);
     return Stream.of(
         Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion)),

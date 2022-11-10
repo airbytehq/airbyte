@@ -18,7 +18,7 @@
             "$ref": "WellKnownTypes.json#definitions/TimestampWithoutTimezone"
           },
           "property_number": {
-            "$ref":  "WellKnownTypes.json#definitions/Number"
+            "$ref": "WellKnownTypes.json#definitions/Number"
           },
           "property_big_number": {
             "$ref": "WellKnownTypes.json#definitions/String"
@@ -27,7 +27,7 @@
             "$ref": "WellKnownTypes.json#definitions/Integer"
           },
           "property_boolean": {
-            "$ref":  "WellKnownTypes.json#definitions/Boolean"
+            "$ref": "WellKnownTypes.json#definitions/Boolean"
           }
         }
       }

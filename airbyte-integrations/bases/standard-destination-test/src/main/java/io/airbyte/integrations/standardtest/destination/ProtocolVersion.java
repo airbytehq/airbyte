@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.standardtest.destination;
 
 public enum ProtocolVersion {
@@ -14,4 +18,5 @@ public enum ProtocolVersion {
   public String getPrefix() {
     return prefix;
   }
+
 }

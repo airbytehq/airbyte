@@ -1012,7 +1012,6 @@ public abstract class DestinationAcceptanceTest {
     retrieveRawRecordsAndAssertSameMessages(catalog, allMessages, defaultSchema);
   }
 
-
   @ParameterizedTest
   @ArgumentsSource(NamespaceTestCaseProvider.class)
   public void testNamespaces(final String testCaseId,
@@ -1544,10 +1543,11 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
-   * The method should be overridden if destination connector support newer
-   * protocol version otherwise {@link io.airbyte.integrations.standardtest.destination.ProtocolVersion#DEFAULT}
-   * is used <p>
+   * The method should be overridden if destination connector support newer protocol version otherwise
+   * {@link io.airbyte.integrations.standardtest.destination.ProtocolVersion#DEFAULT} is used
+   * <p>
    * NOTE: Method should be public in a sake of java reflection
+   *
    * @return
    */
   public ProtocolVersion getProtocolVersion() {

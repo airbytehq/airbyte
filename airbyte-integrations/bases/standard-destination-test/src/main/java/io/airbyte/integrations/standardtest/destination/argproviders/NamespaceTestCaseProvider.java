@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.standardtest.destination.argproviders;
 
 import com.fasterxml.jackson.databind.JsonNode;

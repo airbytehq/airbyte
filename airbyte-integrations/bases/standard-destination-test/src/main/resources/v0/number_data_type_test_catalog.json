@@ -5,7 +5,7 @@
       "json_schema": {
         "properties": {
           "data": {
-            "$ref":  "WellKnownTypes.json#definitions/Integer"
+            "$ref": "WellKnownTypes.json#definitions/Integer"
           }
         }
       }
@@ -15,7 +15,7 @@
       "json_schema": {
         "properties": {
           "data": {
-            "$ref":  "WellKnownTypes.json#definitions/Number"
+            "$ref": "WellKnownTypes.json#definitions/Number"
           }
         }
       }
@@ -25,7 +25,7 @@
       "json_schema": {
         "properties": {
           "data": {
-            "$ref":  "WellKnownTypes.json#definitions/Number"
+            "$ref": "WellKnownTypes.json#definitions/Number"
           }
         }
       }
