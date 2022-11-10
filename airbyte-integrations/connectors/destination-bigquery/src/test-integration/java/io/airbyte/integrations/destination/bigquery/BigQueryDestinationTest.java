@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -26,6 +27,7 @@ import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
@@ -72,6 +74,8 @@ import org.slf4j.LoggerFactory;
 class BigQueryDestinationTest {
 
   protected static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+  protected static final Path CREDENTIALS_WITH_MISSED_CREATE_DATASET_ROLE_PATH =
+      Path.of("secrets/credentials-with-missed-dataset-creation-role.json");
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationTest.class);
   private static final String DATASET_NAME_PREFIX = "bq_dest_integration_test";
@@ -227,12 +231,49 @@ class BigQueryDestinationTest {
   void testCheckFailure(final DatasetIdResetter resetDatasetId) {
     ((ObjectNode) config).put(BigQueryConsts.CONFIG_PROJECT_ID, "fake");
     resetDatasetId.accept(config);
-    final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
-    final String actualMessage = actual.getMessage();
-    LOGGER.info("Checking expected failure message:" + actualMessage);
-    assertTrue(actualMessage.contains("Access Denied:"));
-    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("");
-    assertEquals(expected, actual.withMessage(""));
+
+    // Assert that check throws exception. Later it will be handled by IntegrationRunner
+    final ConfigErrorException ex = assertThrows(ConfigErrorException.class, () -> {
+      new BigQueryDestination().check(config);
+    });
+
+    assertThat(ex.getMessage()).contains("Access Denied");
+  }
+
+  @ParameterizedTest
+  @MethodSource("datasetIdResetterProvider")
+  void testCheckFailureInsufficientPermissionForCreateDataset(final DatasetIdResetter resetDatasetId) throws IOException {
+
+    if (!Files.exists(CREDENTIALS_WITH_MISSED_CREATE_DATASET_ROLE_PATH)) {
+      throw new IllegalStateException("""
+                                      Json config not found. Must provide path to a big query credentials file,
+                                       please add file with creds to
+                                      ../destination-bigquery/secrets/credentialsWithMissedDatasetCreationRole.json.""");
+    }
+    final String fullConfigAsString = Files.readString(
+        CREDENTIALS_WITH_MISSED_CREATE_DATASET_ROLE_PATH);
+    final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
+    final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
+    final String datasetId = Strings.addRandomSuffix(DATASET_NAME_PREFIX, "_", 8);
+
+    final JsonNode insufficientRoleConfig;
+
+    insufficientRoleConfig = Jsons.jsonNode(ImmutableMap.builder()
+        .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
+        .put(BigQueryConsts.CONFIG_CREDS, credentialsJson.toString())
+        .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
+        .put(BigQueryConsts.CONFIG_DATASET_LOCATION, DATASET_LOCATION)
+        .put(BIG_QUERY_CLIENT_CHUNK_SIZE, 10)
+        .build());
+
+    resetDatasetId.accept(insufficientRoleConfig);
+
+    // Assert that check throws exception. Later it will be handled by IntegrationRunner
+    final ConfigErrorException ex = assertThrows(ConfigErrorException.class, () -> {
+      new BigQueryDestination().check(insufficientRoleConfig);
+    });
+
+    assertThat(ex.getMessage()).contains("User does not have bigquery.datasets.create permission");
   }
 
   @ParameterizedTest

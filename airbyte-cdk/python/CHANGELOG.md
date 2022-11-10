@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.8.0
+Low-code: Allow for request and response to be emitted as log messages
+
+## 0.7.1
+Low-code: Decouple yaml manifest parsing from the declarative source implementation
+
+## 0.7.0
+Low-code: Allow connector specifications to be defined in the manifest
+
+## 0.6.0
+Low-code: Add support for monthly and yearly incremental updates for `DatetimeStreamSlicer`
+
+## 0.5.4
+Low-code: Get response.json in a safe way
+
+## 0.5.3
+Low-code: Replace EmptySchemaLoader with DefaultSchemaLoader to retain backwards compatibility
+Low-code: Evaluate backoff strategies at runtime
+
+## 0.5.2
+Low-code: Allow for read even when schemas are not defined for a connector yet
+
+## 0.4.2
+Low-code: Fix off by one error with the stream slicers
+
+## 0.4.1
+Low-code: Fix a few bugs with the stream slicers
+
+## 0.4.0
+Low-code: Add support for custom error messages on error response filters
+
+## 0.3.0
+Publish python typehints via `py.typed` file. 
+
 ## 0.2.3
 - Propagate options to InterpolatedRequestInputProvider
 

@@ -8,6 +8,7 @@ import logging
 import traceback
 from datetime import datetime
 from typing import Any, Iterable, Iterator, Mapping, MutableMapping
+from urllib.parse import urlparse
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
@@ -21,7 +22,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import Source
 
-from .client import Client
+from .client import Client, ConfigurationError
 from .utils import dropbox_force_download
 
 
@@ -83,10 +84,14 @@ class SourceFile(Source):
             try:
                 config["reader_options"] = json.loads(config["reader_options"])
             except ValueError:
-                raise Exception("reader_options is not valid JSON")
+                raise ConfigurationError("reader_options is not valid JSON")
         else:
             config["reader_options"] = {}
         config["url"] = dropbox_force_download(config["url"])
+
+        parse_result = urlparse(config["url"])
+        if parse_result.netloc == "docs.google.com" and parse_result.path.lower().startswith("/spreadsheets/"):
+            raise ConfigurationError(f'Failed to load {config["url"]}: please use the Official Google Sheets Source connector')
         return config
 
     def check(self, logger, config: Mapping) -> AirbyteConnectionStatus:
@@ -94,14 +99,27 @@ class SourceFile(Source):
         Check involves verifying that the specified file is reachable with
         our credentials.
         """
-        config = self._validate_and_transform(config)
+        try:
+            config = self._validate_and_transform(config)
+        except ConfigurationError as e:
+            logger.error(str(e))
+            return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
+
         client = self._get_client(config)
-        logger.info(f"Checking access to {client.reader.full_url}...")
+        source_url = client.reader.full_url
         try:
             with client.reader.open():
+                list(client.streams)
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+        except (TypeError, ValueError, ConfigurationError) as err:
+            reason = (
+                f"Failed to load {source_url}\n Please check File Format and Reader Options are set correctly"
+                f"\n{repr(err)}\n{traceback.format_exc()}"
+            )
+            logger.error(reason)
+            return AirbyteConnectionStatus(status=Status.FAILED, message=reason)
         except Exception as err:
-            reason = f"Failed to load {client.reader.full_url}: {repr(err)}\n{traceback.format_exc()}"
+            reason = f"Failed to load {source_url}: {repr(err)}\n{traceback.format_exc()}"
             logger.error(reason)
             return AirbyteConnectionStatus(status=Status.FAILED, message=reason)
 
