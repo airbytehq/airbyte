@@ -68,7 +68,7 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider, JsonSchemaMixin
     ) -> MutableMapping[str, Any]:
         interpolated_value = self._parameter_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
         if isinstance(interpolated_value, dict):
-            return interpolated_value
+            return {k: v for k, v in interpolated_value.items() if v}
         return {}
 
     def get_request_headers(
@@ -78,7 +78,10 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider, JsonSchemaMixin
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        return self._headers_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
+        interpolated_value = self._headers_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
+        if isinstance(interpolated_value, dict):
+            interpolated_value = {k: v for k, v in interpolated_value.items() if v}
+        return interpolated_value
 
     def get_request_body_data(
         self,
@@ -87,7 +90,10 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider, JsonSchemaMixin
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Union[Mapping, str]]:
-        return self._body_data_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
+        interpolated_value = self._body_data_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
+        if isinstance(interpolated_value, dict):
+            interpolated_value = {k: v for k, v in interpolated_value.items() if v}
+        return interpolated_value
 
     def get_request_body_json(
         self,

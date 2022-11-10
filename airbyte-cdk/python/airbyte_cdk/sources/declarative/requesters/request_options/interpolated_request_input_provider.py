@@ -42,9 +42,4 @@ class InterpolatedRequestInputProvider:
         :return: The request inputs to set on an outgoing HTTP request
         """
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
-        interpolated_value = self._interpolator.eval(self.config, **kwargs)
-
-        if isinstance(interpolated_value, dict):
-            non_null_tokens = {k: v for k, v in interpolated_value.items() if v}
-            return non_null_tokens
-        return interpolated_value
+        return self._interpolator.eval(self.config, **kwargs)
