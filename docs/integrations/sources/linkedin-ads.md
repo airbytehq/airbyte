@@ -44,16 +44,16 @@ This page guides you through the process of setting up the LinkedIn Ads source c
    The authorization token `lasts 60-days before expiring`. The connector app will need to be reauthorized when the authorization token expires.
    Create an Authorization URL with the following steps:
 
-   I. Replace the highlighted parameters `YOUR_CLIENT_ID` and `YOUR_REDIRECT_URI` in the URL (`https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&scope=r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`) from the scope obtain below.
+   1. Replace the highlighted parameters `YOUR_CLIENT_ID` and `YOUR_REDIRECT_URI` in the URL (`https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&scope=r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`) from the scope obtain below.
 
 
-   II. Set up permissions for the following scopes `r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`. For **OAuth2.0**, copy the `Client ID`, and `Client Secret` from your `Developer Application`. And copy the `Refresh Token` obtained from successful authorization with `Client ID` + `Client Secret`
+   2. Set up permissions for the following scopes `r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`. For **OAuth2.0**, copy the `Client ID`, and `Client Secret` from your `Developer Application`. And copy the `Refresh Token` obtained from successful authorization with `Client ID` + `Client Secret`
 
-   III. Enter the modified `URL` in the browser. You will be redirected.
+   3. Enter the modified `URL` in the browser. You will be redirected.
 
-   IV. To authorize the app, click **Allow**.
+   4. To authorize the app, click **Allow**.
 
-   V. Copy the `code` parameter listed in the redirect URL in the Browser header URL.
+   5. Copy the `code` parameter listed in the redirect URL in the Browser header URL.
    
 5. (Optional for Airbyte Cloud) Run the following curl command using `Terminal` or `Command line` with the parameters replaced to return your `access_token`. The `access_token` expires in 2-months.
 
