@@ -442,6 +442,10 @@ public class V0ToV1MigrationTest {
             "multityped_date_field": {
               "type": ["string", "integer"],
               "format": "date"
+            },
+            "sneaky_singletype_field": {
+              "type": ["string", "null"],
+              "format": "date-time"
             }
           }
         }
@@ -497,7 +501,8 @@ public class V0ToV1MigrationTest {
                 {"$ref": "WellKnownTypes.json#definitions/Date"},
                 {"$ref": "WellKnownTypes.json#definitions/Integer"}
               ]
-            }
+            },
+            "sneaky_singletype_field": {"$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"}
           }
         }
         """);
