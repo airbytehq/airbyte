@@ -726,6 +726,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/kyriba
   sourceType: api
   releaseStage: alpha
+- name: LaunchDarkly
+  sourceDefinitionId: f96bb511-5e3c-48fc-b408-547953cd81a4
+  dockerRepository: airbyte/source-launchdarkly
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/launchdarkly
+  sourceType: api
+  releaseStage: alpha
 - name: Lemlist
   sourceDefinitionId: 789f8e7a-2d28-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-lemlist
