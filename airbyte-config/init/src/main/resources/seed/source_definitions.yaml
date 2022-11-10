@@ -496,6 +496,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/gocardless
   sourceType: api
   releaseStage: alpha
+- name: Gong
+  sourceDefinitionId: 32382e40-3b49-4b99-9c5c-4076501914e7
+  dockerRepository: airbyte/source-gong
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gong
+  sourceType: api
+  releaseStage: alpha
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: airbyte/source-google-ads
