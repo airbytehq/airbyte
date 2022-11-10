@@ -18,37 +18,37 @@ class DefaultApiImpl(DefaultApi):
     async def list_streams(self, streams_list_request_body: StreamsListRequestBody = Body(None, description="")) -> StreamsListRead:
         return {
             "streams": [
-                { "name": "disputes", "url": "http://api.com/disputes" },
-                { "name": "transactions", "url": "http://api.com/transactions" },
-                { "name": "users", "url": "http://api.com/users" }
+                {"name": "disputes", "url": "http://api.com/disputes"},
+                {"name": "transactions", "url": "http://api.com/transactions"},
+                {"name": "users", "url": "http://api.com/users"}
             ]
         }
 
     async def read_stream(self, stream_read_request_body: StreamReadRequestBody = Body(None, description="")) -> StreamRead:
         return {
             "logs": [
-                { "level": "INFO", "message": "Syncing stream disputes!!" },
-                { "level": "INFO", "message": "Setting state of disputes to {'date': '2022-09-25'} !!" }
+                {"level": "INFO", "message": "Syncing stream disputes!!"},
+                {"level": "INFO", "message": "Setting state of disputes to {'date': '2022-09-25'} !!"}
             ],
             "slices": [
-                { 
-                    "sliceDescriptor": { 
-                        "startDatetime": "1 Jan 2022", 
-                        "listItem": "airbyte-cloud" 
+                {
+                    "sliceDescriptor": {
+                        "startDatetime": "1 Jan 2022",
+                        "listItem": "airbyte-cloud"
                     },
                     "state": {
                         "type": "STREAM",
                         "stream": {
-                            "stream_descriptor": { 
-                                "name": "disputes" 
-                            }, 
-                            "stream_state": { 
-                                "date": "2022-01-01" 
-                            } 
+                            "stream_descriptor": {
+                                "name": "disputes"
+                            },
+                            "stream_state": {
+                                "date": "2022-01-01"
+                            }
                         },
-                        "data": { 
-                            "disputes": { 
-                                "date": "2022-01-01" 
+                        "data": {
+                            "disputes": {
+                                "date": "2022-01-01"
                             }
                         }
                     },
