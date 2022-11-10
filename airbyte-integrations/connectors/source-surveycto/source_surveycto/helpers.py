@@ -8,10 +8,6 @@ from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from bigquery_schema_generator.generate_schema import SchemaGenerator
 from gbqschema_converter.gbqschema_to_jsonschema import json_representation as converter
-import json
-import asyncio
-import time
-
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
@@ -25,17 +21,10 @@ class Helpers(object):
 
     @staticmethod
     def call_survey_cto(config, form_id):
-        # time.sleep(15)
-        print(f'{config}')
-        print(f'{form_id}')
         server_name = config['server_name']
-        print(f'=========================>>>>{server_name}')
         start_date = config['start_date']
-        print(f'=========================>>>>{start_date}')
         user_name_password = f"{config['username']}:{config['password']}"
-        print(f'=========================>>>>{user_name_password}')
         auth_token = Helpers._base64_encode(user_name_password)
-        print(f'=========================>>>>{auth_token}')
         
         url = f"https://{server_name}.surveycto.com/api/v2/forms/data/wide/json/{form_id}?date={start_date}"
 
@@ -50,17 +39,13 @@ class Helpers(object):
         http.mount("http://", adapter)
 
         response = http.get(url, headers = {'Authorization': 'Basic ' + auth_token })
-        print(f'=========================>>>>{response}')
         data = response.json()
-        print(f'=========================>>>>{data}')
         generator = SchemaGenerator(input_format='dict', infer_mode='NULLABLE',preserve_input_sort_order='true')
 
         schema_map, error_logs = generator.deduce_schema(input_data=data)
         schema = generator.flatten_schema(schema_map)
         schema_json = converter(schema)
-        schema=schema_json['definitions']['element']['properties']
-        print(f'-------------------SCHEMATYPE------------------{type(schema)}')
-    
+        schema=schema_json['definitions']['element']['properties']    
         return schema
 
     @staticmethod

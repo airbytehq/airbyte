@@ -78,7 +78,6 @@ class SurveyctoStream(SurveyStream):
 
     def get_json_schema(self):  
         return self.schema
-        print(f'======================================sssss============{self.schema}')
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -102,7 +101,6 @@ class SurveyctoStream(SurveyStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         self.response_json = response.json()
-        print(f'=====================------------==========sssssss=======sssss============{self.response_json}')
     
         for data in self.response_json:
             try:
@@ -133,7 +131,7 @@ class SourceSurveycto(AbstractSource):
     def generate_streams(self, config: str) -> List[Stream]:
         forms = config.get("form_id", [])
         streams = []
-        time.sleep(10)
+        # time.sleep(10)
         for form_id in forms:
             schema = Helpers.call_survey_cto(config, form_id)
             schema_res = Helpers.get_json_schema(schema)
