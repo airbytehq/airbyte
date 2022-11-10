@@ -20,17 +20,28 @@ interface PageDisplayProps {
 
 interface TabData {
   title: string;
+  key: string;
   content: StreamReadSlicesItemPagesItemRecordsItem[] | HttpRequest | HttpResponse;
 }
 
 export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className }) => {
   const { formatMessage } = useIntl();
-  const tabs: TabData[] = [{ title: formatMessage({ id: "connectorBuilder.recordsTab" }), content: page.records }];
+  const tabs: TabData[] = [
+    {
+      title: `${formatMessage({ id: "connectorBuilder.recordsTab" })} (${page.records.length})`,
+      key: "records",
+      content: page.records,
+    },
+  ];
   if (page.request) {
-    tabs.push({ title: formatMessage({ id: "connectorBuilder.requestTab" }), content: page.request });
+    tabs.push({ title: formatMessage({ id: "connectorBuilder.requestTab" }), key: "request", content: page.request });
   }
   if (page.response) {
-    tabs.push({ title: formatMessage({ id: "connectorBuilder.responseTab" }), content: page.response });
+    tabs.push({
+      title: formatMessage({ id: "connectorBuilder.responseTab" }),
+      key: "response",
+      content: page.response,
+    });
   }
 
   return (
@@ -38,7 +49,7 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className }) => 
       <Tab.Group>
         <Tab.List className={styles.tabList}>
           {tabs.map((tab) => (
-            <Tab className={styles.tab}>
+            <Tab className={styles.tab} key={tab.key}>
               {({ selected }) => (
                 <Text className={classNames(styles.tabTitle, { [styles.selected]: selected })}>{tab.title}</Text>
               )}
@@ -47,7 +58,7 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className }) => 
         </Tab.List>
         <Tab.Panels className={styles.tabPanelContainer}>
           {tabs.map((tab) => (
-            <Tab.Panel className={styles.tabPanel}>
+            <Tab.Panel className={styles.tabPanel} key={tab.key}>
               <pre>{JSON.stringify(tab.content, null, 2)}</pre>
             </Tab.Panel>
           ))}

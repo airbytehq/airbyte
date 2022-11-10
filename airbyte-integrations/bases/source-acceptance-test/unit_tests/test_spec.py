@@ -352,6 +352,49 @@ def test_oneof_usage(connector_spec, should_fail):
         t.test_oneof_usage(actual_connector_spec=ConnectorSpecification(connectionSpecification=connector_spec))
 
 
+@parametrize_test_case(
+    {
+        "test_id": "successful",
+        "connector_spec": {
+            "type": "object",
+            "properties": {
+                "property_with_options": {
+                    "title": "Property with options",
+                    "description": "A property in the form of an enumerated list",
+                    "type": "string",
+                    "default": "Option 1",
+                    "enum": ["Option 1", "Option 2", "Option 3"],
+                }
+            },
+        },
+        "should_fail": False,
+    },
+    {
+        "test_id": "duplicate_values",
+        "connector_spec": {
+            "type": "object",
+            "properties": {
+                "property_with_options": {
+                    "title": "Property with options",
+                    "description": "A property in the form of an enumerated list",
+                    "type": "string",
+                    "default": "Option 1",
+                    "enum": ["Option 1", "Option 2", "Option 3", "Option 2"],
+                }
+            },
+        },
+        "should_fail": True,
+    },
+)
+def test_enum_usage(connector_spec, should_fail):
+    t = _TestSpec()
+    if should_fail is True:
+        with pytest.raises(AssertionError):
+            t.test_enum_usage(actual_connector_spec=ConnectorSpecification(connectionSpecification=connector_spec))
+    else:
+        t.test_enum_usage(actual_connector_spec=ConnectorSpecification(connectionSpecification=connector_spec))
+
+
 @pytest.mark.parametrize(
     "connector_spec, expected_error",
     [

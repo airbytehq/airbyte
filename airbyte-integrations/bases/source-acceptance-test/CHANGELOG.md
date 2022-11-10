@@ -1,7 +1,11 @@
 # Changelog
 
-## 0.2.17
+
+## 0.2.18
 Test connector specification against exposed secret fields. [#19124](https://github.com/airbytehq/airbyte/pull/19124).
+
+## 0.2.17
+Make `incremental.future_state` mandatory in `high` `test_strictness_level`. [#19085](https://github.com/airbytehq/airbyte/pull/19085/).
 
 ## 0.2.16
 Run `basic_read` on the discovered catalog in `high` `test_strictness_level`. [#18937](https://github.com/airbytehq/airbyte/pull/18937).
