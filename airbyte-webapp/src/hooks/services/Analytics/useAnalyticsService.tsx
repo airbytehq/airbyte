@@ -1,62 +1,25 @@
 import React, { useContext, useEffect, useMemo } from "react";
-import { useMap } from "react-use";
 
+import { useConfig } from "config";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 
 type AnalyticsContext = Record<string, unknown>;
 
-export interface AnalyticsServiceProviderValue {
-  analyticsContext: AnalyticsContext;
-  setContext: (ctx: AnalyticsContext) => void;
-  addContextProps: (props: AnalyticsContext) => void;
-  removeContextProps: (props: string[]) => void;
-  service: AnalyticsService;
-}
+export const analyticsServiceContext = React.createContext<AnalyticsService | null>(null);
 
-export const analyticsServiceContext = React.createContext<AnalyticsServiceProviderValue | null>(null);
+const AnalyticsServiceProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+  const { version } = useConfig();
 
-const AnalyticsServiceProvider = ({
-  children,
-  version,
-  initialContext = {},
-}: {
-  children: React.ReactNode;
-  version?: string;
-  initialContext?: AnalyticsContext;
-}) => {
-  const [analyticsContext, { set, setAll, remove }] = useMap(initialContext);
+  const analyticsService: AnalyticsService = useMemo(() => {
+    return new AnalyticsService(version);
+    // We know the version of the app can't change without a page refresh, so we never need to reinitialize
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const analyticsService: AnalyticsService = useMemo(
-    () => new AnalyticsService(analyticsContext, version),
-    [version, analyticsContext]
-  );
-
-  const handleAddContextProps = (props: AnalyticsContext) => {
-    Object.entries(props).forEach((value) => set(...value));
-  };
-
-  const handleRemoveContextProps = (props: string[]) => props.forEach(remove);
-
-  return (
-    <analyticsServiceContext.Provider
-      value={{
-        analyticsContext,
-        setContext: setAll,
-        addContextProps: handleAddContextProps,
-        removeContextProps: handleRemoveContextProps,
-        service: analyticsService,
-      }}
-    >
-      {children}
-    </analyticsServiceContext.Provider>
-  );
+  return <analyticsServiceContext.Provider value={analyticsService}>{children}</analyticsServiceContext.Provider>;
 };
 
 export const useAnalyticsService = (): AnalyticsService => {
-  return useAnalytics().service;
-};
-
-export const useAnalytics = (): AnalyticsServiceProviderValue => {
   const analyticsContext = useContext(analyticsServiceContext);
 
   if (!analyticsContext) {
@@ -86,15 +49,15 @@ export const useTrackPage = (page: string): void => {
 };
 
 export const useAnalyticsRegisterValues = (props?: AnalyticsContext | null): void => {
-  const { addContextProps, removeContextProps } = useAnalytics();
+  const service = useAnalyticsService();
 
   useEffect(() => {
     if (!props) {
       return;
     }
 
-    addContextProps(props);
-    return () => removeContextProps(Object.keys(props));
+    service.setContext(props);
+    return () => service.removeFromContext(...Object.keys(props));
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props]);
