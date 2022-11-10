@@ -85,19 +85,19 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
         <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
       </Cell>
       {/* <Cell>{fieldCount}</Cell> */}
-      <Cell flex={1} ellipsis title={stream.stream?.namespace || ""}>
+      <Cell flex={1} title={stream.stream?.namespace || ""}>
         <Text size="md" className={styles.cellText}>
           {stream.stream?.namespace || <FormattedMessage id="form.noNamespace" />}
         </Text>
       </Cell>
-      <Cell flex={1} ellipsis title={stream.stream?.name || ""}>
+      <Cell flex={1} title={stream.stream?.name || ""}>
         <Text size="md" className={styles.cellText}>
           {stream.stream?.name}
         </Text>
       </Cell>
-      <Cell flex={2}>
+      <Cell flex={2} flush={disabled ? false : true}>
         {disabled ? (
-          <Cell ellipsis title={syncSchema.syncMode}>
+          <Cell title={syncSchema.syncMode}>
             <Text size="md" className={styles.cellText}>
               {syncSchema.syncMode}
             </Text>
@@ -117,7 +117,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           />
         )}
       </Cell>
-      <Cell flex={1} ellipsis>
+      <Cell flex={1}>
         {pkType && (
           <StreamPathSelect
             pathType={pkType}
@@ -129,13 +129,12 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
         )}
       </Cell>
       <FontAwesomeIcon icon={faArrowRight} className={styles.arrowCell} />
-      <Cell flex={1} ellipsis title={destNamespace}>
+      <Cell flex={1} title={destNamespace}>
         <Text size="md" className={styles.cellText}>
-          {" "}
           {destNamespace}
         </Text>
       </Cell>
-      <Cell flex={1} ellipsis title={destName}>
+      <Cell flex={1} title={destName}>
         <Text size="md" className={styles.cellText}>
           {destName}
         </Text>

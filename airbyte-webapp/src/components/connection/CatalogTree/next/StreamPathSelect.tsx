@@ -7,6 +7,8 @@ import { Tooltip } from "components/ui/Tooltip";
 
 import { Path } from "core/domain/catalog";
 
+import styles from "./StreamPathSelect.module.scss";
+
 export const pathDisplayName = (path: Path): string => path.join(".");
 
 export type IndexerType = null | "required" | "sourceDefined";
@@ -37,9 +39,11 @@ export const StreamPathSelect: React.FC<PathPopoutProps> = (props) => {
       const text = props.isMulti ? props.path.map(pathDisplayName).join(", ") : pathDisplayName(props.path);
 
       return (
-        <Tooltip placement="bottom-start" control={text}>
-          <Text size="lg">{text}</Text>
-        </Tooltip>
+        <Text className={styles.text}>
+          <Tooltip placement="bottom-start" control={text}>
+            {text}
+          </Tooltip>
+        </Text>
       );
     }
 
