@@ -10,6 +10,7 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStream;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 public class V0ToV1MigrationTest {
@@ -27,19 +28,21 @@ public class V0ToV1MigrationTest {
     assertEquals("1.0.0", migration.getCurrentVersion().serialize());
   }
 
-  @Test
-  public void testBasicUpgrade() {
-    // This isn't actually a valid stream schema (since it's not an object)
-    // but this test case is mostly about preserving the message structure, so it's not super relevant
-    JsonNode oldSchema = Jsons.deserialize("""
+  @Nested
+  public class CatalogUpgradeTest {
+    @Test
+    public void testBasicUpgrade() {
+      // This isn't actually a valid stream schema (since it's not an object)
+      // but this test case is mostly about preserving the message structure, so it's not super relevant
+      JsonNode oldSchema = Jsons.deserialize("""
         {
           "type": "string"
         }
         """);
 
-    io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
+      io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
 
-    io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize("""
+      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize("""
         {
           "type": "CATALOG",
           "catalog": {
@@ -53,12 +56,12 @@ public class V0ToV1MigrationTest {
           }
         }
         """, io.airbyte.protocol.models.v0.AirbyteMessage.class);
-    assertEquals(expectedMessage, upgradedMessage);
-  }
+      assertEquals(expectedMessage, upgradedMessage);
+    }
 
-  @Test
-  public void testUpgradeAllPrimitives() {
-    JsonNode oldSchema = Jsons.deserialize("""
+    @Test
+    public void testUpgradeAllPrimitives() {
+      JsonNode oldSchema = Jsons.deserialize("""
         {
           "type": "object",
           "properties": {
@@ -114,9 +117,9 @@ public class V0ToV1MigrationTest {
         }
         """);
 
-    io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
+      io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
 
-    JsonNode expectedSchema = Jsons.deserialize("""
+      JsonNode expectedSchema = Jsons.deserialize("""
         {
           "type": "object",
           "properties": {
@@ -159,12 +162,12 @@ public class V0ToV1MigrationTest {
           }
         }
         """);
-    assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
-  }
+      assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
+    }
 
-  @Test
-  public void testUpgradeNestedFields() {
-    JsonNode oldSchema = Jsons.deserialize("""
+    @Test
+    public void testUpgradeNestedFields() {
+      JsonNode oldSchema = Jsons.deserialize("""
         {
           "type": "object",
           "properties": {
@@ -216,9 +219,9 @@ public class V0ToV1MigrationTest {
         }
         """);
 
-    io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
+      io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
 
-    JsonNode expectedSchema = Jsons.deserialize("""
+      JsonNode expectedSchema = Jsons.deserialize("""
         {
           "type": "object",
           "properties": {
@@ -269,14 +272,14 @@ public class V0ToV1MigrationTest {
           }
         }
         """);
-    assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
-  }
+      assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
+    }
 
-  @Test
-  public void testUpgradeBooleanSchemas() {
-    // Most of these should never happen in reality, but let's handle them just in case
-    // The only ones that we're _really_ expecting are additionalItems and additionalProperties
-    String schemaString = """
+    @Test
+    public void testUpgradeBooleanSchemas() {
+      // Most of these should never happen in reality, but let's handle them just in case
+      // The only ones that we're _really_ expecting are additionalItems and additionalProperties
+      String schemaString = """
         {
           "type": "object",
           "properties": {
@@ -312,13 +315,13 @@ public class V0ToV1MigrationTest {
           }
         }
         """;
-    assertUpgradeIsNoop(schemaString);
-  }
+      assertUpgradeIsNoop(schemaString);
+    }
 
-  @Test
-  public void testUpgradeEmptySchema() {
-    // Sources shouldn't do this, but we should have handling for it anyway, since it's not currently enforced by SATs
-    String schemaString = """
+    @Test
+    public void testUpgradeEmptySchema() {
+      // Sources shouldn't do this, but we should have handling for it anyway, since it's not currently enforced by SATs
+      String schemaString = """
         {
           "type": "object",
           "properties": {
@@ -354,13 +357,13 @@ public class V0ToV1MigrationTest {
           }
         }
         """;
-    assertUpgradeIsNoop(schemaString);
-  }
+      assertUpgradeIsNoop(schemaString);
+    }
 
-  @Test
-  public void testUpgradeLiteralSchema() {
-    // Verify that we do _not_ recurse into places we shouldn't
-    String schemaString = """
+    @Test
+    public void testUpgradeLiteralSchema() {
+      // Verify that we do _not_ recurse into places we shouldn't
+      String schemaString = """
         {
           "type": "object",
           "properties": {
@@ -373,15 +376,15 @@ public class V0ToV1MigrationTest {
           }
         }
         """;
-    assertUpgradeIsNoop(schemaString);
-  }
+      assertUpgradeIsNoop(schemaString);
+    }
 
-  @Test
-  public void testUpgradeMalformedSchemas() {
-    // These schemas are "wrong" in some way. For example, normalization will currently treat bad_timestamptz as a string timestamp_with_timezone,
-    // i.e. it will disregard the option for a boolean.
-    // Generating this sort of schema is just wrong; sources shouldn't do this to begin with. But let's verify that we behave mostly correctly here.
-    JsonNode oldSchema = Jsons.deserialize("""
+    @Test
+    public void testUpgradeMalformedSchemas() {
+      // These schemas are "wrong" in some way. For example, normalization will currently treat bad_timestamptz as a string timestamp_with_timezone,
+      // i.e. it will disregard the option for a boolean.
+      // Generating this sort of schema is just wrong; sources shouldn't do this to begin with. But let's verify that we behave mostly correctly here.
+      JsonNode oldSchema = Jsons.deserialize("""
         {
           "type": "object",
           "properties": {
@@ -399,9 +402,9 @@ public class V0ToV1MigrationTest {
         }
         """);
 
-    io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
+      io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
 
-    JsonNode expectedSchema = Jsons.deserialize("""
+      JsonNode expectedSchema = Jsons.deserialize("""
         {
           "type": "object",
           "properties": {
@@ -410,12 +413,12 @@ public class V0ToV1MigrationTest {
           }
         }
         """);
-    assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
-  }
+      assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
+    }
 
-  @Test
-  public void testUpgradeMultiTypeFields() {
-    JsonNode oldSchema = Jsons.deserialize("""
+    @Test
+    public void testUpgradeMultiTypeFields() {
+      JsonNode oldSchema = Jsons.deserialize("""
         {
           "type": "object",
           "properties": {
@@ -451,9 +454,9 @@ public class V0ToV1MigrationTest {
         }
         """);
 
-    io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
+      io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
 
-    JsonNode expectedSchema = Jsons.deserialize("""
+      JsonNode expectedSchema = Jsons.deserialize("""
         {
           "type": "object",
           "properties": {
@@ -506,7 +509,8 @@ public class V0ToV1MigrationTest {
           }
         }
         """);
-    assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
+      assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
+    }
   }
 
   private AirbyteMessage createCatalogMessage(JsonNode schema) {
