@@ -2,18 +2,17 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.server;
+package io.airbyte.server.config;
 
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.temporal.ConnectionManagerUtils;
 import io.airbyte.commons.temporal.StreamResetRecordsHelper;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
-import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.Configs;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -25,7 +24,6 @@ import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.check.DatabaseCheckException;
-import io.airbyte.db.factory.DatabaseCheckFactory;
 import io.airbyte.persistence.job.DefaultJobPersistence;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.WebUrlHelper;
@@ -35,12 +33,72 @@ import io.airbyte.persistence.job.errorreporter.JobErrorReportingClient;
 import io.airbyte.persistence.job.errorreporter.JobErrorReportingClientFactory;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.tracker.JobTracker;
-import io.airbyte.server.errors.InvalidInputExceptionMapper;
-import io.airbyte.server.errors.InvalidJsonExceptionMapper;
-import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
-import io.airbyte.server.errors.KnownExceptionMapper;
-import io.airbyte.server.errors.NotFoundExceptionMapper;
-import io.airbyte.server.errors.UncaughtExceptionMapper;
+import io.airbyte.server.CorsFilter;
+import io.airbyte.server.ServerApp;
+import io.airbyte.server.ServerRunnable;
+import io.airbyte.server.apis.AttemptApiController;
+import io.airbyte.server.apis.ConnectionApiController;
+import io.airbyte.server.apis.DbMigrationApiController;
+import io.airbyte.server.apis.DestinationApiController;
+import io.airbyte.server.apis.DestinationDefinitionApiController;
+import io.airbyte.server.apis.DestinationDefinitionSpecificationApiController;
+import io.airbyte.server.apis.DestinationOauthApiController;
+import io.airbyte.server.apis.HealthApiController;
+import io.airbyte.server.apis.JobsApiController;
+import io.airbyte.server.apis.LogsApiController;
+import io.airbyte.server.apis.NotificationsApiController;
+import io.airbyte.server.apis.OpenapiApiController;
+import io.airbyte.server.apis.OperationApiController;
+import io.airbyte.server.apis.SchedulerApiController;
+import io.airbyte.server.apis.SourceApiController;
+import io.airbyte.server.apis.SourceDefinitionApiController;
+import io.airbyte.server.apis.SourceDefinitionSpecificationApiController;
+import io.airbyte.server.apis.SourceOauthApiController;
+import io.airbyte.server.apis.StateApiController;
+import io.airbyte.server.apis.WebBackendApiController;
+import io.airbyte.server.apis.WorkspaceApiController;
+import io.airbyte.server.apis.binders.AttemptApiBinder;
+import io.airbyte.server.apis.binders.ConnectionApiBinder;
+import io.airbyte.server.apis.binders.DbMigrationBinder;
+import io.airbyte.server.apis.binders.DestinationApiBinder;
+import io.airbyte.server.apis.binders.DestinationDefinitionApiBinder;
+import io.airbyte.server.apis.binders.DestinationDefinitionSpecificationApiBinder;
+import io.airbyte.server.apis.binders.DestinationOauthApiBinder;
+import io.airbyte.server.apis.binders.HealthApiBinder;
+import io.airbyte.server.apis.binders.JobsApiBinder;
+import io.airbyte.server.apis.binders.LogsApiBinder;
+import io.airbyte.server.apis.binders.NotificationApiBinder;
+import io.airbyte.server.apis.binders.OpenapiApiBinder;
+import io.airbyte.server.apis.binders.OperationApiBinder;
+import io.airbyte.server.apis.binders.SchedulerApiBinder;
+import io.airbyte.server.apis.binders.SourceApiBinder;
+import io.airbyte.server.apis.binders.SourceDefinitionApiBinder;
+import io.airbyte.server.apis.binders.SourceDefinitionSpecificationApiBinder;
+import io.airbyte.server.apis.binders.SourceOauthApiBinder;
+import io.airbyte.server.apis.binders.StateApiBinder;
+import io.airbyte.server.apis.binders.WebBackendApiBinder;
+import io.airbyte.server.apis.binders.WorkspaceApiBinder;
+import io.airbyte.server.apis.factories.AttemptApiFactory;
+import io.airbyte.server.apis.factories.ConnectionApiFactory;
+import io.airbyte.server.apis.factories.DbMigrationApiFactory;
+import io.airbyte.server.apis.factories.DestinationApiFactory;
+import io.airbyte.server.apis.factories.DestinationDefinitionApiFactory;
+import io.airbyte.server.apis.factories.DestinationDefinitionSpecificationApiFactory;
+import io.airbyte.server.apis.factories.DestinationOauthApiFactory;
+import io.airbyte.server.apis.factories.HealthApiFactory;
+import io.airbyte.server.apis.factories.JobsApiFactory;
+import io.airbyte.server.apis.factories.LogsApiFactory;
+import io.airbyte.server.apis.factories.NotificationsApiFactory;
+import io.airbyte.server.apis.factories.OpenapiApiFactory;
+import io.airbyte.server.apis.factories.OperationApiFactory;
+import io.airbyte.server.apis.factories.SchedulerApiFactory;
+import io.airbyte.server.apis.factories.SourceApiFactory;
+import io.airbyte.server.apis.factories.SourceDefinitionApiFactory;
+import io.airbyte.server.apis.factories.SourceDefinitionSpecificationApiFactory;
+import io.airbyte.server.apis.factories.SourceOauthApiFactory;
+import io.airbyte.server.apis.factories.StateApiFactory;
+import io.airbyte.server.apis.factories.WebBackendApiFactory;
+import io.airbyte.server.apis.factories.WorkspaceApiFactory;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DbMigrationHandler;
@@ -64,122 +122,99 @@ import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
+import io.micronaut.context.annotation.Factory;
+import io.micronaut.context.annotation.Requires;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
+import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
 import org.flywaydb.core.Flyway;
-import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.servlet.ServletContainer;
 import org.jooq.DSLContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-@SuppressWarnings("PMD.AvoidCatchingThrowable")
-public class ServerApp implements ServerRunnable {
+@Factory
+public class ServerBeanFactory {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
-  private static final int PORT = 8001;
-  // private static final String DRIVER_CLASS_NAME = "org.postgresql.Driver";
-
-  private final AirbyteVersion airbyteVersion;
-  private final Set<Class<?>> customComponentClasses;
-  private final Set<Object> customComponents;
-
-  public ServerApp(final AirbyteVersion airbyteVersion,
-                   final Set<Class<?>> customComponentClasses,
-                   final Set<Object> customComponents) {
-    this.airbyteVersion = airbyteVersion;
-    this.customComponentClasses = customComponentClasses;
-    this.customComponents = customComponents;
+  @Singleton
+  @Requires(env = WorkerMode.CONTROL_PLANE)
+  @Named("componentClasses")
+  public Set<Class<?>> componentClasses() {
+    return Set.of(
+        AttemptApiController.class,
+        ConnectionApiController.class,
+        DbMigrationApiController.class,
+        DestinationApiController.class,
+        DestinationDefinitionApiController.class,
+        DestinationDefinitionSpecificationApiController.class,
+        DestinationOauthApiController.class,
+        HealthApiController.class,
+        JobsApiController.class,
+        LogsApiController.class,
+        NotificationsApiController.class,
+        OpenapiApiController.class,
+        OperationApiController.class,
+        SchedulerApiController.class,
+        SourceApiController.class,
+        SourceDefinitionApiController.class,
+        SourceDefinitionSpecificationApiController.class,
+        SourceOauthApiController.class,
+        StateApiController.class,
+        WebBackendApiController.class,
+        WorkspaceApiController.class);
   }
 
-  @Override
-  @SuppressWarnings("PMD.InvalidLogMessageFormat")
-  public void start() throws Exception {
-    final Server server = new Server(PORT);
-
-    final ServletContextHandler handler = new ServletContextHandler();
-
-    final Map<String, String> mdc = MDC.getCopyOfContextMap();
-
-    final ResourceConfig rc =
-        new ResourceConfig()
-            .register(new RequestLogger(mdc))
-            .register(InvalidInputExceptionMapper.class)
-            .register(InvalidJsonExceptionMapper.class)
-            .register(InvalidJsonInputExceptionMapper.class)
-            .register(KnownExceptionMapper.class)
-            .register(UncaughtExceptionMapper.class)
-            .register(NotFoundExceptionMapper.class)
-            // needed so that the custom json exception mappers don't get overridden
-            // https://stackoverflow.com/questions/35669774/jersey-custom-exception-mapper-for-invalid-json-string
-            .register(JacksonJaxbJsonProvider.class);
-
-    // inject custom server functionality
-    customComponentClasses.forEach(rc::register);
-    customComponents.forEach(rc::register);
-
-    final ServletHolder configServlet = new ServletHolder(new ServletContainer(rc));
-
-    handler.addServlet(configServlet, "/api/*");
-
-    server.setHandler(handler);
-
-    server.start();
-    final String banner = MoreResources.readResource("banner/banner.txt");
-    LOGGER.info(banner + String.format("Version: %s\n", airbyteVersion.serialize()));
-    server.join();
-
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-      try {
-        server.stop();
-      } catch (final Exception ex) {
-        // silently fail at this stage because server is terminating.
-        LOGGER.warn("exception: " + ex);
-      }
-    }));
+  @Singleton
+  @Requires(env = WorkerMode.CONTROL_PLANE)
+  @Named("components")
+  public Set<Object> components() {
+    return Set.of(
+        new CorsFilter(),
+        new AttemptApiBinder(),
+        new ConnectionApiBinder(),
+        new DbMigrationBinder(),
+        new DestinationApiBinder(),
+        new DestinationDefinitionApiBinder(),
+        new DestinationDefinitionSpecificationApiBinder(),
+        new DestinationOauthApiBinder(),
+        new HealthApiBinder(),
+        new JobsApiBinder(),
+        new LogsApiBinder(),
+        new NotificationApiBinder(),
+        new OpenapiApiBinder(),
+        new OperationApiBinder(),
+        new SchedulerApiBinder(),
+        new SourceApiBinder(),
+        new SourceDefinitionApiBinder(),
+        new SourceDefinitionSpecificationApiBinder(),
+        new SourceOauthApiBinder(),
+        new StateApiBinder(),
+        new WebBackendApiBinder(),
+        new WorkspaceApiBinder());
   }
 
-  public static void assertDatabasesReady(final Configs configs,
-                                          final DSLContext configsDslContext,
-                                          final Flyway configsFlyway,
-                                          final DSLContext jobsDslContext,
-                                          final Flyway jobsFlyway)
-      throws DatabaseCheckException {
-    LOGGER.info("Checking configs database flyway migration version..");
-    DatabaseCheckFactory
-        .createConfigsDatabaseMigrationCheck(configsDslContext, configsFlyway, configs.getConfigsDatabaseMinimumFlywayMigrationVersion(),
-            configs.getConfigsDatabaseInitializationTimeoutMs())
-        .check();
-
-    LOGGER.info("Checking jobs database flyway migration version..");
-    DatabaseCheckFactory.createJobsDatabaseMigrationCheck(jobsDslContext, jobsFlyway, configs.getJobsDatabaseMinimumFlywayMigrationVersion(),
-        configs.getJobsDatabaseInitializationTimeoutMs()).check();
-  }
-
-  public static ServerRunnable getServer(final ServerFactory apiFactory,
-                                         final Configs configs,
-                                         final DSLContext configsDslContext,
-                                         final Flyway configsFlyway,
-                                         final DSLContext jobsDslContext,
-                                         final Flyway jobsFlyway)
-      throws Exception {
+  @Singleton
+  @Requires(env = WorkerMode.CONTROL_PLANE)
+  @Named("serverRunnable")
+  public ServerRunnable serverRunnable(
+                                       @Named("componentClasses") final Set<Class<?>> componentClasses,
+                                       @Named("components") final Set<Object> components,
+                                       final Configs configs,
+                                       @Named("config") final DSLContext configsDslContext,
+                                       @Named("configFlyway") final Flyway configsFlyway,
+                                       @Named("jobs") final DSLContext jobsDslContext,
+                                       @Named("jobsFlyway") final Flyway jobsFlyway)
+      throws DatabaseCheckException, IOException {
     LogClientSingleton.getInstance().setWorkspaceMdc(
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
         LogClientSingleton.getInstance().getServerLogsRoot(configs.getWorkspaceRoot()));
 
-    LOGGER.info("Checking databases..");
-    assertDatabasesReady(configs, configsDslContext, configsFlyway, jobsDslContext, jobsFlyway);
+    ServerApp.assertDatabasesReady(configs, configsDslContext, configsFlyway, jobsDslContext, jobsFlyway);
 
-    LOGGER.info("Creating config repository...");
     final Database configsDatabase = new Database(configsDslContext);
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configsDslContext, configs);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configsDslContext, configs);
@@ -189,7 +224,6 @@ public class ServerApp implements ServerRunnable {
     final SecretsRepositoryWriter secretsRepositoryWriter =
         new SecretsRepositoryWriter(configRepository, secretPersistence, ephemeralSecretPersistence);
 
-    LOGGER.info("Creating jobs persistence...");
     final Database jobsDatabase = new Database(jobsDslContext);
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobsDatabase);
 
@@ -332,56 +366,56 @@ public class ServerApp implements ServerRunnable {
 
     final WebBackendGeographiesHandler webBackendGeographiesHandler = new WebBackendGeographiesHandler();
 
-    LOGGER.info("Starting server...");
+    final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
-    return apiFactory.create(
-        configs.getAirbyteVersion(),
-        attemptHandler,
+    AttemptApiFactory.setValues(attemptHandler, mdc);
+
+    ConnectionApiFactory.setValues(
         connectionsHandler,
-        dbMigrationHandler,
-        destinationDefinitionsHandler,
-        destinationHandler,
-        healthCheckHandler,
-        jobHistoryHandler,
-        logsHandler,
-        oAuthHandler,
-        openApiConfigHandler,
         operationsHandler,
         schedulerHandler,
-        sourceHandler,
-        sourceDefinitionsHandler,
-        stateHandler,
-        workspacesHandler,
-        webBackendConnectionsHandler,
-        webBackendGeographiesHandler);
-  }
+        mdc);
 
-  /*
-   * public static void main(final String[] args) { try { final Configs configs = new EnvConfigs();
-   *
-   * // Manual configuration that will be replaced by Dependency Injection in the future final
-   * DataSource configsDataSource = DataSourceFactory.create(configs.getConfigDatabaseUser(),
-   * configs.getConfigDatabasePassword(), DRIVER_CLASS_NAME, configs.getConfigDatabaseUrl()); final
-   * DataSource jobsDataSource = DataSourceFactory.create(configs.getDatabaseUser(),
-   * configs.getDatabasePassword(), DRIVER_CLASS_NAME, configs.getDatabaseUrl());
-   *
-   * try (final DSLContext configsDslContext = DSLContextFactory.create(configsDataSource,
-   * SQLDialect.POSTGRES); final DSLContext jobsDslContext = DSLContextFactory.create(jobsDataSource,
-   * SQLDialect.POSTGRES)) {
-   *
-   * // Ensure that the database resources are closed on application shutdown
-   * CloseableShutdownHook.registerRuntimeShutdownHook(configsDataSource, jobsDataSource,
-   * configsDslContext, jobsDslContext);
-   *
-   * final Flyway configsFlyway = FlywayFactory.create(configsDataSource,
-   * DbMigrationHandler.class.getSimpleName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
-   * ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION); final Flyway jobsFlyway =
-   * FlywayFactory.create(jobsDataSource, DbMigrationHandler.class.getSimpleName(),
-   * JobsDatabaseMigrator.DB_IDENTIFIER, JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-   *
-   * getServer(new ServerFactory.Api(), configs, configsDslContext, configsFlyway, jobsDslContext,
-   * jobsFlyway).start(); } } catch (final Throwable e) { LOGGER.error("Server failed", e);
-   * System.exit(1); // so the app doesn't hang on background threads } }
-   */
+    DbMigrationApiFactory.setValues(dbMigrationHandler, mdc);
+
+    DestinationApiFactory.setValues(destinationHandler, schedulerHandler, mdc);
+
+    DestinationDefinitionApiFactory.setValues(destinationDefinitionsHandler);
+
+    DestinationDefinitionSpecificationApiFactory.setValues(schedulerHandler);
+
+    HealthApiFactory.setValues(healthCheckHandler);
+
+    DestinationOauthApiFactory.setValues(oAuthHandler);
+
+    SourceOauthApiFactory.setValues(oAuthHandler);
+
+    JobsApiFactory.setValues(jobHistoryHandler, schedulerHandler);
+
+    LogsApiFactory.setValues(logsHandler);
+
+    NotificationsApiFactory.setValues(workspacesHandler);
+
+    OperationApiFactory.setValues(operationsHandler);
+
+    OpenapiApiFactory.setValues(openApiConfigHandler);
+
+    SchedulerApiFactory.setValues(schedulerHandler);
+
+    SourceApiFactory.setValues(schedulerHandler, sourceHandler);
+
+    SourceDefinitionApiFactory.setValues(sourceDefinitionsHandler);
+
+    SourceDefinitionSpecificationApiFactory.setValues(schedulerHandler);
+
+    StateApiFactory.setValues(stateHandler);
+
+    WebBackendApiFactory.setValues(webBackendConnectionsHandler, webBackendGeographiesHandler);
+
+    WorkspaceApiFactory.setValues(workspacesHandler);
+
+    // construct server
+    return new ServerApp(configs.getAirbyteVersion(), componentClasses, components);
+  }
 
 }

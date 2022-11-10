@@ -134,6 +134,7 @@ public interface ServerFactory {
                                  final WorkspacesHandler workspacesHandler,
                                  final WebBackendConnectionsHandler webBackendConnectionsHandler,
                                  final WebBackendGeographiesHandler webBackendGeographiesHandler) {
+
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
       AttemptApiFactory.setValues(attemptHandler, mdc);
