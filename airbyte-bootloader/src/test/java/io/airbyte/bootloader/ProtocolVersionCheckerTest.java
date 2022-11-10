@@ -296,7 +296,6 @@ class ProtocolVersionCheckerTest {
     assertEquals(Optional.empty(), actualRange);
   }
 
-
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   void testValidateSucceedsWhenNoProtocolRangeChangeWithoutDefinitionsProvider(final boolean supportAutoUpgrade) throws Exception {
