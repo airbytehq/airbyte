@@ -13,6 +13,7 @@ import java.util.Optional;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -65,8 +66,8 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
             schema);
       }
     } else if (oldMessage.getType() == Type.RECORD) {
-      // TODO upgrade record
       JsonNode data = newMessage.getRecord().getData();
+      upgradeRecord((ObjectNode)data);
     }
     return newMessage;
   }
@@ -293,6 +294,27 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
       } else if (subschemaNode.isObject()) {
         subschemas.add(subschemaNode);
       }
+    }
+  }
+
+  private static void upgradeRecord(ObjectNode data) {
+    Iterator<Entry<String, JsonNode>> fieldsIterator = data.fields();
+    Map<String, String> replacements = new HashMap<>();
+    while (fieldsIterator.hasNext()) {
+      Entry<String, JsonNode> next = fieldsIterator.next();
+      String key = next.getKey();
+      JsonNode value = next.getValue();
+      if (value.isNumber()) {
+        replacements.put(key, value.asText());
+      } else if (value.isObject()) {
+        // TODO
+      } else if (value.isArray()) {
+        // TODO
+      }
+    }
+
+    for (Map.Entry<String, String> replacement : replacements.entrySet()) {
+      data.put(replacement.getKey(), replacement.getValue());
     }
   }
 
