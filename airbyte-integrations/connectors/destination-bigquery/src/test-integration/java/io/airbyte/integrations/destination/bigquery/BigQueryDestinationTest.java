@@ -74,7 +74,7 @@ import org.slf4j.LoggerFactory;
 class BigQueryDestinationTest {
 
   protected static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
-  protected static final Path CREDENTIALS_WITHMISSED_CREATE_DATASET_ROLE_PATH =
+  protected static final Path CREDENTIALS_WITH_MISSED_CREATE_DATASET_ROLE_PATH =
       Path.of("secrets/credentials-with-missed-dataset-creation-role.json");
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationTest.class);
@@ -237,22 +237,21 @@ class BigQueryDestinationTest {
       new BigQueryDestination().check(config);
     });
 
-    final String actualMessage = ex.getMessage();
-    LOGGER.info("Checking expected failure message:" + actualMessage);
-    assertThat(actualMessage).contains("Access Denied");
+    assertThat(ex.getMessage()).contains("Access Denied");
   }
 
   @ParameterizedTest
   @MethodSource("datasetIdResetterProvider")
   void testCheckFailureInsufficientPermissionForCreateDataset(final DatasetIdResetter resetDatasetId) throws IOException {
 
-    if (!Files.exists(CREDENTIALS_WITHMISSED_CREATE_DATASET_ROLE_PATH)) {
+    if (!Files.exists(CREDENTIALS_WITH_MISSED_CREATE_DATASET_ROLE_PATH)) {
       throw new IllegalStateException("""
                                       Json config not found. Must provide path to a big query credentials file,
                                        please add file with creds to
                                       ../destination-bigquery/secrets/credentialsWithMissedDatasetCreationRole.json.""");
     }
-    final String fullConfigAsString = Files.readString(CREDENTIALS_WITHMISSED_CREATE_DATASET_ROLE_PATH);
+    final String fullConfigAsString = Files.readString(
+        CREDENTIALS_WITH_MISSED_CREATE_DATASET_ROLE_PATH);
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
     final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
     final String datasetId = Strings.addRandomSuffix(DATASET_NAME_PREFIX, "_", 8);
@@ -274,10 +273,7 @@ class BigQueryDestinationTest {
       new BigQueryDestination().check(insufficientRoleConfig);
     });
 
-    final String actualMessage = ex.getMessage();
-    LOGGER.info("Checking expected failure message:" + actualMessage);
-    assertThat(actualMessage)
-        .contains("Project dataline-integration-testing: User does not have bigquery.datasets.create permission");
+    assertThat(ex.getMessage()).contains("User does not have bigquery.datasets.create permission");
   }
 
   @ParameterizedTest

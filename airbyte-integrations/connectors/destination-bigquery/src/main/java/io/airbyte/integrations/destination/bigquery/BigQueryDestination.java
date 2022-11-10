@@ -149,7 +149,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       message.append(" Please make sure the service account can access the bucket path, and the HMAC keys are correct.");
 
       LOGGER.error(message.toString(), e);
-      throw new ConfigErrorException("Could access the GCS bucket with the provided configuration.\n", e);
+      throw new ConfigErrorException("Could not access the GCS bucket with the provided configuration.\n", e);
     }
   }
 
