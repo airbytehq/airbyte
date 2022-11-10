@@ -1,6 +1,7 @@
 package io.airbyte.commons.protocol.migrations;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -89,6 +90,11 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
 
   /**
    * Modifies the schema in-place to upgrade from the old-style type declaration to the new-style $ref declaration.
+   * Assumes that the schema contains a primitive declaration, i.e. either something like:
+   * {"type": "string"}
+   * or:
+   * {"type": ["string", "object"]}
+   *
    * @param schema An ObjectNode representing a primitive type declaration
    */
   private void upgradeTypeDeclaration(JsonNode schema) {
@@ -101,11 +107,69 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
       schemaNode.put("$ref", referenceType);
     } else {
       // Otherwise, fall back to type/format
-      // TODO handle when schema["type"] is a list
-      String type = schemaNode.get("type").asText();
-      String referenceType = getReferenceType(type, schemaNode);
-      schemaNode.removeAll();
-      schemaNode.put("$ref", referenceType);
+      JsonNode typeNode = schemaNode.get("type");
+      if (typeNode.isTextual()) {
+        String type = typeNode.asText();
+        String referenceType = getReferenceType(type, schemaNode);
+        schemaNode.removeAll();
+        schemaNode.put("$ref", referenceType);
+      } else {
+        List<String> types = StreamSupport.stream(typeNode.spliterator(), false)
+            .map(JsonNode::asText)
+            // Everything is implicitly nullable by just not declaring the `required `field
+            // so filter out any explicit null types
+            .filter(type -> !"null".equals(type))
+            .toList();
+        if (types.size() == 1) {
+          // If there's only one type, e.g. {type: [string]}, just treat that as equivalent to {type: string}
+          String type = types.get(0);
+          String referenceType = getReferenceType(type, schemaNode);
+          schemaNode.removeAll();
+          schemaNode.put("$ref", referenceType);
+        } else {
+          // If there are multiple types, we'll need to convert this to a oneOf.
+          // For arrays and objects, we do a mutual recursion back into mutateSchemas to upgrade their subschemas.
+          ArrayNode oneOfOptions = Jsons.arrayNode();
+          for (String type : types) {
+            ObjectNode option = (ObjectNode) Jsons.emptyObject();
+            switch (type) {
+              case "array" -> {
+                option.put("type", "array");
+                copyKey(schemaNode, option, "items");
+                copyKey(schemaNode, option, "additionalItems");
+                copyKey(schemaNode, option, "contains");
+                mutateSchemas(
+                    this::isPrimitiveTypeDeclaration,
+                    this::upgradeTypeDeclaration,
+                    option);
+              }
+              case "object" -> {
+                option.put("type", "object");
+                copyKey(schemaNode, option, "properties");
+                copyKey(schemaNode, option, "patternProperties");
+                copyKey(schemaNode, option, "additionalProperties");
+                mutateSchemas(
+                    this::isPrimitiveTypeDeclaration,
+                    this::upgradeTypeDeclaration,
+                    option);
+              }
+              default -> {
+                String referenceType = getReferenceType(type, schemaNode);
+                option.put("$ref", referenceType);
+              }
+            }
+            oneOfOptions.add(option);
+          }
+          schemaNode.removeAll();
+          schemaNode.set("oneOf", oneOfOptions);
+        }
+      }
+    }
+  }
+
+  private static void copyKey(ObjectNode source, ObjectNode target, String key) {
+    if (source.hasNonNull(key)) {
+      target.set(key, source.get(key));
     }
   }
 

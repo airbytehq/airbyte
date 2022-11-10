@@ -14,8 +14,6 @@ import org.junit.jupiter.api.Test;
 
 public class V0ToV1MigrationTest {
 
-  private static final String STREAM_NAME = "TEST_STREAM";
-
   private AirbyteMessageMigrationV1 migration;
 
   @BeforeEach
@@ -431,12 +429,19 @@ public class V0ToV1MigrationTest {
               },
               "additionalProperties": {"type": "string"},
               "items": {"type": "string"},
+              "additionalItems": {"type": "string"},
               "contains": {"type": "string"}
             },
             "nullable_multityped_field": {
-              "type": ["null", "string", "array"],
+              "type": ["null", "string", "array", "object"],
               "items": [{"type": "string"}, {"type": "integer"}],
-              "contains": {"type": "string"}
+              "properties": {
+                "id": {"type": "integer"}
+              }
+            },
+            "multityped_date_field": {
+              "type": ["string", "integer"],
+              "format": "date"
             }
           }
         }
@@ -464,6 +469,7 @@ public class V0ToV1MigrationTest {
                 {
                   "type": "array",
                   "items": {"$ref": "WellKnownTypes.json#definitions/String"},
+                  "additionalItems": {"$ref": "WellKnownTypes.json#definitions/String"},
                   "contains": {"$ref": "WellKnownTypes.json#definitions/String"}
                 }
               ]
@@ -476,9 +482,20 @@ public class V0ToV1MigrationTest {
                   "items": [
                     {"$ref": "WellKnownTypes.json#definitions/String"},
                     {"$ref": "WellKnownTypes.json#definitions/Integer"}
-                  ],
-                  "contains": {"$ref": "WellKnownTypes.json#definitions/String"}
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                  }
                 }
+              ]
+            },
+            "multityped_date_field": {
+              "oneOf": [
+                {"$ref": "WellKnownTypes.json#definitions/Date"},
+                {"$ref": "WellKnownTypes.json#definitions/Integer"}
               ]
             }
           }
