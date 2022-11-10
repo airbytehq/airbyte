@@ -5,10 +5,7 @@
 from connector_builder.generated.apis.default_api_interface import initialize_router
 from connector_builder.impl.default_api import DefaultApiImpl
 from fastapi import FastAPI
-<<<<<<< HEAD
 from fastapi.middleware.cors import CORSMiddleware
-=======
->>>>>>> master
 
 app = FastAPI(
     title="Connector Builder Server API",
@@ -16,7 +13,6 @@ app = FastAPI(
     version="1.0.0",
 )
 
-<<<<<<< HEAD
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -25,6 +21,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-=======
->>>>>>> master
 app.include_router(initialize_router(DefaultApiImpl()))
