@@ -3,7 +3,7 @@ import os
 import os.path
 import yaml
 
-CONNECTOR_PATH = "./airbyte-integrations/connectors/"
+CONNECTORS_PATH = "./airbyte-integrations/connectors/"
 NORMALIZATION_PATH = "./airbyte-integrations/bases/base-normalization/"
 DOC_PATH = "docs/integrations/"
 SOURCE_DEFINITIONS_PATH = "./airbyte-config/init/src/main/resources/seed/source_definitions.yaml"
@@ -35,7 +35,7 @@ def main():
     # Getting all build.gradle file
     build_gradle_files = {}
     for connector in all_connectors:
-        connector_path = CONNECTOR_PATH + connector
+        connector_path = CONNECTORS_PATH + connector + "/"
         build_gradle_files.update(get_gradle_file_for_path(connector_path))
     build_gradle_files.update(get_gradle_file_for_path(NORMALIZATION_PATH))
 
@@ -66,11 +66,13 @@ def get_changed_modules(changed_files):
 
 
 def get_all_connectors():
-    walk = os.walk(CONNECTOR_PATH)
+    walk = os.walk(CONNECTORS_PATH)
     return [connector for connector in next(walk)[1]]
 
 
 def get_gradle_file_for_path(path):
+    if not path.endswith("/"):
+        path = path + "/"
     build_gradle_file = find_file("build.gradle", path)
     module = path.split("/")[-2]
     return {module: build_gradle_file}
@@ -95,7 +97,7 @@ def get_depended_connectors(changed_modules, all_build_gradle_files):
 
 
 def get_connector_version(connector):
-    with open(f"{CONNECTOR_PATH}/{connector}/Dockerfile") as f:
+    with open(f"{CONNECTORS_PATH}/{connector}/Dockerfile") as f:
         for line in f:
             if "io.airbyte.version" in line:
                 return line.split("=")[1].strip()
