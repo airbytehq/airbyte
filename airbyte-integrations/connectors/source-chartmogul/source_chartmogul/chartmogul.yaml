@@ -1,0 +1,64 @@
+version: "0.2.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://example.com"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  customers_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "customers"
+      primary_key: "id"
+      path: "/example"
+
+streams:
+  - "*ref(definitions.customers_stream)"
+
+check:
+  stream_names:
+    - "customers"
+
+spec:
+  documentation_url: https://docs.airbyte.com/integrations/sources/chartmogul
+  connection_specification:
+    title: "Chartmogul Spec"
+    type: object
+    required:
+      - api_key
+      - start_date
+      - interval
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        description: "Chartmogul API key"
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        description: "UTC date and time in the format 2017-01-25T00:00:00Z. When feasible, any data before this date will not be replicated."
+        examples: ["2017-01-25T00:00:00Z"]
+        order: 1
+      interval:
+        type: string
+        description: "Some APIs such as <a href=\"https://dev.chartmogul.com/reference/endpoint-overview-metrics-api\">Metrics</a> require intervals to cluster data."
+        enum: ["day", "week", "month", "quarter"]
+        default: "month"
+        order: 2
