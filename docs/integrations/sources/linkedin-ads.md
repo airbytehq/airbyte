@@ -12,31 +12,23 @@ This page guides you through the process of setting up the LinkedIn Ads source c
 ## Step 1: Set up LinkedIn Ads
 
 1. [Login to LinkedIn](https://developer.linkedin.com/) with a developer account.
-2. Click the **Create App** icon on the center of the page or [use here](https://www.linkedin.com/developers/apps). Fill in the required fields:
-   <ol type=" I">
-    <li>For <b>App Name</b>, enter a name.</li>
-    <li>For <b>LinkedIn Page</b>, enter your company's name or LinkedIn Company Page URL.</li>
-    <li>For <b>Privacy policy URL</b>, enter the link to your company's privacy policy.</li>
-    <li>For <b>App logo</b>, upload your company's logo.</li>
-    <li>For <b>Legal Agreement</b>, select **I have read and agree to these terms**.</li>
-    <li>Click <b>Create App</b>, on the bottom right of the screen. LinkedIn redirects you to a page showing the details of your application.</li>
-  </ol>
+2. Click the **Create App** icon on the center of the page or [use here](https://www.linkedin.com/developers/apps). Fill in the required fields:  
+    1. For **App Name**, enter a name.
+    2. For **LinkedIn Page**, enter your company's name or LinkedIn Company Page URL.
+    3. For **Privacy policy URL**, enter the link to your company's privacy policy.
+    4. For **App logo**, upload your company's logo.
+    5. For **Legal Agreement**, select **I have read and agree to these terms**.
+    6. Click **Create App**, on the bottom right of the screen. LinkedIn redirects you to a page showing the details of your application.
 
 3. Verify your app. You can verify your app using the following steps:
-   <ol type="I">
-    <li>
-      To display the settings page, click the <b>Settings</b> tab. On the <b>App Settings</b> section, click <b>Verify</b> under <b>Company</b>. A popup window will be displayed. To generate the verification URL, click on <b>Generate URL</b>, then copy and send the URL to the Page Admin (this may be you). Click on <b>I'm done</b>.
-      
-      If you are the administrator of your Page, simply run the URL in a new tab (if not, an administrator will have to do the next step). Click on <b>Verify</b>. Finally, Refresh the tab of app creation, the app should now be associated with your Page.
-    </li>
-    <li>
-      To display the Products page, click the <b>Product</b> tab. For <b>Marketing Developer Platform</b> click on the <b>Request access</b>. A popup window will be displayed. Review and Select <b>I have read and agree to these terms</b>. Finally, click <b>Request access</b>. 
-    </li>
-    <li>To authorize your application, click the <b>Auth</b> tab. The authentication page is displayed. Copy the <b>client_id</b> and <b>client_secret</b> (for later steps). For <b>Oauth 2.0 settings</b>, Provide a <b>redirect_uri</b> (for later steps)</li>
-    <li>
-      Click and review the <b>Analytics</b> tab. This page shows the daily application and user/member limits with the percent used for each resource endpoint.
-    </li>
-   </ol>
+    1. To display the settings page, click the **Settings** tab. On the **App Settings** section, click **Verify** under **Company**. A popup window will be displayed. To generate the verification URL, click on **Generate URL**, then copy and send the URL to the Page Admin (this may be you). Click on **I'm done**.
+    If you are the administrator of your Page, simply run the URL in a new tab (if not, an administrator will have to do the next step). Click on **Verify**. Finally, Refresh the tab of app creation, the app should now be associated with your Page.
+
+    2.  To display the Products page, click the **Product** tab. For **Marketing Developer Platform** click on the **Request access**. A popup window will be displayed. Review and Select **I have read and agree to these terms**. Finally, click **Request access**. 
+    
+    3. To authorize your application, click the **Auth** tab. The authentication page is displayed. Copy the **client_id** and **client_secret** (for later steps). For **Oauth 2.0 settings**, Provide a **redirect_uri** (for later steps).
+    
+    4. Click and review the **Analytics** tab. This page shows the daily application and user/member limits with the percent used for each resource endpoint.
 
 
 4. (Optional for Airbyte Cloud) Authorize your app. In case your authorization expires:
@@ -113,10 +105,9 @@ To edit these roles, sign in to Campaign Manager and follow [these instructions]
 4. Add `Start Date` - the starting point for your data replication.
 5. Add your `Account IDs (Optional)` if required.
 6. Choose between Authentication Options:
-    <ol type="I">
-      <li>For <b>OAuth2.0:</b> Copy and paste info (<b>Client ID</b>, <b>Client Secret</b>) from your <b>LinkedIn Ads developer application</b>, and obtain the <b>Refresh Token</b> using <b>Set up LinkedIn Ads</b>  guide steps and paste it into the corresponding field.</li>
-      <li>For <b>Access Token:</b> Obtain the <b>Acess Token</b> using <b>Set up LinkedIn Ads</b>  guide steps and paste it into the corresponding field.</li></li>
-    </ol>
+    1. For **OAuth2.0:** Copy and paste info (**Client ID**, **Client Secret**) from your **LinkedIn Ads developer application**, and obtain the **Refresh Token** using **Set up LinkedIn Ads**  guide steps and paste it into the corresponding field.
+    2. For **Access Token:** Obtain the **Access Token** using **Set up LinkedIn Ads**  guide steps and paste it into the corresponding field.
+
 7. Click **Set up source**.
 
 ## Supported Streams and Sync Modes
@@ -190,4 +181,6 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 | 0.1.2   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                                                                 |
 | 0.1.1   | 2021-10-02 | [6610](https://github.com/airbytehq/airbyte/pull/6610)   | Fix for `Campaigns/targetingCriteria` transformation, coerced `Creatives/variables/values` to string by default |
 | 0.1.0   | 2021-09-05 | [5285](https://github.com/airbytehq/airbyte/pull/5285)   | Initial release of Native LinkedIn Ads connector for Airbyte                                                    |
+
+
 
