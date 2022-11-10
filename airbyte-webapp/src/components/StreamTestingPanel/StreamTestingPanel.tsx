@@ -15,7 +15,12 @@ import { TestControls } from "./TestControls";
 export const StreamTestingPanel: React.FC<unknown> = () => {
   const { formatMessage } = useIntl();
   const { jsonManifest, selectedStream, configJson } = useConnectorBuilderState();
-  const { data: streamReadData, refetch: readStream } = useReadStream({
+  const {
+    data: streamReadData,
+    refetch: readStream,
+    isError,
+    error,
+  } = useReadStream({
     manifest: jsonManifest,
     stream: selectedStream.name,
     config: configJson,
@@ -58,7 +63,9 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
           hideSecondPanel={streamReadData.logs.length === 0}
         />
       ) : (
-        <div className={styles.placeholder}>{formatMessage({ id: "connectorBuilder.resultsPlaceholder" })}</div>
+        isError && (
+          <div>{error instanceof Error ? error.message : formatMessage({ id: "connectorBuilder.unknownError" })}</div>
+        )
       )}
     </div>
   );
