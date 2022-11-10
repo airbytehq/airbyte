@@ -903,11 +903,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      # - name: Delete default old docker and replace it with a new one
-      #   shell: bash
-      #   run: |
-      #     sudo apt-get remove docker.io || sudo apt-get remove docker
-      #     curl -fsSL https://get.docker.com | bash -
+      - name: Delete default old docker and replace it with a new one
+        shell: bash
+        run: |
+          sudo apt-get remove docker.io || sudo apt-get remove docker
+          curl -fsSL https://get.docker.com | bash -
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
