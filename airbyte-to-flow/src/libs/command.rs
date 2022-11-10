@@ -35,15 +35,15 @@ pub fn check_exit_status(message: &str, result: std::io::Result<ExitStatus>) -> 
 // time for us to write down configuration files for Airbyte connectors before starting them up.
 // The stdin passed to delayed connector processes must start with a line that serves as a signal
 // for readiness of the configuration files.
-pub fn invoke_connector_delayed(entrypoint: String) -> Result<Child, Error> {
+pub fn invoke_connector_delayed(entrypoint: String, log_level: String) -> Result<Child, Error> {
     tracing::debug!(%entrypoint, "invoke_connector_delayed");
-
 
     invoke_connector(
         Stdio::piped(),
         Stdio::piped(),
         Stdio::inherit(),
         &format!("read -r connector_proxy_dummy_var && exec {entrypoint}"),
+        log_level,
     )
 }
 
@@ -53,6 +53,7 @@ pub fn invoke_connector(
     stdout: Stdio,
     stderr: Stdio,
     entrypoint: &str,
+    log_level: String,
 ) -> Result<Child, Error> {
     tracing::debug!(%entrypoint, "invoke_connector");
 
@@ -60,6 +61,7 @@ pub fn invoke_connector(
         .stdin(stdin)
         .stdout(stdout)
         .stderr(stderr)
+        .env("LOG_LEVEL", log_level)
         .args(vec!["-c", entrypoint])
         .spawn()
         .map_err(|e| e.into())
