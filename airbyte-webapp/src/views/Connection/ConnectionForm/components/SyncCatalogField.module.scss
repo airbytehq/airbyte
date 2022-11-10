@@ -1,7 +1,7 @@
 @use "scss/_variables";
 
 .header {
-  margin: 10px 0 0;
+  margin: variables.$spacing-md 0 0;
   display: flex;
   justify-content: space-between;
   align-items: center;

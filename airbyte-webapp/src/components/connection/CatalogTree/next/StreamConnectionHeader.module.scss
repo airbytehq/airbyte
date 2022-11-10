@@ -5,7 +5,7 @@ $icon-size: 15px;
 .container {
   display: flex;
   flex-direction: row;
-  padding: variables.$spacing-xl calc(variables.$spacing-lg * 2) 0;
+  padding: variables.$spacing-xl calc(#{variables.$spacing-lg} * 2) 0;
   height: 43px;
   align-items: center;
   overflow: hidden;
