@@ -10,6 +10,15 @@ definitions:
     request_options_provider:
       request_headers:
         x-api-key: "{{ config['api_key'] }}"
+    error_handler:
+      type: "CompositeErrorHandler"
+      error_handlers:
+        - response_filters:
+            - predicate: "{{ 'Too much requests' in response }}"
+              action: RETRY
+          backoff_strategies:
+            - type: "ConstantBackoffStrategy"
+              backoff_time_in_seconds: 15
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
