@@ -30,12 +30,12 @@ definitions:
       $ref: "*ref(definitions.requester)"
   base_stream:
     primary_key: "id"
-    checkpoint_interval: 500
     retriever:
       $ref: "*ref(definitions.retriever)"
   base_incremental_stream:
     $ref: "*ref(definitions.base_stream)"
     stream_cursor_field: "date_upd"
+    checkpoint_interval: 500
     retriever:
       $ref: "*ref(definitions.retriever)"
       stream_slicer:
