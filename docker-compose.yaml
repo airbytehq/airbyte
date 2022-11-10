@@ -216,7 +216,7 @@ services:
     container_name: airbyte-connector-builder-server
     restart: unless-stopped
     ports:
-      - 8003
+      - 80
     environment:
       - AIRBYTE_VERSION=${VERSION}
     networks:
