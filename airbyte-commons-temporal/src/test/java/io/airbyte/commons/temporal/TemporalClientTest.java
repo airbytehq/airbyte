@@ -326,12 +326,12 @@ public class TemporalClientTest {
 
   @Nested
   @DisplayName("Test delete connection method.")
-  class DeleteConnection {
+  class ForceCancelConnection {
 
     @Test
     @SuppressWarnings(UNCHECKED)
     @DisplayName("Test delete connection method when workflow is in a running state.")
-    void testDeleteConnection() {
+    void testforceCancelConnection() {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
       final WorkflowState mWorkflowState = mock(WorkflowState.class);
       when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
@@ -349,54 +349,9 @@ public class TemporalClientTest {
           .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
 
       temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig, CONNECTION_ID);
-      temporalClient.deleteConnection(CONNECTION_ID);
+      temporalClient.forceDeleteWorkflow(CONNECTION_ID);
 
-      verify(workflowClient, Mockito.never()).newSignalWithStartRequest();
-      verify(mConnectionManagerWorkflow).deleteConnection();
-    }
-
-    @Test
-    @SuppressWarnings(UNCHECKED)
-    @DisplayName("Test delete connection method when workflow is in an unexpected state")
-    void testDeleteConnectionInUnexpectedState() {
-      final ConnectionManagerWorkflow mTerminatedConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
-      when(mTerminatedConnectionManagerWorkflow.getState())
-          .thenThrow(new IllegalStateException(EXCEPTION_MESSAGE));
-      when(workflowClient.newWorkflowStub(any(Class.class), any(String.class))).thenReturn(mTerminatedConnectionManagerWorkflow);
-
-      final ConnectionManagerWorkflow mNewConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
-      when(workflowClient.newWorkflowStub(any(Class.class), any(WorkflowOptions.class))).thenReturn(mNewConnectionManagerWorkflow);
-      final BatchRequest mBatchRequest = mock(BatchRequest.class);
-      when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
-
-      temporalClient.deleteConnection(CONNECTION_ID);
-      verify(workflowClient).signalWithStart(mBatchRequest);
-
-      // Verify that the deleteConnection signal was passed to the batch request by capturing the
-      // argument,
-      // executing the signal, and verifying that the desired signal was executed
-      final ArgumentCaptor<Proc> batchRequestAddArgCaptor = ArgumentCaptor.forClass(Proc.class);
-      verify(mBatchRequest).add(batchRequestAddArgCaptor.capture());
-      final Proc signal = batchRequestAddArgCaptor.getValue();
-      signal.apply();
-      verify(mNewConnectionManagerWorkflow).deleteConnection();
-    }
-
-    @Test
-    @SuppressWarnings(UNCHECKED)
-    @DisplayName("Test delete connection method when workflow has already been deleted")
-    void testDeleteConnectionOnDeletedWorkflow() {
-      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
-      final WorkflowState mWorkflowState = mock(WorkflowState.class);
-      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
-      when(mWorkflowState.isDeleted()).thenReturn(true);
-      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
-      mockWorkflowStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_COMPLETED);
-
-      temporalClient.deleteConnection(CONNECTION_ID);
-
-      verify(temporalClient).deleteConnection(CONNECTION_ID);
-      verifyNoMoreInteractions(temporalClient);
+      verify(connectionManagerUtils).deleteWorkflowIfItExist(workflowClient, CONNECTION_ID);
     }
 
   }

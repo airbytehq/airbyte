@@ -8,6 +8,7 @@ import logging
 import traceback
 from datetime import datetime
 from typing import Any, Iterable, Iterator, Mapping, MutableMapping
+from urllib.parse import urlparse
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
@@ -83,10 +84,14 @@ class SourceFile(Source):
             try:
                 config["reader_options"] = json.loads(config["reader_options"])
             except ValueError:
-                raise Exception("reader_options is not valid JSON")
+                raise ConfigurationError("reader_options is not valid JSON")
         else:
             config["reader_options"] = {}
         config["url"] = dropbox_force_download(config["url"])
+
+        parse_result = urlparse(config["url"])
+        if parse_result.netloc == "docs.google.com" and parse_result.path.lower().startswith("/spreadsheets/"):
+            raise ConfigurationError(f'Failed to load {config["url"]}: please use the Official Google Sheets Source connector')
         return config
 
     def check(self, logger, config: Mapping) -> AirbyteConnectionStatus:
@@ -94,14 +99,14 @@ class SourceFile(Source):
         Check involves verifying that the specified file is reachable with
         our credentials.
         """
-        config = self._validate_and_transform(config)
+        try:
+            config = self._validate_and_transform(config)
+        except ConfigurationError as e:
+            logger.error(str(e))
+            return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
+
         client = self._get_client(config)
         source_url = client.reader.full_url
-        logger.info(f"Checking access to {source_url}...")
-        if "docs.google.com/spreadsheets" in source_url:
-            reason = f"Failed to load {source_url}: please use the Official Google Sheets Source connector"
-            logger.error(reason)
-            return AirbyteConnectionStatus(status=Status.FAILED, message=reason)
         try:
             with client.reader.open():
                 list(client.streams)
