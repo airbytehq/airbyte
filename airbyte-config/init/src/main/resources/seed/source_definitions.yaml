@@ -1182,6 +1182,13 @@
   icon: redshift.svg
   sourceType: database
   releaseStage: alpha
+- name: Reply.io
+  sourceDefinitionId: 8cc6537e-f8a6-423c-b960-e927af76116e
+  dockerRepository: airbyte/source-reply-io
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/reply-io
+  sourceType: api
+  releaseStage: alpha
 - name: Retently
   sourceDefinitionId: db04ecd1-42e7-4115-9cec-95812905c626
   dockerRepository: airbyte/source-retently
