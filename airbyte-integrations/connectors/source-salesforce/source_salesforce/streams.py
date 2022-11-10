@@ -251,7 +251,7 @@ class BulkSalesforceStream(SalesforceStream):
         for i in range(0, self.MAX_RETRY_NUMBER):
             job_id = self.create_stream_job(query=query, url=url)
             if not job_id:
-                return None, None
+                return None, job_status
             job_full_url = f"{url}/{job_id}"
             job_status = self.wait_for_job(url=job_full_url)
             if job_status not in ["UploadComplete", "InProgress"]:
