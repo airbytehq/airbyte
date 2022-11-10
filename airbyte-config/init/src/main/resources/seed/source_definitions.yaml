@@ -1117,6 +1117,14 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/rki-covid
   sourceType: api
   releaseStage: alpha
+- name: RSS
+  sourceDefinitionId: 0efee448-6948-49e2-b786-17db50647908 
+  dockerRepository: airbyte/source-rss
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/rss
+  icon: rss.svg
+  sourceType: api
+  releaseStage: alpha
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
