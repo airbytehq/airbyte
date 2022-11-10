@@ -32,7 +32,7 @@ public class ProtocolVersionChecker {
   private final JobPersistence jobPersistence;
   private final Configs configs;
   private final ConfigRepository configRepository;
-  private final DefinitionsProvider definitionsProvider;
+  private final Optional<DefinitionsProvider> definitionsProvider;
 
   // Dependencies could be simplified once we break some pieces up:
   // * JobPersistence for accessing the airbyte_metadata table.
@@ -41,7 +41,7 @@ public class ProtocolVersionChecker {
   public ProtocolVersionChecker(final JobPersistence jobPersistence,
                                 final Configs configs,
                                 final ConfigRepository configRepository,
-                                final DefinitionsProvider definitionsProvider) {
+                                final Optional<DefinitionsProvider> definitionsProvider) {
     this.jobPersistence = jobPersistence;
     this.configs = configs;
     this.configRepository = configRepository;
@@ -177,13 +177,17 @@ public class ProtocolVersionChecker {
   }
 
   protected Stream<Entry<UUID, Version>> getProtocolVersionsForActorDefinitions(final ActorType actorType) {
+    if (definitionsProvider.isEmpty()) {
+      return Stream.empty();
+    }
+
     Stream<Entry<UUID, Version>> stream;
     if (actorType == ActorType.SOURCE) {
-      stream = definitionsProvider.getSourceDefinitions()
+      stream = definitionsProvider.get().getSourceDefinitions()
           .stream()
           .map(def -> Map.entry(def.getSourceDefinitionId(), AirbyteProtocolVersion.getWithDefault(def.getSpec().getProtocolVersion())));
     } else {
-      stream = definitionsProvider.getDestinationDefinitions()
+      stream = definitionsProvider.get().getDestinationDefinitions()
           .stream()
           .map(def -> Map.entry(def.getDestinationDefinitionId(), AirbyteProtocolVersion.getWithDefault(def.getSpec().getProtocolVersion())));
     }

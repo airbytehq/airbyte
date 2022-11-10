@@ -48,7 +48,7 @@ class ProtocolVersionCheckerTest {
     configRepository = mock(ConfigRepository.class);
     definitionsProvider = mock(DefinitionsProvider.class);
     jobPersistence = mock(JobPersistence.class);
-    protocolVersionChecker = new ProtocolVersionChecker(jobPersistence, configs, configRepository, definitionsProvider);
+    protocolVersionChecker = new ProtocolVersionChecker(jobPersistence, configs, configRepository, Optional.of(definitionsProvider));
 
     when(jobPersistence.getVersion()).thenReturn(Optional.of("1.2.3"));
   }
@@ -274,6 +274,47 @@ class ProtocolVersionCheckerTest {
 
     final Optional<AirbyteProtocolVersionRange> actualRange = protocolVersionChecker.validate(supportAutoUpgrade);
     assertEquals(Optional.empty(), actualRange);
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  void testValidateFailsOnProtocolRangeChangeWithoutDefinitionsProvider(final boolean supportAutoUpgrade) throws Exception {
+    protocolVersionChecker = new ProtocolVersionChecker(jobPersistence, configs, configRepository, Optional.empty());
+
+    setCurrentProtocolRangeRange(V0_0_0, V1_0_0);
+    setTargetProtocolRangeRange(V1_0_0, V2_0_0);
+
+    final UUID source1 = UUID.randomUUID();
+    final UUID dest1 = UUID.randomUUID();
+
+    final Map<UUID, Entry<ActorType, Version>> initialActorDefinitions = Map.of(
+        source1, Map.entry(ActorType.SOURCE, V0_0_0),
+        dest1, Map.entry(ActorType.DESTINATION, V0_0_0));
+    when(configRepository.getActorDefinitionToProtocolVersionMap()).thenReturn(initialActorDefinitions);
+
+    final Optional<AirbyteProtocolVersionRange> actualRange = protocolVersionChecker.validate(supportAutoUpgrade);
+    assertEquals(Optional.empty(), actualRange);
+  }
+
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  void testValidateSucceedsWhenNoProtocolRangeChangeWithoutDefinitionsProvider(final boolean supportAutoUpgrade) throws Exception {
+    protocolVersionChecker = new ProtocolVersionChecker(jobPersistence, configs, configRepository, Optional.empty());
+
+    setCurrentProtocolRangeRange(V0_0_0, V2_0_0);
+    setTargetProtocolRangeRange(V0_0_0, V2_0_0);
+
+    final UUID source1 = UUID.randomUUID();
+    final UUID dest1 = UUID.randomUUID();
+
+    final Map<UUID, Entry<ActorType, Version>> initialActorDefinitions = Map.of(
+        source1, Map.entry(ActorType.SOURCE, V0_0_0),
+        dest1, Map.entry(ActorType.DESTINATION, V0_0_0));
+    when(configRepository.getActorDefinitionToProtocolVersionMap()).thenReturn(initialActorDefinitions);
+
+    final Optional<AirbyteProtocolVersionRange> actualRange = protocolVersionChecker.validate(supportAutoUpgrade);
+    assertEquals(Optional.of(new AirbyteProtocolVersionRange(V0_0_0, V2_0_0)), actualRange);
   }
 
   private void setCurrentProtocolRangeRange(final Version min, final Version max) throws IOException {

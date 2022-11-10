@@ -70,7 +70,7 @@ public class BootloaderApp {
   private final FeatureFlags featureFlags;
   private final SecretMigrator secretMigrator;
   private ConfigRepository configRepository;
-  private DefinitionsProvider definitionsProvider;
+  private Optional<DefinitionsProvider> definitionsProvider;
   private Database configDatabase;
   private Database jobDatabase;
   private JobPersistence jobPersistence;
@@ -105,7 +105,7 @@ public class BootloaderApp {
                        final DSLContext jobsDslContext,
                        final Flyway configsFlyway,
                        final Flyway jobsFlyway,
-                       final DefinitionsProvider definitionsProvider,
+                       final Optional<DefinitionsProvider> definitionsProvider,
                        final boolean autoUpgradeConnectors) {
     this.configs = configs;
     this.postLoadExecution = postLoadExecution;
@@ -142,7 +142,7 @@ public class BootloaderApp {
     this.autoUpgradeConnectors = false;
 
     try {
-      this.definitionsProvider = getLocalDefinitionsProvider();
+      this.definitionsProvider = Optional.of(getLocalDefinitionsProvider());
     } catch (final IOException e) {
       LOGGER.error("Unable to initialize persistence.", e);
     }
@@ -166,14 +166,14 @@ public class BootloaderApp {
     this.configsFlyway = configsFlyway;
     this.jobsDslContext = jobsDslContext;
     this.jobsFlyway = jobsFlyway;
-    this.definitionsProvider = definitionsProvider;
+    this.definitionsProvider = Optional.of(definitionsProvider);
     this.autoUpgradeConnectors = autoUpgradeConnectors;
 
     initPersistences(configsDslContext, jobsDslContext);
 
     postLoadExecution = () -> {
       try {
-        final ApplyDefinitionsHelper applyDefinitionsHelper = new ApplyDefinitionsHelper(configRepository, this.definitionsProvider);
+        final ApplyDefinitionsHelper applyDefinitionsHelper = new ApplyDefinitionsHelper(configRepository, this.definitionsProvider.get());
         applyDefinitionsHelper.apply();
 
         if (featureFlags.forceSecretMigration() || !jobPersistence.isSecretMigrated()) {
