@@ -57,13 +57,18 @@ const useSourceDefinitionList = (): {
 };
 
 const useSourceDefinition = <T extends string | undefined>(
-  id: T
+  sourceDefinitionId: T
 ): T extends string ? SourceDefinitionRead : SourceDefinitionRead | undefined => {
   const service = useGetSourceDefinitionService();
+  const workspaceId = useCurrentWorkspaceId();
 
-  return useSuspenseQuery(sourceDefinitionKeys.detail(id || ""), () => service.get(id || ""), {
-    enabled: isDefined(id),
-  });
+  return useSuspenseQuery(
+    sourceDefinitionKeys.detail(sourceDefinitionId || ""),
+    () => service.get({ workspaceId, sourceDefinitionId: sourceDefinitionId || "" }),
+    {
+      enabled: isDefined(sourceDefinitionId),
+    }
+  );
 };
 
 const useCreateSourceDefinition = () => {
@@ -89,6 +94,7 @@ const useCreateSourceDefinition = () => {
 const useUpdateSourceDefinition = () => {
   const service = useGetSourceDefinitionService();
   const queryClient = useQueryClient();
+  const workspaceId = useCurrentWorkspaceId();
 
   return useMutation<
     SourceDefinitionRead,
@@ -97,7 +103,7 @@ const useUpdateSourceDefinition = () => {
       sourceDefinitionId: string;
       dockerImageTag: string;
     }
-  >((sourceDefinition) => service.update(sourceDefinition), {
+  >((sourceDefinition) => service.update({ workspaceId, sourceDefinition }), {
     onSuccess: (data) => {
       queryClient.setQueryData(sourceDefinitionKeys.detail(data.sourceDefinitionId), data);
 

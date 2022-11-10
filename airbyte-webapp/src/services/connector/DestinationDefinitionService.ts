@@ -59,13 +59,18 @@ const useDestinationDefinitionList = (): {
 };
 
 const useDestinationDefinition = <T extends string | undefined>(
-  id: T
+  destinationDefinitionId: T
 ): T extends string ? DestinationDefinitionRead : DestinationDefinitionRead | undefined => {
   const service = useGetDestinationDefinitionService();
+  const workspaceId = useCurrentWorkspaceId();
 
-  return useSuspenseQuery(destinationDefinitionKeys.detail(id || ""), () => service.get(id || ""), {
-    enabled: isDefined(id),
-  });
+  return useSuspenseQuery(
+    destinationDefinitionKeys.detail(destinationDefinitionId || ""),
+    () => service.get({ workspaceId, destinationDefinitionId: destinationDefinitionId || "" }),
+    {
+      enabled: isDefined(destinationDefinitionId),
+    }
+  );
 };
 
 const useCreateDestinationDefinition = () => {
@@ -91,6 +96,7 @@ const useCreateDestinationDefinition = () => {
 const useUpdateDestinationDefinition = () => {
   const service = useGetDestinationDefinitionService();
   const queryClient = useQueryClient();
+  const workspaceId = useCurrentWorkspaceId();
 
   return useMutation<
     DestinationDefinitionRead,
@@ -99,7 +105,7 @@ const useUpdateDestinationDefinition = () => {
       destinationDefinitionId: string;
       dockerImageTag: string;
     }
-  >((destinationDefinition) => service.update(destinationDefinition), {
+  >((destinationDefinition) => service.update({ workspaceId, destinationDefinition }), {
     onSuccess: (data) => {
       queryClient.setQueryData(destinationDefinitionKeys.detail(data.destinationDefinitionId), data);
 

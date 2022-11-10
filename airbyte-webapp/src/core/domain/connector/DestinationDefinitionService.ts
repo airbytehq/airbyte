@@ -3,16 +3,17 @@ import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import {
   createCustomDestinationDefinition,
   CustomDestinationDefinitionCreate,
-  DestinationDefinitionUpdate,
-  getDestinationDefinition,
+  CustomDestinationDefinitionUpdate,
+  DestinationDefinitionIdWithWorkspaceId,
+  getDestinationDefinitionForWorkspace,
   listDestinationDefinitionsForWorkspace,
   listLatestDestinationDefinitions,
-  updateDestinationDefinition,
+  updateCustomDestinationDefinition,
 } from "../../request/AirbyteClient";
 
 export class DestinationDefinitionService extends AirbyteRequestService {
-  public get(destinationDefinitionId: string) {
-    return getDestinationDefinition({ destinationDefinitionId }, this.requestOptions);
+  public get(body: DestinationDefinitionIdWithWorkspaceId) {
+    return getDestinationDefinitionForWorkspace(body, this.requestOptions);
   }
 
   public list(workspaceId: string) {
@@ -23,8 +24,8 @@ export class DestinationDefinitionService extends AirbyteRequestService {
     return listLatestDestinationDefinitions(this.requestOptions);
   }
 
-  public update(body: DestinationDefinitionUpdate) {
-    return updateDestinationDefinition(body, this.requestOptions);
+  public update(body: CustomDestinationDefinitionUpdate) {
+    return updateCustomDestinationDefinition(body, this.requestOptions);
   }
 
   public create(body: CustomDestinationDefinitionCreate) {
