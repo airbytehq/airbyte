@@ -43,7 +43,6 @@ import io.airbyte.workers.internal.AirbyteSource;
 import io.airbyte.workers.internal.MessageTracker;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -465,7 +464,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         final var relevantStream = maybeRelevantStream.get();
         final JsonNode schema = relevantStream.getStream().getJsonSchema();
         final JsonNode columns = schema.findValue("properties");
-        List<String> columnsToRetain = Collections.emptyList();
+        List<String> columnsToRetain = new ArrayList<>();
         columns.fieldNames().forEachRemaining(columnsToRetain::add);
 
         final JsonNode data = record.getData();
