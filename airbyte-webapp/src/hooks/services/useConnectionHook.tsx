@@ -60,11 +60,21 @@ export interface ListConnection {
 }
 
 function useWebConnectionService() {
-  const config = useConfig();
+  // const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
+
   return useInitService(
-    () => new WebBackendConnectionService(config.apiUrl, middlewares),
-    [config.apiUrl, middlewares]
+    () =>
+      new WebBackendConnectionService(
+        // config.apiUrl,
+        process.env.REACT_APP_BASE_URL as string,
+        middlewares
+      ),
+    [
+      // config.apiUrl,
+      process.env.REACT_APP_BASE_URL,
+      middlewares,
+    ]
   );
 }
 

@@ -24,12 +24,14 @@ export interface AuthenticatedUser {
   workspaceId: string;
 }
 
+const USER_KEY = "daspire-user";
+
 export function setAuthenticatedUser(userData: AuthenticatedUser) {
-  localStorage.setItem("air-byte-user", JSON.stringify(userData));
+  localStorage.setItem(USER_KEY, JSON.stringify(userData));
 }
 
 export function getAuthenticatedUser() {
-  return JSON.parse(localStorage.getItem("air-byte-user") as string);
+  return JSON.parse(localStorage.getItem(USER_KEY) as string);
 }
 
 export class AuthService extends AirbyteRequestService {

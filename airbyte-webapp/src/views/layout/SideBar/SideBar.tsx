@@ -142,7 +142,7 @@ const SideBar: React.FC = () => {
         </Link>
         <Menu>
           <li>
-            <NavLink className={navLinkClassName} to={RoutePaths.Onboarding}>
+            <NavLink className={navLinkClassName} to={RoutePaths.Connections}>
               <HelpIcon icon={faHome} />
               <Text>
                 <FormattedMessage id="sidebar.DaspireDashboard" />

@@ -1,11 +1,12 @@
 import { Field, FieldProps, Formik } from "formik";
-import React from "react";
+import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
 import { LabeledInput, Link, LoadingButton } from "components";
-// import HeadTitle from "components/HeadTitle";
+import Alert from "components/Alert";
+import HeadTitle from "components/HeadTitle";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 // import useRouter from "hooks/useRouter";
@@ -30,6 +31,7 @@ const LoginPageValidationSchema = yup.object().shape({
 });
 
 const LoginPage: React.FC = () => {
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const { formatMessage } = useIntl();
   const navigate = useNavigate();
   // const { login } = useAuthService();
@@ -39,8 +41,14 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
+      <HeadTitle titles={[{ title: "Sign In" }]} />
+      <Alert
+        message={errorMessage}
+        onClose={() => {
+          setErrorMessage("");
+        }}
+      />
       <img src="/daspireLogo.svg" alt="logo" width={50} />
-      {/* <HeadTitle titles={[{ id: "login.login" }]} />*/}
       <div className={styles.formTitle}>
         <FormattedMessage id="login.title" />
       </div>
@@ -53,9 +61,13 @@ const LoginPage: React.FC = () => {
         validationSchema={LoginPageValidationSchema}
         onSubmit={
           async (values) => {
-            Signin.post(values).then(() => {
-              navigate(`/${RoutePaths.Onboarding}`);
-            });
+            Signin.post(values)
+              .then(() => {
+                navigate(`/${RoutePaths.Connections}`);
+              })
+              .catch((err: any) => {
+                setErrorMessage(err.message);
+              });
           }
           // return login(values)
           //     .then(() => replace(query.from ?? "/"))
@@ -68,9 +80,9 @@ const LoginPage: React.FC = () => {
           //     });
         }
         validateOnBlur
-        validateOnChange={false}
+        validateOnChange
       >
-        {({ isSubmitting }) => (
+        {({ isValid, dirty, isSubmitting }) => (
           <Form className={styles.form}>
             <FieldItem>
               <Field name="email">
@@ -105,7 +117,13 @@ const LoginPage: React.FC = () => {
               </Field>
             </FieldItem>
             <BottomBlock>
-              <LoadingButton white className={styles.logInBtn} type="submit" isLoading={isSubmitting}>
+              <LoadingButton
+                white
+                className={styles.logInBtn}
+                disabled={!(isValid && dirty)}
+                type="submit"
+                isLoading={isSubmitting}
+              >
                 <FormattedMessage id="login.button" />
               </LoadingButton>
             </BottomBlock>
