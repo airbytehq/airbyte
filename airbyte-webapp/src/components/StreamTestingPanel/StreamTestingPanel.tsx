@@ -23,8 +23,8 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
   const [logsFlex, setLogsFlex] = useState(0);
 
   const handleLogsTitleClick = () => {
-    // expand to 50% if it is currently less than 50%, otherwise minimize it
-    setLogsFlex((prevFlex) => (prevFlex < 0.5 ? 0.5 : 0));
+    // expand to 50% if it is currently minimized, otherwise minimize it
+    setLogsFlex((prevFlex) => (prevFlex < 0.06 ? 0.5 : 0));
   };
 
   return (
