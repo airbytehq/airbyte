@@ -4,7 +4,7 @@
 
 NOTE ⚠️ Changes in this PR affect the following connectors. Make sure to do the following as needed:
 - Run integration tests
-- Bump connector version
+- Bump connector or module version
 - Add changelog
 - Publish the new version
 
@@ -38,7 +38,16 @@ NOTE ⚠️ Changes in this PR affect the following connectors. Make sure to do 
 
 </details>
 
+<details open>
+<summary>
+
+### Other Modules
+
 {others}
+
+</summary>
+
+</details>
 
 <details>
 

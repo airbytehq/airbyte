@@ -185,11 +185,6 @@ def write_report(depended_connectors):
     with open(DESTINATION_DEFINITIONS_PATH, 'r') as stream:
         destination_definitions = yaml.safe_load(stream)
 
-    others_md = ""
-    if affected_others:
-        others_md += "The following were also affected:\n"
-        others_md += as_bulleted_markdown_list(affected_others)
-
     affected_sources.sort()
     affected_destinations.sort()
     affected_others.sort()
@@ -207,7 +202,7 @@ def write_report(depended_connectors):
         destination_status_summary=destination_status_summary,
         source_rows=source_rows,
         destination_rows=destination_rows,
-        others=others_md,
+        others=as_bulleted_markdown_list(affected_others),
         num_sources=len(affected_sources),
         num_destinations=len(affected_destinations)
     )
