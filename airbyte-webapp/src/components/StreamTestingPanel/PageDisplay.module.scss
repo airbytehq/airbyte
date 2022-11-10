@@ -35,3 +35,16 @@
   max-height: 100%;
   overflow-y: auto;
 }
+
+// add a fade at the bottom of the tabPanel
+.tabPanel::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+  background-image: linear-gradient(to bottom, colors.$transparentColor, colors.$white 100%);
+  width: 100%;
+  height: variables.$spacing-xl;
+}

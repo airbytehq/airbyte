@@ -63,7 +63,7 @@ Setting up a connection involves configuring the following parameters:
 | Parameter                              | Description                                                                                                                                                                                                                                                           |
 |----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Replication frequency                  | How often should the data sync?                                                                                                                                                                                                                                       |
-| Data residency                         | Where should the data be processed? To choose the preferred data processing location for all of your connections, set your default [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud#choose-your-default-data-residency). |
+| Data residency                         | Where should the data be processed? |
 | Destination Namespace and stream names | Where should the replicated data be written?                                                                                                                                                                                                                          |
 | Catalog selection                      | Which streams and fields should be replicated from the source to the destination?                                                                                                                                                                                     |
 | Sync mode                              | How should the streams be replicated (read and written)?                                                                                                                                                                                                              |
@@ -192,6 +192,13 @@ Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airby
 * 34.106.60.246
 
 ### European Union
+
+:::note 
+
+Some workflows still run in the US, even when the data residency is in the EU. If you use the EU as a data residency, you must allowlist the following IP addresses from both GCP us-west3 and AWS eu-west-3.
+
+:::
+
 #### GCP region: us-west3
 * 34.106.109.131
 * 34.106.196.165
