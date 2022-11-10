@@ -15,7 +15,7 @@ import { Text } from "components/ui/Text";
 
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { DbtCloudJob, useDbtIntegration } from "packages/cloud/services/dbtCloud";
+import { DbtCloudJob, useDbtIntegration, useAvailableDbtJobs } from "packages/cloud/services/dbtCloud";
 import { RoutePaths } from "pages/routePaths";
 
 import dbtLogo from "./dbt-bit_tm.svg";
@@ -50,6 +50,8 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
   const onSubmit = (values: DbtJobListValues, { resetForm }: FormikHelpers<DbtJobListValues>) => {
     saveJobs(values.jobs).then(() => resetForm({ values }));
   };
+
+  const availableDbtJobs = useAvailableDbtJobs();
 
   return (
     <Formik

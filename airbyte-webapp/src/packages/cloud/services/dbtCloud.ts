@@ -9,12 +9,19 @@
 // - custom domains aren't yet supported
 
 import isEmpty from "lodash/isEmpty";
-import { useMutation } from "react-query";
+import { useMutation, useQuery } from "react-query";
 
 import { OperatorType, WebBackendConnectionRead, OperationRead, WebhookConfigRead } from "core/request/AirbyteClient";
 import { useWebConnectionService } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import {
+  webBackendGetAvailableDbtJobsForWorkspace,
+  WorkspaceGetDbtJobsResponse,
+} from "packages/cloud/lib/domain/dbtCloud/api";
+import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useUpdateWorkspace } from "services/workspaces/WorkspacesService";
+
+import { useConfig } from "./config";
 
 export interface DbtCloudJob {
   account: string;
@@ -109,4 +116,30 @@ export const useDbtIntegration = (connection: WebBackendConnectionRead) => {
     dbtCloudJobs,
     saveJobs,
   };
+};
+
+export const useAvailableDbtJobs = () => {
+  const { cloudApiUrl } = useConfig();
+  const config = { apiUrl: cloudApiUrl };
+  const middlewares = useDefaultRequestMiddlewares();
+  const requestOptions = { config, middlewares };
+  const workspace = useCurrentWorkspace();
+  const { workspaceId } = workspace;
+  const dbtConfigId = workspace.webhookConfigs?.find((config) => config.name?.includes("dbt"))?.id;
+
+  if (!dbtConfigId) {
+    throw new Error("cannot request available dbt jobs for a workspace with no dbt cloud integration configured");
+  }
+
+  const results = useQuery(
+    ["dbtCloud", dbtConfigId, "list"],
+    () => webBackendGetAvailableDbtJobsForWorkspace({ workspaceId, dbtConfigId }, requestOptions),
+    {
+      suspense: true,
+    }
+  );
+
+  // casting type to remove `| undefined`, since `suspense: true` will ensure the value
+  // is, in fact, available
+  return (results.data as WorkspaceGetDbtJobsResponse).availableDbtJobs;
 };
