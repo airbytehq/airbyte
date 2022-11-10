@@ -60,9 +60,9 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ job, jobConfigType }) 
     const minutesRemaining = Math.ceil(timeRemaining / 1000 / 60);
     const hoursRemaining = Math.ceil(minutesRemaining / 60);
     if (minutesRemaining <= 60) {
-      timeRemainingString = `${minutesRemaining} ${formatMessage({ id: "estimate.minutesRemaining" })}`;
+      timeRemainingString = formatMessage({ id: "estimate.minutesRemaining" }, { value: minutesRemaining });
     } else {
-      timeRemainingString = `${hoursRemaining} ${formatMessage({ id: "estimate.hoursRemaining" })}`;
+      timeRemainingString = formatMessage({ id: "estimate.hoursRemaining" }, { value: hoursRemaining });
     }
   }
 
@@ -85,7 +85,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ job, jobConfigType }) 
             <>
               <div>
                 {formatNumber(numeratorRecords)} {displayProgressBar ? "" : `/ ${formatNumber(denominatorRecords)}`}{" "}
-                {formatMessage({ id: "estimate.recordsSynced" })} @{" "}
+                {formatMessage({ id: "estimate.recordsSynced" }, { value: numeratorRecords })} @{" "}
                 {Math.round((numeratorRecords / elapsedTimeMS) * 1000)}{" "}
                 {formatMessage({ id: "estimate.recordsPerSecond" })}
               </div>
@@ -155,10 +155,14 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ job, jobConfigType }) 
                     {localNumerator && localDenominator
                       ? `${Math.round((localNumerator * 100) / localDenominator)}${formatMessage({
                           id: "estimate.percentComplete",
-                        })} (${formatNumber(localNumerator)} / ${formatNumber(localDenominator)} ${formatMessage({
-                          id: "estimate.recordsSynced",
-                        })})`
-                      : `${localNumerator} ${formatMessage({ id: "estimate.recordsSyncedThusFar" })} (${formatMessage({
+                        })} (${formatNumber(localNumerator)} / ${formatNumber(localDenominator)} ${formatMessage(
+                          { id: "estimate.recordsSynced" },
+                          { value: localNumerator }
+                        )})`
+                      : `${localNumerator} ${formatMessage(
+                          { id: "estimate.recordsSynced" },
+                          { value: localNumerator }
+                        )} (${formatMessage({
                           id: "estimate.noEstimate",
                         })})`}
                   </div>
