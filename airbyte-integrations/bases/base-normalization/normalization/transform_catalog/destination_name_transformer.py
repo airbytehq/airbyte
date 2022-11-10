@@ -27,13 +27,10 @@ DESTINATION_SIZE_LIMITS = {
     DestinationType.MSSQL.value: 64,
     # https://stackoverflow.com/questions/68358686/what-is-the-maximum-length-of-a-column-in-clickhouse-can-it-be-modified
     DestinationType.CLICKHOUSE.value: 63,
-<<<<<<< HEAD
-
-    DestinationType.TERADATA.value: 255,
-=======
     # https://docs.pingcap.com/tidb/stable/tidb-limitations
-    DestinationType.TIDB.value: 64,
->>>>>>> master
+    DestinationType.TIDB.value: 64,    
+    # https://docs.teradata.com/r/Teradata-VantageTM-SQL-Fundamentals-17.20/Basic-SQL-Syntax/Object-Names
+    DestinationType.TERADATA.value: 128,
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
@@ -245,8 +242,7 @@ class DestinationNameTransformer:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
         elif self.destination_type.value == DestinationType.TERADATA.value:
-            if not is_quoted and not self.needs_quotes(input_name):
-                result = input_name.lower()
+            pass
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result
@@ -288,7 +284,7 @@ class DestinationNameTransformer:
         elif self.destination_type.value == DestinationType.TIDB.value:
             result = input_name.lower()
         elif self.destination_type.value == DestinationType.TERADATA.value:
-            result = input_name.lower()
+            pass
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result
