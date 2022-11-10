@@ -10,7 +10,7 @@ airbytePython {
     moduleDirectory 'connector_builder'
 }
 
-task generateOpenApiPythonServer(type: GenerateTask){
+task generateOpenApiPythonServer(type: GenerateTask) {
     outputs.upToDateWhen { false }
 
     def generatedCodeDir = "$buildDir/server"
@@ -42,4 +42,17 @@ task generateOpenApiPythonServer(type: GenerateTask){
 }
 
 project.build.dependsOn(generateOpenApiPythonServer)
-    
+
+task prepareBuild(type: Copy) {
+    from layout.projectDirectory.file("setup.py")
+    from layout.projectDirectory.file("connector-builder")
+    from layout.projectDirectory.file("src")
+    from layout.projectDirectory.file("openapi")
+
+    into layout.buildDirectory.dir("docker")
+}
+
+tasks.named("buildDockerImage") {
+    dependsOn prepareBuild
+    dependsOn copyDocker
+}
