@@ -1,8 +1,10 @@
 package io.airbyte.commons.protocol.migrations;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.json.Jsons;
@@ -64,8 +66,9 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
             schema);
       }
     } else if (oldMessage.getType() == Type.RECORD) {
-      JsonNode data = newMessage.getRecord().getData();
-      upgradeRecord((ObjectNode)data);
+      JsonNode oldData = newMessage.getRecord().getData();
+      JsonNode newData = upgradeNode(oldData);
+      newMessage.getRecord().setData(newData);
     }
     return newMessage;
   }
@@ -295,24 +298,39 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
     }
   }
 
-  private static void upgradeRecord(ObjectNode data) {
-    Iterator<Entry<String, JsonNode>> fieldsIterator = data.fields();
-    Map<String, String> replacements = new HashMap<>();
-    while (fieldsIterator.hasNext()) {
-      Entry<String, JsonNode> next = fieldsIterator.next();
-      String key = next.getKey();
-      JsonNode value = next.getValue();
-      if (value.isNumber()) {
-        replacements.put(key, value.asText());
-      } else if (value.isObject()) {
-        // TODO
-      } else if (value.isArray()) {
-        // TODO
-      }
-    }
+  /**
+   * Returns a copy of oldData, with numeric values converted to strings.
+   * String and boolean values are returned as-is for convenience, i.e. this is not a true deep copy.
+   */
+  private static JsonNode upgradeNode(JsonNode oldData) {
+    if (oldData.isNumber()) {
+      // Base case: convert numbers to strings
+      return Jsons.convertValue(oldData.asText(), TextNode.class);
+    } else if (oldData.isObject()) {
+      // Recurse into each field of the object
+      ObjectNode newData = (ObjectNode)Jsons.emptyObject();
 
-    for (Map.Entry<String, String> replacement : replacements.entrySet()) {
-      data.put(replacement.getKey(), replacement.getValue());
+      Iterator<Entry<String, JsonNode>> fieldsIterator = oldData.fields();
+      while (fieldsIterator.hasNext()) {
+        Entry<String, JsonNode> next = fieldsIterator.next();
+        String key = next.getKey();
+        JsonNode value = next.getValue();
+
+        JsonNode newValue = upgradeNode(value);
+        newData.set(key, newValue);
+      }
+
+      return newData;
+    } else if (oldData.isArray()) {
+      // Recurse into each element of the array
+      ArrayNode newData = Jsons.arrayNode();
+      for (JsonNode element : oldData) {
+        newData.add(upgradeNode(element));
+      }
+      return newData;
+    } else {
+      // Base case: this is a string or boolean, so we don't need to modify it
+      return oldData;
     }
   }
 
