@@ -925,6 +925,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/news-api
   sourceType: api
   releaseStage: alpha
+- name: Newsdata
+  sourceDefinitionId: 60bd11d8-2632-4daa-a688-b47336d32093
+  dockerRepository: airbyte/source-newsdata
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/newsdata
+  sourceType: api
+  releaseStage: alpha
 - name: Notion
   sourceDefinitionId: 6e00b415-b02e-4160-bf02-58176a0ae687
   dockerRepository: airbyte/source-notion
