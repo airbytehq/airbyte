@@ -16,6 +16,7 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from dataclasses_jsonschema import JsonSchemaMixin
+from dateutil.relativedelta import relativedelta
 
 
 @dataclass
@@ -30,10 +31,12 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     `"<number><unit>"`
 
     where unit can be one of
+    - years, y
+    - months, m
     - weeks, w
     - days, d
 
-    For example, "1d" will produce windows of 1 day, and 2weeks windows of 2 weeks.
+    For example, "1d" will produce windows of 1 day, and "2w" windows of 2 weeks.
 
     The timestamp format accepts the same format codes as datetime.strfptime, which are
     all the format codes required by the 1989 C standard.
@@ -68,7 +71,9 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     stream_state_field_end: Optional[str] = None
     lookback_window: Optional[Union[InterpolatedString, str]] = None
 
-    timedelta_regex = re.compile(r"((?P<weeks>[\.\d]+?)w)?" r"((?P<days>[\.\d]+?)d)?$")
+    timedelta_regex = re.compile(
+        r"((?P<years>[\.\d]+?)y)?" r"((?P<months>[\.\d]+?)m)?" r"((?P<weeks>[\.\d]+?)w)?" r"((?P<days>[\.\d]+?)d)?$"
+    )
 
     def __post_init__(self, options: Mapping[str, Any]):
         if not isinstance(self.start_datetime, MinMaxDatetime):
@@ -188,14 +193,14 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         Parse a time string e.g. (2h13m) into a timedelta object.
         Modified from virhilo's answer at https://stackoverflow.com/a/4628148/851699
         :param time_str: A string identifying a duration. (eg. 2h13m)
-        :return datetime.timedelta: A datetime.timedelta object
+        :return relativedelta: A relativedelta object
         """
         parts = cls.timedelta_regex.match(time_str)
 
         assert parts is not None
 
         time_params = {name: float(param) for name, param in parts.groupdict().items() if param}
-        return datetime.timedelta(**time_params)
+        return relativedelta(**time_params)
 
     def get_request_params(
         self,

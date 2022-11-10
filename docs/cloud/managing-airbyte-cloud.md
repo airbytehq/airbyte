@@ -85,6 +85,7 @@ To switch between workspaces:
 3. Click the name of the workspace you want to switch to.
 
 ### Choose your default data residency
+
 Default data residency allows you to choose where your data is processed.
 
 :::note 
