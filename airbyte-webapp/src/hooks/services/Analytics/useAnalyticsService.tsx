@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 
 import { useConfig } from "config";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
@@ -9,14 +9,15 @@ export const analyticsServiceContext = React.createContext<AnalyticsService | nu
 
 const AnalyticsServiceProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const { version } = useConfig();
+  const analyticsService = useRef<AnalyticsService>();
 
-  const analyticsService: AnalyticsService = useMemo(() => {
-    return new AnalyticsService(version);
-    // We know the version of the app can't change without a page refresh, so we never need to reinitialize
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  if (!analyticsService.current) {
+    analyticsService.current = new AnalyticsService(version);
+  }
 
-  return <analyticsServiceContext.Provider value={analyticsService}>{children}</analyticsServiceContext.Provider>;
+  return (
+    <analyticsServiceContext.Provider value={analyticsService.current}>{children}</analyticsServiceContext.Provider>
+  );
 };
 
 export const useAnalyticsService = (): AnalyticsService => {
