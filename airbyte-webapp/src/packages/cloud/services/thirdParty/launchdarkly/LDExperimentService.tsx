@@ -9,6 +9,7 @@ import { LoadingPage } from "components";
 import { useConfig } from "config";
 import { useI18nContext } from "core/i18n";
 import { useAnalytics } from "hooks/services/Analytics";
+import { useAppMonitoringService, AppActionCodes } from "hooks/services/AppMonitoringService";
 import { ExperimentProvider, ExperimentService } from "hooks/services/Experiment";
 import type { Experiments } from "hooks/services/Experiment/experiments";
 import { FeatureSet, useFeatureService } from "hooks/services/Feature";
@@ -49,6 +50,7 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
   const { addContextProps: addAnalyticsContext } = useAnalytics();
   const { locale } = useIntl();
   const { setMessageOverwrite } = useI18nContext();
+  const { trackAction } = useAppMonitoringService();
 
   /**
    * This function checks for all experiments to find the ones beginning with "i18n_{locale}_"
@@ -103,8 +105,10 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
         // our timeout promise resolves first, we're going to show an error and assume the service
         // failed to initialize, i.e. we'll run without it.
         console.warn(`Failed to initialize LaunchDarkly service with reason: ${String(reason)}`);
+        trackAction(AppActionCodes.LD_LOAD_FAILURE);
         setState("failed");
-      });
+      })
+      .finally(() => "race finally() block");
   }
 
   useEffectOnce(() => {
