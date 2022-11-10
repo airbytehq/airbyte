@@ -28,6 +28,10 @@ runs:
       with:
         node-version: "lts/gallium"
 
+    - uses: actions/setup-python@v2
+      with:
+        python-version: "3.9"
+
     - name: Set up CI Gradle Properties
       run: |
         mkdir -p ~/.gradle/
