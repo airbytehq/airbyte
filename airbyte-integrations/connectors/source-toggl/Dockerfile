@@ -9,31 +9,30 @@ RUN apk --no-cache upgrade \
     && pip install --upgrade pip \
     && apk --no-cache add tzdata build-base
 
+
 COPY setup.py ./
 # install necessary packages to a temporary folder
-RUN python setup.py egg_info
-RUN pip install --prefix=/install -r *.egg-info/requires.txt
+RUN pip install --prefix=/install .
 
 # build a clean environment
 FROM base
-WORKDIR /airbyte/source_acceptance_test
+WORKDIR /airbyte/integration_code
 
 # copy all loaded and built libraries to a pure basic image
 COPY --from=builder /install /usr/local
 # add default timezone settings
 COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN echo "Etc/UTC" > /etc/timezone
-# Bash is installed for more convenient debugging.
+
+# bash is installed for more convenient debugging.
 RUN apk --no-cache add bash
 
-ENV ACCEPTANCE_TEST_DOCKER_CONTAINER 1
-
 # copy payload code only
-COPY pytest.ini setup.py ./
-COPY source_acceptance_test ./source_acceptance_test
-RUN pip install .
+COPY main.py ./
+COPY source_toggl ./source_toggl
 
-LABEL io.airbyte.version=0.2.18
-LABEL io.airbyte.name=airbyte/source-acceptance-test
+ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-ENTRYPOINT ["python", "-m", "pytest", "-p", "source_acceptance_test.plugin", "-r", "fEsx"]
+LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.name=airbyte/source-toggl
