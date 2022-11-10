@@ -2,9 +2,9 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 // import { Text } from "components/base/Text";
-// import HeadTitle from "components/HeadTitle";
-
 import styled from "styled-components";
+
+import HeadTitle from "components/HeadTitle";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 
@@ -58,6 +58,7 @@ const LogoText = styled.div`
 const Context = styled.div`
   padding-left: 70px;
   padding-right: 70px;
+  margin-top: 10px;
 `;
 
 const TitleContent = styled.div`
@@ -139,6 +140,7 @@ const SignupPage: React.FC<SignupPageProps> = () => {
   useTrackPage(PageTrackingCodes.SIGNUP);
   return (
     <Container>
+      <HeadTitle titles={[{ title: "Free Trial" }]} />
       <InformationContent>
         <ImageContent>
           <img src="/SignupCover.png" alt="cover" style={{ maxWidth: "80%", height: "auto", objectFit: "cover" }} />

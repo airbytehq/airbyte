@@ -22,7 +22,7 @@ import { LoginPage } from "./AuthPage/LoginPage";
 import SignupPage from "./AuthPage/SignupPage";
 import ConnectionPage from "./ConnectionPage";
 import DestinationPage from "./DestinationPage";
-import OnboardingPage from "./OnboardingPage";
+// import OnboardingPage from "./OnboardingPage";
 // import PreferencesPage from "./PreferencesPage";
 import { RoutePaths } from "./routePaths";
 import SettingsPage from "./SettingsPage";
@@ -40,22 +40,25 @@ import SourcesPage from "./SourcesPage";
 //   useAnalyticsIdentifyUser(workspace.workspaceId);
 // };
 
-const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = ({ workspace }) => {
-  return (
-    <MainView>
-      <ApiErrorBoundary>
-        <Routes>
-          <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
-          <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
-          <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
-          <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
-          {workspace ? <Route path={`${RoutePaths.Onboarding}/*`} element={<OnboardingPage />} /> : null}
-          <Route path="*" element={<Navigate to={workspace ? RoutePaths.Onboarding : RoutePaths.Connections} />} />
-        </Routes>
-      </ApiErrorBoundary>
-    </MainView>
-  );
-};
+const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = () =>
+  // { workspace }
+  {
+    return (
+      <MainView>
+        <ApiErrorBoundary>
+          <Routes>
+            <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
+            <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
+            <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
+            <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
+            {/* {workspace ? <Route path={`${RoutePaths.Onboarding}/*`} element={<OnboardingPage />} /> : null}
+          <Route path="*" element={<Navigate to={workspace ? RoutePaths.Onboarding : RoutePaths.Connections} />} /> */}
+            <Route path="*" element={<Navigate to={RoutePaths.Connections} />} />
+          </Routes>
+        </ApiErrorBoundary>
+      </MainView>
+    );
+  };
 
 // const PreferencesRoutes = () => (
 //   <Routes>

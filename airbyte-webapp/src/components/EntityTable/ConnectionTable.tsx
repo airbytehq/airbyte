@@ -81,7 +81,8 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
         Header: "",
         accessor: "lastSync",
         customWidth: 1,
-        Cell: ({ cell }: CellProps<ITableDataItem>) => <SwitchButton id={cell.value} />,
+        Cell: ({ cell }: CellProps<ITableDataItem>) => <SwitchButton id={`${cell.value}`} />,
+        // Cell: () => ( <SwitchButton id="checkbox" /> ),
       },
       {
         Header: (
@@ -203,8 +204,6 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
     ],
     [allowSync, entity, onChangeStatus, onSync, onSortClick, sortBy, sortOrder]
   );
-
-  console.log(columns, data);
 
   return (
     <Content>

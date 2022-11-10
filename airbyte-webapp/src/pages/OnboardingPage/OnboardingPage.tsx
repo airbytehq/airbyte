@@ -5,7 +5,7 @@ import styled from "styled-components";
 
 // import { Button } from "components";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
-// import HeadTitle from "components/HeadTitle";
+import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 
 import { useAnalyticsService, useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -95,6 +95,7 @@ const OnboardingPage: React.FC = () => {
 
   return (
     <ConnectorDocumentationWrapper>
+      <HeadTitle titles={[{ title: "Set First Connection" }]} />
       <ScreenContent>
         {!hasApiError && (
           <>
