@@ -10,7 +10,7 @@ interface FrequentlyUsedConnectorsProps {
   availableServices: ConnectorDefinition[];
   connectorType: "source" | "destination";
   connectorIds: string[];
-  onConnectorSelect: (id: string) => void;
+  onConnectorSelect: (connectorDefinitionId: string) => void;
 }
 
 export const FrequentlyUsedConnectors: React.FC<FrequentlyUsedConnectorsProps> = ({
@@ -22,9 +22,9 @@ export const FrequentlyUsedConnectors: React.FC<FrequentlyUsedConnectorsProps> =
   const { trackSelectedSuggestedDestination } = useAnalyticsTrackFunctions();
 
   const suggestedConnectors = useSuggestedConnectors({ availableServices, connectorIds });
-  const onConnectorCardClick = (id: string, connectorName: string) => {
-    onConnectorSelect(id);
-    trackSelectedSuggestedDestination(id, connectorName);
+  const onConnectorCardClick = (connectorDefinitionId: string, connectorName: string) => {
+    onConnectorSelect(connectorDefinitionId);
+    trackSelectedSuggestedDestination(connectorDefinitionId, connectorName);
   };
 
   return (
