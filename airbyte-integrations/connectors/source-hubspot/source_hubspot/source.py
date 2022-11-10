@@ -37,6 +37,7 @@ from source_hubspot.streams import (
     FormSubmissions,
     LineItems,
     MarketingEmails,
+    DealsHistory,
     Owners,
     Products,
     PropertyHistory,
@@ -110,6 +111,7 @@ class SourceHubspot(AbstractSource):
             FormSubmissions(**common_params),
             LineItems(**common_params),
             MarketingEmails(**common_params),
+            DealsHistory(**common_params),
             Owners(**common_params),
             Products(**common_params),
             PropertyHistory(**common_params),
@@ -127,13 +129,18 @@ class SourceHubspot(AbstractSource):
         if api.is_oauth2():
             authenticator = API(credentials=credentials).get_authenticator()
             granted_scopes = self.get_granted_scopes(authenticator)
-            self.logger.info(f"The following scopes were granted: {granted_scopes}")
+            self.logger.info(
+                f"The following scopes were granted: {granted_scopes}")
 
-            available_streams = [stream for stream in streams if stream.scope_is_granted(granted_scopes)]
-            unavailable_streams = [stream for stream in streams if not stream.scope_is_granted(granted_scopes)]
-            self.logger.info(f"The following streams are unavailable: {[s.name for s in unavailable_streams]}")
+            available_streams = [
+                stream for stream in streams if stream.scope_is_granted(granted_scopes)]
+            unavailable_streams = [
+                stream for stream in streams if not stream.scope_is_granted(granted_scopes)]
+            self.logger.info(
+                f"The following streams are unavailable: {[s.name for s in unavailable_streams]}")
         else:
-            self.logger.info("No scopes to grant when authenticating with API key.")
+            self.logger.info(
+                "No scopes to grant when authenticating with API key.")
             available_streams = streams
 
         return available_streams
@@ -143,7 +150,8 @@ class SourceHubspot(AbstractSource):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+        state: Union[List[AirbyteStateMessage],
+                     MutableMapping[str, Any]] = None,
     ) -> Iterator[AirbyteMessage]:
         """
         This method is overridden to check whether the stream `quotes` exists in the source, if not skip reading that stream.
@@ -153,13 +161,16 @@ class SourceHubspot(AbstractSource):
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
-        state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
+        state_manager = ConnectorStateManager(
+            stream_instance_map=stream_instances, state=state)
         self._stream_to_instance_map = stream_instances
         with create_timer(self.name) as timer:
             for configured_stream in catalog.streams:
-                stream_instance = stream_instances.get(configured_stream.stream.name)
+                stream_instance = stream_instances.get(
+                    configured_stream.stream.name)
                 if not stream_instance and configured_stream.stream.name == "quotes":
-                    logger.warning("Stream `quotes` does not exist in the source. Skip reading `quotes` stream.")
+                    logger.warning(
+                        "Stream `quotes` does not exist in the source. Skip reading `quotes` stream.")
                     continue
                 if not stream_instance:
                     raise KeyError(
@@ -175,10 +186,13 @@ class SourceHubspot(AbstractSource):
                         internal_config=internal_config,
                     )
                 except Exception as e:
-                    logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
-                    display_message = stream_instance.get_error_display_message(e)
+                    logger.exception(
+                        f"Encountered an exception while reading stream {configured_stream.stream.name}")
+                    display_message = stream_instance.get_error_display_message(
+                        e)
                     if display_message:
-                        raise AirbyteTracedException.from_exception(e, message=display_message) from e
+                        raise AirbyteTracedException.from_exception(
+                            e, message=display_message) from e
                     raise e
                 finally:
                     logger.info(f"Finished syncing {self.name}")
