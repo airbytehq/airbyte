@@ -45,9 +45,9 @@ containerSecurityContext: {}
 livenessProbe:
   enabled: true
   initialDelaySeconds: 30
-  periodSeconds: 30
-  timeoutSeconds: 30
-  failureThreshold: 10
+  periodSeconds: 10
+  timeoutSeconds: 1
+  failureThreshold: 3
   successThreshold: 1
 
 ##  webapp.readinessProbe.enabled Enable readinessProbe on the webapp
@@ -59,10 +59,10 @@ livenessProbe:
 ##
 readinessProbe:
   enabled: true
-  initialDelaySeconds: 30
-  periodSeconds: 30
-  timeoutSeconds: 30
-  failureThreshold: 10
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 1
+  failureThreshold: 3
   successThreshold: 1
 
 ##  webapp.service.type The service type to use for the webapp service

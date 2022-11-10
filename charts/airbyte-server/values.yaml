@@ -94,9 +94,9 @@ containerSecurityContext: {}
 livenessProbe:
   enabled: true
   initialDelaySeconds: 30
-  periodSeconds: 30
-  timeoutSeconds: 30
-  failureThreshold: 10
+  periodSeconds: 10
+  timeoutSeconds: 1
+  failureThreshold: 3
   successThreshold: 1
 
 ##  readinessProbe.enabled Enable readinessProbe on the server
@@ -108,10 +108,10 @@ livenessProbe:
 ##
 readinessProbe:
   enabled: true
-  initialDelaySeconds: 30
-  periodSeconds: 30
-  timeoutSeconds: 30
-  failureThreshold: 10
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 1
+  failureThreshold: 3
   successThreshold: 1
 
 ## Server app resource requests and limits
