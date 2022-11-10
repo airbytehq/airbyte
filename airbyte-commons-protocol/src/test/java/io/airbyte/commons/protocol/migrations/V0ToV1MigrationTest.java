@@ -12,21 +12,21 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class V1_1_0_0MigrationTest {
+public class V0ToV1MigrationTest {
 
   private static final String STREAM_NAME = "TEST_STREAM";
 
-  private AirbyteMessageMigrationV1_1_0 migration;
+  private AirbyteMessageMigrationV1 migration;
 
   @BeforeEach
   public void setup() {
-    migration = new AirbyteMessageMigrationV1_1_0();
+    migration = new AirbyteMessageMigrationV1();
   }
 
   @Test
   public void testVersionMetadata() {
-    assertEquals("1.0.0", migration.getPreviousVersion().serialize());
-    assertEquals("1.1.0", migration.getCurrentVersion().serialize());
+    assertEquals("0.0.0", migration.getPreviousVersion().serialize());
+    assertEquals("1.0.0", migration.getCurrentVersion().serialize());
   }
 
   @Test
