@@ -17,24 +17,12 @@ function isJobsWithJobs(job: JobsWithJobs | SynchronousJobRead): job is JobsWith
   return (job as JobsWithJobs).attempts !== undefined;
 }
 
-const buttonUnStyle = {
-  background: "none",
-  color: "inherit",
-  border: "none",
-  padding: 0,
-  font: "inherit",
-  cursor: "pointer",
-  outline: "inherit",
-  textDecoration: "underline",
-};
-
-export const ProgressBar = ({
-  job,
-  jobConfigType,
-}: {
+interface ProgressBarProps {
   job: JobsWithJobs | SynchronousJobRead;
   jobConfigType: JobConfigType;
-}) => {
+}
+
+export const ProgressBar: React.FC<ProgressBarProps> = ({ job, jobConfigType }) => {
   const { formatMessage, formatNumber } = useIntl();
   const [showStreams, setShowStreams] = useState(false);
 
@@ -55,28 +43,10 @@ export const ProgressBar = ({
   let latestAttempt: AttemptRead | undefined;
 
   const jobStatus = getJobStatus(job);
-
-  // colors from `_colors.scss` TODO: Use the SCSS variables maybe?
-  let color = "white";
-  switch (jobStatus) {
-    case "pending":
-      color = "#cbc8ff";
-      break;
-    case "running":
-      color = "#cbc8ff";
-      break;
-    case "incomplete":
-      color = "#fdf8e1";
-      break;
-    case "failed":
-      color = "#e64228";
-      return null;
-    case "succeeded":
-      color = "#67dae1";
-      return null;
-    case "cancelled":
-      return null;
-  }
+  if (["failed", "succeeded", "cancelled"].includes(jobStatus)) {
+    return null;
+  } // exit early if the sync is not active
+  const color = styles[jobStatus] ?? "white";
 
   if (isJobsWithJobs(job) && job.attempts) {
     latestAttempt = job.attempts[job.attempts.length - 1];
@@ -165,7 +135,6 @@ export const ProgressBar = ({
 
           {latestAttempt.streamStats && !showStreams && (
             <div>
-              <br />
               <Button
                 variant="clear"
                 onClick={(e) => {
@@ -173,9 +142,11 @@ export const ProgressBar = ({
                   setShowStreams(true);
                 }}
               >
-                {formatMessage({
-                  id: "estimate.viewStreamStats",
-                })}
+                <p>
+                  {formatMessage({
+                    id: "estimate.viewStreamStats",
+                  })}
+                </p>
               </Button>
               <br />
             </div>
@@ -183,25 +154,24 @@ export const ProgressBar = ({
 
           {latestAttempt.streamStats && showStreams && (
             <div>
-              <br />
               <div className={classNames(styles.container)}>
                 {formatMessage({
                   id: "estimate.streamStats",
                 })}{" "}
                 (
-                <button
-                  style={buttonUnStyle}
+                <Button
+                  variant="clear"
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowStreams(false);
                   }}
                 >
-                  <i>
+                  <p>
                     {formatMessage({
                       id: "estimate.hide",
                     })}
-                  </i>
-                </button>
+                  </p>
+                </Button>
                 ):
               </div>
               {latestAttempt.streamStats?.map((stream, idx) => {
