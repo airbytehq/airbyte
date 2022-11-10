@@ -22,3 +22,7 @@ airbyte:
         name: ${AIRBYTE_API_AUTH_HEADER_NAME:}
         value: ${AIRBYTE_API_AUTH_HEADER_VALUE:}
       host: ${INTERNAL_API_HOST}
+  speakeasy:
+    callback-url: ${AIRBYTE_SPEAKEASY_CALLBACKURL:}
+    api-id: ${AIRBYTE_SPEAKEASY_API_ID:}
+    version-id: ${AIRBYTE_SPEAKEASY_VERSION_ID:}

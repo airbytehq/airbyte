@@ -110,7 +110,7 @@ task generateApiServer(type: GenerateTask) {
     ]
 }
 
-//compileJava.dependsOn tasks.generateApiServer
+compileJava.dependsOn tasks.generateApiServer
 
 sourceSets {
     main {
