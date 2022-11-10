@@ -180,6 +180,13 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
             successMessage={
               props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
             }
+            actorId={
+              isEditMode
+                ? "sourceId" in props.connector
+                  ? props.connector.sourceId
+                  : props.connector.destinationId
+                : undefined
+            }
           />
           {/* Show the job log only if advanced mode is turned on or the actual job failed (not the check inside the job) */}
           {job && (advancedMode || !job.succeeded) && <JobItem job={job} />}

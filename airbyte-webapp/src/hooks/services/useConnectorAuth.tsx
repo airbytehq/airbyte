@@ -7,6 +7,7 @@ import { DestinationAuthService } from "core/domain/connector/DestinationAuthSer
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
 import { SourceAuthService } from "core/domain/connector/SourceAuthService";
 import { DestinationOauthConsentRequest, SourceOauthConsentRequest } from "core/request/AirbyteClient";
+import { useConnectorForm } from "views/Connector/ConnectorForm/connectorFormContext";
 
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
 import { useQuery } from "../useQuery";
@@ -47,6 +48,7 @@ export function useConnectorAuth(): {
 } {
   const { workspaceId } = useCurrentWorkspace();
   const { apiUrl, oauthRedirectUrl } = useConfig();
+  const { actorId } = useConnectorForm();
 
   // TODO: move to separate initFacade and use refs instead
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
@@ -74,6 +76,7 @@ export function useConnectorAuth(): {
           sourceDefinitionId: ConnectorSpecification.id(connector),
           redirectUrl: `${oauthRedirectUrl}/auth_flow`,
           oAuthInputConfiguration,
+          sourceId: actorId,
         };
         const response = await sourceAuthService.getConsentUrl(payload);
 
@@ -84,6 +87,7 @@ export function useConnectorAuth(): {
         destinationDefinitionId: ConnectorSpecification.id(connector),
         redirectUrl: `${oauthRedirectUrl}/auth_flow`,
         oAuthInputConfiguration,
+        destinationId: actorId,
       };
       const response = await destinationAuthService.getConsentUrl(payload);
 

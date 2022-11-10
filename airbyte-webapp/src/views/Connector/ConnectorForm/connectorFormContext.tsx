@@ -21,6 +21,7 @@ interface ConnectorFormContext {
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
   validationSchema: AnySchema;
+  actorId?: string;
 }
 
 const connectorFormContext = React.createContext<ConnectorFormContext | null>(null);
@@ -44,6 +45,7 @@ interface ConnectorFormContextProviderProps {
   getValues: <T = unknown>(values: ConnectorFormValues<T>) => ConnectorFormValues<T>;
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
   validationSchema: AnySchema;
+  actorId?: string;
 }
 
 export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<ConnectorFormContextProviderProps>> = ({
@@ -58,6 +60,7 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
   isLoadingSchema,
   validationSchema,
   isEditMode,
+  actorId,
 }) => {
   const { resetForm } = useFormikContext<ConnectorFormValues>();
 
@@ -73,6 +76,7 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
       isLoadingSchema,
       validationSchema,
       isEditMode,
+      actorId,
       unfinishedFlows,
       addUnfinishedFlow: (path, info) =>
         setUiWidgetsInfo("_common.unfinishedFlows", {
@@ -100,6 +104,7 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
     isLoadingSchema,
     validationSchema,
     isEditMode,
+    actorId,
     resetForm,
     resetUiWidgetsInfo,
   ]);
