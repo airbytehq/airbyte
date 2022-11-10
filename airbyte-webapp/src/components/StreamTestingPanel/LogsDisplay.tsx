@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
+import { NumberBadge } from "components/ui/NumberBadge";
 import { Text } from "components/ui/Text";
 
 import { StreamReadLogsItem } from "core/request/ConnectorBuilderClient";
@@ -22,9 +23,7 @@ export const LogsDisplay: React.FC<LogsDisplayProps> = ({ logs, onTitleClick }) 
         <Text size="sm" bold>
           <FormattedMessage id="connectorBuilder.connectorLogs" />
         </Text>
-        <Text className={styles.numLogsDisplay} size="xs" bold>
-          {logs.length}
-        </Text>
+        <NumberBadge value={logs.length} color="blue" />
       </button>
       <div className={styles.logsDisplay}>
         <pre>{formattedLogs}</pre>
