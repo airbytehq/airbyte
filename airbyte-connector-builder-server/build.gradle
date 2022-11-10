@@ -49,6 +49,7 @@ task prepareBuild(type: Copy) {
     into layout.buildDirectory.dir("docker")
 }
 
+// java modules such as airbyte-server can use copyGeneratedTar to copy the files to the docker image
 tasks.named("buildDockerImage") {
     dependsOn prepareBuild
     dependsOn copyDocker
