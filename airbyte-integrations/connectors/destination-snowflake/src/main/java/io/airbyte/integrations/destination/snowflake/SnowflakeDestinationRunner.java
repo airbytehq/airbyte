@@ -1,7 +1,6 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import io.airbyte.integrations.base.adaptive.AdaptiveDestinationRunner;
-import io.airbyte.integrations.util.OssCloudEnvVarConsts;
 
 public class SnowflakeDestinationRunner {
 

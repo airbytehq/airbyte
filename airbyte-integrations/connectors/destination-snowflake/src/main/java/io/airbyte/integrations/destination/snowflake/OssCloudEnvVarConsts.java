@@ -1,4 +1,4 @@
-package io.airbyte.integrations.util;
+package io.airbyte.integrations.destination.snowflake;
 
 public class OssCloudEnvVarConsts {
 
