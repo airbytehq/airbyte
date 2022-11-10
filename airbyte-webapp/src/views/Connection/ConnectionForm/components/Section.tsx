@@ -8,7 +8,7 @@ interface SectionProps {
 }
 
 export const Section: React.FC<React.PropsWithChildren<SectionProps>> = ({ title, children }) => (
-  <Card>
+  <Card className={styles.formCard}>
     <div className={styles.section}>
       {title && (
         <Heading as="h2" size="sm">
