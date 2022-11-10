@@ -1,7 +1,6 @@
 package io.airbyte.commons.protocol.migrations;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
@@ -13,7 +12,6 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -60,10 +58,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
     if (oldMessage.getType() == Type.CATALOG) {
       for (AirbyteStream stream : newMessage.getCatalog().getStreams()) {
         JsonNode schema = stream.getJsonSchema();
-        mutateSchemas(
-            this::isPrimitiveTypeDeclaration,
-            this::upgradeTypeDeclaration,
-            schema);
+        upgradeSchema(schema);
       }
     } else if (oldMessage.getType() == Type.RECORD) {
       JsonNode oldData = newMessage.getRecord().getData();
@@ -71,6 +66,13 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
       newMessage.getRecord().setData(newData);
     }
     return newMessage;
+  }
+
+  private void upgradeSchema(JsonNode schema) {
+    mutateSchemas(
+        this::isPrimitiveTypeDeclaration,
+        this::upgradeTypeDeclaration,
+        schema);
   }
 
   /**
@@ -142,20 +144,14 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
                 copyKey(schemaNode, option, "items");
                 copyKey(schemaNode, option, "additionalItems");
                 copyKey(schemaNode, option, "contains");
-                mutateSchemas(
-                    this::isPrimitiveTypeDeclaration,
-                    this::upgradeTypeDeclaration,
-                    option);
+                upgradeSchema(option);
               }
               case "object" -> {
                 option.put("type", "object");
                 copyKey(schemaNode, option, "properties");
                 copyKey(schemaNode, option, "patternProperties");
                 copyKey(schemaNode, option, "additionalProperties");
-                mutateSchemas(
-                    this::isPrimitiveTypeDeclaration,
-                    this::upgradeTypeDeclaration,
-                    option);
+                upgradeSchema(option);
               }
               default -> {
                 String referenceType = getReferenceType(type, schemaNode);
