@@ -8,9 +8,9 @@
 }
 
 :export {
-  pending: $blue-100;
-  running: $blue-100;
-  incomplete: $yellow-50;
-  failed: $orange-700;
-  succeeded: $green-200;
+  pending: colors.$blue-100;
+  running: colors.$blue-100;
+  incomplete: colors.$yellow-50;
+  failed: colors.$orange-700;
+  succeeded: colors.$green-200;
 }

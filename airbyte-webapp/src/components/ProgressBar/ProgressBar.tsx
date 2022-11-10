@@ -45,7 +45,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ job, jobConfigType }) 
   const jobStatus = getJobStatus(job);
   if (["failed", "succeeded", "cancelled"].includes(jobStatus)) {
     return null;
-  } // exit early if the sync is not active
+  }
   const color = styles[jobStatus] ?? "white";
 
   if (isJobsWithJobs(job) && job.attempts) {
