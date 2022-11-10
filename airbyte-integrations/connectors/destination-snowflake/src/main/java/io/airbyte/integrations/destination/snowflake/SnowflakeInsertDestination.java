@@ -9,6 +9,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.integrations.util.OssCloudEnvVarConsts;
 import java.util.Collections;
 import java.util.Map;
 import javax.sql.DataSource;
@@ -26,7 +27,7 @@ public class SnowflakeInsertDestination extends AbstractJdbcDestination implemen
 
   @Override
   protected DataSource getDataSource(final JsonNode config) {
-    return SnowflakeDatabase.createDataSource(config);
+    return SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
   }
 
   @Override

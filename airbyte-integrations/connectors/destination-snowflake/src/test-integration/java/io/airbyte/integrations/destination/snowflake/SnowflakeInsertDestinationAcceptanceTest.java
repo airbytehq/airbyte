@@ -24,6 +24,7 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.integrations.util.OssCloudEnvVarConsts;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -173,7 +174,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     this.config = Jsons.clone(getStaticConfig());
     ((ObjectNode) config).put("schema", schemaName);
 
-    dataSource = SnowflakeDatabase.createDataSource(config);
+    dataSource = SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
     database = SnowflakeDatabase.getDatabase(dataSource);
     database.execute(createSchemaQuery);
   }
@@ -223,7 +224,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   @Test
   void testCheckWithKeyPairAuth() throws Exception {
     final JsonNode credentialsJsonString = Jsons.deserialize(IOs.readFile(Path.of("secrets/config_key_pair.json")));
-    final AirbyteConnectionStatus check = new SnowflakeDestination().check(credentialsJsonString);
+    final AirbyteConnectionStatus check = new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS).check(credentialsJsonString);
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
   }
 

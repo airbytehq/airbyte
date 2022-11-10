@@ -14,6 +14,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.util.OssCloudEnvVarConsts;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,7 +34,7 @@ class SnowflakeDestinationIntegrationTest {
     // this connector should be updated with multiple credentials, each with a clear purpose (valid,
     // invalid: insufficient permissions, invalid: wrong password, etc..)
     final JsonNode credentialsJsonString = Jsons.deserialize(Files.readString(Paths.get("secrets/config.json")));
-    final AirbyteConnectionStatus check = new SnowflakeDestination().check(credentialsJsonString);
+    final AirbyteConnectionStatus check = new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS).check(credentialsJsonString);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, check.getStatus());
   }
 
@@ -41,7 +42,7 @@ class SnowflakeDestinationIntegrationTest {
   public void testInvalidSchemaName() throws Exception {
     final JsonNode config = getConfig();
     final String schema = config.get("schema").asText();
-    final DataSource dataSource = SnowflakeDatabase.createDataSource(config);
+    final DataSource dataSource = SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
     try {
       final JdbcDatabase database = SnowflakeDatabase.getDatabase(dataSource);
       assertDoesNotThrow(() -> syncWithNamingResolver(database, schema));

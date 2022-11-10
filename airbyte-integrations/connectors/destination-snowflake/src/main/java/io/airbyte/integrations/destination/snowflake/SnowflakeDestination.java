@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.snowflake;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
+import io.airbyte.integrations.util.OssCloudEnvVarConsts;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -21,12 +22,13 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
     INTERNAL_STAGING
   }
 
-  public SnowflakeDestination() {
-    super(DestinationType.class, SnowflakeDestinationResolver::getTypeFromConfig, SnowflakeDestinationResolver.getTypeToDestination());
+  public SnowflakeDestination(final String airbyteEnvironment) {
+    super(DestinationType.class, SnowflakeDestinationResolver::getTypeFromConfig,
+        SnowflakeDestinationResolver.getTypeToDestination(airbyteEnvironment));
   }
 
   public static void main(final String[] args) throws Exception {
-    final Destination destination = new SnowflakeDestination();
+    final Destination destination = new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS);
     new IntegrationRunner(destination).run(args);
     SCHEDULED_EXECUTOR_SERVICE.shutdownNow();
   }
