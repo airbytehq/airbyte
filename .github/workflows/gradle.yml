@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Check images exist
         run: ./tools/bin/check_images_exist.sh all
@@ -41,7 +41,7 @@ jobs:
       frontend: ${{ steps.filter.outputs.frontend }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - uses: dorny/paths-filter@v2
         id: filter
         with:
@@ -78,7 +78,7 @@ jobs:
       pat: ${{ steps.variables.outputs.pat }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Check PAT rate limits
         id: variables
         run: |
@@ -94,7 +94,7 @@ jobs:
   #    needs: changes
   #    runs-on: ubuntu-latest
   #    steps:
-  #      - uses: actions/checkout@v2
+  #      - uses: actions/checkout@v3
   #      - run: |
   #          echo '${{ toJSON(needs) }}'
 
@@ -108,7 +108,7 @@ jobs:
     timeout-minutes: 90
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -116,11 +116,12 @@ jobs:
           cache-key: ${{ secrets.CACHE_VERSION }}
           cache-python: "false"
 
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
+          distribution: "zulu"
           java-version: "17"
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
 
@@ -171,7 +172,7 @@ jobs:
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -188,22 +189,23 @@ jobs:
     timeout-minutes: 90
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
         with:
           cache-key: ${{ secrets.CACHE_VERSION }}
 
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
+          distribution: "zulu"
           java-version: "17"
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: "lts/gallium"
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
 
@@ -324,7 +326,7 @@ jobs:
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -340,7 +342,7 @@ jobs:
     runs-on: ${{ needs.start-frontend-runner.outputs.label }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -350,15 +352,16 @@ jobs:
           cache-key: ${{ secrets.CACHE_VERSION }}
           cache-python: "false"
 
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
+          distribution: "zulu"
           java-version: "17"
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: "lts/gallium"
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
 
@@ -396,7 +399,7 @@ jobs:
     timeout-minutes: 120
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -404,15 +407,16 @@ jobs:
           cache-key: ${{ secrets.CACHE_VERSION }}
           cache-python: "false"
 
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
+          distribution: "zulu"
           java-version: "17"
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: "lts/gallium"
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
 
@@ -482,7 +486,7 @@ jobs:
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -498,7 +502,7 @@ jobs:
     timeout-minutes: 90
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -506,15 +510,16 @@ jobs:
           cache-key: ${{ secrets.CACHE_VERSION }}
           cache-python: "false"
 
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
+          distribution: "zulu"
           java-version: "17"
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: "lts/gallium"
 
@@ -568,7 +573,7 @@ jobs:
       - name: Automatic Migration Acceptance Test
         run: SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         if: always()
         with:
           python-version: "3.9"
@@ -622,6 +627,7 @@ jobs:
           path: "/actions-runner/_work/airbyte/airbyte/*"
           key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
           secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
+
   # In case of self-hosted EC2 errors, remove this block.
   stop-platform-build-runner:
     name: "Platform: Stop Build EC2 Runner"
@@ -666,7 +672,7 @@ jobs:
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -685,7 +691,7 @@ jobs:
     timeout-minutes: 40
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -693,15 +699,16 @@ jobs:
           cache-key: ${{ secrets.CACHE_VERSION }}
           cache-python: "false"
 
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
+          distribution: "zulu"
           java-version: "17"
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: "lts/gallium"
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
 
@@ -758,7 +765,7 @@ jobs:
         run: |
           CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         if: always()
         with:
           python-version: "3.9"
@@ -811,7 +818,8 @@ jobs:
           path: "/actions-runner/_work/airbyte/airbyte/*"
           key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
           secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
-      - uses: actions/upload-artifact@v2
+
+      - uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: Kubernetes Logs
