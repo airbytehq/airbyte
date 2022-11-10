@@ -53,6 +53,29 @@ def connector_spec_dict_fixture(actual_connector_spec):
     return json.loads(actual_connector_spec.json())
 
 
+@pytest.fixture(name="secret_property_names")
+def secret_property_names_fixture():
+    yield (
+        "client_token",
+        "access_token",
+        "api_token",
+        "token",
+        "secret",
+        "client_secret",
+        "password",
+        "key",
+        "service_account_info",
+        "service_account",
+        "tenant_id",
+        "certificate",
+        "jwt",
+        "credentials",
+        "app_id",
+        "appid",
+        "refresh_token",
+    )
+
+
 @pytest.mark.default_timeout(10)
 class TestSpec(BaseTest):
 
@@ -164,65 +187,65 @@ class TestSpec(BaseTest):
     def test_secret_never_in_the_output(self):
         """This test should be injected into any docker command it needs to know current config and spec"""
 
-    def test_secret_is_properly_marked(self, actual_connector_spec: ConnectorSpecification, detailed_logger):
-        def is_property_name_secret(path: str) -> Tuple[str, bool]:
-            reserved_keywords = ("anyOf", "oneOf", "allOf", "not", "properties", "items")
-            name = None
-            for part in reversed(path.split("/")[:-1]):
-                if part.isdigit() or part in reserved_keywords:
-                    continue
-                name = part
-                break
-            return name, name.lower() in (
-                "client_token",
-                "access_token",
-                "api_token",
-                "token",
-                "secret",
-                "client_secret",
-                "password",
-                "key",
-                "service_account_info",
-                "service_account",
-                "tenant_id",
-                "certificate",
-                "jwt",
-                "credentials",
-                "app_id",
-                "appid",
-                "refresh_token",
-            )
+    @staticmethod
+    def _is_spec_property_name_secret(path: str, secret_property_names) -> Tuple[Optional[str], bool]:
+        """
+        Given a path to a type field, extract a field name and decide whether it is a name of secret or not
+        based on a provided list of secret names.
+        Split the path by `/`, drop the last item and make list reversed.
+        Then iterate over it and find the first item that's not a reserved keyword or an index.
+        Example:
+        properties/credentials/oneOf/1/properties/api_key/type -> [api_key, properties, 1, oneOf, credentials, properties] -> api_key
+        """
+        reserved_keywords = ("anyOf", "oneOf", "allOf", "not", "properties", "items", "type", "prefixItems")
+        for part in reversed(path.split("/")[:-1]):
+            if part.isdigit() or part in reserved_keywords:
+                continue
+            return part, part.lower() in secret_property_names
+        return None, False
 
-        def can_hide_a_secret(prop: dict) -> bool:
-            # Null type as well as boolean can not hold a secret value.
-            # A string, a number or an integer type can always hide secrets.
-            # Objects and arrays can hide a secret in case they are generic.
-            unsecure_types = {"string", "integer", "number"}
-            type_ = prop["type"]
-            # type_ is a scalar value
-            return any(
-                [
-                    isinstance(type_, str) and type_ in unsecure_types,
-                    type_ == "object" and "properties" not in prop,
-                    type_ == "array" and "items" not in prop,
-                    isinstance(type_, list) and (set(type_) & unsecure_types),
-                ]
-            )
+    @staticmethod
+    def _property_can_store_secret(prop: dict) -> bool:
+        """
+        Some fields can not hold a secret by design, others can.
+        Null type as well as boolean can not hold a secret value.
+        A string, a number or an integer type can always store secrets.
+        Objects and arrays can hold a secret in case they are generic,
+        meaning their inner structure is not described in details with properties/items.
+        """
+        unsecure_types = {"string", "integer", "number"}
+        type_ = prop["type"]
+        is_property_generic_object = type_ == "object" and not any(
+            [prop.get("properties", {}), prop.get("anyOf", []), prop.get("oneOf", []), prop.get("allOf", [])]
+        )
+        is_property_generic_array = type_ == "array" and not any([prop.get("items", []), prop.get("prefixItems", [])])
+        return any(
+            [
+                isinstance(type_, str) and type_ in unsecure_types,
+                is_property_generic_object,
+                is_property_generic_array,
+                isinstance(type_, list) and (set(type_) & unsecure_types),
+            ]
+        )
 
-        def is_marked_secret(prop: dict):
-            return prop.get("airbyte_secret", False)
-
+    def test_secret_is_properly_marked(self, connector_spec_dict: dict, detailed_logger, secret_property_names):
+        """
+        Each field has a type, therefore we can make a flat list of fields from the returned specification.
+        Iterate over the list, check if a field name is a secret name, can potentially hold a secret value
+        and make sure it is marked as `airbyte_secret`.
+        """
         secrets_exposed = []
         non_secrets_hidden = []
-        spec_properties = actual_connector_spec.connectionSpecification["properties"]
+        spec_properties = connector_spec_dict["connectionSpecification"]["properties"]
         for type_path, value in dpath.util.search(spec_properties, "**/type", yielded=True):
-            name, is_secret_name = is_property_name_secret(type_path)
-            if not is_secret_name:
+            _, is_property_name_secret = self._is_spec_property_name_secret(type_path, secret_property_names)
+            if not is_property_name_secret:
                 continue
             absolute_path = f"/{type_path}"
             property_path, _ = absolute_path.rsplit(sep="/", maxsplit=1)
             property_definition = dpath.util.get(spec_properties, property_path)
-            marked_as_secret, possibly_a_secret = is_marked_secret(property_definition), can_hide_a_secret(property_definition)
+            marked_as_secret = property_definition.get("airbyte_secret", False)
+            possibly_a_secret = self._property_can_store_secret(property_definition)
             if marked_as_secret and not possibly_a_secret:
                 non_secrets_hidden.append(property_path)
             if not marked_as_secret and possibly_a_secret:

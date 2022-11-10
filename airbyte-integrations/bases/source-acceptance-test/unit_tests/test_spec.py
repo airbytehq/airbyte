@@ -655,49 +655,99 @@ def test_additional_properties_is_true(connector_spec, expectation):
     "connector_spec, should_fail",
     (
         (
-            ConnectorSpecification(
-                connectionSpecification={"type": "object", "properties": {"api_token": {"type": "string", "airbyte_secret": True}}}
-            ),
+            {
+                "connectionSpecification": {"type": "object", "properties": {"api_token": {"type": "string", "airbyte_secret": True}}}
+            },
             False,
         ),
         (
-            ConnectorSpecification(connectionSpecification={"type": "object", "properties": {"api_token": {"type": "null"}}}),
+            {
+                "connectionSpecification": {"type": "object", "properties": {"api_token": {"type": "null"}}}
+            },
             False,
         ),
         (
-            ConnectorSpecification(connectionSpecification={"type": "object", "properties": {"jwt": {"type": "object"}}}),
+            {
+                "connectionSpecification": {"type": "object", "properties": {"jwt": {"type": "object"}}}
+            },
             True,
         ),
         (
-            ConnectorSpecification(
-                connectionSpecification={"type": "object", "properties": {"refresh_token": {"type": ["null", "string"]}}}
-            ),
+            {
+                "connectionSpecification": {"type": "object", "properties": {"refresh_token": {"type": ["null", "string"]}}}
+            },
             True,
         ),
         (
-            ConnectorSpecification(connectionSpecification={"type": "object", "properties": {"credentials": {"type": "array"}}}),
+            {
+                "connectionSpecification": {"type": "object", "properties": {"credentials": {"type": "array"}}}
+            },
             True,
         ),
         (
-            ConnectorSpecification(
-                connectionSpecification={"type": "object", "properties": {"credentials": {"type": "array", "items": {"type": "string"}}}}
-            ),
+            {
+                "connectionSpecification": {"type": "object", "properties": {"credentials": {"type": "array", "items": {"type": "string"}}}}
+            },
             True,
         ),
         (
-            ConnectorSpecification(
-                connectionSpecification={"type": "object", "properties": {"auth": {"oneOf": [{"api_token": {"type": "string"}}]}}}
-            ),
+            {
+                "connectionSpecification": {"type": "object", "properties": {"auth": {"oneOf": [{"api_token": {"type": "string"}}]}}}
+            },
             True,
         ),
+        (
+            {
+                "connectionSpecification": {"type": "object", "properties": {"credentials": {"oneOf": [{"type": "object", "properties": {"api_key": {"type": "string"}}}]}}}
+            },
+            True
+        )
     ),
 )
 def test_airbyte_secret(mocker, connector_spec, should_fail):
     mocker.patch.object(conftest.pytest, "fail")
     t = _TestSpec()
     logger = mocker.Mock()
-    t.test_secret_is_properly_marked(connector_spec, logger)
+    t.test_secret_is_properly_marked(connector_spec, logger, ("api_key", "api_token", "refresh_token", "jwt", "credentials"))
     if should_fail:
         conftest.pytest.fail.assert_called_once()
     else:
         conftest.pytest.fail.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "path, expected_name, expected_result",
+    (
+        ("properties/api_key/type", "api_key", True),
+        ("properties/start_date/type", "start_date", False),
+        ("properties/credentials/oneOf/1/properties/api_token/type", "api_token", True),
+        ("properties/type", None, False),  # root element
+        ("properties/accounts/items/2/properties/jwt/type", "jwt", True)
+    )
+)
+def test_is_spec_property_name_secret(path, expected_name, expected_result):
+    t = _TestSpec()
+    assert t._is_spec_property_name_secret(path, ("api_key", "api_token", "refresh_token", "jwt", "credentials")) == (expected_name, expected_result)
+
+
+@pytest.mark.parametrize(
+    "property_def, can_store_secret",
+    (
+        ({"type": "boolean"}, False),
+        ({"type": "null"}, False),
+        ({"type": "string"}, True),
+        ({"type": "integer"}, True),
+        ({"type": "number"}, True),
+        ({"type": ["null", "string"]}, True),
+        ({"type": ["null", "boolean"]}, False),
+        ({"type": "object"}, True),
+        # the object itself cannot hold a secret but the inner items can and will be processed separately
+        ({"type": "object", "properties": {"api_key": {}}}, False),
+        ({"type": "array"}, True),
+        # same as object
+        ({"type": "array", "items": {"type": "string"}}, False)
+    )
+)
+def test_property_can_store_secret(property_def, can_store_secret):
+    t = _TestSpec()
+    assert t._property_can_store_secret(property_def) is can_store_secret
