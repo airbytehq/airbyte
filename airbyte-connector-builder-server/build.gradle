@@ -44,10 +44,7 @@ task generateOpenApiPythonServer(type: GenerateTask) {
 project.build.dependsOn(generateOpenApiPythonServer)
 
 task prepareBuild(type: Copy) {
-    from layout.projectDirectory.file("setup.py")
-    from layout.projectDirectory.file("connector-builder")
-    from layout.projectDirectory.file("src")
-    from layout.projectDirectory.file("openapi")
+    from layout.projectDirectory.file(".")
 
     into layout.buildDirectory.dir("docker")
 }
