@@ -37,7 +37,9 @@ kubectl patch configmap/coredns \
 
 echo "Replacing default Chart.yaml and values.yaml with a test one"
 mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.old
-mv charts/airbyte/Chart.yaml.test charts/airbyte/Chart.yaml 
+mv charts/airbyte/Chart.yaml.test charts/airbyte/Chart.yaml
+mv charts/airbyte/values.yaml charts/airbyte/values.yaml.old
+mv charts/airbyte/values.yaml.test charts/airbyte/values.yaml
 
 echo "Starting app..."
 
@@ -46,7 +48,7 @@ sudo docker ps
 
 echo "Applying dev-integration-test manifests to kubernetes..."
 cd charts/airbyte && helm repo add bitnami https://charts.bitnami.com/bitnami && helm dep update && cd -
-helm upgrade --install --debug --values charts/airbyte/values.yaml.test airbyte charts/airbyte
+helm upgrade --install --debug airbyte charts/airbyte
 
 echo "Waiting for server to be ready..."
 kubectl wait --for=condition=Available deployment/airbyte-server --timeout=300s || (kubectl describe pods && exit 1)

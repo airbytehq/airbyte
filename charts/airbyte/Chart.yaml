@@ -57,9 +57,9 @@ dependencies:
   - condition: metrics.enabled
     name: metrics
     repository: "https://airbytehq.github.io/helm-charts/"
-    version: 0.40.36
+    version: 0.40.40
   - condition: cron.enabled
     name: cron 
     repository: "https://airbytehq.github.io/helm-charts/"
-    version: 0.40.36
+    version: 0.40.40
 
