@@ -5,6 +5,8 @@
   display: flex;
   flex-direction: column;
   gap: variables.$spacing-lg;
+  padding-bottom: variables.$spacing-md;
+  height: 100%;
 }
 
 .sliceSelector {
@@ -17,11 +19,12 @@
   display: flex;
   flex-direction: column;
   gap: variables.$spacing-sm;
+  position: relative;
 }
 
 .paginator {
   display: flex;
-  gap: variables.$spacing-sm;
+  gap: 2px;
   align-self: center;
   justify-self: flex-end;
   margin-top: auto;

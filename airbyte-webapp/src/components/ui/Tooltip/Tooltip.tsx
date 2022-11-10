@@ -20,7 +20,16 @@ const FLOATING_OPTIONS: UseFloatingProps = {
 };
 
 export const Tooltip: React.FC<React.PropsWithChildren<TooltipProps>> = (props) => {
-  const { children, control, className, disabled, cursor, theme = "dark", placement = "bottom" } = props;
+  const {
+    children,
+    control,
+    className,
+    containerClassName,
+    disabled,
+    cursor,
+    theme = "dark",
+    placement = "bottom",
+  } = props;
 
   const [isMouseOver, setIsMouseOver] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -59,7 +68,7 @@ export const Tooltip: React.FC<React.PropsWithChildren<TooltipProps>> = (props) 
     <>
       <div
         ref={reference}
-        className={styles.container}
+        className={classNames(styles.container, containerClassName)}
         style={disabled ? undefined : { cursor }}
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}

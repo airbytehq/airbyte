@@ -301,6 +301,33 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     final List<ContainerPort> containerPorts = KubePodProcess.createContainerPortList(portMap);
     containerPorts.add(new ContainerPort(serverPort, null, null, null, null));
 
+    final var initContainer = new ContainerBuilder()
+        .withName(KubePodProcess.INIT_CONTAINER_NAME)
+        .withImage("busybox:1.35")
+        .withVolumeMounts(volumeMounts)
+        .withCommand(List.of(
+            "sh",
+            "-c",
+            String.format("""
+                          i=0
+                          until [ $i -gt 60 ]
+                          do
+                            echo "$i - waiting for config file transfer to complete..."
+                            # check if the upload-complete file exists, if so exit without error
+                            if [ -f "%s/%s" ]; then
+                              exit 0
+                            fi
+                            i=$((i+1))
+                            sleep 1
+                          done
+                          echo "config files did not transfer in time"
+                          # no upload-complete file was created in time, exit with error
+                          exit 1
+                          """,
+                KubePodProcess.CONFIG_DIR,
+                KubePodProcess.SUCCESS_FILE_NAME)))
+        .build();
+
     final var mainContainer = new ContainerBuilder()
         .withName(KubePodProcess.MAIN_CONTAINER_NAME)
         .withImage(kubePodInfo.mainContainerInfo().image())
@@ -319,9 +346,11 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .withLabels(allLabels)
         .endMetadata()
         .withNewSpec()
-        .withServiceAccount("airbyte-admin").withAutomountServiceAccountToken(true)
+        .withServiceAccount("airbyte-admin")
+        .withAutomountServiceAccountToken(true)
         .withRestartPolicy("Never")
         .withContainers(mainContainer)
+        .withInitContainers(initContainer)
         .withVolumes(volumes)
         .endSpec()
         .build();
@@ -335,9 +364,9 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     kubernetesClient.pods()
         .inNamespace(kubePodInfo.namespace())
         .withName(kubePodInfo.name())
-        .waitUntilCondition(p -> {
-          return !p.getStatus().getContainerStatuses().isEmpty() && p.getStatus().getContainerStatuses().get(0).getState().getWaiting() == null;
-        }, 5, TimeUnit.MINUTES);
+        .waitUntilCondition(p -> !p.getStatus().getInitContainerStatuses().isEmpty()
+            && p.getStatus().getInitContainerStatuses().get(0).getState().getWaiting() == null,
+            5, TimeUnit.MINUTES);
 
     final var podStatus = kubernetesClient.pods()
         .inNamespace(kubePodInfo.namespace())
@@ -346,7 +375,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .getStatus();
 
     final var containerState = podStatus
-        .getContainerStatuses()
+        .getInitContainerStatuses()
         .get(0)
         .getState();
 
@@ -381,7 +410,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         // several issues with copying files. See https://github.com/airbytehq/airbyte/issues/8643 for
         // details.
         final String command = String.format("kubectl cp %s %s/%s:%s -c %s", tmpFile, podDefinition.getMetadata().getNamespace(),
-            podDefinition.getMetadata().getName(), containerPath, "main");
+            podDefinition.getMetadata().getName(), containerPath, KubePodProcess.INIT_CONTAINER_NAME);
         log.info(command);
 
         proc = Runtime.getRuntime().exec(command);
