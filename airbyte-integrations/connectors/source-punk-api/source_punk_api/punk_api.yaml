@@ -74,13 +74,13 @@ definitions:
         $ref: "*ref(definitions.requester)"
 
   beers_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "*ref(definitions.page_stream)"
     $options:
       name: "beers"
       path: "/beers"
 
   beers_with_id_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "*ref(definitions.page_stream)"
     $options:
       name: "beers_with_id"
       path: "/beers?{{ config['brewed_after'] }}"
