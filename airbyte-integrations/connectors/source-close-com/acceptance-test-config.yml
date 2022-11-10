@@ -1,40 +1,52 @@
 # See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-close-com:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "source_close_com/spec.json"
+    tests:
+      - spec_path: "source_close_com/spec.json"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
-      # Some field types was changed for streams.
-      # custom_activities: id field was added
-      # custom_email_connected_accounts: imap field was changed to object
-      # smart_views: imap field was changed to object
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.0"
+    tests:
+      - config_path: "secrets/config.json"
+        # Some field types was changed for streams.
+        # custom_activities: id field was added
+        # custom_email_connected_accounts: imap field was changed to object
+        # smart_views: imap field was changed to object
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.0"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      expect_records:
-        path: "integration_tests/expected_records.txt"
-        extra_fields: no
-        exact_order: no
-        extra_records: yes
-      empty_streams:
-        - missed_call_tasks
-        - answered_detached_call_tasks
-        - incoming_sms_tasks
-        - send_as
-        - voicemail_tasks
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        expect_records:
+          path: "integration_tests/expected_records.txt"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
+        empty_streams:
+          - name: missed_call_tasks
+            bypass_reason: "unable to populate"
+          - name: answered_detached_call_tasks
+            bypass_reason: "unable to populate"
+          - name: incoming_sms_tasks
+            bypass_reason: "unable to populate"
+          - name: send_as
+            bypass_reason: "unable to populate"
+          - name: voicemail_tasks
+            bypass_reason: "unable to populate"
   incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state_path: "integration_tests/abnormal_state.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
