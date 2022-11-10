@@ -42,6 +42,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
 
   @Override
   public AirbyteMessage downgrade(io.airbyte.protocol.models.v0.AirbyteMessage oldMessage) {
+    // TODO implement downgrade
     return null;
   }
 
