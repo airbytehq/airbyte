@@ -182,7 +182,7 @@ Verify the sync by checking the logs:
 2. The Sync History is displayed. Click on the first log in the sync history.
 3. Check the data at your destination. If you added a Destination Stream Prefix while setting up the connection, make sure to search for the stream name with the prefix.
 
-## Allowlist IP address
+## Allowlist IP addresses
 Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud#choose-your-default-data-residency) location, you may need to allowlist the following IP addresses to enable access to Airbyte:
 
 ### United States and Airbyte Default
