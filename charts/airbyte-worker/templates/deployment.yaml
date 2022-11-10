@@ -293,6 +293,11 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: USE_STREAM_CAPABLE_STATE
+        - name: SHOULD_RUN_NOTIFY_WORKFLOWS
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: SHOULD_RUN_NOTIFY_WORKFLOWS
         - name: MICRONAUT_ENVIRONMENTS
           valueFrom:
             configMapKeyRef:
