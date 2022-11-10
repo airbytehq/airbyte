@@ -1,5 +1,4 @@
 import classNames from "classnames";
-import { Line } from "rc-progress";
 import { useState } from "react";
 import { useIntl } from "react-intl";
 
@@ -12,6 +11,7 @@ import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/Jobs
 import { formatBytes } from "utils/numberHelper";
 
 import styles from "./ProgressBar.module.scss";
+import { ProgressLine } from "./ProgressLine";
 
 function isJobsWithJobs(job: JobsWithJobs | SynchronousJobRead): job is JobsWithJobs {
   return (job as JobsWithJobs).attempts !== undefined;
@@ -68,7 +68,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ job, jobConfigType }) 
 
   return (
     <div className={classNames(styles.container)}>
-      {displayProgressBar && <Line percent={totalPercentRecords} strokeColor={[color]} />}
+      {displayProgressBar && <ProgressLine percent={totalPercentRecords} color={color} />}
       {latestAttempt?.status === Status.RUNNING && (
         <>
           {displayProgressBar && (
