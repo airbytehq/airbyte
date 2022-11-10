@@ -12,7 +12,7 @@ Just pass the generated API key and Movie ID for establishing the connection.
 ### Step 1: Set up TMDb connection
 
 - Generate an API key (Example: 12345)
-- Give a Movie ID & Query (Target Movie, Query for search, Optional)
+- Give a Movie ID, Query, Language (Target Movie, Query for search, Language filter)
 
 ## Step 2: Set up the TMDb connector in Airbyte
 
@@ -22,7 +22,7 @@ Just pass the generated API key and Movie ID for establishing the connection.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Google-webfonts connector and select **TMDb** from the Source type dropdown.
 4. Enter your `api_key`.
-5. Enter optional params `movie_id, query, language` (if needed).
+5. Enter params `movie_id, query, language` (if needed).
 6. Click **Set up source**.
 
 ### For Airbyte OSS:
@@ -30,7 +30,7 @@ Just pass the generated API key and Movie ID for establishing the connection.
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 4. Enter your `api_key`.
-5. Enter optional params `movie_id, query, language` (if needed).
+5. Enter params `movie_id, query, language` (if needed).
 6. Click **Set up source**.
 
 ## Supported sync modes
@@ -94,4 +94,4 @@ TMDb's [API reference](https://developers.themoviedb.org/3/getting-started/intro
 
 | Version | Date       | Pull Request                                           | Subject        |
 | :------ | :--------- | :----------------------------------------------------- | :------------- |
-| 0.1.0   | 2022-10-27 | [Init](https://github.com/airbytehq/airbyte/pull/)| Initial commit |
+| 0.1.0   | 2022-10-27 | [Init](https://github.com/airbytehq/airbyte/pull/18561)| Initial commit |
