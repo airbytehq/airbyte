@@ -26,7 +26,7 @@ jobs:
       - name: Install Java
         uses: actions/setup-java@v3
         with:
-          disribution: "zulu"
+          distribution: "zulu"
           java-version: "17"
       - name: Generate catalog
         run: SUB_BUILD=PLATFORM ./gradlew :airbyte-config:init:processResources
@@ -46,4 +46,4 @@ jobs:
         with:
           token: ${{ env.PAT }}
           repository: airbytehq/airbyte-cloud
-          event-type: generate-cloud-catalog        
+          event-type: generate-cloud-catalog
