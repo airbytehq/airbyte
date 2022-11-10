@@ -21,6 +21,7 @@ class InterpolatedRequestInputProvider:
     config: Config = field(default_factory=dict)
     _interpolator: Union[InterpolatedString, InterpolatedMapping] = field(init=False, repr=False, default=None)
     _request_inputs: Union[str, Mapping[str, str]] = field(init=False, repr=False, default=None)
+    filter_items: bool = True
 
     def __post_init__(self, options: Mapping[str, Any]):
 
@@ -42,4 +43,7 @@ class InterpolatedRequestInputProvider:
         :return: The request inputs to set on an outgoing HTTP request
         """
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
-        return self._interpolator.eval(self.config, **kwargs)
+        interpolated_value = self._interpolator.eval(self.config, **kwargs)
+        if self.filter_items and isinstance(interpolated_value, dict):
+            interpolated_value = {k: v for k, v in interpolated_value.items() if v}
+        return interpolated_value
