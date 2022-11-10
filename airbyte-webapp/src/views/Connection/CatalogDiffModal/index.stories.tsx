@@ -16,13 +16,7 @@ const Template: ComponentStory<typeof CatalogDiffModal> = (args) => {
   return (
     <ModalServiceProvider>
       <Modal size="md" title={<FormattedMessage id="connection.updateSchema.completed" />}>
-        <CatalogDiffModal
-          catalogDiff={args.catalogDiff}
-          catalog={args.catalog}
-          onClose={() => {
-            return null;
-          }}
-        />
+        <CatalogDiffModal catalogDiff={args.catalogDiff} catalog={args.catalog} onClose={() => null} />
       </Modal>
     </ModalServiceProvider>
   );
