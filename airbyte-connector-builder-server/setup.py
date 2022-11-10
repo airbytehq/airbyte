@@ -13,7 +13,7 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 
 setup(
-    name="connector-builder",
+    name="connector-builder-server",
     version="0.0.1",
     description="",
     long_description=README,

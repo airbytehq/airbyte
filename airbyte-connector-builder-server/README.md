@@ -25,5 +25,5 @@ openapi-generator generate -i ../connector-builder-server/src/main/openapi/opena
 
 Or you can run it via Gradle by running this from the Airbyte project root: 
 ```bash
-./gradlew :airbyte-connector-builder:generateOpenApiPythonServer
+./gradlew :airbyte-connector-builder-server:generateOpenApiPythonServer
 ```
