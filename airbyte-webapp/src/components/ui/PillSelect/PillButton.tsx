@@ -19,29 +19,32 @@ const STYLES_BY_VARIANT: Readonly<Record<PillButtonVariant, string>> = {
 interface PillButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   active?: boolean;
   variant?: PillButtonVariant;
+  labels?: React.ReactNode[];
 }
 
-export const PillButton: React.FC<React.PropsWithChildren<PillButtonProps>> = ({
-  children,
-  active,
-  variant = "grey",
-  ...buttonProps
-}) => {
+export const PillButton: React.FC<PillButtonProps> = ({ active, variant = "grey", labels = [], ...buttonProps }) => {
   const buttonClassName = classNames(
     styles.button,
     {
       [styles.active]: active,
+      [styles.disabled]: buttonProps.disabled,
     },
-    buttonProps.disabled ? styles.disabled : STYLES_BY_VARIANT[variant],
+    STYLES_BY_VARIANT[variant],
     buttonProps.className
   );
-
   return (
     <button type="button" {...buttonProps} className={buttonClassName}>
-      <Text as="span" size="xs" className={styles.text}>
-        {children}
-      </Text>
-      <FontAwesomeIcon icon={faCaretDown} />
+      {labels.map((label, index) => (
+        <>
+          <div className={styles.labelContainer}>
+            <Text as="span" size="xs" className={styles.text}>
+              {label}
+            </Text>
+          </div>
+          {index !== labels?.length - 1 && <div className={styles.divider} />}
+        </>
+      ))}
+      <FontAwesomeIcon className={styles.icon} icon={faCaretDown} />
     </button>
   );
 };

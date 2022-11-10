@@ -11,7 +11,6 @@ interface PillSelectProps extends PickedPopoutProps {
 
 export const PillSelect: React.FC<PillSelectProps> = ({ className, ...props }) => {
   const { isMulti, variant, disabled } = props;
-
   return (
     <Popout
       {...props}
@@ -22,11 +21,11 @@ export const PillSelect: React.FC<PillSelectProps> = ({ className, ...props }) =
             ? value.map(({ label }: { label: string }) => label).join(", ")
             : value.label
           : "";
-
         return (
           <Tooltip
             control={
               <PillButton
+                labels={Array.isArray(value?.label) ? value?.label : [value?.label]}
                 variant={variant}
                 disabled={disabled}
                 onClick={(event) => {
@@ -35,9 +34,7 @@ export const PillSelect: React.FC<PillSelectProps> = ({ className, ...props }) =
                 }}
                 active={isOpen}
                 className={className}
-              >
-                {label}
-              </PillButton>
+              />
             }
             placement="bottom-start"
             disabled={isOpen || !isMulti || value?.length <= 1}
