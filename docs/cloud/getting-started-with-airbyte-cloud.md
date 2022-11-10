@@ -186,13 +186,13 @@ Verify the sync by checking the logs:
 Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud#choose-your-default-data-residency) location, you may need to allowlist the following IP addresses to enable access to Airbyte:
 
 ### United States and Airbyte Default
-#### GCP region: us-west3
+#### GCP region: us-west2
 * 34.106.109.131
 * 34.106.196.165
 * 34.106.60.246
 
 ### European Union
-#### GCP region: us-west3
+#### GCP region: us-west2
 * 34.106.109.131
 * 34.106.196.165
 * 34.106.60.246
