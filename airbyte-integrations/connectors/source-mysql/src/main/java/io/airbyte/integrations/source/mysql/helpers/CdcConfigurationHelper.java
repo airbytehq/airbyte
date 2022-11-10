@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.mysql.helpers;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import java.time.Duration;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
