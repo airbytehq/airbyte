@@ -2,7 +2,7 @@ import { Formik } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
-import HeadTitle from "components/HeadTitle";
+import { HeadTitle } from "components/common/HeadTitle";
 
 import { isGdprCountry } from "utils/dataPrivacy";
 

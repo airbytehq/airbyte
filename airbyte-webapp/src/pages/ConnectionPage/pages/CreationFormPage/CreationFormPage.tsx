@@ -1,15 +1,15 @@
 import React, { useState } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { LoadingPage } from "components";
 import { CloudInviteUsersHint } from "components/CloudInviteUsersHint";
+import { HeadTitle } from "components/common/HeadTitle";
 import ConnectionBlock from "components/ConnectionBlock";
 import { FormPageContent } from "components/ConnectorBlocks";
 import { CreateConnectionForm } from "components/CreateConnection/CreateConnectionForm";
-import HeadTitle from "components/HeadTitle";
 import { PageHeader } from "components/ui/PageHeader";
-import { StepsMenu } from "components/ui/StepsMenu";
+import { StepsIndicator } from "components/ui/StepsIndicator";
 
 import {
   DestinationDefinitionRead,
@@ -21,6 +21,7 @@ import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { useGetDestination } from "hooks/services/useDestinationHook";
 import { useGetSource } from "hooks/services/useSourceHook";
+import { useLocationState } from "hooks/useLocationState";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
@@ -74,6 +75,12 @@ function usePreloadData(): {
 export const CreationFormPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.CONNECTIONS_NEW);
   const location = useLocation();
+  const { formatMessage } = useIntl();
+
+  // exp-signup-selected-source-definition
+  const state = useLocationState<{ sourceDefinitionId?: string }>();
+  const isSourceDefinitionSelected = Boolean(state?.sourceDefinitionId);
+
   const navigate = useNavigate();
   const { clearAllFormChanges } = useFormChangeTrackerService();
 
@@ -130,10 +137,10 @@ export const CreationFormPage: React.FC = () => {
       if (currentEntityStep === EntityStepsTypes.SOURCE) {
         return (
           <>
-            {type === EntityStepsTypes.CONNECTION && (
+            {/* // exp-signup-selected-source-definition */}
+            {type === EntityStepsTypes.CONNECTION && !isSourceDefinitionSelected && (
               <ExistingEntityForm type="source" onSubmit={onSelectExistingSource} />
             )}
-
             <ConnectionCreateSourceForm
               afterSubmit={() => {
                 if (type === "connection") {
@@ -179,30 +186,28 @@ export const CreationFormPage: React.FC = () => {
       ? [
           {
             id: StepsTypes.CREATE_ENTITY,
-            name: <FormattedMessage id="onboarding.createSource" />,
+            name: formatMessage({ id: "onboarding.createSource" }),
           },
           {
             id: StepsTypes.CREATE_CONNECTOR,
-            name: <FormattedMessage id="onboarding.createDestination" />,
+            name: formatMessage({ id: "onboarding.createDestination" }),
           },
           {
             id: StepsTypes.CREATE_CONNECTION,
-            name: <FormattedMessage id="onboarding.setUpConnection" />,
+            name: formatMessage({ id: "onboarding.setUpConnection" }),
           },
         ]
       : [
           {
             id: StepsTypes.CREATE_ENTITY,
             name:
-              type === "destination" ? (
-                <FormattedMessage id="onboarding.createDestination" />
-              ) : (
-                <FormattedMessage id="onboarding.createSource" />
-              ),
+              type === "destination"
+                ? formatMessage({ id: "onboarding.createDestination" })
+                : formatMessage({ id: "onboarding.createSource" }),
           },
           {
             id: StepsTypes.CREATE_CONNECTION,
-            name: <FormattedMessage id="onboarding.setUpConnection" />,
+            name: formatMessage({ id: "onboarding.setUpConnection" }),
           },
         ];
 
@@ -220,7 +225,7 @@ export const CreationFormPage: React.FC = () => {
       <ConnectorDocumentationWrapper>
         <PageHeader
           title={<FormattedMessage id={titleId} />}
-          middleComponent={<StepsMenu lightMode data={steps} activeStep={currentStep} />}
+          middleComponent={<StepsIndicator steps={steps} activeStep={currentStep} />}
         />
         <FormPageContent big={currentStep === StepsTypes.CREATE_CONNECTION}>
           {currentStep !== StepsTypes.CREATE_CONNECTION && (!!source || !!destination) && (
