@@ -19,6 +19,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.oauth.OAuthFlowImplementation;
 import io.airbyte.oauth.OAuthImplementationFactory;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
@@ -51,6 +52,7 @@ public class OAuthHandler {
 
   public OAuthConsentRead getSourceOAuthConsent(final SourceOauthConsentRequest sourceDefinitionIdRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
+
     final StandardSourceDefinition sourceDefinition =
         configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(sourceDefinition);

@@ -2,11 +2,6 @@ plugins {
     id 'application'
 }
 
-configurations.all {
-    exclude group: 'io.micronaut.jaxrs'
-    exclude group: 'io.micronaut.sql'
-}
-
 dependencies {
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
@@ -42,7 +37,6 @@ dependencies {
 
     implementation platform(libs.micronaut.bom)
     implementation libs.bundles.micronaut
-    implementation libs.micronaut.data.jdbc
 
     // Ensure that the versions defined in deps.toml are used
     // instead of versions from transitive dependencies
