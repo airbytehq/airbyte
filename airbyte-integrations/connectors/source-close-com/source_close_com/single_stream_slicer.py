@@ -37,7 +37,7 @@ class SingleStreamSlicer(SingleSlice):
         if not self.start_datetime.datetime_format:
             self.start_datetime.datetime_format = self.datetime_format
 
-        if self.start_time_option.field_name:
+        if self.start_time_option and self.start_time_option.field_name:
             self.start_time_option.field_name = InterpolatedString.create(self.start_time_option.field_name, options=options)
 
         if self.start_time_option and self.start_time_option.inject_into == RequestOptionType.path:
