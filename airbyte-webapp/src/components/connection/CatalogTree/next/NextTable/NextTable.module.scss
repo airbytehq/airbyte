@@ -1,0 +1,51 @@
+@use "scss/colors";
+
+// --------- <th/> ---------
+.tableHead {
+  background: colors.$dark-blue;
+  text-align: left;
+  font-size: 10px;
+  line-height: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-bottom: none;
+  color: colors.$grey;
+
+  // This couple can be passed as "customStyle" prop, note it uses for styling <td/> also
+  //width: ${({ collapse, customWidth }) => (customWidth ? `${customWidth}%` : collapse ? "0.0000000001%" : "auto")};
+  //padding: ${({ customPadding }) => `9px ${customPadding?.right ?? 13}px 10px ${customPadding?.left ?? 13}px`};
+
+  &:first-child {
+    padding-left: 45px;
+    border-radius: 10px 0 0;
+  }
+
+  &:last-child {
+    padding-left: 15px;
+    border-radius: 0 10px 0 0;
+  }
+}
+
+// "light" prop
+.light {
+  background: none;
+  font-size:  11px;
+  font-weight: 400;
+  text-transform: capitalize;
+
+  &:first-child {
+    padding-left: 13px;
+  }
+}
+
+// "highlighted" prop
+.highlighted {
+  color: colors.$white;
+}
+
+// --------- <tr/> ---------
+
+
+// --------- <td/> ---------
+
+
