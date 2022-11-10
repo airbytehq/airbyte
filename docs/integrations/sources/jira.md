@@ -5,7 +5,7 @@
 | Feature | Supported? |  |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes | Only Issues |
+| Incremental Sync | Yes | Only Issues, BoardIssues, Epics, IssueComments, IssueWorklogs, PullRequests, SprintIssues |
 | Replicate Incremental Deletes | Coming soon |  |
 | SSL connection | Yes |  |
 
@@ -60,6 +60,7 @@ This source is capable of syncing the following tables and their data:
 * [Screen schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-schemes/#api-rest-api-3-screenscheme-get)
 * [Time tracking](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-time-tracking/#api-rest-api-3-configuration-timetracking-list-get)
 * [Users](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-user-search/#api-rest-api-3-user-search-get)
+* [UsersGroupsDetailed](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-user-groups-get)
 * [Workflows](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflow-search-get)
 * [Workflow schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-schemes/#api-rest-api-3-workflowscheme-get)
 * [Workflow statuses](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get)
@@ -95,9 +96,9 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                                | Subject                                                                                                                 |
 |:--------|:-----------|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
-| 0.2.23  | 2022-10-28 | [\#18505](hhttps://github.com/airbytehq/airbyte/pull/18505) | Correcting `max_results` bug introduced in connector stream                                                                   |
-| 0.2.22  | 2022-10-03 | [\#16944](hhttps://github.com/airbytehq/airbyte/pull/16944) | Adds support for `max_results` to `users` stream                                                                   |
-| 0.2.22  | 2022-10-03 | [\#16944](hhttps://github.com/airbytehq/airbyte/pull/16944) | Adds support for `max_results` to `users` stream                                                                   |
+| 0.3.0   | 2022-11-03 | [\#18901](hhttps://github.com/airbytehq/airbyte/pull/18901) | Adds UserGroupsDetailed schema, fix Incremental normalization, add Incremental support for IssueComments, IssueWorklogs |
+| 0.2.23  | 2022-10-28 | [\#18505](hhttps://github.com/airbytehq/airbyte/pull/18505) | Correcting `max_results` bug introduced in connector stream                                                             |
+| 0.2.22  | 2022-10-03 | [\#16944](hhttps://github.com/airbytehq/airbyte/pull/16944) | Adds support for `max_results` to `users` stream                                                                        |
 | 0.2.21  | 2022-07-28 | [\#15135](hhttps://github.com/airbytehq/airbyte/pull/15135) | Adds components to `fields` object on `issues` stream                                                                   |
 | 0.2.20  | 2022-05-25 | [\#13202](https://github.com/airbytehq/airbyte/pull/13202)  | Adds resolutiondate to `fields` object on `issues` stream                                                               |
 | 0.2.19  | 2022-05-04 | [\#10835](https://github.com/airbytehq/airbyte/pull/10835)  | Change description for array fields                                                                                     |
