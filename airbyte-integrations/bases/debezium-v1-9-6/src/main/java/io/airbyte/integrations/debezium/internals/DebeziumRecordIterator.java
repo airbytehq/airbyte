@@ -72,7 +72,8 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   // #18987 The following logic incorporates heartbeat (CDC postgres only for now):
   // 1. Wait on queue the either the configured time first or 1 min after a record received
   // 2. If nothing came out of queue finish sync
-  // 3. If received heartbeat: check if hearbeat_lsn reached target or hasn't changed in a while finish sync
+  // 3. If received heartbeat: check if hearbeat_lsn reached target or hasn't changed in a while
+  // finish sync
   // 4. If change event lsn reached target finish sync
   // 5. Otherwise check message queuen again
   @Override
@@ -126,6 +127,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       hasSnapshotFinished = hasSnapshotFinished(eventAsJson);
 
       // if the last record matches the target file position, it is time to tell the producer to shutdown.
+
       if (!signalledClose && shouldSignalClose(eventAsJson)) {
         LOGGER.info("Closing: Change event reached target position");
         requestClose();
