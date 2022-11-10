@@ -11,6 +11,8 @@ airbytePython {
 }
 
 task generateOpenApiPythonServer(type: GenerateTask){
+    outputs.upToDateWhen { false }
+
     def generatedCodeDir = "$buildDir/server"
     inputSpec = "$rootDir.absolutePath/airbyte-connector-builder/src/main/openapi/openapi.yaml"
     outputDir = generatedCodeDir
