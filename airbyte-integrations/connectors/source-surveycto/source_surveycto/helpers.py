@@ -77,8 +77,7 @@ class Helpers(object):
         schema_map, error_logs = generator.deduce_schema(input_data=data)
         schema = generator.flatten_schema(schema_map)
         schema_json = converter(schema)
-        schema=schema_json['definitions']['element']['properties'] 
-        print(f'--------------========----------------SCHEMA+===============?>>>>>{schema}')   
+        schema=schema_json['definitions']['element']['properties']   
         return schema
 
     @staticmethod
