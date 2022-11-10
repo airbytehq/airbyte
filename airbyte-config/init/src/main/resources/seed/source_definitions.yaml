@@ -870,7 +870,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 1.0.11
+  dockerImageTag: 1.0.12
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -912,6 +912,14 @@
   icon: notion.svg
   sourceType: api
   releaseStage: generally_available
+- name: New York Times
+  sourceDefinitionId: 0fae6a9a-04eb-44d4-96e1-e02d3dbc1d83
+  dockerRepository: airbyte/source-nytimes
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/nytimes
+  icon: nytimes.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Okta
   sourceDefinitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
   dockerRepository: airbyte/source-okta
@@ -1070,11 +1078,18 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 1.0.22
+  dockerImageTag: 1.0.23
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
   releaseStage: generally_available
+- name: Postmark App
+  sourceDefinitionId: cde75ca1-1e28-4a0f-85bb-90c546de9f1f
+  dockerRepository: airbyte/source-postmarkapp
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/postmarkapp
+  sourceType: api
+  releaseStage: alpha
 - name: Prestashop
   sourceDefinitionId: d60a46d4-709f-4092-a6b7-2457f7d455f5
   dockerRepository: airbyte/source-prestashop
@@ -1214,6 +1229,13 @@
   icon: sendgrid.svg
   sourceType: api
   releaseStage: beta
+- name: Senseforce
+  sourceDefinitionId: 39de93cb-1511-473e-a673-5cbedb9436af
+  dockerRepository: airbyte/source-senseforce
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/senseforce
+  sourceType: api
+  releaseStage: alpha
 - name: Shopify
   sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   dockerRepository: airbyte/source-shopify
@@ -1417,6 +1439,14 @@
   icon: youtube.svg
   sourceType: api
   releaseStage: beta
+- sourceDefinitionId: 78752073-6d96-447d-8a93-2b6953f3c787
+  name: YouTube Analytics Business
+  dockerRepository: airbyte/source-youtube-analytics-business
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/youtube-analytics-business
+  icon: youtube.svg
+  sourceType: api
+  releaseStage: alpha
 - name: VictorOps
   sourceDefinitionId: 7e20ce3e-d820-4327-ad7a-88f3927fd97a
   dockerRepository: farosai/airbyte-victorops-source
@@ -1616,6 +1646,13 @@
   dockerRepository: airbyte/source-yandex-metrica
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/yandex-metrica
+  sourceType: api
+  releaseStage: alpha
+- name: Younium
+  sourceDefinitionId: 9c74c2d7-531a-4ebf-b6d8-6181f805ecdc
+  dockerRepository: airbyte/source-younium
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/younium
   sourceType: api
   releaseStage: alpha
 - name: Zoom
