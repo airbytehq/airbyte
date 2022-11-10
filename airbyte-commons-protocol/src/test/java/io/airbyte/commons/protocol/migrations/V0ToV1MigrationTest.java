@@ -7,6 +7,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -513,6 +514,32 @@ public class V0ToV1MigrationTest {
     }
   }
 
+  @Nested
+  public class RecordUpgradeTest {
+    @Test
+    public void testBasicUpgrade() {
+      JsonNode oldData = Jsons.deserialize("""
+        {
+          "id": 42
+        }
+        """);
+
+      io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createRecordMessage(oldData));
+
+      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize("""
+        {
+          "type": "RECORD",
+          "record": {
+            "data": {
+              "id": "42"
+            }
+          }
+        }
+        """, io.airbyte.protocol.models.v0.AirbyteMessage.class);
+      assertEquals(expectedMessage, upgradedMessage);
+    }
+  }
+
   private AirbyteMessage createCatalogMessage(JsonNode schema) {
     return new AirbyteMessage().withType(Type.CATALOG)
         .withCatalog(new AirbyteCatalog().withStreams(List.of(new AirbyteStream().withJsonSchema(schema))));
@@ -525,6 +552,10 @@ public class V0ToV1MigrationTest {
 
     JsonNode expectedSchema = Jsons.deserialize(schemaString);
     assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
+  }
+
+  private AirbyteMessage createRecordMessage(JsonNode data) {
+    return new AirbyteMessage().withType(Type.RECORD).withRecord(new AirbyteRecordMessage().withData(data));
   }
 
 }
