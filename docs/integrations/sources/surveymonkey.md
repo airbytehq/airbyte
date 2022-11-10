@@ -9,24 +9,20 @@ OAuth for Survey Monkey is officially supported only for the US. We are testing 
 :::
 
 <!-- env:oss -->
-
 ## Prerequisites
 
 **For Airbyte Open Source:**
 
-- Access Token
+* Access Token
 <!-- /env:oss -->
 
 ## Setup guide
-
 ### Step 1: Set up SurveyMonkey
-
 Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-started). Register your application [here](https://developer.surveymonkey.com/apps/) Then go to Settings and copy your access token
 
 ### Step 2: Set up the source connector in Airbyte
 
 <!-- env:cloud -->
-
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
@@ -39,7 +35,6 @@ Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-start
 <!-- /env:cloud -->
 
 <!-- env:oss -->
-
 **For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
@@ -52,17 +47,17 @@ Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-start
 
 ## Supported streams and sync modes
 
-- [Surveys](https://developer.surveymonkey.com/api/v3/#surveys) \(Incremental\)
-- [SurveyPages](https://developer.surveymonkey.com/api/v3/#surveys-id-pages)
-- [SurveyQuestions](https://developer.surveymonkey.com/api/v3/#surveys-id-pages-id-questions)
-- [SurveyResponses](https://developer.surveymonkey.com/api/v3/#survey-responses) \(Incremental\)
+* [Surveys](https://developer.surveymonkey.com/api/v3/#surveys) \(Incremental\)
+* [SurveyPages](https://developer.surveymonkey.com/api/v3/#surveys-id-pages)
+* [SurveyQuestions](https://developer.surveymonkey.com/api/v3/#surveys-id-pages-id-questions)
+* [SurveyResponses](https://developer.surveymonkey.com/api/v3/#survey-responses) \(Incremental\)
 
 ### Performance considerations
 
 The SurveyMonkey API applies heavy API quotas for default private apps, which have the following limits:
 
-- 125 requests per minute
-- 500 requests per day
+* 125 requests per minute
+* 500 requests per day
 
 To cover more data from this source we use caching.
 

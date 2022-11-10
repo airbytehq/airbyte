@@ -5,18 +5,13 @@ This page contains the setup guide and reference information for the Zendesk Cha
 ## Prerequisites
 
 - A Zendesk Account with permission to access data from accounts you want to sync.
-
 <!-- env:oss -->
-
-**For Airbyte Open Source:**
-
-- An Access Token (https://developer.zendesk.com/rest_api/docs/chat/auth). We recommend creating a restricted, read-only key specifically for Airbyte access to allow you to control which resources Airbyte should be able to access.
+- (Airbyte Open Source) An Access Token (https://developer.zendesk.com/rest_api/docs/chat/auth). We recommend creating a restricted, read-only key specifically for Airbyte access to allow you to control which resources Airbyte should be able to access.
 <!-- /env:oss -->
 
 ## Setup guide
 
 <!-- env:cloud -->
-
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
@@ -30,7 +25,6 @@ This page contains the setup guide and reference information for the Zendesk Cha
 <!-- /env:cloud -->
 
 <!-- env:oss -->
-
 **For Airbyte Open Source:**
 
 1. Navigate to the Airbyte Open Source dashboard.
@@ -47,25 +41,25 @@ This page contains the setup guide and reference information for the Zendesk Cha
 
 The Zendesk Chat source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
 
-- [Accounts](https://developer.zendesk.com/rest_api/docs/chat/accounts#show-account)
-- [Agents](https://developer.zendesk.com/rest_api/docs/chat/agents#list-agents) \(Incremental\)
-- [Agent Timelines](https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export) \(Incremental\)
-- [Chats](https://developer.zendesk.com/rest_api/docs/chat/chats#list-chats)
-- [Shortcuts](https://developer.zendesk.com/rest_api/docs/chat/shortcuts#list-shortcuts)
-- [Triggers](https://developer.zendesk.com/rest_api/docs/chat/triggers#list-triggers)
-- [Bans](https://developer.zendesk.com/rest_api/docs/chat/bans#list-bans) \(Incremental\)
-- [Departments](https://developer.zendesk.com/rest_api/docs/chat/departments#list-departments)
-- [Goals](https://developer.zendesk.com/rest_api/docs/chat/goals#list-goals)
-- [Skills](https://developer.zendesk.com/rest_api/docs/chat/skills#list-skills)
-- [Roles](https://developer.zendesk.com/rest_api/docs/chat/roles#list-roles)
-- [Routing Settings](https://developer.zendesk.com/rest_api/docs/chat/routing_settings#show-account-routing-settings)
+* [Accounts](https://developer.zendesk.com/rest_api/docs/chat/accounts#show-account)
+* [Agents](https://developer.zendesk.com/rest_api/docs/chat/agents#list-agents) \(Incremental\)
+* [Agent Timelines](https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export) \(Incremental\)
+* [Chats](https://developer.zendesk.com/rest_api/docs/chat/chats#list-chats)
+* [Shortcuts](https://developer.zendesk.com/rest_api/docs/chat/shortcuts#list-shortcuts)
+* [Triggers](https://developer.zendesk.com/rest_api/docs/chat/triggers#list-triggers)
+* [Bans](https://developer.zendesk.com/rest_api/docs/chat/bans#list-bans) \(Incremental\)
+* [Departments](https://developer.zendesk.com/rest_api/docs/chat/departments#list-departments)
+* [Goals](https://developer.zendesk.com/rest_api/docs/chat/goals#list-goals)
+* [Skills](https://developer.zendesk.com/rest_api/docs/chat/skills#list-skills)
+* [Roles](https://developer.zendesk.com/rest_api/docs/chat/roles#list-roles)
+* [Routing Settings](https://developer.zendesk.com/rest_api/docs/chat/routing_settings#show-account-routing-settings)
 
 ## Performance considerations
 
@@ -84,7 +78,7 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
-| 0.1.11  | 2022-10-18 | [17745](https://github.com/airbytehq/airbyte/pull/17745) | Add Engagements Stream and fix infity looping                                                                    |
+| 0.1.11  | 2022-10-18 | [17745](https://github.com/airbytehq/airbyte/pull/17745) | Add Engagements Stream and fix infity looping                                                                            |
 | 0.1.10  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                                                    |
 | 0.1.9   | 2022-08-23 | [15879](https://github.com/airbytehq/airbyte/pull/15879) | Corrected specification and stream schemas to support backward capability                                        |
 | 0.1.8   | 2022-06-28 | [13387](https://github.com/airbytehq/airbyte/pull/13387) | Add state checkpoint to allow long runs                                                                          |

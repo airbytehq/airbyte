@@ -1,11 +1,8 @@
 # Bing Ads
-
 This page contains the setup guide and reference information for the Bing Ads source connector.
 
 ## Setup guide
-
 ### Step 1: Set up Bing Ads
-
 1. [Register your application](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-register?view=bingads-13) in the Azure portal.
 2. [Request user consent](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-consent?view=bingads-13l) to get the authorization code.
 3. Use the authorization code to [get a refresh token](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens?view=bingads-13).
@@ -28,9 +25,7 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 ### Step 2: Set up the source connector in Airbyte
 
 <!-- env:cloud -->
-
 **For Airbyte Cloud:**
-
 1. Log in to your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Bing Ads** from the **Source type** dropdown.
@@ -40,13 +35,11 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 7. For **Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 8. Click **Authenticate your Bing Ads account**.
 9. Log in and authorize the Bing Ads account.
-10. Click **Set up source**.
+10. Click **Set up source**.  
 <!-- /env:cloud -->
 
 <!-- env:oss -->
-
 **For Airbyte Open Source:**
-
 1. Log in to your Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Bing Ads** from the **Source type** dropdown.
@@ -58,27 +51,22 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 <!-- /env:oss -->
 
 ## Supported sync modes
-
 The Bing Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
-
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
-
 The Bing Ads source connector supports the following streams. For more information, see the [Bing Ads API](https://docs.microsoft.com/en-us/advertising/guides/?view=bingads-13).
 
 ### Basic streams
-
 - [accounts](https://docs.microsoft.com/en-us/advertising/customer-management-service/searchaccounts?view=bingads-13)
 - [ad_groups](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadgroupsbycampaignid?view=bingads-13)
 - [ads](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadsbyadgroupid?view=bingads-13)
 - [campaigns](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13)
 
 ### Report Streams
-
 - [account_performance_report_hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
 - [account_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
 - [account_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
@@ -102,7 +90,6 @@ The Bing Ads source connector supports the following streams. For more informati
 - [keyword_performance_report_monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
 
 ### Report aggregation
-
 All reports synced by this connector can be [aggregated](https://docs.microsoft.com/en-us/advertising/reporting-service/reportaggregation?view=bingads-13) using hourly, daily, weekly, or monthly time windows.
 
 For example, if you select a report with daily aggregation, the report will contain a row for each day for the duration of the report. Each row will indicate the number of impressions recorded on that day.
@@ -110,13 +97,11 @@ For example, if you select a report with daily aggregation, the report will cont
 A report's aggregation window is indicated in its name. For example, `account_performance_report_hourly` is the Account Performance Reported aggregated using an hourly window.
 
 ## Performance considerations
-
 The Bing Ads API limits the number of requests for all Microsoft Advertising clients. You can find detailed info [here](https://docs.microsoft.com/en-us/advertising/guides/services-protocol?view=bingads-13#throttling).
 
 ## Changelog
-
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                    |
-| :------ | :--------- | :------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
+| :------ |:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------|
 | 0.1.16  | 2022-10-12 | [17873](https://github.com/airbytehq/airbyte/pull/17873)                                                                         | Fix: added missing campaign types in (Audience, Shopping and DynamicSearchAds) in campaigns stream                         |
 | 0.1.15  | 2022-10-03 | [17505](https://github.com/airbytehq/airbyte/pull/17505)                                                                         | Fix: limit cache size for ServiceClient instances                                                                          |
 | 0.1.14  | 2022-09-29 | [17403](https://github.com/airbytehq/airbyte/pull/17403)                                                                         | Fix: limit cache size for ReportingServiceManager instances                                                                |

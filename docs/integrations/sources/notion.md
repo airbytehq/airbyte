@@ -25,7 +25,6 @@ You must be the owner of a Notion workspace to create a new integration.
 ### Step 2: Set up the Notion connector in Airbyte
 
 <!-- env:cloud -->
-
 **For Airbyte Cloud:**
 
 1. Log in to your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
@@ -33,15 +32,14 @@ You must be the owner of a Notion workspace to create a new integration.
 3. On the Set up the source page, select **Notion** from the **Source type** dropdown.
 4. Enter a name for your source.
 5. Choose the method of authentication:
-   - If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
-   - If you select **OAuth2.0** authorization, click **Authenticate your Notion account**.
-     - Log in and Authorize the Notion account. Select the permissions you want to allow Airbyte.
+      * If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
+      * If you select **OAuth2.0** authorization, click **Authenticate your Notion account**.
+          * Log in and Authorize the Notion account. Select the permissions you want to allow Airbyte.
 6. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 7. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
-
 **For Airbyte Open Source:**
 
 1. Log in to your Airbyte Open Source account.
@@ -49,8 +47,8 @@ You must be the owner of a Notion workspace to create a new integration.
 3. On the Set up the source page, select **Notion** from the **Source type** dropdown.
 4. Enter a name for your source.
 5. Choose the method of authentication:
-   - If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
-   - If you select **OAuth2.0** authorization, paste the client ID, access token, and client secret from [Step 8](#step-1-set-up-notion​).
+      * If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
+      * If you select **OAuth2.0** authorization, paste the client ID, access token, and client secret from [Step 8](#step-1-set-up-notion​).
 6. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 7. Click **Set up source**.
 <!-- /env:oss -->
@@ -58,20 +56,19 @@ You must be the owner of a Notion workspace to create a new integration.
 ## Supported sync modes
 
 The Notion source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
-
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (partially)
-- [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (partially)
+* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
 
 The Notion source connector supports the following streams. For more information, see the [Notion API](https://developers.notion.com/reference/intro).
 
-- [blocks](https://developers.notion.com/reference/retrieve-a-block)
-- [databases](https://developers.notion.com/reference/retrieve-a-database)
-- [pages](https://developers.notion.com/reference/retrieve-a-page)
-- [users](https://developers.notion.com/reference/get-user)
+* [blocks](https://developers.notion.com/reference/retrieve-a-block)
+* [databases](https://developers.notion.com/reference/retrieve-a-database)
+* [pages](https://developers.notion.com/reference/retrieve-a-page)
+* [users](https://developers.notion.com/reference/get-user)
 
 :::note
 

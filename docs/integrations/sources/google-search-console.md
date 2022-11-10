@@ -2,9 +2,10 @@
 
 This page contains the setup guide and reference information for the google search console source connector.
 
+
 ## Prerequisites
 
-- Credentials to a Google Service Account \(or Google Service Account with delegated Domain Wide Authority\) or Google User Account
+* Credentials to a Google Service Account \(or Google Service Account with delegated Domain Wide Authority\) or Google User Account
 
 :::note
 
@@ -12,18 +13,18 @@ Since Google has deprecated certain [OAuth workflows](https://developers.google.
 
 :::
 
-## Setup guide
 
+## Setup guide
 ### Step 1: Set up google search console
 
 #### How to create the client credentials for Google Search Console, to use with Airbyte?
 
 You can either:
 
-- Use the existing `Service Account` for your Google Project with granted Admin Permissions
-- Use your personal Google User Account with oauth. If you choose this option, your account must have permissions to view the Google Search Console project you choose.
-- Create the new `Service Account` credentials for your Google Project, and grant Admin Permissions to it
-- Follow the `Delegating domain-wide authority` process to obtain the necessary permissions to your google account from the administrator of Workspace
+* Use the existing `Service Account` for your Google Project with granted Admin Permissions
+* Use your personal Google User Account with oauth. If you choose this option, your account must have permissions to view the Google Search Console project you choose.
+* Create the new `Service Account` credentials for your Google Project, and grant Admin Permissions to it
+* Follow the `Delegating domain-wide authority` process to obtain the necessary permissions to your google account from the administrator of Workspace
 
 ### Creating a Google service account
 
@@ -33,8 +34,8 @@ A service account's credentials include a generated email address that is unique
 2. If prompted, select an existing project, or create a new project.
 3. Click `+ Create service account`.
 4. Under Service account details, type a `name`, `ID`, and `description` for the service account, then click `Create`.
-   - Optional: Under `Service account permissions`, select the `IAM roles` to grant to the service account, then click `Continue`.
-   - Optional: Under `Grant users access to this service account`, add the `users` or `groups` that are allowed to use and manage the service account.
+   * Optional: Under `Service account permissions`, select the `IAM roles` to grant to the service account, then click `Continue`.
+   * Optional: Under `Grant users access to this service account`, add the `users` or `groups` that are allowed to use and manage the service account.
 5. Go to [API Console/Credentials](https://console.cloud.google.com/apis/credentials), check the `Service Accounts` section, click on the Email address of service account you just created.
 6. Open `Details` tab and find `Show domain-wide delegation`, checkmark the `Enable Google Workspace Domain-wide Delegation`.
 7. On `Keys` tab click `+ Add key`, then click `Create new key`.
@@ -57,14 +58,13 @@ You can return to the [API Console/Credentials](https://console.cloud.google.com
 
 Follow the Google Documentation for performing [Delegating domain-wide authority](https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority) to create a Service account with delegated domain-wide authority. This account must be created by an administrator of your Google Workspace. Please make sure to grant the following `OAuth scopes` to the service user:
 
-- `https://www.googleapis.com/auth/webmasters.readonly`
+* `https://www.googleapis.com/auth/webmasters.readonly`
 
 At the end of this process, you should have JSON credentials to this Google Service Account.
 
 ## Step 2: Set up the google search console connector in Airbyte
 
 <!-- env:cloud -->
-
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
@@ -72,13 +72,12 @@ At the end of this process, you should have JSON credentials to this Google Serv
 3. On the Set up the source page, enter the name for the google search console connector and select **google search console** from the Source type dropdown.
 4. Click Authenticate your account to sign in with Google and authorize your account.
 5. Fill in the `site_urls` field.
-6. Fill in the `start date` field.
-7. Fill in the `custom reports` (optionally) in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...]}`
-8. You should be ready to sync data.
+5. Fill in the `start date` field.
+6. Fill in the `custom reports` (optionally) in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...]}`
+7. You should be ready to sync data.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
-
 **For Airbyte Open Source:**
 
 1. Fill in the `service_account_info` and `email` fields for authentication.
@@ -87,6 +86,7 @@ At the end of this process, you should have JSON credentials to this Google Serv
 4. Fill in the `custom reports` (optionally) in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...]}`
 5. You should be ready to sync data.
 <!-- /env:oss -->
+
 
 ## Supported sync modes
 
@@ -99,21 +99,24 @@ The google search console source connector supports the following [sync modes](h
 | SSL connection    | Yes                  |                           |
 | Namespaces        | No                   |                           |
 
+
 ## Supported Streams
 
-- [Sites](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites/get)
-- [Sitemaps](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps/list)
-- [Full Analytics report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query) \(this stream has a long sync time because it is very detailed, use with care\)
-- [Analytics report by country](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by date](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by device](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by query](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- Analytics report by custom dimensions
+* [Sites](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites/get)
+* [Sitemaps](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps/list)
+* [Full Analytics report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query) \(this stream has a long sync time because it is very detailed, use with care\)
+* [Analytics report by country](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+* [Analytics report by date](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+* [Analytics report by device](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+* [Analytics report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+* [Analytics report by query](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+* Analytics report by custom dimensions
+
 
 ## Performance considerations
 
 This connector attempts to back off gracefully when it hits Reports API's rate limits. To find more information about limits, see [Usage Limits](https://developers.google.com/webmaster-tools/search-console-api-original/v3/limits) documentation.
+
 
 ## Data type map
 
@@ -123,6 +126,7 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 | `number`         | `number`     |       |
 | `array`          | `array`      |       |
 | `object`         | `object`     |       |
+
 
 ## Changelog
 

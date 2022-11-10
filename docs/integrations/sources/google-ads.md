@@ -11,8 +11,6 @@ This page contains the setup guide and reference information for the Google Ads 
 
 ## Setup guide
 
-<!-- env:oss -->
-
 ### Step 1: (For Airbyte Open Source) Apply for a developer token
 
 :::note
@@ -32,7 +30,29 @@ When you apply for a token, make sure to mention:
 
 ### Step 2: Set up the Google Ads connector in Airbyte
 
+<!-- env:cloud -->
+**For Airbyte Cloud:**
+
+To set up Google Ads as a source in Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Google Ads** from the Source type dropdown.
+4. Enter a **Name** for your source.
+5. Click **Sign in with Google** to authenticate your Google Ads account.
+6. Enter a comma-separated list of the [Customer ID(s)](https://support.google.com/google-ads/answer/1704344) for your account.
+7. Enter the **Start Date** in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+8. (Optional) Enter a custom [GAQL](#custom-query-understanding-google-ads-query-language) query.
+9. (Optional) If the access to your account is through a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/), enter the [**Login Customer ID for Managed Accounts**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Google Ads Manager account.
+10. (Optional) Enter a [**Conversion Window**](https://support.google.com/google-ads/answer/3123169?hl=en).
+11. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated.
+12. Click **Set up source**.
+<!-- /env:cloud -->
+
+<!-- env:oss -->
 **For Airbyte Open Source:**
+
+To set up Google Ads as a source in Airbyte Open Source:
 
 1. Log into your Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
@@ -48,24 +68,6 @@ When you apply for a token, make sure to mention:
 12. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated.
 13. Click **Set up source**.
 <!-- /env:oss -->
-
-<!-- env:cloud -->
-
-**For Airbyte Cloud:**
-
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Google Ads** from the Source type dropdown.
-4. Enter a **Name** for your source.
-5. Click **Sign in with Google** to authenticate your Google Ads account.
-6. Enter a comma-separated list of the [Customer ID(s)](https://support.google.com/google-ads/answer/1704344) for your account.
-7. Enter the **Start Date** in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-8. (Optional) Enter a custom [GAQL](#custom-query-understanding-google-ads-query-language) query.
-9. (Optional) If the access to your account is through a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/), enter the [**Login Customer ID for Managed Accounts**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Google Ads Manager account.
-10. (Optional) Enter a [**Conversion Window**](https://support.google.com/google-ads/answer/3123169?hl=en).
-11. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated.
-12. Click **Set up source**.
-<!-- /env:cloud -->
 
 ## Supported sync modes
 
@@ -127,7 +129,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 ## Changelog
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
-| :------- | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+|:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
 | `0.2.3`  | 2022-10-17 | [18069](https://github.com/airbytehq/airbyte/pull/18069) | Add `segments.hour`, `metrics.ctr`, `metrics.conversions` and `metrics.conversions_values` fields to `campaigns` report stream       |
 | `0.2.2`  | 2022-10-21 | [17412](https://github.com/airbytehq/airbyte/pull/17412) | Release with CDK >= 0.2.2                                                                                                            |
 | `0.2.1`  | 2022-09-29 | [17412](https://github.com/airbytehq/airbyte/pull/17412) | Always use latest CDK version                                                                                                        |

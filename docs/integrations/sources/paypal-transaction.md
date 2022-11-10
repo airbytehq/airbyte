@@ -7,7 +7,6 @@ This page contains the setup guide and reference information for the Paypal Tran
 The [Paypal Transaction API](https://developer.paypal.com/docs/api/transaction-search/v1/) is used to get the history of transactions for a PayPal account.
 
 ## Setup guide
-
 ### Step 1: Set up Paypal Transaction
 
 In order to get an `Client ID` and `Secret` please go to [this](https://developer.paypal.com/docs/platforms/get-started/) page and follow the instructions. After registration you may find your `Client ID` and `Secret` [here](https://developer.paypal.com/developer/accounts/).
@@ -18,10 +17,9 @@ Our Paypal Transactions Source Connector does not support OAuth at this time due
 
 :::
 
-### Step 2: Set up the Paypal Transaction connector in Airbyte
+## Step 2: Set up the Paypal Transaction connector in Airbyte
 
 <!-- env:cloud -->
-
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
@@ -35,7 +33,6 @@ Our Paypal Transactions Source Connector does not support OAuth at this time due
 <!-- /env:cloud -->
 
 <!-- env:oss -->
-
 **For Airbyte Open Source:**
 
 1. Navigate to the Airbyte Open Source dashboard
@@ -53,27 +50,27 @@ The PayPal Transaction source connector supports the following [sync modes](http
 
 | Feature                   | Supported? |
 | :------------------------ | :--------- |
-| Full Refresh Sync         | Yes        |
-| Incremental - Append Sync | Yes        |
-| Namespaces                | No         |
+| Full Refresh Sync         |    Yes     |
+| Incremental - Append Sync |    Yes     |
+| Namespaces                |     No     |
 
 ## Supported Streams
 
 This Source is capable of syncing the following core Streams:
 
-- [Transactions](https://developer.paypal.com/docs/api/transaction-search/v1/#transactions)
-- [Balances](https://developer.paypal.com/docs/api/transaction-search/v1/#balances)
+* [Transactions](https://developer.paypal.com/docs/api/transaction-search/v1/#transactions)
+* [Balances](https://developer.paypal.com/docs/api/transaction-search/v1/#balances)
 
 ## Performance considerations
 
 Paypal transaction API has some [limits](https://developer.paypal.com/docs/integration/direct/transaction-search/)
 
-- `start_date_min` = 3 years, API call lists transaction for the previous three years.
-- `start_date_max` = 1.5 days, it takes a maximum of three hours for executed transactions to appear in the list transactions call. It is set to 1.5 days by default based on experience, otherwise API throw an error.
-- `stream_slice_period` = 1 day, the maximum supported date range is 31 days.
-- `records_per_request` = 10000, the maximum number of records in a single request.
-- `page_size` = 500, the maximum page size is 500.
-- `requests_per_minute` = 30, maximum limit is 50 requests per minute from IP address to all endpoint
+* `start_date_min` = 3 years, API call lists transaction for the previous three years.
+* `start_date_max` = 1.5 days, it takes a maximum of three hours for executed transactions to appear in the list transactions call. It is set to 1.5 days by default based on experience, otherwise API throw an error.
+* `stream_slice_period` = 1 day, the maximum supported date range is 31 days.
+* `records_per_request` = 10000, the maximum number of records in a single request.
+* `page_size` = 500, the maximum page size is 500.
+* `requests_per_minute` = 30, maximum limit is 50 requests per minute from IP address to all endpoint
 
 Transactions sync is performed with default `stream_slice_period` = 1 day, it means that there will be 1 request for each day between start_date and now or end_date. if `start_date` is greater then `start_date_max`. Balances sync is similarly performed with default `stream_slice_period` = 1 day, but it will do additional request for the end_date of the sync now.
 
@@ -81,15 +78,15 @@ Transactions sync is performed with default `stream_slice_period` = 1 day, it me
 
 | Integration Type | Airbyte Type |
 | :--------------- | :----------- |
-| `string`         | `string`     |
-| `number`         | `number`     |
-| `array`          | `array`      |
-| `object`         | `object`     |
+|     `string`     |   `string`   |
+|     `number`     |   `number`   |
+|     `array`      |   `array`    |
+|     `object`     |   `object`   |
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------|
 | 0.1.10  | 2022-09-04 | [17554](https://github.com/airbytehq/airbyte/pull/17554) | Made the spec and source config to be consistent                                                                             |
 | 0.1.9   | 2022-08-18 | [15741](https://github.com/airbytehq/airbyte/pull/15741) | Removed `OAuth2.0` option                                                                                                    |
 | 0.1.8   | 2022-07-25 | [15000](https://github.com/airbytehq/airbyte/pull/15000) | Added support of `OAuth2.0` authentication, fixed bug when normalization couldn't handle nested cursor field and primary key |

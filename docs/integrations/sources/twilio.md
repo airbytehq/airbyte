@@ -13,7 +13,6 @@ See [docs](https://www.twilio.com/docs/iam/api) for more details.
 ## Setup guide
 
 <!-- env:cloud -->
-
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
@@ -27,7 +26,6 @@ See [docs](https://www.twilio.com/docs/iam/api) for more details.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
-
 **For Airbyte Open Source:**
 
 1. Navigate to the Airbyte Open Source dashboard.
@@ -53,28 +51,28 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 
 ## Supported Streams
 
-- [Accounts](https://www.twilio.com/docs/usage/api/account#read-multiple-account-resources)
-- [Addresses](https://www.twilio.com/docs/usage/api/address#read-multiple-address-resources)
-- [Alerts](https://www.twilio.com/docs/usage/monitor-alert#read-multiple-alert-resources) \(Incremental\)
-- [Applications](https://www.twilio.com/docs/usage/api/applications#read-multiple-application-resources)
-- [Available Phone Number Countries](https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-resource#read-a-list-of-countries) \(Incremental\)
-- [Available Phone Numbers Local](https://www.twilio.com/docs/phone-numbers/api/availablephonenumberlocal-resource#read-multiple-availablephonenumberlocal-resources) \(Incremental\)
-- [Available Phone Numbers Mobile](https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-mobile-resource#read-multiple-availablephonenumbermobile-resources) \(Incremental\)
-- [Available Phone Numbers Toll Free](https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-tollfree-resource#read-multiple-availablephonenumbertollfree-resources) \(Incremental\)
-- [Calls](https://www.twilio.com/docs/voice/api/call-resource#create-a-call-resource) \(Incremental\)
-- [Conference Participants](https://www.twilio.com/docs/voice/api/conference-participant-resource#read-multiple-participant-resources) \(Incremental\)
-- [Conferences](https://www.twilio.com/docs/voice/api/conference-resource#read-multiple-conference-resources) \(Incremental\)
-- [Dependent Phone Numbers](https://www.twilio.com/docs/usage/api/address?code-sample=code-list-dependent-pns-subresources&code-language=curl&code-sdk-version=json#instance-subresources) \(Incremental\)
-- [Incoming Phone Numbers](https://www.twilio.com/docs/phone-numbers/api/incomingphonenumber-resource#read-multiple-incomingphonenumber-resources) \(Incremental\)
-- [Keys](https://www.twilio.com/docs/usage/api/keys#read-a-key-resource)
-- [Message Media](https://www.twilio.com/docs/sms/api/media-resource#read-multiple-media-resources) \(Incremental\)
-- [Messages](https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources) \(Incremental\)
-- [Outgoing Caller Ids](https://www.twilio.com/docs/voice/api/outgoing-caller-ids#outgoingcallerids-list-resource)
-- [Queues](https://www.twilio.com/docs/voice/api/queue-resource#read-multiple-queue-resources)
-- [Recordings](https://www.twilio.com/docs/voice/api/recording#read-multiple-recording-resources) \(Incremental\)
-- [Transcriptions](https://www.twilio.com/docs/voice/api/recording-transcription?code-sample=code-read-list-all-transcriptions&code-language=curl&code-sdk-version=json#read-multiple-transcription-resources)
-- [Usage Records](https://www.twilio.com/docs/usage/api/usage-record#read-multiple-usagerecord-resources) \(Incremental\)
-- [Usage Triggers](https://www.twilio.com/docs/usage/api/usage-trigger#read-multiple-usagetrigger-resources)
+* [Accounts](https://www.twilio.com/docs/usage/api/account#read-multiple-account-resources)
+* [Addresses](https://www.twilio.com/docs/usage/api/address#read-multiple-address-resources)
+* [Alerts](https://www.twilio.com/docs/usage/monitor-alert#read-multiple-alert-resources) \(Incremental\)
+* [Applications](https://www.twilio.com/docs/usage/api/applications#read-multiple-application-resources)
+* [Available Phone Number Countries](https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-resource#read-a-list-of-countries) \(Incremental\)
+* [Available Phone Numbers Local](https://www.twilio.com/docs/phone-numbers/api/availablephonenumberlocal-resource#read-multiple-availablephonenumberlocal-resources) \(Incremental\)
+* [Available Phone Numbers Mobile](https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-mobile-resource#read-multiple-availablephonenumbermobile-resources) \(Incremental\)
+* [Available Phone Numbers Toll Free](https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-tollfree-resource#read-multiple-availablephonenumbertollfree-resources) \(Incremental\)
+* [Calls](https://www.twilio.com/docs/voice/api/call-resource#create-a-call-resource) \(Incremental\)
+* [Conference Participants](https://www.twilio.com/docs/voice/api/conference-participant-resource#read-multiple-participant-resources) \(Incremental\)
+* [Conferences](https://www.twilio.com/docs/voice/api/conference-resource#read-multiple-conference-resources) \(Incremental\)
+* [Dependent Phone Numbers](https://www.twilio.com/docs/usage/api/address?code-sample=code-list-dependent-pns-subresources&code-language=curl&code-sdk-version=json#instance-subresources) \(Incremental\)
+* [Incoming Phone Numbers](https://www.twilio.com/docs/phone-numbers/api/incomingphonenumber-resource#read-multiple-incomingphonenumber-resources) \(Incremental\)
+* [Keys](https://www.twilio.com/docs/usage/api/keys#read-a-key-resource)
+* [Message Media](https://www.twilio.com/docs/sms/api/media-resource#read-multiple-media-resources) \(Incremental\)
+* [Messages](https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources) \(Incremental\)
+* [Outgoing Caller Ids](https://www.twilio.com/docs/voice/api/outgoing-caller-ids#outgoingcallerids-list-resource)
+* [Queues](https://www.twilio.com/docs/voice/api/queue-resource#read-multiple-queue-resources)
+* [Recordings](https://www.twilio.com/docs/voice/api/recording#read-multiple-recording-resources) \(Incremental\)
+* [Transcriptions](https://www.twilio.com/docs/voice/api/recording-transcription?code-sample=code-read-list-all-transcriptions&code-language=curl&code-sdk-version=json#read-multiple-transcription-resources)
+* [Usage Records](https://www.twilio.com/docs/usage/api/usage-record#read-multiple-usagerecord-resources) \(Incremental\)
+* [Usage Triggers](https://www.twilio.com/docs/usage/api/usage-trigger#read-multiple-usagetrigger-resources)
 
 ## Performance considerations
 
@@ -84,7 +82,7 @@ For more information, see [the Twilio docs for rate limitations](https://support
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
 | 0.1.13  | 2022-10-25 | [18423](https://github.com/airbytehq/airbyte/pull/18423) | Implement datetime slicing for streams supporting incremental syncs                                     |
 | 0.1.11  | 2022-09-30 | [17478](https://github.com/airbytehq/airbyte/pull/17478) | Add lookback_window parameters                                                                          |
 | 0.1.10  | 2022-09-29 | [17410](https://github.com/airbytehq/airbyte/pull/17410) | Migrate to per-stream states                                                                            |
