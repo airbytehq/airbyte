@@ -4,12 +4,15 @@
 
 package io.airbyte.db.factory;
 
+import static org.postgresql.PGProperty.CONNECT_TIMEOUT;
+
 import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Objects;
 import javax.sql.DataSource;
 
 /**
@@ -61,7 +64,7 @@ public class DataSourceFactory {
         .withJdbcUrl(jdbcConnectionString)
         .withPassword(password)
         .withUsername(username)
-        .withConnectionTimeoutMs(DataSourceBuilder.getConnectionTimeoutMs(connectionProperties))
+        .withConnectionTimeoutMs(DataSourceBuilder.getConnectionTimeoutMs(connectionProperties, driverClassName))
         .build();
   }
 
@@ -179,7 +182,6 @@ public class DataSourceFactory {
     private String password;
     private int port = 5432;
     private String username;
-    private static final String CONNECT_TIMEOUT_KEY = "connectTimeout";
     private static final Duration CONNECT_TIMEOUT_DEFAULT = Duration.ofSeconds(60);
 
     private DataSourceBuilder() {}
@@ -196,20 +198,20 @@ public class DataSourceFactory {
      *
      * @param connectionProperties custom jdbc_url_parameters containing information on connection
      *        properties
+     * @param driverClassName name of the JDBC driver
      * @return DataSourceBuilder class used to create dynamic fields for DataSource
      */
-    private static long getConnectionTimeoutMs(final Map<String, String> connectionProperties) {
-      final Duration connectionTimeout;
-      // TODO: the usage of CONNECT_TIMEOUT_KEY is Postgres specific, may need to extend for other
-      // databases
-      connectionTimeout =
-          connectionProperties.containsKey(CONNECT_TIMEOUT_KEY) ? Duration.ofSeconds(Long.parseLong(connectionProperties.get(CONNECT_TIMEOUT_KEY)))
-              : CONNECT_TIMEOUT_DEFAULT;
-      if (connectionTimeout.getSeconds() == 0) {
-        return connectionTimeout.toMillis();
-      } else {
-        return (connectionTimeout.compareTo(CONNECT_TIMEOUT_DEFAULT) > 0 ? connectionTimeout : CONNECT_TIMEOUT_DEFAULT).toMillis();
-      }
+    private static long getConnectionTimeoutMs(final Map<String, String> connectionProperties, String driverClassName) {
+      // TODO: the usage of CONNECT_TIMEOUT is Postgres specific, may need to extend for other databases
+      final String pgPropertyConnectTimeout = CONNECT_TIMEOUT.getName();
+      return (connectionProperties.containsKey(pgPropertyConnectTimeout)
+          && (Long.parseLong(connectionProperties.get(pgPropertyConnectTimeout)) > 0))
+              ? Duration.ofSeconds(Long.parseLong(connectionProperties.get(pgPropertyConnectTimeout))).toMillis()
+              // If the PGProperty.CONNECT_TIMEOUT was set by the user, then take its value, if not take the
+              // default
+              : driverClassName.equals(DatabaseDriver.POSTGRESQL.getDriverClassName())
+                  ? Duration.ofSeconds(Long.parseLong(Objects.requireNonNull(CONNECT_TIMEOUT.getDefaultValue()))).toMillis()
+                  : CONNECT_TIMEOUT_DEFAULT.toMillis();
     }
 
     public DataSourceBuilder withConnectionProperties(final Map<String, String> connectionProperties) {
