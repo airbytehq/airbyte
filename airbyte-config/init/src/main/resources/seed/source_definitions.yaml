@@ -410,7 +410,7 @@
 - name: File
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.2.28
+  dockerImageTag: 0.2.30
   documentationUrl: https://docs.airbyte.com/integrations/sources/file
   icon: file.svg
   sourceType: file
@@ -496,10 +496,17 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/gocardless
   sourceType: api
   releaseStage: alpha
+- name: Gong
+  sourceDefinitionId: 32382e40-3b49-4b99-9c5c-4076501914e7
+  dockerRepository: airbyte/source-gong
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gong
+  sourceType: api
+  releaseStage: alpha
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   icon: google-adwords.svg
   sourceType: api
@@ -912,6 +919,14 @@
   icon: notion.svg
   sourceType: api
   releaseStage: generally_available
+- name: New York Times
+  sourceDefinitionId: 0fae6a9a-04eb-44d4-96e1-e02d3dbc1d83
+  dockerRepository: airbyte/source-nytimes
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/nytimes
+  icon: nytimes.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Okta
   sourceDefinitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
   dockerRepository: airbyte/source-okta
