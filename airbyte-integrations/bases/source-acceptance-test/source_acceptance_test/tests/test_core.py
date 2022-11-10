@@ -105,7 +105,9 @@ class TestSpec(BaseTest):
 
         for path in enum_paths:
             enum_list = schema_helper.get_node(path)
-            assert len(set(enum_list)) == len(enum_list), f"Enum lists should not contain duplicate values. Misconfigured enum array: {enum_list}. {docs_msg}"
+            assert len(set(enum_list)) == len(
+                enum_list
+            ), f"Enum lists should not contain duplicate values. Misconfigured enum array: {enum_list}. {docs_msg}"
 
     def test_oneof_usage(self, actual_connector_spec: ConnectorSpecification):
         """Check that if spec contains oneOf it follows the rules according to reference
