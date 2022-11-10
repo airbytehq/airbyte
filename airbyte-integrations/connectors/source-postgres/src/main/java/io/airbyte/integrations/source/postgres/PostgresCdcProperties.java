@@ -56,8 +56,6 @@ public class PostgresCdcProperties {
     props.setProperty("converters", "datetime");
     props.setProperty("datetime.type", PostgresConverter.class.getName());
     props.setProperty("include.unknown.datatypes", "true");
-
-
     props.setProperty("heartbeat.interval.ms", Long.toString(Duration.ofSeconds(HEARTBEAT_FREQUENCY_SEC).toMillis()));
 
     // Check params for SSL connection in config and add properties for CDC SSL connection
