@@ -42,4 +42,7 @@ task generateOpenApiPythonServer(type: GenerateTask){
 }
 
 project.build.dependsOn(generateOpenApiPythonServer)
-    
+
+tasks.named("buildDockerImage") {
+    dependsOn copyGeneratedTar
+}
