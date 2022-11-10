@@ -95,7 +95,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           {stream.stream?.name}
         </Text>
       </Cell>
-      <Cell flex={2} flush={disabled ? false : true}>
+      <div className={styles.syncModeCell}>
         {disabled ? (
           <Cell title={syncSchema.syncMode}>
             <Text size="md" className={styles.cellText}>
@@ -106,7 +106,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           // todo: SyncModeSelect should probably have a Tooltip, append/dedupe ends up ellipsing
           <SyncModeSelect options={availableSyncModes} onChange={onSelectSyncMode} value={syncSchema} />
         )}
-      </Cell>
+      </div>
       <Cell flex={1}>
         {cursorType && (
           <StreamPathSelect

@@ -74,3 +74,9 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.syncModeCell {
+  width: variables.$width-wide-menu;
+  min-width: variables.$width-wide-menu;
+  border: red 1px solid;
+}
