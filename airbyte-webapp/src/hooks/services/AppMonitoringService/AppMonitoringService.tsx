@@ -1,6 +1,8 @@
 import { datadogRum } from "@datadog/browser-rum";
 import React, { createContext, useContext } from "react";
 
+import { AppActionCodes } from "./actionCodes";
+
 const appMonitoringContext = createContext<AppMonitoringServiceProviderValue | null>(null);
 
 /**
@@ -9,7 +11,7 @@ const appMonitoringContext = createContext<AppMonitoringServiceProviderValue | n
  * are encountered in production.
  */
 interface AppMonitoringServiceProviderValue {
-  trackAction: (actionName: string, context?: Record<string, unknown>) => void;
+  trackAction: (actionCode: AppActionCodes, context?: Record<string, unknown>) => void;
   trackError: (error: Error, context?: Record<string, unknown>) => void;
 }
 
@@ -27,10 +29,20 @@ export const useAppMonitoringService = (): AppMonitoringServiceProviderValue => 
  */
 export const AppMonitoringServiceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const trackAction = (action: string, context?: Record<string, unknown>) => {
+    if (!datadogRum.getInternalContext()) {
+      console.debug(`trackAction(${action}) failed because RUM is not initialized.`);
+      return;
+    }
+
     datadogRum.addAction(action, context);
   };
 
   const trackError = (error: Error, context?: Record<string, unknown>) => {
+    if (!datadogRum.getInternalContext()) {
+      console.debug(`trackError() failed because RUM is not initialized. \n`, error);
+      return;
+    }
+
     datadogRum.addError(error, context);
   };
 
