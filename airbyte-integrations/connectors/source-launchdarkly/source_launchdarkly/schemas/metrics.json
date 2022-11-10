@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "_id": {
+      "type": ["null", "string"]
+    },
+    "key": {
+      "type": ["null", "string"]
+    },
+    "experimentCount": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "kind": {
+      "type": ["null", "string"]
+    },
+    "_attachedFlagCount": {
+      "type": ["null", "integer"]
+    },
+    "_links": {
+      "type": ["null", "object"]
+    },
+    "_site": {
+      "type": ["null", "object"]
+    },
+    "_access": {
+      "type": ["null", "object"]
+    },
+    "tags": {
+      "type": ["null", "array"]
+    },
+    "_creationDate": {
+      "type": ["null", "integer"]
+    },
+    "lastModified": {
+      "type": ["null", "object"]
+    },
+    "maintainerId": {
+      "type": ["null", "string"]
+    },
+    "_maintainer": {
+      "type": ["null", "object"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "isNumeric": {
+      "type": ["null", "boolean"]
+    },
+    "successCriteria": {
+      "type": ["null", "string"]
+    },
+    "unit": {
+      "type": ["null", "string"]
+    },
+    "eventKey": {
+      "type": ["null", "string"]
+    }
+  }
+}
