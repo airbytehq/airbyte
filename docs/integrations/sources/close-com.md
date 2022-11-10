@@ -75,6 +75,8 @@ This Source is capable of syncing the following core Streams:
 
 Leads, Events Incremental streams use `date_updated` field as a cursor. All other Incremental streams use `date_created` field for the same purpose.
 
+`SendAs` stream requires payment.
+
 ### Data type mapping
 
 The [Close.com API](https://developer.close.com/) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally (`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`), so no type conversions happen as part of this source.
