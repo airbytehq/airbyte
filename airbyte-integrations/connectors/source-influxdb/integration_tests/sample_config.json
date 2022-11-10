@@ -1,0 +1,8 @@
+{
+  "url":"Your InfluxDB Cloud Instance Url",
+  "api_key":"Your API Key",
+  "u":"Your User Name",
+  "p": "Your API Key",
+  "db":"Your Database Name",
+  "q":"Your Database Query"
+}

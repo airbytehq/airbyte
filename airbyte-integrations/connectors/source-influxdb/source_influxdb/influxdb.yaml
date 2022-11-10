@@ -1,0 +1,42 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "{{ config['url'] }}"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "apikey"
+      api_token: "{{ config['api_key'] }}"
+    request_options_provider:
+      request_parameters:
+        u: "{{ config['u'] }}"
+        p: "{{ config['p'] }}"
+        db: "{{ config['db'] }}"
+        q: "{{ config['q'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+
+  influxdata_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "influxdata"
+      path: "/query"
+  
+streams:
+  - "*ref(definitions.influxdata_stream)"
+
+check:
+  stream_names:
+    - "influxdata"

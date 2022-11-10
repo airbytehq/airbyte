@@ -1,0 +1,8 @@
+{
+  "url":"https://ap-southeast-2-1.aws.cloud2.influxdata.com",
+  "api_key":"PE0yIxfuw==",
+  "u":"test@gmail.com",
+  "p": "PE0yIxfuw==",
+  "db":"example-db",
+  "q":"SELECT * FROM airSensors"
+}

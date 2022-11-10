@@ -1,0 +1,35 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/influxdb
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Influxdb Spec
+  type: object
+  required:
+    - api_key
+    - u
+    - p
+    - db
+    - q
+  additionalProperties: true
+  properties:
+    api_key:
+      type: string
+      title: API Key Token
+      description: API key is required to access google apis, For getting your's goto google console and generate api key for Webfonts
+      airbyte_secret: true
+    u:
+      type: string
+      title: User Name
+      description: username of your influxdb cloud instance
+    p:
+      type: string
+      title: Password Key Token
+      description: password/api token of your influxdb cloud instance
+      airbyte_secret: true
+    db:
+      type: string
+      title: Database Name
+      description: database name of your influxdb cloud instance
+    q:
+      type: string
+      title: Database query for the table
+      description: query1 you plan to run on the database of your influxdb cloud instance
