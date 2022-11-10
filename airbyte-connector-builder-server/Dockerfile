@@ -8,7 +8,7 @@ COPY . ./
 
 RUN pip install --no-cache-dir .
 
-ENTRYPOINT ["uvicorn", "connector_builder.entrypoint:app", "--host", "0.0.0.0", "--port", "80"]
+ENTRYPOINT ["uvicorn", "connector_builder.entrypoint:app", "--host", "0.0.0.0", "--port", "8003"]
 
 LABEL io.airbyte.version=0.40.15
 LABEL io.airbyte.name=airbyte/connector-builder-server

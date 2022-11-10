@@ -54,7 +54,7 @@ http {
         auth_basic "Welcome to Airbyte";
         auth_basic_user_file /etc/nginx/.htpasswd;
 
-        proxy_pass "${PROXY_PASS_API}";
+        proxy_pass "${CONNECTOR_BUILDER_SERVER_API}";
 
         error_page 401 /etc/nginx/401.html;
         location ~ (401.html)$ {
