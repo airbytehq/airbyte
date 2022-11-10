@@ -19,6 +19,7 @@ import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.Map;
 
+// TODO: Deleted when version is removed
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
 public class ConnectionDeletionActivityImpl implements ConnectionDeletionActivity {
