@@ -183,8 +183,6 @@ def write_report(depended_connectors):
     with open(COMMENT_TEMPLATE_PATH, "r") as f:
         template = f.read()
 
-    source_definitions = []
-    destination_definitions = []
     with open(SOURCE_DEFINITIONS_PATH, 'r') as stream:
         source_definitions = yaml.safe_load(stream)
     with open(DESTINATION_DEFINITIONS_PATH, 'r') as stream:
