@@ -12,7 +12,6 @@ class EventsStream(HttpStream):
   cursor_field = "id"
   page_size = 5000
   page = 1
-  first_transaction_id = ""
   interrupt_execution = False
   url_base = "https://prod-main-net-dashboard-api.azurewebsites.net"
     
@@ -38,7 +37,6 @@ class EventsStream(HttpStream):
     print("#############################")
 
     if len(response.json()) < self.page_size:
-      self._cursor_value = self.first_transaction_id
       self.interrupt_execution = True
 
     yield from json.loads(json.dumps(response.json()).lower())
@@ -46,7 +44,7 @@ class EventsStream(HttpStream):
   def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
 
     if self.page == 1:
-      self.first_transaction_id = response.json()[0]["id"]
+      self._cursor_value = response.json()[0]["id"]
 
     if self.interrupt_execution:
       return None
@@ -72,7 +70,6 @@ class EventsStream(HttpStream):
   @state.setter
   def state(self, value: Mapping[str, Any]):
     self.page = 1
-    self.first_transaction_id = ""
     self.interrupt_execution = False
     self._cursor_value = value["id"]
 
