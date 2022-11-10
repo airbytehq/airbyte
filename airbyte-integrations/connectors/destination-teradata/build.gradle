@@ -17,7 +17,7 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
-    implementation files('lib/terajdbc4.jar')  
+	implementation 'com.teradata.jdbc:terajdbc4:17.20.00.12'
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-teradata')

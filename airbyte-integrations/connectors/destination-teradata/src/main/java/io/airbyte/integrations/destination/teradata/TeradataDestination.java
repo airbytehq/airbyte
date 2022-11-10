@@ -5,25 +5,26 @@
 package io.airbyte.integrations.destination.teradata;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import java.util.Map;
 import java.util.Optional;
 import java.util.List;
 import java.util.Collections;
-import io.airbyte.commons.json.Jsons;
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class TeradataDestination extends AbstractJdbcDestination  implements Destination {
 
