@@ -4,6 +4,7 @@ import os.path
 import yaml
 
 CONNECTOR_PATH = "./airbyte-integrations/connectors/"
+NORMALIZATION_PATH = "./airbyte-integrations/bases/base-normalization/"
 DOC_PATH = "docs/integrations/"
 SOURCE_DEFINITIONS_PATH = "./airbyte-config/init/src/main/resources/seed/source_definitions.yaml"
 DESTINATION_DEFINITIONS_PATH = "./airbyte-config/init/src/main/resources/seed/destination_definitions.yaml"
@@ -32,14 +33,16 @@ def main():
     all_connectors = get_all_connectors()
 
     # Getting all build.gradle file
-    all_build_gradle_files = get_connectors_gradle_files(all_connectors)
+    build_gradle_files = {}
+    build_gradle_files.update(get_connectors_gradle_files(all_connectors))
+    build_gradle_files.update(get_normalization_gradle_file(NORMALIZATION_PATH))
 
     # Try to find dependency in build.gradle file
-    depended_connectors = list(set(get_depended_connectors(changed_modules, all_build_gradle_files)))
+    dependent_modules = list(set(get_depended_connectors(changed_modules, build_gradle_files)))
 
     # Create comment body to post on pull request
-    if depended_connectors:
-        write_report(depended_connectors)
+    if dependent_modules:
+        write_report(dependent_modules)
 
 
 def get_changed_files(path):
@@ -66,12 +69,17 @@ def get_all_connectors():
 
 
 def get_connectors_gradle_files(all_connectors):
-    all_build_gradle_files = {}
+    connector_build_gradle_files = {}
     for connector in all_connectors:
         build_gradle_path = CONNECTOR_PATH + connector + "/"
         build_gradle_file = find_file("build.gradle", build_gradle_path)
-        all_build_gradle_files[connector] = build_gradle_file
-    return all_build_gradle_files
+        connector_build_gradle_files[connector] = build_gradle_file
+    return connector_build_gradle_files
+
+
+def get_normalization_gradle_file(path):
+    build_gradle_file = find_file("build.gradle", path)
+    return {"base-normalization": build_gradle_file}
 
 
 def find_file(name, path):
@@ -125,6 +133,7 @@ def get_connector_changelog_status(connector, version):
             if after_changelog and version in line:
                 return "✅"
     return "❌<br/>(changelog missing)"
+
 
 def as_bulleted_markdown_list(items):
     text = ""

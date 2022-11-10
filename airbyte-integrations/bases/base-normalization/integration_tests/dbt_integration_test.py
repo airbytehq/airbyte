@@ -35,6 +35,7 @@ class DbtIntegrationTest(object):
         self.target_schema = "test_normalization"
         self.container_prefix = f"test_normalization_db_{self.random_string(3)}"
         self.db_names = []
+        self.test = "test"
 
     @staticmethod
     def generate_random_string(prefix: str) -> str:

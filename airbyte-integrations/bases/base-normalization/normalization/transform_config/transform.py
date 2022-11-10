@@ -147,6 +147,7 @@ class TransformConfig:
             "priority": config.get("transformation_priority", "interactive"),
             "threads": 8,
             "retries": 3,
+            "test": "test"
         }
         if "credentials_json" in config:
             dbt_config["method"] = "service-account-json"
