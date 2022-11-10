@@ -35,9 +35,9 @@ def main():
     # Getting all build.gradle file
     build_gradle_files = {}
     for connector in all_connectors:
-        connector_path = f"{CONNECTOR_PATH}/{connector}/"
-        build_gradle_files.update({connector: get_gradle_file(connector_path)})
-    build_gradle_files.update({"base-normalization": get_gradle_file(NORMALIZATION_PATH)})
+        connector_path = CONNECTOR_PATH + connector
+        build_gradle_files.update(get_gradle_file_for_path(connector_path))
+    build_gradle_files.update(get_gradle_file_for_path(NORMALIZATION_PATH))
 
     # Try to find dependency in build.gradle file
     dependent_modules = list(set(get_depended_connectors(changed_modules, build_gradle_files)))
@@ -70,9 +70,10 @@ def get_all_connectors():
     return [connector for connector in next(walk)[1]]
 
 
-def get_gradle_file(path):
+def get_gradle_file_for_path(path):
     build_gradle_file = find_file("build.gradle", path)
-    return build_gradle_file
+    module = path.split("/")[-2]
+    return {module: build_gradle_file}
 
 
 def find_file(name, path):
