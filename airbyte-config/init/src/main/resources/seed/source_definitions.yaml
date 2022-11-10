@@ -1233,7 +1233,7 @@
   sourceType: api
   releaseStage: alpha
 - name: RSS
-  sourceDefinitionId: 0efee448-6948-49e2-b786-17db50647908 
+  sourceDefinitionId: 0efee448-6948-49e2-b786-17db50647908
   dockerRepository: airbyte/source-rss
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/rss

@@ -2,12 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import os
+import time
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
-import os
 import pytest
-import time
 from source_rss.source import RssStream
 
 
