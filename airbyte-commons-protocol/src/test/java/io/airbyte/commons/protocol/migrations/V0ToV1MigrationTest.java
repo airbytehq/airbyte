@@ -538,6 +538,70 @@ public class V0ToV1MigrationTest {
         """, io.airbyte.protocol.models.v0.AirbyteMessage.class);
       assertEquals(expectedMessage, upgradedMessage);
     }
+
+    @Test
+    public void testNestedUpgrade() {
+      JsonNode oldData = Jsons.deserialize("""
+        {
+          "int": 42,
+          "float": 42.0,
+          "float2": 42.2,
+          "sub_object": {
+            "sub_int": 42,
+            "sub_float": 42.0,
+            "sub_float2": 42.2
+          },
+          "sub_array": [42, 42.0, 42.2]
+        }
+        """);
+
+      io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createRecordMessage(oldData));
+
+      JsonNode expectedData = Jsons.deserialize("""
+        {
+          "int": "42",
+          "float": "42.0",
+          "float2": "42.2",
+          "sub_object": {
+            "sub_int": "42",
+            "sub_float": "42.0",
+            "sub_float2": "42.2"
+          },
+          "sub_array": ["42", "42.0", "42.2"]
+        }
+        """);
+      assertEquals(expectedData, upgradedMessage.getRecord().getData());
+    }
+
+    @Test
+    public void testNonUpgradableValues() {
+      JsonNode oldData = Jsons.deserialize("""
+        {
+          "boolean": true,
+          "string": "arst",
+          "sub_object": {
+            "boolean": true,
+            "string": "arst"
+          },
+          "sub_array": [true, "arst"]
+        }
+        """);
+
+      io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.upgrade(createRecordMessage(oldData));
+
+      JsonNode expectedData = Jsons.deserialize("""
+        {
+          "boolean": true,
+          "string": "arst",
+          "sub_object": {
+            "boolean": true,
+            "string": "arst"
+          },
+          "sub_array": [true, "arst"]
+        }
+        """);
+      assertEquals(expectedData, upgradedMessage.getRecord().getData());
+    }
   }
 
   private AirbyteMessage createCatalogMessage(JsonNode schema) {
