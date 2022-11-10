@@ -252,6 +252,8 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 ## Changelog
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.12  | 2022-11-07 | [19025](https://github.com/airbytehq/airbyte/pull/19025)   | Stop enforce SSL if ssl mode is disabled                                                                                                                                                       |
+| 1.0.11  | 2022-11-03 | [18851](https://github.com/airbytehq/airbyte/pull/18851)   | Fix bug with unencrypted CDC connections                                                                                      |
 | 1.0.10  | 2022-11-02 | [18619](https://github.com/airbytehq/airbyte/pull/18619)   | Fix bug with handling Tinyint(1) Unsigned values as boolean                                                                                      |
 | 1.0.9   | 2022-10-31 | [18538](https://github.com/airbytehq/airbyte/pull/18538)   | Encode database name                                                                                                                             |
 | 1.0.8   | 2022-10-25 | [18383](https://github.com/airbytehq/airbyte/pull/18383)   | Better SSH error handling + messages                                                                                                             |

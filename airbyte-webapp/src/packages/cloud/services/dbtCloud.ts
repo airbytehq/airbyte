@@ -11,7 +11,7 @@
 import isEmpty from "lodash/isEmpty";
 import { useMutation } from "react-query";
 
-import { OperatorType, WebBackendConnectionRead, OperationRead } from "core/request/AirbyteClient";
+import { OperatorType, WebBackendConnectionRead, OperationRead, WebhookConfigRead } from "core/request/AirbyteClient";
 import { useWebConnectionService } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useUpdateWorkspace } from "services/workspaces/WorkspacesService";
@@ -26,17 +26,17 @@ const webhookConfigName = "dbt cloud";
 const executionBody = `{"cause": "airbyte"}`;
 const jobName = (t: DbtCloudJob) => `${t.account}/${t.job}`;
 
+const isDbtWebhookConfig = (webhookConfig: WebhookConfigRead) => !!webhookConfig.name?.includes("dbt");
+
 const toDbtCloudJob = (operation: OperationRead): DbtCloudJob => {
   const { operationId } = operation;
   const { executionUrl } = operation.operatorConfiguration.webhook || {};
 
-  const matches = (executionUrl || "").match(/\/accounts\/([^/]+)\/jobs\/([^]+)\/run\//);
-
+  const matches = (executionUrl || "").match(/\/accounts\/([^/]+)\/jobs\/([^]+)\/run/);
   if (!matches) {
     throw new Error(`Cannot extract dbt cloud job params from executionUrl ${executionUrl}`);
   } else {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_fullUrl, account, job] = matches;
+    const [, account, job] = matches;
 
     return {
       account,
@@ -70,9 +70,8 @@ export const useDbtIntegration = (connection: WebBackendConnectionRead) => {
   const { workspaceId } = workspace;
   const connectionService = useWebConnectionService();
 
-  // TODO extract shared isDbtWebhookConfig predicate
-  const hasDbtIntegration = !isEmpty(workspace.webhookConfigs?.filter((config) => /dbt/.test(config.name || "")));
-  const webhookConfigId = workspace.webhookConfigs?.find((config) => /dbt/.test(config.name || ""))?.id;
+  const hasDbtIntegration = !isEmpty(workspace.webhookConfigs?.filter(isDbtWebhookConfig));
+  const webhookConfigId = workspace.webhookConfigs?.find((config) => isDbtWebhookConfig(config))?.id;
 
   const dbtCloudJobs = [...(connection.operations?.filter((operation) => isDbtCloudJob(operation)) || [])].map(
     toDbtCloudJob
