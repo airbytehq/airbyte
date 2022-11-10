@@ -21,7 +21,7 @@ jobs:
       next-version: ${{ steps.ver.outputs.fragment }}
       tag: ${{ steps.sem-ver.outputs.version_tag }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 

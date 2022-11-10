@@ -1,7 +1,10 @@
 # Changelog
 
-## 0.7.2
+## 0.8.1
 Low-code: Allow `grant_type` to be specified for OAuthAuthenticator
+
+## 0.8.0
+Low-code: Allow for request and response to be emitted as log messages
 
 ## 0.7.1
 Low-code: Decouple yaml manifest parsing from the declarative source implementation
