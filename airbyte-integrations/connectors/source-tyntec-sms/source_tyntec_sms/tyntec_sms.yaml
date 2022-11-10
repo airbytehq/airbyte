@@ -22,13 +22,34 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
+  # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-Send%20SMS%20(GET)
+  sms_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "sms"
+      primary_key: "requestId"
+      path: "/messaging/v1/sms?to={{ config['to'] }}&from={{ config['from']}}&message={{ config['message'] or ''}}"
+  sms_stream_slicer:
+    type: SubstreamSlicer
+    parent_stream_configs:
+      - stream: "*ref(definitions.sms_stream)"
+        parent_key: "requestId"
+        stream_slice_field: "requestId"
   # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-Read%20SMS%20status
   messages_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "messages"
-      primary_key: "doneDate"
-      path: "/messaging/v1/messages/{{ config['request_id'] }}"
+      primary_key: "requestId"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/messaging/v1/messages/{{ stream_slice.requestId }}"
+      stream_slicer:
+        $ref: "*ref(definitions.sms_stream_slicer)"
   # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20contacts
   contacts_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -49,6 +70,7 @@ definitions:
       path: "/byon/provisioning/v1"
 
 streams:
+  - "*ref(definitions.sms_stream)"
   - "*ref(definitions.messages_stream)"
   - "*ref(definitions.contacts_stream)"
   - "*ref(definitions.phones_stream)"
@@ -56,4 +78,4 @@ streams:
 
 check:
   stream_names:
-    - "messages"
+    - "sms"

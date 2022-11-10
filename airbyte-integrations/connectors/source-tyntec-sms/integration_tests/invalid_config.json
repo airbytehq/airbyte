@@ -1,4 +1,6 @@
 {
   "api_key": "asl;dkfjsdFX%ZSIfqel5thera", 
-  "request_id": "216b3cd2-51e7-4cc3-ba8d-6c431fcbb086"
+  "to": "+17023759672",
+  "from": "+17023759672",
+  "message": "Hello, this is your first Tyntec message."
 }

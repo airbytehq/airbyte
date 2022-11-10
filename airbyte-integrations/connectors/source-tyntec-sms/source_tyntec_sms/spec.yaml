@@ -5,7 +5,8 @@ connectionSpecification:
   type: object
   required:
     - api_key
-    - request_id
+    - to
+    - from
   additionalProperties: true
   properties:
     api_key:
@@ -14,8 +15,18 @@ connectionSpecification:
       description: Your Tyntec API Key. See <a href="https://www.tyntec.com/docs/docs-center-sms-api-quick-start">here</a>
       order: 0
       airbyte_secret: true
-    request_id:
+    to:
       type: string
-      title: SMS Message Request ID
-      description: The unique identifier provided for each SMS messaging request.
+      title: SMS Message Recipient Phone
+      description: The phone number of the SMS message recipient (international).
       order: 1
+    from:
+      type: string
+      title: SMS Message Sender Phone
+      description: The phone number of the SMS message sender (international).
+      order: 2
+    message:
+      type: string
+      title: SMS Message Body
+      description: The content of the SMS message to be sent.
+      order: 3
