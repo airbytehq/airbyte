@@ -677,7 +677,7 @@
 - name: Jira
   sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   dockerRepository: airbyte/source-jira
-  dockerImageTag: 0.2.23
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   icon: jira.svg
   sourceType: api
@@ -1066,6 +1066,14 @@
   icon: plaid.svg
   sourceType: api
   releaseStage: alpha
+- name: Pocket
+  sourceDefinitionId: b0dd65f1-081f-4731-9c51-38e9e6aa0ebf
+  dockerRepository: airbyte/source-pocket
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pocket
+  icon: pocket.svg
+  sourceType: api
+  releaseStage: alpha
 - name: PokeAPI
   sourceDefinitionId: 6371b14b-bc68-4236-bfbd-468e8df8e968
   dockerRepository: airbyte/source-pokeapi
@@ -1118,6 +1126,13 @@
   dockerRepository: airbyte/source-public-apis
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/public-apis
+  sourceType: api
+  releaseStage: alpha
+- name: PyPI
+  sourceDefinitionId: 88ecd3a8-5f5b-11ed-9b6a-0242ac120002
+  dockerRepository: airbyte/source-pypi
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pypi
   sourceType: api
   releaseStage: alpha
 - name: Qualaroo
@@ -1474,6 +1489,13 @@
   dockerRepository: airbyte/source-xkcd
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/xkcd
+  sourceType: api
+  releaseStage: alpha
+- name: Weatherstack
+  sourceDefinitionId: 5db8292c-5f5a-11ed-9b6a-0242ac120002
+  dockerRepository: airbyte/source-weatherstack
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/weatherstack
   sourceType: api
   releaseStage: alpha
 - name: Webflow

@@ -42,7 +42,7 @@ class JiraStream(HttpStream, ABC):
         else:
             if all(paging_metadata in response_data for paging_metadata in ("startAt", "maxResults", "total")):
                 start_at = response_data["startAt"]
-                max_results = response_data["maxResults"]
+                max_results = int(response_data["maxResults"])
                 total = response_data["total"]
                 end_at = start_at + max_results
                 if not end_at > total:
@@ -94,6 +94,7 @@ class StartDateJiraStream(JiraStream, ABC):
         issues_state = None
         cursor_exist_in_state: Any = False
         cursor_field = self.cursor_field
+
         if isinstance(self.cursor_field, str):
             cursor_exist_in_state = stream_state.get(self.cursor_field)
         elif isinstance(self.cursor_field, list) and self.cursor_field:
@@ -101,6 +102,7 @@ class StartDateJiraStream(JiraStream, ABC):
             for cursor_part in self.cursor_field:
                 cursor_exist_in_state = stream_state.get(cursor_part)
             cursor_field = cursor_field[-1]
+
         if cursor_exist_in_state:
             issues_state = pendulum.parse(stream_state.get(cursor_field, self._start_date))
         elif self._start_date:
@@ -193,7 +195,7 @@ class BoardIssues(V1ApiJiraStream, IncrementalJiraStream):
     https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-agile-1-0-board-boardid-issue-get
     """
 
-    cursor_field = ["fields", "updated"]
+    cursor_field = "updated"
     parse_response_root = "issues"
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
@@ -221,6 +223,9 @@ class BoardIssues(V1ApiJiraStream, IncrementalJiraStream):
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["boardId"] = stream_slice["board_id"]
+        issue_fields = record["fields"]
+        record["created"] = issue_fields.get("created")
+        record["updated"] = issue_fields.get("updated") or issue_fields.get("created")
         return record
 
 
@@ -244,7 +249,7 @@ class Epics(IncrementalJiraStream):
         super().__init__(**kwargs)
         self._render_fields = render_fields
 
-    cursor_field = ["fields", "updated"]
+    cursor_field = "updated"
     parse_response_root = "issues"
 
     def path(self, **kwargs) -> str:
@@ -273,6 +278,9 @@ class Epics(IncrementalJiraStream):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["projectId"] = stream_slice["project_id"]
         record["projectKey"] = stream_slice["project_key"]
+        issue_fields = record["fields"]
+        record["created"] = issue_fields.get("created")
+        record["updated"] = issue_fields.get("updated") or issue_fields.get("created")
         return record
 
 
@@ -325,7 +333,7 @@ class Issues(IncrementalJiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get
     """
 
-    cursor_field = ["fields", "updated"]
+    cursor_field = "updated"
     parse_response_root = "issues"
     use_cache = True
 
@@ -394,21 +402,28 @@ class Issues(IncrementalJiraStream):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["projectId"] = stream_slice["project_id"]
         record["projectKey"] = stream_slice["project_key"]
+        issue_fields = record["fields"]
+        record["created"] = issue_fields.get("created")
+        record["updated"] = issue_fields.get("updated") or issue_fields.get("created")
         return record
 
 
-class IssueComments(StartDateJiraStream):
+class IssueComments(IncrementalJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-get
     """
 
     parse_response_root = "comments"
+    primary_key = "id"
+    cursor_field = "updated"
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
         return f"issue/{key}/comment"
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
         issues_stream = Issues(
             additional_fields=[],
             authenticator=self.authenticator,
@@ -416,8 +431,8 @@ class IssueComments(StartDateJiraStream):
             projects=self._projects,
             start_date=self._start_date,
         )
-        for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
+        for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state):
+            yield from super().read_records(stream_slice={"key": issue["key"]}, stream_state=stream_state, **kwargs)
 
 
 class IssueFields(JiraStream):
@@ -671,19 +686,22 @@ class IssueWatchers(StartDateJiraStream):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
 
 
-class IssueWorklogs(StartDateJiraStream):
+class IssueWorklogs(IncrementalJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get
     """
 
     parse_response_root = "worklogs"
-    primary_key = None
+    primary_key = "id"
+    cursor_field = "updated"
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
         return f"issue/{key}/worklog"
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
         issues_stream = Issues(
             additional_fields=[],
             authenticator=self.authenticator,
@@ -691,8 +709,8 @@ class IssueWorklogs(StartDateJiraStream):
             projects=self._projects,
             start_date=self._start_date,
         )
-        for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
+        for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state):
+            yield from super().read_records(stream_slice={"key": issue["key"]}, stream_state=stream_state, **kwargs)
 
 
 class JiraSettings(JiraStream):
@@ -1027,7 +1045,7 @@ class SprintIssues(V1ApiJiraStream, IncrementalJiraStream):
     https://developer.atlassian.com/cloud/jira/software/rest/api-group-sprint/#api-agile-1-0-sprint-sprintid-issue-get
     """
 
-    cursor_field = ["fields", "updated"]
+    cursor_field = "updated"
     parse_response_root = "issues"
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
@@ -1062,6 +1080,9 @@ class SprintIssues(V1ApiJiraStream, IncrementalJiraStream):
         record["issueId"] = record["id"]
         record["id"] = "-".join([str(stream_slice["sprint_id"]), record["id"]])
         record["sprintId"] = stream_slice["sprint_id"]
+        issue_fields = record["fields"]
+        record["created"] = issue_fields.get("created")
+        record["updated"] = issue_fields.get("updated") or issue_fields.get("created")
         return record
 
 
@@ -1081,18 +1102,48 @@ class Users(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-users-search-get
     """
 
-    primary_key = None
+    primary_key = "accountId"
+    use_cache = True
 
-    def __init__(self, domain: str, projects: List[str], max_results: int, **kwargs):
+    def __init__(self, domain: str, projects: List[str], **kwargs):
         super(JiraStream, self).__init__(**kwargs)
         self._domain = domain
         self._projects = projects
-        self._max_results = max_results
+        self._max_results = 100
+        self._total = self._max_results
+        self._startAt = 0
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        params = {}
+        response_data = response.json()
+
+        if users_returned := len(response_data):
+            self._total = self._total + users_returned
+            self._startAt = self._startAt + users_returned
+            params["startAt"] = self._startAt
+            params["maxResults"] = self._max_results
+
+        return params
 
     def path(self, **kwargs) -> str:
-        if self._max_results > 0:
-            return "user/search?maxResults=" + str(self._max_results) + "&query="
-        return "user/search?query="
+        return "users/search"
+
+
+class UsersGroupsDetailed(JiraStream):
+    """
+    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-get
+    """
+
+    primary_key = "accountId"
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
+        key = stream_slice["accountId"]
+        return f"user?accountId={key}&expand=groups,applicationRoles"
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        users_stream = Users(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        for user in users_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(stream_slice={"accountId": user["accountId"]}, **kwargs)
 
 
 class Workflows(JiraStream):
