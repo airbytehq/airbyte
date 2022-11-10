@@ -995,8 +995,9 @@ jobs:
             --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
             --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
             --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
-          org.gradle.workers.max=8
+          org.gradle.workers.max=512
           org.gradle.vfs.watch=false
+          org.gradle.parallel=true
           EOF
 
       # - name: Create cluster config file
