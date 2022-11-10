@@ -80,9 +80,7 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = ({
         minSize={firstPanel.minWidth}
         flex={firstPanel.flex}
         onStopResize={(args) => {
-          if (firstPanel.onStopResize) {
-            firstPanel.onStopResize(args.component.props.flex);
-          }
+          firstPanel.onStopResize?.(args.component.props.flex);
         }}
       >
         <PanelContainer className={firstPanel.className} overlay={firstPanel.overlay}>
