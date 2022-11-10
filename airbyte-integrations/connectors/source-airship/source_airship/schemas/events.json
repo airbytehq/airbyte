@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": ["null", "string"]
+    },
+    "conversion": {
+      "type": ["null", "string"]
+    },
+    "location": {
+      "type": ["null", "string"]
+    },
+    "count": {
+      "type": ["null", "integer"]
+    },
+    "value": {
+      "type": ["null", "float"]
+    }
+  }
+}
