@@ -4,11 +4,9 @@ definitions:
   selector:
     extractor:
       field_pointer: []
-  requester:
-    url_base: "https://api.pexels.com"
-    http_method: "GET"
-    request_options_provider:
-      request_parameters:
+      
+  requester_stream:
+    request_parameters:
         query: |
           {{
             config['query']
@@ -33,6 +31,19 @@ definitions:
             if options['name'] == 'photos_search' or options['name'] == 'videos_search'
             else ''
           }}
+        color: |
+          {{
+            config['color']
+            if options['name'] == 'photos_search'
+            else ''
+          }}
+          
+  requester:
+    url_base: "https://api.pexels.com"
+    http_method: "GET"
+    request_options_provider:
+      request_parameters:
+        $ref: "*ref(definitions.requester_stream.request_parameters)"
     authenticator:
       type: ApiKeyAuthenticator
       header: "Authorization"
@@ -79,7 +90,7 @@ definitions:
     $ref: "*ref(definitions.page_stream)"
     $options:
       name: "photos_search"
-      path: "/v1/search?color={{ config['color'] or 'orange'}}"
+      path: "/v1/search"
 
   photos_curated_stream:
     $ref: "*ref(definitions.page_stream)"
@@ -91,7 +102,7 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "photos_get_by_id"
-      path: "/v1/photos/{{ config['id'] or '3756777'}}"
+      path: "/v1/photos/{{ config['photo_id'] }}"
 
   videos_search_stream:
     $ref: "*ref(definitions.page_stream)"

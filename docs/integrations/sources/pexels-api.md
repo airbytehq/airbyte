@@ -14,13 +14,14 @@ Just pass the generated API key and optional parameters for establishing the con
 - Generate an API key (Example: 12345)
 - Params (If specific info is needed)
 - Available params
-    - quer: Ocean, Tigers, Pears, etc. Default is people
+    - query: Ocean, Tigers, Pears, etc. Default is people
     - orientation:  landscape, portrait or square. Default is landscape
     - size: large, medium, small. Default is large
     - color: red, orange, yellow, green, turquoise, blue, violet, pink, brown, black, gray, white or any hexidecimal color code.
     - locale: en-US, pt-BR, es-ES, ca-ES, de-DE, it-IT, fr-FR, sv-SE, id-ID, pl-PL, ja-JP, zh-TW, zh-CN, ko-KR, th-TH, nl-NL, hu-HU, vi-VN,<br> cs-CZ, da-DK, fi-FI, uk-UA, el-GR, ro-RO, nb-NO, sk-SK, tr-TR, ru-RU. Default is en-US
-    - page: Default is 1
-    - per_page: Default is 15, Max is 80
+    - collection_id: Specific collection target ID
+    - photo_id: Specific photo target ID
+    - video_id: Specific video target ID
 
 ## Step 2: Set up the Pexels-APIs connector in Airbyte
 
@@ -30,7 +31,8 @@ Just pass the generated API key and optional parameters for establishing the con
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Pexels-API connector and select **Pexels-API** from the Source type dropdown.
 4. Enter your `api_key`.
-5. Enter the params configuration if needed (Optional). Supported params are: query, orientation, size, color, locale, page, per_page
+5. Enter the params configuration if needed. Supported params are: query, orientation, size, color, locale, collection_id \ 
+video_id, photo_id
 6. Click **Set up source**.
 
 ### For Airbyte OSS:
@@ -38,8 +40,9 @@ Just pass the generated API key and optional parameters for establishing the con
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. Enter your `api_key`.
-5. Enter the params configuration if needed (Optional). Supported params are: query, orientation, size, color, locale, page, per_page
-6. Click **Set up source**.
+4. Enter the params configuration if needed. Supported params are: query, orientation, size, color, locale, collection_id \ 
+video_id, photo_id
+5. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -76,4 +79,4 @@ Pexels-API's [API reference]https://www.pexels.com/api/documentation) has v1 at 
 
 | Version | Date       | Pull Request                                           | Subject        |
 | :------ | :--------- | :----------------------------------------------------- | :------------- |
-| 0.1.0   | 2022-11-02 | [Init](https://github.com/airbytehq/airbyte/pull/)| Initial commit |
+| 0.1.0   | 2022-11-02 | [Init](https://github.com/airbytehq/airbyte/pull/18854)| Initial commit |

@@ -5,6 +5,10 @@ connectionSpecification:
   type: object
   required:
     - api_key
+    - query
+    - photo_id
+    - video_id
+    - collection_id
   additionalProperties: true
   properties:
     api_key:
@@ -47,6 +51,12 @@ connectionSpecification:
       examples:
         - en-US
         - pt-BR
+    photo_id:
+      title: Specific photo_id for the targeted search
+      type: string
+      description: Mandate for required streams. It will retrieve details concerned with that specific id. 
+      examples:
+        - 3756777
     video_id:
       title: Specific video_id for the targeted search
       type: string
