@@ -113,7 +113,7 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: TEMPORAL_WORKER_PORTS
-       - name: DATA_DOCKER_MOUNT
+        - name: DATA_DOCKER_MOUNT
           valueFrom:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
