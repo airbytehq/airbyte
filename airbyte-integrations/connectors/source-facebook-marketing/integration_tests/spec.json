@@ -65,6 +65,22 @@
               "description": "The name value of insight",
               "type": "string"
             },
+            "level": {
+              "title": "Level",
+              "description": "Chosen level for API",
+              "default": "ad",
+              "type": "string",
+              "items": {
+                "title": "ValidLevel",
+                "description": "Generic enumeration.\n\nDerive from this class to define new enumerations.",
+                "enum": [
+                  "account",
+                  "ad",
+                  "adset",
+                  "campaign"
+                ]
+              }
+            },
             "fields": {
               "title": "Fields",
               "description": "A list of chosen fields for fields parameter",
