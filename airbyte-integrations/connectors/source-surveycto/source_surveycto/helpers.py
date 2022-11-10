@@ -10,7 +10,7 @@ from bigquery_schema_generator.generate_schema import SchemaGenerator
 from gbqschema_converter.gbqschema_to_jsonschema import json_representation as converter
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
-
+from datetime import datetime
 
 
 class Helpers(object):
@@ -39,13 +39,46 @@ class Helpers(object):
         http.mount("http://", adapter)
 
         response = http.get(url, headers = {'Authorization': 'Basic ' + auth_token })
-        data = response.json()
+        response_json = response.json()
+
+        for data in response_json:
+            try:
+                key = data["KEY"]
+                o = key.replace('uuid:', '')
+                data["KEY"] = o
+
+                starttime = data["starttime"]
+                a = datetime.strptime(starttime,'%b %d, %Y %I:%M:%S %p').strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                data["starttime"] = a
+
+                endtime = data["endtime"]
+                a = datetime.strptime(endtime,'%b %d, %Y %I:%M:%S %p').strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                data["endtime"] = a
+
+                completiondate = data["CompletionDate"]
+                a = datetime.strptime(completiondate,'%b %d, %Y %I:%M:%S %p').strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                data["CompletionDate"] = a
+
+                submissiondate = data["SubmissionDate"]
+                a = datetime.strptime(submissiondate,'%b %d, %Y %I:%M:%S %p').strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                data["SubmissionDate"] = a
+
+                
+                yield data
+            except Exception as e:
+                raise e
+
+
+    
+    @staticmethod
+    def get_filter_data(data):
         generator = SchemaGenerator(input_format='dict', infer_mode='NULLABLE',preserve_input_sort_order='true')
 
         schema_map, error_logs = generator.deduce_schema(input_data=data)
         schema = generator.flatten_schema(schema_map)
         schema_json = converter(schema)
-        schema=schema_json['definitions']['element']['properties']    
+        schema=schema_json['definitions']['element']['properties'] 
+        print(f'--------------========----------------SCHEMA+===============?>>>>>{schema}')   
         return schema
 
     @staticmethod
@@ -57,12 +90,3 @@ class Helpers(object):
             "properties": schema,
         }
         return json_schema
-
-    @staticmethod
-    def get_airbyte_stream(form_id: str, json_schema: Dict[str, Any]) -> AirbyteStream:
-        return AirbyteStream(
-            name=form_id,
-            json_schema=json_schema,
-            supported_sync_modes=[SyncMode.full_refresh],
-            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append_dedup],
-        )

@@ -62,10 +62,26 @@ class SurveyStream(HttpStream, ABC):
         return {}
 
 
-class SurveyctoStream(SurveyStream):
+class SurveyctoStream(SurveyStream, IncrementalMixin):
+    primary_key = 'KEY'
+    date_format_scto = '%b %d, %Y %H:%M:%S %p'
+    dateformat =  '%Y-%m-%dT%H:%M:%S+00:00'
+    cursor_field = 'CompletionDate'
+    _cursor_value = None
 
-    primary_key = None
 
+    @property
+    def state(self) -> Mapping[str, Any]:
+        initial_date = datetime.strptime(self.start_date, self.date_format_scto)
+        if self._cursor_value:
+            return {self.cursor_field: self._cursor_value}
+        else:
+            return {self.cursor_field: initial_date}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._cursor_value = datetime.strptime(value[self.cursor_field], self.dateformat)
+        
     @property
     def name(self) -> str:
         return self.form_id
@@ -73,21 +89,19 @@ class SurveyctoStream(SurveyStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    # def _base64_encode(self,string:str) -> str:
-    #     return base64.b64encode(string.encode("ascii")).decode("ascii")
-
     def get_json_schema(self):  
         return self.schema
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-         return {'date': self.start_date}
+        ix = self.state[self.cursor_field] 
+        
+        return {'date': ix.strftime(self.date_format_scto)}
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        print(f'---->>{self.auth_token}')
         return {'Authorization': 'Basic ' + self.auth_token }
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -104,11 +118,35 @@ class SurveyctoStream(SurveyStream):
     
         for data in self.response_json:
             try:
+               
+                starttime = data["starttime"]
+                a = datetime.strptime(starttime,'%b %d, %Y %I:%M:%S %p').strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                data["starttime"] = a
+
+                endtime = data["endtime"]
+                a = datetime.strptime(endtime,'%b %d, %Y %I:%M:%S %p').strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                data["endtime"] = a
+
+                completiondate = data["CompletionDate"]
+                a = datetime.strptime(completiondate,'%b %d, %Y %I:%M:%S %p').strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                data["CompletionDate"] = a
+
+                submissiondate = data["SubmissionDate"]
+                a = datetime.strptime(submissiondate,'%b %d, %Y %I:%M:%S %p').strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                data["SubmissionDate"] = a
+
+                
                 yield data
             except Exception as e:
                 msg = f"""Encountered an exception parsing schema"""
                 self.logger.exception(msg)
                 raise e
+                
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(*args, **kwargs):
+            self._cursor_value = record[self.cursor_field]
+            yield record
+
 
 # Source
 class SourceSurveycto(AbstractSource):
@@ -118,23 +156,14 @@ class SourceSurveycto(AbstractSource):
     def no_auth(self):
         return NoAuth()  
 
-    def discover(self, logger: AirbyteLogger, config) -> AirbyteCatalog:
-        forms = config.get("form_id", [])
-        streams = []
-        for form_id in forms:
-            schema_res = Helpers.call_survey_cto(config, form_id)
-            schema = Helpers.get_json_schema(schema_res)
-            airbyte_stream = Helpers.get_airbyte_stream(form_id, schema)
-            streams.append(airbyte_stream)
-        return AirbyteCatalog(streams=streams)
-
     def generate_streams(self, config: str) -> List[Stream]:
         forms = config.get("form_id", [])
         streams = []
-        # time.sleep(10)
+      
         for form_id in forms:
             schema = Helpers.call_survey_cto(config, form_id)
-            schema_res = Helpers.get_json_schema(schema)
+            filter_data = Helpers.get_filter_data(schema)
+            schema_res = Helpers.get_json_schema(filter_data)
             stream = SurveyctoStream(config=config,form_id=form_id,schema=schema_res)
             streams.append(stream)
         return streams
