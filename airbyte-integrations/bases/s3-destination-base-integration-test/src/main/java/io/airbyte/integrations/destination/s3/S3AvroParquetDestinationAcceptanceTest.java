@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.destination.s3.avro.JsonSchemaType;
-import io.airbyte.integrations.standardtest.destination.NumberDataTypeTestArgumentProvider;
+import io.airbyte.integrations.standardtest.destination.argproviders.NumberDataTypeTestArgumentProvider;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;

@@ -2,8 +2,11 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.standardtest.destination;
+package io.airbyte.integrations.standardtest.destination.argproviders;
 
+import static io.airbyte.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil.getProtocolVersion;
+
+import io.airbyte.integrations.standardtest.destination.ProtocolVersion;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
@@ -27,9 +30,11 @@ public class DataTypeTestArgumentProvider implements ArgumentsProvider {
   public static final CatalogMessageTestConfigWithCompatibility OBJECT_WITH_ARRAY_TEST =
       new CatalogMessageTestConfigWithCompatibility("data_type_array_object_test_catalog.json", "data_type_array_object_test_messages.txt",
           new TestCompatibility(true, true, true));
+  private ProtocolVersion protocolVersion;
 
   @Override
   public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+    protocolVersion = getProtocolVersion(context);
     return Stream.of(
         getArguments(BASIC_TEST),
         getArguments(ARRAY_TEST),
@@ -38,7 +43,7 @@ public class DataTypeTestArgumentProvider implements ArgumentsProvider {
   }
 
   private Arguments getArguments(CatalogMessageTestConfigWithCompatibility testConfig) {
-    return Arguments.of(testConfig.messageFile, testConfig.catalogFile, testConfig.testCompatibility);
+    return Arguments.of(testConfig.getMessageFileVersion(protocolVersion), testConfig.getCatalogFileVersion(protocolVersion), testConfig.testCompatibility);
   }
 
   public record TestCompatibility(boolean requireBasicCompatibility,

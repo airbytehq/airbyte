@@ -2,8 +2,12 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.standardtest.destination;
+package io.airbyte.integrations.standardtest.destination.argproviders;
 
+import static io.airbyte.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil.prefixFileNameByVersion;
+import static io.airbyte.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil.getProtocolVersion;
+
+import io.airbyte.integrations.standardtest.destination.ProtocolVersion;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
@@ -24,10 +28,11 @@ public class DataArgumentsProvider implements ArgumentsProvider {
       new CatalogMessageTestConfigPair("namespace_catalog.json", "namespace_messages.txt");
 
   @Override
-  public Stream<? extends Arguments> provideArguments(final ExtensionContext context) {
+  public Stream<? extends Arguments> provideArguments(final ExtensionContext context) throws Exception{
+    ProtocolVersion protocolVersion = getProtocolVersion(context);
     return Stream.of(
-        Arguments.of(EXCHANGE_RATE_CONFIG.messageFile, EXCHANGE_RATE_CONFIG.catalogFile),
-        Arguments.of(EDGE_CASE_CONFIG.messageFile, EDGE_CASE_CONFIG.catalogFile)
+        Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion)),
+        Arguments.of(EDGE_CASE_CONFIG.getMessageFileVersion(protocolVersion), EDGE_CASE_CONFIG.getCatalogFileVersion(protocolVersion))
     // todo - need to use the new protocol to capture this.
     // Arguments.of("stripe_messages.txt", "stripe_schema.json")
     );
@@ -42,6 +47,14 @@ public class DataArgumentsProvider implements ArgumentsProvider {
     public CatalogMessageTestConfigPair(final String catalogFile, final String messageFile) {
       this.catalogFile = catalogFile;
       this.messageFile = messageFile;
+    }
+
+    public String getCatalogFileVersion(ProtocolVersion protocolVersion) {
+      return prefixFileNameByVersion(catalogFile, protocolVersion);
+    }
+
+    public String getMessageFileVersion(ProtocolVersion protocolVersion) {
+      return prefixFileNameByVersion(messageFile, protocolVersion);
     }
 
   }

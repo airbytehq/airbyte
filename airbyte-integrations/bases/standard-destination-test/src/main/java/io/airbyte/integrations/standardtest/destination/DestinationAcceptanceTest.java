@@ -18,7 +18,6 @@ import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.OperatorDbt;
@@ -27,6 +26,9 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
+import io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
+import io.airbyte.integrations.standardtest.destination.argproviders.NamespaceTestCaseProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.BasicTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -70,16 +72,12 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -429,13 +427,13 @@ public abstract class DestinationAcceptanceTest {
 
     final AirbyteCatalog catalog =
         Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
 
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     final JsonNode config = getConfig();
@@ -446,7 +444,7 @@ public abstract class DestinationAcceptanceTest {
     // So let's create a dummy data that will be checked after all sync. It should remain the same
     final AirbyteCatalog dummyCatalog =
         Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
     dummyCatalog.getStreams().get(0).setName(DUMMY_CATALOG_NAME);
     final ConfiguredAirbyteCatalog configuredDummyCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
@@ -495,7 +493,7 @@ public abstract class DestinationAcceptanceTest {
   public void testLineBreakCharacters() throws Exception {
     final AirbyteCatalog catalog =
         Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
@@ -560,7 +558,7 @@ public abstract class DestinationAcceptanceTest {
 
     final AirbyteCatalog catalog =
         Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
@@ -570,7 +568,7 @@ public abstract class DestinationAcceptanceTest {
     });
 
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     final JsonNode config = getConfig();
@@ -651,7 +649,7 @@ public abstract class DestinationAcceptanceTest {
 
     final AirbyteCatalog catalog =
         Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
@@ -665,7 +663,7 @@ public abstract class DestinationAcceptanceTest {
     });
 
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     final JsonNode config = getConfig();
@@ -754,12 +752,12 @@ public abstract class DestinationAcceptanceTest {
 
     final AirbyteCatalog catalog =
         Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
     final List<AirbyteMessage> messages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     // Add a big message that barely fits into the limits of the destination
@@ -946,7 +944,7 @@ public abstract class DestinationAcceptanceTest {
     // TODO(davin): make these tests part of the catalog file.
     final AirbyteCatalog catalog =
         Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
     final String namespace = "sourcenamespace";
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
@@ -954,7 +952,7 @@ public abstract class DestinationAcceptanceTest {
         catalog);
 
     final List<AirbyteMessage> messages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(
@@ -978,7 +976,7 @@ public abstract class DestinationAcceptanceTest {
     // TODO(davin): make these tests part of the catalog file.
     final var catalog =
         Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
     final var namespace1 = "sourcenamespace";
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace1));
@@ -995,14 +993,12 @@ public abstract class DestinationAcceptanceTest {
     catalog.getStreams().addAll(diffNamespaceStreams);
 
     final var configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-
-    final var ns1Messages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+    final var messageFile = DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion());
+    final var ns1Messages = MoreResources.readResource(messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     final var ns1MessagesAtNamespace1 = getRecordMessagesWithNewNamespace(ns1Messages, namespace1);
-    final var ns2Messages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+    final var ns2Messages = MoreResources.readResource(messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     final var ns2MessagesAtNamespace2 = getRecordMessagesWithNewNamespace(ns2Messages, namespace2);
@@ -1016,22 +1012,6 @@ public abstract class DestinationAcceptanceTest {
     retrieveRawRecordsAndAssertSameMessages(catalog, allMessages, defaultSchema);
   }
 
-  public static class NamespaceTestCaseProvider implements ArgumentsProvider {
-
-    @Override
-    public Stream<? extends Arguments> provideArguments(final ExtensionContext context)
-        throws Exception {
-      final JsonNode testCases =
-          Jsons.deserialize(MoreResources.readResource("namespace_test_cases.json"));
-      return MoreIterators.toList(testCases.elements()).stream()
-          .filter(testCase -> testCase.get("enabled").asBoolean())
-          .map(testCase -> Arguments.of(
-              testCase.get("id").asText(),
-              testCase.get("namespace").asText(),
-              testCase.get("normalized").asText()));
-    }
-
-  }
 
   @ParameterizedTest
   @ArgumentsSource(NamespaceTestCaseProvider.class)
@@ -1049,14 +1029,14 @@ public abstract class DestinationAcceptanceTest {
     }
 
     final AirbyteCatalog catalog = Jsons.deserialize(
-        MoreResources.readResource(DataArgumentsProvider.NAMESPACE_CONFIG.catalogFile),
+        MoreResources.readResource(DataArgumentsProvider.NAMESPACE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
         AirbyteCatalog.class);
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
 
     final List<AirbyteMessage> messages = MoreResources.readResource(
-        DataArgumentsProvider.NAMESPACE_CONFIG.messageFile).lines()
+        DataArgumentsProvider.NAMESPACE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(
@@ -1105,13 +1085,13 @@ public abstract class DestinationAcceptanceTest {
 
     final AirbyteCatalog catalog =
         Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
 
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     final JsonNode config = getConfig();
@@ -1561,6 +1541,17 @@ public abstract class DestinationAcceptanceTest {
 
   protected boolean supportObjectDataTypeTest() {
     return false;
+  }
+
+  /**
+   * The method should be overridden if destination connector support newer
+   * protocol version otherwise {@link io.airbyte.integrations.standardtest.destination.ProtocolVersion#DEFAULT}
+   * is used <p>
+   * NOTE: Method should be public in a sake of java reflection
+   * @return
+   */
+  public ProtocolVersion getProtocolVersion() {
+    return ProtocolVersion.DEFAULT;
   }
 
   private boolean checkTestCompatibility(
