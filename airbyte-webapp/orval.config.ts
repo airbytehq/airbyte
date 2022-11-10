@@ -23,7 +23,7 @@ export default defineConfig({
     },
   },
   connectorBuilder: {
-    input: "../airbyte-connector-builder/src/main/openapi/openapi.yaml",
+    input: "../airbyte-connector-builder-server/src/main/openapi/openapi.yaml",
     output: {
       target: "./src/core/request/ConnectorBuilderClient.ts",
       prettier: true,

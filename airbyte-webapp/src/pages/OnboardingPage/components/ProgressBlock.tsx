@@ -27,7 +27,7 @@ const run = keyframes`
 const Bar = styled.div`
   width: 100%;
   height: 49px;
-  background: ${({ theme }) => theme.darkBeigeColor} url("/rectangle.svg");
+  background: #ffebd7 url("/rectangle.svg");
   color: ${({ theme }) => theme.redColor};
   border-radius: 15px;
   font-weight: 500;

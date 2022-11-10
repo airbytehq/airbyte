@@ -1,0 +1,25 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+plugins {
+    id "org.openapi.generator" version "5.3.1"
+    id 'airbyte-python'
+    id 'airbyte-docker'
+}
+
+airbytePython {
+    moduleDirectory 'connector_builder'
+}
+
+
+task generateApiServer(type: GenerateTask) {
+    inputSpec = "$rootDir.absolutePath/airbyte-connector-builder-server/src/main/openapi/openapi.yaml"
+    outputDir = "$buildDir/airbyte_connector_builder_server"
+
+    generatorName = "python"
+    packageName = "airbyte_connector_builder_server"
+}
+
+blackFormat.dependsOn generateApiServer
+isortFormat.dependsOn generateApiServer
+flakeCheck.dependsOn generateApiServer
+installReqs.dependsOn generateApiServer

@@ -210,10 +210,10 @@ services:
       - workspace:${WORKSPACE_ROOT}
     networks:
       - airbyte_internal
-  airbyte-connector-builder:
-    image: airbyte/connector-builder:${VERSION}
+  airbyte-connector-builder-server:
+    image: airbyte/connector-builder-server:${VERSION}
     logging: *default-logging
-    container_name: airbyte-connector-builder
+    container_name: airbyte-connector-builder-server
     restart: unless-stopped
     ports:
       - 8003:80
