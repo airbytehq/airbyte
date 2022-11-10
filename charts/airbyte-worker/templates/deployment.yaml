@@ -113,6 +113,11 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: TEMPORAL_WORKER_PORTS
+       - name: DATA_DOCKER_MOUNT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: DATA_DOCKER_MOUNT
         - name: LOG_LEVEL
           value: "{{ .Values.log.level }}"
         - name: JOB_KUBE_NAMESPACE
