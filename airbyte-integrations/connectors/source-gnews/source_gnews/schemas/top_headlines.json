@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": ["null", "string"],
+      "description": "The main title of the article."
+    },
+    "description": {
+      "type": ["null", "string"],
+      "description": "The small paragraph under the title."
+    },
+    "content": {
+      "type": ["null", "string"],
+      "description": "All the content of the article."
+    },
+    "url": {
+      "type": ["null", "string"],
+      "description": "The URL of the article."
+    },
+    "image": {
+      "type": ["null", "string"],
+      "description": "The main image of the article."
+    },
+    "publishedAt": {
+      "type": ["null", "string"],
+      "description": "The date of publication of the article. The date is always in the UTC time zone."
+    },
+    "source": {
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type": ["null", "string"],
+          "description": "The name of the source."
+        },
+        "url": {
+          "type": ["null", "string"],
+          "description": "The home page of the source."
+        }
+      }
+    }
+  }
+}

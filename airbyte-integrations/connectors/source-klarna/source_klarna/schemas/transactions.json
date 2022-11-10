@@ -1,12 +1,7 @@
 {
   "type": "object",
   "additionalProperties": true,
-  "required": [
-    "capture_id",
-    "sale_date",
-    "capture_date",
-    "order_id"
-  ],
+  "required": ["capture_id", "sale_date", "capture_date", "order_id"],
   "properties": {
     "amount": {
       "description": "Total amount of the specific transaction, in minor units",
