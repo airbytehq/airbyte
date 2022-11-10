@@ -652,59 +652,81 @@ def test_additional_properties_is_true(connector_spec, expectation):
 
 
 @pytest.mark.parametrize(
-    "connector_spec, should_fail",
+    "connector_spec, should_fail, is_warning_logged",
     (
         (
             {
                 "connectionSpecification": {"type": "object", "properties": {"api_token": {"type": "string", "airbyte_secret": True}}}
             },
             False,
+            False
         ),
         (
             {
                 "connectionSpecification": {"type": "object", "properties": {"api_token": {"type": "null"}}}
             },
             False,
+            False
+        ),
+        (
+            {
+                "connectionSpecification": {"type": "object", "properties": {"refresh_token": {"type": "boolean", "airbyte_secret": True}}}
+            },
+            False,
+            True
         ),
         (
             {
                 "connectionSpecification": {"type": "object", "properties": {"jwt": {"type": "object"}}}
             },
             True,
+            False
         ),
         (
             {
                 "connectionSpecification": {"type": "object", "properties": {"refresh_token": {"type": ["null", "string"]}}}
             },
             True,
+            False
         ),
         (
             {
                 "connectionSpecification": {"type": "object", "properties": {"credentials": {"type": "array"}}}
             },
             True,
+            False
         ),
         (
             {
                 "connectionSpecification": {"type": "object", "properties": {"credentials": {"type": "array", "items": {"type": "string"}}}}
             },
             True,
+            False
         ),
         (
             {
                 "connectionSpecification": {"type": "object", "properties": {"auth": {"oneOf": [{"api_token": {"type": "string"}}]}}}
             },
             True,
+            False
         ),
         (
             {
                 "connectionSpecification": {"type": "object", "properties": {"credentials": {"oneOf": [{"type": "object", "properties": {"api_key": {"type": "string"}}}]}}}
             },
-            True
+            True,
+            False
+        ),
+        (
+            {
+                "connectionSpecification": {"type": "object", "properties": {"start_date": {"type": ["null", "string"]}}}
+            },
+            False,
+            False
         )
     ),
 )
-def test_airbyte_secret(mocker, connector_spec, should_fail):
+def test_airbyte_secret(mocker, connector_spec, should_fail, is_warning_logged):
     mocker.patch.object(conftest.pytest, "fail")
     t = _TestSpec()
     logger = mocker.Mock()
@@ -713,6 +735,12 @@ def test_airbyte_secret(mocker, connector_spec, should_fail):
         conftest.pytest.fail.assert_called_once()
     else:
         conftest.pytest.fail.assert_not_called()
+    if is_warning_logged:
+        _, args, _ = logger.warning.mock_calls[0]
+        msg, *_ = args
+        assert "Some properties are marked with `airbyte_secret` although they probably should not be" in msg
+    else:
+        logger.warning.assert_not_called()
 
 
 @pytest.mark.parametrize(

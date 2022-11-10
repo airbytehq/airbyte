@@ -55,7 +55,7 @@ def connector_spec_dict_fixture(actual_connector_spec):
 
 @pytest.fixture(name="secret_property_names")
 def secret_property_names_fixture():
-    yield (
+    return (
         "client_token",
         "access_token",
         "api_token",
