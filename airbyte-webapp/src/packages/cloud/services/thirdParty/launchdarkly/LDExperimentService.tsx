@@ -107,8 +107,7 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
         console.warn(`Failed to initialize LaunchDarkly service with reason: ${String(reason)}`);
         trackAction(AppActionCodes.LD_LOAD_FAILURE);
         setState("failed");
-      })
-      .finally(() => "race finally() block");
+      });
   }
 
   useEffectOnce(() => {
