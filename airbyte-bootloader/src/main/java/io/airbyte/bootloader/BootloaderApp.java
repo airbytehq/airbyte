@@ -129,7 +129,7 @@ public class BootloaderApp {
 
     postLoadExecution = () -> {
       try {
-        final ApplyDefinitionsHelper applyDefinitionsHelper = new ApplyDefinitionsHelper(configRepository, localDefinitionsProvider);
+        final ApplyDefinitionsHelper applyDefinitionsHelper = new ApplyDefinitionsHelper(configRepository, localDefinitionsProvider, jobPersistence);
         applyDefinitionsHelper.apply();
 
         if (featureFlags.forceSecretMigration() || !jobPersistence.isSecretMigrated()) {
