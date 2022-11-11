@@ -35,13 +35,17 @@ public class DbtJobOrchestrator implements JobOrchestrator<OperatorDbtInput> {
   private final Configs configs;
   private final WorkerConfigs workerConfigs;
   private final ProcessFactory processFactory;
+  private final JobRunConfig jobRunConfig;
 
   public DbtJobOrchestrator(final Configs configs,
-                            final WorkerConfigs workerConfigs,
-                            final ProcessFactory processFactory) {
+      final WorkerConfigs workerConfigs,
+      final ProcessFactory processFactory,
+      final JobRunConfig jobRunConfig
+  ) {
     this.configs = configs;
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
+    this.jobRunConfig = jobRunConfig;
   }
 
   @Override
@@ -57,7 +61,6 @@ public class DbtJobOrchestrator implements JobOrchestrator<OperatorDbtInput> {
   @Trace(operationName = JOB_ORCHESTRATOR_OPERATION_NAME)
   @Override
   public Optional<String> runJob() throws Exception {
-    final JobRunConfig jobRunConfig = readJobRunConfig();
     final OperatorDbtInput dbtInput = readInput();
 
     final IntegrationLauncherConfig destinationLauncherConfig = JobOrchestrator.readAndDeserializeFile(
@@ -76,9 +79,9 @@ public class DbtJobOrchestrator implements JobOrchestrator<OperatorDbtInput> {
         workerConfigs.getResourceRequirements(),
         new DbtTransformationRunner(
             processFactory, NormalizationRunnerFactory.create(
-                destinationLauncherConfig.getDockerImage(),
-                processFactory,
-                NormalizationRunnerFactory.NORMALIZATION_VERSION)));
+            destinationLauncherConfig.getDockerImage(),
+            processFactory,
+            NormalizationRunnerFactory.NORMALIZATION_VERSION)));
 
     log.info("Running dbt worker...");
     final Path jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(),

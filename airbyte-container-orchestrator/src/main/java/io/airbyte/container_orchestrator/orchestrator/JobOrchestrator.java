@@ -6,7 +6,6 @@ package io.airbyte.container_orchestrator.orchestrator;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.sync.OrchestratorConstants;
-import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.process.KubePodProcess;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,8 +13,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 /**
- * The job orchestrator helps abstract over container launcher application differences across
- * replication, normalization, and custom dbt operators.
+ * The job orchestrator helps abstract over container launcher application differences across replication, normalization, and custom dbt operators.
  *
  * @param <INPUT> job input type
  */
@@ -34,15 +32,7 @@ public interface JobOrchestrator<INPUT> {
         getInputClass());
   }
 
-  /**
-   * reads the job run config from a file that was copied to the container launcher
-   */
-  default JobRunConfig readJobRunConfig() throws IOException {
-    return Jsons.deserialize(
-        Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_JOB_RUN_CONFIG).toFile(),
-        JobRunConfig.class);
-  }
-
+  
   /**
    * Contains the unique logic that belongs to each type of job.
    *

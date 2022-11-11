@@ -15,6 +15,7 @@ import io.airbyte.container_orchestrator.orchestrator.JobOrchestrator;
 import io.airbyte.container_orchestrator.orchestrator.NoOpOrchestrator;
 import io.airbyte.container_orchestrator.orchestrator.NormalizationJobOrchestrator;
 import io.airbyte.container_orchestrator.orchestrator.ReplicationJobOrchestrator;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
 import io.airbyte.workers.process.DockerProcessFactory;
@@ -71,9 +72,9 @@ class ContainerOrchestratorFactory {
   @Singleton
   @Requires(env = Environment.KUBERNETES)
   ProcessFactory kubeProcessFactory(
-                                    final WorkerConfigs workerConfigs,
-                                    final EnvConfigs configs,
-                                    @Value("${micronaut.server.port}") final int serverPort)
+      final WorkerConfigs workerConfigs,
+      final EnvConfigs configs,
+      @Value("${micronaut.server.port}") final int serverPort)
       throws UnknownHostException {
     final var localIp = InetAddress.getLocalHost().getHostAddress();
     final var kubeHeartbeatUrl = localIp + ":" + serverPort;
@@ -92,18 +93,19 @@ class ContainerOrchestratorFactory {
 
   @Singleton
   JobOrchestrator<?> jobOrchestrator(
-                                     @Named("application") final String application,
-                                     final EnvConfigs envConfigs,
-                                     final ProcessFactory processFactory,
-                                     final FeatureFlags featureFlags,
-                                     final WorkerConfigs workerConfigs,
-                                     final AirbyteMessageSerDeProvider serdeProvider,
-                                     final AirbyteMessageVersionedMigratorFactory migratorFactory) {
+      @Named("application") final String application,
+      final EnvConfigs envConfigs,
+      final ProcessFactory processFactory,
+      final FeatureFlags featureFlags,
+      final WorkerConfigs workerConfigs,
+      final AirbyteMessageSerDeProvider serdeProvider,
+      final AirbyteMessageVersionedMigratorFactory migratorFactory,
+      final JobRunConfig jobRunConfig) {
     return switch (application) {
       case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(envConfigs, processFactory, featureFlags, serdeProvider,
-          migratorFactory);
-      case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(envConfigs, processFactory);
-      case DbtLauncherWorker.DBT -> new DbtJobOrchestrator(envConfigs, workerConfigs, processFactory);
+          migratorFactory, jobRunConfig);
+      case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(envConfigs, processFactory, jobRunConfig);
+      case DbtLauncherWorker.DBT -> new DbtJobOrchestrator(envConfigs, workerConfigs, processFactory, jobRunConfig);
       case AsyncOrchestratorPodProcess.NO_OP -> new NoOpOrchestrator();
       default -> throw new IllegalStateException("Could not find job orchestrator for application: " + application);
     };

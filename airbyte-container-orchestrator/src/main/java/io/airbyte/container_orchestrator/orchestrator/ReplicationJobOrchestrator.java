@@ -23,6 +23,7 @@ import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerMetricReporter;
@@ -56,17 +57,20 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   private final FeatureFlags featureFlags;
   private final AirbyteMessageSerDeProvider serDeProvider;
   private final AirbyteMessageVersionedMigratorFactory migratorFactory;
+  private final JobRunConfig jobRunConfig;
 
   public ReplicationJobOrchestrator(final Configs configs,
-                                    final ProcessFactory processFactory,
-                                    final FeatureFlags featureFlags,
-                                    final AirbyteMessageSerDeProvider serDeProvider,
-                                    final AirbyteMessageVersionedMigratorFactory migratorFactory) {
+      final ProcessFactory processFactory,
+      final FeatureFlags featureFlags,
+      final AirbyteMessageSerDeProvider serDeProvider,
+      final AirbyteMessageVersionedMigratorFactory migratorFactory,
+      final JobRunConfig jobRunConfig) {
     this.configs = configs;
     this.processFactory = processFactory;
     this.featureFlags = featureFlags;
     this.serDeProvider = serDeProvider;
     this.migratorFactory = migratorFactory;
+    this.jobRunConfig = jobRunConfig;
   }
 
   @Override
@@ -82,7 +86,6 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   @Trace(operationName = JOB_ORCHESTRATOR_OPERATION_NAME)
   @Override
   public Optional<String> runJob() throws Exception {
-    final var jobRunConfig = readJobRunConfig();
     final var syncInput = readInput();
 
     final var sourceLauncherConfig = JobOrchestrator.readAndDeserializeFile(
