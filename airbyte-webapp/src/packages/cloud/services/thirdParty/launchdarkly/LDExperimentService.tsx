@@ -9,6 +9,7 @@ import { LoadingPage } from "components";
 import { useConfig } from "config";
 import { useI18nContext } from "core/i18n";
 import { useAnalyticsService } from "hooks/services/Analytics";
+import { useAppMonitoringService, AppActionCodes } from "hooks/services/AppMonitoringService";
 import { ExperimentProvider, ExperimentService } from "hooks/services/Experiment";
 import type { Experiments } from "hooks/services/Experiment/experiments";
 import { FeatureSet, useFeatureService } from "hooks/services/Feature";
@@ -49,6 +50,7 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
   const analyticsService = useAnalyticsService();
   const { locale } = useIntl();
   const { setMessageOverwrite } = useI18nContext();
+  const { trackAction } = useAppMonitoringService();
 
   /**
    * This function checks for all experiments to find the ones beginning with "i18n_{locale}_"
@@ -87,7 +89,7 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
     // Wait for either LaunchDarkly to initialize or a specific timeout to pass first
     Promise.race([
       ldClient.current.waitForInitialization(),
-      rejectAfter(INITIALIZATION_TIMEOUT, "Timed out waiting for LaunchDarkly to initialize"),
+      rejectAfter(INITIALIZATION_TIMEOUT, AppActionCodes.LD_LOAD_TIMEOUT),
     ])
       .then(() => {
         // The LaunchDarkly promise resolved before the timeout, so we're good to use LD.
@@ -103,6 +105,9 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
         // our timeout promise resolves first, we're going to show an error and assume the service
         // failed to initialize, i.e. we'll run without it.
         console.warn(`Failed to initialize LaunchDarkly service with reason: ${String(reason)}`);
+        if (reason === AppActionCodes.LD_LOAD_TIMEOUT) {
+          trackAction(AppActionCodes.LD_LOAD_TIMEOUT);
+        }
         setState("failed");
       });
   }
