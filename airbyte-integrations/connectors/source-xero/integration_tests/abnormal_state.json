@@ -17,16 +17,24 @@
   "overpayments": {
     "date": "2033-10-28T12:30:01+00:00"
   },
-  "prepayments": {},
-  "purchase_orders": {},
+  "prepayments":  {
+    "date": "2033-10-18T11:51:45+00:00"
+  },
+  "purchase_orders":  {
+    "date": "2033-10-18T11:51:45+00:00"
+  },
   "accounts": {
     "date": "2033-10-18T11:51:45+00:00"
   },
   "bank_transfers": {
     "date": "2033-10-28T07:28:42+00:00"
   },
-  "employees": {},
-  "items": {},
+  "employees":  {
+    "date": "2033-10-18T11:51:45+00:00"
+  },
+  "items":  {
+    "date": "2033-10-18T11:51:45+00:00"
+  },
   "payments": {
     "date": "2033-10-28T16:36:42+00:00"
   },
