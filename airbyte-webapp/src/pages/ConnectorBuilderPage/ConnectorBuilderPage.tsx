@@ -17,18 +17,18 @@ const ConnectorBuilderPageInner: React.FC = () => {
   return (
     <ResizablePanels
       className={styles.container}
-      leftPanel={{
+      firstPanel={{
         children: <YamlEditor />,
         className: styles.leftPanel,
-        minWidth: 400,
+        minWidth: 100,
       }}
-      rightPanel={{
+      secondPanel={{
         children: <StreamTestingPanel />,
         className: styles.rightPanel,
-        startingFlex: 0.33,
+        flex: 0.33,
         minWidth: 60,
         overlay: {
-          displayThreshold: 300,
+          displayThreshold: 325,
           header: capitalize(selectedStream.name),
           rotation: "counter-clockwise",
         },

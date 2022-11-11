@@ -1,0 +1,19 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/visma-economic
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Visma E-conomic Spec
+  type: object
+  required:
+    - app_secret_token
+    - agreement_grant_token
+  properties:
+    app_secret_token:
+      title: App Secret Token
+      type: string
+      description: Identification token for app accessing data
+      airbyte_secret: true
+    agreement_grant_token:
+      title: Agreement Grant Token
+      type: string
+      description: Identifier for the grant issued by an agreement
+      airbyte_secret: true

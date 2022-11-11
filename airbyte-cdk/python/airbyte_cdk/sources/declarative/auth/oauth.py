@@ -31,6 +31,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
         scopes (Optional[List[str]]): The scopes to request
         token_expiry_date (Optional[Union[InterpolatedString, str]]): The access token expiration date
         refresh_request_body (Optional[Mapping[str, Any]]): The request body to send in the refresh request
+        grant_type: The grant_type to request for access_token
     """
 
     token_refresh_endpoint: Union[InterpolatedString, str]
@@ -45,6 +46,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     access_token_name: Union[InterpolatedString, str] = "access_token"
     expires_in_name: Union[InterpolatedString, str] = "expires_in"
     refresh_request_body: Optional[Mapping[str, Any]] = None
+    grant_type: Union[InterpolatedString, str] = "refresh_token"
 
     def __post_init__(self, options: Mapping[str, Any]):
         self.token_refresh_endpoint = InterpolatedString.create(self.token_refresh_endpoint, options=options)
@@ -53,6 +55,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
         self.refresh_token = InterpolatedString.create(self.refresh_token, options=options)
         self.access_token_name = InterpolatedString.create(self.access_token_name, options=options)
         self.expires_in_name = InterpolatedString.create(self.expires_in_name, options=options)
+        self.grant_type = InterpolatedString.create(self.grant_type, options=options)
         self._refresh_request_body = InterpolatedMapping(self.refresh_request_body or {}, options=options)
         self._token_expiry_date = (
             pendulum.parse(InterpolatedString.create(self.token_expiry_date, options=options).eval(self.config))
@@ -81,6 +84,9 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
 
     def get_expires_in_name(self) -> InterpolatedString:
         return self.expires_in_name.eval(self.config)
+
+    def get_grant_type(self) -> InterpolatedString:
+        return self.grant_type.eval(self.config)
 
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         return self._refresh_request_body.eval(self.config)
