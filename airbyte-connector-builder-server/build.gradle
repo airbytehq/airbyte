@@ -13,9 +13,9 @@ airbytePython {
 task generateOpenApiPythonServer(type: GenerateTask){
     outputs.upToDateWhen { false }
 
-    def generatedCodeDir = "$buildDir/server"
+    def generatedCodeDir = "$buildDir/airbyte_connector_builder_server"
     inputSpec = "$rootDir.absolutePath/airbyte-connector-builder-server/src/main/openapi/openapi.yaml"
-    outputDir = "$buildDir/airbyte_connector_builder_server"
+    outputDir = generatedCodeDir
 
     generatorName = "python-fastapi"
     configFile = "$projectDir/openapi/generator_config.yaml"
