@@ -231,41 +231,41 @@ def test_display_report_stream_init_too_many_requests(mocker, config):
     ("modifiers", "expected"),
     [
         (
-            [
-                (lambda x: x <= 5, "SUCCESS", None),
-            ],
-            5,
+                [
+                    (lambda x: x <= 5, "SUCCESS", None),
+                ],
+                5,
         ),
         (
-            [
-                (lambda x: x > 5, "SUCCESS", None),
-            ],
-            10,
+                [
+                    (lambda x: x > 5, "SUCCESS", None),
+                ],
+                10,
         ),
         (
-            [
-                (lambda x: x > 5, None, "2021-01-02 06:04:05"),
-            ],
-            ReportGenerationInProgress,
+                [
+                    (lambda x: x > 5, None, "2021-01-02 06:04:05"),
+                ],
+                ReportGenerationInProgress,
         ),
         (
-            [
-                (lambda x: x >= 1 and x <= 5, "FAILURE", None),
-                (lambda x: x >= 6 and x <= 10, None, "2021-01-02 03:23:05"),
-                (lambda x: x >= 11, "SUCCESS", "2021-01-02 03:24:06"),
-            ],
-            15,
+                [
+                    (lambda x: x >= 1 and x <= 5, "FAILURE", None),
+                    (lambda x: x >= 6 and x <= 10, None, "2021-01-02 03:23:05"),
+                    (lambda x: x >= 11, "SUCCESS", "2021-01-02 03:24:06"),
+                ],
+                15,
         ),
         (
-            [
-                (lambda x: True, "FAILURE", None),
-                (lambda x: x >= 10, None, "2021-01-02 06:04:05"),
-                (lambda x: x >= 15, None, "2021-01-02 09:04:05"),
-                (lambda x: x >= 20, None, "2021-01-02 12:04:05"),
-                (lambda x: x >= 25, None, "2021-01-02 15:04:05"),
-                (lambda x: x >= 30, None, "2021-01-02 18:04:05"),
-            ],
-            ReportGenerationFailure,
+                [
+                    (lambda x: True, "FAILURE", None),
+                    (lambda x: x >= 10, None, "2021-01-02 06:04:05"),
+                    (lambda x: x >= 15, None, "2021-01-02 09:04:05"),
+                    (lambda x: x >= 20, None, "2021-01-02 12:04:05"),
+                    (lambda x: x >= 25, None, "2021-01-02 15:04:05"),
+                    (lambda x: x >= 30, None, "2021-01-02 18:04:05"),
+                ],
+                ReportGenerationFailure,
         ),
     ],
 )
@@ -562,40 +562,40 @@ def test_read_incremental_with_records_start_date(config):
     "state_filter, stream_class",
     [
         (
-            ["enabled", "archived", "paused"],
-            SponsoredBrandsCampaigns,
+                ["enabled", "archived", "paused"],
+                SponsoredBrandsCampaigns,
         ),
         (
-            ["enabled"],
-            SponsoredBrandsCampaigns,
+                ["enabled"],
+                SponsoredBrandsCampaigns,
         ),
         (
-            None,
-            SponsoredBrandsCampaigns,
+                None,
+                SponsoredBrandsCampaigns,
         ),
         (
-            ["enabled", "archived", "paused"],
-            SponsoredProductCampaigns,
+                ["enabled", "archived", "paused"],
+                SponsoredProductCampaigns,
         ),
         (
-            ["enabled"],
-            SponsoredProductCampaigns,
+                ["enabled"],
+                SponsoredProductCampaigns,
         ),
         (
-            None,
-            SponsoredProductCampaigns,
+                None,
+                SponsoredProductCampaigns,
         ),
         (
-            ["enabled", "archived", "paused"],
-            SponsoredDisplayCampaigns,
+                ["enabled", "archived", "paused"],
+                SponsoredDisplayCampaigns,
         ),
         (
-            ["enabled"],
-            SponsoredDisplayCampaigns,
+                ["enabled"],
+                SponsoredDisplayCampaigns,
         ),
         (
-            None,
-            SponsoredDisplayCampaigns,
+                None,
+                SponsoredDisplayCampaigns,
         ),
     ],
 )
@@ -612,7 +612,28 @@ def test_streams_state_filter(mocker, config, state_filter, stream_class):
 
 
 @responses.activate
-def test_display_report_stream_single_record_type(config_gen):
+@pytest.mark.parametrize(
+    "custom_record_types, flag_match_error",
+    [
+        (
+                ["campaigns"],
+                True
+        ),
+        (
+                ["campaigns", "adGroups"],
+                True
+        ),
+        (
+                [],
+                False
+        ),
+        (
+                ["invalid_record_type"],
+                True
+        )
+    ]
+)
+def test_display_report_stream_with_custom_record_types(config_gen, custom_record_types, flag_match_error):
     setup_responses(
         init_response=REPORT_INIT_RESPONSE,
         status_response=REPORT_STATUS_RESPONSE,
@@ -620,26 +641,11 @@ def test_display_report_stream_single_record_type(config_gen):
     )
 
     profiles = make_profiles()
-    custom_record_types = ["campaigns"]
 
     stream = SponsoredDisplayReportStream(config_gen(report_record_types=custom_record_types), profiles, authenticator=mock.MagicMock())
     stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
-    metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
-    assert len(metrics) == len(custom_record_types) * len(stream.metrics_map)
-
-
-@responses.activate
-def test_display_report_stream_multiple_record_type(config_gen):
-    setup_responses(
-        init_response=REPORT_INIT_RESPONSE,
-        status_response=REPORT_STATUS_RESPONSE,
-        metric_response=METRIC_RESPONSE,
-    )
-
-    profiles = make_profiles()
-    custom_record_types = ["campaigns", "adGroups"]
-
-    stream = SponsoredDisplayReportStream(config_gen(report_record_types=custom_record_types), profiles, authenticator=mock.MagicMock())
-    stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
-    metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
-    assert len(metrics) == len(custom_record_types) * len(stream.metrics_map)
+    records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
+    for record in records:
+        if record['recordType'] not in custom_record_types:
+            if flag_match_error:
+                assert False

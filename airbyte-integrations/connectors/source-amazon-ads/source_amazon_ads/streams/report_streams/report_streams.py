@@ -130,11 +130,11 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         return self._model
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         This is base method of CDK Stream class for getting metrics report. It
@@ -265,9 +265,9 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     @backoff.on_exception(
         backoff.expo,
         (
-                requests.exceptions.Timeout,
-                requests.exceptions.ConnectionError,
-                TooManyRequests,
+            requests.exceptions.Timeout,
+            requests.exceptions.ConnectionError,
+            TooManyRequests,
         ),
         max_tries=10,
     )
@@ -304,7 +304,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             yield {"profile": profile, self.cursor_field: report_date}
 
     def stream_slices(
-            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         stream_state = stream_state or {}
