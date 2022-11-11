@@ -11,6 +11,15 @@ definitions:
       type: ApiKeyAuthenticator
       header: "Authorization"
       api_token: "OAuth {{ config['api_key'] }}"
+    error_handler:
+      type: "CompositeErrorHandler"
+      error_handlers:
+        - response_filters:
+            - http_codes: [420, 429]
+              action: RETRY
+          backoff_strategies:
+            - type: "ConstantBackoffStrategy"
+              backoff_time_in_seconds: 60
   offset_paginator:
     type: DefaultPaginator
     $options:
