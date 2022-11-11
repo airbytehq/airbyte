@@ -54,6 +54,8 @@ The Zendesk Chat source connector supports the following [sync modes](https://do
 * [Skills](https://developer.zendesk.com/rest_api/docs/chat/skills#list-skills)
 * [Roles](https://developer.zendesk.com/rest_api/docs/chat/roles#list-roles)
 * [Routing Settings](https://developer.zendesk.com/rest_api/docs/chat/routing_settings#show-account-routing-settings)
+* [Conversions](https://developer.zendesk.com/api-reference/live-chat/chat-api/incremental_export/#incremental-conversions-export)
+* [Department Events](https://developer.zendesk.com/api-reference/live-chat/chat-api/incremental_export/#incremental-department-events-export)
 
 ## Performance considerations
 
@@ -72,6 +74,7 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
+| 0.1.12  | 2022-11-11 | [19351](https://github.com/airbytehq/airbyte/pull/19351) | Add Convesions and Department Events Streams                                                                     |
 | 0.1.11  | 2022-10-18 | [17745](https://github.com/airbytehq/airbyte/pull/17745) | Add Engagements Stream and fix infity looping                                                                            |
 | 0.1.10  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                                                    |
 | 0.1.9   | 2022-08-23 | [15879](https://github.com/airbytehq/airbyte/pull/15879) | Corrected specification and stream schemas to support backward capability                                        |
