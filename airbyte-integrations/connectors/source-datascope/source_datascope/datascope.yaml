@@ -15,13 +15,19 @@ definitions:
     type: "DatetimeStreamSlicer"
     start_datetime:
       datetime: "{{ config['date'] }}"
-      datetime_format: "%Y-%m-%d %H:%M"
+      datetime_format: "%d/%m/%Y %H:%M"
     end_datetime:
-      datetime: "{{ now_utc().strftime('%Y-%m-%d %H:%M') }}"
-      datetime_format: "%Y-%m-%d %H:%M"
+      datetime: "{{ now_utc().strftime('%d/%m/%Y %H:%M') }}"
+      datetime_format: "%d/%m/%Y %H:%M"
     step: "1d"
-    datetime_format: "%Y-%m-%d %H:%M"
+    datetime_format: "%d/%m/%Y %H:%M"
     cursor_field: "{{ options['stream_cursor_field'] }}"
+    start_time_option:
+      field_name: "start"
+      inject_into: "request_parameter"
+    end_time_option:
+      field_name: "end"
+      inject_into: "request_parameter"
 
   retriever:
     record_selector:
@@ -63,8 +69,6 @@ definitions:
         field_name: "offset"
     requester:
       $ref: "*ref(definitions.requester)"
-    stream_slicer:
-      $ref: "*ref(definitions.stream_slicer)"
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
@@ -81,7 +85,7 @@ definitions:
       name: "answers"
       primary_key: "form_answer_id"
       path: "/v2/answers"
-      stream_cursor_field: "start"
+      stream_cursor_field: "created_at"
   lists_stream:
     retriever:
       $ref: "*ref(definitions.retriever_non_incremental)"
@@ -95,7 +99,7 @@ definitions:
       name: "notifications"
       primary_key: "id"
       path: "/notifications"
-      stream_cursor_field: "start"
+      stream_cursor_field: "created_at"
 streams:
   - "*ref(definitions.location_stream)"
   - "*ref(definitions.answers_stream)"

@@ -13,7 +13,7 @@ connectionSpecification:
       description: Start date for the data to be replicated
       examples:
         - "YYY-mm-dd HH:MM"
-      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}$"
+      pattern: "^[0-9]{2}/[0-9]{2}/[0-9]{4} [0-9]{2}:[0-9]{2}$"
     Authorization:
       title: Authorization
       type: string
