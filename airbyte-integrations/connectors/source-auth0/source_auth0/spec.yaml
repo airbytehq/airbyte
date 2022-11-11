@@ -77,4 +77,3 @@ connectionSpecification:
                 The access token used to call the Auth0 Management API Token. It's a JWT that contains specific grant permissions knowns as scopes.
               type: string
               airbyte_secret: true
- 
