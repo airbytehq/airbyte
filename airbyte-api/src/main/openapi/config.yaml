@@ -4668,7 +4668,7 @@ components:
         oAuthInputConfiguration:
           $ref: "#/components/schemas/OAuthInputConfiguration"
         destinationId:
-          $ref: "#/components/schemas/SourceId"
+          $ref: "#/components/schemas/DestinationId"
     OAuthConsentRead:
       type: object
       required:
