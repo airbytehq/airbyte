@@ -12,8 +12,8 @@
   padding: 8px;
   display: flex;
   align-items: center;
-  background-color: colors.$blue;
-  color: colors.$white;
+  background-color: colors.$blue-100;
+  color: colors.$dark-blue;
 
   @media (min-width: 1280px) {
     height: 50px;
@@ -32,8 +32,4 @@
 
 .linkCta {
   color: colors.$dark-blue;
-}
-
-.textDecorationNone {
-  text-decoration: none;
 }
