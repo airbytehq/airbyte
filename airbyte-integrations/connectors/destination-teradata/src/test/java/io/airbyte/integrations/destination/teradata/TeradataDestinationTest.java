@@ -45,8 +45,8 @@ public class TeradataDestinationTest {
 				config.get(JdbcUtils.PASSWORD_KEY).asText()));
 	}
 
-	@Override
-	protected void setup(TestDestinationEnv testEnv) {
+	@BeforeEach
+	void setup() {
 
 		try {
 			this.config = Jsons.clone(Jsons.deserialize(Files.readString(Paths.get("secrets/config.json"))));
@@ -56,10 +56,15 @@ public class TeradataDestinationTest {
 			this.EXPECTED_JDBC_ESCAPED_URL = String.format("jdbc:teradata://%s/",
 					config.get(JdbcUtils.HOST_KEY).asText());
 			LOGGER.info("TeradataDestinationTest - EXPECTED_JDBC_URL : " + this.EXPECTED_JDBC_URL);
-			System.out.println("TeradataDestinationTest - this.EXPECTED_JDBC_ESCAPED_URL : " + this.EXPECTED_JDBC_ESCAPED_URL);
+			System.out.println(
+					"TeradataDestinationTest - this.EXPECTED_JDBC_ESCAPED_URL : " + this.EXPECTED_JDBC_ESCAPED_URL);
 		} catch (Exception e) {
 			AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "setup failed");
 		}
+	}
+
+	@AfterAll
+	static void cleanUp() {
 	}
 
 	private JsonNode buildConfigEscapingNeeded() {
