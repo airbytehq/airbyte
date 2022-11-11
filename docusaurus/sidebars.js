@@ -97,6 +97,7 @@ module.exports = {
         'deploying-airbyte/on-azure-vm-cloud-shell',
         'deploying-airbyte/on-gcp-compute-engine',
         'deploying-airbyte/on-kubernetes',
+        'deploying-airbyte/on-restack',
         'deploying-airbyte/on-plural',
         'deploying-airbyte/on-oci-vm',
         'deploying-airbyte/on-digitalocean-droplet',
