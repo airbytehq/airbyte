@@ -27,6 +27,7 @@ import com.google.common.hash.Hashing;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
+import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.ConfigSchema;
@@ -92,16 +93,22 @@ public class ConfigRepository {
   private final ConfigPersistence persistence;
   private final ExceptionWrappingDatabase database;
   private final ActorDefinitionMigrator actorDefinitionMigrator;
+  private final StandardSyncPersistence standardSyncPersistence;
 
   public ConfigRepository(final Database database) {
-    this(DatabaseConfigPersistence.createWithValidation(database), database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)));
+    this(DatabaseConfigPersistence.createWithValidation(database), database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
+        new StandardSyncPersistence(database));
   }
 
   @VisibleForTesting
-  ConfigRepository(final ConfigPersistence persistence, final Database database, final ActorDefinitionMigrator actorDefinitionMigrator) {
+  ConfigRepository(final ConfigPersistence persistence,
+                   final Database database,
+                   final ActorDefinitionMigrator actorDefinitionMigrator,
+                   final StandardSyncPersistence standardSyncPersistence) {
     this.persistence = persistence;
     this.database = new ExceptionWrappingDatabase(database);
     this.actorDefinitionMigrator = actorDefinitionMigrator;
+    this.standardSyncPersistence = standardSyncPersistence;
   }
 
   /**
@@ -408,11 +415,7 @@ public class ConfigRepository {
   }
 
   public void deleteStandardSyncDefinition(final UUID syncDefId) throws IOException {
-    try {
-      persistence.deleteConfig(ConfigSchema.STANDARD_SYNC, syncDefId.toString());
-    } catch (final ConfigNotFoundException e) {
-      LOGGER.info("Attempted to delete destination definition with id: {}, but it does not exist", syncDefId);
-    }
+    standardSyncPersistence.deleteStandardSync(syncDefId);
   }
 
   public void deleteDestinationDefinitionAndAssociations(final UUID destinationDefinitionId)
@@ -439,7 +442,7 @@ public class ConfigRepository {
         .filter(connector -> connectorDefinitionIdGetter.apply(connector).equals(definitionId))
         .collect(Collectors.toSet());
     for (final T connector : connectors) {
-      final Set<StandardSync> syncs = persistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class)
+      final Set<StandardSync> syncs = standardSyncPersistence.listStandardSync()
           .stream()
           .filter(sync -> sync.getSourceId().equals(connectorIdGetter.apply(connector))
               || sync.getDestinationId().equals(connectorIdGetter.apply(connector)))
@@ -719,15 +722,32 @@ public class ConfigRepository {
   }
 
   public StandardSync getStandardSync(final UUID connectionId) throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(ConfigSchema.STANDARD_SYNC, connectionId.toString(), StandardSync.class);
+    return standardSyncPersistence.getStandardSync(connectionId);
   }
 
   public void writeStandardSync(final StandardSync standardSync) throws JsonValidationException, IOException {
-    persistence.writeConfig(ConfigSchema.STANDARD_SYNC, standardSync.getConnectionId().toString(), standardSync);
+    standardSyncPersistence.writeStandardSync(standardSync);
+  }
+
+  /**
+   * For the StandardSyncs related to actorDefinitionId, clear the unsupported protocol version flag
+   * if both connectors are now within support range.
+   *
+   * @param actorDefinitionId the actorDefinitionId to query
+   * @param actorType the ActorType of actorDefinitionId
+   * @param supportedRange the supported range of protocol versions
+   */
+  // We have conflicting imports here, ActorType is imported from jooq for most internal uses. Since
+  // this is a public method, we should be using the ActorType from airbyte-config.
+  public void clearUnsupportedProtocolVersionFlag(final UUID actorDefinitionId,
+                                                  final io.airbyte.config.ActorType actorType,
+                                                  final AirbyteProtocolVersionRange supportedRange)
+      throws IOException {
+    standardSyncPersistence.clearUnsupportedProtocolVersionFlag(actorDefinitionId, actorType, supportedRange);
   }
 
   public List<StandardSync> listStandardSyncs() throws IOException, JsonValidationException {
-    return persistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class);
+    return standardSyncPersistence.listStandardSync();
   }
 
   public List<StandardSync> listStandardSyncsUsingOperation(final UUID operationId)

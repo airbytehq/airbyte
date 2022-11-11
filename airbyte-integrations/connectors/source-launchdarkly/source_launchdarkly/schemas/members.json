@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "_id": {
+      "type": ["null", "string"]
+    },
+    "firstName": {
+      "type": ["null", "string"]
+    },
+    "lastName": {
+      "type": ["null", "string"]
+    },
+    "role": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "_pendingInvite": {
+      "type": ["null", "boolean"]
+    },
+    "_verified": {
+      "type": ["null", "boolean"]
+    },
+    "isBeta": {
+      "type": ["null", "boolean"]
+    },
+    "customRoles": {
+      "type": ["null", "array"]
+    },
+    "mfa": {
+      "type": ["null", "string"]
+    },
+    "excludedDashboards": {
+      "type": ["null", "array"]
+    },
+    "_lastSeen": {
+      "type": ["null", "integer"]
+    },
+    "_lastSeenMetadata": {
+      "type": ["null", "object"]
+    },
+    "creationDate": {
+      "type": ["null", "integer"]
+    },
+    "oauthProviders": {
+      "type": ["null", "array"]
+    }
+  }
+}
