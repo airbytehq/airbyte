@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - access_key
     - url
+    - start_date
   properties:
     access_key:
       type: string
@@ -18,3 +19,9 @@ connectionSpecification:
       title: Shop URL
       description: Shop URL without trailing slash.
       order: 1
+    start_date:
+      type: string
+      title: start_date
+      description: start_date
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+      order: 2
