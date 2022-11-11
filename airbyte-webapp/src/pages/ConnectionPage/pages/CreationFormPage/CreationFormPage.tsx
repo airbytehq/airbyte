@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { LoadingPage } from "components";
@@ -9,7 +9,7 @@ import ConnectionBlock from "components/ConnectionBlock";
 import { FormPageContent } from "components/ConnectorBlocks";
 import { CreateConnectionForm } from "components/CreateConnection/CreateConnectionForm";
 import { PageHeader } from "components/ui/PageHeader";
-import { StepsMenu } from "components/ui/StepsMenu";
+import { StepsIndicator } from "components/ui/StepsIndicator";
 
 import {
   DestinationDefinitionRead,
@@ -75,6 +75,7 @@ function usePreloadData(): {
 export const CreationFormPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.CONNECTIONS_NEW);
   const location = useLocation();
+  const { formatMessage } = useIntl();
 
   // exp-signup-selected-source-definition
   const state = useLocationState<{ sourceDefinitionId?: string }>();
@@ -185,30 +186,28 @@ export const CreationFormPage: React.FC = () => {
       ? [
           {
             id: StepsTypes.CREATE_ENTITY,
-            name: <FormattedMessage id="onboarding.createSource" />,
+            name: formatMessage({ id: "onboarding.createSource" }),
           },
           {
             id: StepsTypes.CREATE_CONNECTOR,
-            name: <FormattedMessage id="onboarding.createDestination" />,
+            name: formatMessage({ id: "onboarding.createDestination" }),
           },
           {
             id: StepsTypes.CREATE_CONNECTION,
-            name: <FormattedMessage id="onboarding.setUpConnection" />,
+            name: formatMessage({ id: "onboarding.setUpConnection" }),
           },
         ]
       : [
           {
             id: StepsTypes.CREATE_ENTITY,
             name:
-              type === "destination" ? (
-                <FormattedMessage id="onboarding.createDestination" />
-              ) : (
-                <FormattedMessage id="onboarding.createSource" />
-              ),
+              type === "destination"
+                ? formatMessage({ id: "onboarding.createDestination" })
+                : formatMessage({ id: "onboarding.createSource" }),
           },
           {
             id: StepsTypes.CREATE_CONNECTION,
-            name: <FormattedMessage id="onboarding.setUpConnection" />,
+            name: formatMessage({ id: "onboarding.setUpConnection" }),
           },
         ];
 
@@ -226,7 +225,7 @@ export const CreationFormPage: React.FC = () => {
       <ConnectorDocumentationWrapper>
         <PageHeader
           title={<FormattedMessage id={titleId} />}
-          middleComponent={<StepsMenu lightMode data={steps} activeStep={currentStep} />}
+          middleComponent={<StepsIndicator steps={steps} activeStep={currentStep} />}
         />
         <FormPageContent big={currentStep === StepsTypes.CREATE_CONNECTION}>
           {currentStep !== StepsTypes.CREATE_CONNECTION && (!!source || !!destination) && (
