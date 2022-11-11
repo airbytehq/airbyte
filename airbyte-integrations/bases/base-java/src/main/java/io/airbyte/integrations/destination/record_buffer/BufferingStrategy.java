@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.record_buffer;
 
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteMessage;
 
 /**

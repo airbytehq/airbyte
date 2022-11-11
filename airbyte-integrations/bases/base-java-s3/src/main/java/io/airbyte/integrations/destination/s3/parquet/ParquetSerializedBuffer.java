@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.s3.parquet;
 
 import io.airbyte.commons.functional.CheckedBiFunction;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;

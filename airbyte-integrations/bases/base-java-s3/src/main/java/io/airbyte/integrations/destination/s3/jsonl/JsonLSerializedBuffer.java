@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.record_buffer.BaseSerializedBuffer;
 import io.airbyte.integrations.destination.record_buffer.BufferStorage;

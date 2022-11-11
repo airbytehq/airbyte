@@ -10,7 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.SyncMode;

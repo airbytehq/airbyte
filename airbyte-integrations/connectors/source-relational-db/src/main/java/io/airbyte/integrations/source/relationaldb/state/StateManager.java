@@ -5,7 +5,7 @@
 package io.airbyte.integrations.source.relationaldb.state;
 
 import com.google.common.base.Preconditions;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.CdcStateManager;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.protocol.models.AirbyteStateMessage;

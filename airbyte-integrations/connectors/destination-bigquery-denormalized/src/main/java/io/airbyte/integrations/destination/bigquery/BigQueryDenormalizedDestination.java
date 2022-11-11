@@ -9,7 +9,7 @@ import static com.google.cloud.bigquery.Field.Mode.REPEATED;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.Table;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;

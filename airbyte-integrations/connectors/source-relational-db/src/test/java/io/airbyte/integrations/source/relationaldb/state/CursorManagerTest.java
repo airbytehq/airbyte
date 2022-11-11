@@ -15,7 +15,7 @@ import static io.airbyte.integrations.source.relationaldb.state.StateTestConstan
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.getStream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import java.util.Collections;

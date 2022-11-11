@@ -14,7 +14,7 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.common.net.InetAddresses;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.PerStreamStateMessageTest;
