@@ -38,7 +38,7 @@ public class SnowflakeDestinationResolver {
   }
 
   public static Map<DestinationType, Destination> getTypeToDestination(
-     final String airbyteEnvironment) {
+                                                                       final String airbyteEnvironment) {
     final SnowflakeS3StagingDestination s3StagingDestination = new SnowflakeS3StagingDestination(airbyteEnvironment);
     final SnowflakeGcsStagingDestination gcsStagingDestination = new SnowflakeGcsStagingDestination(airbyteEnvironment);
     final SnowflakeInternalStagingDestination internalStagingDestination = new SnowflakeInternalStagingDestination(airbyteEnvironment);

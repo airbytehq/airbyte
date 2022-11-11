@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
