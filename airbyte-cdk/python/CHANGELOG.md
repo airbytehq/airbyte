@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.1
+Low-code: Fix filtering vars in `InterpolatedRequestInputProvider.eval_request_inputs`
+
 ## 0.9.0
 Low-code: Allow `grant_type` to be specified for OAuthAuthenticator
 
