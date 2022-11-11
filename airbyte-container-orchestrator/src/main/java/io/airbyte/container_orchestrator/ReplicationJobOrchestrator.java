@@ -127,6 +127,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
 
     log.info("Setting up replication worker...");
+    // inject the api client here
     final ReplicationWorker replicationWorker = new DefaultReplicationWorker(
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),
