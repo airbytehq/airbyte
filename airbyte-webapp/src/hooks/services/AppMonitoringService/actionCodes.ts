@@ -4,5 +4,8 @@
  * encountered in production.
  */
 export enum AppActionCodes {
-  LD_LOAD_FAILURE = "LD_LOAD_FAILURE", // LaunchDarkly did not load in time and was ignored
+  /**
+   * LaunchDarkly did not load in time and was ignored
+   */
+  LD_LOAD_FAILURE = "LD_LOAD_FAILURE",
 }

@@ -11,7 +11,13 @@ const appMonitoringContext = createContext<AppMonitoringServiceProviderValue | n
  * are encountered in production.
  */
 interface AppMonitoringServiceProviderValue {
+  /**
+   * Log a custom action in datadog. Useful for tracking edge cases or unexpected application states.
+   */
   trackAction: (actionCode: AppActionCodes, context?: Record<string, unknown>) => void;
+  /**
+   * Log a custom error in datadog. Useful for tracking edge case errors while handling them in the UI.
+   */
   trackError: (error: Error, context?: Record<string, unknown>) => void;
 }
 
