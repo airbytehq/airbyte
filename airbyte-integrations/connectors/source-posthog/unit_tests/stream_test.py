@@ -2,12 +2,10 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
+import pytest as pytest
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
-import pytest as pytest
 from airbyte_cdk.models import SyncMode
-
 from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import ParentStreamConfig
 from airbyte_cdk.sources.streams.core import Stream
 
@@ -58,7 +56,9 @@ class MockStream(Stream):
         else:
             yield from [r for r in self._records if r["slice"] == stream_slice["slice"]]
 
+
 state = {"2331": {"timestamp": "2021-12-10T10:21:35.003000+00:00"}}
+
 
 @pytest.mark.parametrize(
     "test_name, stream_slice, last_record, expected_state",
@@ -66,7 +66,6 @@ state = {"2331": {"timestamp": "2021-12-10T10:21:35.003000+00:00"}}
         ("test_update_cursor_no_state_no_record", {}, {}, {}),
         ("test_update_cursor_with_initial_state", state, {}, state),
         ("test_update_cursor_with_new_record", {"project_id": "2331"}, {"timestamp": "2021-12-10T10:21:35.003000+00:00"}, state),
-        # ("test_update_cursor_with_state_single_parent", {"first_stream_id": "1234"}, {"timestamp": ""}, {"first_stream_id": "1234"}),
     ],
 )
 def test_update_cursor(test_name, stream_slice, last_record, expected_state):
@@ -86,6 +85,7 @@ def test_update_cursor(test_name, stream_slice, last_record, expected_state):
 
 
 config = {"start_date": "2020-01-01"}
+
 
 @pytest.mark.parametrize(
     "test_name, stream_state, stream_slice, expected_request_params",
