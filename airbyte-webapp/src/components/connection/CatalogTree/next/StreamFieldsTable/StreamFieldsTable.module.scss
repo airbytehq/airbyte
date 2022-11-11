@@ -1,7 +1,85 @@
 @use "scss/colors";
 
+$icon-size: 28px;
+
+.headerGroupCell {
+  height: 58px;
+  background-color: colors.$white;
+  color: colors.$dark-blue;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 28px;
+  text-transform: capitalize;
+
+  &:last-child {
+    padding-left: 0;
+  }
+}
+
+.connectorIconContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon {
+  height: $icon-size;
+  width: $icon-size;
+}
+
 .headerCell {
-  margin: 10px;
   color: colors.$grey;
   background-color: colors.$grey-50;
+  height: 28px;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 15px;
+
+  &:first-child {
+    padding-left: 45px;
+    border-radius: 0;
+  }
+
+  &:last-child {
+    padding-left: 0;
+    border-radius: 0;
+  }
+}
+
+%bodyCell {
+  height: 28px;
+  padding: 0;
+
+  &:first-child {
+    padding-left: 45px;
+    border-radius: 0;
+  }
+}
+
+.textCell {
+  @extend %bodyCell;
+
+  color: colors.$dark-blue;
+}
+
+.dataTypeCell {
+  @extend %bodyCell;
+
+  color: colors.$grey-400;
+}
+
+.arrowCell {
+  @extend %bodyCell;
+
+  font-size: 16px;
+  color: colors.$grey-400;
+}
+
+.checkboxCell {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  overflow: unset;
+  padding-left: 0;
 }
