@@ -5,7 +5,6 @@ import { Overlay } from "components/ui/Overlay";
 
 import { AirbyteStream } from "core/request/AirbyteClient";
 
-import { StreamConnectionHeader } from "./StreamConnectionHeader";
 import styles from "./StreamDetailsPanel.module.scss";
 import { StreamFieldsTable, StreamFieldsTableProps } from "./StreamFieldsTable/StreamFieldsTable";
 import { StreamPanelHeader } from "./StreamPanelHeader";
@@ -40,7 +39,6 @@ export const StreamDetailsPanel: React.FC<StreamDetailsPanelProps> = ({
           onClose={onClose}
           onSelectedChange={onSelectedChange}
         />
-        <StreamConnectionHeader />
         <StreamFieldsTable
           config={config}
           syncSchemaFields={syncSchemaFields}
