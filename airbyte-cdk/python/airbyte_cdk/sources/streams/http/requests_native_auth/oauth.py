@@ -63,7 +63,7 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
 
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         return self._refresh_request_body
-    
+
     def get_grant_type(self) -> str:
         return self._grant_type
 
