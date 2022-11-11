@@ -67,9 +67,6 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
     def get_grant_type(self) -> str:
         return self._grant_type
 
-    def get_grant_type(self) -> str:
-        return self._grant_type
-
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return self._token_expiry_date
 
