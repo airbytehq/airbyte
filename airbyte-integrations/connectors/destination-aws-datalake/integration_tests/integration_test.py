@@ -94,6 +94,7 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     # make sure we start with empty tables
     for tbl in [append_stream, overwrite_stream]:
         wr.catalog.delete_table_if_exists(database=config["lakeformation_database_name"], table=tbl)
+        wr.s3.delete_objects(path=f"s3://{config['bucket_name']}/{config['lakeformation_database_name']}/{tbl}")
 
     first_state_message = _state({"state": "1"})
 
@@ -116,11 +117,11 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     # Check if table was created
     for tbl in [append_stream, overwrite_stream]:
         table = wr.catalog.table(database=config["lakeformation_database_name"], table=tbl)
-        expected_types = {"str_col": "string", "int_col": "bigint", "date_col": "timestamp"}
+        expected_types = {"string_col": "string", "int_col": "bigint", "date_col": "timestamp"}
 
         # Check table format
         for col in table.to_dict('records'):
-            assert col['Column Name'] in ['str_col', 'int_col', 'date_col']
+            assert col['Column Name'] in ['string_col', 'int_col', 'date_col']
             assert col['Type'] == expected_types[col['Column Name']]
 
         # Check table data
