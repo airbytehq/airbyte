@@ -151,6 +151,16 @@ def test_check_wrong_reader_options(source, config):
     config["reader_options"] = '{encoding":"utf_16"}'
     with pytest.raises(Exception):
         source.check(logger=logger, config=config)
+    assert source.check(logger=logger, config=config) == AirbyteConnectionStatus(
+        status=Status.FAILED, message="reader_options is not valid JSON"
+    )
+
+def test_check_google_spreadsheets_url(source, config):
+    config["url"] = "https://docs.google.com/spreadsheets/d/"
+    assert source.check(logger=logger, config=config) == AirbyteConnectionStatus(
+        status=Status.FAILED,
+        message="Failed to load https://docs.google.com/spreadsheets/d/: please use the Official Google Sheets Source connector",
+    )
 
 
 def test_pandas_header_not_none(absolute_path, test_files):

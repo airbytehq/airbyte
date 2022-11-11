@@ -14,7 +14,7 @@ jobs:
       command: ${{ steps.regex.outputs.first_match }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -97,7 +97,7 @@ jobs:
           comment-id: ${{ needs.set-params.outputs.comment-id }}
           reactions: eyes, rocket
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{  needs.set-params.outputs.repo }}
           ref: ${{  needs.set-params.outputs.ref }}

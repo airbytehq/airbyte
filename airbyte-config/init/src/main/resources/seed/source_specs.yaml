@@ -2474,6 +2474,32 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-configcat:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/configcat"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Configcat Spec"
+      type: "object"
+      required:
+      - "username"
+      - "password"
+      additionalProperties: true
+      properties:
+        username:
+          title: "Username"
+          type: "string"
+          description: "Basic auth user name. See <a href=\"https://api.configcat.com/docs/#section/Authentication\"\
+            >here</a>."
+        password:
+          title: "Password"
+          type: "string"
+          description: "Basic auth password. See <a href=\"https://api.configcat.com/docs/#section/Authentication\"\
+            >here</a>."
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-confluence:0.1.1"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -3636,7 +3662,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.29"
+- dockerImage: "airbyte/source-file:0.2.30"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
@@ -4068,7 +4094,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.3.7"
+- dockerImage: "airbyte/source-github:0.3.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -4271,6 +4297,235 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-gnews:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/gnews"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Gnews Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "query"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          title: "API Key"
+          description: "API Key"
+          order: 0
+          airbyte_secret: true
+        query:
+          type: "string"
+          order: 1
+          title: "Query"
+          description: "This parameter allows you to specify your search keywords\
+            \ to find the news articles you are looking for. The keywords will be\
+            \ used to return the most relevant articles. It is possible to use logical\
+            \ operators  with keywords. - Phrase Search Operator: This operator allows\
+            \ you to make an exact search. Keywords surrounded by \n  quotation marks\
+            \ are used to search for articles with the exact same keyword sequence.\
+            \ \n  For example the query: \"Apple iPhone\" will return articles matching\
+            \ at least once this sequence of keywords.\n- Logical AND Operator: This\
+            \ operator allows you to make sure that several keywords are all used\
+            \ in the article\n  search. By default the space character acts as an\
+            \ AND operator, it is possible to replace the space character \n  by AND\
+            \ to obtain the same result. For example the query: Apple Microsoft is\
+            \ equivalent to Apple AND Microsoft\n- Logical OR Operator: This operator\
+            \ allows you to retrieve articles matching the keyword a or the keyword\
+            \ b.\n  It is important to note that this operator has a higher precedence\
+            \ than the AND operator. For example the \n  query: Apple OR Microsoft\
+            \ will return all articles matching the keyword Apple as well as all articles\
+            \ matching \n  the keyword Microsoft\n- Logical NOT Operator: This operator\
+            \ allows you to remove from the results the articles corresponding to\
+            \ the\n  specified keywords. To use it, you need to add NOT in front of\
+            \ each word or phrase surrounded by quotes.\n  For example the query:\
+            \ Apple NOT iPhone will return all articles matching the keyword Apple\
+            \ but not the keyword\n  iPhone"
+          examples:
+          - "Microsoft Windows 10"
+          - "Apple OR Microsoft"
+          - "Apple AND NOT iPhone"
+          - "(Windows 7) AND (Windows 10)"
+          - "Intel AND (i7 OR i9)"
+        language:
+          type: "string"
+          title: "Language"
+          decription: "This parameter allows you to specify the language of the news\
+            \ articles returned by the API.  You have to set as value the 2 letters\
+            \ code of the language you want to filter."
+          order: 2
+          enum:
+          - "ar"
+          - "zh"
+          - "nl"
+          - "en"
+          - "fr"
+          - "de"
+          - "el"
+          - "he"
+          - "hi"
+          - "it"
+          - "ja"
+          - "ml"
+          - "mr"
+          - "no"
+          - "pt"
+          - "ro"
+          - "ru"
+          - "es"
+          - "sv"
+          - "ta"
+          - "te"
+          - "uk"
+        country:
+          type: "string"
+          title: "Country"
+          description: "This parameter allows you to specify the country where the\
+            \ news articles returned by the API were published, the contents of the\
+            \ articles are not necessarily related to the specified country. You have\
+            \ to set as value the 2 letters code of the country you want to filter."
+          order: 3
+          enum:
+          - "au"
+          - "br"
+          - "ca"
+          - "cn"
+          - "eg"
+          - "fr"
+          - "de"
+          - "gr"
+          - "hk"
+          - "in"
+          - "ie"
+          - "il"
+          - "it"
+          - "jp"
+          - "nl"
+          - "no"
+          - "pk"
+          - "pe"
+          - "ph"
+          - "pt"
+          - "ro"
+          - "ru"
+          - "sg"
+          - "es"
+          - "se"
+          - "ch"
+          - "tw"
+          - "ua"
+          - "gb"
+          - "us"
+        in:
+          type: "array"
+          title: "In"
+          description: "This parameter allows you to choose in which attributes the\
+            \ keywords are searched. The attributes that can be set are title, description\
+            \ and content. It is possible to combine several attributes."
+          order: 4
+          items:
+            type: "string"
+            enum:
+            - "title"
+            - "description"
+            - "content"
+        nullable:
+          type: "array"
+          title: "Nullable"
+          description: "This parameter allows you to specify the attributes that you\
+            \ allow to return null values. The attributes that  can be set are title,\
+            \ description and content. It is possible to combine several attributes"
+          order: 5
+          items:
+            type: "string"
+            enum:
+            - "title"
+            - "description"
+            - "content"
+        start_date:
+          type: "string"
+          title: "Start Date"
+          description: "This parameter allows you to filter the articles that have\
+            \ a publication date greater than or equal to the  specified value. The\
+            \ date must respect the following format: YYYY-MM-DD hh:mm:ss (in UTC)"
+          order: 6
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$"
+          examples:
+          - "2022-08-21 16:27:09"
+        end_date:
+          type: "string"
+          title: "End Date"
+          description: "This parameter allows you to filter the articles that have\
+            \ a publication date smaller than or equal to the  specified value. The\
+            \ date must respect the following format: YYYY-MM-DD hh:mm:ss (in UTC)"
+          order: 6
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$"
+          examples:
+          - "2022-08-21 16:27:09"
+        sortby:
+          type: "string"
+          title: "Sort By"
+          description: "This parameter allows you to choose with which type of sorting\
+            \ the articles should be returned. Two values  are possible:\n  - publishedAt\
+            \ = sort by publication date, the articles with the most recent publication\
+            \ date are returned first\n  - relevance = sort by best match to keywords,\
+            \ the articles with the best match are returned first"
+          order: 7
+          enum:
+          - "publishedAt"
+          - "relevance"
+        top_headlines_query:
+          type: "string"
+          order: 8
+          title: "Top Headlines Query"
+          description: "This parameter allows you to specify your search keywords\
+            \ to find the news articles you are looking for. The keywords will be\
+            \ used to return the most relevant articles. It is possible to use logical\
+            \ operators  with keywords. - Phrase Search Operator: This operator allows\
+            \ you to make an exact search. Keywords surrounded by \n  quotation marks\
+            \ are used to search for articles with the exact same keyword sequence.\
+            \ \n  For example the query: \"Apple iPhone\" will return articles matching\
+            \ at least once this sequence of keywords.\n- Logical AND Operator: This\
+            \ operator allows you to make sure that several keywords are all used\
+            \ in the article\n  search. By default the space character acts as an\
+            \ AND operator, it is possible to replace the space character \n  by AND\
+            \ to obtain the same result. For example the query: Apple Microsoft is\
+            \ equivalent to Apple AND Microsoft\n- Logical OR Operator: This operator\
+            \ allows you to retrieve articles matching the keyword a or the keyword\
+            \ b.\n  It is important to note that this operator has a higher precedence\
+            \ than the AND operator. For example the \n  query: Apple OR Microsoft\
+            \ will return all articles matching the keyword Apple as well as all articles\
+            \ matching \n  the keyword Microsoft\n- Logical NOT Operator: This operator\
+            \ allows you to remove from the results the articles corresponding to\
+            \ the\n  specified keywords. To use it, you need to add NOT in front of\
+            \ each word or phrase surrounded by quotes.\n  For example the query:\
+            \ Apple NOT iPhone will return all articles matching the keyword Apple\
+            \ but not the keyword\n  iPhone"
+          examples:
+          - "Microsoft Windows 10"
+          - "Apple OR Microsoft"
+          - "Apple AND NOT iPhone"
+          - "(Windows 7) AND (Windows 10)"
+          - "Intel AND (i7 OR i9)"
+        top_headlines_topic:
+          type: "string"
+          title: "Top Headlines Topic"
+          description: "This parameter allows you to change the category for the request."
+          order: 9
+          enum:
+          - "breaking-news"
+          - "world"
+          - "nation"
+          - "business"
+          - "technology"
+          - "entertainment"
+          - "sports"
+          - "science"
+          - "health"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-gocardless:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gocardless"
@@ -4319,7 +4574,42 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.2.3"
+- dockerImage: "airbyte/source-gong:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/gong"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Gong Spec"
+      type: "object"
+      required:
+      - "access_key"
+      - "access_key_secret"
+      additionalProperties: true
+      properties:
+        access_key:
+          type: "string"
+          title: "Gong Access Key"
+          description: "Gong Access Key"
+          airbyte_secret: true
+        access_key_secret:
+          type: "string"
+          title: "Gong Access Key Secret"
+          description: "Gong Access Key Secret"
+          airbyte_secret: true
+        start_date:
+          type: "string"
+          title: "Start date"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          description: "The date from which to list calls, in the ISO-8601 format;\
+            \ if not specified, the calls start with the earliest recorded call. For\
+            \ web-conference calls recorded by Gong, the date denotes its scheduled\
+            \ time, otherwise, it denotes its actual start time."
+          examples:
+          - "2018-02-18T08:00:00Z"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-google-ads:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -5754,6 +6044,32 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
+- dockerImage: "airbyte/source-ip2whois:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/ip2whois"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Ip2whois Spec"
+      type: "object"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API key"
+          type: "string"
+          description: "Your API Key. See <a href=\"https://www.ip2whois.com/developers-api\"\
+            >here</a>."
+          airbyte_secret: true
+        domain:
+          title: "Domain"
+          type: "string"
+          description: "Domain name. See <a href=\"https://www.ip2whois.com/developers-api\"\
+            >here</a>."
+          examples:
+          - "www.google.com"
+          - "www.facebook.com"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-iterable:0.1.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/iterable"
@@ -5832,7 +6148,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-jira:0.2.23"
+- dockerImage: "airbyte/source-jira:0.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/jira"
     connectionSpecification:
@@ -5862,11 +6178,6 @@
           type: "string"
           title: "Email"
           description: "The user email for your Jira account."
-        max_results:
-          type: "integer"
-          title: "Max Results"
-          description: "Pagination max results (only for users stream)"
-          default: 50
         projects:
           type: "array"
           title: "Projects"
@@ -5913,6 +6224,26 @@
             \ Jira API endpoints. See https://docs.airbyte.com/integrations/sources/jira#experimental-tables\
             \ for more info."
           default: false
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-k6-cloud:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/k6-cloud"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "K6 Cloud Spec"
+      type: "object"
+      required:
+      - "api_token"
+      additionalProperties: true
+      properties:
+        api_token:
+          title: "Api Token"
+          type: "string"
+          description: "Your API Token. See <a href=\"https://k6.io/docs/cloud/integrations/token/\"\
+            >here</a>. The key is case sensitive."
+          airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -6325,6 +6656,26 @@
           examples:
           - "2022-03-01"
           pattern: "^(?:(\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01]))|)$"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-launchdarkly:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/launchdarkly"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Launchdarkly Spec"
+      type: "object"
+      required:
+      - "access_token"
+      additionalProperties: true
+      properties:
+        access_token:
+          title: "Access token"
+          type: "string"
+          description: "Your Access token. See <a href=\"https://apidocs.launchdarkly.com/#section/Overview/Authentication\"\
+            >here</a>."
+          airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -7892,7 +8243,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.11"
+- dockerImage: "airbyte/source-mysql:1.0.12"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -8573,6 +8924,211 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-newsdata:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/newsdata"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Newsdata Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          description: "API Key"
+          airbyte_secret: true
+          order: 0
+        OneOf:
+          query:
+            type: "string"
+            description: "Keywords or phrases to search for in the news title and\
+              \ content. Advanced Search options:\n  - Search `Social`: query = \"\
+              social\"\n  - Search `Social Pizza`: query = \"social pizza\"\n  - Search\
+              \ `Social` but not with `pizza`: query = \"social -pizza\"\n  - Search\
+              \ `Social` but not with `pizza` and `wildfire`: query = \"social -pizza\
+              \ -wildfire\"\n  - Search `Social` and `pizza`: query = \"social AND\
+              \ pizza\"\n  - Search `Social` and `pizza` and `pasta`: query = \"social\
+              \ AND pizza AND pasta\"\n  - Search `Social` or `pizza`: query = \"\
+              social OR pizza\"\n  - Search `Social` or `pizza` but not `pasta`: query\
+              \ = \"social OR pizza -pasta\"\n  - Search `Social` or `pizza` or `pasta`:\
+              \ query = \"social OR pizza OR pasta\"\nNote: You can't use AND and\
+              \ OR in the same query."
+            order: 1
+          query_in_title:
+            type: "string"
+            description: "Same as `query`, but restricting the search to only the\
+              \ news title. It cannot be used along with `query`."
+            order: 1
+        domain:
+          type: "array"
+          description: "Domains (maximum 5) to restrict the search to. Use the sources\
+            \ stream to find top sources id."
+          maxitems: 5
+          items:
+            type: "string"
+          order: 2
+        country:
+          type: "array"
+          description: "2-letter ISO 3166-1 countries (maximum 5) to restrict the\
+            \ search to."
+          maxitems: 5
+          order: 3
+          items:
+            type: "string"
+            enum:
+            - "ar"
+            - "au"
+            - "at"
+            - "bd"
+            - "by"
+            - "be"
+            - "br"
+            - "bg"
+            - "ca"
+            - "cl"
+            - "cn"
+            - "co"
+            - "cr"
+            - "cu"
+            - "cz"
+            - "dk"
+            - "do"
+            - "ec"
+            - "eg"
+            - "ee"
+            - "et"
+            - "fi"
+            - "fr"
+            - "de"
+            - "gr"
+            - "hk"
+            - "hu"
+            - "in"
+            - "id"
+            - "iq"
+            - "ie"
+            - "il"
+            - "it"
+            - "jp"
+            - "kz"
+            - "kw"
+            - "lv"
+            - "lb"
+            - "lt"
+            - "my"
+            - "mx"
+            - "ma"
+            - "mm"
+            - "nl"
+            - "nz"
+            - "ng"
+            - "kp"
+            - "no"
+            - "pk"
+            - "pe"
+            - "ph"
+            - "pl"
+            - "pt"
+            - "pr"
+            - "ro"
+            - "ru"
+            - "sa"
+            - "rs"
+            - "sg"
+            - "sk"
+            - "si"
+            - "za"
+            - "kr"
+            - "es"
+            - "se"
+            - "ch"
+            - "tw"
+            - "tz"
+            - "th"
+            - "tr"
+            - "ua"
+            - "ae"
+            - "gb"
+            - "us"
+            - "ve"
+            - "vi"
+        category:
+          type: "array"
+          description: "Categories (maximum 5) to restrict the search to."
+          maxitems: 5
+          order: 4
+          items:
+            type: "string"
+            enum:
+            - "business"
+            - "entertainment"
+            - "environment"
+            - "food"
+            - "health"
+            - "politics"
+            - "science"
+            - "sports"
+            - "technology"
+            - "top"
+            - "world"
+        language:
+          type: "array"
+          description: "Languages (maximum 5) to restrict the search to."
+          maxitems: 5
+          order: 5
+          items:
+            type: "string"
+            enum:
+            - "be"
+            - "am"
+            - "ar"
+            - "bn"
+            - "bs"
+            - "bg"
+            - "my"
+            - "ckb"
+            - "zh"
+            - "hr"
+            - "cs"
+            - "da"
+            - "nl"
+            - "en"
+            - "et"
+            - "fi"
+            - "fr"
+            - "de"
+            - "el"
+            - "he"
+            - "hi"
+            - "hu"
+            - "in"
+            - "it"
+            - "jp"
+            - "ko"
+            - "lv"
+            - "lt"
+            - "ms"
+            - "no"
+            - "pl"
+            - "pt"
+            - "ro"
+            - "ru"
+            - "sr"
+            - "sk"
+            - "sl"
+            - "es"
+            - "sw"
+            - "sv"
+            - "th"
+            - "tr"
+            - "uk"
+            - "ur"
+            - "vi"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-notion:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/notion"
@@ -8653,6 +9209,62 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "access_token"
+- dockerImage: "airbyte/source-nytimes:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/nytimes"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Nytimes Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "start_date"
+      - "period"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          title: "API Key"
+          description: "API Key"
+          airbyte_secret: true
+          order: 0
+        start_date:
+          type: "string"
+          title: "Start Date"
+          description: "Start date to begin the article retrieval (format YYYY-MM)"
+          pattern: "^[0-9]{4}-[0-9]{2}$"
+          examples:
+          - "2022-08"
+          - "1851-01"
+          order: 1
+        end_date:
+          type: "string"
+          title: "End Date"
+          description: "End date to stop the article retrieval (format YYYY-MM)"
+          pattern: "^[0-9]{4}-[0-9]{2}$"
+          examples:
+          - "2022-08"
+          - "1851-01"
+          order: 2
+        period:
+          type: "integer"
+          title: "Period (used for Most Popular streams)"
+          description: "Period of time (in days)"
+          order: 3
+          enum:
+          - 1
+          - 7
+          - 30
+        share_type:
+          type: "string"
+          title: "Share Type (used for Most Popular Shared stream)"
+          description: "Share Type"
+          order: 4
+          enum:
+          - "facebook"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-okta:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/okta"
@@ -9819,6 +10431,100 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-pocket:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/pocket"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Pocket Spec"
+      type: "object"
+      required:
+      - "consumer_key"
+      - "access_token"
+      additionalProperties: true
+      properties:
+        consumer_key:
+          type: "string"
+          title: "Consumer Key"
+          description: "Your application's Consumer Key."
+          airbyte_secret: true
+          order: 0
+        access_token:
+          type: "string"
+          title: "Access Token"
+          description: "The user's Pocket access token."
+          airbyte_secret: true
+          order: 1
+        state:
+          type: "string"
+          title: "State"
+          description: "Select the state of the items to retrieve."
+          order: 2
+          enum:
+          - "unread"
+          - "archive"
+          - "all"
+        favorite:
+          type: "boolean"
+          title: "Is Favorite?"
+          description: "Retrieve only favorited items."
+          default: false
+          order: 3
+        tag:
+          type: "string"
+          title: "Tag Name"
+          description: "Return only items tagged with this tag name. Use _untagged_\
+            \ for retrieving only untagged items."
+          order: 4
+        content_type:
+          type: "string"
+          title: "Content Type"
+          description: "Select the content type of the items to retrieve."
+          order: 5
+          enum:
+          - "article"
+          - "video"
+          - "image"
+        sort:
+          type: "string"
+          title: "Sort By"
+          description: "Sort retrieved items by the given criteria."
+          order: 6
+          enum:
+          - "newest"
+          - "oldest"
+          - "title"
+          - "site"
+        detail_type:
+          type: "string"
+          title: "Detail Type"
+          description: "Select the granularity of the information about each item."
+          order: 7
+          enum:
+          - "simple"
+          - "complete"
+        search:
+          type: "string"
+          title: "Search Query"
+          description: "Only return items whose title or url contain the `search`\
+            \ string."
+          order: 8
+        domain:
+          type: "string"
+          title: "Domain"
+          description: "Only return items from a particular `domain`."
+          order: 9
+        since:
+          type: "string"
+          title: "Since"
+          description: "Only return items modified since the given timestamp."
+          pattern: "[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}"
+          examples:
+          - "2022-10-20 14:14:14"
+          order: 10
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-pokeapi:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pokeapi"
@@ -9877,7 +10583,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.22"
+- dockerImage: "airbyte/source-postgres:1.0.23"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -10282,6 +10988,31 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-postmarkapp:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Postmarkapp Spec"
+      type: "object"
+      required:
+      - "X-Postmark-Server-Token"
+      - "X-Postmark-Account-Token"
+      additionalProperties: true
+      properties:
+        X-Postmark-Server-Token:
+          title: "X-Postmark-Server-Token"
+          type: "string"
+          description: "API Key for server"
+          airbyte_secret: true
+        X-Postmark-Account-Token:
+          title: "X-Postmark-Account-Token"
+          type: "string"
+          description: "API Key for account"
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-prestashop:0.2.0"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -10347,6 +11078,34 @@
       type: "object"
       required: []
       properties: {}
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-pypi:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/pypi"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Pypi Spec"
+      type: "object"
+      required:
+      - "project_name"
+      additionalProperties: true
+      properties:
+        project_name:
+          type: "string"
+          title: "PyPI Package"
+          description: "Name of the project/package. Can only be in lowercase with\
+            \ hyphen. This is the name used using pip command for installing the package."
+          examples:
+          - "sampleproject"
+        version:
+          title: "Package Version"
+          type: "string"
+          description: "Version of the project/package.  Use it to find a particular\
+            \ release instead of all releases."
+          examples:
+          - "1.2.0"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -10628,6 +11387,25 @@
             \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
           type: "string"
           order: 7
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-reply-io:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/reply-io"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Reply Io Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          title: "API Token"
+          description: "The API Token for Reply"
+          airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -11409,6 +12187,102 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-senseforce:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/senseforce"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Senseforce Source Spec"
+      type: "object"
+      required:
+      - "access_token"
+      - "backend_url"
+      - "dataset_id"
+      - "start_date"
+      additionalProperties: true
+      properties:
+        access_token:
+          type: "string"
+          title: "API Access Token"
+          description: "Your API access token. See <a href=\"https://manual.senseforce.io/manual/sf-platform/public-api/get-your-access-token/\"\
+            >here</a>. The toke is case sensitive."
+          airbyte_secret: true
+        backend_url:
+          type: "string"
+          title: "Senseforce backend URL"
+          examples:
+          - "https://galaxyapi.senseforce.io"
+          description: "Your Senseforce API backend URL. This is the URL shown during\
+            \ the Login screen. See <a href=\"https://manual.senseforce.io/manual/sf-platform/public-api/get-your-access-token/\"\
+            >here</a> for more details. (Note: Most Senseforce backend APIs have the\
+            \ term 'galaxy' in their ULR)"
+        dataset_id:
+          type: "string"
+          title: "Dataset ID"
+          examples:
+          - "8f418098-ca28-4df5-9498-0df9fe78eda7"
+          description: "The ID of the dataset you want to synchronize. The ID can\
+            \ be found in the URL when opening the dataset. See <a href=\"https://manual.senseforce.io/manual/sf-platform/public-api/get-your-access-token/\"\
+            >here</a> for more details. (Note: As the Senseforce API only allows to\
+            \ synchronize a specific dataset, each dataset you  want to synchronize\
+            \ needs to be implemented as a separate airbyte source)."
+        start_date:
+          type: "string"
+          title: "The first day (in UTC) when to read data from."
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          description: "UTC date and time in the format 2017-01-25. Only data with\
+            \ \"Timestamp\" after this date will be replicated. Important note: This\
+            \ start date must be set to the first day of where your dataset provides\
+            \ data.  If your dataset has data from 2020-10-10 10:21:10, set the start_date\
+            \ to 2020-10-10 or later"
+          examples:
+          - "2017-01-25"
+        slice_range:
+          type: "integer"
+          title: "Data request time increment in days"
+          default: 10
+          minimum: 1
+          maximum: 365
+          examples:
+          - 1
+          - 3
+          - 10
+          - 30
+          - 180
+          - 360
+          airbyte_hidden: true
+          description: "The time increment used by the connector when requesting data\
+            \ from the Senseforce API. The bigger the value is, the less requests\
+            \ will be made and faster the sync will be. On the other hand, the more\
+            \ seldom the state is persisted and the more likely one could run into\
+            \ rate limites.  Furthermore, consider that large chunks of time might\
+            \ take a long time for the Senseforce query to return data - meaning it\
+            \ could take in effect longer than with more smaller time slices. If there\
+            \ are a lot of data per day, set this setting to 1. If there is only very\
+            \ little data per day, you might change the setting to 10 or more."
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-sendinblue:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/sendinblue"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Sendinblue Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API Key"
+          type: "string"
+          description: "Your API Key. See <a href=\"https://developers.sendinblue.com/docs/getting-started\"\
+            >here</a>."
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-shopify:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/shopify"
@@ -11695,6 +12569,35 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
+- dockerImage: "airbyte/source-smaily:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/smaily"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Smaily Spec"
+      type: "object"
+      required:
+      - "api_subdomain"
+      - "api_username"
+      - "api_password"
+      additionalProperties: true
+      properties:
+        api_subdomain:
+          type: "string"
+          title: "API Subdomain"
+          description: "API Subdomain. See https://smaily.com/help/api/general/create-api-user/"
+        api_username:
+          type: "string"
+          title: "API User Username"
+          description: "API user username. See https://smaily.com/help/api/general/create-api-user/"
+        api_password:
+          type: "string"
+          title: "API User Password"
+          description: "API user password. See https://smaily.com/help/api/general/create-api-user/"
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-smartsheets:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/smartsheets"
@@ -11825,7 +12728,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.24"
+- dockerImage: "airbyte/source-snowflake:0.1.25"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snowflake"
     connectionSpecification:
@@ -11854,7 +12757,6 @@
               auth_type:
                 type: "string"
                 const: "OAuth"
-                default: "OAuth"
                 order: 0
               client_id:
                 type: "string"
@@ -11891,7 +12793,6 @@
               auth_type:
                 type: "string"
                 const: "username/password"
-                default: "username/password"
                 order: 0
               username:
                 description: "The username you created to allow Airbyte to access\
@@ -12312,6 +13213,26 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
+- dockerImage: "airbyte/source-statuspage:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/statuspage"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Statuspage Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API Key"
+          type: "string"
+          description: "Your API Key. See <a href=\"https://developer.statuspage.io/#section/Authentication/api_key\"\
+            >here</a>."
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-stripe:0.1.40"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
@@ -12858,6 +13779,54 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-toggl:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/toggl"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Toggl Spec"
+      type: "object"
+      required:
+      - "api_token"
+      - "organization_id"
+      - "workspace_id"
+      - "start_date"
+      - "end_date"
+      additionalProperties: true
+      properties:
+        api_token:
+          title: "API token"
+          type: "string"
+          description: "Your API Token. See <a href=\"https://developers.track.toggl.com/docs/authentication\"\
+            >here</a>. The token is case sensitive."
+          airbyte_secret: true
+        organization_id:
+          title: "Organization ID"
+          type: "integer"
+          description: "Your organization id. See <a href=\"https://developers.track.toggl.com/docs/organization\"\
+            >here</a>."
+        workspace_id:
+          title: "Workspace ID"
+          type: "integer"
+          description: "Your workspace id. See <a href=\"https://developers.track.toggl.com/docs/workspaces\"\
+            >here</a>."
+        start_date:
+          title: "Start date"
+          type: "string"
+          description: "To retrieve time entries created after the given date (inclusive)."
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          examples:
+          - "YYYY-MM-DD"
+        end_date:
+          title: "End date"
+          type: "string"
+          description: "To retrieve time entries created before the given date (inclusive)."
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          examples:
+          - "YYYY-MM-DD"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-the-guardian-api:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/the-guardian-api"
@@ -13196,6 +14165,55 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
+- dockerImage: "airbyte/source-youtube-analytics-business:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/youtube-analytics-business"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "YouTube Analytics Business Spec"
+      type: "object"
+      required:
+      - "credentials"
+      additionalProperties: true
+      properties:
+        credentials:
+          title: "Authenticate via OAuth 2.0"
+          type: "object"
+          required:
+          - "client_id"
+          - "client_secret"
+          - "refresh_token"
+          additionalProperties: true
+          properties:
+            client_id:
+              title: "Client ID"
+              type: "string"
+              description: "The Client ID of your developer application"
+              airbyte_secret: true
+            client_secret:
+              title: "Client Secret"
+              type: "string"
+              description: "The client secret of your developer application"
+              airbyte_secret: true
+            refresh_token:
+              title: "Refresh Token"
+              type: "string"
+              description: "A refresh token generated using the above client ID and\
+                \ secret"
+              airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+    authSpecification:
+      auth_type: "oauth2.0"
+      oauth2Specification:
+        rootObject:
+        - "credentials"
+        oauthFlowInitParameters:
+        - - "client_id"
+        - - "client_secret"
+        oauthFlowOutputParameters:
+        - - "refresh_token"
 - dockerImage: "farosai/airbyte-victorops-source:0.1.23"
   spec:
     documentationUrl: "https://docs.faros.ai"
@@ -13265,6 +14283,53 @@
       title: "Xkcd Spec"
       type: "object"
       properties: {}
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-weatherstack:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/weatherstack"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Weatherstack Spec"
+      type: "object"
+      required:
+      - "access_key"
+      - "query"
+      - "historical_date"
+      properties:
+        is_paid_account:
+          order: 0
+          title: "Is Paid Account"
+          description: "Toggle if you're using a <a href=\"https://weatherstack.com/product\"\
+            >Paid subscription</a>"
+          type: "boolean"
+          default: false
+        access_key:
+          order: 1
+          type: "string"
+          description: "API access key used to retrieve data from the Weatherstack\
+            \ API.(https://weatherstack.com/product)"
+          airbyte_secret: true
+        query:
+          order: 2
+          type: "string"
+          description: "A location to query such as city, IP, latitudeLongitude, or\
+            \ zipcode. Multiple locations with semicolon seperated if using a professional\
+            \ plan or higher. For more info- (https://weatherstack.com/documentation#query_parameter)"
+          examples:
+          - "New York"
+          - "London"
+          - "98101"
+        historical_date:
+          order: 3
+          type: "string"
+          description: "This is required for enabling the Historical date API with\
+            \ format- (YYYY-MM-DD). * Note, only supported by paid accounts"
+          examples:
+          - "2015-01-21"
+          default": "2000-01-01"
+          pattern: "[0-9]{4}-[0-9]{2}-[0-9]{2}"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -14721,6 +15786,40 @@
           examples:
           - "2022-01-01"
           order: 3
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-younium:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/younium"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Younium Spec"
+      type: "object"
+      required:
+      - "username"
+      - "password"
+      - "legal_entity"
+      properties:
+        username:
+          title: "Username"
+          type: "string"
+          description: "Username for Younium account"
+        password:
+          title: "Password"
+          type: "string"
+          description: "Account password for younium account API key"
+          airbyte_secret: true
+        legal_entity:
+          title: "Legal Entity"
+          type: "string"
+          description: "Legal Entity that data should be pulled from"
+        playground:
+          title: "Playground environment"
+          type: "boolean"
+          description: "Property defining if connector is used against playground\
+            \ or production environment"
+          default: false
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []

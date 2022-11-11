@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.1
+Low-code: Don't update cursor for non-record messages and fix default loader for connector builder manifests
+
+## 0.8.0
+Low-code: Allow for request and response to be emitted as log messages
+
 ## 0.7.1
 Low-code: Decouple yaml manifest parsing from the declarative source implementation
 
