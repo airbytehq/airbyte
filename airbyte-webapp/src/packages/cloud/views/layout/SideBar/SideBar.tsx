@@ -2,6 +2,7 @@ import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
 import { faDesktop, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
 import React from "react";
 import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import { NavLink } from "react-router-dom";
@@ -9,6 +10,7 @@ import { NavLink } from "react-router-dom";
 import { Link } from "components";
 import { CreditsIcon } from "components/icons/CreditsIcon";
 import { DocsIcon } from "components/icons/DocsIcon";
+import { DropdownMenu } from "components/ui/DropdownMenu";
 import { Text } from "components/ui/Text";
 
 import { useExperiment } from "hooks/services/Experiment";
@@ -25,7 +27,6 @@ import ConnectionsIcon from "views/layout/SideBar/components/ConnectionsIcon";
 import DestinationIcon from "views/layout/SideBar/components/DestinationIcon";
 import OnboardingIcon from "views/layout/SideBar/components/OnboardingIcon";
 import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
-import { SidebarDropdownMenu, SidebarDropdownMenuItemType } from "views/layout/SideBar/components/SidebarDropdownMenu";
 import SourceIcon from "views/layout/SideBar/components/SourceIcon";
 import StatusIcon from "views/layout/SideBar/components/StatusIcon";
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
@@ -39,9 +40,9 @@ const SideBar: React.FC = () => {
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
   const { show } = useIntercom();
-  const handleChatUs = () => show();
-  const hideOnboardingExperiment = useExperiment("onboarding.hideOnboarding", false);
   const { formatMessage } = useIntl();
+  const hideOnboardingExperiment = useExperiment("onboarding.hideOnboarding", false);
+  const handleChatUs = () => show();
 
   return (
     <nav className={styles.nav}>
@@ -108,57 +109,75 @@ const SideBar: React.FC = () => {
           </NavLink>
         </li>
         <li>
-          <SidebarDropdownMenu
-            label={{ icon: <DocsIcon />, displayName: <FormattedMessage id="sidebar.resources" /> }}
+          <DropdownMenu
+            placement="right"
+            displacement={10}
             options={[
               {
-                type: SidebarDropdownMenuItemType.LINK,
+                as: "a",
                 href: links.docsLink,
                 icon: <DocsIcon />,
-                displayName: <FormattedMessage id="sidebar.documentation" />,
+                displayName: formatMessage({ id: "sidebar.documentation" }),
               },
               {
-                type: SidebarDropdownMenuItemType.LINK,
+                as: "a",
                 href: links.slackLink,
                 icon: <FontAwesomeIcon icon={faSlack} />,
-                displayName: <FormattedMessage id="sidebar.joinSlack" />,
+                displayName: formatMessage({ id: "sidebar.joinSlack" }),
               },
               {
-                type: SidebarDropdownMenuItemType.LINK,
+                as: "a",
                 href: links.statusLink,
                 icon: <StatusIcon />,
-                displayName: <FormattedMessage id="sidebar.status" />,
+                displayName: formatMessage({ id: "sidebar.status" }),
               },
               {
-                type: SidebarDropdownMenuItemType.LINK,
+                as: "a",
                 href: links.demoLink,
                 icon: <FontAwesomeIcon icon={faDesktop} />,
-                displayName: <FormattedMessage id="sidebar.demo" />,
+                displayName: formatMessage({ id: "sidebar.demo" }),
               },
             ]}
-          />
+          >
+            {({ open }) => (
+              <button className={classNames(styles.dropdownMenuButton, { [styles.open]: open })}>
+                <DocsIcon />
+                <Text className={styles.text} size="sm">
+                  <FormattedMessage id="sidebar.resources" />
+                </Text>
+              </button>
+            )}
+          </DropdownMenu>
         </li>
         <li>
-          <SidebarDropdownMenu
-            label={{
-              icon: <FontAwesomeIcon icon={faQuestionCircle} size="2x" />,
-              displayName: <FormattedMessage id="sidebar.support" />,
-            }}
+          <DropdownMenu
+            placement="right"
+            displacement={10}
             options={[
               {
-                type: SidebarDropdownMenuItemType.LINK,
+                as: "a",
                 href: links.supportTicketLink,
                 icon: <FontAwesomeIcon icon={faEnvelope} />,
-                displayName: <FormattedMessage id="sidebar.supportTicket" />,
+                displayName: formatMessage({ id: "sidebar.supportTicket" }),
               },
               {
-                type: SidebarDropdownMenuItemType.BUTTON,
-                onClick: handleChatUs,
+                as: "button",
                 icon: <ChatIcon />,
-                displayName: <FormattedMessage id="sidebar.chat" />,
+                value: "chatUs",
+                displayName: formatMessage({ id: "sidebar.chat" }),
               },
             ]}
-          />
+            onChange={(data) => data.value === "chatUs" && handleChatUs}
+          >
+            {({ open }) => (
+              <button className={classNames(styles.dropdownMenuButton, { [styles.open]: open })}>
+                <FontAwesomeIcon icon={faQuestionCircle} size="2x" />
+                <Text className={styles.text} size="sm">
+                  <FormattedMessage id="sidebar.support" />
+                </Text>
+              </button>
+            )}
+          </DropdownMenu>
         </li>
         <li>
           <NavLink className={navLinkClassName} to={RoutePaths.Settings}>
