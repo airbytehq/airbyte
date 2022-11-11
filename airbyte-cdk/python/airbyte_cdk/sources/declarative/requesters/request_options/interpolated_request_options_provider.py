@@ -56,7 +56,7 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider, JsonSchemaMixin
             config=self.config, request_inputs=self.request_body_data, options=options
         )
         self._body_json_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_body_json, options=options, filter_items=False
+            config=self.config, request_inputs=self.request_body_json, options=options
         )
 
     def get_request_params(

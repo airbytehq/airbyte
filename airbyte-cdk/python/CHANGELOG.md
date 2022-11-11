@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.8.2
-Low-code: Don't filter falsy interpolated vars for `request_options_provider.request_body_json`
+Low-code: Fix filtering vars in `InterpolatedRequestInputProvider.eval_request_inputs`
 
 ## 0.8.1
 Low-code: Don't update cursor for non-record messages and fix default loader for connector builder manifests
