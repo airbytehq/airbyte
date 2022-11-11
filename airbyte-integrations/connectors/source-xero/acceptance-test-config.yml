@@ -14,19 +14,7 @@ tests:
   basic_read:
     - config_path: "integration_tests/sample_config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams:
-      - name: "manual_journals"
-        bypass_reason: "no items in demo company"
-      - name: "credit_notes"
-        bypass_reason: "no items in demo company"
-      - name: "overpayments"
-        bypass_reason: "no items in demo company"
-      - name: "bank_transfers"
-        bypass_reason: "no items in demo company"
-      - name: "purchase_orders"
-        bypass_reason: "no items in demo company"
-      - name: "prepayments"
-        bypass_reason: "no items in demo company"
+      empty_streams: ["manual_journals", "credit_notes", "overpayments", "bank_transfers",  "purchase_orders", "prepayments"]
   incremental:
     - config_path: "integration_tests/sample_config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
