@@ -1,0 +1,27 @@
+{
+  "type": [
+    "null",
+    "object"
+  ],
+  "properties": {
+    "Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "Amount": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "minimum": -1e+33,
+      "maximum": 1e+33
+    },
+    "Invoice": {
+      "$ref": "nested_invoice.json"
+    }
+  },
+  "additionalProperties": true
+}
