@@ -33,7 +33,7 @@ export const useAppMonitoringService = (): AppMonitoringServiceProviderValue => 
 /**
  * This implementation of the AppMonitoringService uses the datadog SDK to track errors and actions
  */
-export const AppMonitoringServiceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AppMonitoringServiceProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const trackAction = (action: string, context?: Record<string, unknown>) => {
     if (!datadogRum.getInternalContext()) {
       console.debug(`trackAction(${action}) failed because RUM is not initialized.`);
