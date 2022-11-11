@@ -19,15 +19,12 @@ definitions:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%s"
     end_datetime:
-      datetime: "{{ now_utc() }}"
-      datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
+      datetime: "{{ now_utc().strftime('%s') }}"
+      datetime_format: "%s"
     step: "1d"
     cursor_field: "{{ options['stream_cursor_field'] }}"
     start_time_option:
       field_name: "date_from"
-      inject_into: "request_parameter"
-    end_time_option:
-      field_name: "date_to"
       inject_into: "request_parameter"
     datetime_format: "%s"
   paginator:

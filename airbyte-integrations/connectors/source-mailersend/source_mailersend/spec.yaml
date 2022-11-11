@@ -18,7 +18,8 @@ connectionSpecification:
         - airbyte.com
         - linkana.com
     start_date:
-      type: string
+      type: number
       description: Timestamp is assumed to be UTC. Must be lower than date_to.
       examples:
-        - "2022-11-06"
+        # - "2022-11-06"
+        - 123131321
