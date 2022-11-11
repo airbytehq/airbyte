@@ -82,7 +82,6 @@ class IncrementalUtilsTest {
     assertTrue(IncrementalUtils.compareCursors("false", "true", JsonSchemaPrimitive.BOOLEAN) < 0);
     assertTrue(IncrementalUtils.compareCursors(null, "def", JsonSchemaPrimitive.STRING) < 1);
     assertTrue(IncrementalUtils.compareCursors(ABC, null, JsonSchemaPrimitive.STRING) > 0);
-    assertTrue(IncrementalUtils.compareCursors("100", "1000", JsonSchemaPrimitive.INTEGER) < 0);
     Assertions.assertEquals(0, IncrementalUtils.compareCursors(null, null, JsonSchemaPrimitive.STRING));
     assertThrows(IllegalStateException.class, () -> IncrementalUtils.compareCursors("a", "a", JsonSchemaPrimitive.ARRAY));
     assertThrows(IllegalStateException.class, () -> IncrementalUtils.compareCursors("a", "a", JsonSchemaPrimitive.OBJECT));
