@@ -2,10 +2,10 @@
 
 ## Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
 
 This source syncs data from the [Airtable API](https://airtable.com/api).
 
@@ -33,7 +33,8 @@ See information about rate limits [here](https://support.airtable.com/hc/en-us/a
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-|:--------| :--------  | :-----       | :------ |
-| 0.1.2   | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                             |
-| 0.1.1   | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425) | Update title, description fields in spec |
+| Version | Date       | Pull Request                                             | Subject                                  |
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------- |
+| 0.1.3   | 2022-10-26 | [18491](https://github.com/airbytehq/airbyte/pull/18491) | Improve schema discovery logic           |
+| 0.1.2   | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy         |
+| 0.1.1   | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425)   | Update title, description fields in spec |

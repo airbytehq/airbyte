@@ -9,21 +9,21 @@ You can use OAuth, API key, or Private App to authenticate your HubSpot account.
 | Stream                      | Required Scope                                                                   |
 | :-------------------------- | :------------------------------------------------------------------------------- |
 | `campaigns`                 | `content`                                                                        |
-| `companies`                 | `contacts`                                                                       |
-| `contact_lists`             | `contacts`                                                                       |
-| `contacts`                  | `contacts`                                                                       |
-| `contacts_list_memberships` | `contacts`                                                                       |
-| `deal_pipelines`            | either the `contacts` scope \(to fetch deals pipelines\) or the `tickets` scope. |
-| `deals`                     | `contacts`                                                                       |
+| `companies`                 | `crm.objects.contacts.read`                                                      |
+| `contact_lists`             | `crm.objects.contacts.read`                                                      |
+| `contacts`                  | `crm.objects.contacts.read`                                                      |
+| `contacts_list_memberships` | `crm.objects.contacts.read`                                                      |
+| `deal_pipelines`            | either the `crm.objects.contacts.read` scope \(to fetch deals pipelines\) or the `tickets` scope. |
+| `deals`                     | `crm.objects.contacts.read`                                                      |
 | `email_events`              | `content`                                                                        |
-| `engagements`               | `contacts`                                                                       |
+| `engagements`               | `crm.objects.contacts.read`                                                      |
 | `engagements_emails`        | `sales-email-read`                                                               |
 | `forms`                     | `forms`                                                                          |
 | `form_submissions`          | `forms`                                                                          |
 | `line_items`                | `e-commerce`                                                                     |
-| `owners`                    | `contacts`                                                                       |
+| `owners`                    | `crm.objects.contacts.read`                                                      |
 | `products`                  | `e-commerce`                                                                     |
-| `property_history`          | `contacts`                                                                       |
+| `property_history`          | `crm.objects.contacts.read`                                                      |
 | `quotes`                    | no scope required                                                                |
 | `subscription_changes`      | `content`                                                                        |
 | `tickets`                   | `tickets`                                                                        |
@@ -131,7 +131,8 @@ Now that you have set up the Hubspot source connector, check out the following H
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.2   | 2022-10-03 | [16914](https://github.com/airbytehq/airbyte/pull/16914) | Fix 403 forbidden error validation                                                                                                             |
 | 0.2.1   | 2022-09-26 | [17120](https://github.com/airbytehq/airbyte/pull/17120) | Migrate to per-stream state.                                                                                                                   |
 | 0.2.0   | 2022-09-13 | [16632](https://github.com/airbytehq/airbyte/pull/16632) | Remove Feedback Submissions stream as the one using unstable (beta) API.                                                                       |
 | 0.1.83  | 2022-09-01 | [16214](https://github.com/airbytehq/airbyte/pull/16214) | Update Tickets, fix missing properties and change how state is updated.                                                                        |

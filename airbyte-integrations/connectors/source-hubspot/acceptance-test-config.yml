@@ -12,7 +12,7 @@ tests:
     - config_path: "integration_tests/invalid_config_oauth.json"
       status: "failed"
     - config_path: "integration_tests/invalid_config_wrong_title.json"
-      status: "exception"
+      status: "failed"
   discovery:
     - config_path: "secrets/config.json"
       backward_compatibility_tests_config:
@@ -40,6 +40,7 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/full_refresh_catalog.json"
       ignored_fields:
+        "contact_lists": [ "properties", "ilsFilterBranch" ]
         "companies": [ "properties", "hs_time_in_customer" ]
         "companies": [ "properties", "hs_time_in_evangelist" ]
         "companies": [ "properties", "hs_time_in_lead" ]
@@ -73,6 +74,7 @@ tests:
     - config_path: "secrets/config_oauth.json"
       configured_catalog_path: "sample_files/full_refresh_oauth_catalog.json"
       ignored_fields:
+        "contact_lists": [ "properties", "ilsFilterBranch" ]
         "companies": [ "properties", "hs_time_in_customer" ]
         "companies": [ "properties", "hs_time_in_evangelist" ]
         "companies": [ "properties", "hs_time_in_lead" ]

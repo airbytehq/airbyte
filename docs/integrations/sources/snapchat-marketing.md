@@ -97,7 +97,8 @@ Snapchat Marketing API has limitations to 1000 items per page.
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                               |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------|
+| 0.1.8   | 2022-10-05 | [17596](https://github.com/airbytehq/airbyte/pull/17596) | Retry 429 and 5xx errors when refreshing access token |
 | 0.1.6   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from specs        |
 | 0.1.5   | 2022-07-13 | [14577](https://github.com/airbytehq/airbyte/pull/14577) | Added stats streams hourly, daily, lifetime           |
 | 0.1.4   | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8429)   | Update titles and descriptions                        |

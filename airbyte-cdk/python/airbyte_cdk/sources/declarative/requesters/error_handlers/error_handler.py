@@ -26,7 +26,7 @@ class ErrorHandler(JsonSchemaMixin):
         pass
 
     @abstractmethod
-    def should_retry(self, response: requests.Response) -> ResponseStatus:
+    def interpret_response(self, response: requests.Response) -> ResponseStatus:
         """
         Evaluate response status describing whether a failing request should be retried or ignored.
 

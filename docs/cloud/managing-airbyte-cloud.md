@@ -14,24 +14,29 @@ Airbyte [credits](https://airbyte.com/pricing) are assigned per workspace and ca
 
 To add a user to your workspace:
 
-1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar. 
+1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar.
+
 2. In the Workspace Settings sidebar, click **Access Management**.
+
 3. Click **+ New user**.
+
 4. On the **Add new users** dialog, enter the email address of the user you want to invite to your workspace. Click **Send invitation**.
 
     :::info
     The user will have access to only the workspace you invited them to. Also note that they will be added as a workspace admin by default.
     :::
 
-### Switch between multiple workspaces
+### Remove users from your workspace​
 
-To switch between workspaces:
+To remove a user from your workspace:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click the current workspace name under the Airbyte logo in the navigation bar.
+1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar.
 
-2. Click **View all workspaces**.
+2. In the Workspace Settings sidebar, click **Access Management**.
 
-3. Click the name of the workspace you want to switch to.
+3. Click **Remove** next to the user’s name.
+
+4. The **Remove user** dialog displays. Click **Remove**.
 
 ### Rename a workspace
 
@@ -69,6 +74,50 @@ You can use one or multiple workspaces with Airbyte Cloud.
 | Single               | You can use the same payment method for all purchases.                        | Credits pay for the use of resources in a workspace when you run a sync. Resource usage cannot be divided and paid for separately (for example, you cannot bill different departments in your organization for the usage of some credits in one workspace).                                     |
 | Multiple             | Workspaces are independent of each other, so you can use a different payment method card for each workspace (for example,  different credit cards per department in your organization). | You can use the same payment method for different workspaces, but each workspace is billed separately. Managing billing for each workspace can become complicated if you have many workspaces. |
 
+### Switch between multiple workspaces
+
+To switch between workspaces:
+
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click the current workspace name under the Airbyte logo in the navigation bar.
+
+2. Click **View all workspaces**.
+
+3. Click the name of the workspace you want to switch to.
+
+### Choose your default data residency
+
+Default data residency allows you to choose where your data is processed.
+
+:::note 
+
+Configuring default data residency only applies it to new connections and does not affect existing connections.   
+
+:::
+
+For individual connections, you can choose a data residency that is different from the default through [connection settings](#choose-the-data-residency-for-a-connection) or when you create a [new connection](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-connection).
+
+:::note 
+
+While the data is processed in a data plane in the chosen residency, the cursor and primary key data is stored in the US control plane. If you have data that cannot be stored in the US, do not use it as a cursor or primary key.
+
+:::
+
+To choose your default data residency:
+
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings** in the navigation bar.
+
+2. In the Workspace settings sidebar, click **Data Residency**.
+
+3. Click the dropdown and choose the location for your default data residency.
+
+4. Click **Save changes**. 
+
+:::info 
+
+Depending on your network configuration, you may need to add [IP addresses](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#allowlist-ip-address) to your allowlist.   
+
+:::
+
 ## Manage Airbyte Cloud notifications
 
 To set up Slack notifications:
@@ -97,76 +146,45 @@ Understanding the following limitations will help you better manage Airbyte Clou
 * Shortest sync schedule: Every 60 min
 * Schedule accuracy: +/- 30 min
 
-## View the sync log summary
-The sync log summary shows if a sync succeeded, failed, cancelled, or is currently running.
+## View the sync summary
+The sync summary displays information about the data moved during a sync.
  
-To view the sync log summary:
+To view the sync summary:
 1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections** in the navigation bar.   
 
     The Connections page displays.
 
 2. Click a connection in the list to view its sync history.
 
-3. Under Sync History, a list of syncs for that connection is displayed.
+    Sync History displays the sync status or [reset](https://docs.airbyte.com/operator-guides/reset/) status (Succeeded, Partial Success, Failed, Cancelled, or Running) and the [sync summary](#sync-summary).  
 
-    The sync status is displayed (Succeeded, Cancelled, Failed, or Running) along with the [summary of the sync log](#sync-log-summary).  
-
-4. For more information about a sync, click the sync log dropdown.  
+    :::note 
+    
+    Airbyte will try to sync your data three times. After a third failure, it will stop attempting to sync.
+    
+    :::
+    
+3. To view the full sync log, click the sync summary dropdown.
  
-### Sync log summary
-#### Succeeded
-The log summary for a successful sync shows the following data.
-
-| Log                            | Description                                                                                                                                             |
+### Sync summary
+| Data                            | Description                                                                                                                                             |
 |--------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
 | x GB (also measured in KB, MB) | Amount of data moved during the sync. If basic normalization is on, the amount of data would not change since normalization occurs in the destination.  |
 | x emitted records              | Number of records read from the source during the sync.                                                                                                 |
 | x committed records            | Number of records the destination confirmed it received.                                                                                                |
-| xh xm xs                   | Total time (hours, minutes, seconds) for the sync and basic normalization, if enabled, to complete.                                                     |
-| Sync or Reset                    | The action that was performed (either a sync or a [reset](https://docs.airbyte.com/operator-guides/reset/)).                                                                                               |
- 
+| xh xm xs                   | Total time (hours, minutes, seconds) for the sync and basic normalization, if enabled, to complete.                                                     | 
+
 :::note
 
 In a successful sync, the number of emitted records and committed records should be the same.
 
-:::  
-
-#### Cancelled
-The log summary for a cancelled sync may show the following data.
-
-| Log            | Description                                                                                     |
-|----------------|-------------------------------------------------------------------------------------------------|
-| NaN Bytes      | Since the sync was cancelled, the log does not show how much data was moved before cancelling.  |
-| No records     | Since the sync was cancelled, the log does not show emitted or committed records.               |
-| xh xm xs       | Total time (hours, minutes, seconds) between the beginning of sync and when it was cancelled.   |
-| Sync or Reset  | The action that was performed (either a sync or a reset).                                       |
-| Failure Origin | The cause of the sync cancellation.                                                             | 
-
-:::note 
-    
-Airbyte will try to sync your data three times. After a third failure, it will stop attempting to sync.
-    
-:::
-
-#### Failed
-The log summary for a failed sync may show the following data.
-
-| Log            | Description                                                                                 |
-|----------------|---------------------------------------------------------------------------------------------|
-| NaN Bytes      | Since the sync failed, the amount of data is zero.                                          |
-| No records     | Since the sync failed, there are no emitted or committed records.                           |
-| xh xm xs       | Total time (hours, minutes, seconds) between the beginning of the sync and when it failed.  |
-| Sync or Reset  | The action that was performed (either a sync or a reset).                                   |
-| Failure Origin | The cause of the sync failure.                                                              |
-
-#### Running
-The sync log summary displays **Running** when the sync is actively running.
+::: 
 
 ## Edit stream configuration
 
 1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** in the navigation bar and then click a connection in the list you want to change.  
 
-    The **Connection** page displays.  
+    The Connection page displays.  
 
 2. Click **Replication**.
 
@@ -190,9 +208,11 @@ If you need to use [cron scheduling](http://www.quartz-scheduler.org/documentati
 1. In the **Replication Frequency** dropdown, click **Cron**. 
 2. Enter a cron expression and choose a time zone to create a sync schedule.
 
-:::info
+:::note
 
-Only one sync per connection can run at a time. If cron schedules a sync to run before the last sync finishes, the sync will start after the last one completes. 
+* Only one sync per connection can run at a time. 
+* If cron schedules a sync to run before the last one finishes, the scheduled sync will start after the last sync completes.
+* Cloud does not allow schedules that sync more than once per hour. 
 
 :::
 
@@ -255,6 +275,42 @@ To refresh the source schema:
 1. Click **Refresh source schema** to fetch the schema of your data source.
 
 2. If there are changes to the schema, the **Refreshed source schema** dialog displays them.
+
+## Display Connection State
+**Connection State** provides additional information about incremental syncs. It includes the most recent values for the global or stream-level cursors, which can aid in debugging or determining which data will be included in the next syncs. 
+
+To display **Connection State**:
+
+1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar.
+
+2. In the Workspace Settings sidebar, click **General Settings**.
+
+3. Toggle **Enable advanced mode** and click **Save changes**.
+
+4. Click **Connections** in the navigation bar and then click the connection in the list you want to display.
+
+5. Click the **Settings** tab on the Connection page.
+
+    The **Connection State** displays. 
+
+## Choose the data residency for a connection
+You can choose the data residency for your connection in the connection settings. You can also choose data residency when creating a [new connection](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-connection), or you can set the [default data residency](#choose-your-default-data-residency) for your workspace.
+
+To choose the data residency for your connection: 
+
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** in the navigation bar and then click the connection that you want to change. 
+
+    The Connection page displays. 
+
+2. Click the **Settings** tab. 
+
+3. Click the **Data residency** dropdown and choose the location for your default data residency.
+
+:::note 
+
+Changes to data residency will not affect any sync in progress. 
+
+:::
 
 ## Buy credits
 

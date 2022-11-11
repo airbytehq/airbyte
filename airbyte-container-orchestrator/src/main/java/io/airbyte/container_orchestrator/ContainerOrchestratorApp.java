@@ -8,12 +8,19 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.logging.LoggingHelper;
 import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.commons.protocol.AirbyteMessageMigrator;
+import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
+import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
+import io.airbyte.commons.protocol.migrations.AirbyteMessageMigrationV0;
+import io.airbyte.commons.protocol.serde.AirbyteMessageV0Deserializer;
+import io.airbyte.commons.protocol.serde.AirbyteMessageV0Serializer;
+import io.airbyte.commons.temporal.TemporalUtils;
+import io.airbyte.commons.temporal.sync.OrchestratorConstants;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
 import io.airbyte.workers.process.DockerProcessFactory;
@@ -23,15 +30,15 @@ import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.storage.StateClients;
-import io.airbyte.workers.temporal.sync.DbtLauncherWorker;
-import io.airbyte.workers.temporal.sync.NormalizationLauncherWorker;
-import io.airbyte.workers.temporal.sync.OrchestratorConstants;
-import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
+import io.airbyte.workers.sync.DbtLauncherWorker;
+import io.airbyte.workers.sync.NormalizationLauncherWorker;
+import io.airbyte.workers.sync.ReplicationLauncherWorker;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -99,7 +106,7 @@ public class ContainerOrchestratorApp {
     logClient.setJobMdc(
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
-        WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId()));
+        TemporalUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId()));
   }
 
   /**
@@ -113,7 +120,10 @@ public class ContainerOrchestratorApp {
 
       final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
       final ProcessFactory processFactory = getProcessBuilderFactory(configs, workerConfigs);
-      final JobOrchestrator<?> jobOrchestrator = getJobOrchestrator(configs, workerConfigs, processFactory, application, featureFlags);
+      final AirbyteMessageSerDeProvider serDeProvider = getAirbyteMessageSerDeProvider();
+      final AirbyteMessageVersionedMigratorFactory migratorFactory = getAirbyteMessageVersionedMigratorFactory();
+      final JobOrchestrator<?> jobOrchestrator =
+          getJobOrchestrator(configs, workerConfigs, processFactory, application, featureFlags, serDeProvider, migratorFactory);
 
       if (jobOrchestrator == null) {
         throw new IllegalStateException("Could not find job orchestrator for application: " + application);
@@ -201,10 +211,13 @@ public class ContainerOrchestratorApp {
                                                        final WorkerConfigs workerConfigs,
                                                        final ProcessFactory processFactory,
                                                        final String application,
-                                                       final FeatureFlags featureFlags) {
+                                                       final FeatureFlags featureFlags,
+                                                       final AirbyteMessageSerDeProvider serDeProvider,
+                                                       final AirbyteMessageVersionedMigratorFactory migratorFactory) {
     return switch (application) {
-      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(configs, workerConfigs, processFactory, featureFlags);
-      case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(configs, workerConfigs, processFactory);
+      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(configs, processFactory, featureFlags, serDeProvider,
+          migratorFactory);
+      case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(configs, processFactory);
       case DbtLauncherWorker.DBT -> new DbtJobOrchestrator(configs, workerConfigs, processFactory);
       case AsyncOrchestratorPodProcess.NO_OP -> new NoOpOrchestrator();
       default -> null;
@@ -239,6 +252,25 @@ public class ContainerOrchestratorApp {
           configs.getLocalDockerMount(),
           configs.getDockerNetwork());
     }
+  }
+
+  // Create AirbyteMessageSerDeProvider
+  // This should be replaced by a simple injection once we migrated the orchestrator to the micronaut
+  private static AirbyteMessageSerDeProvider getAirbyteMessageSerDeProvider() {
+    final AirbyteMessageSerDeProvider serDeProvider = new AirbyteMessageSerDeProvider(
+        List.of(new AirbyteMessageV0Deserializer()),
+        List.of(new AirbyteMessageV0Serializer()));
+    serDeProvider.initialize();
+    return serDeProvider;
+  }
+
+  // Create AirbyteMessageVersionedMigratorFactory
+  // This should be replaced by a simple injection once we migrated the orchestrator to the micronaut
+  private static AirbyteMessageVersionedMigratorFactory getAirbyteMessageVersionedMigratorFactory() {
+    final AirbyteMessageMigrator messageMigrator = new AirbyteMessageMigrator(
+        List.of(new AirbyteMessageMigrationV0()));
+    messageMigrator.initialize();
+    return new AirbyteMessageVersionedMigratorFactory(messageMigrator);
   }
 
 }

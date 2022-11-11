@@ -4,12 +4,21 @@
 
 package io.airbyte.workers.temporal.sync;
 
-import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.persistence.job.models.AttemptNormalizationStatus;
+import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
+
+import datadog.trace.api.Trace;
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.AttemptNormalizationStatusRead;
+import io.airbyte.api.client.model.generated.AttemptNormalizationStatusReadList;
+import io.airbyte.api.client.model.generated.JobIdRequestBody;
+import io.airbyte.metrics.lib.ApmTraceUtils;
+import io.temporal.activity.Activity;
 import jakarta.inject.Singleton;
-import java.io.IOException;
 import java.util.Comparator;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -19,19 +28,17 @@ import lombok.extern.slf4j.Slf4j;
 @Singleton
 public class NormalizationSummaryCheckActivityImpl implements NormalizationSummaryCheckActivity {
 
-  private final Optional<JobPersistence> jobPersistence;
+  private final AirbyteApiClient airbyteApiClient;
 
-  public NormalizationSummaryCheckActivityImpl(final Optional<JobPersistence> jobPersistence) {
-    this.jobPersistence = jobPersistence;
+  public NormalizationSummaryCheckActivityImpl(final AirbyteApiClient airbyteApiClient) {
+    this.airbyteApiClient = airbyteApiClient;
   }
 
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
-  public boolean shouldRunNormalization(final Long jobId, final Long attemptNumber, final Optional<Long> numCommittedRecords) throws IOException {
-    // if job persistence is unavailable, default to running normalization
-    if (jobPersistence.isEmpty()) {
-      return true;
-    }
+  public boolean shouldRunNormalization(final Long jobId, final Long attemptNumber, final Optional<Long> numCommittedRecords) {
+    ApmTraceUtils.addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, attemptNumber, JOB_ID_KEY, jobId));
 
     // if the count of committed records for this attempt is > 0 OR if it is null,
     // then we should run normalization
@@ -39,19 +46,26 @@ public class NormalizationSummaryCheckActivityImpl implements NormalizationSumma
       return true;
     }
 
-    final List<AttemptNormalizationStatus> attemptNormalizationStatuses = jobPersistence.get().getAttemptNormalizationStatusesForJob(jobId);
+    final AttemptNormalizationStatusReadList AttemptNormalizationStatusReadList;
+    try {
+      AttemptNormalizationStatusReadList = airbyteApiClient.getJobsApi().getAttemptNormalizationStatusesForJob(new JobIdRequestBody().id(jobId));
+    } catch (final ApiException e) {
+      throw Activity.wrap(e);
+    }
     final AtomicLong totalRecordsCommitted = new AtomicLong(0L);
     final AtomicBoolean shouldReturnTrue = new AtomicBoolean(false);
 
-    attemptNormalizationStatuses.stream().sorted(Comparator.comparing(AttemptNormalizationStatus::attemptNumber).reversed()).toList()
+    AttemptNormalizationStatusReadList.getAttemptNormalizationStatuses().stream().sorted(Comparator.comparing(
+        AttemptNormalizationStatusRead::getAttemptNumber).reversed()).toList()
         .forEach(n -> {
-          if (n.attemptNumber() == attemptNumber) {
+          // Have to cast it because attemptNumber is read from JobRunConfig.
+          if (n.getAttemptNumber().intValue() == attemptNumber) {
             return;
           }
 
           // if normalization succeeded from a previous attempt succeeded,
           // we can stop looking for previous attempts
-          if (!n.normalizationFailed()) {
+          if (!n.getHasNormalizationFailed()) {
             return;
           }
 
@@ -59,11 +73,11 @@ public class NormalizationSummaryCheckActivityImpl implements NormalizationSumma
           // committed number
           // if there is no data recorded for the number of committed records, we should assume that there
           // were committed records and run normalization
-          if (n.recordsCommitted().isEmpty()) {
+          if (!n.getHasRecordsCommitted()) {
             shouldReturnTrue.set(true);
             return;
-          } else if (n.recordsCommitted().get() != 0L) {
-            totalRecordsCommitted.addAndGet(n.recordsCommitted().get());
+          } else if (n.getRecordsCommitted().longValue() != 0L) {
+            totalRecordsCommitted.addAndGet(n.getRecordsCommitted());
           }
         });
 

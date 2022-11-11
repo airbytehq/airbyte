@@ -99,7 +99,7 @@ python main.py read --config secrets/config.json --catalog sample_files/configur
 Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named. First install test dependencies into your virtual environment:
 
 ```
-pip install .[tests]
+pip install .'[tests]'
 ```
 
 ### Unit Tests

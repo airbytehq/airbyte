@@ -54,6 +54,9 @@ create table "public"."actor_definition"(
   "public" bool not null default false,
   "custom" bool not null default false,
   "protocol_version" varchar(255) null,
+  "normalization_repository" varchar(255) null,
+  "normalization_tag" varchar(255) null,
+  "supports_dbt" bool null,
   constraint "actor_definition_pkey"
     primary key ("id")
 );
@@ -104,6 +107,11 @@ create table "public"."connection"(
   "source_catalog_id" uuid null,
   "schedule_type" schedule_type null,
   "schedule_data" jsonb null,
+  "geography" geography_type not null default null,
+  "notify_schema_changes" bool not null default true,
+  "non_breaking_change_preference" varchar(7) not null default '''ignore''::character varying',
+  "breaking_change" bool not null default false,
+  "unsupported_protocol_version" bool not null default false,
   constraint "connection_pkey"
     primary key ("id")
 );
@@ -130,6 +138,7 @@ create table "public"."operation"(
   "tombstone" bool not null default false,
   "created_at" timestamptz(35) not null default null,
   "updated_at" timestamptz(35) not null default null,
+  "operator_webhook" jsonb null,
   constraint "operation_pkey"
     primary key ("id")
 );
@@ -173,6 +182,8 @@ create table "public"."workspace"(
   "feedback_complete" bool null,
   "created_at" timestamptz(35) not null default null,
   "updated_at" timestamptz(35) not null default null,
+  "geography" geography_type not null default null,
+  "webhook_operation_configs" jsonb null,
   constraint "workspace_pkey"
     primary key ("id")
 );
@@ -269,6 +280,7 @@ create index "airbyte_configs_migrations_s_idx" on "public"."airbyte_configs_mig
 create index "connection_destination_id_idx" on "public"."connection"("destination_id" asc);
 create unique index "connection_pkey" on "public"."connection"("id" asc);
 create index "connection_source_id_idx" on "public"."connection"("source_id" asc);
+create index "connection_status_idx" on "public"."connection"("status" asc);
 create index "connection_operation_connection_id_idx" on "public"."connection_operation"("connection_id" asc);
 create unique index "connection_operation_pkey" on "public"."connection_operation"(
   "id" asc, 

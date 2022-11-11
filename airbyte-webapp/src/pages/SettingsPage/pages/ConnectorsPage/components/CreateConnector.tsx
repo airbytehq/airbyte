@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
-import { Button } from "components";
+import { Button } from "components/ui/Button";
 
 import { RoutePaths } from "pages/routePaths";
 import { useCreateDestinationDefinition } from "services/connector/DestinationDefinitionService";

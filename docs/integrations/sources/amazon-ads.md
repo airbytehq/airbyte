@@ -7,8 +7,6 @@ This page contains the setup guide and reference information for the Amazon Ads 
 * Client Secret
 * Refresh Token
 * Region
-* Report Wait Timeout
-* Report Generation Maximum Retries
 * Start Date (Optional)
 * Profile IDs (Optional)
 
@@ -28,11 +26,9 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 4. Click `Authenticate your Amazon Ads account`.
 5. Log in and Authorize to the Amazon account.
 6. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-7. **Report Wait Timeout** is the maximum number of minutes the connector waits for the generation of a report for streams `Brands Reports`, `Brand Video Reports`, `Display Reports`, `Products Reports`.
-8. **Report Generation Maximum Retries** is the maximum number of attempts the connector tries to generate a report for streams `Brands Reports`, `Brand Video Reports`, `Display Reports`, `Products Reports`.
-9. **Start Date (Optional)** is used for generating reports starting from the specified start date. Should be in YYYY-MM-DD format and not more than 60 days in the past. If not specified today's date is used. The date is treated in the timezone of the processed profile.
-10. **Profile IDs (Optional)** you want to fetch data for. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
-11. Click `Set up source`.
+7. **Start Date (Optional)** is used for generating reports starting from the specified start date. Should be in YYYY-MM-DD format and not more than 60 days in the past. If not specified today's date is used. The date is treated in the timezone of the processed profile.
+8. **Profile IDs (Optional)** you want to fetch data for. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
+9. Click `Set up source`.
 
 **For Airbyte Open Source:**
 
@@ -66,6 +62,7 @@ This source is capable of syncing the following streams:
 * [Brand Video Reports](https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports)
 * [Display Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Reports)
 * [Products Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Reports)
+* [Attribution Reports](https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/)
 
 ## Connector-specific features and highlights
 
@@ -89,7 +86,10 @@ Information about expected report generation waiting time you may find [here](ht
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 0.1.25  | 2022-11-08 | [18985](https://github.com/airbytehq/airbyte/pull/18985) | Remove "report_wait_timeout", "report_generation_max_retries" from config                                       |
+| 0.1.24  | 2022-10-19 | [17475](https://github.com/airbytehq/airbyte/pull/17475) | Add filters for state on brand, product and display campaigns                                                   |
+| 0.1.23  | 2022-09-06 | [16342](https://github.com/airbytehq/airbyte/pull/16342) | Add attribution reports                                                                                         |
 | 0.1.22  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state.                                                                                    |
 | 0.1.21  | 2022-09-27 | [17202](https://github.com/airbytehq/airbyte/pull/17202) | Improved handling if known reporting errors                                                                     |
 | 0.1.20  | 2022-09-08 | [16453](https://github.com/airbytehq/airbyte/pull/16453) | Increase `report_wait_timeout` 30 -> 60 minutes                                                                 |

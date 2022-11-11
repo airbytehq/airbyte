@@ -4,6 +4,12 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
+
+import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
@@ -21,6 +27,7 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.ContainerOrchestratorConfig;
@@ -29,6 +36,7 @@ import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DefaultNormalizationWorker;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.ProcessFactory;
+import io.airbyte.workers.sync.NormalizationLauncherWorker;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.micronaut.context.annotation.Value;
 import io.temporal.activity.Activity;
@@ -36,6 +44,7 @@ import io.temporal.activity.ActivityExecutionContext;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -85,10 +94,14 @@ public class NormalizationActivityImpl implements NormalizationActivity {
     this.airbyteApiClient = airbyteApiClient;
   }
 
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public NormalizationSummary normalize(final JobRunConfig jobRunConfig,
                                         final IntegrationLauncherConfig destinationLauncherConfig,
                                         final NormalizationInput input) {
+    ApmTraceUtils.addTagsToTrace(
+        Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
+            destinationLauncherConfig.getDockerImage()));
     final ActivityExecutionContext context = Activity.getExecutionContext();
     return temporalUtils.withBackgroundHeartbeat(() -> {
       final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
@@ -105,7 +118,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
         workerFactory = getContainerLauncherWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig,
             () -> context);
       } else {
-        workerFactory = getLegacyWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig);
+        workerFactory = getLegacyWorkerFactory(destinationLauncherConfig, jobRunConfig);
       }
 
       final TemporalAttemptExecution<NormalizationInput, NormalizationSummary> temporalAttemptExecution = new TemporalAttemptExecution<>(
@@ -123,6 +136,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
         () -> context);
   }
 
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public NormalizationInput generateNormalizationInput(final StandardSyncInput syncInput, final StandardSyncOutput syncOutput) {
     return new NormalizationInput()
@@ -132,14 +146,12 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   }
 
   private CheckedSupplier<Worker<NormalizationInput, NormalizationSummary>, Exception> getLegacyWorkerFactory(
-                                                                                                              final WorkerConfigs workerConfigs,
                                                                                                               final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                               final JobRunConfig jobRunConfig) {
     return () -> new DefaultNormalizationWorker(
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),
         NormalizationRunnerFactory.create(
-            workerConfigs,
             destinationLauncherConfig.getDockerImage(),
             processFactory,
             NormalizationRunnerFactory.NORMALIZATION_VERSION),

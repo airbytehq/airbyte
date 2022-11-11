@@ -54,6 +54,7 @@ airbyte:
     orchestrator:
       enabled: ${CONTAINER_ORCHESTRATOR_ENABLED:false}
       image: ${CONTAINER_ORCHESTRATOR_IMAGE:}
+      java-opts: ${CONTAINER_ORCHESTRATOR_JAVA_OPTS:}
       secret-mount-path: ${CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH:}
       secret-name: ${CONTAINER_ORCHESTRATOR_SECRET_NAME:}
   control:
@@ -63,7 +64,6 @@ airbyte:
     sync:
       task-queue: ${DATA_SYNC_TASK_QUEUES:SYNC}
     plane:
-      connection-ids-mvp: ${CONNECTION_IDS_FOR_MVP_DATA_PLANE:}
       service-account:
         credentials-path: ${DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH:}
         email: ${DATA_PLANE_SERVICE_ACCOUNT_EMAIL:}
@@ -82,14 +82,16 @@ airbyte:
         value: ${AIRBYTE_API_AUTH_HEADER_VALUE:}
       host: ${INTERNAL_API_HOST}
   local:
-    docker-mount: ${LOCAL_DOCKER_MOUNT}
+    docker-mount: ${LOCAL_DOCKER_MOUNT:}
     root: ${LOCAL_ROOT}
+  metric:
+    client: ${METRIC_CLIENT:}
+    should-publish: ${PUBLISH_METRICS:false}
   worker:
-    env: ${WORKER_ENVIRONMENT:DOCKER}
     check:
       enabled: ${SHOULD_RUN_CHECK_CONNECTION_WORKFLOWS:true}
       kube:
-        annotations: ${CHECK_JOB_KUBE_ANNOTATION:}
+        annotations: ${CHECK_JOB_KUBE_ANNOTATIONS:}
         node-selectors: ${CHECK_JOB_KUBE_NODE_SELECTORS:}
       max-workers: ${MAX_CHECK_WORKERS:5}
       main:
@@ -192,6 +194,11 @@ airbyte:
   workspace:
     docker-mount: ${WORKSPACE_DOCKER_MOUNT:}
     root: ${WORKSPACE_ROOT}
+
+datadog:
+  agent:
+    host: ${DD_AGENT_HOST:}
+    port: ${DD_DOGSTATSD_PORT:}
 
 docker:
   network: ${DOCKER_NETWORK:host}

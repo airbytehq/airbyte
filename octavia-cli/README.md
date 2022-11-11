@@ -104,7 +104,7 @@ This script:
 ```bash
 touch ~/.octavia # Create a file to store env variables that will be mapped the octavia-cli container
 mkdir my_octavia_project_directory # Create your octavia project directory where YAML configurations will be stored.
-docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.40.10
+docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.40.18
 ```
 
 ### Using `docker-compose`
@@ -140,6 +140,8 @@ docker-compose run octavia-cli <command>`
 | **Flag**                                 | **Description**                                                                   | **Env Variable**           | **Default**                                            |
 | ---------------------------------------- | --------------------------------------------------------------------------------- | -------------------------- | ------------------------------------------------------ |
 | `--airbyte-url`                          | Airbyte instance URL.                                                             | `AIRBYTE_URL`              | `http://localhost:8000`                                |
+| `--airbyte-username`                     | Airbyte instance username (basic auth).                                           | `AIRBYTE_URL`              | `airbyte`                                              |
+| `--airbyte-password`                     | Airbyte instance password (basic auth).                                           | `AIRBYTE_URL`              | `password`                                             |
 | `--workspace-id`                         | Airbyte workspace id.                                                             | `AIRBYTE_WORKSPACE_ID`     | The first workspace id found on your Airbyte instance. |
 | `--enable-telemetry/--disable-telemetry` | Enable or disable the sending of telemetry data.                                  | `OCTAVIA_ENABLE_TELEMETRY` | True                                                   |
 | `--api-http-header`                      | HTTP Header value pairs passed while calling Airbyte's API                        | None                       | None                                                   |
@@ -690,7 +692,7 @@ $ octavia apply
 3. Activate the virtualenv: `source .venv/bin/activate`.
 4. Install dev dependencies: `pip install -e .\[tests\]`.
 5. Install `pre-commit` hooks: `pre-commit install`.
-6. Run the unittest suite: `pytest --cov=octavia_cli`.
+6. Run the unittest suite: `pytest --cov=octavia_cli`. Note, a local version of airbyte needs to be running (e.g. `docker compose up` from the root directory of the project)
 7. Make sure the build passes (step 0) before opening a PR.
 
 ## Telemetry
@@ -709,7 +711,8 @@ You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment 
 
 | Version | Date       | Description                                                                           | PR                                                          |
 | ------- | ---------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| 0.40.10  | 2022-08-10 | Enable cron and basic scheduling                                                      | [#15253](https://github.com/airbytehq/airbyte/pull/15253)   |
+| 0.41.0  | 2022-10-13 | Use Basic Authentication for making API requests                                      | [#17982](https://github.com/airbytehq/airbyte/pull/17982)   |
+| 0.40.18 | 2022-08-10 | Enable cron and basic scheduling                                                      | [#15253](https://github.com/airbytehq/airbyte/pull/15253)   |
 | 0.39.33 | 2022-07-05 | Add `octavia import all` command                                                      | [#14374](https://github.com/airbytehq/airbyte/pull/14374)   |
 | 0.39.32 | 2022-06-30 | Create import command to import and manage existing Airbyte resource from octavia-cli | [#14137](https://github.com/airbytehq/airbyte/pull/14137)   |
 | 0.39.27 | 2022-06-24 | Create get command to retrieve resources JSON representation                          | [#13254](https://github.com/airbytehq/airbyte/pull/13254)   |

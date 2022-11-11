@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 
-import DeleteBlock from "components/DeleteBlock";
+import { DeleteBlock } from "components/common/DeleteBlock";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceRead, WebBackendConnectionListItem } from "core/request/AirbyteClient";
@@ -42,11 +42,12 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
     name: string;
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
-  }) =>
+  }) => {
     await updateSource({
       values,
       sourceId: currentSource.sourceId,
     });
+  };
 
   const onDelete = async () => {
     clearFormChange(formId);
@@ -56,18 +57,14 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
   return (
     <div className={styles.content}>
       <ConnectorCard
-        formId={formId}
+        formType="source"
         title={<FormattedMessage id="sources.sourceSettings" />}
         isEditMode
-        onSubmit={onSubmit}
-        formType="source"
-        connector={currentSource}
-        availableServices={[sourceDefinition]}
-        formValues={{
-          ...currentSource,
-          serviceType: currentSource.sourceDefinitionId,
-        }}
+        formId={formId}
+        availableConnectorDefinitions={[sourceDefinition]}
         selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
+        connector={currentSource}
+        onSubmit={onSubmit}
       />
       <DeleteBlock type="source" onDelete={onDelete} />
     </div>

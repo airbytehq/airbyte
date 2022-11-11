@@ -4,8 +4,9 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { NavigateOptions, To, useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
-import { LabeledInput, Link, Button } from "components";
-import HeadTitle from "components/HeadTitle";
+import { LabeledInput, Link } from "components";
+import { HeadTitle } from "components/common/HeadTitle";
+import { Button } from "components/ui/Button";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useQuery } from "hooks/useQuery";
@@ -16,6 +17,7 @@ import { BottomBlock, FieldItem, Form } from "packages/cloud/views/auth/componen
 import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
 
 import { OAuthLogin } from "../OAuthLogin";
+import { Separator } from "../SignupPage/components/Separator";
 import { Disclaimer } from "../SignupPage/components/SignupForm";
 import styles from "./LoginPage.module.scss";
 
@@ -111,6 +113,8 @@ const LoginPage: React.FC = () => {
           </Form>
         )}
       </Formik>
+
+      <Separator />
       <OAuthLogin />
       <Disclaimer />
     </div>

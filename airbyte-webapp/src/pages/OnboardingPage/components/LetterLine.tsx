@@ -42,8 +42,7 @@ export const ExitAnimation = keyframes`
 const Line = styled.div<{ $onRight?: boolean }>`
   position: absolute;
   width: calc(50% - 275px);
-  z-index: 1;
-  top: 382px;
+  top: 345px;
   left: ${({ $onRight }) => ($onRight ? "calc(50% + 275px)" : 0)};
 `;
 const Path = styled.div<{ exit?: boolean }>`
@@ -70,7 +69,7 @@ const LetterLine: React.FC<LetterLineProps> = ({ onRight, exit }) => {
   return (
     <Line $onRight={onRight}>
       <Path exit={exit} />
-      <Img src="/newsletter.png" alt="newsletter" width={78} height={68} exit={exit} />
+      <Img src="/newsletter.png" alt="" width={78} height={68} exit={exit} />
     </Line>
   );
 };

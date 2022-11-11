@@ -3,7 +3,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useAsyncFn } from "react-use";
 import styled from "styled-components";
 
-import { Button } from "components";
+import { Button } from "components/ui/Button";
 
 import { LogType } from "core/domain/logs/types";
 import { useNotificationService } from "hooks/services/Notification";

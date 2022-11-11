@@ -4,19 +4,31 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_DOCKER_IMAGE_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKFLOW_TRACE_OPERATION_NAME;
+
+import datadog.trace.api.Trace;
+import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
+import io.airbyte.config.OperatorWebhookInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.WebhookOperationSummary;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
 import io.temporal.workflow.Workflow;
-import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -41,7 +53,10 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private PersistStateActivity persistActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private NormalizationSummaryCheckActivity normalizationSummaryCheckActivity;
+  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  private WebhookOperationActivity webhookOperationActivity;
 
+  @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
   public StandardSyncOutput run(final JobRunConfig jobRunConfig,
                                 final IntegrationLauncherConfig sourceLauncherConfig,
@@ -49,8 +64,16 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
 
+    ApmTraceUtils
+        .addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), CONNECTION_ID_KEY, connectionId.toString(), JOB_ID_KEY,
+            jobRunConfig.getJobId(), SOURCE_DOCKER_IMAGE_KEY,
+            sourceLauncherConfig.getDockerImage(),
+            DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage()));
+
     final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
-    StandardSyncOutput syncOutput = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
+    final String taskQueue = Workflow.getInfo().getTaskQueue();
+    StandardSyncOutput syncOutput =
+        replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput, taskQueue);
 
     if (version > Workflow.DEFAULT_VERSION) {
       // the state is persisted immediately after the replication succeeded, because the
@@ -69,13 +92,15 @@ public class SyncWorkflowImpl implements SyncWorkflow {
             Boolean shouldRun;
             try {
               shouldRun = normalizationSummaryCheckActivity.shouldRunNormalization(Long.valueOf(jobRunConfig.getJobId()), jobRunConfig.getAttemptId(),
-                  Optional.of(syncOutput.getStandardSyncSummary().getTotalStats().getRecordsCommitted()));
-            } catch (final IOException e) {
+                  Optional.ofNullable(syncOutput.getStandardSyncSummary().getTotalStats().getRecordsCommitted()));
+            } catch (final Exception e) {
               shouldRun = true;
             }
             if (!shouldRun) {
-              LOGGER.info("Skipping normalization because there are no records to normalize.");
-              continue;
+              LOGGER.info("No records to normalize detected");
+              // Normalization skip has been disabled: issue #5417
+              // LOGGER.info("Skipping normalization because there are no records to normalize.");
+              // continue;
             }
           }
 
@@ -90,6 +115,26 @@ public class SyncWorkflowImpl implements SyncWorkflow {
               .withOperatorDbt(standardSyncOperation.getOperatorDbt());
 
           dbtTransformationActivity.run(jobRunConfig, destinationLauncherConfig, syncInput.getResourceRequirements(), operatorDbtInput);
+        } else if (standardSyncOperation.getOperatorType() == OperatorType.WEBHOOK) {
+          LOGGER.info("running webhook operation");
+          LOGGER.debug("webhook operation input: {}", standardSyncOperation);
+          final boolean success = webhookOperationActivity
+              .invokeWebhook(new OperatorWebhookInput()
+                  .withExecutionUrl(standardSyncOperation.getOperatorWebhook().getExecutionUrl())
+                  .withExecutionBody(standardSyncOperation.getOperatorWebhook().getExecutionBody())
+                  .withWebhookConfigId(standardSyncOperation.getOperatorWebhook().getWebhookConfigId())
+                  .withWorkspaceWebhookConfigs(syncInput.getWebhookOperationConfigs()));
+          LOGGER.info("webhook {} completed {}", standardSyncOperation.getOperatorWebhook().getWebhookConfigId(),
+              success ? "successfully" : "unsuccessfully");
+          // TODO(mfsiega-airbyte): clean up this logic to be returned from the webhook invocation.
+          if (syncOutput.getWebhookOperationSummary() == null) {
+            syncOutput.withWebhookOperationSummary(new WebhookOperationSummary());
+          }
+          if (success) {
+            syncOutput.getWebhookOperationSummary().getSuccesses().add(standardSyncOperation.getOperatorWebhook().getWebhookConfigId());
+          } else {
+            syncOutput.getWebhookOperationSummary().getFailures().add(standardSyncOperation.getOperatorWebhook().getWebhookConfigId());
+          }
         } else {
           final String message = String.format("Unsupported operation type: %s", standardSyncOperation.getOperatorType());
           LOGGER.error(message);

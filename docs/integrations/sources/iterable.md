@@ -4,93 +4,82 @@ This page contains the setup guide and reference information for the Iterable so
 
 ## Prerequisites
 
-* Iterable Account
-* Iterable API Key with `standard` permissions. See [API Keys docs](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-) for more details.
+To set up the Iterable source connector, you'll need the Iterable [`Server-side` API Key with `standard` permissions](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-).
 
-## Setup guide
-### Step 1: Set up Iterable
+## Set up the Iterable connector in Airbyte
 
-Please read [How to find your API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-#creating-api-keys).
-
-## Step 2: Set up the Iterable connector in Airbyte
-### For Airbyte Cloud:
-
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Iterable connector and select **Iterable** from the Source type dropdown. 
-4. Enter your `api_key`
-5. Enter the `start_date` you want your sync to start from
-6. Click **Set up source**
-
-### For Airbyte OSS:
-
-1. Navigate to the Airbyte Open Source dashboard
-2. Set the name for your source 
-3. Enter your `api_key`
-4. Enter the `start_date` you want your sync to start from
-5. Click **Set up source**
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account or navigate to the Airbyte Open Source dashboard.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Iterable** from the Source type dropdown.
+4. Enter the name for the Iterable connector.
+5. For **API Key**, enter the [Iterable API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-).
+6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
+7. Click **Set up source**.
 
 ## Supported sync modes
 
 The Iterable source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature           | Supported? |
-| :---------------- | :--------- |
-| Full Refresh Sync | Yes        |
-| Incremental Sync  | Yes        |
-| SSL connection    | Yes        |
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
 
 * [Campaigns](https://api.iterable.com/api/docs#campaigns_campaigns)
 * [Campaign Metrics](https://api.iterable.com/api/docs#campaigns_metrics)
 * [Channels](https://api.iterable.com/api/docs#channels_channels)
-* [Email Bounce](https://api.iterable.com/api/docs#export_exportDataJson)
-* [Email Click](https://api.iterable.com/api/docs#export_exportDataJson)
-* [Email Complaint](https://api.iterable.com/api/docs#export_exportDataJson)
-* [Email Open](https://api.iterable.com/api/docs#export_exportDataJson)
-* [Email Send](https://api.iterable.com/api/docs#export_exportDataJson)
-* [Email Send Skip](https://api.iterable.com/api/docs#export_exportDataJson)
-* [Email Subscribe](https://api.iterable.com/api/docs#export_exportDataJson)
-* [Email Unsubscribe](https://api.iterable.com/api/docs#export_exportDataJson)
+* [Email Bounce](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [Email Click](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [Email Complaint](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [Email Open](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [Email Send](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [Email Send Skip](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [Email Subscribe](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [Email Unsubscribe](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
 * [Events](https://api.iterable.com/api/docs#events_User_events)
 * [Lists](https://api.iterable.com/api/docs#lists_getLists)
 * [List Users](https://api.iterable.com/api/docs#lists_getLists_0)
 * [Message Types](https://api.iterable.com/api/docs#messageTypes_messageTypes)
 * [Metadata](https://api.iterable.com/api/docs#metadata_list_tables)
-* [Templates](https://api.iterable.com/api/docs#templates_getTemplates)
-* [Users](https://api.iterable.com/api/docs#export_exportDataJson)
-* [PushSend](https://api.iterable.com/api/docs#export_exportDataJson)
-* [PushSendSkip](https://api.iterable.com/api/docs#export_exportDataJson)
-* [PushOpen](https://api.iterable.com/api/docs#export_exportDataJson)
-* [PushUninstall](https://api.iterable.com/api/docs#export_exportDataJson)
-* [PushBounce](https://api.iterable.com/api/docs#export_exportDataJson)
-* [WebPushSend](https://api.iterable.com/api/docs#export_exportDataJson)
-* [WebPushClick](https://api.iterable.com/api/docs#export_exportDataJson)
-* [WebPushSendSkip](https://api.iterable.com/api/docs#export_exportDataJson)
-* [InAppSend](https://api.iterable.com/api/docs#export_exportDataJson)
-* [InAppOpen](https://api.iterable.com/api/docs#export_exportDataJson)
-* [InAppClick](https://api.iterable.com/api/docs#export_exportDataJson)
-* [InAppClose](https://api.iterable.com/api/docs#export_exportDataJson)
-* [InAppDelete](https://api.iterable.com/api/docs#export_exportDataJson)
-* [InAppDelivery](https://api.iterable.com/api/docs#export_exportDataJson)
-* [InAppSendSkip](https://api.iterable.com/api/docs#export_exportDataJson)
-* [InboxSession](https://api.iterable.com/api/docs#export_exportDataJson)
-* [InboxMessageImpression](https://api.iterable.com/api/docs#export_exportDataJson)
-* [SmsSend](https://api.iterable.com/api/docs#export_exportDataJson)
-* [SmsBounce](https://api.iterable.com/api/docs#export_exportDataJson)
-* [SmsClick](https://api.iterable.com/api/docs#export_exportDataJson)
-* [SmsReceived](https://api.iterable.com/api/docs#export_exportDataJson)
-* [SmsSendSkip](https://api.iterable.com/api/docs#export_exportDataJson)
-* [SmsUsageInfo](https://api.iterable.com/api/docs#export_exportDataJson)
-* [Purchase](https://api.iterable.com/api/docs#export_exportDataJson)
-* [CustomEvent](https://api.iterable.com/api/docs#export_exportDataJson)
-* [HostedUnsubscribeClick](https://api.iterable.com/api/docs#export_exportDataJson)
+* [Templates](https://api.iterable.com/api/docs#templates_getTemplates) \(Incremental\)
+* [Users](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [PushSend](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [PushSendSkip](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [PushOpen](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [PushUninstall](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [PushBounce](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [WebPushSend](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [WebPushClick](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [WebPushSendSkip](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [InAppSend](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [InAppOpen](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [InAppClick](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [InAppClose](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [InAppDelete](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [InAppDelivery](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [InAppSendSkip](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [InboxSession](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [InboxMessageImpression](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [SmsSend](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [SmsBounce](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [SmsClick](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [SmsReceived](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [SmsSendSkip](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [SmsUsageInfo](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [Purchase](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [CustomEvent](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
+* [HostedUnsubscribeClick](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
+| 0.1.21  | 2022-10-27 | [18537](https://github.com/airbytehq/airbyte/pull/18537) | Improve streams discovery                                                  |
+| 0.1.20  | 2022-10-21 | [18292](https://github.com/airbytehq/airbyte/pull/18292) | Better processing of 401 and 429 errors                                    |
+| 0.1.19  | 2022-10-05 | [17602](https://github.com/airbytehq/airbyte/pull/17602) | Add check for stream permissions                                           |
+| 0.1.18  | 2022-10-04 | [17573](https://github.com/airbytehq/airbyte/pull/17573) | Limit time range for SATs                                                  |
 | 0.1.17  | 2022-09-02 | [16067](https://github.com/airbytehq/airbyte/pull/16067) | added new events streams                                                   |
 | 0.1.16  | 2022-08-15 | [15670](https://github.com/airbytehq/airbyte/pull/15670) | Api key is passed via header                                               |
 | 0.1.15  | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524)   | Update connector fields title/description                                  |

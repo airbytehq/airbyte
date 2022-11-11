@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/redshift",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/redshift",
   "supportsIncremental": true,
   "supportsNormalization": true,
   "supportsDBT": true,
@@ -97,7 +97,7 @@
                 "examples": ["airbyte.staging"]
               },
               "s3_bucket_path": {
-                "title": "S3 Bucket Path (Optional)",
+                "title": "S3 Bucket Path",
                 "type": "string",
                 "description": "The directory under the S3 bucket where data will be written. If not provided, then defaults to the root directory. See <a href=\"https://docs.aws.amazon.com/prescriptive-guidance/latest/defining-bucket-names-data-lakes/faq.html#:~:text=be%20globally%20unique.-,For%20S3%20bucket%20paths,-%2C%20you%20can%20use\">path's name recommendations</a> for more details.",
                 "examples": ["data_sync/test"]
@@ -137,7 +137,7 @@
               "file_name_pattern": {
                 "type": "string",
                 "description": "The pattern allows you to set the file-name format for the S3 staging file(s)",
-                "title": "S3 Filename pattern (Optional)",
+                "title": "S3 Filename pattern",
                 "examples": [
                   "{date}",
                   "{date:yyyy_MM}",
@@ -160,7 +160,7 @@
                 "airbyte_secret": true
               },
               "purge_staging_data": {
-                "title": "Purge Staging Files and Tables (Optional)",
+                "title": "Purge Staging Files and Tables",
                 "type": "boolean",
                 "description": "Whether to delete the staging files from S3 after completing the sync. See <a href=\"https://docs.airbyte.com/integrations/destinations/redshift/#:~:text=the%20root%20directory.-,Purge%20Staging%20Data,-Whether%20to%20delete\"> docs</a> for details.",
                 "default": true

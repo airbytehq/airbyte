@@ -41,6 +41,7 @@
   "login.oauth.github": "Continue with GitHub",
   "login.oauth.differentCredentialsError": "Use your email and password to sign in.",
   "login.oauth.unknownError": "An unknown error happened during sign in: {error}",
+  "login.sourceSelector": "Select a source to get started",
 
   "confirmResetPassword.newPassword": "Enter a new password",
   "confirmResetPassword.success": "Your password has been reset. Please log in with the new password.",
@@ -58,6 +59,16 @@
   "workspaces.create": "Create workspace",
   "workspaces.createNew": "Create new workspace",
   "workspaces.loading": "Loading…",
+
+  "connection.dbtCloudJobs.cardTitle": "Transformations",
+  "connection.dbtCloudJobs.addJob": "Add transformation",
+  "connection.dbtCloudJobs.explanation": "After an Airbyte sync job has completed, the following jobs will run",
+  "connection.dbtCloudJobs.noJobs": "No transformations",
+  "connection.dbtCloudJobs.job.title": "dbt Cloud transform",
+  "connection.dbtCloudJobs.job.accountId": "Account ID",
+  "connection.dbtCloudJobs.job.jobId": "Job ID",
+  "connection.dbtCloudJobs.job.deleteButton": "Delete job",
+  "connection.dbtCloudJobs.noIntegration": "Go to your <settingsLink>settings</settingsLink> to connect a dbt Cloud account",
 
   "settings.accountSettings.logoutLabel": "Sign out",
   "settings.accountSettings.logoutText": "Sign out",
@@ -86,6 +97,13 @@
   "settings.accountSettings.updateNameSuccess": "Your name has been updated!",
   "settings.userSettings": "User settings",
   "settings.workspaceSettings": "Workspace settings",
+  "settings.integrationSettings": "Integration settings",
+  "settings.integrationSettings.dbtCloudSettings": "dbt Cloud Integration",
+  "settings.integrationSettings.dbtCloudSettings.form.serviceToken": "Service Token",
+  "settings.integrationSettings.dbtCloudSettings.form.advancedOptions": "Advanced options",
+  "settings.integrationSettings.dbtCloudSettings.form.singleTenantUrl": "Single-tenant URL",
+  "settings.integrationSettings.dbtCloudSettings.form.testConnection": "Test connection",
+  "settings.integrationSettings.dbtCloudSettings.form.submit": "Save changes",
   "settings.generalSettings": "General Settings",
   "settings.generalSettings.changeWorkspace": "Change Workspace",
   "settings.generalSettings.form.name.label": "Workspace name",
@@ -118,9 +136,12 @@
   "settings.accessManagement.roleEditors": "<b>Editors</b> can edit connections",
   "settings.accessManagement.roleAdmin": "<b>Admin</b> can also manage users",
 
+  "addUsers.success.title": "Invitations sent!",
+
   "credits.date": "Date",
   "credits.amount": "Credits",
 
+  "credits.loadingCreditsUsage": "Loading credits usage …",
   "credits.usagePerConnection": "Usage per connection",
   "credits.connection": "Connection",
   "credits.usage": "Usage",
@@ -149,5 +170,8 @@
 
   "verifyEmail.notification": "You successfully verified your email. Thank you.",
 
-  "webapp.cannotReachServer": "Cannot reach server."
+  "webapp.cannotReachServer": "Cannot reach server.",
+
+  "inviteUsersHint.message": "Need help from a teammate to set up the {connector}?",
+  "inviteUsersHint.cta": "Invite users"
 }

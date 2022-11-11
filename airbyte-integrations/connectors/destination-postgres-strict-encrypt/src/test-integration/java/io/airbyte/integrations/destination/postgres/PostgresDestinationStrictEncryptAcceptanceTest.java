@@ -175,9 +175,9 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
         .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
             .put("mode", "prefer")
             .build())
-         .put("tunnel_method", ImmutableMap.builder()
-             .put("tunnel_method", "NO_TUNNEL")
-             .build())
+        .put("tunnel_method", ImmutableMap.builder()
+            .put("tunnel_method", "NO_TUNNEL")
+            .build())
         .build());
 
     final var actual = runCheck(config);
@@ -223,7 +223,8 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
             .build())
         .build());
     final var actual = runCheck(config);
-    //DefaultCheckConnectionWorker is swallowing the NullPointerException
+    // DefaultCheckConnectionWorker is swallowing the NullPointerException
     assertNull(actual);
   }
+
 }

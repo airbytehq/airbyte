@@ -16,10 +16,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.stream.MoreStreams;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,6 +41,8 @@ public class Jsons {
 
   // Object Mapper is thread-safe
   private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initMapper();
+
+  private static final ObjectMapper YAML_OBJECT_MAPPER = MoreMappers.initYamlMapper(new YAMLFactory());
   private static final ObjectWriter OBJECT_WRITER = OBJECT_MAPPER.writer(new JsonPrettyPrinter());
 
   public static <T> String serialize(final T object) {
@@ -87,6 +91,10 @@ public class Jsons {
 
   public static <T> JsonNode jsonNode(final T object) {
     return OBJECT_MAPPER.valueToTree(object);
+  }
+
+  public static JsonNode jsonNodeFromFile(final File file) throws IOException {
+    return YAML_OBJECT_MAPPER.readTree(file);
   }
 
   public static JsonNode emptyObject() {

@@ -1,20 +1,20 @@
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { Button, DropDownRow } from "components";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
-import { Popout } from "components/ui/Popout";
+import { DropdownMenu, DropdownMenuOptionType } from "components/ui/DropdownMenu";
+import { Heading } from "components/ui/Heading";
 import { Text } from "components/ui/Text";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
-import { FeatureItem, useFeature } from "hooks/services/Feature";
 
+import { Button } from "../ui/Button";
 import styles from "./TableItemTitle.module.scss";
 
 interface TableItemTitleProps {
   type: "source" | "destination";
-  dropDownData: DropDownRow.IDataItem[];
-  onSelect: (item: DropDownRow.IDataItem) => void;
+  dropdownOptions: DropdownMenuOptionType[];
+  onSelect: (data: DropdownMenuOptionType) => void;
   entity: string;
   entityName: string;
   entityIcon?: React.ReactNode;
@@ -23,63 +23,51 @@ interface TableItemTitleProps {
 
 const TableItemTitle: React.FC<TableItemTitleProps> = ({
   type,
-  dropDownData,
+  dropdownOptions,
   onSelect,
   entity,
   entityName,
   entityIcon,
   releaseStage,
 }) => {
-  const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
   const { formatMessage } = useIntl();
-  const options = [
-    {
-      label: formatMessage({
-        id: `tables.${type}AddNew`,
-      }),
-      value: "create-new-item",
-      primary: true,
-    },
-    ...dropDownData,
-  ];
 
   return (
     <>
       <div className={styles.entityInfo}>
         {entityIcon && <div className={styles.entityIcon}>{entityIcon}</div>}
         <div>
-          <Text as="h2" size="md">
-            {entityName}
-          </Text>
-          <Text as="p" size="lg" bold className={styles.entityType}>
+          <Heading as="h2">{entityName}</Heading>
+          <Text size="lg" bold className={styles.entityType}>
             <span>{entity}</span>
             <ReleaseStageBadge stage={releaseStage} />
           </Text>
         </div>
       </div>
       <div className={styles.content}>
-        <Text as="h3" size="sm">
+        <Heading as="h3" size="sm">
           <FormattedMessage id="tables.connections" />
-        </Text>
-        <Popout
-          data-testid={`select-${type}`}
-          options={options}
-          isSearchable={false}
-          styles={{
-            // TODO: hack to position select. Should be refactored with Headless UI Menu
-            menuPortal: (base) => ({
-              ...base,
-              marginLeft: -130,
-            }),
-          }}
-          menuShouldBlockScroll={false}
+        </Heading>
+        <DropdownMenu
+          placement="bottom-end"
+          options={[
+            {
+              as: "button",
+              className: styles.primary,
+              displayName: formatMessage({
+                id: `tables.${type}AddNew`,
+              }),
+            },
+            ...dropdownOptions,
+          ]}
           onChange={onSelect}
-          targetComponent={({ onOpen }) => (
-            <Button onClick={onOpen} disabled={!allowCreateConnection}>
+        >
+          {() => (
+            <Button data-id={`select-${type}`}>
               <FormattedMessage id={`tables.${type}Add`} />
             </Button>
           )}
-        />
+        </DropdownMenu>
       </div>
     </>
   );

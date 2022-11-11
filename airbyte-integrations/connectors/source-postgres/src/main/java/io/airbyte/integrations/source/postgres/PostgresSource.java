@@ -16,6 +16,7 @@ import static java.util.stream.Collectors.toSet;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -40,6 +41,7 @@ import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -66,7 +68,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -79,6 +80,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
   public static final String PARAM_SSLMODE = "sslmode";
+  public static final String SSL_MODE = "ssl_mode";
   public static final String PARAM_SSL = "ssl";
   public static final String PARAM_SSL_TRUE = "true";
   public static final String PARAM_SSL_FALSE = "false";
@@ -88,11 +90,13 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public static final String CA_CERTIFICATE_PATH = "ca_certificate_path";
   public static final String SSL_KEY = "sslkey";
   public static final String SSL_PASSWORD = "sslpassword";
+  public static final String MODE = "mode";
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "ssl", "true",
       "sslmode", "require");
   private List<String> schemas;
   private final FeatureFlags featureFlags;
+  private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
 
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new PostgresSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
@@ -116,10 +120,12 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
 
+    final String encodedDatabaseName = HostPortResolver.encodeValue(config.get(JdbcUtils.DATABASE_KEY).asText());
+
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
         config.get(JdbcUtils.HOST_KEY).asText(),
         config.get(JdbcUtils.PORT_KEY).asText(),
-        config.get(JdbcUtils.DATABASE_KEY).asText()));
+        encodedDatabaseName));
 
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
       jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText()).append(AMPERSAND);
@@ -127,7 +133,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     final Map<String, String> sslParameters = parseSSLConfig(config);
     if (config.has(PARAM_SSL_MODE) && config.get(PARAM_SSL_MODE).has(PARAM_CA_CERTIFICATE)) {
-      sslParameters.put(CA_CERTIFICATE_PATH, JdbcSSLConnectionUtils.fileFromCertPem(config.get(PARAM_SSL_MODE).get(PARAM_CA_CERTIFICATE).asText()).toString());
+      sslParameters.put(CA_CERTIFICATE_PATH,
+          JdbcSSLConnectionUtils.fileFromCertPem(config.get(PARAM_SSL_MODE).get(PARAM_CA_CERTIFICATE).asText()).toString());
       LOGGER.debug("root ssl ca crt file: {}", sslParameters.get(CA_CERTIFICATE_PATH));
     }
 
@@ -301,8 +308,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final JsonNode state)
+                                                    final ConfiguredAirbyteCatalog catalog,
+                                                    final JsonNode state)
       throws Exception {
     // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt to
     // create it.
@@ -317,10 +324,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
-      final ConfiguredAirbyteCatalog catalog,
-      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-      final StateManager stateManager,
-      final Instant emittedAt) {
+                                                                             final ConfiguredAirbyteCatalog catalog,
+                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                             final StateManager stateManager,
+                                                                             final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (PostgresUtils.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);
@@ -372,7 +379,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database,
-      final String schema)
+                                                                final String schema)
       throws SQLException {
     final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator = connection -> {
       final PreparedStatement ps = connection.prepareStatement(
@@ -462,6 +469,23 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     LOGGER.info("starting source: {}", PostgresSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", PostgresSource.class);
+  }
+
+  @Override
+  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
+    if (PostgresUtils.isCdc(config)) {
+      if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
+        String sslModeValue = config.get(SSL_MODE).get(MODE).asText();
+        if (INVALID_CDC_SSL_MODES.contains(sslModeValue)) {
+          return new AirbyteConnectionStatus()
+              .withStatus(Status.FAILED)
+              .withMessage(String.format(
+                  "In CDC replication mode ssl value '%s' is invalid. Please use one of the following SSL modes: disable, require, verify-ca, verify-full",
+                  sslModeValue));
+        }
+      }
+    }
+    return super.check(config);
   }
 
   @Override

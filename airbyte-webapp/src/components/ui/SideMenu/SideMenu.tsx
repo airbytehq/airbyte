@@ -1,14 +1,18 @@
 import React from "react";
 import styled from "styled-components";
 
-import MenuItem from "./MenuItem";
+import { MenuItem } from "./MenuItem";
 
 export interface SideMenuItem {
   path: string;
   name: string | React.ReactNode;
   indicatorCount?: number;
-  component: React.ComponentType;
+  component?: React.ComponentType;
   id?: string;
+  /**
+   * Will be called instead of the onSelect of the component if this link is clicked.
+   */
+  onClick?: () => void;
 }
 
 export interface CategoryItem {
@@ -23,7 +27,7 @@ interface SideMenuProps {
 }
 
 const Content = styled.nav`
-  min-width: 147px;
+  min-width: 155px;
 `;
 
 const Category = styled.div`
@@ -52,7 +56,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({ data, onSelect, activeItem }
               name={route.name}
               isActive={activeItem?.endsWith(route.path)}
               count={route.indicatorCount}
-              onClick={() => onSelect(route.path)}
+              onClick={route.onClick ?? (() => onSelect(route.path))}
             />
           ))}
         </Category>

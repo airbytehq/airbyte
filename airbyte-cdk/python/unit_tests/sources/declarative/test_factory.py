@@ -34,11 +34,13 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
+from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
+from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
+from dateutil.relativedelta import relativedelta
 from jsonschema import ValidationError
 
 factory = DeclarativeComponentFactory()
@@ -69,9 +71,9 @@ def test_factory():
     request_options_provider = factory.create_component(config["request_options"], input_config)()
 
     assert type(request_options_provider) == InterpolatedRequestOptionsProvider
-    assert request_options_provider._parameter_interpolator._config == input_config
+    assert request_options_provider._parameter_interpolator.config == input_config
     assert request_options_provider._parameter_interpolator._interpolator.mapping["offset"] == "{{ next_page_token['offset'] }}"
-    assert request_options_provider._body_json_interpolator._config == input_config
+    assert request_options_provider._body_json_interpolator.config == input_config
     assert request_options_provider._body_json_interpolator._interpolator.mapping["body_offset"] == "{{ next_page_token['offset'] }}"
 
 
@@ -260,7 +262,7 @@ def test_datetime_stream_slicer():
     assert stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
     assert stream_slicer.start_datetime.min_datetime.string == "{{ config['start_time'] + day_delta(2) }}"
     assert stream_slicer.end_datetime.datetime.string == "{{ config['end_time'] }}"
-    assert stream_slicer._step == datetime.timedelta(days=10)
+    assert stream_slicer._step == relativedelta(days=10)
     assert stream_slicer.cursor_field.string == "created"
     assert stream_slicer.lookback_window.string == "5d"
     assert stream_slicer.start_time_option.inject_into == RequestOptionType.request_parameter
@@ -318,7 +320,7 @@ retriever:
 partial_stream:
   class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
   schema_loader:
-    class_name: airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema
+    class_name: airbyte_cdk.sources.declarative.schema.json_file_schema_loader.JsonFileSchemaLoader
     file_path: "./source_sendgrid/schemas/{{ options.name }}.json"
   cursor_field: [ ]
 list_stream:
@@ -328,7 +330,7 @@ list_stream:
     primary_key: "id"
     extractor:
       $ref: "*ref(extractor)"
-      field_pointer: ["result"]
+      field_pointer: ["{{ options['name'] }}"]
   retriever:
     $ref: "*ref(retriever)"
     requester:
@@ -343,6 +345,22 @@ list_stream:
 check:
   class_name: airbyte_cdk.sources.declarative.checks.check_stream.CheckStream
   stream_names: ["list_stream"]
+spec:
+  class_name: airbyte_cdk.sources.declarative.spec.Spec
+  documentation_url: https://airbyte.com/#yaml-from-manifest
+  connection_specification:
+    title: Test Spec
+    type: object
+    required:
+      - api_key
+    additionalProperties: false
+    properties:
+      api_key:
+        type: string
+        airbyte_secret: true
+        title: API Key
+        description: Test API Key
+        order: 0
     """
     config = parser.parse(content)
 
@@ -358,14 +376,14 @@ check:
     assert type(stream) == DeclarativeStream
     assert stream.primary_key == "id"
     assert stream.name == "lists"
-    assert type(stream.schema_loader) == JsonSchema
+    assert type(stream.schema_loader) == JsonFileSchemaLoader
     assert type(stream.retriever) == SimpleRetriever
     assert stream.retriever.requester.http_method == HttpMethod.GET
     assert stream.retriever.requester.authenticator._token.eval(input_config) == "verysecrettoken"
     assert type(stream.retriever.record_selector) == RecordSelector
     assert type(stream.retriever.record_selector.extractor.decoder) == JsonDecoder
 
-    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_pointer] == ["result"]
+    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_pointer] == ["lists"]
     assert type(stream.retriever.record_selector.record_filter) == RecordFilter
     assert stream.retriever.record_selector.record_filter._filter_interpolator.condition == "{{ record['id'] > stream_state['id'] }}"
     assert stream.schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.json"
@@ -375,21 +393,41 @@ check:
     assert len(streams_to_check) == 1
     assert list(streams_to_check)[0] == "list_stream"
 
+    spec = factory.create_component(config["spec"], input_config)()
+    documentation_url = spec.documentation_url
+    connection_specification = spec.connection_specification
+    assert documentation_url == "https://airbyte.com/#yaml-from-manifest"
+    assert connection_specification["title"] == "Test Spec"
+    assert connection_specification["required"] == ["api_key"]
+    assert connection_specification["properties"]["api_key"] == {
+        "type": "string",
+        "airbyte_secret": True,
+        "title": "API Key",
+        "description": "Test API Key",
+        "order": 0,
+    }
+
     assert stream.retriever.requester.path.default == "marketing/lists"
 
 
-def test_create_record_selector():
-    content = """
+@pytest.mark.parametrize(
+    "test_name, record_selector, expected_runtime_selector",
+    [("test_static_record_selector", "result", "result"), ("test_options_record_selector", "{{ options['name'] }}", "lists")],
+)
+def test_create_record_selector(test_name, record_selector, expected_runtime_selector):
+    content = f"""
     extractor:
       type: DpathExtractor
     selector:
+      $options:
+        name: "lists"
       class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
       record_filter:
         class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
         condition: "{{ record['id'] > stream_state['id'] }}"
       extractor:
         $ref: "*ref(extractor)"
-        field_pointer: ["result"]
+        field_pointer: ["{record_selector}"]
     """
     config = parser.parse(content)
 
@@ -398,12 +436,99 @@ def test_create_record_selector():
     selector = factory.create_component(config["selector"], input_config)()
     assert isinstance(selector, RecordSelector)
     assert isinstance(selector.extractor, DpathExtractor)
-    assert [fp.eval(input_config) for fp in selector.extractor.field_pointer] == ["result"]
+    assert [fp.eval(input_config) for fp in selector.extractor.field_pointer] == [expected_runtime_selector]
     assert isinstance(selector.record_filter, RecordFilter)
 
 
-def test_create_requester():
-    content = """
+@pytest.mark.parametrize(
+    "test_name, content, expected_field_pointer_value",
+    [
+        (
+            "test_option_in_selector",
+            """
+                      extractor:
+                        type: DpathExtractor
+                        field_pointer: ["{{ options['name'] }}"]
+                      selector:
+                        class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+                        $options:
+                          name: "selector"
+                        extractor: "*ref(extractor)"
+                    """,
+            "selector",
+        ),
+        (
+            "test_option_in_extractor",
+            """
+                      extractor:
+                        type: DpathExtractor
+                        $options:
+                          name: "extractor"
+                        field_pointer: ["{{ options['name'] }}"]
+                      selector:
+                        class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+                        $options:
+                          name: "selector"
+                        extractor: "*ref(extractor)"
+                    """,
+            "extractor",
+        ),
+    ],
+)
+def test_options_propagation(test_name, content, expected_field_pointer_value):
+    config = parser.parse(content)
+
+    selector = factory.create_component(config["selector"], input_config, True)()
+    assert selector.extractor.field_pointer[0].eval(input_config) == expected_field_pointer_value
+
+
+@pytest.mark.parametrize(
+    "test_name, error_handler",
+    [
+        (
+            "test_create_requester_constant_error_handler",
+            """
+  error_handler:
+    backoff_strategies:
+      - type: "ConstantBackoffStrategy"
+        backoff_time_in_seconds: 5
+            """,
+        ),
+        (
+            "test_create_requester_exponential_error_handler",
+            """
+  error_handler:
+    backoff_strategies:
+      - type: "ExponentialBackoffStrategy"
+        factor: 5
+            """,
+        ),
+        (
+            "test_create_requester_wait_time_from_header_error_handler",
+            """
+  error_handler:
+    backoff_strategies:
+      - type: "WaitTimeFromHeader"
+        header: "a_header"
+            """,
+        ),
+        (
+            "test_create_requester_wait_time_until_from_header_error_handler",
+            """
+  error_handler:
+    backoff_strategies:
+      - type: "WaitUntilTimeFromHeader"
+        header: "a_header"
+            """,
+        ),
+        (
+            "test_create_requester_no_error_handler",
+            """""",
+        ),
+    ],
+)
+def test_create_requester(test_name, error_handler):
+    content = f"""
   requester:
     type: HttpRequester
     path: "/v3/marketing/lists"
@@ -412,13 +537,14 @@ def test_create_requester():
     url_base: "https://api.sendgrid.com"
     authenticator:
       type: "BasicHttpAuthenticator"
-      username: "{{ options.name }}"
-      password: "{{ config.apikey }}"
+      username: "{{{{ options.name}}}}"
+      password: "{{{{ config.apikey }}}}"
     request_options_provider:
       request_parameters:
         a_parameter: "something_here"
       request_headers:
         header: header_value
+    {error_handler}
     """
     config = parser.parse(content)
 
@@ -508,13 +634,13 @@ def test_config_with_defaults():
     assert type(stream) == DeclarativeStream
     assert stream.primary_key == "id"
     assert stream.name == "lists"
-    assert type(stream.schema_loader) == JsonSchema
+    assert type(stream.schema_loader) == DefaultSchemaLoader
     assert type(stream.retriever) == SimpleRetriever
     assert stream.retriever.requester.http_method == HttpMethod.GET
 
     assert stream.retriever.requester.authenticator._token.eval(input_config) == "verysecrettoken"
     assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_pointer] == ["result"]
-    assert stream.schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.yaml"
+    assert stream.schema_loader.get_json_schema() == {}
     assert isinstance(stream.retriever.paginator, DefaultPaginator)
 
     assert stream.retriever.paginator.url_base.string == "https://api.sendgrid.com"

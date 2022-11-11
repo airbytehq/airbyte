@@ -2,10 +2,12 @@ import { FieldProps, useField } from "formik";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { ControlLabels, DropDown } from "components";
+import { ControlLabels } from "components/LabeledControl";
+import { DropDown } from "components/ui/DropDown";
 
 import { NamespaceDefinitionType } from "../../../../core/request/AirbyteClient";
 import styles from "./NamespaceDefinitionField.module.scss";
+
 export const StreamOptions = [
   {
     value: NamespaceDefinitionType.source,
@@ -33,7 +35,6 @@ export const NamespaceDefinitionField: React.FC<FieldProps<string>> = ({ field, 
         <ControlLabels
           nextLine
           error={!!meta.error && meta.touched}
-          labelAdditionLength={0}
           label={<FormattedMessage id="connectionForm.namespaceDefinition.title" />}
           message={<FormattedMessage id="connectionForm.namespaceDefinition.subtitle" />}
         />

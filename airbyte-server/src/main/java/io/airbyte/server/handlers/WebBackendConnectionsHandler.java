@@ -24,6 +24,7 @@ import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.OperationCreate;
 import io.airbyte.api.model.generated.OperationReadList;
 import io.airbyte.api.model.generated.OperationUpdate;
+import io.airbyte.api.model.generated.SchemaChange;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
@@ -43,6 +44,7 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -52,7 +54,6 @@ import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ProtocolConverters;
-import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,6 +63,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -97,19 +100,69 @@ public class WebBackendConnectionsHandler {
   }
 
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
+      throws IOException, JsonValidationException, ConfigNotFoundException {
+
+    // passing 'false' so that deleted connections are not included
+    final List<StandardSync> standardSyncs =
+        configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(), false);
+    final Map<UUID, SourceRead> sourceReadById =
+        getSourceReadById(standardSyncs.stream().map(StandardSync::getSourceId).toList());
+    final Map<UUID, DestinationRead> destinationReadById =
+        getDestinationReadById(standardSyncs.stream().map(StandardSync::getDestinationId).toList());
+    final Map<UUID, JobRead> latestJobByConnectionId =
+        getLatestJobByConnectionId(standardSyncs.stream().map(StandardSync::getConnectionId).toList());
+    final Map<UUID, JobRead> runningJobByConnectionId =
+        getRunningJobByConnectionId(standardSyncs.stream().map(StandardSync::getConnectionId).toList());
+
+    final Map<UUID, ActorCatalogFetchEvent> newestFetchEventsByActorId =
+        configRepository.getMostRecentActorCatalogFetchEventForSources(new ArrayList<>());
 
     final List<WebBackendConnectionListItem> connectionItems = Lists.newArrayList();
 
-    // passing 'false' so that deleted connections are not included
-    for (final StandardSync standardSync : configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(), false)) {
-      connectionItems.add(buildWebBackendConnectionListItem(standardSync));
+    for (final StandardSync standardSync : standardSyncs) {
+      connectionItems.add(
+          buildWebBackendConnectionListItem(
+              standardSync,
+              sourceReadById,
+              destinationReadById,
+              latestJobByConnectionId,
+              runningJobByConnectionId,
+              Optional.ofNullable(newestFetchEventsByActorId.get(standardSync.getSourceId()))));
     }
 
     return new WebBackendConnectionReadList().connections(connectionItems);
   }
 
-  private WebBackendConnectionRead buildWebBackendConnectionRead(final ConnectionRead connectionRead)
+  private Map<UUID, JobRead> getLatestJobByConnectionId(final List<UUID> connectionIds) throws IOException {
+    return jobHistoryHandler.getLatestSyncJobsForConnections(connectionIds).stream()
+        .collect(Collectors.toMap(j -> UUID.fromString(j.getConfigId()), Function.identity()));
+  }
+
+  private Map<UUID, JobRead> getRunningJobByConnectionId(final List<UUID> connectionIds) throws IOException {
+    return jobHistoryHandler.getRunningSyncJobForConnections(connectionIds).stream()
+        .collect(Collectors.toMap(j -> UUID.fromString(j.getConfigId()), Function.identity()));
+  }
+
+  private Map<UUID, SourceRead> getSourceReadById(final List<UUID> sourceIds) throws IOException {
+    final List<SourceRead> sourceReads = configRepository.getSourceAndDefinitionsFromSourceIds(sourceIds)
+        .stream()
+        .map(sourceAndDefinition -> SourceHandler.toSourceRead(sourceAndDefinition.source(), sourceAndDefinition.definition()))
+        .toList();
+
+    return sourceReads.stream().collect(Collectors.toMap(SourceRead::getSourceId, Function.identity()));
+  }
+
+  private Map<UUID, DestinationRead> getDestinationReadById(final List<UUID> destinationIds) throws IOException {
+    final List<DestinationRead> destinationReads = configRepository.getDestinationAndDefinitionsFromDestinationIds(destinationIds)
+        .stream()
+        .map(destinationAndDefinition -> DestinationHandler.toDestinationRead(destinationAndDefinition.destination(),
+            destinationAndDefinition.definition()))
+        .toList();
+
+    return destinationReads.stream().collect(Collectors.toMap(DestinationRead::getDestinationId, Function.identity()));
+  }
+
+  private WebBackendConnectionRead buildWebBackendConnectionRead(final ConnectionRead connectionRead, final Optional<UUID> currentSourceCatalogId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceRead source = getSourceRead(connectionRead.getSourceId());
     final DestinationRead destination = getDestinationRead(connectionRead.getDestinationId());
@@ -127,15 +180,33 @@ public class WebBackendConnectionsHandler {
       webBackendConnectionRead.setLatestSyncJobStatus(job.getStatus());
     });
 
+    final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
+        configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
+
+    final SchemaChange schemaChange = getSchemaChange(connectionRead, currentSourceCatalogId, mostRecentFetchEvent);
+
+    webBackendConnectionRead.setSchemaChange(schemaChange);
+
     return webBackendConnectionRead;
   }
 
-  private WebBackendConnectionListItem buildWebBackendConnectionListItem(final StandardSync standardSync)
+  private WebBackendConnectionListItem buildWebBackendConnectionListItem(
+                                                                         final StandardSync standardSync,
+                                                                         final Map<UUID, SourceRead> sourceReadById,
+                                                                         final Map<UUID, DestinationRead> destinationReadById,
+                                                                         final Map<UUID, JobRead> latestJobByConnectionId,
+                                                                         final Map<UUID, JobRead> runningJobByConnectionId,
+                                                                         final Optional<ActorCatalogFetchEvent> latestFetchEvent)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final SourceRead source = getSourceRead(standardSync.getSourceId());
-    final DestinationRead destination = getDestinationRead(standardSync.getDestinationId());
-    final Optional<JobRead> latestSyncJob = jobHistoryHandler.getLatestSyncJob(standardSync.getConnectionId());
-    final Optional<JobRead> latestRunningSyncJob = jobHistoryHandler.getLatestRunningSyncJob(standardSync.getConnectionId());
+
+    final SourceRead source = sourceReadById.get(standardSync.getSourceId());
+    final DestinationRead destination = destinationReadById.get(standardSync.getDestinationId());
+    final Optional<JobRead> latestSyncJob = Optional.ofNullable(latestJobByConnectionId.get(standardSync.getConnectionId()));
+    final Optional<JobRead> latestRunningSyncJob = Optional.ofNullable(runningJobByConnectionId.get(standardSync.getConnectionId()));
+    final ConnectionRead connectionRead = connectionsHandler.getConnection(standardSync.getConnectionId());
+    final Optional<UUID> currentCatalogId = connectionRead == null ? Optional.empty() : Optional.ofNullable(connectionRead.getSourceCatalogId());
+
+    final SchemaChange schemaChange = getSchemaChange(connectionRead, currentCatalogId, latestFetchEvent);
 
     final WebBackendConnectionListItem listItem = new WebBackendConnectionListItem()
         .connectionId(standardSync.getConnectionId())
@@ -146,7 +217,8 @@ public class WebBackendConnectionsHandler {
         .scheduleType(ApiPojoConverters.toApiConnectionScheduleType(standardSync))
         .scheduleData(ApiPojoConverters.toApiConnectionScheduleData(standardSync))
         .source(source)
-        .destination(destination);
+        .destination(destination)
+        .schemaChange(schemaChange);
 
     listItem.setIsSyncing(latestRunningSyncJob.isPresent());
 
@@ -156,6 +228,34 @@ public class WebBackendConnectionsHandler {
     });
 
     return listItem;
+  }
+
+  /*
+   * A breakingChange boolean is stored on the connectionRead object and corresponds to the boolean
+   * breakingChange field on the connection table. If there is not a breaking change, we still have to
+   * check whether there is a non-breaking schema change by fetching the most recent
+   * ActorCatalogFetchEvent. A new ActorCatalogFetchEvent is stored each time there is a source schema
+   * refresh, so if the most recent ActorCatalogFetchEvent has a different actor catalog than the
+   * existing actor catalog, there is a schema change.
+   */
+  @VisibleForTesting
+  SchemaChange getSchemaChange(
+                               final ConnectionRead connectionRead,
+                               final Optional<UUID> currentSourceCatalogId,
+                               final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent) {
+    if (connectionRead == null || currentSourceCatalogId.isEmpty()) {
+      return SchemaChange.NO_CHANGE;
+    }
+
+    if (connectionRead.getBreakingChange() != null && connectionRead.getBreakingChange()) {
+      return SchemaChange.BREAKING;
+    }
+
+    if (mostRecentFetchEvent.isPresent() && !mostRecentFetchEvent.map(ActorCatalogFetchEvent::getActorCatalogId).equals(currentSourceCatalogId)) {
+      return SchemaChange.NON_BREAKING;
+    }
+
+    return SchemaChange.NO_CHANGE;
   }
 
   private SourceRead getSourceRead(final UUID sourceId) throws JsonValidationException, IOException, ConfigNotFoundException {
@@ -196,7 +296,10 @@ public class WebBackendConnectionsHandler {
         .source(source)
         .destination(destination)
         .operations(operations.getOperations())
-        .resourceRequirements(connectionRead.getResourceRequirements());
+        .resourceRequirements(connectionRead.getResourceRequirements())
+        .geography(connectionRead.getGeography())
+        .notifySchemaChanges(connectionRead.getNotifySchemaChanges())
+        .nonBreakingChangesPreference(connectionRead.getNonBreakingChangesPreference());
   }
 
   // todo (cgardens) - This logic is a headache to follow it stems from the internal data model not
@@ -207,6 +310,7 @@ public class WebBackendConnectionsHandler {
         .connectionId(webBackendConnectionRequestBody.getConnectionId());
 
     final ConnectionRead connection = connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId());
+
     /*
      * This variable contains all configuration but will be missing streams that were not selected.
      */
@@ -224,15 +328,16 @@ public class WebBackendConnectionsHandler {
      */
     final Optional<SourceDiscoverSchemaRead> refreshedCatalog;
     if (MoreBooleans.isTruthy(webBackendConnectionRequestBody.getWithRefreshedCatalog())) {
-      refreshedCatalog = getRefreshedSchema(connection.getSourceId());
+      refreshedCatalog = getRefreshedSchema(connection.getSourceId(), connection.getConnectionId());
     } else {
       refreshedCatalog = Optional.empty();
     }
 
     final CatalogDiff diff;
     final AirbyteCatalog syncCatalog;
+    final Optional<UUID> currentSourceCatalogId = Optional.ofNullable(connection.getSourceCatalogId());
     if (refreshedCatalog.isPresent()) {
-      connection.setSourceCatalogId(refreshedCatalog.get().getCatalogId());
+      connection.sourceCatalogId(refreshedCatalog.get().getCatalogId());
       /*
        * constructs a full picture of all existing configured + all new / updated streams in the newest
        * catalog.
@@ -246,7 +351,8 @@ public class WebBackendConnectionsHandler {
        * but was present at time of configuration will appear in the diff as an added stream which is
        * confusing. We need to figure out why source_catalog_id is not always populated in the db.
        */
-      diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(configuredCatalog), refreshedCatalog.get().getCatalog());
+      diff = refreshedCatalog.get().getCatalogDiff();
+      connection.setBreakingChange(refreshedCatalog.get().getBreakingChange());
     } else if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
       // reconstructs a full picture of the full schema at the time the catalog was configured.
       syncCatalog = updateSchemaWithDiscovery(configuredCatalog, catalogUsedToMakeConfiguredCatalog.get());
@@ -260,15 +366,17 @@ public class WebBackendConnectionsHandler {
     }
 
     connection.setSyncCatalog(syncCatalog);
-    return buildWebBackendConnectionRead(connection).catalogDiff(diff);
+    return buildWebBackendConnectionRead(connection, currentSourceCatalogId).catalogDiff(diff);
   }
 
-  private Optional<SourceDiscoverSchemaRead> getRefreshedSchema(final UUID sourceId)
+  private Optional<SourceDiscoverSchemaRead> getRefreshedSchema(final UUID sourceId, final UUID connectionId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final SourceDiscoverSchemaRequestBody discoverSchemaReadReq = new SourceDiscoverSchemaRequestBody()
         .sourceId(sourceId)
-        .disableCache(true);
-    return Optional.ofNullable(schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq));
+        .disableCache(true)
+        .connectionId(connectionId);
+    SourceDiscoverSchemaRead schemaRead = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
+    return Optional.ofNullable(schemaRead);
   }
 
   /**
@@ -341,7 +449,8 @@ public class WebBackendConnectionsHandler {
     final List<UUID> operationIds = createOperations(webBackendConnectionCreate);
 
     final ConnectionCreate connectionCreate = toConnectionCreate(webBackendConnectionCreate, operationIds);
-    return buildWebBackendConnectionRead(connectionsHandler.createConnection(connectionCreate));
+    final Optional<UUID> currentSourceCatalogId = Optional.ofNullable(connectionCreate.getSourceCatalogId());
+    return buildWebBackendConnectionRead(connectionsHandler.createConnection(connectionCreate), currentSourceCatalogId);
   }
 
   /**
@@ -372,10 +481,7 @@ public class WebBackendConnectionsHandler {
     connectionRead = connectionsHandler.updateConnection(connectionPatch);
 
     // detect if any streams need to be reset based on the patch and initial catalog, if so, reset them
-    // and fetch
-    // an up-to-date connectionRead
-    connectionRead = resetStreamsIfNeeded(webBackendConnectionPatch, oldConfiguredCatalog, connectionRead);
-
+    resetStreamsIfNeeded(webBackendConnectionPatch, oldConfiguredCatalog, connectionRead);
     /*
      * This catalog represents the full catalog that was used to create the configured catalog. It will
      * have all streams that were present at the time. It will have no configuration set.
@@ -388,16 +494,17 @@ public class WebBackendConnectionsHandler {
       connectionRead.setSyncCatalog(syncCatalog);
     }
 
-    return buildWebBackendConnectionRead(connectionRead);
+    final Optional<UUID> currentSourceCatalogId = Optional.ofNullable(connectionRead.getSourceCatalogId());
+    return buildWebBackendConnectionRead(connectionRead, currentSourceCatalogId);
   }
 
   /**
    * Given a fully updated connection, check for a diff between the old catalog and the updated
    * catalog to see if any streams need to be reset.
    */
-  private ConnectionRead resetStreamsIfNeeded(final WebBackendConnectionUpdate webBackendConnectionPatch,
-                                              final ConfiguredAirbyteCatalog oldConfiguredCatalog,
-                                              final ConnectionRead updatedConnectionRead)
+  private void resetStreamsIfNeeded(final WebBackendConnectionUpdate webBackendConnectionPatch,
+                                    final ConfiguredAirbyteCatalog oldConfiguredCatalog,
+                                    final ConnectionRead updatedConnectionRead)
       throws IOException, JsonValidationException, ConfigNotFoundException {
 
     final UUID connectionId = webBackendConnectionPatch.getConnectionId();
@@ -405,7 +512,8 @@ public class WebBackendConnectionsHandler {
     if (!skipReset) {
       final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(oldConfiguredCatalog);
       final AirbyteCatalog upToDateAirbyteCatalog = updatedConnectionRead.getSyncCatalog();
-      final CatalogDiff catalogDiff = connectionsHandler.getDiff(apiExistingCatalog, upToDateAirbyteCatalog);
+      final CatalogDiff catalogDiff =
+          connectionsHandler.getDiff(apiExistingCatalog, upToDateAirbyteCatalog, CatalogConverter.toProtocol(upToDateAirbyteCatalog));
       final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
       final Set<StreamDescriptor> changedConfigStreamDescriptors =
           connectionsHandler.getConfigurationDiff(apiExistingCatalog, upToDateAirbyteCatalog);
@@ -422,24 +530,10 @@ public class WebBackendConnectionsHandler {
         if (stateType == ConnectionStateType.LEGACY || stateType == ConnectionStateType.NOT_SET) {
           streamsToReset = configRepository.getAllStreamsForConnection(connectionId);
         }
-        ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
+        eventRunner.resetConnection(
             connectionId,
-            streamsToReset);
-        verifyManualOperationResult(manualOperationResult);
-        manualOperationResult = eventRunner.startNewManualSync(connectionId);
-        verifyManualOperationResult(manualOperationResult);
-
-        // return updated connectionRead after reset
-        return connectionsHandler.getConnection(connectionId);
+            streamsToReset, true);
       }
-    }
-    // if no reset was necessary, return the connectionRead without changes
-    return updatedConnectionRead;
-  }
-
-  private void verifyManualOperationResult(final ManualOperationResult manualOperationResult) throws IllegalStateException {
-    if (manualOperationResult.getFailingReason().isPresent()) {
-      throw new IllegalStateException(manualOperationResult.getFailingReason().get());
     }
   }
 
@@ -526,6 +620,7 @@ public class WebBackendConnectionsHandler {
     connectionCreate.status(webBackendConnectionCreate.getStatus());
     connectionCreate.resourceRequirements(webBackendConnectionCreate.getResourceRequirements());
     connectionCreate.sourceCatalogId(webBackendConnectionCreate.getSourceCatalogId());
+    connectionCreate.geography(webBackendConnectionCreate.getGeography());
 
     return connectionCreate;
   }
@@ -555,6 +650,9 @@ public class WebBackendConnectionsHandler {
     connectionPatch.status(webBackendConnectionPatch.getStatus());
     connectionPatch.resourceRequirements(webBackendConnectionPatch.getResourceRequirements());
     connectionPatch.sourceCatalogId(webBackendConnectionPatch.getSourceCatalogId());
+    connectionPatch.geography(webBackendConnectionPatch.getGeography());
+    connectionPatch.notifySchemaChanges(webBackendConnectionPatch.getNotifySchemaChanges());
+    connectionPatch.nonBreakingChangesPreference(webBackendConnectionPatch.getNonBreakingChangesPreference());
 
     connectionPatch.operationIds(finalOperationIds);
 

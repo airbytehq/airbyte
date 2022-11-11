@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/r2",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/r2",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
@@ -18,17 +18,17 @@
     ],
 
     "properties": {
-      "account_id" : {
+      "account_id": {
         "type": "string",
         "description": "Cloudflare account ID",
         "title": "Cloudflare account ID",
-        "examples" : ["12345678aa1a1a11111aaa1234567abc"],
+        "examples": ["12345678aa1a1a11111aaa1234567abc"],
         "order": 0
       },
       "access_key_id": {
         "type": "string",
         "description": "The access key ID to access the R2 bucket. Airbyte requires Read and Write permissions to the given bucket. Read more <a href=\"https://developers.cloudflare.com/r2/platform/s3-compatibility/tokens/\">here</a>.",
-        "title": "R2 Key ID *",
+        "title": "R2 Key ID",
         "airbyte_secret": true,
         "examples": ["A012345678910EXAMPLE"],
         "order": 1
@@ -36,7 +36,7 @@
       "secret_access_key": {
         "type": "string",
         "description": "The corresponding secret to the access key ID. Read more <a href=\"https://developers.cloudflare.com/r2/platform/s3-compatibility/tokens/\">here</a>",
-        "title": "R2 Access Key *",
+        "title": "R2 Access Key",
         "airbyte_secret": true,
         "examples": ["a012345678910ABCDEFGHAbCdEfGhEXAMPLEKEY"],
         "order": 2
@@ -56,7 +56,7 @@
         "order": 4
       },
       "format": {
-        "title": "Output Format *",
+        "title": "Output Format",
         "type": "object",
         "description": "Format of the data output. See <a href=\"https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema\">here</a> for more details",
         "oneOf": [
@@ -65,14 +65,14 @@
             "required": ["format_type", "compression_codec"],
             "properties": {
               "format_type": {
-                "title": "Format Type *",
+                "title": "Format Type",
                 "type": "string",
                 "enum": ["Avro"],
                 "default": "Avro",
                 "order": 0
               },
               "compression_codec": {
-                "title": "Compression Codec *",
+                "title": "Compression Codec",
                 "description": "The compression algorithm used to compress data. Default to no compression.",
                 "type": "object",
                 "oneOf": [
@@ -182,7 +182,7 @@
             "required": ["format_type", "flattening"],
             "properties": {
               "format_type": {
-                "title": "Format Type *",
+                "title": "Format Type",
                 "type": "string",
                 "enum": ["CSV"],
                 "default": "CSV"
@@ -230,7 +230,7 @@
             "required": ["format_type"],
             "properties": {
               "format_type": {
-                "title": "Format Type *",
+                "title": "Format Type",
                 "type": "string",
                 "enum": ["JSONL"],
                 "default": "JSONL"
@@ -270,7 +270,7 @@
         "order": 5
       },
       "s3_path_format": {
-        "title": "R2 Path Format (Optional)",
+        "title": "R2 Path Format",
         "description": "Format string on how data will be organized inside the R2 bucket directory. Read more <a href=\"https://docs.airbyte.com/integrations/destinations/r2#:~:text=The%20full%20path%20of%20the%20output%20data%20with%20the%20default%20S3%20path%20format\">here</a>",
         "type": "string",
         "examples": [
@@ -281,7 +281,7 @@
       "file_name_pattern": {
         "type": "string",
         "description": "The pattern allows you to set the file-name format for the R2 staging file(s)",
-        "title": "R2 Filename pattern (Optional)",
+        "title": "R2 Filename pattern",
         "examples": [
           "{date}",
           "{date:yyyy_MM}",

@@ -67,60 +67,52 @@
         "oneOf": [
           {
             "title": "allow",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "description": "Allow SSL mode.",
             "required": ["mode"],
             "properties": {
               "mode": {
                 "type": "string",
                 "const": "allow",
-                "enum": ["allow"],
-                "default": "allow",
                 "order": 0
               }
             }
           },
           {
             "title": "prefer",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "description": "Prefer SSL mode.",
             "required": ["mode"],
             "properties": {
               "mode": {
                 "type": "string",
                 "const": "prefer",
-                "enum": ["prefer"],
-                "default": "prefer",
                 "order": 0
               }
             }
           },
           {
             "title": "require",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "description": "Require SSL mode.",
             "required": ["mode"],
             "properties": {
               "mode": {
                 "type": "string",
                 "const": "require",
-                "enum": ["require"],
-                "default": "require",
                 "order": 0
               }
             }
           },
           {
             "title": "verify-ca",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "description": "Verify-ca SSL mode.",
             "required": ["mode", "ca_certificate"],
             "properties": {
               "mode": {
                 "type": "string",
                 "const": "verify-ca",
-                "enum": ["verify-ca"],
-                "default": "verify-ca",
                 "order": 0
               },
               "ca_certificate": {
@@ -133,7 +125,7 @@
               },
               "client_certificate": {
                 "type": "string",
-                "title": "Client Certificate (Optional)",
+                "title": "Client Certificate",
                 "description": "Client certificate",
                 "airbyte_secret": true,
                 "multiline": true,
@@ -141,7 +133,7 @@
               },
               "client_key": {
                 "type": "string",
-                "title": "Client Key (Optional)",
+                "title": "Client Key",
                 "description": "Client key",
                 "airbyte_secret": true,
                 "multiline": true,
@@ -149,7 +141,7 @@
               },
               "client_key_password": {
                 "type": "string",
-                "title": "Client key password (Optional)",
+                "title": "Client key password",
                 "description": "Password for keystorage. If you do not add it - the password will be generated automatically.",
                 "airbyte_secret": true,
                 "order": 4
@@ -158,15 +150,13 @@
           },
           {
             "title": "verify-full",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "description": "Verify-full SSL mode.",
             "required": ["mode", "ca_certificate"],
             "properties": {
               "mode": {
                 "type": "string",
                 "const": "verify-full",
-                "enum": ["verify-full"],
-                "default": "verify-full",
                 "order": 0
               },
               "ca_certificate": {
@@ -179,7 +169,7 @@
               },
               "client_certificate": {
                 "type": "string",
-                "title": "Client Certificate (Optional)",
+                "title": "Client Certificate",
                 "description": "Client certificate",
                 "airbyte_secret": true,
                 "multiline": true,
@@ -187,7 +177,7 @@
               },
               "client_key": {
                 "type": "string",
-                "title": "Client Key (Optional)",
+                "title": "Client Key",
                 "description": "Client key",
                 "airbyte_secret": true,
                 "multiline": true,
@@ -195,7 +185,7 @@
               },
               "client_key_password": {
                 "type": "string",
-                "title": "Client key password (Optional)",
+                "title": "Client key password",
                 "description": "Password for keystorage. If you do not add it - the password will be generated automatically.",
                 "airbyte_secret": true,
                 "order": 4
@@ -218,8 +208,6 @@
               "method": {
                 "type": "string",
                 "const": "Standard",
-                "enum": ["Standard"],
-                "default": "Standard",
                 "order": 0
               }
             }
@@ -232,8 +220,6 @@
               "method": {
                 "type": "string",
                 "const": "CDC",
-                "enum": ["CDC"],
-                "default": "CDC",
                 "order": 0
               },
               "plugin": {
@@ -241,7 +227,7 @@
                 "title": "Plugin",
                 "description": "A logical decoding plugin installed on the PostgreSQL server. The `pgoutput` plugin is used by default. If the replication table contains a lot of big jsonb values it is recommended to use `wal2json` plugin. Read more about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-2-select-a-replication-plugin\">selecting replication plugins</a>.",
                 "enum": ["pgoutput", "wal2json"],
-                "default": "pgoutput",
+                "const": "pgoutput",
                 "order": 1
               },
               "replication_slot": {
@@ -268,7 +254,124 @@
             }
           }
         ]
+      },
+      "tunnel_method": {
+        "type": "object",
+        "title": "SSH Tunnel Method",
+        "description": "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
+        "oneOf": [
+          {
+            "title": "No Tunnel",
+            "required": ["tunnel_method"],
+            "properties": {
+              "tunnel_method": {
+                "description": "No ssh tunnel needed to connect to database",
+                "type": "string",
+                "const": "NO_TUNNEL",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "SSH Key Authentication",
+            "required": [
+              "tunnel_method",
+              "tunnel_host",
+              "tunnel_port",
+              "tunnel_user",
+              "ssh_key"
+            ],
+            "properties": {
+              "tunnel_method": {
+                "description": "Connect through a jump server tunnel host using username and ssh key",
+                "type": "string",
+                "const": "SSH_KEY_AUTH",
+                "order": 0
+              },
+              "tunnel_host": {
+                "title": "SSH Tunnel Jump Server Host",
+                "description": "Hostname of the jump server host that allows inbound ssh tunnel.",
+                "type": "string",
+                "order": 1
+              },
+              "tunnel_port": {
+                "title": "SSH Connection Port",
+                "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65536,
+                "default": 22,
+                "examples": ["22"],
+                "order": 2
+              },
+              "tunnel_user": {
+                "title": "SSH Login Username",
+                "description": "OS-level username for logging into the jump server host.",
+                "type": "string",
+                "order": 3
+              },
+              "ssh_key": {
+                "title": "SSH Private Key",
+                "description": "OS-level user account ssh key credentials in RSA PEM format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )",
+                "type": "string",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 4
+              }
+            }
+          },
+          {
+            "title": "Password Authentication",
+            "required": [
+              "tunnel_method",
+              "tunnel_host",
+              "tunnel_port",
+              "tunnel_user",
+              "tunnel_user_password"
+            ],
+            "properties": {
+              "tunnel_method": {
+                "description": "Connect through a jump server tunnel host using username and password authentication",
+                "type": "string",
+                "const": "SSH_PASSWORD_AUTH",
+                "order": 0
+              },
+              "tunnel_host": {
+                "title": "SSH Tunnel Jump Server Host",
+                "description": "Hostname of the jump server host that allows inbound ssh tunnel.",
+                "type": "string",
+                "order": 1
+              },
+              "tunnel_port": {
+                "title": "SSH Connection Port",
+                "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65536,
+                "default": 22,
+                "examples": ["22"],
+                "order": 2
+              },
+              "tunnel_user": {
+                "title": "SSH Login Username",
+                "description": "OS-level username for logging into the jump server host",
+                "type": "string",
+                "order": 3
+              },
+              "tunnel_user_password": {
+                "title": "Password",
+                "description": "OS-level password for logging into the jump server host",
+                "type": "string",
+                "airbyte_secret": true,
+                "order": 4
+              }
+            }
+          }
+        ]
       }
     }
-  }
+  },
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": []
 }

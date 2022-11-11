@@ -209,6 +209,29 @@ class Transactions(OrderSubstream):
         return params
 
 
+class Channels(IncrementalBigcommerceStream):
+    data_field = "channels"
+    # Override `order_field` bacause Channels API do not acept `asc` value
+    order_field = "date_modified"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}"
+
+
+class Store(BigcommerceStream):
+    data_field = "store"
+    cursor_field = "store_id"
+    api_version = "v2"
+    data = None
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        json_response = response.json()
+        yield from [json_response]
+
+
 class BigcommerceAuthenticator(HttpAuthenticator):
     def __init__(self, token: str):
         self.token = token
@@ -248,4 +271,6 @@ class SourceBigcommerce(AbstractSource):
             Orders(**args),
             Transactions(**args),
             Products(**args),
+            Channels(**args),
+            Store(**args),
         ]

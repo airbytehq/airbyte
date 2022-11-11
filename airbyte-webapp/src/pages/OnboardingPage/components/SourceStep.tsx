@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
 
-import { Action, Namespace } from "core/analytics";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCreateSource } from "hooks/services/useSourceHook";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
+import { ConnectorCardValues } from "views/Connector/ConnectorForm";
 
 interface SourcesStepProps {
   onSuccess: () => void;
@@ -24,8 +23,6 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
 
   const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
   const { mutateAsync: createSource } = useCreateSource();
-
-  const analyticsService = useAnalyticsService();
 
   const getSourceDefinitionById = (id: string) => sourceDefinitions.find((item) => item.sourceDefinitionId === id);
 
@@ -71,17 +68,11 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
     const sourceDefinition = getSourceDefinitionById(sourceId);
     setDocumentationUrl(sourceDefinition?.documentationUrl || "");
 
-    analyticsService.track(Namespace.SOURCE, Action.SELECT, {
-      actionDescription: "Source connector type selected",
-      connector_source: sourceDefinition?.name,
-      connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
-    });
-
     setError(null);
     setSourceDefinitionId(sourceId);
   };
 
-  const onSubmitForm = async (values: { name: string; serviceType: string }) =>
+  const onSubmitForm = async (values: ConnectorCardValues) =>
     onSubmitSourceStep({
       ...values,
     });
@@ -91,15 +82,15 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
   return (
     <ConnectorCard
       full
-      jobInfo={LogsRequestError.extractJobInfo(error)}
-      onServiceSelect={onServiceSelect}
-      onSubmit={onSubmitForm}
       formType="source"
-      availableServices={sourceDefinitions}
+      isLoading={isLoading}
       hasSuccess={successRequest}
       errorMessage={errorMessage}
+      availableConnectorDefinitions={sourceDefinitions}
+      onConnectorDefinitionSelect={onServiceSelect}
       selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
-      isLoading={isLoading}
+      onSubmit={onSubmitForm}
+      jobInfo={LogsRequestError.extractJobInfo(error)}
     />
   );
 };

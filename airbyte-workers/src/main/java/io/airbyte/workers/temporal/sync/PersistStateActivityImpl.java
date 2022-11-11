@@ -5,9 +5,12 @@
 package io.airbyte.workers.temporal.sync;
 
 import static io.airbyte.config.helpers.StateMessageHelper.isMigration;
+import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 import static io.airbyte.workers.helper.StateConverter.convertClientStateTypeToInternal;
 
 import com.google.common.annotations.VisibleForTesting;
+import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
@@ -19,12 +22,14 @@ import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.helpers.StateMessageHelper;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.workers.helper.StateConverter;
 import jakarta.inject.Singleton;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,15 +44,17 @@ public class PersistStateActivityImpl implements PersistStateActivity {
     this.featureFlags = featureFlags;
   }
 
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public boolean persist(final UUID connectionId, final StandardSyncOutput syncOutput, final ConfiguredAirbyteCatalog configuredCatalog) {
+    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionId.toString()));
     final State state = syncOutput.getState();
     if (state != null) {
       // todo: these validation logic should happen on server side.
       try {
         final Optional<StateWrapper> maybeStateWrapper = StateMessageHelper.getTypedState(state.getState(), featureFlags.useStreamCapableState());
         if (maybeStateWrapper.isPresent()) {
-          final ConnectionState previousState = airbyteApiClient.getConnectionApi()
+          final ConnectionState previousState = airbyteApiClient.getStateApi()
               .getState(new ConnectionIdRequestBody().connectionId(connectionId));
           if (featureFlags.needStateValidation() && previousState != null) {
             final StateType newStateType = maybeStateWrapper.get().getStateType();
@@ -58,7 +65,7 @@ public class PersistStateActivityImpl implements PersistStateActivity {
             }
           }
 
-          airbyteApiClient.getConnectionApi().createOrUpdateState(
+          airbyteApiClient.getStateApi().createOrUpdateState(
               new ConnectionStateCreateOrUpdate()
                   .connectionId(connectionId)
                   .connectionState(StateConverter.toClient(connectionId, maybeStateWrapper.orElse(null))));

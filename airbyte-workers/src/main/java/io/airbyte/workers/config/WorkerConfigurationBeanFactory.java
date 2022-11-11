@@ -7,14 +7,17 @@ package io.airbyte.workers.config;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.TolerationPOJO;
 import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.WorkerConstants;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.context.env.Environment;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.util.List;
@@ -36,8 +39,9 @@ public class WorkerConfigurationBeanFactory {
   private static final String AIRBYTE_ROLE = "AIRBYTE_ROLE";
   private static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
   private static final String DEPLOYMENT_MODE = "DEPLOYMENT_MODE";
+  private static final String DOCKER = "DOCKER";
   private static final String JOB_DEFAULT_ENV_PREFIX = "JOB_DEFAULT_ENV_";
-  private static final String WORKER_ENVIRONMENT = "WORKER_ENVIRONMENT";
+  private static final String KUBERNETES = "KUBERNETES";
 
   @Singleton
   @Named("checkJobKubeAnnotations")
@@ -93,7 +97,7 @@ public class WorkerConfigurationBeanFactory {
                                               @Value("${airbyte.role}") final String airbyteRole,
                                               @Value("${airbyte.version}") final String airbyteVersion,
                                               final DeploymentMode deploymentMode,
-                                              final WorkerEnvironment workerEnvironment) {
+                                              final Environment environment) {
     final Map<String, String> envMap = System.getenv();
     final Map<String, String> jobPrefixedEnvMap = envMap.keySet().stream()
         .filter(key -> key.startsWith(JOB_DEFAULT_ENV_PREFIX))
@@ -101,7 +105,7 @@ public class WorkerConfigurationBeanFactory {
     final Map<String, String> jobSharedEnvMap = Map.of(AIRBYTE_ROLE, airbyteRole,
         AIRBYTE_VERSION, airbyteVersion,
         DEPLOYMENT_MODE, deploymentMode.name(),
-        WORKER_ENVIRONMENT, workerEnvironment.name());
+        WorkerConstants.WORKER_ENVIRONMENT, environment.getActiveNames().contains(Environment.KUBERNETES) ? KUBERNETES : DOCKER);
     return MoreMaps.merge(jobPrefixedEnvMap, jobSharedEnvMap);
   }
 

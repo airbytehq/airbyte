@@ -4,8 +4,8 @@
 
 package io.airbyte.server.scheduler;
 
+import io.airbyte.commons.temporal.TemporalClient.ManualOperationResult;
 import io.airbyte.protocol.models.StreamDescriptor;
-import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -18,12 +18,12 @@ public interface EventRunner {
 
   ManualOperationResult startNewCancellation(final UUID connectionId);
 
-  ManualOperationResult resetConnection(final UUID connectionId, final List<StreamDescriptor> streamsToReset);
+  ManualOperationResult resetConnection(final UUID connectionId, final List<StreamDescriptor> streamsToReset, final boolean runSyncImmediately);
 
-  ManualOperationResult synchronousResetConnection(final UUID connectionId, final List<StreamDescriptor> streamsToReset);
+  void forceDeleteConnection(final UUID connectionId);
 
-  void deleteConnection(final UUID connectionId);
-
+  // TODO: Delete
+  @Deprecated(forRemoval = true)
   void migrateSyncIfNeeded(final Set<UUID> connectionIds);
 
   void update(final UUID connectionId);
