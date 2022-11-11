@@ -27,9 +27,9 @@ import org.slf4j.LoggerFactory;
  * The new stream_stats table contains the estimated and emitted records/bytes for an attempt at the
  * per-stream level. This lets us track per-stream stats as an attempt is in progress.
  */
-public class V0_40_18_001__AddProgressBarStats extends BaseJavaMigration {
+public class V0_40_18_002__AddProgressBarStats extends BaseJavaMigration {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(V0_40_18_001__AddProgressBarStats.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(V0_40_18_002__AddProgressBarStats.class);
 
   @Override
   public void migrate(final Context context) throws Exception {
