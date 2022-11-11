@@ -60,7 +60,7 @@ paths:
   /v1/manifest_template:
     get:
       summary: Return a connector manifest template to use as the default value for the yaml editor
-      operationId: template
+      operationId: getManifestTemplate
       responses:
         "200":
           description: Successful operation

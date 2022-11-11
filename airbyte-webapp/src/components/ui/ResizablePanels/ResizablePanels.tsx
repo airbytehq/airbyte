@@ -20,6 +20,7 @@ interface PanelProps {
   className?: string;
   flex?: number;
   overlay?: Overlay;
+  onStopResize?: (newFlex: number | undefined) => void;
 }
 
 interface Overlay {
@@ -78,6 +79,9 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = ({
         propagateDimensions
         minSize={firstPanel.minWidth}
         flex={firstPanel.flex}
+        onStopResize={(args) => {
+          firstPanel.onStopResize?.(args.component.props.flex);
+        }}
       >
         <PanelContainer className={firstPanel.className} overlay={firstPanel.overlay}>
           {firstPanel.children}
@@ -107,6 +111,9 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = ({
           propagateDimensions
           minSize={secondPanel.minWidth}
           flex={secondPanel.flex}
+          onStopResize={(args) => {
+            secondPanel.onStopResize?.(args.component.props.flex);
+          }}
         >
           <PanelContainer className={secondPanel.className} overlay={secondPanel.overlay}>
             {secondPanel.children}

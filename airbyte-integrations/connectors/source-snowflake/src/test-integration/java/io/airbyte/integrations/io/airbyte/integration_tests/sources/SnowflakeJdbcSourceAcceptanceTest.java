@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static io.airbyte.integrations.source.snowflake.SnowflakeDataSourceUtils.AIRBYTE_OSS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -102,7 +103,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Override
   public AbstractJdbcSource<JDBCType> getJdbcSource() {
-    return new SnowflakeSource();
+    return new SnowflakeSource(AIRBYTE_OSS);
   }
 
   @Test
