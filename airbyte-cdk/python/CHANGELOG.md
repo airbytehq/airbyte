@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.0
+Low-code: Allow `grant_type` to be specified for OAuthAuthenticator
+
 ## 0.8.1
 Low-code: Don't update cursor for non-record messages and fix default loader for connector builder manifests
 
