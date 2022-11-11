@@ -89,7 +89,7 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
     // Wait for either LaunchDarkly to initialize or a specific timeout to pass first
     Promise.race([
       ldClient.current.waitForInitialization(),
-      rejectAfter(INITIALIZATION_TIMEOUT, "Timed out waiting for LaunchDarkly to initialize"),
+      rejectAfter(INITIALIZATION_TIMEOUT, AppActionCodes.LD_LOAD_TIMEOUT),
     ])
       .then(() => {
         // The LaunchDarkly promise resolved before the timeout, so we're good to use LD.
@@ -105,7 +105,9 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
         // our timeout promise resolves first, we're going to show an error and assume the service
         // failed to initialize, i.e. we'll run without it.
         console.warn(`Failed to initialize LaunchDarkly service with reason: ${String(reason)}`);
-        trackAction(AppActionCodes.LD_LOAD_FAILURE);
+        if (reason === AppActionCodes.LD_LOAD_TIMEOUT) {
+          trackAction(AppActionCodes.LD_LOAD_TIMEOUT);
+        }
         setState("failed");
       });
   }

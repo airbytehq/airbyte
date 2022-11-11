@@ -7,5 +7,5 @@ export enum AppActionCodes {
   /**
    * LaunchDarkly did not load in time and was ignored
    */
-  LD_LOAD_FAILURE = "LD_LOAD_FAILURE",
+  LD_LOAD_TIMEOUT = "LD_LOAD_TIMEOUT",
 }
