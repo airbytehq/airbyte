@@ -371,11 +371,14 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
             stream_state,
         )
         for record in records_generator:
-            self.stream_slicer.update_cursor(stream_slice, last_record=record)
+            # Only record messages should be parsed to update the cursor which is indicated by the Mapping type
+            if isinstance(record, Mapping):
+                self.stream_slicer.update_cursor(stream_slice, last_record=record)
             yield record
         else:
             last_record = self._last_records[-1] if self._last_records else None
-            self.stream_slicer.update_cursor(stream_slice, last_record=last_record)
+            if last_record and isinstance(last_record, Mapping):
+                self.stream_slicer.update_cursor(stream_slice, last_record=last_record)
             yield from []
 
     def stream_slices(
