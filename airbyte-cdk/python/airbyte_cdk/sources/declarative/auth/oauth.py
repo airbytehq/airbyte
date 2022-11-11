@@ -88,9 +88,6 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     def get_grant_type(self) -> InterpolatedString:
         return self.grant_type.eval(self.config)
 
-    def get_grant_type(self) -> InterpolatedString:
-        return self.grant_type.eval(self.config)
-
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         return self._refresh_request_body.eval(self.config)
 
