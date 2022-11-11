@@ -14,3 +14,23 @@ connectionSpecification:
         Every ClickUp API call required authentication. This field is your personal API token. See <a
         href="https://clickup.com/api/developer-portal/authentication/#personal-token">here</a>.
       airbyte_secret: true
+    team_id:
+      type: string
+      description: >-
+        The ID of your team in ClickUp. Retrieve it from the `/team` of the ClickUp API. See <a
+        href="https://clickup.com/api/clickupreference/operation/GetAuthorizedTeams/">here</a>.
+    space_id:
+      type: string
+      description: >-
+        The ID of your space in your workspace. Retrieve it from the `/team/{team_id}/space` of the ClickUp API. See <a
+        href="https://clickup.com/api/clickupreference/operation/GetSpaces/">here</a>.
+    folder_id:
+      type: string
+      description: >-
+        The ID of your folder in your space. Retrieve it from the `/space/{space_id}/folder` of the ClickUp API. See <a
+        href="https://clickup.com/api/clickupreference/operation/GetFolders/">here</a>.
+    list_id:
+      type: string
+      description: >-
+        The ID of your list in your folder. Retrieve it from the `/folder/{folder_id}/list` of the ClickUp API. See <a
+        href="https://clickup.com/api/clickupreference/operation/GetLists/">here</a>.
