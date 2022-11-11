@@ -5,21 +5,20 @@
 package io.airbyte.integrations.destination.bigquery.formatter.arrayformater;
 
 import static io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryDenormalizedRecordFormatter.PROPERTIES_FIELD;
-import static io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryDenormalizedRecordFormatter.TYPE_FIELD;
+import static io.airbyte.integrations.destination.bigquery.formatter.util.FormatterUtil.ARRAY_ITEMS_FIELD;
+import static io.airbyte.integrations.destination.bigquery.formatter.util.FormatterUtil.NESTED_ARRAY_FIELD;
+import static io.airbyte.integrations.destination.bigquery.formatter.util.FormatterUtil.TYPE_FIELD;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.bigquery.formatter.util.FormatterUtil;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class DefaultArrayFormatter implements ArrayFormatter {
-
-  public static final String NESTED_ARRAY_FIELD = "big_query_array";
-  public static final String ARRAY_ITEMS_FIELD = "items";
 
   @Override
   public void populateEmptyArrays(final JsonNode node) {
@@ -35,7 +34,7 @@ public class DefaultArrayFormatter implements ArrayFormatter {
   public void surroundArraysByObjects(final JsonNode node) {
     findArrays(node).forEach(
         jsonNode -> {
-          if (isAirbyteArray(jsonNode.get(ARRAY_ITEMS_FIELD))) {
+          if (FormatterUtil.isAirbyteArray(jsonNode.get(ARRAY_ITEMS_FIELD))) {
             final ObjectNode arrayNode = jsonNode.get(ARRAY_ITEMS_FIELD).deepCopy();
             final ObjectNode originalNode = (ObjectNode) jsonNode;
 
@@ -58,26 +57,11 @@ public class DefaultArrayFormatter implements ArrayFormatter {
   protected List<JsonNode> findArrays(final JsonNode node) {
     if (node != null) {
       return node.findParents(TYPE_FIELD).stream()
-          .filter(this::isAirbyteArray)
+          .filter(FormatterUtil::isAirbyteArray)
           .collect(Collectors.toList());
     } else {
       return Collections.emptyList();
     }
-  }
-
-  protected boolean isAirbyteArray(final JsonNode node) {
-    final JsonNode type = node.get(TYPE_FIELD);
-    if (type.isArray()) {
-      final ArrayNode typeNode = (ArrayNode) type;
-      for (final JsonNode arrayTypeNode : typeNode) {
-        if (arrayTypeNode.isTextual() && arrayTypeNode.textValue().equals("array")) {
-          return true;
-        }
-      }
-    } else if (type.isTextual()) {
-      return node.asText().equals("array");
-    }
-    return false;
   }
 
 }

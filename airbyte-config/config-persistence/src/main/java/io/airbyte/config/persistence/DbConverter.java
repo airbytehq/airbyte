@@ -4,7 +4,9 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG_FETCH_EVENT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_OAUTH_PARAMETER;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
@@ -14,33 +16,43 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE_SER
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.Geography;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Notification;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.ScheduleData;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.NonBreakingChangesPreference;
 import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.jooq.Record;
 
+/**
+ * Provides static methods for converting from repository layer results (often in the form of a jooq
+ * {@link Record}) to config models.
+ */
 public class DbConverter {
 
-  public static StandardSync buildStandardSync(final Record record, final List<UUID> connectionOperationId) throws IOException {
+  public static StandardSync buildStandardSync(final Record record, final List<UUID> connectionOperationId) {
     return new StandardSync()
         .withConnectionId(record.get(CONNECTION.ID))
         .withNamespaceDefinition(
@@ -54,16 +66,24 @@ public class DbConverter {
         .withCatalog(
             Jsons.deserialize(record.get(CONNECTION.CATALOG).data(), ConfiguredAirbyteCatalog.class))
         .withStatus(
-            record.get(CONNECTION.STATUS) == null ? null : Enums.toEnum(record.get(CONNECTION.STATUS, String.class), Status.class).orElseThrow())
+            record.get(CONNECTION.STATUS) == null ? null
+                : Enums.toEnum(record.get(CONNECTION.STATUS, String.class), Status.class).orElseThrow())
         .withSchedule(Jsons.deserialize(record.get(CONNECTION.SCHEDULE).data(), Schedule.class))
         .withManual(record.get(CONNECTION.MANUAL))
         .withScheduleType(record.get(CONNECTION.SCHEDULE_TYPE) == null ? null
             : Enums.toEnum(record.get(CONNECTION.SCHEDULE_TYPE, String.class), ScheduleType.class).orElseThrow())
         .withScheduleData(
-            record.get(CONNECTION.SCHEDULE_DATA) == null ? null : Jsons.deserialize(record.get(CONNECTION.SCHEDULE_DATA).data(), ScheduleData.class))
+            record.get(CONNECTION.SCHEDULE_DATA) == null ? null
+                : Jsons.deserialize(record.get(CONNECTION.SCHEDULE_DATA).data(), ScheduleData.class))
         .withOperationIds(connectionOperationId)
-        .withResourceRequirements(Jsons.deserialize(record.get(CONNECTION.RESOURCE_REQUIREMENTS).data(), ResourceRequirements.class))
-        .withSourceCatalogId(record.get(CONNECTION.SOURCE_CATALOG_ID));
+        .withResourceRequirements(
+            Jsons.deserialize(record.get(CONNECTION.RESOURCE_REQUIREMENTS).data(), ResourceRequirements.class))
+        .withSourceCatalogId(record.get(CONNECTION.SOURCE_CATALOG_ID))
+        .withBreakingChange(record.get(CONNECTION.BREAKING_CHANGE))
+        .withGeography(Enums.toEnum(record.get(CONNECTION.GEOGRAPHY, String.class), Geography.class).orElseThrow())
+        .withNonBreakingChangesPreference(
+            Enums.toEnum(record.get(CONNECTION.NON_BREAKING_CHANGE_PREFERENCE, String.class), NonBreakingChangesPreference.class).orElseThrow())
+        .withNotifySchemaChanges(record.get(CONNECTION.NOTIFY_SCHEMA_CHANGES));
   }
 
   public static StandardWorkspace buildStandardWorkspace(final Record record) {
@@ -86,7 +106,31 @@ public class DbConverter {
         .withTombstone(record.get(WORKSPACE.TOMBSTONE))
         .withNotifications(notificationList)
         .withFirstCompletedSync(record.get(WORKSPACE.FIRST_SYNC_COMPLETE))
-        .withFeedbackDone(record.get(WORKSPACE.FEEDBACK_COMPLETE));
+        .withFeedbackDone(record.get(WORKSPACE.FEEDBACK_COMPLETE))
+        .withDefaultGeography(
+            Enums.toEnum(record.get(WORKSPACE.GEOGRAPHY, String.class), Geography.class).orElseThrow())
+        .withWebhookOperationConfigs(record.get(WORKSPACE.WEBHOOK_OPERATION_CONFIGS) == null ? null
+            : Jsons.deserialize(record.get(WORKSPACE.WEBHOOK_OPERATION_CONFIGS).data()));
+  }
+
+  public static SourceConnection buildSourceConnection(final Record record) {
+    return new SourceConnection()
+        .withSourceId(record.get(ACTOR.ID))
+        .withConfiguration(Jsons.deserialize(record.get(ACTOR.CONFIGURATION).data()))
+        .withWorkspaceId(record.get(ACTOR.WORKSPACE_ID))
+        .withSourceDefinitionId(record.get(ACTOR.ACTOR_DEFINITION_ID))
+        .withTombstone(record.get(ACTOR.TOMBSTONE))
+        .withName(record.get(ACTOR.NAME));
+  }
+
+  public static DestinationConnection buildDestinationConnection(final Record record) {
+    return new DestinationConnection()
+        .withDestinationId(record.get(ACTOR.ID))
+        .withConfiguration(Jsons.deserialize(record.get(ACTOR.CONFIGURATION).data()))
+        .withWorkspaceId(record.get(ACTOR.WORKSPACE_ID))
+        .withDestinationDefinitionId(record.get(ACTOR.ACTOR_DEFINITION_ID))
+        .withTombstone(record.get(ACTOR.TOMBSTONE))
+        .withName(record.get(ACTOR.NAME));
   }
 
   public static StandardSourceDefinition buildStandardSourceDefinition(final Record record) {
@@ -156,6 +200,13 @@ public class DbConverter {
         .withId(record.get(ACTOR_CATALOG.ID))
         .withCatalog(Jsons.deserialize(record.get(ACTOR_CATALOG.CATALOG).toString()))
         .withCatalogHash(record.get(ACTOR_CATALOG.CATALOG_HASH));
+  }
+
+  public static ActorCatalogFetchEvent buildActorCatalogFetchEvent(final Record record) {
+    return new ActorCatalogFetchEvent()
+        .withActorId(record.get(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID))
+        .withActorCatalogId(record.get(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID))
+        .withCreatedAt(record.get(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC));
   }
 
   public static WorkspaceServiceAccount buildWorkspaceServiceAccount(final Record record) {

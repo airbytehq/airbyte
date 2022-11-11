@@ -4,28 +4,33 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 import static io.airbyte.persistence.job.JobNotifier.CONNECTION_DISABLED_NOTIFICATION;
 import static io.airbyte.persistence.job.JobNotifier.CONNECTION_DISABLED_WARNING_NOTIFICATION;
 import static io.airbyte.persistence.job.models.Job.REPLICATION_TYPES;
 import static java.time.temporal.ChronoUnit.DAYS;
 
+import datadog.trace.api.Trace;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.temporal.config.WorkerMode;
+import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.JobNotifier;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobStatus;
 import io.airbyte.persistence.job.models.JobWithStatusAndTimestamp;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.config.WorkerMode;
-import io.airbyte.workers.temporal.exception.RetryableException;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -62,8 +67,10 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
   // failures, and that the connection's first job is at least that many days old
   // Notifications will be sent if a connection is disabled or warned if it has reached halfway to
   // disable limits
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public AutoDisableConnectionOutput autoDisableFailingConnection(final AutoDisableConnectionActivityInput input) {
+    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, input.getConnectionId()));
     if (featureFlags.autoDisablesFailingConnections()) {
       try {
         // if connection is already inactive, no need to disable

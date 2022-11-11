@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/pubsub",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/pubsub",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
@@ -23,7 +23,7 @@
       },
       "credentials_json": {
         "type": "string",
-        "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.io/integrations/destinations/pubsub\">docs</a> if you need help generating this key.",
+        "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.com/integrations/destinations/pubsub\">docs</a> if you need help generating this key.",
         "title": "Credentials JSON",
         "airbyte_secret": true
       }

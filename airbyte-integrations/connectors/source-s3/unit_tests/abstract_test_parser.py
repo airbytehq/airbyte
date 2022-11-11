@@ -132,25 +132,28 @@ class AbstractTestParser(ABC):
 
     @memory_limit(1024)
     def test_suite_inferred_schema(self, file_info: Mapping[str, Any]) -> None:
+        file_info_instance = FileInfo(key=file_info["filepath"], size=os.stat(file_info["filepath"]).st_size, last_modified=datetime.now())
         with smart_open(file_info["filepath"], self._get_readmode(file_info)) as f:
             if "test_get_inferred_schema" in file_info["fails"]:
                 with pytest.raises(Exception) as e_info:
-                    file_info["AbstractFileParser"].get_inferred_schema(f)
+                    file_info["AbstractFileParser"].get_inferred_schema(f), file_info_instance
                     self.logger.debug(str(e_info))
             else:
-                assert file_info["AbstractFileParser"].get_inferred_schema(f) == file_info["inferred_schema"]
+                assert file_info["AbstractFileParser"].get_inferred_schema(f, file_info_instance) == file_info["inferred_schema"]
 
     @memory_limit(1024)
     def test_stream_suite_records(self, file_info: Mapping[str, Any]) -> None:
         filepath = file_info["filepath"]
-        self.logger.info(f"read the file: {filepath}, size: {os.stat(filepath).st_size / (1024 ** 2)}Mb")
+        file_size = os.stat(filepath).st_size
+        file_info_instance = FileInfo(key=filepath, size=file_size, last_modified=datetime.now())
+        self.logger.info(f"read the file: {filepath}, size: {file_size / (1024 ** 2)}Mb")
         with smart_open(filepath, self._get_readmode(file_info)) as f:
             if "test_stream_records" in file_info["fails"]:
                 with pytest.raises(Exception) as e_info:
-                    [print(r) for r in file_info["AbstractFileParser"].stream_records(f)]
+                    [print(r) for r in file_info["AbstractFileParser"].stream_records(f, file_info_instance)]
                     self.logger.debug(str(e_info))
             else:
-                records = [r for r in file_info["AbstractFileParser"].stream_records(f)]
+                records = [r for r in file_info["AbstractFileParser"].stream_records(f, file_info_instance)]
 
                 assert len(records) == file_info["num_records"]
                 for index, expected_record in file_info["line_checks"].items():

@@ -7,8 +7,8 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 import static io.airbyte.db.jdbc.JdbcUtils.JDBC_URL_KEY;
 import static io.airbyte.integrations.source.clickhouse.ClickHouseSource.SSL_MODE;
 import static java.time.temporal.ChronoUnit.SECONDS;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;

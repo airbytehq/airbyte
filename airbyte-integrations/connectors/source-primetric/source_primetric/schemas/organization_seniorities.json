@@ -1,15 +1,15 @@
 {
-  "type" : "object",
-  "properties" : {
-    "uuid" : {
-      "type" : "string",
-      "format" : "uuid"
+  "type": "object",
+  "properties": {
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
     },
-    "text" : {
-      "type" : "string"
+    "text": {
+      "type": "string"
     },
-    "level" : {
-      "type" : "integer"
+    "level": {
+      "type": "integer"
     }
   }
 }

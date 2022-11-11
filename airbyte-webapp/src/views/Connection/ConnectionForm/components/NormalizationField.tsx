@@ -1,26 +1,22 @@
 import { FieldProps } from "formik";
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
 import { LabeledRadioButton, Link } from "components";
 
-import { useConfig } from "config";
 import { NormalizationType } from "core/domain/connection/operation";
-import { ConnectionFormMode } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { links } from "utils/links";
 
-const Normalization = styled.div`
-  margin: 16px 0;
-`;
+import styles from "./NormalizationField.module.scss";
 
-type NormalizationBlockProps = FieldProps<string> & {
-  mode: ConnectionFormMode;
-};
+type NormalizationBlockProps = FieldProps<string>;
 
-const NormalizationField: React.FC<NormalizationBlockProps> = ({ form, field, mode }) => {
-  const config = useConfig();
+export const NormalizationField: React.FC<NormalizationBlockProps> = ({ form, field }) => {
+  const { mode } = useConnectionFormService();
+
   return (
-    <Normalization>
+    <div className={styles.normalizationField}>
       <LabeledRadioButton
         {...form.getFieldProps(field.name)}
         id="normalization.raw"
@@ -42,7 +38,7 @@ const NormalizationField: React.FC<NormalizationBlockProps> = ({ form, field, mo
               id="form.basicNormalization.message"
               values={{
                 lnk: (lnk: React.ReactNode) => (
-                  <Link target="_blank" href={config.links.normalizationLink} as="a">
+                  <Link target="_blank" href={links.normalizationLink} as="a">
                     {lnk}
                   </Link>
                 ),
@@ -51,8 +47,6 @@ const NormalizationField: React.FC<NormalizationBlockProps> = ({ form, field, mo
           )
         }
       />
-    </Normalization>
+    </div>
   );
 };
-
-export { NormalizationField };

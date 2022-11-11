@@ -13,7 +13,7 @@ In order to get an `Client ID` and `Secret` please go to [this](https://develope
 
 :::note
 
-Note: Our Paypal Transactions Source Connector does not support OAuth at this time due to limitations outside of our control. If OAuth for Paypal Transactions is critical to your business, [please reach out to us](mailto:product@airbyte.io) to discuss how we may be able to partner on this effort.
+Our Paypal Transactions Source Connector does not support OAuth at this time due to limitations outside of our control. If OAuth for Paypal Transactions is critical to your business, [please reach out to us](mailto:product@airbyte.io) to discuss how we may be able to partner on this effort.
 
 :::
 

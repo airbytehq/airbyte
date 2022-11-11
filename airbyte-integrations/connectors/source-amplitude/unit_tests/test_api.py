@@ -75,6 +75,17 @@ class TestIncrementalStreams:
                 [{"date": "2021-01-01", "statistics": {0: 1}}, {"date": "2021-01-02", "statistics": {0: 5}}],
             ),
             (
+                ActiveUsers,
+                {
+                    "xValues": ["2021-01-01", "2021-01-02"],
+                    "series": [],
+                    "seriesCollapsed": [[0]],
+                    "seriesLabels": [0],
+                    "seriesMeta": [{"segmentIndex": 0}],
+                },
+                [],
+            ),
+            (
                 AverageSessionLength,
                 {
                     "xValues": ["2019-05-23", "2019-05-24"],
@@ -85,8 +96,19 @@ class TestIncrementalStreams:
                 },
                 [{"date": "2019-05-23", "length": 2}, {"date": "2019-05-24", "length": 6}],
             ),
+            (
+                AverageSessionLength,
+                {
+                    "xValues": ["2019-05-23", "2019-05-24"],
+                    "series": [],
+                    "seriesCollapsed": [[0]],
+                    "seriesLabels": [0],
+                    "seriesMeta": [{"segmentIndex": 0}],
+                },
+                [],
+            ),
         ],
-        ids=["ActiveUsers", "AverageSessionLength"],
+        ids=["ActiveUsers", "EmptyActiveUsers", "AverageSessionLength", "EmptyAverageSessionLength"],
     )
     def test_parse_response(self, requests_mock, stream_cls, data, expected):
         stream = stream_cls("2021-01-01T00:00:00Z")

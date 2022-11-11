@@ -613,3 +613,71 @@ def test_config_skip_test():
 
     # This is guaranteed to fail when the test gets executed
     docker_runner_mock.call_read.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "read_output, expectation",
+    [
+        pytest.param([], pytest.raises(AssertionError), id="Error because incremental stream should always emit state messages"),
+        pytest.param(
+            [
+                AirbyteMessage(
+                    type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"date": "2022-10-04"}, emitted_at=111)
+                ),
+                AirbyteMessage(
+                    type=Type.STATE,
+                    state=AirbyteStateMessage(
+                        type=AirbyteStateType.STREAM,
+                        stream=AirbyteStreamState(
+                            stream_descriptor=StreamDescriptor(name="test_stream"),
+                            stream_state=AirbyteStateBlob.parse_obj({"date": "2022-10-04"}),
+                        ),
+                        data={"date": "2022-10-04"},
+                    ),
+                ),
+            ],
+            pytest.raises(AssertionError),
+            id="Error because incremental sync with abnormally large state value should not produce record.",
+        ),
+        pytest.param(
+            [
+                AirbyteMessage(
+                    type=Type.STATE,
+                    state=AirbyteStateMessage(
+                        type=AirbyteStateType.STREAM,
+                        stream=AirbyteStreamState(
+                            stream_descriptor=StreamDescriptor(name="test_stream"),
+                            stream_state=AirbyteStateBlob.parse_obj({"date": "2022-10-04"}),
+                        ),
+                        data={"date": "2022-10-04"},
+                    ),
+                )
+            ],
+            does_not_raise(),
+        ),
+    ],
+)
+def test_state_with_abnormally_large_values(mocker, read_output, expectation):
+    docker_runner_mock = mocker.MagicMock()
+    docker_runner_mock.call_read_with_state.return_value = read_output
+    t = _TestIncremental()
+    with expectation:
+        t.test_state_with_abnormally_large_values(
+            connector_config=mocker.MagicMock(),
+            configured_catalog=ConfiguredAirbyteCatalog(
+                streams=[
+                    ConfiguredAirbyteStream(
+                        stream=AirbyteStream(
+                            name="test_stream",
+                            json_schema={"type": "object", "properties": {"date": {"type": "date"}}},
+                            supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+                        ),
+                        sync_mode=SyncMode.incremental,
+                        destination_sync_mode=DestinationSyncMode.overwrite,
+                        cursor_field=["date"],
+                    )
+                ]
+            ),
+            future_state=mocker.MagicMock(),
+            docker_runner=docker_runner_mock,
+        )

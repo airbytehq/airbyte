@@ -29,7 +29,8 @@ public class MongodbSourceStrictEncrypt extends SpecModifyingSource implements S
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     final JsonNode instanceConfig = config.get(MongoDbSourceUtils.INSTANCE_TYPE);
     final MongoInstanceType instance = MongoInstanceType.fromValue(instanceConfig.get(MongoDbSourceUtils.INSTANCE).asText());
-    // If the MongoDb source connector is not set up to use a TLS connection, then we should fail the check.
+    // If the MongoDb source connector is not set up to use a TLS connection, then we should fail the
+    // check.
     if (instance.equals(MongoInstanceType.STANDALONE) && !MongoDbSourceUtils.tlsEnabledForStandaloneInstance(config, instanceConfig)) {
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)

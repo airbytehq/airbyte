@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mqtt",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/mqtt",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
