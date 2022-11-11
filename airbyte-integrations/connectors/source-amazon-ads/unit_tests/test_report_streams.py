@@ -27,7 +27,8 @@ from source_amazon_ads.streams import (
     SponsoredProductCampaigns,
     SponsoredProductsReportStream,
 )
-from source_amazon_ads.streams.report_streams.report_streams import ReportGenerationFailure, ReportGenerationInProgress, TooManyRequests
+from source_amazon_ads.streams.report_streams.report_streams import ReportGenerationFailure, ReportGenerationInProgress, \
+    TooManyRequests
 
 from .utils import read_incremental
 
@@ -231,41 +232,41 @@ def test_display_report_stream_init_too_many_requests(mocker, config):
     ("modifiers", "expected"),
     [
         (
-                [
-                    (lambda x: x <= 5, "SUCCESS", None),
-                ],
-                5,
+            [
+                (lambda x: x <= 5, "SUCCESS", None),
+            ],
+            5,
         ),
         (
-                [
-                    (lambda x: x > 5, "SUCCESS", None),
-                ],
-                10,
+            [
+                (lambda x: x > 5, "SUCCESS", None),
+            ],
+            10,
         ),
         (
-                [
-                    (lambda x: x > 5, None, "2021-01-02 06:04:05"),
-                ],
-                ReportGenerationInProgress,
+            [
+                (lambda x: x > 5, None, "2021-01-02 06:04:05"),
+            ],
+            ReportGenerationInProgress,
         ),
         (
-                [
-                    (lambda x: x >= 1 and x <= 5, "FAILURE", None),
-                    (lambda x: x >= 6 and x <= 10, None, "2021-01-02 03:23:05"),
-                    (lambda x: x >= 11, "SUCCESS", "2021-01-02 03:24:06"),
-                ],
-                15,
+            [
+                (lambda x: x >= 1 and x <= 5, "FAILURE", None),
+                (lambda x: x >= 6 and x <= 10, None, "2021-01-02 03:23:05"),
+                (lambda x: x >= 11, "SUCCESS", "2021-01-02 03:24:06"),
+            ],
+            15,
         ),
         (
-                [
-                    (lambda x: True, "FAILURE", None),
-                    (lambda x: x >= 10, None, "2021-01-02 06:04:05"),
-                    (lambda x: x >= 15, None, "2021-01-02 09:04:05"),
-                    (lambda x: x >= 20, None, "2021-01-02 12:04:05"),
-                    (lambda x: x >= 25, None, "2021-01-02 15:04:05"),
-                    (lambda x: x >= 30, None, "2021-01-02 18:04:05"),
-                ],
-                ReportGenerationFailure,
+            [
+                (lambda x: True, "FAILURE", None),
+                (lambda x: x >= 10, None, "2021-01-02 06:04:05"),
+                (lambda x: x >= 15, None, "2021-01-02 09:04:05"),
+                (lambda x: x >= 20, None, "2021-01-02 12:04:05"),
+                (lambda x: x >= 25, None, "2021-01-02 15:04:05"),
+                (lambda x: x >= 30, None, "2021-01-02 18:04:05"),
+            ],
+            ReportGenerationFailure,
         ),
     ],
 )
@@ -562,40 +563,40 @@ def test_read_incremental_with_records_start_date(config):
     "state_filter, stream_class",
     [
         (
-                ["enabled", "archived", "paused"],
-                SponsoredBrandsCampaigns,
+            ["enabled", "archived", "paused"],
+            SponsoredBrandsCampaigns,
         ),
         (
-                ["enabled"],
-                SponsoredBrandsCampaigns,
+            ["enabled"],
+            SponsoredBrandsCampaigns,
         ),
         (
-                None,
-                SponsoredBrandsCampaigns,
+            None,
+            SponsoredBrandsCampaigns,
         ),
         (
-                ["enabled", "archived", "paused"],
-                SponsoredProductCampaigns,
+            ["enabled", "archived", "paused"],
+            SponsoredProductCampaigns,
         ),
         (
-                ["enabled"],
-                SponsoredProductCampaigns,
+            ["enabled"],
+            SponsoredProductCampaigns,
         ),
         (
-                None,
-                SponsoredProductCampaigns,
+            None,
+            SponsoredProductCampaigns,
         ),
         (
-                ["enabled", "archived", "paused"],
-                SponsoredDisplayCampaigns,
+            ["enabled", "archived", "paused"],
+            SponsoredDisplayCampaigns,
         ),
         (
-                ["enabled"],
-                SponsoredDisplayCampaigns,
+            ["enabled"],
+            SponsoredDisplayCampaigns,
         ),
         (
-                None,
-                SponsoredDisplayCampaigns,
+            None,
+            SponsoredDisplayCampaigns,
         ),
     ],
 )
