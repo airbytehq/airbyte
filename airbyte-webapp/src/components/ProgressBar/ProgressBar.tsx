@@ -107,6 +107,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ job, jobConfigType }) 
             <div>
               <Button
                 variant="clear"
+                style={{ padding: 0 }}
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowStreams(true);
@@ -131,6 +132,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ job, jobConfigType }) 
                 (
                 <Button
                   variant="clear"
+                  style={{ padding: 0 }}
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowStreams(false);
