@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useMemo } from "react";
 import { useMutation, useQueryClient } from "react-query";
-import { matchPath, useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { Workspace, WorkspaceService } from "core/domain/workspace";
 import { RoutePaths } from "pages/routePaths";
@@ -76,8 +76,9 @@ function useWorkspaceApiService() {
 }
 
 export const useCurrentWorkspaceId = () => {
-  const location = useLocation();
-  return matchPath({ path: `/${RoutePaths.Workspaces}/:workspaceId/*` }, location.pathname)?.params.workspaceId ?? "";
+  const params = useParams<{ workspaceId: string }>();
+
+  return params.workspaceId as string;
 };
 
 export const useCurrentWorkspace = () => {
