@@ -1256,6 +1256,13 @@
   icon: salesforce.svg
   sourceType: api
   releaseStage: generally_available
+- name: SAP Fieldglass
+  sourceDefinitionId: ec5f3102-fb31-4916-99ae-864faf8e7e25
+  dockerRepository: airbyte/source-sap-fieldglass
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sap-fieldglass
+  sourceType: api
+  releaseStage: alpha
 - name: SearchMetrics
   sourceDefinitionId: 8d7ef552-2c0f-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-search-metrics
