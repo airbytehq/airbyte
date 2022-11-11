@@ -31,6 +31,9 @@ import java.sql.SQLException;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import java.util.stream.Collectors;
+import io.airbyte.db.jdbc.JdbcSourceOperations;
+import io.airbyte.db.factory.DSLContextFactory;
+import org.jooq.DSLContext;
 
 public class TeradataDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -85,23 +88,6 @@ public class TeradataDestinationAcceptanceTest extends DestinationAcceptanceTest
 		return actual;
 	}
 	
-	private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-	    try (final DSLContext dslContext = DSLContextFactory.create(
-	    		jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-	    		jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
-	        DatabaseDriver.TERADATA.getDriverClassName(),
-	        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-	        SQLDialect.POSTGRES)) {
-	      return new Database(dslContext)
-	          .query(ctx -> {
-	            ctx.execute("set time zone 'UTC';");
-	            return ctx.fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-	                .stream()
-	                .map(this::getJsonFromRecord)
-	                .collect(Collectors.toList());
-	          });
-	    }
-	  }
 
 	@Override
 	protected void setup(TestDestinationEnv testEnv) {
