@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useIntl } from "react-intl";
 
 import { ResizablePanels } from "components/ui/ResizablePanels";
+import { ErrorSign } from "components/ui/Toast/ErrorSign";
 
 import { useReadStream } from "services/connectorBuilder/ConnectorBuilderApiService";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
@@ -41,30 +42,34 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
           readStream();
         }}
       />
-      {streamReadData && streamReadData.slices.length !== 0 ? (
-        <ResizablePanels
-          className={styles.resizablePanelsContainer}
-          orientation="horizontal"
-          firstPanel={{
-            children: <ResultDisplay slices={streamReadData.slices} />,
-            minWidth: 120,
-          }}
-          secondPanel={{
-            className: styles.logsContainer,
-            children: <LogsDisplay logs={streamReadData.logs} onTitleClick={handleLogsTitleClick} />,
-            minWidth: 30,
-            flex: logsFlex,
-            onStopResize: (newFlex) => {
-              if (newFlex) {
-                setLogsFlex(newFlex);
-              }
-            },
-          }}
-          hideSecondPanel={streamReadData.logs.length === 0}
-        />
+      {isError ? (
+        <div className={styles.error}>
+          <ErrorSign />
+          {error instanceof Error ? error.message : formatMessage({ id: "connectorBuilder.unknownError" })}
+        </div>
       ) : (
-        isError && (
-          <div>{error instanceof Error ? error.message : formatMessage({ id: "connectorBuilder.unknownError" })}</div>
+        streamReadData &&
+        streamReadData.slices.length !== 0 && (
+          <ResizablePanels
+            className={styles.resizablePanelsContainer}
+            orientation="horizontal"
+            firstPanel={{
+              children: <ResultDisplay slices={streamReadData.slices} />,
+              minWidth: 120,
+            }}
+            secondPanel={{
+              className: styles.logsContainer,
+              children: <LogsDisplay logs={streamReadData.logs} onTitleClick={handleLogsTitleClick} />,
+              minWidth: 30,
+              flex: logsFlex,
+              onStopResize: (newFlex) => {
+                if (newFlex) {
+                  setLogsFlex(newFlex);
+                }
+              },
+            }}
+            hideSecondPanel={streamReadData.logs.length === 0}
+          />
         )
       )}
     </div>

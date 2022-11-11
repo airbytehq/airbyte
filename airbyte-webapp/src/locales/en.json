@@ -585,5 +585,6 @@
   "connectorBuilder.sliceLabel": "Slice",
   "connectorBuilder.connectorLogs": "Connector logs",
   "connectorBuilder.invalidYamlDownload": "Cannot download while YAML content is invalid.",
-  "connectorBuilder.invalidYamlTest": "Cannot test stream while YAML content is invalid."
+  "connectorBuilder.invalidYamlTest": "Cannot test stream while YAML content is invalid.",
+  "connectorBuilder.unknownError": "An unknown error has occurred"
 }
