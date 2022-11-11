@@ -97,7 +97,7 @@ export interface ConnectorFormProps {
   fetchingConnectorError?: Error | null;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
-  actorId?: string;
+  connectorId?: string;
 
   isTestConnectionInProgress?: boolean;
   onStopTesting?: () => void;
@@ -120,7 +120,7 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     selectedConnectorDefinition,
     selectedConnectorDefinitionSpecification,
     errorMessage,
-    actorId,
+    connectorId,
   } = props;
 
   const specifications = useBuildInitialSchema(selectedConnectorDefinitionSpecification);
@@ -201,7 +201,7 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
           isEditMode={isEditMode}
           isLoadingSchema={isLoading}
           validationSchema={validationSchema}
-          actorId={actorId}
+          connectorId={connectorId}
         >
           <RevalidateOnValidationSchemaChange validationSchema={validationSchema} />
           <FormikPatch />
