@@ -10,6 +10,7 @@
     "color-function-notation": null,
     "font-family-name-quotes": null,
     "no-unknown-animations": true,
+    "custom-property-empty-line-before": null,
     "scss/dollar-variable-empty-line-before": null,
     "scss/dollar-variable-pattern": null,
     "scss/percent-placeholder-pattern": null,
