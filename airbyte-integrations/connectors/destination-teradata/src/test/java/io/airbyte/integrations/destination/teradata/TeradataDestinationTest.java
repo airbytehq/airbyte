@@ -19,6 +19,9 @@ import org.slf4j.LoggerFactory;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 
 public class TeradataDestinationTest {
 
