@@ -1,15 +1,13 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-import json
-import pandas as pd
-from destination_aws_datalake.config_reader import CompressionCodec
 
+import json
 from typing import Any, Mapping
 
 from destination_aws_datalake import DestinationAwsDatalake
 from destination_aws_datalake.aws import AwsHandler
-from destination_aws_datalake.config_reader import ConnectorConfig
+from destination_aws_datalake.config_reader import CompressionCodec, ConnectorConfig
 
 
 def config_fixture() -> Mapping[str, Any]:
@@ -18,6 +16,7 @@ def config_fixture() -> Mapping[str, Any]:
 
 
 aws_handler = AwsHandler(ConnectorConfig(**config_fixture()), DestinationAwsDatalake())
+
 
 def test_get_compression_type():
     tests = {

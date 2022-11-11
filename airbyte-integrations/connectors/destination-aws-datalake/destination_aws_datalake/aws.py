@@ -2,19 +2,19 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import boto3
 import logging
-import pandas as pd
-import awswrangler as wr
-
-from retrying import retry
 from decimal import Decimal
-from awswrangler import _data_types
 from typing import Dict, Optional
-from botocore.exceptions import ClientError
-from airbyte_cdk.destinations import Destination
 
-from .config_reader import CompressionCodec, CredentialsType, ConnectorConfig, OutputFormat
+import awswrangler as wr
+import boto3
+import pandas as pd
+from airbyte_cdk.destinations import Destination
+from awswrangler import _data_types
+from botocore.exceptions import ClientError
+from retrying import retry
+
+from .config_reader import CompressionCodec, ConnectorConfig, CredentialsType, OutputFormat
 
 logger = logging.getLogger("airbyte")
 
@@ -194,7 +194,7 @@ class AwsHandler:
         try:
             self.glue_client.get_table(DatabaseName=database, Name=table)
             return True
-        except ClientError as e:
+        except ClientError:
             return False
 
     def delete_table(self, database: str, table: str) -> bool:
@@ -214,7 +214,7 @@ class AwsHandler:
             partition_cols,
         )
 
-    def append(self, df: pd.DataFrame, path: str, database: str, table: str,dtype: Dict[str, str], partition_cols: list):
+    def append(self, df: pd.DataFrame, path: str, database: str, table: str, dtype: Dict[str, str], partition_cols: list):
         return self._write(
             df,
             path,

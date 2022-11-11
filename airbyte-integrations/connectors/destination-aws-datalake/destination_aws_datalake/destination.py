@@ -3,14 +3,13 @@
 #
 
 import logging
+from typing import Any, Dict, Iterable, Mapping
+
 import pandas as pd
-
-from typing import Any, Iterable, Mapping, Dict
-from botocore.exceptions import ClientError, InvalidRegionError
-
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
+from botocore.exceptions import ClientError, InvalidRegionError
 
 from .aws import AwsHandler
 from .config_reader import ConnectorConfig
@@ -20,6 +19,7 @@ logger = logging.getLogger("airbyte")
 
 # Flush records every 25000 records to limit memory consumption
 RECORD_FLUSH_INTERVAL = 25000
+
 
 class DestinationAwsDatalake(Destination):
     def _flush_streams(self, streams: Dict[str, StreamWriter]) -> None:
@@ -71,13 +71,13 @@ class DestinationAwsDatalake(Destination):
                             logger.warning(f"Trying to reset stream {stream} that is not in the configured catalog")
 
                     if not message.state.stream:
-                        logger.info(f"Received empty state for, resetting all streams including non-incremental streams")
+                        logger.info("Received empty state for, resetting all streams including non-incremental streams")
                         for stream in streams:
                             streams[stream].reset()
 
                 # Flush records when state is received
                 if message.state.stream:
-                    if message.state.stream.stream_state and hasattr(message.state.stream.stream_state, 'stream_name'):
+                    if message.state.stream.stream_state and hasattr(message.state.stream.stream_state, "stream_name"):
                         stream_name = message.state.stream.stream_state.stream_name
                         if stream_name in streams:
                             logger.info(f"Got state message from source: flushing records for {stream_name}")
@@ -123,7 +123,7 @@ class DestinationAwsDatalake(Destination):
             logger.error(f"""Could not create session on {connector_config.aws_account_id} Exception: {repr(e)}""")
             message = f"""Could not authenticate using {connector_config.credentials_type} on Account {connector_config.aws_account_id} Exception: {repr(e)}"""
             return AirbyteConnectionStatus(status=Status.FAILED, message=message)
-        except InvalidRegionError as e:
+        except InvalidRegionError:
             message = f"{connector_config.region} is not a valid AWS region"
             logger.error(message)
             return AirbyteConnectionStatus(status=Status.FAILED, message=message)

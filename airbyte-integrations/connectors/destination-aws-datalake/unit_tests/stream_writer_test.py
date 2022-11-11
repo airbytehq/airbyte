@@ -3,21 +3,15 @@
 #
 
 import json
-import pandas as pd
-
 from datetime import datetime
-from typing import Any, Mapping, Dict
+from typing import Any, Dict, Mapping
 
+import pandas as pd
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from destination_aws_datalake import DestinationAwsDatalake
 from destination_aws_datalake.aws import AwsHandler
-from destination_aws_datalake.stream_writer import StreamWriter
 from destination_aws_datalake.config_reader import ConnectorConfig
-from airbyte_cdk.models import (
-    AirbyteStream,
-    ConfiguredAirbyteStream,
-    DestinationSyncMode,
-    SyncMode,
-)
+from destination_aws_datalake.stream_writer import StreamWriter
 
 
 def get_config() -> Mapping[str, Any]:
@@ -194,14 +188,14 @@ def get_big_schema_writer(config: Dict[str, Any]):
 
 def test_get_path():
     writer = get_writer(get_config())
-    assert writer._get_path() == f"s3://datalake-bucket/test/append_stream/"
+    assert writer._get_path() == "s3://datalake-bucket/test/append_stream/"
 
 
 def test_get_path_prefix():
     config = get_config()
     config["bucket_prefix"] = "prefix"
     writer = get_writer(config)
-    assert writer._get_path() == f"s3://datalake-bucket/prefix/test/append_stream/"
+    assert writer._get_path() == "s3://datalake-bucket/prefix/test/append_stream/"
 
 
 def test_get_date_columns():
@@ -289,47 +283,38 @@ def test_get_glue_dtypes_from_json_schema():
 
 def test_has_objects_with_no_properties_good():
     writer = get_big_schema_writer(get_config())
-    assert (
-        writer._is_invalid_struct_or_array(
-            {
-                "nestedJson": {
-                    "type": ["null", "object"],
-                    "properties": {
-                        "city": {"type": "object", "properties": {"name": {"type": "string"}}},
-                    },
-                }
+    assert writer._is_invalid_struct_or_array(
+        {
+            "nestedJson": {
+                "type": ["null", "object"],
+                "properties": {
+                    "city": {"type": "object", "properties": {"name": {"type": "string"}}},
+                },
             }
-        )
-        == True
+        }
     )
 
 
 def test_has_objects_with_no_properties_bad():
     writer = get_big_schema_writer(get_config())
-    assert (
-        writer._is_invalid_struct_or_array(
-            {
-                "nestedJson": {
-                    "type": ["null", "object"],
-                }
+    assert not writer._is_invalid_struct_or_array(
+        {
+            "nestedJson": {
+                "type": ["null", "object"],
             }
-        )
-        == False
+        }
     )
 
 
 def test_has_objects_with_no_properties_nested_bad():
     writer = get_big_schema_writer(get_config())
-    assert (
-        writer._is_invalid_struct_or_array(
-            {
-                "nestedJson": {
-                    "type": ["null", "object"],
-                    "properties": {
-                        "city": {"type": "object", "properties": {}},
-                    },
-                }
+    assert not writer._is_invalid_struct_or_array(
+        {
+            "nestedJson": {
+                "type": ["null", "object"],
+                "properties": {
+                    "city": {"type": "object", "properties": {}},
+                },
             }
-        )
-        == False
+        }
     )

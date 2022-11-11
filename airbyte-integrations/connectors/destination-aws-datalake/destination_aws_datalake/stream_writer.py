@@ -4,12 +4,11 @@
 
 import json
 import logging
-import numpy as np
-import pandas as pd
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-from typing import Dict, Any, Optional, List, Union, Tuple
+import pandas as pd
+from airbyte_cdk.models import ConfiguredAirbyteStream, DestinationSyncMode
 from destination_aws_datalake.config_reader import ConnectorConfig, PartitionOptions
-from airbyte_cdk.models import DestinationSyncMode, ConfiguredAirbyteStream
 
 from .aws import AwsHandler
 
@@ -60,7 +59,7 @@ class StreamWriter:
         fields = {}
         for partition in partitions:
             date_col = f"{col}_{partition.lower()}"
-            fields[date_col] = 'bigint'
+            fields[date_col] = "bigint"
 
             # defaulting to 0 since both governed tables
             # and pyarrow don't play well with __HIVE_DEFAULT_PARTITION__
@@ -69,17 +68,17 @@ class StreamWriter:
             # aside from the above, awswrangler will remove data from a table if the partition value is null
             # see: https://github.com/aws/aws-sdk-pandas/issues/921
             if partition == "YEAR":
-                df[date_col] = df[col].dt.strftime('%Y').fillna("0").astype("Int64")
+                df[date_col] = df[col].dt.strftime("%Y").fillna("0").astype("Int64")
 
             elif partition == "MONTH":
-                df[date_col] = df[col].dt.strftime('%m').fillna("0").astype("Int64")
+                df[date_col] = df[col].dt.strftime("%m").fillna("0").astype("Int64")
 
             elif partition == "DAY":
-                df[date_col] = df[col].dt.strftime('%d').fillna("0").astype("Int64")
+                df[date_col] = df[col].dt.strftime("%d").fillna("0").astype("Int64")
 
             elif partition == "DATE":
-                fields[date_col] = 'date'
-                df[date_col] = df[col].dt.strftime('%Y-%m-%d')
+                fields[date_col] = "date"
+                df[date_col] = df[col].dt.strftime("%Y-%m-%d")
 
         return fields
 
