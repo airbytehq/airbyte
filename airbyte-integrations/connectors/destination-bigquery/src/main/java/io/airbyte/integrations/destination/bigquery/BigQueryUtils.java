@@ -109,10 +109,10 @@ public class BigQueryUtils {
   }
 
   public static Dataset getOrCreateDataset(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
-    final Dataset dataset = bigquery.getDataset(datasetId);
+    Dataset dataset = bigquery.getDataset(datasetId);
     if (dataset == null || !dataset.exists()) {
       final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
-      bigquery.create(datasetInfo);
+      dataset = bigquery.create(datasetInfo);
     }
     return dataset;
   }
