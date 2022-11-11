@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.snowflake;
 
 import static io.airbyte.integrations.source.snowflake.SnowflakeDataSourceUtils.AIRBYTE_CLOUD;
@@ -15,4 +19,5 @@ public class SnowflakeSourceRunner {
         .run(args);
     SCHEDULED_EXECUTOR_SERVICE.shutdownNow();
   }
+
 }
