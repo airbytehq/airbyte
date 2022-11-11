@@ -47,7 +47,7 @@ class AbstractOauth2Authenticator(AuthBase):
         Override to define additional parameters
         """
         payload: MutableMapping[str, Any] = {
-            "grant_type": "refresh_token",
+            "grant_type": self.get_grant_type(),
             "client_id": self.get_client_id(),
             "client_secret": self.get_client_secret(),
             "refresh_token": self.get_refresh_token(),
@@ -117,6 +117,10 @@ class AbstractOauth2Authenticator(AuthBase):
     @abstractmethod
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         """Returns the request body to set on the refresh request"""
+
+    @abstractmethod
+    def get_grant_type(self) -> str:
+        """Returns grant_type specified for requesting access_token"""
 
     @property
     @abstractmethod
