@@ -18,8 +18,8 @@ jobs:
           ./tools/bin/find_non_rate_limited_PAT \
             ${{ secrets.OCTAVIA_4_ROOT_ACCESS }} \
             ${{ secrets.OCTAVIA_PAT }}
-    - name: "Label PR based on changed files"
-      uses: actions/labeler@v3
-        with:
-          repo-token: "${{ env.PAT }}"
-          sync-labels: true
+      - name: "Label PR based on changed files"
+        uses: actions/labeler@v3
+          with:
+            repo-token: "${{ env.PAT }}"
+            sync-labels: true
