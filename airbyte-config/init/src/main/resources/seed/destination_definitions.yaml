@@ -27,7 +27,7 @@
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 1.2.5
+  dockerImageTag: 1.2.6
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   icon: bigquery.svg
   normalizationRepository: airbyte/normalization
@@ -43,7 +43,7 @@
 - name: BigQuery (denormalized typed struct)
   destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-bigquery-denormalized
-  dockerImageTag: 1.2.5
+  dockerImageTag: 1.2.6
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   icon: bigquery.svg
   normalizationRepository: airbyte/normalization
@@ -144,12 +144,6 @@
   dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.com/integrations/destinations/pubsub
   icon: googlepubsub.svg
-  releaseStage: alpha
-- name: Heap Analytics
-  destinationDefinitionId: f8e68742-407a-4a3c-99ad-dfd42ae2cba8
-  dockerRepository: airbyte/destination-heap-analytics
-  dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/heap-analytics
   releaseStage: alpha
 - name: Kafka
   destinationDefinitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
@@ -306,7 +300,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.38
+  dockerImageTag: 0.4.40
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   icon: snowflake.svg
   normalizationRepository: airbyte/normalization-snowflake

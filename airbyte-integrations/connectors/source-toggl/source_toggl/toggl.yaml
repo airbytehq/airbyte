@@ -1,0 +1,112 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  data_selector:
+    extractor:
+      field_pointer: ["data"]
+  requester:
+    url_base: "https://api.track.toggl.com"
+    http_method: "GET"
+    request_options_provider:
+      request_parameters:
+        start_date: "{{ config['start_date'] }}"
+        end_date: "{{ config['end_date'] }}"
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['api_token'] }}"
+      password: "api_token"
+  increment_paginator:
+    type: "DefaultPaginator"
+    url_base: "*ref(definitions.requester.url_base)"
+    page_size_option:
+      inject_into: "request_parameter"
+      field_name: "per_page"
+    pagination_strategy:
+      type: "PageIncrement"
+      page_size: 50
+    page_token_option:
+      inject_into: "request_parameter"
+      field_name: "page"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  time_entries_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "time_entries"
+      primary_key: "id"
+      path: "/api/v9/me/time_entries"
+  organizations_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "organizations"
+      primary_key: "id"
+      path: "/api/v9/organizations/{{ config['organization_id'] }}"
+  organizations_users_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "organizations_users"
+      primary_key: "id"
+      path: "/api/v9/organizations/{{ config['organization_id'] }}/users"
+  organizations_groups_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "organizations_groups"
+      primary_key: "group_id"
+      path: "/api/v9/organizations/{{ config['organization_id'] }}/groups"
+  workspace_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "workspace"
+      primary_key: ""
+      path: "/api/v9/workspaces/{{ config['workspace_id'] }}/statistics"
+  workspace_clients_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "workspace_clients"
+      primary_key: "id"
+      path: "/api/v9/workspaces/{{ config['workspace_id'] }}/clients"
+  workspace_projects_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "workspace_projects"
+      primary_key: "id"
+      path: "/api/v9/workspaces/{{ config['workspace_id'] }}/projects"
+  workspace_tasks_stream:
+    retriever:
+      record_selector:
+        $ref: "*ref(definitions.data_selector)"
+      paginator:
+        $ref: "*ref(definitions.increment_paginator)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          request_parameters: ""
+    $options:
+      name: "workspace_tasks"
+      primary_key: "id"
+      path: "/api/v9/workspaces/{{ config['workspace_id'] }}/tasks"
+
+streams:
+  - "*ref(definitions.time_entries_stream)"
+  - "*ref(definitions.organizations_stream)"
+  - "*ref(definitions.organizations_users_stream)"
+  - "*ref(definitions.organizations_groups_stream)"
+  - "*ref(definitions.workspace_stream)"
+  - "*ref(definitions.workspace_clients_stream)"
+  - "*ref(definitions.workspace_projects_stream)"
+  - "*ref(definitions.workspace_tasks_stream)"
+
+check:
+  stream_names:
+    - "time_entries"
