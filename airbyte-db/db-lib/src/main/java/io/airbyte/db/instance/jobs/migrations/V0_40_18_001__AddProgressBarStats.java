@@ -56,6 +56,7 @@ public class V0_40_18_001__AddProgressBarStats extends BaseJavaMigration {
     // Metadata Columns
     final Field<UUID> id = field("id", SQLDataType.UUID.nullable(false));
     final Field<Integer> attemptId = field("attempt_id", SQLDataType.INTEGER.nullable(false));
+    final Field<String> streamNamespace = field("stream_namespace", SQLDataType.VARCHAR.nullable(false));
     final Field<String> streamName = field("stream_name", SQLDataType.VARCHAR.nullable(false));
 
     // Stats Columns
@@ -72,7 +73,7 @@ public class V0_40_18_001__AddProgressBarStats extends BaseJavaMigration {
 
     ctx.createTableIfNotExists("stream_stats")
         .columns(
-            id, attemptId, streamName, recordsEmitted, bytesEmitted, estimatedRecords, estimatedBytes, createdAt, updatedAt)
+            id, attemptId, streamNamespace, streamName, recordsEmitted, bytesEmitted, estimatedRecords, estimatedBytes, createdAt, updatedAt)
         .constraints(
             primaryKey(id),
             foreignKey(attemptId).references("attempts", "id").onDeleteCascade(),

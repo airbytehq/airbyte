@@ -64,6 +64,7 @@ create table "public"."normalization_summaries"(
 create table "public"."stream_stats"(
   "id" uuid not null,
   "attempt_id" int4 not null,
+  "stream_namespace" varchar(2147483647) not null,
   "stream_name" varchar(2147483647) not null,
   "records_emitted" int8 null,
   "bytes_emitted" int8 null,
