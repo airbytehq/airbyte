@@ -1378,6 +1378,13 @@
   icon: strava.svg
   sourceType: api
   releaseStage: alpha
+- name: Statuspage
+  sourceDefinitionId: 74cbd708-46c3-4512-9c93-abd5c3e9a94d
+  dockerRepository: airbyte/source-statuspage
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/statuspage
+  sourceType: api
+  releaseStage: alpha
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
