@@ -58,7 +58,7 @@
                 "type": "string",
                 "description": "The Api Key of your Lever Hiring account.",
                 "airbyte_secret": true,
-                "order":1
+                "order": 1
               }
             }
           }
