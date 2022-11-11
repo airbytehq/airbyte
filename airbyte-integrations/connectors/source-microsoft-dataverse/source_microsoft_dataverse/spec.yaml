@@ -22,12 +22,14 @@ connectionSpecification:
       type: string
       description: Tenant Id of your Microsoft Dataverse Instance
       title: Tenant Id
+      airbyte_secret: true
       order: 1
 
     client_id:
       type: string
       description: App Registration Client Id
       title: Client Id
+      airbyte_secret: true
       order: 2
 
     client_secret_value:
