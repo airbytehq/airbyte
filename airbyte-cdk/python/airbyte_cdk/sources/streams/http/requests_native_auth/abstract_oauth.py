@@ -117,7 +117,7 @@ class AbstractOauth2Authenticator(AuthBase):
     @abstractmethod
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         """Returns the request body to set on the refresh request"""
-        
+
     @abstractmethod
     def get_grant_type(self) -> str:
         """Returns grant_type specified for requesting access_token"""
