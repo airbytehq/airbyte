@@ -27,8 +27,7 @@ from source_amazon_ads.streams import (
     SponsoredProductCampaigns,
     SponsoredProductsReportStream,
 )
-from source_amazon_ads.streams.report_streams.report_streams import ReportGenerationFailure, ReportGenerationInProgress, \
-    TooManyRequests
+from source_amazon_ads.streams.report_streams.report_streams import ReportGenerationFailure, ReportGenerationInProgress, TooManyRequests
 
 from .utils import read_incremental
 
