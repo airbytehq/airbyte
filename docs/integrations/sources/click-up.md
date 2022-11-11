@@ -34,12 +34,21 @@ The ClickUp API enforces request rate limits per token. The rate limits are depe
 
 1. Generate an API key from [ClickUp](https://clickup.com/). See [here](https://clickup.com/api/developer-portal/authentication/#generate-your-personal-api-token).
 
-
 ### Setup guide
 
 The following fields are required fields for the connector to work:
 
-- `api_token`: Your ClickUp API Token.
+* `api_token`: Your ClickUp API Token.
+
+Here are some optional fields for different streams:
+
+* `team_id`: Your team ID in your ClickUp workspace. It is required for `space` stream.
+
+* `space_id`: Your space ID in your ClickUp workspace. It is required for `folder` stream.
+
+* `folder_id`: Your folder ID in your ClickUp space. It is required for `list` stream.
+
+* `list_id`: Your list ID in your folder of space. It is required for `task` stream.
 
 ## Changelog
 
