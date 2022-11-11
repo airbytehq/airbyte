@@ -91,7 +91,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       BigQueryUtils.checkHasCreateAndDeleteDatasetRole(bigquery, datasetId, datasetLocation);
 
       final Dataset dataset = BigQueryUtils.getOrCreateDataset(bigquery, datasetId, datasetLocation);
-      if (!dataset.getLocation().equals(datasetLocation)){
+      if (!dataset.getLocation().equals(datasetLocation)) {
         throw new ConfigErrorException("Actual dataset location doesn't match to location from config");
       }
       final QueryJobConfiguration queryConfig = QueryJobConfiguration
