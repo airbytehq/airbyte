@@ -20,14 +20,14 @@ class XeroCustomConnectionsOauth2Authenticator(Oauth2Authenticator):
     """
 
     def __init__(
-            self,
-            token_refresh_endpoint: str,
-            client_id: str,
-            client_secret: str,
-            scopes: List[str] = None,
-            token_expiry_date: pendulum.DateTime = None,
-            access_token_name: str = "access_token",
-            expires_in_name: str = "expires_in",
+        self,
+        token_refresh_endpoint: str,
+        client_id: str,
+        client_secret: str,
+        scopes: List[str] = None,
+        token_expiry_date: pendulum.DateTime = None,
+        access_token_name: str = "access_token",
+        expires_in_name: str = "expires_in",
     ):
         self.token_refresh_endpoint = token_refresh_endpoint
         self.client_secret = client_secret
@@ -61,18 +61,14 @@ class XeroCustomConnectionsOauth2Authenticator(Oauth2Authenticator):
 
     def get_refresh_request_headers(self) -> Mapping[str, Any]:
         headers: MutableMapping[str, Any] = {
-            "Authorization":
-                "Basic " + str(base64.b64encode(bytes(self.client_id + ":" + self.client_secret, "utf-8")), "utf-8")
+            "Authorization": "Basic " + str(base64.b64encode(bytes(self.client_id + ":" + self.client_secret, "utf-8")), "utf-8")
         }
 
         return headers
 
     def refresh_access_token(self) -> Tuple[str, int]:
         response = requests.request(
-            method="POST",
-            url=self.token_refresh_endpoint,
-            data=self.get_refresh_request_body(),
-            headers=self.get_refresh_request_headers()
+            method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body(), headers=self.get_refresh_request_headers()
         )
         response.raise_for_status()
         response_json = response.json()

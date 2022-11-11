@@ -2,11 +2,11 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-import datetime
 from source_xero.streams import XeroStream, parse_date
 
 
@@ -88,11 +88,8 @@ def test_parse_date():
     # 11/10/2020 00:00:00 +3 (11/10/2020 21:00:00 GMT/UTC)
     assert parse_date("/Date(1602363600000+0300)/") == datetime.datetime(2020, 10, 11, 0, 0, tzinfo=datetime.timezone.utc)
     # 02/02/2020 10:31:51.5 +3 (02/02/2020 07:31:51.5 GMT/UTC)
-    assert parse_date("/Date(1580628711500+0300)/") == datetime.datetime(2020, 2, 2, 10, 31, 51, 500000,
-                                                                         tzinfo=datetime.timezone.utc)
+    assert parse_date("/Date(1580628711500+0300)/") == datetime.datetime(2020, 2, 2, 10, 31, 51, 500000, tzinfo=datetime.timezone.utc)
     # 07/02/2022 20:12:55 GMT/UTC
-    assert parse_date("/Date(1656792775000)/") == datetime.datetime(2022, 7, 2, 20, 12, 55,
-                                                                    tzinfo=datetime.timezone.utc)
+    assert parse_date("/Date(1656792775000)/") == datetime.datetime(2022, 7, 2, 20, 12, 55, tzinfo=datetime.timezone.utc)
     # Not a date
     assert parse_date("not a date") is None
-
