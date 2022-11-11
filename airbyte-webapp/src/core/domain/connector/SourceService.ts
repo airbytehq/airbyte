@@ -25,7 +25,6 @@ export class SourceService extends AirbyteRequestService {
     params: {
       sourceId?: string;
       connectionConfiguration?: ConnectionConfiguration;
-      workspaceId?: string;
     },
     requestParams?: RequestInit
   ) {

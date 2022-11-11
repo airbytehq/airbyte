@@ -9,7 +9,6 @@ import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
-import io.airbyte.config.JobOutput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.SyncStats;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
@@ -122,7 +121,7 @@ public interface JobPersistence {
   /**
    * Sets an attempt's temporal workflow id. Later used to cancel the workflow.
    */
-  void setAttemptTemporalWorkflowInfo(long jobId, int attemptNumber, String temporalWorkflowId, String processingTaskQueue) throws IOException;
+  void setAttemptTemporalWorkflowId(long jobId, int attemptNumber, String temporalWorkflowId) throws IOException;
 
   /**
    * Retrieves an attempt's temporal workflow id. Used to cancel the workflow.
@@ -134,7 +133,7 @@ public interface JobPersistence {
    * StandardSyncOutput#state in the configs database by calling
    * ConfigRepository#updateConnectionState, which takes care of persisting the connection state.
    */
-  void writeOutput(long jobId, int attemptNumber, JobOutput output) throws IOException;
+  <T> void writeOutput(long jobId, int attemptNumber, T output, SyncStats syncStats, NormalizationSummary normalizationSummary) throws IOException;
 
   /**
    * Writes a summary of all failures that occurred during the attempt.
@@ -211,10 +210,6 @@ public interface JobPersistence {
   Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException;
 
   Optional<Job> getLastSyncJob(UUID connectionId) throws IOException;
-
-  List<Job> getLastSyncJobForConnections(final List<UUID> connectionIds) throws IOException;
-
-  List<Job> getRunningSyncJobForConnections(final List<UUID> connectionIds) throws IOException;
 
   Optional<Job> getFirstReplicationJob(UUID connectionId) throws IOException;
 

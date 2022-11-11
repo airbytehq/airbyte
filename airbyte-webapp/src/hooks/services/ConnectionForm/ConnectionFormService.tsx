@@ -6,7 +6,7 @@ import { useGetDestinationDefinitionSpecification } from "services/connector/Des
 import { FormError, generateMessageFromError } from "utils/errorStatusMessage";
 import {
   ConnectionFormValues,
-  createConnectionValidationSchema,
+  connectionValidationSchema,
   FormikConnectionFormValues,
   mapFormPropsToOperation,
   useInitialValues,
@@ -33,14 +33,10 @@ export const tidyConnectionFormValues = (
   values: FormikConnectionFormValues,
   workspaceId: string,
   mode: ConnectionFormMode,
-  allowSubOneHourCronExpressions: boolean,
   operations?: OperationRead[]
 ): ValuesProps => {
   // TODO (https://github.com/airbytehq/airbyte/issues/17279): We should try to fix the types so we don't need the casting.
-  const formValues: ConnectionFormValues = createConnectionValidationSchema({
-    mode,
-    allowSubOneHourCronExpressions,
-  }).cast(values, {
+  const formValues: ConnectionFormValues = connectionValidationSchema(mode).cast(values, {
     context: { isRequest: true },
   }) as unknown as ConnectionFormValues;
 
@@ -86,10 +82,7 @@ const useConnectionForm = ({ connection, mode, schemaError, refreshSchema }: Con
 
 const ConnectionFormContext = createContext<ReturnType<typeof useConnectionForm> | null>(null);
 
-export const ConnectionFormServiceProvider: React.FC<React.PropsWithChildren<ConnectionServiceProps>> = ({
-  children,
-  ...props
-}) => {
+export const ConnectionFormServiceProvider: React.FC<ConnectionServiceProps> = ({ children, ...props }) => {
   const data = useConnectionForm(props);
   return <ConnectionFormContext.Provider value={data}>{children}</ConnectionFormContext.Provider>;
 };

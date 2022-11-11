@@ -1,8 +1,8 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { HeadTitle } from "components/common/HeadTitle";
-import { Heading } from "components/ui/Heading";
+import HeadTitle from "components/HeadTitle";
+import { Text } from "components/ui/Text";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 
@@ -20,7 +20,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ highlightStyle }) => {
   return (
     <div>
       <HeadTitle titles={[{ id: "login.signup" }]} />
-      <Heading as="h1" size="xl" className={styles.title}>
+      <Text as="h1" size="xl" className={styles.title}>
         <FormattedMessage
           id="login.activateAccess"
           values={{
@@ -31,7 +31,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ highlightStyle }) => {
             ),
           }}
         />
-      </Heading>
+      </Text>
       <SpecialBlock />
       <SignupForm />
       <OAuthLogin isSignUpPage />

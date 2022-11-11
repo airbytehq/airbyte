@@ -58,7 +58,7 @@ def table_schema() -> str:
 @pytest.fixture
 def configured_catalogue(test_table_name: str, table_schema: str) -> ConfiguredAirbyteCatalog:
     append_stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name=test_table_name, json_schema=table_schema, supported_sync_modes=[SyncMode.incremental]),
+        stream=AirbyteStream(name=test_table_name, json_schema=table_schema),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
     )

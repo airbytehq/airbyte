@@ -11,8 +11,6 @@ import pyarrow
 import pyarrow as pa
 import six  # type: ignore[import]
 from pyarrow import csv as pa_csv
-from source_s3.exceptions import S3Exception
-from source_s3.source_files_abstract.file_info import FileInfo
 from source_s3.utils import get_value_or_json_if_empty_string, run_in_external_process
 
 from .abstract_file_parser import AbstractFileParser
@@ -20,19 +18,6 @@ from .csv_spec import CsvFormat
 
 MAX_CHUNK_SIZE = 50.0 * 1024**2  # in bytes
 TMP_FOLDER = tempfile.mkdtemp()
-
-
-def wrap_exception(exceptions: Tuple[type, ...]):
-    def wrapper(fn: callable):
-        def inner(self, file: Union[TextIO, BinaryIO], file_info: FileInfo):
-            try:
-                return fn(self, file, file_info)
-            except exceptions as e:
-                raise S3Exception(file_info, str(e), str(e), exception=e)
-
-        return inner
-
-    return wrapper
 
 
 class CsvParser(AbstractFileParser):
@@ -89,8 +74,7 @@ class CsvParser(AbstractFileParser):
             **json.loads(additional_reader_options),
         }
 
-    @wrap_exception((ValueError,))
-    def get_inferred_schema(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Mapping[str, Any]:
+    def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> Mapping[str, Any]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
         This now uses multiprocessing in order to timeout the schema inference as it can hang.
@@ -162,8 +146,7 @@ class CsvParser(AbstractFileParser):
         field_names = next(reader)
         return {field_name.strip(): pyarrow.string() for field_name in field_names}
 
-    @wrap_exception((ValueError,))
-    def stream_records(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Iterator[Mapping[str, Any]]:
+    def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
         PyArrow returns lists of values for each column so we zip() these up into records which we then yield

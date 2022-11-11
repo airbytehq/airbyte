@@ -78,10 +78,6 @@ public class SshBastionContainer {
     db.close();
   }
 
-  public void stopAndClose() {
-    bastion.close();
-  }
-
   public GenericContainer getContainer() {
     return bastion;
   }

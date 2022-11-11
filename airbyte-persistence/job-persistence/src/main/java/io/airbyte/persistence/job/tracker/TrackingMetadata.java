@@ -12,7 +12,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobOutput;
-import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.ScheduleData;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -20,7 +19,6 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.config.StandardSyncSummary;
-import io.airbyte.config.SyncStats;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.persistence.job.models.Attempt;
 import io.airbyte.persistence.job.models.Job;
@@ -112,9 +110,6 @@ public class TrackingMetadata {
           final JobOutput jobOutput = lastAttempt.getOutput().get();
           if (jobOutput.getSync() != null) {
             final StandardSyncSummary syncSummary = jobOutput.getSync().getStandardSyncSummary();
-            final SyncStats totalStats = syncSummary.getTotalStats();
-            final NormalizationSummary normalizationSummary = jobOutput.getSync().getNormalizationSummary();
-
             if (syncSummary.getStartTime() != null)
               metadata.put("sync_start_time", syncSummary.getStartTime());
             if (syncSummary.getEndTime() != null && syncSummary.getStartTime() != null)
@@ -123,42 +118,22 @@ public class TrackingMetadata {
               metadata.put("volume_mb", syncSummary.getBytesSynced());
             if (syncSummary.getRecordsSynced() != null)
               metadata.put("volume_rows", syncSummary.getRecordsSynced());
-            if (totalStats.getSourceStateMessagesEmitted() != null)
+            if (syncSummary.getTotalStats().getSourceStateMessagesEmitted() != null)
               metadata.put("count_state_messages_from_source", syncSummary.getTotalStats().getSourceStateMessagesEmitted());
-            if (totalStats.getDestinationStateMessagesEmitted() != null)
+            if (syncSummary.getTotalStats().getDestinationStateMessagesEmitted() != null)
               metadata.put("count_state_messages_from_destination", syncSummary.getTotalStats().getDestinationStateMessagesEmitted());
-            if (totalStats.getMaxSecondsBeforeSourceStateMessageEmitted() != null)
+            if (syncSummary.getTotalStats().getMaxSecondsBeforeSourceStateMessageEmitted() != null)
               metadata.put("max_seconds_before_source_state_message_emitted",
-                  totalStats.getMaxSecondsBeforeSourceStateMessageEmitted());
-            if (totalStats.getMeanSecondsBeforeSourceStateMessageEmitted() != null)
+                  syncSummary.getTotalStats().getMaxSecondsBeforeSourceStateMessageEmitted());
+            if (syncSummary.getTotalStats().getMeanSecondsBeforeSourceStateMessageEmitted() != null)
               metadata.put("mean_seconds_before_source_state_message_emitted",
-                  totalStats.getMeanSecondsBeforeSourceStateMessageEmitted());
-            if (totalStats.getMaxSecondsBetweenStateMessageEmittedandCommitted() != null)
+                  syncSummary.getTotalStats().getMeanSecondsBeforeSourceStateMessageEmitted());
+            if (syncSummary.getTotalStats().getMaxSecondsBetweenStateMessageEmittedandCommitted() != null)
               metadata.put("max_seconds_between_state_message_emit_and_commit",
-                  totalStats.getMaxSecondsBetweenStateMessageEmittedandCommitted());
-            if (totalStats.getMeanSecondsBetweenStateMessageEmittedandCommitted() != null)
+                  syncSummary.getTotalStats().getMaxSecondsBetweenStateMessageEmittedandCommitted());
+            if (syncSummary.getTotalStats().getMeanSecondsBetweenStateMessageEmittedandCommitted() != null)
               metadata.put("mean_seconds_between_state_message_emit_and_commit",
-                  totalStats.getMeanSecondsBetweenStateMessageEmittedandCommitted());
-
-            if (totalStats.getReplicationStartTime() != null)
-              metadata.put("replication_start_time", totalStats.getReplicationStartTime());
-            if (totalStats.getReplicationEndTime() != null)
-              metadata.put("replication_end_time", totalStats.getReplicationEndTime());
-            if (totalStats.getSourceReadStartTime() != null)
-              metadata.put("source_read_start_time", totalStats.getSourceReadStartTime());
-            if (totalStats.getSourceReadEndTime() != null)
-              metadata.put("source_read_end_time", totalStats.getSourceReadEndTime());
-            if (totalStats.getDestinationWriteStartTime() != null)
-              metadata.put("destination_write_start_time", totalStats.getDestinationWriteStartTime());
-            if (totalStats.getDestinationWriteEndTime() != null)
-              metadata.put("destination_write_end_time", totalStats.getDestinationWriteEndTime());
-
-            if (normalizationSummary != null) {
-              if (normalizationSummary.getStartTime() != null)
-                metadata.put("normalization_start_time", normalizationSummary.getStartTime());
-              if (normalizationSummary.getEndTime() != null)
-                metadata.put("normalization_end_time", normalizationSummary.getEndTime());
-            }
+                  syncSummary.getTotalStats().getMeanSecondsBetweenStateMessageEmittedandCommitted());
           }
         }
 

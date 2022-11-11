@@ -1,4 +1,5 @@
-ARG JDK_IMAGE=airbyte/airbyte-base-java-image:1.0
+ARG JDK_VERSION=17.0.4
+ARG JDK_IMAGE=amazoncorretto:${JDK_VERSION}
 FROM ${JDK_IMAGE} AS worker
 
 ARG DOCKER_BUILD_ARCH=amd64
@@ -10,7 +11,7 @@ RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/s
         && chmod +x kubectl && mv kubectl /usr/local/bin/
 
 # Don't change this manually.  Bump version expects to make moves based on this string
-ARG VERSION=0.40.18
+ARG VERSION=0.40.14
 
 ENV APPLICATION airbyte-workers
 ENV VERSION ${VERSION}

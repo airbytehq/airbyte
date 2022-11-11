@@ -38,11 +38,7 @@ export class GoogleAuthService {
   }
 
   async loginWithOAuth(provider: OAuthProviders) {
-    // Instantiate the appropriate auth provider. For Google we're specifying the `hd` parameter, to only show
-    // Google accounts in the selector that are linked to a business (GSuite) account.
-    const authProvider =
-      provider === "github" ? new GithubAuthProvider() : new GoogleAuthProvider().setCustomParameters({ hd: "*" });
-    await signInWithPopup(this.auth, authProvider);
+    await signInWithPopup(this.auth, provider === "github" ? new GithubAuthProvider() : new GoogleAuthProvider());
   }
 
   async login(email: string, password: string): Promise<UserCredential> {

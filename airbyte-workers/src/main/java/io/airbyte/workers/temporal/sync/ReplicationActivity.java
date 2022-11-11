@@ -18,7 +18,6 @@ public interface ReplicationActivity {
   StandardSyncOutput replicate(JobRunConfig jobRunConfig,
                                IntegrationLauncherConfig sourceLauncherConfig,
                                IntegrationLauncherConfig destinationLauncherConfig,
-                               StandardSyncInput syncInput,
-                               final String taskQueue);
+                               StandardSyncInput syncInput);
 
 }

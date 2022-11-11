@@ -27,7 +27,6 @@ import {
 import { ConnectionFormMode, ConnectionOrPartialConnection } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
-import { validateCronExpression, validateCronFrequencyOneHourOrMore } from "utils/cron";
 
 import calculateInitialCatalog from "./calculateInitialCatalog";
 
@@ -75,15 +74,7 @@ export function useDefaultTransformation(): OperationCreate {
   };
 }
 
-interface CreateConnectionValidationSchemaArgs {
-  allowSubOneHourCronExpressions: boolean;
-  mode: ConnectionFormMode;
-}
-
-export const createConnectionValidationSchema = ({
-  mode,
-  allowSubOneHourCronExpressions,
-}: CreateConnectionValidationSchemaArgs) =>
+export const connectionValidationSchema = (mode: ConnectionFormMode) =>
   yup
     .object({
       // The connection name during Editing is handled separately from the form
@@ -108,16 +99,7 @@ export const createConnectionValidationSchema = ({
         return yup.object({
           cron: yup
             .object({
-              cronExpression: yup
-                .string()
-                .trim()
-                .required("form.empty.error")
-                .test("validCron", "form.cronExpression.error", validateCronExpression)
-                .test(
-                  "validCronFrequency",
-                  "form.cronExpression.underOneHourNotAllowed",
-                  (expression) => allowSubOneHourCronExpressions || validateCronFrequencyOneHourOrMore(expression)
-                ),
+              cronExpression: yup.string().required("form.empty.error"),
               cronTimeZone: yup.string().required("form.empty.error"),
             })
             .defined("form.empty.error"),
@@ -133,7 +115,7 @@ export const createConnectionValidationSchema = ({
         .required("form.empty.error"),
       namespaceFormat: yup.string().when("namespaceDefinition", {
         is: NamespaceDefinitionType.customformat,
-        then: yup.string().trim().required("form.empty.error"),
+        then: yup.string().required("form.empty.error"),
       }),
       prefix: yup.string(),
       syncCatalog: yup.object({
@@ -266,21 +248,14 @@ export const useInitialValues = (
   destDefinition: DestinationDefinitionSpecificationRead,
   isNotCreateMode?: boolean
 ): FormikConnectionFormValues => {
-  const { catalogDiff } = connection;
-
-  const newStreamDescriptors = catalogDiff?.transforms
-    .filter((transform) => transform.transformType === "add_stream")
-    .map((stream) => stream.streamDescriptor);
-
   const initialSchema = useMemo(
     () =>
       calculateInitialCatalog(
         connection.syncCatalog,
         destDefinition?.supportedDestinationSyncModes || [],
-        isNotCreateMode,
-        newStreamDescriptors
+        isNotCreateMode
       ),
-    [connection.syncCatalog, destDefinition?.supportedDestinationSyncModes, isNotCreateMode, newStreamDescriptors]
+    [connection.syncCatalog, destDefinition, isNotCreateMode]
   );
 
   return useMemo(() => {

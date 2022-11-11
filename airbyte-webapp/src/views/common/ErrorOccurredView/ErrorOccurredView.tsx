@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components/ui/Button";
-import { Heading } from "components/ui/Heading";
+import { Text } from "components/ui/Text";
 
 import styles from "./ErrorOccurredView.module.scss";
 
@@ -17,9 +17,9 @@ export const ErrorOccurredView: React.FC<ErrorOccurredViewProps> = ({ message, o
     <div className={styles.errorOccurredView}>
       <div className={styles.content}>
         <img src="/images/octavia/biting-nails.png" alt="" className={styles.octavia} />
-        <Heading as="h2" size="lg" centered>
+        <Text as="h2" size="lg" centered>
           <FormattedMessage id="errorView.title" />
-        </Heading>
+        </Text>
         <p className={styles.message}>{message}</p>
         {onCtaButtonClick && ctaButtonText && (
           <Button size="lg" onClick={onCtaButtonClick}>

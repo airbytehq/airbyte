@@ -1,4 +1,4 @@
-import { ConfirmationModalProps } from "components/common/ConfirmationModal/ConfirmationModal";
+import { ConfirmationModalProps } from "components/ConfirmationModal/ConfirmationModal";
 
 export type ConfirmationModalOptions = Omit<ConfirmationModalProps, "onClose">;
 

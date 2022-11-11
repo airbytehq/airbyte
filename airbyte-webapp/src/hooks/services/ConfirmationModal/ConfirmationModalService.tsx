@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useMemo } from "react";
 
-import { ConfirmationModal } from "components/common/ConfirmationModal";
+import { ConfirmationModal } from "components/ConfirmationModal";
 
 import useTypesafeReducer from "hooks/useTypesafeReducer";
 

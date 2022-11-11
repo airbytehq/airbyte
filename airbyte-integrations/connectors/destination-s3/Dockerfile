@@ -19,11 +19,12 @@ RUN /bin/bash -c 'set -e && \
     ARCH=`uname -m` && \
     if [ "$ARCH" == "x86_64" ] || [ "$ARCH" = "amd64" ]; then \
        echo "$ARCH" && \
-       yum install lzop lzo lzo-dev -y; \
+       apt-get update; \
+       apt-get install lzop liblzo2-2 liblzo2-dev -y; \
     elif [ "$ARCH" == "aarch64" ] || [ "$ARCH" = "arm64" ]; then \
       echo "$ARCH" && \
-      yum group install -y "Development Tools"; \
-      yum install lzop lzo lzo-dev wget curl unzip zip maven git which -y; \
+      apt-get update; \
+      apt-get install lzop liblzo2-2 liblzo2-dev wget curl unzip zip build-essential maven git -y; \
       wget http://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz -P /tmp; \
       cd /tmp && tar xvfz lzo-2.10.tar.gz; \
       cd /tmp/lzo-2.10/ && ./configure --enable-shared --prefix /usr/local/lzo-2.10; \
@@ -40,5 +41,5 @@ RUN /bin/bash -c 'set -e && \
        echo "unknown arch" ;\
     fi'
 
-LABEL io.airbyte.version=0.3.17
+LABEL io.airbyte.version=0.3.16
 LABEL io.airbyte.name=airbyte/destination-s3

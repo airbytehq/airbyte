@@ -1,6 +1,5 @@
 {
   "type": "object",
-  "additionalProperties": true,
   "properties": {
     "created_at": {
       "type": ["null", "string"],

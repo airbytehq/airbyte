@@ -1,5 +1,5 @@
 import { Card } from "components/ui/Card";
-import { Heading } from "components/ui/Heading";
+import { Text } from "components/ui/Text";
 
 import styles from "./Section.module.scss";
 
@@ -11,9 +11,9 @@ export const Section: React.FC<React.PropsWithChildren<SectionProps>> = ({ title
   <Card>
     <div className={styles.section}>
       {title && (
-        <Heading as="h2" size="sm">
+        <Text as="h5" size="sm">
           {title}
-        </Heading>
+        </Text>
       )}
       {children}
     </div>

@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 import { Button } from "components/ui/Button";
 
-import { links } from "utils/links";
+import { useConfig } from "config";
 
 import HighlightedText from "./HighlightedText";
 import TitlesBlock from "./TitlesBlock";
@@ -26,6 +26,8 @@ const Videos = styled.div`
 `;
 
 const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onNextStep }) => {
+  const config = useConfig();
+
   return (
     <>
       <TitlesBlock
@@ -63,10 +65,9 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onNextStep }) => {
         <VideoItem
           description={<FormattedMessage id="onboarding.exploreDemo" />}
           img="/videoCover.png"
-          link={links.demoLink}
+          link={config.links.demoLink}
         />
       </Videos>
-
       <Button size="lg" onClick={onNextStep}>
         <FormattedMessage id="onboarding.firstConnection" />
       </Button>

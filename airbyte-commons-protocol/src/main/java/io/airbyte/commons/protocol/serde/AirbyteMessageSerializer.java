@@ -4,12 +4,12 @@
 
 package io.airbyte.commons.protocol.serde;
 
-import io.airbyte.commons.version.Version;
+import io.airbyte.commons.version.AirbyteVersion;
 
 public interface AirbyteMessageSerializer<T> {
 
   String serialize(final T message);
 
-  Version getTargetVersion();
+  AirbyteVersion getTargetVersion();
 
 }

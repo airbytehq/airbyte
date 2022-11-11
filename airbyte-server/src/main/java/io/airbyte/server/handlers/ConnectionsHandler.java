@@ -29,7 +29,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.Geography;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.ScheduleData;
@@ -38,7 +37,6 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.ScheduleType;
-import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -140,9 +138,7 @@ public class ConnectionsHandler {
         .withDestinationId(connectionCreate.getDestinationId())
         .withOperationIds(operationIds)
         .withStatus(ApiPojoConverters.toPersistenceStatus(connectionCreate.getStatus()))
-        .withSourceCatalogId(connectionCreate.getSourceCatalogId())
-        .withGeography(getGeographyFromConnectionCreateOrWorkspace(connectionCreate))
-        .withBreakingChange(false);
+        .withSourceCatalogId(connectionCreate.getSourceCatalogId());
     if (connectionCreate.getResourceRequirements() != null) {
       standardSync.withResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(connectionCreate.getResourceRequirements()));
     }
@@ -179,25 +175,6 @@ public class ConnectionsHandler {
     }
 
     return buildConnectionRead(connectionId);
-  }
-
-  private Geography getGeographyFromConnectionCreateOrWorkspace(final ConnectionCreate connectionCreate)
-      throws JsonValidationException, ConfigNotFoundException, IOException {
-
-    if (connectionCreate.getGeography() != null) {
-      return ApiPojoConverters.toPersistenceGeography(connectionCreate.getGeography());
-    }
-
-    // connectionCreate didn't specify a geography, so use the workspace default geography if one exists
-    final UUID workspaceId = workspaceHelper.getWorkspaceForSourceId(connectionCreate.getSourceId());
-    final StandardWorkspace workspace = configRepository.getStandardWorkspaceNoSecrets(workspaceId, true);
-
-    if (workspace.getDefaultGeography() != null) {
-      return workspace.getDefaultGeography();
-    }
-
-    // if the workspace doesn't have a default geography, default to 'auto'
-    return Geography.AUTO;
   }
 
   private void populateSyncFromLegacySchedule(final StandardSync standardSync, final ConnectionCreate connectionCreate) {
@@ -339,10 +316,6 @@ public class ConnectionsHandler {
     if (patch.getResourceRequirements() != null) {
       sync.setResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(patch.getResourceRequirements()));
     }
-
-    if (patch.getGeography() != null) {
-      sync.setGeography(ApiPojoConverters.toPersistenceGeography(patch.getGeography()));
-    }
   }
 
   private void validateConnectionPatch(final WorkspaceHelper workspaceHelper, final StandardSync persistedSync, final ConnectionUpdate patch) {
@@ -421,10 +394,10 @@ public class ConnectionsHandler {
     return buildConnectionRead(connectionId);
   }
 
-  public CatalogDiff getDiff(final AirbyteCatalog oldCatalog, final AirbyteCatalog newCatalog, final ConfiguredAirbyteCatalog configuredCatalog) {
+  public CatalogDiff getDiff(final AirbyteCatalog oldCatalog, final AirbyteCatalog newCatalog) {
     return new CatalogDiff().transforms(CatalogHelpers.getCatalogDiff(
         CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(oldCatalog)),
-        CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(newCatalog)), configuredCatalog)
+        CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(newCatalog)))
         .stream()
         .map(CatalogDiffConverters::streamTransformToApi)
         .toList());

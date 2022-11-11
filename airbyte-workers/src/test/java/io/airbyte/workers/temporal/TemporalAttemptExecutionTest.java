@@ -26,7 +26,6 @@ import io.temporal.serviceclient.CheckedExceptionWrapper;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -90,8 +89,7 @@ class TemporalAttemptExecutionTest {
         mdcSetter,
         mock(CancellationHandler.class),
         airbyteApiClient,
-        () -> "workflow_id", configs.getAirbyteVersionOrWarning(),
-        Optional.of("SYNC"));
+        () -> "workflow_id", configs.getAirbyteVersionOrWarning());
   }
 
   @AfterAll

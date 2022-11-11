@@ -156,8 +156,7 @@ public class BigQueryDenormalizedTestDataUtils {
 
   public static ConfiguredAirbyteCatalog getCommonCatalog(final JsonNode schema, final String datasetId) {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(schema)
-            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)))
+        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(schema))
         .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
   }
 

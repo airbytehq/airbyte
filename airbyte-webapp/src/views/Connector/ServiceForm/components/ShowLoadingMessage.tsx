@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 
 import { Link } from "components";
 
-import { links } from "utils/links";
+import { useConfig } from "config";
 
 interface ShowLoadingMessageProps {
   connector?: string;
@@ -12,6 +12,7 @@ interface ShowLoadingMessageProps {
 const TIMEOUT_MS = 10000;
 
 const ShowLoadingMessage: React.FC<ShowLoadingMessageProps> = ({ connector }) => {
+  const config = useConfig();
   const [longLoading, setLongLoading] = useState(false);
 
   useEffect(() => {
@@ -25,7 +26,7 @@ const ShowLoadingMessage: React.FC<ShowLoadingMessageProps> = ({ connector }) =>
       id="form.tooLong"
       values={{
         lnk: (...lnk: React.ReactNode[]) => (
-          <Link target="_blank" href={links.technicalSupport} as="a">
+          <Link target="_blank" href={config.links.technicalSupport} as="a">
             {lnk}
           </Link>
         ),

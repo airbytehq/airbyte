@@ -1,136 +1,171 @@
-import { uniqueId } from "lodash";
-import { KeyboardEventHandler, useMemo, useState } from "react";
-import { ActionMeta, MultiValue, OnChangeValue } from "react-select";
-import CreatableSelect from "react-select/creatable";
+import React, { useRef, useState } from "react";
+import styled from "styled-components";
 
-import styles from "./TagInput.module.scss";
+import { TagItem, IItemProps } from "./TagItem";
 
-const components = {
-  DropdownIndicator: null,
-};
+const MainContainer = styled.div<{ error?: boolean; disabled?: boolean }>`
+  width: 100%;
+  min-height: 36px;
+  border-radius: 4px;
+  padding: 6px 6px 0;
+  cursor: text;
+  max-height: 100%;
+  overflow: auto;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-self: stretch;
+  border: 1px solid ${(props) => (props.error ? props.theme.dangerColor : props.theme.greyColor0)};
+  background: ${(props) => (props.error ? props.theme.greyColor10 : props.theme.greyColor0)};
+  caret-color: ${({ theme }) => theme.primaryColor};
 
-const customStyles = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- react-select's typing is lacking here
-  multiValue: (provided: any) => ({
-    ...provided,
-    maxWidth: "100%",
-    display: "flex",
-    background: `${styles.backgroundColor}`,
-    color: `${styles.fontColor}`,
-    borderRadius: `${styles.borderRadius}`,
-    paddingLeft: `${styles.paddingLeft}`,
-  }),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- same as above
-  multiValueLabel: (provided: any) => ({
-    ...provided,
-    color: `${styles.fontColor}`,
-    fontWeight: 500,
-  }),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- same as above
-  multiValueRemove: (provided: any) => ({
-    ...provided,
-    borderRadius: `${styles.borderRadius}`,
-  }),
-};
-
-interface Tag {
-  readonly label: string;
-  readonly value: string;
-}
-
-interface TagInputProps {
-  name: string;
-  fieldValue: string[];
-  onChange: (value: string[]) => void;
-  error?: boolean;
-  disabled?: boolean;
-  id?: string;
-}
-
-const generateTagFromString = (inputValue: string): Tag => ({
-  label: inputValue,
-  value: uniqueId(`tag_value_`),
-});
-
-const generateStringFromTag = (tag: Tag): string => tag.label;
-
-const delimiters = [",", ";"];
-
-export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, disabled, id }) => {
-  const tags = useMemo(() => fieldValue.map(generateTagFromString), [fieldValue]);
-
-  // input value is a tag draft
-  const [inputValue, setInputValue] = useState("");
-
-  // handles various ways of deleting a value
-  const handleDelete = (_value: OnChangeValue<Tag, true>, actionMeta: ActionMeta<Tag>) => {
-    let updatedTags: MultiValue<Tag> = tags;
-
-    /**
-     * remove-value: user clicked x or used backspace/delete to remove tag
-     * clear: user clicked big x to clear all tags
-     * pop-value: user clicked backspace to remove tag
-     */
-    if (actionMeta.action === "remove-value") {
-      updatedTags = updatedTags.filter((tag) => tag.value !== actionMeta.removedValue.value);
-    } else if (actionMeta.action === "clear") {
-      updatedTags = [];
-    } else if (actionMeta.action === "pop-value") {
-      updatedTags = updatedTags.slice(0, updatedTags.length - 1);
-    }
-    onChange(updatedTags.map((tag) => generateStringFromTag(tag)));
-  };
-
-  // handle when a user types OR pastes in the input
-  const handleInputChange = (inputValue: string) => {
-    setInputValue(inputValue);
-
-    delimiters.forEach((delimiter) => {
-      if (inputValue.includes(delimiter)) {
-        const newTagStrings = inputValue
-          .split(delimiter)
-          .map((tag) => tag.trim())
-          .filter(Boolean);
-
-        inputValue.trim().length > 1 && onChange([...fieldValue, ...newTagStrings]);
-        setInputValue("");
+  ${({ disabled, theme, error }) =>
+    !disabled &&
+    `
+      &:hover {
+        background: ${theme.greyColor20};
+        border-color: ${error ? theme.dangerColor : theme.greyColor20};
       }
-    });
+    `}
+
+  &:focus,
+  &:focus-within {
+    background: ${({ theme }) => theme.primaryColor12};
+    border-color: ${({ theme }) => theme.primaryColor};
+  }
+`;
+
+const InputElement = styled.input`
+  margin-bottom: 4px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: normal;
+  color: ${({ theme }) => theme.textColor};
+  flex: 1 1 auto;
+  background: rgba(0, 0, 0, 0);
+
+  &::placeholder {
+    color: ${({ theme }) => theme.greyColor40};
+  }
+`;
+
+export interface TagInputProps {
+  inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
+  value: IItemProps[];
+  className?: string;
+  validationRegex?: RegExp;
+  error?: boolean;
+  addOnBlur?: boolean;
+  disabled?: boolean;
+  name?: string;
+
+  onEnter: (value?: string | number | readonly string[]) => void;
+  onDelete: (value: string) => void;
+  onError?: () => void;
+}
+
+export const TagInput: React.FC<TagInputProps> = ({
+  inputProps,
+  onEnter,
+  value,
+  className,
+  onDelete,
+  validationRegex,
+  error,
+  disabled,
+  onError,
+  addOnBlur,
+  name,
+}) => {
+  const inputElement = useRef<HTMLInputElement | null>(null);
+  const [selectedElementId, setSelectedElementId] = useState("");
+  const [currentInputValue, setCurrentInputValue] = useState("");
+
+  const handleContainerBlur = () => setSelectedElementId("");
+  const handleContainerClick = () => {
+    if (inputElement.current !== null) {
+      inputElement.current.focus();
+    }
   };
 
-  // handle when user presses keyboard keys in the input
-  const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (event) => {
-    if (!inputValue || !inputValue.length) {
+  const onAddValue = () => {
+    if (!inputElement.current?.value) {
       return;
     }
-    switch (event.key) {
-      case "Enter":
-      case "Tab":
-        inputValue.trim().length > 1 && onChange([...fieldValue, inputValue.trim()]);
 
-        event.preventDefault();
-        setInputValue("");
+    const isValid = validationRegex ? !!inputElement.current?.value.match(validationRegex) : true;
+
+    if (isValid) {
+      onEnter(currentInputValue);
+      setCurrentInputValue("");
+    } else if (onError) {
+      onError();
     }
   };
 
+  const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const { keyCode } = event;
+
+    // on ENTER click
+    if (keyCode === 13) {
+      event.stopPropagation();
+      event.preventDefault();
+      onAddValue();
+
+      // on DELETE or BACKSPACE click when input is empty (select or delete last tag in valuesList)
+    } else if ((keyCode === 46 || keyCode === 8) && currentInputValue === "") {
+      if (selectedElementId !== "") {
+        const nextId = value.length - 1 > 0 ? value[value.length - 2].id : "";
+        onDelete(selectedElementId);
+        setSelectedElementId(nextId);
+      } else if (value.length) {
+        setSelectedElementId(value[value.length - 1].id);
+      }
+    }
+  };
+
+  const handleInputBlur = () => {
+    if (addOnBlur) {
+      onAddValue();
+    }
+  };
+
+  const inputPlaceholder = !value.length && inputProps?.placeholder ? inputProps.placeholder : "";
+
   return (
-    <div data-testid="tag-input">
-      <CreatableSelect
-        inputId={id}
+    <MainContainer
+      onBlur={handleContainerBlur}
+      onClick={handleContainerClick}
+      className={className}
+      error={error}
+      disabled={disabled}
+    >
+      {value.map((item, key) => (
+        <TagItem
+          disabled={disabled}
+          key={`tag-${key}`}
+          item={item}
+          onDeleteTag={onDelete}
+          isSelected={item.id === selectedElementId}
+        />
+      ))}
+      <InputElement
+        {...inputProps}
         name={name}
-        components={components}
-        inputValue={inputValue}
-        isClearable
-        isMulti
-        onBlur={() => handleDelete}
-        menuIsOpen={false}
-        onChange={handleDelete}
-        onInputChange={handleInputChange}
-        onKeyDown={handleKeyDown}
-        value={tags}
-        isDisabled={disabled}
-        styles={customStyles}
+        disabled={disabled}
+        autoComplete="off"
+        placeholder={inputPlaceholder}
+        ref={inputElement}
+        onBlur={handleInputBlur}
+        onKeyDown={handleInputKeyDown}
+        value={currentInputValue}
+        onChange={(event) => {
+          setSelectedElementId("");
+          setCurrentInputValue(event.target.value);
+        }}
       />
-    </div>
+    </MainContainer>
   );
 };

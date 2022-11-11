@@ -18,7 +18,6 @@ from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 logger = init_logger("airbyte")
 
@@ -94,14 +93,7 @@ class AirbyteEntrypoint(object):
                 # jsonschema's additionalProperties flag wont fail the validation
                 connector_config, _ = split_config(config)
                 if self.source.check_config_against_spec or cmd == "check":
-                    try:
-                        check_config_against_spec_or_exit(connector_config, source_spec)
-                    except AirbyteTracedException as traced_exc:
-                        connection_status = traced_exc.as_connection_status_message()
-                        if connection_status and cmd == "check":
-                            yield connection_status.json(exclude_unset=True)
-                            return
-                        raise traced_exc
+                    check_config_against_spec_or_exit(connector_config, source_spec)
 
                 if cmd == "check":
                     check_result = self.source.check(self.logger, config)

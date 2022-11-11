@@ -29,7 +29,6 @@ import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
-import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -63,7 +62,7 @@ class ConfigRepositoryTest {
   void setup() {
     configPersistence = mock(ConfigPersistence.class);
     database = mock(Database.class);
-    configRepository = spy(new ConfigRepository(configPersistence, database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database))));
+    configRepository = spy(new ConfigRepository(configPersistence, database));
   }
 
   @AfterEach
@@ -89,7 +88,7 @@ class ConfigRepositoryTest {
   void assertReturnsWorkspace(final StandardWorkspace workspace) throws ConfigNotFoundException, IOException, JsonValidationException {
     when(configPersistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, WORKSPACE_ID.toString(), StandardWorkspace.class)).thenReturn(workspace);
 
-    assertEquals(workspace, configRepository.getStandardWorkspaceNoSecrets(WORKSPACE_ID, true));
+    assertEquals(workspace, configRepository.getStandardWorkspace(WORKSPACE_ID, true));
   }
 
   @ParameterizedTest
@@ -112,11 +111,11 @@ class ConfigRepositoryTest {
         .getSourceConnection(sourceId);
     doReturn(mWorkflow)
         .when(configRepository)
-        .getStandardWorkspaceNoSecrets(WORKSPACE_ID, isTombstone);
+        .getStandardWorkspace(WORKSPACE_ID, isTombstone);
 
     configRepository.getStandardWorkspaceFromConnection(connectionId, isTombstone);
 
-    verify(configRepository).getStandardWorkspaceNoSecrets(WORKSPACE_ID, isTombstone);
+    verify(configRepository).getStandardWorkspace(WORKSPACE_ID, isTombstone);
   }
 
   @Test
@@ -453,7 +452,7 @@ class ConfigRepositoryTest {
     final StandardWorkspace workspace = new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(false);
     doReturn(workspace)
         .when(configRepository)
-        .getStandardWorkspaceNoSecrets(WORKSPACE_ID, false);
+        .getStandardWorkspace(WORKSPACE_ID, false);
 
     configRepository.setFeedback(WORKSPACE_ID);
 

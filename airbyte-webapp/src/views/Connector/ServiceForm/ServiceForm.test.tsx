@@ -177,9 +177,11 @@ describe("Service Form", () => {
 
     it("should display general components: submit button, name and serviceType fields", () => {
       const name = container.querySelector("input[name='name']");
+      const serviceType = container.querySelector("div[data-testid='serviceType']");
       const submit = container.querySelector("button[type='submit']");
 
       expect(name).toBeInTheDocument();
+      expect(serviceType).toBeInTheDocument();
       expect(submit).toBeInTheDocument();
     });
 
@@ -266,8 +268,8 @@ describe("Service Form", () => {
       const password = container.querySelector("input[name='connectionConfiguration.password']");
       const message = container.querySelector("textarea[name='connectionConfiguration.message']");
       const apiKey = container.querySelector("input[name='connectionConfiguration.credentials.api_key']");
+      const emails = container.querySelector("input[name='connectionConfiguration.emails']");
       const workTime = container.querySelector("div[name='connectionConfiguration.workTime']");
-      const emails = screen.getByTestId("tag-input").querySelector("input");
 
       userEvent.type(name!, "{selectall}{del}name");
       userEvent.type(host!, "test-host");
@@ -301,8 +303,8 @@ describe("Service Form", () => {
     });
 
     it("should fill right values in array of simple entity field", async () => {
-      const emails = screen.getByTestId("tag-input").querySelector("input");
-      userEvent.type(emails!, "test1@test.com{enter}test2@test.com{enter}test3@test.com{enter}");
+      const emails = container.querySelector("input[name='connectionConfiguration.emails']");
+      userEvent.type(emails!, "test1@test.com{enter}test2@test.com{enter}test3@test.com");
 
       const submit = container.querySelector("button[type='submit']");
       await waitFor(() => userEvent.click(submit!));

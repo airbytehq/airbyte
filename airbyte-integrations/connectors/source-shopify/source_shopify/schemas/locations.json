@@ -1,6 +1,5 @@
 {
   "type": "object",
-  "additionalProperties": true,
   "properties": {
     "active": {
       "type": ["null", "boolean"]

@@ -4,7 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
 import { LabeledInput, Link } from "components";
-import { HeadTitle } from "components/common/HeadTitle";
+import HeadTitle from "components/HeadTitle";
 import { Button } from "components/ui/Button";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";

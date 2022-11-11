@@ -1,12 +1,12 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
-import { EmptyResourceListView } from "components/common/EmptyResourceListView";
-import { HeadTitle } from "components/common/HeadTitle";
-import { MainPageWithScroll } from "components/common/MainPageWithScroll";
+import { EmptyResourceListView } from "components/EmptyResourceListView";
+import HeadTitle from "components/HeadTitle";
+import { MainPageWithScroll } from "components/MainPageWithScroll";
 import { Button } from "components/ui/Button";
 import { PageHeader } from "components/ui/PageHeader";
 
@@ -18,7 +18,6 @@ import DestinationsTable from "./components/DestinationsTable";
 
 const AllDestinationsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { formatMessage } = useIntl();
   const { destinations } = useDestinationList();
   useTrackPage(PageTrackingCodes.DESTINATION_LIST);
 
@@ -46,11 +45,7 @@ const AllDestinationsPage: React.FC = () => {
       <DestinationsTable destinations={destinations} />
     </MainPageWithScroll>
   ) : (
-    <EmptyResourceListView
-      resourceType="destinations"
-      onCreateClick={onCreateDestination}
-      buttonLabel={formatMessage({ id: "destinations.createFirst" })}
-    />
+    <EmptyResourceListView resourceType="destinations" onCreateClick={onCreateDestination} />
   );
 };
 

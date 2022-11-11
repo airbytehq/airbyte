@@ -5,7 +5,6 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.base.Preconditions;
-import io.airbyte.api.model.generated.AttemptNormalizationStatusReadList;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.generated.DestinationDefinitionRead;
@@ -139,24 +138,6 @@ public class JobHistoryHandler {
 
   public Optional<JobRead> getLatestSyncJob(final UUID connectionId) throws IOException {
     return jobPersistence.getLastSyncJob(connectionId).map(JobConverter::getJobRead);
-  }
-
-  public List<JobRead> getLatestSyncJobsForConnections(final List<UUID> connectionIds) throws IOException {
-    return jobPersistence.getLastSyncJobForConnections(connectionIds).stream()
-        .map(JobConverter::getJobRead)
-        .collect(Collectors.toList());
-  }
-
-  public AttemptNormalizationStatusReadList getAttemptNormalizationStatuses(final JobIdRequestBody jobIdRequestBody) throws IOException {
-    return new AttemptNormalizationStatusReadList()
-        .attemptNormalizationStatuses(jobPersistence.getAttemptNormalizationStatusesForJob(jobIdRequestBody.getId()).stream()
-            .map(JobConverter::convertAttemptNormalizationStatus).collect(Collectors.toList()));
-  }
-
-  public List<JobRead> getRunningSyncJobForConnections(final List<UUID> connectionIds) throws IOException {
-    return jobPersistence.getRunningSyncJobForConnections(connectionIds).stream()
-        .map(JobConverter::getJobRead)
-        .collect(Collectors.toList());
   }
 
   private SourceRead getSourceRead(final ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {

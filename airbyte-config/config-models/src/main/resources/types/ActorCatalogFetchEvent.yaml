@@ -25,6 +25,3 @@ properties:
     type: string
   connectorVersion:
     type: string
-  createdAt:
-    type: integer
-    format: int64

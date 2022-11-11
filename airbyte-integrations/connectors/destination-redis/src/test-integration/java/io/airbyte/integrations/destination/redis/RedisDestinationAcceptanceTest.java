@@ -13,10 +13,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private JsonNode jsonConfig;
+  private static final Logger LOGGER = LoggerFactory.getLogger(RedisDestinationAcceptanceTest.class);
+
+  private JsonNode configJson;
 
   private RedisCache redisCache;
 
@@ -31,10 +35,11 @@ class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected void setup(TestDestinationEnv testEnv) {
-    jsonConfig = RedisDataFactory.jsonConfig(
+    configJson = RedisDataFactory.jsonConfig(
         redisContainer.getHost(),
         redisContainer.getFirstMappedPort());
-    redisCache = new RedisHCache(jsonConfig);
+    var redisConfig = new RedisConfig(configJson);
+    redisCache = new RedisHCache(redisConfig);
     redisNameTransformer = new RedisNameTransformer();
   }
 
@@ -50,7 +55,7 @@ class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected JsonNode getConfig() {
-    return jsonConfig;
+    return configJson;
   }
 
   @Override

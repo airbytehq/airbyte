@@ -127,7 +127,7 @@ public class MaskedDataInterceptor implements RewritePolicy {
     builder.append("(?i)"); // case insensitive
     builder.append("\"(");
     builder.append(properties.stream().collect(Collectors.joining("|")));
-    builder.append(")\"\\s*:\\s*(\"(?:[^\"\\\\]|\\\\.)*\"|\\[[^]\\[]*]|\\d+)");
+    builder.append(")\"\\s*:\\s*\"?((\\\\\"|[^\",}])*)\"?");
     return builder.toString();
   }
 

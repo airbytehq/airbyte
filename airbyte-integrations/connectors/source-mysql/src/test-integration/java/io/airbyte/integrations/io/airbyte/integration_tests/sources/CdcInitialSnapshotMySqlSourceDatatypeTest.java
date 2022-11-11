@@ -21,7 +21,6 @@ import org.testcontainers.containers.MySQLContainer;
 public class CdcInitialSnapshotMySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
 
   private DSLContext dslContext;
-
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     dslContext.close();

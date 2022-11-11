@@ -1,12 +1,11 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.40.18",
+  "version": "0.40.14",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
   },
   "scripts": {
-    "prepare": "cd .. && husky install airbyte-webapp/.husky",
     "prestart": "npm run generate-client",
     "start": "craco start",
     "prebuild": "npm run generate-client",
@@ -25,7 +24,6 @@
     "validate-links": "ts-node --skip-project ./scripts/validate-links.ts"
   },
   "dependencies": {
-    "@datadog/browser-rum": "^4.21.2",
     "@floating-ui/react-dom": "^1.0.0",
     "@fortawesome/fontawesome-svg-core": "^6.1.1",
     "@fortawesome/free-brands-svg-icons": "^6.1.1",
@@ -43,7 +41,6 @@
     "flat": "^5.0.2",
     "formik": "^2.2.9",
     "framer-motion": "^6.3.11",
-    "js-yaml": "^4.1.0",
     "launchdarkly-js-client-sdk": "^2.22.1",
     "lodash": "^4.17.21",
     "mdast": "^3.0.0",
@@ -91,7 +88,6 @@
     "@testing-library/user-event": "^13.5.0",
     "@types/flat": "^5.0.2",
     "@types/jest": "^27.4.1",
-    "@types/js-yaml": "^4.0.5",
     "@types/json-schema": "^7.0.11",
     "@types/lodash": "^4.14.182",
     "@types/node": "^17.0.40",
@@ -116,7 +112,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-unused-imports": "^2.0.0",
     "express": "^4.18.1",
-    "husky": "^8.0.1",
+    "husky": "^4.2.3",
     "license-checker": "^25.0.1",
     "lint-staged": "^12.3.7",
     "mini-css-extract-plugin": "^2.6.1",
@@ -135,6 +131,11 @@
     "tmpl": "^1.0.5",
     "ts-node": "^10.8.1",
     "typescript": "^4.7.3"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   },
   "lint-staged": {
     "src/**/*.{js,jsx,ts,tsx}": [
@@ -161,9 +162,6 @@
   },
   "jest": {
     "transformIgnorePatterns": [],
-    "snapshotSerializers": [
-      "./scripts/classname-serializer.js"
-    ],
     "coveragePathIgnorePatterns": [
       ".stories.tsx"
     ]

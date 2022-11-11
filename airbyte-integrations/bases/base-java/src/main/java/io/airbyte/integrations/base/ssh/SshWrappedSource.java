@@ -7,11 +7,9 @@ package io.airbyte.integrations.base.ssh;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -39,15 +37,7 @@ public class SshWrappedSource implements Source {
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
-    try {
-      return SshTunnel.sshWrap(config, hostKey, portKey, delegate::check);
-    } catch (final RuntimeException e) {
-      final String sshErrorMessage = "Could not connect with provided SSH configuration. Error: " + e.getMessage();
-      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, sshErrorMessage);
-      return new AirbyteConnectionStatus()
-          .withStatus(Status.FAILED)
-          .withMessage(sshErrorMessage);
-    }
+    return SshTunnel.sshWrap(config, hostKey, portKey, delegate::check);
   }
 
   @Override

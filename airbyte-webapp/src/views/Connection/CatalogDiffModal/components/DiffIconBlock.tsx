@@ -1,6 +1,6 @@
 import { useIntl } from "react-intl";
 
-import { NumberBadge } from "components/ui/NumberBadge";
+import { ImageBlock } from "components/ui/ImageBlock";
 
 import styles from "./DiffIconBlock.module.scss";
 
@@ -15,10 +15,11 @@ export const DiffIconBlock: React.FC<DiffIconBlockProps> = ({ newCount, removedC
   return (
     <div className={styles.iconBlock}>
       {removedCount > 0 && (
-        <NumberBadge
-          value={removedCount}
+        <ImageBlock
+          num={removedCount}
           color="red"
-          aria-label={`${formatMessage(
+          light
+          ariaLabel={`${formatMessage(
             {
               id: "connection.updateSchema.removed",
             },
@@ -30,10 +31,11 @@ export const DiffIconBlock: React.FC<DiffIconBlockProps> = ({ newCount, removedC
         />
       )}
       {newCount > 0 && (
-        <NumberBadge
-          value={newCount}
+        <ImageBlock
+          num={newCount}
           color="green"
-          aria-label={`${formatMessage(
+          light
+          ariaLabel={`${formatMessage(
             {
               id: "connection.updateSchema.new",
             },
@@ -45,10 +47,11 @@ export const DiffIconBlock: React.FC<DiffIconBlockProps> = ({ newCount, removedC
         />
       )}
       {changedCount > 0 && (
-        <NumberBadge
-          value={changedCount}
+        <ImageBlock
+          num={changedCount}
           color="blue"
-          aria-label={`${formatMessage(
+          light
+          ariaLabel={`${formatMessage(
             {
               id: "connection.updateSchema.changed",
             },

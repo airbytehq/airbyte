@@ -4,7 +4,7 @@ import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
 
-import { Table, SortableTableHeader } from "components/ui/Table";
+import { Table } from "components/ui/Table";
 
 import { ConnectionScheduleType } from "core/request/AirbyteClient";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
@@ -15,7 +15,9 @@ import ConnectorCell from "./components/ConnectorCell";
 import FrequencyCell from "./components/FrequencyCell";
 import LastSyncCell from "./components/LastSyncCell";
 import NameCell from "./components/NameCell";
+import SortIcon from "./components/SortIcon";
 import StatusCell from "./components/StatusCell";
+import styles from "./ConnectionTable.module.scss";
 import { ITableDataItem, SortOrderEnum } from "./types";
 
 interface IProps {
@@ -74,13 +76,10 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
     () => [
       {
         Header: (
-          <SortableTableHeader
-            onClick={() => onSortClick("name")}
-            isActive={sortBy === "name"}
-            isAscending={sortOrder === SortOrderEnum.ASC}
-          >
+          <button className={styles.tableHeaderButton} onClick={() => onSortClick("name")}>
             <FormattedMessage id="tables.name" />
-          </SortableTableHeader>
+            <SortIcon wasActive={sortBy === "name"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
+          </button>
         ),
         headerHighlighted: true,
         accessor: "name",
@@ -91,15 +90,14 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
       },
       {
         Header: (
-          <SortableTableHeader
-            onClick={() => onSortClick("entityName")}
-            isActive={sortBy === "entityName"}
-            isAscending={sortOrder === SortOrderEnum.ASC}
-          >
-            <FormattedMessage
-              id={entity === "connection" ? "tables.destinationConnectionToName" : `tables.${entity}ConnectionToName`}
-            />
-          </SortableTableHeader>
+          <button className={styles.tableHeaderButton} onClick={() => onSortClick("entityName")}>
+            {entity === "connection" ? (
+              <FormattedMessage id="tables.destinationConnectionToName" />
+            ) : (
+              <FormattedMessage id={`tables.${entity}ConnectionToName`} />
+            )}
+            <SortIcon wasActive={sortBy === "entityName"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
+          </button>
         ),
         headerHighlighted: true,
         accessor: "entityName",
@@ -114,13 +112,14 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
       },
       {
         Header: (
-          <SortableTableHeader
-            onClick={() => onSortClick("connectorName")}
-            isActive={sortBy === "connectorName"}
-            isAscending={sortOrder === SortOrderEnum.ASC}
-          >
-            <FormattedMessage id={entity === "connection" ? "tables.sourceConnectionToName" : "tables.connector"} />
-          </SortableTableHeader>
+          <button className={styles.tableHeaderButton} onClick={() => onSortClick("connectorName")}>
+            {entity === "connection" ? (
+              <FormattedMessage id="tables.sourceConnectionToName" />
+            ) : (
+              <FormattedMessage id="tables.connector" />
+            )}
+            <SortIcon wasActive={sortBy === "connectorName"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
+          </button>
         ),
         accessor: "connectorName",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
@@ -137,13 +136,10 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
       },
       {
         Header: (
-          <SortableTableHeader
-            onClick={() => onSortClick("lastSync")}
-            isActive={sortBy === "lastSync"}
-            isAscending={sortOrder === SortOrderEnum.ASC}
-          >
+          <button className={styles.tableHeaderButton} onClick={() => onSortClick("lastSync")}>
             <FormattedMessage id="tables.lastSync" />
-          </SortableTableHeader>
+            <SortIcon wasActive={sortBy === "lastSync"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
+          </button>
         ),
         accessor: "lastSync",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (

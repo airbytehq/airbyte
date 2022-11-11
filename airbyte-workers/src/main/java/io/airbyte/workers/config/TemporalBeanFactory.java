@@ -8,9 +8,7 @@ import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.temporal.TemporalUtils;
-import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.TrackingStrategy;
@@ -18,11 +16,11 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.DefaultJobCreator;
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.persistence.job.factory.DefaultSyncJobFactory;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.factory.SyncJobFactory;
 import io.airbyte.workers.run.TemporalWorkerRunFactory;
+import io.airbyte.workers.temporal.TemporalClient;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Property;
 import io.micronaut.context.annotation.Requires;
@@ -67,7 +65,6 @@ public class TemporalBeanFactory {
   @Requires(env = WorkerMode.CONTROL_PLANE)
   public SyncJobFactory jobFactory(
                                    final ConfigRepository configRepository,
-                                   final JobPersistence jobPersistence,
                                    @Property(name = "airbyte.connector.specific-resource-defaults-enabled",
                                              defaultValue = "false") final boolean connectorSpecificResourceDefaultsEnabled,
                                    final DefaultJobCreator jobCreator,
@@ -76,8 +73,7 @@ public class TemporalBeanFactory {
         connectorSpecificResourceDefaultsEnabled,
         jobCreator,
         configRepository,
-        new OAuthConfigSupplier(configRepository, trackingClient),
-        new WorkspaceHelper(configRepository, jobPersistence));
+        new OAuthConfigSupplier(configRepository, trackingClient));
   }
 
   @Singleton

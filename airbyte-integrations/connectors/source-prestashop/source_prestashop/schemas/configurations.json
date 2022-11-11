@@ -12,10 +12,10 @@
       "type": "string"
     },
     "id_shop_group": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "id_shop": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "date_add": {
       "type": "string",

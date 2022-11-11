@@ -1,0 +1,3 @@
+tasks.named("buildDockerImage") {
+    dependsOn copyDocker
+}

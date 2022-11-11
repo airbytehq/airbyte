@@ -13,7 +13,6 @@ from airbyte_cdk.connector import Connector
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pydantic import ValidationError
 
 logger = logging.getLogger("airbyte")
@@ -96,14 +95,7 @@ class Destination(Connector, ABC):
             return
         config = self.read_config(config_path=parsed_args.config)
         if self.check_config_against_spec or cmd == "check":
-            try:
-                check_config_against_spec_or_exit(config, spec)
-            except AirbyteTracedException as traced_exc:
-                connection_status = traced_exc.as_connection_status_message()
-                if connection_status and cmd == "check":
-                    yield connection_status.json(exclude_unset=True)
-                    return
-                raise traced_exc
+            check_config_against_spec_or_exit(config, spec)
 
         if cmd == "check":
             yield self._run_check(config=config)

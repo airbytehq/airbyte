@@ -95,14 +95,9 @@ def test_update_cursor(test_name, stream_slice, expected_state):
         ),
     ]
     slicer = CartesianProductStreamSlicer(stream_slicers=stream_slicers, options={})
-
-    if expected_state:
-        slicer.update_cursor(stream_slice, None)
-        updated_state = slicer.get_stream_state()
-        assert expected_state == updated_state
-    else:
-        with pytest.raises(ValueError):
-            slicer.update_cursor(stream_slice, None)
+    slicer.update_cursor(stream_slice, None)
+    updated_state = slicer.get_stream_state()
+    assert expected_state == updated_state
 
 
 @pytest.mark.parametrize(
@@ -174,37 +169,9 @@ def test_request_option(
         ],
         options={},
     )
-    stream_slice = {"owner_resource": "customer", "repository": "airbyte"}
+    slicer.update_cursor({"owner_resource": "customer", "repository": "airbyte"}, None)
 
-    assert expected_req_params == slicer.get_request_params(stream_slice=stream_slice)
-    assert expected_headers == slicer.get_request_headers(stream_slice=stream_slice)
-    assert expected_body_json == slicer.get_request_body_json(stream_slice=stream_slice)
-    assert expected_body_data == slicer.get_request_body_data(stream_slice=stream_slice)
-
-
-def test_request_option_before_updating_cursor():
-    stream_1_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, options={}, field_name="owner")
-    stream_2_request_option = RequestOption(inject_into=RequestOptionType.header, options={}, field_name="repo")
-    slicer = CartesianProductStreamSlicer(
-        stream_slicers=[
-            ListStreamSlicer(
-                slice_values=["customer", "store", "subscription"],
-                cursor_field="owner_resource",
-                config={},
-                request_option=stream_1_request_option,
-                options={},
-            ),
-            ListStreamSlicer(
-                slice_values=["airbyte", "airbyte-cloud"],
-                cursor_field="repository",
-                config={},
-                request_option=stream_2_request_option,
-                options={},
-            ),
-        ],
-        options={},
-    )
-    assert {} == slicer.get_request_params()
-    assert {} == slicer.get_request_headers()
-    assert {} == slicer.get_request_body_json()
-    assert {} == slicer.get_request_body_data()
+    assert expected_req_params == slicer.get_request_params()
+    assert expected_headers == slicer.get_request_headers()
+    assert expected_body_json == slicer.get_request_body_json()
+    assert expected_body_data == slicer.get_request_body_data()

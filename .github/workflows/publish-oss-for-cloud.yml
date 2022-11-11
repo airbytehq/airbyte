@@ -61,16 +61,16 @@ jobs:
         shell: bash
         run: |-
           set -x
-
+          
           commit_sha=$(git rev-parse --short HEAD)
-
+          
           # set dev_tag
           # AirbyteVersion.java allows versions that have a prefix of 'dev'
-          echo "dev_tag=dev-${commit_sha}" >> $GITHUB_OUTPUT
-
+          echo "::set-output name=dev_tag::dev-${commit_sha}"
+          
           # If this commit is on the master branch, also set master_tag
           if $(git merge-base --is-ancestor "${commit_sha}" master); then
-            echo "master_tag=${commit_sha}" >> $GITHUB_OUTPUT
+            echo "::set-output name=master_tag::${commit_sha}"
           fi
 
   oss-branch-build:

@@ -39,8 +39,7 @@ class ConnectorRunner:
         self.input_folder.mkdir(parents=True)
         self.output_folder.mkdir(parents=True)
 
-        # using "is not None" to allow falsey config objects like {} to still write
-        if config is not None:
+        if config:
             with open(str(self.input_folder / "tap_config.json"), "w") as outfile:
                 json.dump(dict(config), outfile)
 
@@ -150,7 +149,7 @@ class ConnectorRunner:
             raise
         if exit_status["StatusCode"]:
             error = exit_status["Error"] or exception or line
-            logging.error(f"Docker container failed, " f'code {exit_status["StatusCode"]}, error:\n{error}')
+            logging.error(f"Docker container was failed, " f'code {exit_status["StatusCode"]}, error:\n{error}')
             if with_ext:
                 raise ContainerError(
                     container=container,

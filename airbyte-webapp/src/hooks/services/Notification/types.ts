@@ -1,9 +1,7 @@
-import React from "react";
-
 export interface Notification {
   id: string | number;
-  title: React.ReactNode;
-  text?: React.ReactNode;
+  title: string;
+  text?: string;
   isError?: boolean;
   nonClosable?: boolean;
   onClose?: () => void;

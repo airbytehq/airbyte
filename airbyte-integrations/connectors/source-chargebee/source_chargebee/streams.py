@@ -7,7 +7,6 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from chargebee import APIError
 from chargebee.list_result import ListResult
 from chargebee.model import Model
@@ -303,7 +302,6 @@ class Transaction(IncrementalChargebeeStream):
     cursor_field = "updated_at"
 
     api = TransactionModel
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)

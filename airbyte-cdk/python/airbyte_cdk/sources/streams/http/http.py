@@ -6,16 +6,15 @@
 import logging
 import os
 from abc import ABC, abstractmethod
-from contextlib import suppress
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
 
 import requests
-import requests_cache
+import vcr
+import vcr.cassette as Cassette
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream
 from requests.auth import AuthBase
-from requests_cache.session import CachedSession
 
 from .auth.core import HttpAuthenticator, NoAuth
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
@@ -23,6 +22,8 @@ from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
+
+logging.getLogger("vcr").setLevel(logging.ERROR)
 
 
 class HttpStream(Stream, ABC):
@@ -35,10 +36,7 @@ class HttpStream(Stream, ABC):
 
     # TODO: remove legacy HttpAuthenticator authenticator references
     def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None):
-        if self.use_cache:
-            self._session = self.request_cache()
-        else:
-            self._session = requests.Session()
+        self._session = requests.Session()
 
         self._authenticator: HttpAuthenticator = NoAuth()
         if isinstance(authenticator, AuthBase):
@@ -46,12 +44,17 @@ class HttpStream(Stream, ABC):
         elif authenticator:
             self._authenticator = authenticator
 
+        if self.use_cache:
+            self.cache_file = self.request_cache()
+            # we need this attr to get metadata about cassettes, such as record play count, all records played, etc.
+            self.cassete = None
+
     @property
     def cache_filename(self):
         """
         Override if needed. Return the name of cache file
         """
-        return f"{self.name}.sqlite"
+        return f"{self.name}.yml"
 
     @property
     def use_cache(self):
@@ -60,19 +63,19 @@ class HttpStream(Stream, ABC):
         """
         return False
 
-    def request_cache(self) -> CachedSession:
-        self.clear_cache()
-        return requests_cache.CachedSession(self.cache_filename)
+    def request_cache(self) -> Cassette:
+        """
+        Builds VCR instance.
+        It deletes file everytime we create it, normally should be called only once.
+        We can't use NamedTemporaryFile here because yaml serializer doesn't work well with empty files.
+        """
 
-    def clear_cache(self):
-        """
-        remove cache file only once
-        """
-        STREAM_CACHE_FILES = globals().setdefault("STREAM_CACHE_FILES", set())
-        if self.cache_filename not in STREAM_CACHE_FILES:
-            with suppress(FileNotFoundError):
-                os.remove(self.cache_filename)
-            STREAM_CACHE_FILES.add(self.cache_filename)
+        try:
+            os.remove(self.cache_filename)
+        except FileNotFoundError:
+            pass
+
+        return vcr.use_cassette(self.cache_filename, record_mode="new_episodes", serializer="yaml")
 
     @property
     @abstractmethod
@@ -243,15 +246,6 @@ class HttpStream(Stream, ABC):
         """
         return None
 
-    def error_message(self, response: requests.Response) -> str:
-        """
-        Override this method to specify a custom error message which can incorporate the HTTP response received
-
-        :param response: The incoming HTTP response from the partner API
-        :return:
-        """
-        return ""
-
     def _create_prepared_request(
         self,
         path: str,
@@ -305,13 +299,10 @@ class HttpStream(Stream, ABC):
             )
         if self.should_retry(response):
             custom_backoff_time = self.backoff_time(response)
-            error_message = self.error_message(response)
             if custom_backoff_time:
-                raise UserDefinedBackoffException(
-                    backoff=custom_backoff_time, request=request, response=response, error_message=error_message
-                )
+                raise UserDefinedBackoffException(backoff=custom_backoff_time, request=request, response=response)
             else:
-                raise DefaultBackoffException(request=request, response=response, error_message=error_message)
+                raise DefaultBackoffException(request=request, response=response)
         elif self.raise_on_http_errors:
             # Raise any HTTP exceptions that happened in case there were unexpected ones
             try:
@@ -424,7 +415,16 @@ class HttpStream(Stream, ABC):
             )
             request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
-            response = self._send_request(request, request_kwargs)
+            if self.use_cache:
+                # use context manager to handle and store cassette metadata
+                with self.cache_file as cass:
+                    self.cassete = cass
+                    # vcr tries to find records based on the request, if such records exist, return from cache file
+                    # else make a request and save record in cache file
+                    response = self._send_request(request, request_kwargs)
+
+            else:
+                response = self._send_request(request, request_kwargs)
             yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
 
             next_page_token = self.next_page_token(response)

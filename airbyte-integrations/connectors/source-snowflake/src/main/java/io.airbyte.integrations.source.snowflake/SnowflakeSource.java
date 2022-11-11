@@ -94,11 +94,6 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
     return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
-  @Override
-  protected String getCountColumnName() {
-    return "RECORD_COUNT";
-  }
-
   private JsonNode buildOAuthConfig(final JsonNode config, final String jdbcUrl) {
     final String accessToken;
     final var credentials = config.get("credentials");

@@ -1,4 +1,4 @@
-# Adjust
+# Airbyte Source Connector for Adjust
 
 This is a setup guide for the Adjust source connector which ingests data from the reports API.
 

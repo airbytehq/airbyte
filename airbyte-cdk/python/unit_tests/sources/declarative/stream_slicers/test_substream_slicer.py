@@ -66,7 +66,7 @@ class MockStream(Stream):
                     stream=MockStream([{}], [], "first_stream"), parent_key="id", stream_slice_field="first_stream_id", options={}
                 )
             ],
-            [],
+            [{"first_stream_id": None, "parent_slice": {}}],
         ),
         (
             "test_single_parent_slices_with_records",
@@ -94,6 +94,7 @@ class MockStream(Stream):
                 {"parent_slice": {"slice": "first"}, "first_stream_id": 0},
                 {"parent_slice": {"slice": "first"}, "first_stream_id": 1},
                 {"parent_slice": {"slice": "second"}, "first_stream_id": 2},
+                {"parent_slice": {"slice": "third"}, "first_stream_id": None},
             ],
         ),
         (
@@ -116,6 +117,7 @@ class MockStream(Stream):
                 {"parent_slice": {"slice": "first"}, "first_stream_id": 0},
                 {"parent_slice": {"slice": "first"}, "first_stream_id": 1},
                 {"parent_slice": {"slice": "second"}, "first_stream_id": 2},
+                {"parent_slice": {"slice": "third"}, "first_stream_id": None},
                 {"parent_slice": {"slice": "second_parent"}, "second_stream_id": 10},
                 {"parent_slice": {"slice": "second_parent"}, "second_stream_id": 20},
             ],
@@ -256,9 +258,9 @@ def test_request_option(
         ],
         options={},
     )
-    stream_slice = {"first_stream_id": "1234", "second_stream_id": "4567"}
+    slicer.update_cursor({"first_stream_id": "1234", "second_stream_id": "4567"}, None)
 
-    assert expected_req_params == slicer.get_request_params(stream_slice=stream_slice)
-    assert expected_headers == slicer.get_request_headers(stream_slice=stream_slice)
-    assert expected_body_json == slicer.get_request_body_json(stream_slice=stream_slice)
-    assert expected_body_data == slicer.get_request_body_data(stream_slice=stream_slice)
+    assert expected_req_params == slicer.get_request_params()
+    assert expected_headers == slicer.get_request_headers()
+    assert expected_body_json == slicer.get_request_body_json()
+    assert expected_body_data == slicer.get_request_body_data()

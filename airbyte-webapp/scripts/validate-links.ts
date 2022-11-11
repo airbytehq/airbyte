@@ -2,7 +2,7 @@
 
 import fetch from "node-fetch";
 
-import { links } from "../src/utils/links";
+import { links } from "../src/config/links";
 
 async function run() {
   // Query all domains and wait for results

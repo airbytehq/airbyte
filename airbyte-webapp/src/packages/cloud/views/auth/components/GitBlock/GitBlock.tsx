@@ -3,8 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { FC } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { links } from "utils/links";
-
+import { useConfig } from "../../../../../../config";
 import styles from "./GitBlock.module.scss";
 
 export interface GitBlockProps {
@@ -12,9 +11,10 @@ export interface GitBlockProps {
   messageStyle?: React.CSSProperties;
 }
 export const GitBlock: FC<GitBlockProps> = ({ titleStyle, messageStyle }) => {
+  const config = useConfig();
   return (
     <div className={styles.container}>
-      <a className={styles.link} href={links.gitLink} target="_blank" rel="noreferrer">
+      <a className={styles.link} href={config.links.gitLink} target="_blank" rel="noreferrer">
         <div className={styles.content}>
           <FontAwesomeIcon icon={faGithub} className={styles.icon} />
           <div>

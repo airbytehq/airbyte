@@ -1,18 +1,34 @@
 import { Form, useFormikContext } from "formik";
 import React from "react";
+import styled from "styled-components";
 
 import { Spinner } from "components/ui/Spinner";
 
-import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { FormBlock } from "core/form/types";
 
+import { ConnectorDefinitionSpecification } from "../../../core/domain/connector";
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
 import { FormSection } from "./components/Sections/FormSection";
 import ShowLoadingMessage from "./components/ShowLoadingMessage";
-import styles from "./FormRoot.module.scss";
 import { useServiceForm } from "./serviceFormContext";
 import { ServiceFormValues } from "./types";
+
+const FormContainer = styled(Form)`
+  padding: 22px 27px 23px 24px;
+`;
+
+const LoaderContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 22px 0 23px;
+`;
+
+const LoadingMessage = styled.div`
+  margin-top: 10px;
+  margin-left: 15px;
+`;
 
 interface FormRootProps {
   formFields: FormBlock;
@@ -26,7 +42,7 @@ interface FormRootProps {
   selectedConnector: ConnectorDefinitionSpecification | undefined;
 }
 
-export const FormRoot: React.FC<FormRootProps> = ({
+const FormRoot: React.FC<FormRootProps> = ({
   isTestConnectionInProgress = false,
   onRetest,
   formFields,
@@ -41,15 +57,15 @@ export const FormRoot: React.FC<FormRootProps> = ({
   const { resetServiceForm, isLoadingSchema, selectedService, isEditMode, formType } = useServiceForm();
 
   return (
-    <Form>
+    <FormContainer>
       <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
       {isLoadingSchema && (
-        <div className={styles.loaderContainer}>
+        <LoaderContainer>
           <Spinner />
-          <div className={styles.loadingMessage}>
+          <LoadingMessage>
             <ShowLoadingMessage connector={selectedService?.name} />
-          </div>
-        </div>
+          </LoadingMessage>
+        </LoaderContainer>
       )}
 
       {isEditMode ? (
@@ -81,6 +97,8 @@ export const FormRoot: React.FC<FormRootProps> = ({
           />
         )
       )}
-    </Form>
+    </FormContainer>
   );
 };
+
+export { FormRoot };

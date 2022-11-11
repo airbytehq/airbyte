@@ -2,7 +2,7 @@ import React, { Suspense, useEffect, useMemo } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
-import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
+import ApiErrorBoundary from "components/ApiErrorBoundary";
 import LoadingPage from "components/LoadingPage";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
@@ -11,7 +11,6 @@ import { FeatureItem, FeatureSet, useFeatureService } from "hooks/services/Featu
 import { useApiHealthPoll } from "hooks/services/Health";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useQuery } from "hooks/useQuery";
-import { useExperimentSpeedyConnection } from "packages/cloud/components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useIntercom";
 import { Auth } from "packages/cloud/views/auth";
@@ -67,7 +66,9 @@ const MainRoutes: React.FC = () => {
       cloudWorkspace.creditStatus === CreditStatus.NEGATIVE_MAX_THRESHOLD;
     // If the workspace is out of credits it doesn't allow creation of new connections
     // or syncing existing connections.
-    setWorkspaceFeatures(outOfCredits ? ({ [FeatureItem.AllowSync]: false } as FeatureSet) : []);
+    setWorkspaceFeatures(
+      outOfCredits ? ({ [FeatureItem.AllowCreateConnection]: false, [FeatureItem.AllowSync]: false } as FeatureSet) : []
+    );
     return () => {
       setWorkspaceFeatures(undefined);
     };
@@ -85,8 +86,6 @@ const MainRoutes: React.FC = () => {
   const mainNavigate =
     workspace.displaySetupWizard && !hideOnboardingExperiment ? RoutePaths.Onboarding : RoutePaths.Connections;
 
-  // exp-speedy-connection
-  const { isExperimentVariant } = useExperimentSpeedyConnection();
   return (
     <ApiErrorBoundary>
       <Routes>
@@ -96,7 +95,7 @@ const MainRoutes: React.FC = () => {
         <Route path={`${RoutePaths.Settings}/*`} element={<CloudSettingsPage />} />
         <Route path={CloudRoutes.Credits} element={<CreditsPage />} />
 
-        {(workspace.displaySetupWizard || isExperimentVariant) && !hideOnboardingExperiment && (
+        {workspace.displaySetupWizard && !hideOnboardingExperiment && (
           <Route
             path={RoutePaths.Onboarding}
             element={

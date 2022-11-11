@@ -4,9 +4,9 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled, { keyframes } from "styled-components";
 
-import { Link } from "components/common/Link";
+import Link from "components/Link";
 import { Button } from "components/ui/Button";
-import { Heading } from "components/ui/Heading";
+import { Text } from "components/ui/Text";
 
 import { JobStatus, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
@@ -83,9 +83,9 @@ const ProgressBlock: React.FC<ProgressBlockProps> = ({ connection, onSync }) => 
   if (connection.latestSyncJobStatus !== Status.RUNNING && connection.latestSyncJobStatus !== Status.INCOMPLETE) {
     return (
       <ControlBlock>
-        <Heading as="h1" size="xl">
+        <Text as="h1" size="xl">
           {showMessage(connection.latestSyncJobStatus)}
-        </Heading>
+        </Text>
         <Button className={styles.paddedButton} onClick={onSync}>
           <FormattedMessage id="sources.syncNow" />
         </Button>

@@ -1,8 +1,0 @@
-{
-  "api_key": "YOUR_API_KEY",
-  "domains": ["bbc.co.uk", "techcrunch.com", "bloomberg.com"],
-  "category": "business",
-  "country": "gb",
-  "sort_by": "publishedAt",
-  "start_date": "2065-10-21T35:40:00"
-}

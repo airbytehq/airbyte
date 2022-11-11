@@ -1,4 +1,4 @@
-@use "scss/colors";
+@use "../../../scss/colors";
 
 .text {
   color: colors.$dark-blue;
@@ -10,10 +10,6 @@
 .md {
   font-weight: 400;
   line-height: 1.2em;
-}
-
-.xs {
-  font-size: 11px;
 }
 
 .sm {

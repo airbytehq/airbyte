@@ -70,7 +70,6 @@ Helm chart to deploy airbyte-server
 | resources.limits | object | `{}` |  |
 | resources.requests | object | `{}` |  |
 | secrets | object | `{}` |  |
-| service.annotations | object | `{}` |  |
 | service.port | int | `8001` |  |
 | service.type | string | `"ClusterIP"` |  |
 | tolerations | list | `[]` |  |

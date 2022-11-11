@@ -33,7 +33,6 @@ dependencies {
     testImplementation libs.connectors.testcontainers.elasticsearch
     integrationTestJavaImplementation libs.connectors.testcontainers.elasticsearch
 
-    integrationTestJavaImplementation project(':airbyte-commons-worker')
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-elasticsearch')
 }

@@ -1,14 +1,20 @@
-import React from "react";
+import React, { useMemo } from "react";
 import styled from "styled-components";
 
-interface StepProps {
+import StatusIcon from "components/StatusIcon";
+import { StatusIconStatus } from "components/StatusIcon/StatusIcon";
+
+import Status from "core/statuses";
+
+interface IProps {
   id: string;
   lightMode?: boolean;
   name: string | React.ReactNode;
   onClick?: (id: string) => void;
   isActive?: boolean;
-  icon?: React.ReactNode;
+  isPartialSuccess?: boolean;
   num: number;
+  status?: string;
 }
 
 const StepView = styled.div<{
@@ -51,12 +57,17 @@ const Num = styled.div<{ isActive?: boolean }>`
   box-shadow: 0 1px 2px 0 ${({ theme }) => theme.shadowColor};
 `;
 
-export const Step: React.FC<StepProps> = ({ name, id, isActive, onClick, num, lightMode, icon }) => {
+export const Step: React.FC<IProps> = ({ name, id, isActive, onClick, num, lightMode, status, isPartialSuccess }) => {
   const onItemClickItem = () => {
     if (onClick) {
       onClick(id);
     }
   };
+
+  const statusIconStatus: StatusIconStatus | undefined = useMemo(
+    () => (status !== Status.FAILED && !isPartialSuccess ? "success" : isPartialSuccess ? "warning" : undefined),
+    [status, isPartialSuccess]
+  );
 
   return (
     <StepView
@@ -67,7 +78,7 @@ export const Step: React.FC<StepProps> = ({ name, id, isActive, onClick, num, li
       lightMode={lightMode}
     >
       {lightMode ? null : <Num isActive={isActive}>{num}</Num>}
-      {icon}
+      {status ? <StatusIcon status={statusIconStatus} /> : null}
       {name}
     </StepView>
   );

@@ -15,6 +15,3 @@ properties:
     existingJavaType: com.fasterxml.jackson.databind.JsonNode
   dockerImage:
     type: string
-  protocolVersion:
-    type: object
-    existingJavaType: io.airbyte.commons.version.Version

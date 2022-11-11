@@ -21,7 +21,6 @@ class Type(Enum):
     CONNECTION_STATUS = "CONNECTION_STATUS"
     CATALOG = "CATALOG"
     TRACE = "TRACE"
-    CONTROL = "CONTROL"
 
 
 class AirbyteRecordMessage(BaseModel):
@@ -96,17 +95,6 @@ class AirbyteErrorTraceMessage(BaseModel):
     internal_message: Optional[str] = Field(None, description="The internal error that caused the failure")
     stack_trace: Optional[str] = Field(None, description="The full stack trace of the error")
     failure_type: Optional[FailureType] = Field(None, description="The type of error")
-
-
-class OrchestratorType(Enum):
-    CONNECTOR_CONFIG = "CONNECTOR_CONFIG"
-
-
-class AirbyteControlConnectorConfigMessage(BaseModel):
-    class Config:
-        extra = Extra.allow
-
-    config: Dict[str, Any] = Field(..., description="the config items from this connector's spec to update")
 
 
 class Status(Enum):
@@ -215,25 +203,13 @@ class AirbyteTraceMessage(BaseModel):
     error: Optional[AirbyteErrorTraceMessage] = Field(None, description="error trace message: the error object")
 
 
-class AirbyteControlMessage(BaseModel):
-    class Config:
-        extra = Extra.allow
-
-    type: OrchestratorType = Field(..., description="the type of orchestrator message", title="orchestrator type")
-    emitted_at: float = Field(..., description="the time in ms that the message was emitted")
-    connectorConfig: Optional[AirbyteControlConnectorConfigMessage] = Field(
-        None,
-        description="connector config orchestrator message: the updated config for the platform to store for this connector",
-    )
-
-
 class AirbyteStream(BaseModel):
     class Config:
         extra = Extra.allow
 
     name: str = Field(..., description="Stream's name.")
     json_schema: Dict[str, Any] = Field(..., description="Stream schema using Json Schema specs.")
-    supported_sync_modes: List[SyncMode] = Field(..., description="List of sync modes supported by this stream.", min_items=1)
+    supported_sync_modes: Optional[List[SyncMode]] = None
     source_defined_cursor: Optional[bool] = Field(
         None,
         description="If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.",
@@ -356,10 +332,6 @@ class AirbyteMessage(BaseModel):
     trace: Optional[AirbyteTraceMessage] = Field(
         None,
         description="trace message: a message to communicate information about the status and performance of a connector",
-    )
-    control: Optional[AirbyteControlMessage] = Field(
-        None,
-        description="connector config message: a message to communicate an updated configuration from a connector that should be persisted",
     )
 
 

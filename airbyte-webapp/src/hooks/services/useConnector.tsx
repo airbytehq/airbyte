@@ -101,7 +101,6 @@ export type CheckConnectorParams = { signal: AbortSignal } & (
   | {
       selectedConnectorDefinitionId: string;
       connectionConfiguration: ConnectionConfiguration;
-      workspaceId: string;
     }
 );
 
@@ -118,10 +117,6 @@ export const useCheckConnector = (formType: "source" | "destination") => {
 
     if ("name" in params) {
       payload.name = params.name;
-    }
-
-    if ("workspaceId" in params) {
-      payload.workspaceId = params.workspaceId;
     }
 
     if (formType === "destination") {

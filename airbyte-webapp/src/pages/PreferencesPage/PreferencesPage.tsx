@@ -1,9 +1,9 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { HeadTitle } from "components/common/HeadTitle";
-import { PageViewContainer } from "components/common/PageViewContainer";
-import { Heading } from "components/ui/Heading";
+import { PageViewContainer } from "components/CenteredPageComponents";
+import HeadTitle from "components/HeadTitle";
+import { Text } from "components/ui/Text";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import useWorkspace from "hooks/services/useWorkspace";
@@ -19,9 +19,9 @@ const PreferencesPage: React.FC = () => {
   return (
     <PageViewContainer>
       <HeadTitle titles={[{ id: "preferences.headTitle" }]} />
-      <Heading as="h1" size="lg" centered className={styles.title}>
+      <Text as="h1" size="lg" centered className={styles.title}>
         <FormattedMessage id="preferences.title" />
-      </Heading>
+      </Text>
       <PreferencesForm onSubmit={setInitialSetupConfig} />
     </PageViewContainer>
   );

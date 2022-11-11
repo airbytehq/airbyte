@@ -8,7 +8,6 @@ import { Text } from "components/ui/Text";
 import { ConnectorSpecification } from "core/domain/connector";
 
 import { useServiceForm } from "../../../serviceFormContext";
-import { useAuthentication } from "../../../useAuthentication";
 import styles from "./AuthButton.module.scss";
 import GoogleAuthButton from "./GoogleAuthButton";
 import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
@@ -22,7 +21,6 @@ function isGoogleConnector(connectorDefinitionId: string): boolean {
     "71607ba1-c0ac-4799-8049-7f4b90dd50f7", // google sheets source
     "a4cbd2d1-8dbe-4818-b8bc-b90ad782d12a", // google sheets destination
     "ed9dfefa-1bbc-419d-8c5e-4d78f0ef6734", // google workspace admin reports
-    "afa734e4-3571-11ec-991a-1e0031268139", // YouTube analytics
   ].includes(connectorDefinitionId);
 }
 
@@ -41,9 +39,8 @@ function getAuthenticateMessageId(connectorDefinitionId: string): string {
 }
 
 export const AuthButton: React.FC = () => {
-  const { selectedService, selectedConnector } = useServiceForm();
-  const { hiddenAuthFieldErrors } = useAuthentication();
-  const authRequiredError = Object.values(hiddenAuthFieldErrors).includes("form.empty.error");
+  const { selectedService, authErrors, selectedConnector } = useServiceForm();
+  const hasAuthError = Object.values(authErrors).includes("form.empty.error");
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { loading, done, run, hasRun } = useFormikOauthAdapter(selectedConnector!);
@@ -57,8 +54,8 @@ export const AuthButton: React.FC = () => {
   const Component = getButtonComponent(definitionId);
 
   const messageStyle = classnames(styles.message, {
-    [styles.error]: authRequiredError,
-    [styles.success]: !authRequiredError,
+    [styles.error]: hasAuthError,
+    [styles.success]: !hasAuthError,
   });
   const buttonLabel = done ? (
     <FormattedMessage id="connectorForm.reauthenticate" />
@@ -75,7 +72,7 @@ export const AuthButton: React.FC = () => {
           <FormattedMessage id="connectorForm.authenticate.succeeded" />
         </Text>
       )}
-      {authRequiredError && (
+      {hasAuthError && (
         <Text as="div" size="lg" className={messageStyle}>
           <FormattedMessage id="connectorForm.authenticate.required" />
         </Text>

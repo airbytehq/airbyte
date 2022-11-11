@@ -96,6 +96,5 @@
       "type": ["null", "string"]
     }
   },
-  "additionalProperties": true,
   "type": ["null", "object"]
 }

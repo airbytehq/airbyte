@@ -514,6 +514,7 @@ class PostgresSourceTest {
     assertEquals(username, PostgresSource.getUsername(azureConfig));
   }
 
+
   @Test
   public void tableWithInvalidCursorShouldThrowException() throws Exception {
     try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
@@ -522,8 +523,7 @@ class PostgresSourceTest {
       try (final DSLContext dslContext = getDslContext(config)) {
         final Database database = new Database(dslContext);
         final ConfiguredAirbyteStream tableWithInvalidCursorType = createTableWithInvalidCursorType(database);
-        final ConfiguredAirbyteCatalog configuredAirbyteCatalog =
-            new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(tableWithInvalidCursorType));
+        final ConfiguredAirbyteCatalog configuredAirbyteCatalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(tableWithInvalidCursorType));
 
         final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new PostgresSource().read(config, configuredAirbyteCatalog, null)));
         assertThat(throwable).isInstanceOf(InvalidCursorException.class)
@@ -547,28 +547,12 @@ class PostgresSourceTest {
         .withDestinationSyncMode(DestinationSyncMode.APPEND)
         .withSyncMode(SyncMode.INCREMENTAL)
         .withStream(CatalogHelpers.createAirbyteStream(
-            "test_table",
-            "public",
-            Field.of("id", JsonSchemaType.STRING))
+                "test_table",
+                "public",
+                Field.of("id", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
 
-  }
-
-  @Test
-  void testJdbcUrlWithEscapedDatabaseName() {
-    final JsonNode jdbcConfig = new PostgresSource().toDatabaseConfig(buildConfigEscapingNeeded());
-    assertEquals(EXPECTED_JDBC_ESCAPED_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
-  }
-
-  private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:postgresql://localhost:1111/db%2Ffoo?";
-
-  private JsonNode buildConfigEscapingNeeded() {
-    return Jsons.jsonNode(ImmutableMap.of(
-        JdbcUtils.HOST_KEY, "localhost",
-        JdbcUtils.PORT_KEY, 1111,
-        JdbcUtils.USERNAME_KEY, "user",
-        JdbcUtils.DATABASE_KEY, "db/foo"));
   }
 
 }

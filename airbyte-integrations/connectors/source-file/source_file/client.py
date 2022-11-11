@@ -10,7 +10,6 @@ from os import environ
 from typing import Iterable
 from urllib.parse import urlparse
 
-import backoff
 import boto3
 import botocore
 import google
@@ -24,8 +23,6 @@ from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
 from yaml import safe_load
-
-from .utils import backoff_handler
 
 
 class ConfigurationError(Exception):
@@ -233,12 +230,20 @@ class Client:
     reader_class = URLFile
     binary_formats = {"excel", "excel_binary", "feather", "parquet", "orc", "pickle"}
 
-    def __init__(self, dataset_name: str, url: str, provider: dict, format: str = None, reader_options: dict = None):
+    def __init__(self, dataset_name: str, url: str, provider: dict, format: str = None, reader_options: str = None):
         self._dataset_name = dataset_name
         self._url = url
         self._provider = provider
         self._reader_format = format or "csv"
-        self._reader_options = reader_options or {}
+        self._reader_options = {}
+        if reader_options:
+            try:
+                self._reader_options = json.loads(reader_options)
+            except json.decoder.JSONDecodeError as err:
+                error_msg = f"Failed to parse reader options {repr(err)}\n{reader_options}\n{traceback.format_exc()}"
+                logger.error(error_msg)
+                raise ConfigurationError(error_msg) from err
+
         self.binary_source = self._reader_format in self.binary_formats
         self.encoding = self._reader_options.get("encoding")
 
@@ -313,22 +318,18 @@ class Client:
             raise ConfigurationError(error_msg) from err
 
         reader_options = {**self._reader_options}
-        try:
-            if self._reader_format == "csv":
-                reader_options["chunksize"] = self.CSV_CHUNK_SIZE
-                if skip_data:
-                    reader_options["nrows"] = 0
-                    reader_options["index_col"] = 0
-                yield from reader(fp, **reader_options)
-            elif self._reader_options == "excel_binary":
-                reader_options["engine"] = "pyxlsb"
-                yield from reader(fp, **reader_options)
-            else:
-                yield reader(fp, **reader_options)
-        except UnicodeDecodeError as err:
-            error_msg = f"File {fp} can't be parsed with reader of chosen type ({self._reader_format})\n{traceback.format_exc()}"
-            logger.error(error_msg)
-            raise ConfigurationError(error_msg) from err
+        if self._reader_format == "csv":
+            reader_options["chunksize"] = self.CSV_CHUNK_SIZE
+            if skip_data:
+                reader_options["nrows"] = 0
+                reader_options["index_col"] = 0
+
+            yield from reader(fp, **reader_options)
+        elif self._reader_options == "excel_binary":
+            reader_options["engine"] = "pyxlsb"
+            yield from reader(fp, **reader_options)
+        else:
+            yield reader(fp, **reader_options)
 
     @staticmethod
     def dtype_to_json_type(current_type: str, dtype) -> str:
@@ -354,30 +355,25 @@ class Client:
     def reader(self) -> reader_class:
         return self.reader_class(url=self._url, provider=self._provider, binary=self.binary_source, encoding=self.encoding)
 
-    @backoff.on_exception(backoff.expo, ConnectionResetError, on_backoff=backoff_handler, max_tries=5, max_time=60)
     def read(self, fields: Iterable = None) -> Iterable[dict]:
         """Read data from the stream"""
         with self.reader.open() as fp:
-            try:
-                if self._reader_format in ["json", "jsonl"]:
-                    yield from self.load_nested_json(fp)
-                elif self._reader_format == "yaml":
-                    fields = set(fields) if fields else None
-                    df = self.load_yaml(fp)
+            if self._reader_format in ["json", "jsonl"]:
+                yield from self.load_nested_json(fp)
+            elif self._reader_format == "yaml":
+                fields = set(fields) if fields else None
+                df = self.load_yaml(fp)
+                columns = fields.intersection(set(df.columns)) if fields else df.columns
+                df = df.where(pd.notnull(df), None)
+                yield from df[columns].to_dict(orient="records")
+            else:
+                fields = set(fields) if fields else None
+                if self.binary_source:
+                    fp = self._cache_stream(fp)
+                for df in self.load_dataframes(fp):
                     columns = fields.intersection(set(df.columns)) if fields else df.columns
-                    df = df.where(pd.notnull(df), None)
-                    yield from df[columns].to_dict(orient="records")
-                else:
-                    fields = set(fields) if fields else None
-                    if self.binary_source:
-                        fp = self._cache_stream(fp)
-                    for df in self.load_dataframes(fp):
-                        columns = fields.intersection(set(df.columns)) if fields else df.columns
-                        df.replace({np.nan: None}, inplace=True)
-                        yield from df[list(columns)].to_dict(orient="records")
-            except ConnectionResetError:
-                logger.info(f"Catched `connection reset error - 104`, stream: {self.stream_name} ({self.reader.full_url})")
-                raise ConnectionResetError
+                    df.replace({np.nan: None}, inplace=True)
+                    yield from df[list(columns)].to_dict(orient="records")
 
     def _cache_stream(self, fp):
         """cache stream to file"""

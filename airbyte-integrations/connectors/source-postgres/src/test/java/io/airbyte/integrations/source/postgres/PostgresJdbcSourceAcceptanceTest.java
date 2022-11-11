@@ -446,8 +446,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .withStreamName(streamName)
         .withStreamNamespace(namespace)
         .withCursorField(ImmutableList.of(COL_ID))
-        .withCursor("5")
-        .withCursorRecordCount(1L);
+        .withCursor("5");
     expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
     return expectedMessages;
   }

@@ -324,7 +324,6 @@ module.exports = {
         'understanding-airbyte/namespaces',
         'understanding-airbyte/supported-data-types',
         'understanding-airbyte/json-avro-conversion',
-        'understanding-airbyte/database-data-catalog',
       ]
     },
     {

@@ -1,7 +1,6 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Heading } from "components/ui/Heading";
 import { Text } from "components/ui/Text";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -15,10 +14,10 @@ const WorkspacesPage: React.FC = () => {
   return (
     <div className={styles.container}>
       <img className={styles.logo} alt="logo" src="/cloud-main-logo.svg" width={186} />
-      <Heading as="h1" size="lg" centered>
+      <Text as="h1" size="lg" centered>
         <FormattedMessage id="workspaces.title" />
-      </Heading>
-      <Text centered className={styles.subtitle}>
+      </Text>
+      <Text as="p" centered className={styles.subtitle}>
         <FormattedMessage id="workspaces.subtitle" />
       </Text>
       <WorkspacesList />

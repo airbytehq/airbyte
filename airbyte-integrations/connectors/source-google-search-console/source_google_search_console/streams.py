@@ -298,14 +298,6 @@ class SearchAnalyticsAllFields(SearchAnalytics):
 
 
 class SearchAnalyticsByCustomDimensions(SearchAnalytics):
-    dimension_to_property_schema_map = {
-        "country": [{"country": {"type": ["null", "string"]}}],
-        "date": [],
-        "device": [{"device": {"type": ["null", "string"]}}],
-        "page": [{"page": {"type": ["null", "string"]}}],
-        "query": [{"query": {"type": ["null", "string"]}}],
-    }
-
     def __init__(self, dimensions: List[str], *args, **kwargs):
         super(SearchAnalyticsByCustomDimensions, self).__init__(*args, **kwargs)
         self.dimensions = dimensions
@@ -317,7 +309,7 @@ class SearchAnalyticsByCustomDimensions(SearchAnalytics):
     def get_json_schema(self) -> Mapping[str, Any]:
         try:
             return super(SearchAnalyticsByCustomDimensions, self).get_json_schema()
-        except FileNotFoundError:
+        except IOError:
             schema: Mapping[str, Any] = {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": ["null", "object"],
@@ -339,9 +331,16 @@ class SearchAnalyticsByCustomDimensions(SearchAnalytics):
             return schema
 
     def dimension_to_property_schema(self) -> dict:
+        dimension_to_property_schema_map = {
+            "country": [{"country": {"type": ["null", "string"]}}],
+            "date": [],
+            "device": [{"device": {"type": ["null", "string"]}}],
+            "page": [{"page": {"type": ["null", "string"]}}],
+            "query": [{"query": {"type": ["null", "string"]}}],
+        }
         properties = {}
         for dimension in sorted(self.dimensions):
-            fields = self.dimension_to_property_schema_map[dimension]
+            fields = dimension_to_property_schema_map[dimension]
             for field in fields:
                 properties = {**properties, **field}
         return properties

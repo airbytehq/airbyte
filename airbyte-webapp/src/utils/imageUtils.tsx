@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import { DefaultLogoCatalog } from "components/common/DefaultLogoCatalog";
+import { DefaultLogoCatalog } from "components";
 
 const IconContainer = styled.img`
   height: 100%;

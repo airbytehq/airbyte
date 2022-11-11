@@ -124,12 +124,8 @@
                 }
               }
             },
-            "afterpay_clearpay": {
-              "type": ["null", "string"]
-            },
-            "alipay": {
-              "type": ["null", "string"]
-            },
+            "afterpay_clearpay": {},
+            "alipay": {},
             "au_becs_debit": {
               "type": ["null", "object"],
               "properties": {
@@ -158,9 +154,7 @@
                 }
               }
             },
-            "bancontact": {
-              "type": ["null", "string"]
-            },
+            "bancontact": {},
             "billing_details": {
               "type": ["null", "object"],
               "properties": {
@@ -378,18 +372,12 @@
                 "wallet": {
                   "type": ["null", "object"],
                   "properties": {
-                    "amex_express_checkout": {
-                      "type": ["null", "string"]
-                    },
-                    "apple_pay": {
-                      "type": ["null", "string"]
-                    },
+                    "amex_express_checkout": {},
+                    "apple_pay": {},
                     "dynamic_last4": {
                       "type": ["null", "string"]
                     },
-                    "google_pay": {
-                      "type": ["null", "string"]
-                    },
+                    "google_pay": {},
                     "masterpass": {
                       "type": ["null", "object"],
                       "properties": {
@@ -447,9 +435,7 @@
                         }
                       }
                     },
-                    "samsung_pay": {
-                      "type": ["null", "string"]
-                    },
+                    "samsung_pay": {},
                     "type": {
                       "type": ["null", "string"]
                     },

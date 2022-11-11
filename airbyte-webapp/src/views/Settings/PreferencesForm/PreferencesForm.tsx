@@ -9,7 +9,7 @@ import LabeledInput from "components/LabeledInput";
 import { LabeledSwitch } from "components/LabeledSwitch";
 import { Button } from "components/ui/Button";
 
-import { links } from "utils/links";
+import { useConfig } from "config";
 
 import EditControls from "./components/EditControls";
 
@@ -70,6 +70,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
   errorMessage,
 }) => {
   const { formatMessage } = useIntl();
+  const config = useConfig();
 
   return (
     <Formik
@@ -124,7 +125,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
               id="preferences.collectData"
               values={{
                 docs: (docs: React.ReactNode) => (
-                  <DocsLink target="_blank" href={links.docsLink}>
+                  <DocsLink target="_blank" href={config.links.docsLink}>
                     {docs}
                   </DocsLink>
                 ),

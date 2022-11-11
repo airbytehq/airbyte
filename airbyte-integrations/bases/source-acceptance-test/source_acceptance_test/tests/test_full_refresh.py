@@ -67,14 +67,15 @@ class TestFullRefresh(BaseTest):
                 serializer = partial(make_hashable, exclude_fields=ignored_fields.get(stream))
             stream_records_1 = records_by_stream_1.get(stream)
             stream_records_2 = records_by_stream_2.get(stream)
-            if not set(map(serializer, stream_records_1)).issubset(set(map(serializer, stream_records_2))):
-                missing_records = set(map(serializer, stream_records_1)) - (set(map(serializer, stream_records_2)))
+            # Using
+            output_diff = set(map(serializer, stream_records_1)).symmetric_difference(set(map(serializer, stream_records_2)))
+            if output_diff:
                 msg = f"{stream}: the two sequential reads should produce either equal set of records or one of them is a strict subset of the other"
                 detailed_logger.info(msg)
                 detailed_logger.info("First read")
                 detailed_logger.log_json_list(stream_records_1)
                 detailed_logger.info("Second read")
                 detailed_logger.log_json_list(stream_records_2)
-                detailed_logger.info("Missing records")
-                detailed_logger.log_json_list(missing_records)
+                detailed_logger.info("Difference")
+                detailed_logger.log_json_list(output_diff)
                 pytest.fail(msg)

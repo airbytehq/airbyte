@@ -14,6 +14,7 @@ import io.airbyte.commons.json.JsonPaths;
 import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,17 +27,18 @@ import javax.annotation.Nullable;
  * Contains most of the core logic surrounding secret coordinate extraction and insertion.
  *
  * These are the three main helpers provided by this class:
- * {@link SecretsHelpers#splitConfig(UUID, JsonNode, JsonNode)}
- * {@link SecretsHelpers#splitAndUpdateConfig(UUID, JsonNode, JsonNode, JsonNode, ReadOnlySecretPersistence)}
+ * {@link SecretsHelpers#splitConfig(UUID, JsonNode, ConnectorSpecification)}
+ * {@link SecretsHelpers#splitAndUpdateConfig(UUID, JsonNode, JsonNode, ConnectorSpecification, ReadOnlySecretPersistence)}
  * {@link SecretsHelpers#combineConfig(JsonNode, ReadOnlySecretPersistence)}
  *
  * Here's an overview on some terminology used in this class:
  *
- * A "full config" represents an entire config as specified by an end user.
+ * A "full config" represents an entire connector config as specified by an end user. This should
+ * conform to a connector specification.
  *
- * A "partial config" represents a config where any string that was specified as an airbyte_secret
- * in the specification is replaced by a JSON object {"_secret": "secret coordinate"} that can later
- * be used to reconstruct the "full config".
+ * A "partial config" represents a connector config where any string that was specified as an
+ * airbyte_secret in the connector specification is replaced by a JSON object {"_secret": "secret
+ * coordinate"} that can later be used to reconstruct the "full config".
  *
  * A {@link SecretPersistence} provides the ability to read and write secrets to a backing store
  * such as Google Secrets Manager.
@@ -50,39 +52,41 @@ public class SecretsHelpers {
   public static final String COORDINATE_FIELD = "_secret";
 
   /**
-   * Used to separate secrets out of some configuration. This will output a partial config that
+   * Used to separate secrets out of a connector configuration. This will output a partial config that
    * includes pointers to secrets instead of actual secret values and a map that can be used to update
    * a {@link SecretPersistence} at coordinates with values from the full config.
    *
-   * @param workspaceId workspace used for this config
+   * @param workspaceId workspace used for this connector config
    * @param fullConfig config including secrets
-   * @param spec specification for the config
+   * @param spec connector specification
    * @return a partial config + a map of coordinates to secret payloads
    */
   public static SplitSecretConfig splitConfig(final UUID workspaceId,
                                               final JsonNode fullConfig,
-                                              final JsonNode spec) {
+                                              final ConnectorSpecification spec) {
     return internalSplitAndUpdateConfig(
         UUID::randomUUID,
         workspaceId,
         (coordinate) -> Optional.empty(),
         Jsons.emptyObject(),
         fullConfig,
-        spec);
+        spec.getConnectionSpecification());
   }
 
   /**
-   * Used to separate secrets out of a configuration and output a partial config that includes
-   * pointers to secrets instead of actual secret values and a map that can be used to update a
-   * {@link SecretPersistence} at coordinates with values from the full config. If a previous config
-   * for this configuration is provided, this method attempts to use the same base coordinates to
-   * refer to the same secret and increment the version of the coordinate used to reference a secret.
+   * Used to separate secrets out of a connector configuration and output a partial config that
+   * includes pointers to secrets instead of actual secret values and a map that can be used to update
+   * a {@link SecretPersistence} at coordinates with values from the full config. If a previous config
+   * for this connector's configuration is provided, this method attempts to use the same base
+   * coordinates to refer to the same secret and increment the version of the coordinate used to
+   * reference a secret.
    *
-   * @param workspaceId workspace used for this config
-   * @param oldPartialConfig previous partial config for this specific configuration
+   * @param workspaceId workspace used for this connector config
+   * @param oldPartialConfig previous partial config for this specific connector configuration
    * @param newFullConfig new config containing secrets that will be used to update the partial config
-   * @param spec specification that should match both the previous partial config after filling in
-   *        coordinates and the new full config.
+   *        for this connector
+   * @param spec connector specification that should match both the previous partial config after
+   *        filling in coordinates and the new full config.
    * @param secretReader provides a way to determine if a secret is the same or updated at a specific
    *        location in a config
    * @return a partial config + a map of coordinates to secret payloads
@@ -90,7 +94,7 @@ public class SecretsHelpers {
   public static SplitSecretConfig splitAndUpdateConfig(final UUID workspaceId,
                                                        final JsonNode oldPartialConfig,
                                                        final JsonNode newFullConfig,
-                                                       final JsonNode spec,
+                                                       final ConnectorSpecification spec,
                                                        final ReadOnlySecretPersistence secretReader) {
     return internalSplitAndUpdateConfig(
         UUID::randomUUID,
@@ -98,7 +102,7 @@ public class SecretsHelpers {
         secretReader,
         oldPartialConfig,
         newFullConfig,
-        spec);
+        spec.getConnectionSpecification());
   }
 
   /**
@@ -144,9 +148,9 @@ public class SecretsHelpers {
   public static SplitSecretConfig splitConfig(final Supplier<UUID> uuidSupplier,
                                               final UUID workspaceId,
                                               final JsonNode fullConfig,
-                                              final JsonNode spec) {
+                                              final ConnectorSpecification spec) {
     return internalSplitAndUpdateConfig(uuidSupplier, workspaceId, (coordinate) -> Optional.empty(), Jsons.emptyObject(), fullConfig,
-        spec);
+        spec.getConnectionSpecification());
   }
 
   /**
@@ -158,9 +162,9 @@ public class SecretsHelpers {
                                                        final UUID workspaceId,
                                                        final JsonNode oldPartialConfig,
                                                        final JsonNode newFullConfig,
-                                                       final JsonNode spec,
+                                                       final ConnectorSpecification spec,
                                                        final ReadOnlySecretPersistence secretReader) {
-    return internalSplitAndUpdateConfig(uuidSupplier, workspaceId, secretReader, oldPartialConfig, newFullConfig, spec);
+    return internalSplitAndUpdateConfig(uuidSupplier, workspaceId, secretReader, oldPartialConfig, newFullConfig, spec.getConnectionSpecification());
   }
 
   /**
@@ -203,7 +207,7 @@ public class SecretsHelpers {
    *
    * For splits that don't have a prior partial config (such as when a connector is created for a
    * source or destination for the first time), the secret reader and old partial config can be set to
-   * empty (see {@link SecretsHelpers#splitConfig(UUID, JsonNode, JsonNode)}).
+   * empty (see {@link SecretsHelpers#splitConfig(UUID, JsonNode, ConnectorSpecification)}).
    *
    * IMPORTANT: This is used recursively. In the process, the partial config, full config, and spec
    * inputs will represent internal json structures, not the entire configs/specs.
@@ -214,9 +218,10 @@ public class SecretsHelpers {
    *        stored for
    * @param secretReader provides a way to determine if a secret is the same or updated at a specific
    *        location in a config
-   * @param persistedPartialConfig previous partial config for this specific configuration
+   * @param persistedPartialConfig previous partial config for this specific connector configuration
    * @param newFullConfig new config containing secrets that will be used to update the partial config
-   * @param spec config specification
+   *        for this connector
+   * @param spec connector specification
    * @return a partial config + a map of coordinates to secret payloads
    */
   @VisibleForTesting
@@ -287,7 +292,7 @@ public class SecretsHelpers {
    *
    * @param newSecret new value of a secret provides a way to determine if a secret is the same or
    *        updated at a specific location in a config
-   * @param workspaceId workspace used for this config
+   * @param workspaceId workspace used for this connector config
    * @param uuidSupplier provided to allow a test case to produce known UUIDs in order for easy
    *        fixture creation.
    * @param oldSecretFullCoordinate a nullable full coordinate (base+version) retrieved from the

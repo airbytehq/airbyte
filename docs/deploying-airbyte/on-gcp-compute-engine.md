@@ -3,37 +3,67 @@ import TabItem from '@theme/TabItem';
 
 # On GCP (Compute Engine)
 
-This page guides you through deploying Airbyte Open Source on a [Google Cloud Platform (GCP) Compute Engine instance](https://cloud.google.com/compute/docs/instances) by setting up the deployment environment, installing and starting Airbyte, and connecting it to the GCP instance.
-
 :::info
 
-The instructions have been tested on a `Debian GNU/Linux 10` VM instance.
+The instructions have been tested on `Debian GNU/Linux 10 (buster)`
 
 :::
 
-## Requirements
+## Create a new instance
 
-- To test Airbyte, we recommend an `e2.medium` instance and provision at least 30GBs of disk per node.
-- To deploy Airbyte in a production environment, we recommend a `n1-standard-2` instance.
+* Launch a new instance
 
-## Set up the environment
+![](../.gitbook/assets/gcp_ce_launch.png)
 
-1. Create a [new GCP instance](https://cloud.google.com/compute/docs/instances/create-start-instance).
-2. Set variables in your local terminal:
+* Configure new instance
+  * For testing out Airbyte, an `e2.medium` instance is likely sufficient. Airbyte uses a lot of disk space with images and logs, so make sure to provision at least 30GBs of disk per node. 
+  * For long-running Airbyte installations, we recommend a `n1-standard-2` instance.
+
+![](../.gitbook/assets/gcp_ce_configure.png)
+
+* `Create`
+
+## Install environment
+
+:::info
+
+Note: The following commands will be entered either on your local terminal or in your ssh session on the instance terminal. The comments above each command block will indicate where to enter the commands.
+
+:::
+
+* Set variables in your terminal
 
 ```bash
+# In your workstation terminal
 PROJECT_ID=PROJECT_ID_WHERE_YOU_CREATED_YOUR_INSTANCE
-INSTANCE_NAME=airbyte # or any other name that you've used
+INSTANCE_NAME=airbyte # or anyother name that you've used
 ```
 
-3. Install Google Cloud SDK and initialize the gcloud command-line tool using the following commands in your local terminal:
+* Install `gcloud`
+
+<Tabs groupId="operating-systems">
+<TabItem value="linux" label="Linux">
 
 ```bash
-brew install --cask google-cloud-sdk
-gcloud init
+echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+sudo apt-get install apt-transport-https ca-certificates gnupg
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+sudo apt-get update && sudo apt-get install google-cloud-sdk
 ```
 
-4. List all instances in your project and verify that you can see the Airbyte instance you created in step 1 in your local terminal:
+</TabItem>
+<TabItem value="mac" label="macOS">
+
+```bash
+# In your workstation terminal
+brew install --cask google-cloud-sdk
+gcloud init # Follow instructions```
+```
+
+</TabItem>
+</Tabs>
+
+* List all instances in your project
 
 ```bash
 # Verify you can see your instance
@@ -41,15 +71,17 @@ gcloud --project $PROJECT_ID compute instances list
 [...] # You should see the airbyte instance you just created
 ```
 
-5. Connect to your instance in your local terminal:
+* Connect to your instance
 
 ```bash
-gcloud --project=$PROJECT_ID beta compute SSH $INSTANCE_NAME
+# In your workstation terminal
+gcloud --project=$PROJECT_ID beta compute ssh $INSTANCE_NAME
 ```
 
-6. Install Docker on your VM instance by following the below commands in your VM terminal:
+* Install `docker`
 
 ```bash
+# In your ssh session on the instance terminal
 sudo apt-get update
 sudo apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
 curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add --
@@ -59,34 +91,36 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 sudo usermod -a -G docker $USER
 ```
 
-7. Install `docker-compose` on your VM instance by following the below commands in your VM terminal:
+* Install `docker-compose`
 
 ```bash
+# In your ssh session on the instance terminal
 sudo apt-get -y install wget
 sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 ```
 
-8.  Close the SSH connection on your VM instance to ensure the group modification is taken into account by following the below command in your VM terminal:
+* Close the ssh connection to ensure the group modification is taken into account
 
 ```bash
+# In your ssh session on the instance terminal
 logout
 ```
 
-## Install and launch Airbyte
+## Install & start Airbyte
 
-To install and launch Airbyte:
-
-1. In your local terminal, connect to your Google Cloud instance:
+* Connect to your instance
 
 ```bash
-gcloud --project=$PROJECT_ID beta compute SSH $INSTANCE_NAME
+# In your workstation terminal
+gcloud --project=$PROJECT_ID beta compute ssh $INSTANCE_NAME
 ```
 
-2. In your VM terminal, install Airbyte:
+* Install Airbyte
 
 ```bash
+# In your ssh session on the instance terminal
 mkdir airbyte && cd airbyte
 wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
 docker-compose up -d
@@ -94,18 +128,22 @@ docker-compose up -d
 
 ## Connect to Airbyte
 
-:::caution
-Warning: For security reasons, we strongly recommended not exposing Airbyte publicly.
+:::danger
+
+For security reasons, we strongly recommend to not expose Airbyte publicly. Future versions will add support for SSL & Authentication.
+
 :::
 
-1. In your local terminal, create an SSH tunnel to connect the GCP instance to Airbyte:
+* Create ssh tunnel.
 
 ```bash
-gcloud --project=$PROJECT_ID beta compute SSH $INSTANCE_NAME -- -L 8000:localhost:8000 -N -f
+# In your workstation terminal
+gcloud --project=$PROJECT_ID beta compute ssh $INSTANCE_NAME -- -L 8000:localhost:8000 -N -f
 ```
 
-2. Verify the connection by visiting [http://localhost:8000](http://localhost:8000) in your browser.
+* Just visit [http://localhost:8000](http://localhost:8000) in your browser and start moving some data!
 
 ## Troubleshooting
 
-If you encounter any issues, reach out to our community on [Slack](https://slack.airbyte.com/).
+If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../troubleshooting/on-deploying.md) section in our docs for common problems.
+

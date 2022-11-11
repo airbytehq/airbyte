@@ -18,21 +18,20 @@ def test_source_streams():
     assert len(schemas) == 3
     assert schemas[0]["properties"] == {
         "id": {"type": "number"},
-        "created_at": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
-        "updated_at": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
+        "created_at": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"},
+        "updated_at": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"},
+        "job": {"type": "string"},
+        "company": {"type": "string"},
+        "ssn": {"type": "string"},
+        "residence": {"type": "string"},
+        "current_location": {"type": "array"},
+        "blood_group": {"type": "string"},
+        "website": {"type": "array"},
+        "username": {"type": "string"},
         "name": {"type": "string"},
-        "title": {"type": "string"},
-        "age": {"type": "integer"},
-        "email": {"type": "string"},
-        "telephone": {"type": "string"},
-        "gender": {"type": "string"},
-        "language": {"type": "string"},
-        "academic_degree": {"type": "string"},
-        "nationality": {"type": "string"},
-        "occupation": {"type": "string"},
-        "height": {"type": "string"},
-        "blood_type": {"type": "string"},
-        "weight": {"type": "integer"},
+        "sex": {"type": "string"},
+        "address": {"type": "string"},
+        "mail": {"type": "string"},
     }
 
     for schema in schemas:
@@ -163,8 +162,8 @@ def test_read_with_seed():
     iterator = source.read(logger, config, catalog, state)
 
     records = [row for row in iterator if row.type is Type.RECORD]
-    assert records[0].record.data["occupation"] == "Roadworker"
-    assert records[0].record.data["email"] == "reproduce1856@outlook.com"
+    assert records[0].record.data["company"] == "Gibson-Townsend"
+    assert records[0].record.data["mail"] == "zamoradenise@yahoo.com"
 
 
 def test_ensure_no_purchases_without_users():

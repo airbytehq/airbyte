@@ -23,8 +23,7 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources import Source
-from mimesis import Datetime, Person
-from mimesis.locales import Locale
+from faker import Faker
 
 
 class SourceFaker(Source):
@@ -109,8 +108,8 @@ class SourceFaker(Source):
         records_per_sync: int = config["records_per_sync"] if "records_per_sync" in config else 500
         records_per_slice: int = config["records_per_slice"] if "records_per_slice" in config else 100
 
-        person = Person(locale=Locale.EN, seed=seed)
-        dt = Datetime(seed=seed)
+        Faker.seed(seed)
+        fake = Faker()
 
         to_generate_users = False
         to_generate_purchases = False
@@ -137,14 +136,14 @@ class SourceFaker(Source):
                 records_in_page = 0
 
                 for i in range(cursor, count):
-                    user = generate_user(person, dt, i)
+                    user = generate_user(fake, i)
                     yield generate_record(stream, user)
                     total_records += 1
                     records_in_sync += 1
                     records_in_page += 1
 
                     if to_generate_purchases:
-                        purchases = generate_purchases(user, purchases_count)
+                        purchases = generate_purchases(fake, user, purchases_count)
                         for p in purchases:
                             yield generate_record(purchases_stream, p)
                             purchases_count += 1
@@ -185,7 +184,7 @@ def generate_record(stream: any, data: any):
     # timestamps need to be emitted in ISO format
     for key in dict:
         if isinstance(dict[key], datetime.datetime):
-            dict[key] = format_airbyte_time(dict[key])
+            dict[key] = dict[key].isoformat()
 
     return AirbyteMessage(
         type=Type.RECORD,
@@ -211,39 +210,22 @@ def generate_state(state: Dict[str, any], stream: any, data: any):
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=state))
 
 
-def generate_user(person: Person, dt: Datetime, user_id: int):
-    time_a = dt.datetime()
-    time_b = dt.datetime()
+def generate_user(fake: Faker, user_id: int):
+    profile = fake.profile()
+    del profile["birthdate"]  # the birthdate field seems to not obey the seed at the moment, so we'll ignore it
 
-    profile = {
+    time_a = fake.date_time()
+    time_b = fake.date_time()
+    metadata = {
         "id": user_id + 1,
         "created_at": time_a if time_a <= time_b else time_b,
         "updated_at": time_a if time_a > time_b else time_b,
-        "name": person.name(),
-        "title": person.title(),
-        "age": person.age(),
-        "email": person.email(),
-        "telephone": person.telephone(),
-        "gender": person.gender(),
-        "language": person.language(),
-        "academic_degree": person.academic_degree(),
-        "nationality": person.nationality(),
-        "occupation": person.occupation(),
-        "height": person.height(),
-        "blood_type": person.blood_type(),
-        "weight": person.weight(),
     }
-
-    while not profile["created_at"]:
-        profile["created_at"] = dt.datetime()
-
-    if not profile["updated_at"]:
-        profile["updated_at"] = profile["created_at"] + 1
-
+    profile.update(metadata)
     return profile
 
 
-def generate_purchases(user: any, purchases_count: int) -> list[Dict]:
+def generate_purchases(fake: Faker, user: any, purchases_count: int) -> list[Dict]:
     purchases: list[Dict] = []
     purchase_percent_remaining = 80  # ~ 20% of people will have no purchases
     total_products = len(generate_products())
@@ -287,16 +269,6 @@ def read_json(filepath):
 def random_date_in_range(start_date: datetime.datetime, end_date: datetime.datetime = datetime.datetime.now()) -> datetime.datetime:
     time_between_dates = end_date - start_date
     days_between_dates = time_between_dates.days
-    if days_between_dates < 2:
-        days_between_dates = 2
     random_number_of_days = random.randrange(days_between_dates)
     random_date = start_date + datetime.timedelta(days=random_number_of_days)
     return random_date
-
-
-def format_airbyte_time(d: datetime):
-    s = f"{d}"
-    s = s.split(".")[0]
-    s = s.replace(" ", "T")
-    s += "+00:00"
-    return s

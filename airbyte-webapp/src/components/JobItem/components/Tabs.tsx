@@ -3,10 +3,13 @@ import styled from "styled-components";
 
 import { StepsMenu } from "components/ui/StepsMenu";
 
+import { AttemptStatus } from "core/request/AirbyteClient";
+
 export interface TabsData {
   id: string;
   name: string | React.ReactNode;
-  icon?: React.ReactNode;
+  status?: AttemptStatus;
+  isPartialSuccess?: boolean;
   onSelect?: () => void;
 }
 

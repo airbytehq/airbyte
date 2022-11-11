@@ -20,8 +20,6 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
-from .custom_reports_validator import CustomReportsValidator
-
 DATA_IS_NOT_GOLDEN_MSG = "Google Analytics data is not golden. Future requests may return different data."
 
 RESULT_IS_SAMPLED_MSG = (
@@ -105,8 +103,6 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         self.view_id = config["view_id"]
         self.metrics = config["metrics"]
         self.dimensions = config["dimensions"]
-        self.segments = config.get("segments", list())
-        self.filtersExpression = config.get("filter", "")
         self._config = config
         self.dimensions_ref, self.metrics_ref = GoogleAnalyticsV4TypesList().read_records(sync_mode=None)
 
@@ -134,12 +130,9 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         return "./reports:batchGet"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        reports = response.json().get(self.report_field, [])
-        for report in reports:
-            # since we're requesting just one report at a time, the first report in the response is enough
-            next_page = report.get("nextPageToken")
-            if next_page:
-                return {"pageToken": next_page}
+        next_page = response.json().get("nextPageToken")
+        if next_page:
+            return {"pageToken": next_page}
 
     def should_retry(self, response: requests.Response) -> bool:
         """
@@ -155,13 +148,11 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         if response.status_code == 400:
             self.logger.info(f"{response.json()['error']['message']}")
             self._raise_on_http_errors = False
-            return False
 
         elif response.status_code == 429 and "has exceeded the daily request limit" in response.json()["error"]["message"]:
             rate_limit_docs_url = "https://developers.google.com/analytics/devguides/reporting/core/v4/limits-quotas"
             self.logger.info(f"{response.json()['error']['message']}. More info: {rate_limit_docs_url}")
             self._raise_on_http_errors = False
-            return False
 
         result: bool = HttpStream.should_retry(self, response)
         return result
@@ -176,8 +167,6 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
         metrics = [{"expression": metric} for metric in self.metrics]
         dimensions = [{"name": dimension} for dimension in self.dimensions]
-        segments = [{"segmentId": segment} for segment in self.segments]
-        filtersExpression = self.filtersExpression
 
         request_body = {
             "reportRequests": [
@@ -187,8 +176,6 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                     "pageSize": self.page_size,
                     "metrics": metrics,
                     "dimensions": dimensions,
-                    "segments": segments,
-                    "filtersExpression": filtersExpression,
                 }
             ]
         }
@@ -281,7 +268,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         """
         try:
             if field_type == "dimension":
-                if attribute.startswith(("ga:dimension", "ga:customVarName", "ga:customVarValue", "ga:segment")):
+                if attribute.startswith(("ga:dimension", "ga:customVarName", "ga:customVarValue")):
                     # Custom Google Analytics Dimensions that are not part of self.dimensions_ref. They are always
                     # strings
                     return "string"
@@ -402,9 +389,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                     "ga_exitRate":6.523809523809524
         }
         """
-        json_response = response.json() if response.status_code not in (400, 429) else None
-        if not json_response:
-            return []
+        json_response = response.json()
         reports = json_response.get(self.report_field, [])
 
         for report in reports:
@@ -574,12 +559,12 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         config["metrics"] = ["ga:hits"]
         config["dimensions"] = ["ga:date"]
 
-        # load and verify the custom_reports
         try:
             # test the eligibility of custom_reports input
             custom_reports = config.get("custom_reports")
             if custom_reports:
-                CustomReportsValidator(json.loads(custom_reports)).validate()
+                json.loads(custom_reports)
+
             # Read records to check the reading permissions
             read_check = list(TestStreamConnection(config).read_records(sync_mode=None))
             if read_check:
@@ -617,8 +602,6 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         for stream in config["ga_streams"]:
             config["metrics"] = stream["metrics"]
             config["dimensions"] = stream["dimensions"]
-            config["segments"] = stream.get("segments", list())
-            config["filter"] = stream.get("filter", "")
 
             # construct GAReadStreams sub-class for each stream
             stream_name = stream["name"]

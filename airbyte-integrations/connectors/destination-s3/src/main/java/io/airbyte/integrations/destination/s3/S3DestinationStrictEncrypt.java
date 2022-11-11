@@ -32,5 +32,4 @@ public class S3DestinationStrictEncrypt extends S3Destination {
     }
     return super.check(config);
   }
-
 }

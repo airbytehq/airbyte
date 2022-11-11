@@ -51,7 +51,6 @@ public class S3DestinationTest {
         .get();
 
     factoryConfig = new S3DestinationConfigFactory() {
-
       public S3DestinationConfig getS3DestinationConfig(final JsonNode config, final StorageProvider storageProvider) {
         return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
             .withEndpoint("https://s3.example.com")
@@ -59,7 +58,6 @@ public class S3DestinationTest {
             .withS3Client(s3)
             .get();
       }
-
     };
   }
 

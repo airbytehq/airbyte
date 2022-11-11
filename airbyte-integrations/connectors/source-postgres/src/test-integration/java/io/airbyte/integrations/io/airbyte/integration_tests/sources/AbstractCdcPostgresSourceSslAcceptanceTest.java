@@ -1,7 +1,6 @@
 /*
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
-
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static io.airbyte.db.PostgresUtils.getCertificate;
@@ -23,7 +22,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPostgresSourceAcceptanceTest {
-
   protected static final String PASSWORD = "Passw0rd";
   protected static PostgresUtils.Certificate certs;
 
@@ -31,7 +29,7 @@ public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPost
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
         .asCompatibleSubstituteFor("postgres"))
-            .withCommand("postgres -c wal_level=logical");
+        .withCommand("postgres -c wal_level=logical");
     container.start();
 
     certs = getCertificate(container);
@@ -87,5 +85,4 @@ public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPost
   }
 
   public abstract ImmutableMap getCertificateConfiguration();
-
 }

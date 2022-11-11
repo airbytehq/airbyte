@@ -13,5 +13,6 @@ const Template: ComponentStory<typeof ImageBlock> = (args) => <ImageBlock {...ar
 export const Primary = Template.bind({});
 Primary.args = {
   img: undefined,
+  num: undefined,
   small: undefined,
 };

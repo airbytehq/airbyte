@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import { ConnectorIcon } from "components/common/ConnectorIcon";
+import { ConnectorIcon } from "components/ConnectorIcon";
 
 interface IProps {
   value: string;

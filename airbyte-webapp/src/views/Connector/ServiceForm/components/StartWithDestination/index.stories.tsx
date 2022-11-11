@@ -1,21 +1,29 @@
 import { ComponentMeta, ComponentStory } from "@storybook/react";
+import { Formik } from "formik";
 
 import { mockData } from "../../../../../test-utils/mock-data/mockStartWithDestination";
-import { StartWithDestinationCard } from "./StartWithDestinationCard";
+import { StartWithDestination } from "./StartWithDestination";
 
 export default {
   title: "Views/StartWithDestination",
-  component: StartWithDestinationCard,
+  component: StartWithDestination,
   args: {
     destination: mockData,
     onDestinationSelect: () => {
       return undefined;
     },
   },
-} as ComponentMeta<typeof StartWithDestinationCard>;
+} as ComponentMeta<typeof StartWithDestination>;
 
-export const Template: ComponentStory<typeof StartWithDestinationCard> = (args) => (
-  <div style={{ maxWidth: 560 }}>
-    <StartWithDestinationCard {...args} />
-  </div>
+export const Template: ComponentStory<typeof StartWithDestination> = (args) => (
+  <Formik
+    initialValues={{}}
+    onSubmit={() => {
+      return undefined;
+    }}
+  >
+    <div style={{ maxWidth: 560 }}>
+      <StartWithDestination {...args} />
+    </div>
+  </Formik>
 );

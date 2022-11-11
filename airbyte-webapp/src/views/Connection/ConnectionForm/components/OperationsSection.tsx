@@ -3,7 +3,7 @@ import React from "react";
 import { useIntl } from "react-intl";
 
 import { Card } from "components/ui/Card";
-import { Heading } from "components/ui/Heading";
+import { Text } from "components/ui/Text";
 
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
@@ -37,14 +37,14 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
     <Card>
       <Section>
         {supportsNormalization || supportsTransformations ? (
-          <Heading as="h5">
+          <Text as="h5">
             {[
               supportsNormalization && formatMessage({ id: "connectionForm.normalization.title" }),
               supportsTransformations && formatMessage({ id: "connectionForm.transformation.title" }),
             ]
               .filter(Boolean)
               .join(" & ")}
-          </Heading>
+          </Text>
         ) : null}
         {supportsNormalization && <Field name="normalization" component={NormalizationField} />}
         {supportsTransformations && (

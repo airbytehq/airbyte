@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.config;
 
-import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.persistence.split_secrets.GoogleSecretManagerPersistence;
 import io.airbyte.config.persistence.split_secrets.LocalTestingSecretPersistence;
 import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;

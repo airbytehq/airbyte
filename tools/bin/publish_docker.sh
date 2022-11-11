@@ -3,17 +3,17 @@ set -e
 
 # List of directories without "airbyte-" prefix.
 projectDir=(
-  "bootloader"
-  "config/init"
-  "container-orchestrator"
+  "workers"
+  "cli"
   "cron"
-  "db/db-lib"
-  "metrics/reporter"
-  "proxy"
+  "webapp"
   "server"
   "temporal"
-  "webapp"
-  "workers"
+  "container-orchestrator"
+  "config/init"
+  "bootloader"
+  "metrics/reporter"
+  "db/db-lib"
 )
 
 # Set default values to required vars. If set in env, values will be taken from there.

@@ -111,6 +111,7 @@ export const theme = {
   dangerColor: scss.red,
   dangerColor25: scss.red50,
   warningColor: scss.yellow,
+  warningBackgroundColor: scss.yellow100,
   lightDangerColor: scss.red50,
   dangerTransparentColor: scss.red50,
   successColor: scss.green,

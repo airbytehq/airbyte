@@ -1,6 +1,5 @@
 import React from "react";
 
-import { Heading } from "components/ui/Heading";
 import { Text } from "components/ui/Text";
 
 import styles from "./TitlesBlock.module.scss";
@@ -14,10 +13,10 @@ interface TitlesBlockProps {
 const TitlesBlock: React.FC<TitlesBlockProps> = ({ title, children, testId }) => {
   return (
     <div className={styles.container}>
-      <Heading as="h1" size="lg" centered data-testid={testId}>
+      <Text as="h1" size="lg" centered data-testid={testId}>
         {title}
-      </Heading>
-      <Text centered className={styles.content}>
+      </Text>
+      <Text as="p" centered className={styles.content}>
         {children}
       </Text>
     </div>

@@ -39,7 +39,10 @@
           "required": ["day"],
           "$schema": "http://json-schema.org/draft-07/schema#"
         },
-        "supported_sync_modes": ["full_refresh", "incremental"]
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
       }
     }
   ]

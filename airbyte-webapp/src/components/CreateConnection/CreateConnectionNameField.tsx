@@ -2,8 +2,8 @@ import { Field, FieldProps } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { ControlLabels } from "components/LabeledControl";
-import { Heading } from "components/ui/Heading";
 import { Input } from "components/ui/Input";
+import { Text } from "components/ui/Text";
 
 import { Section } from "views/Connection/ConnectionForm/components/Section";
 
@@ -23,9 +23,9 @@ export const CreateConnectionNameField = () => {
                 nextLine
                 error={!!meta.error && meta.touched}
                 label={
-                  <Heading as="h5" className={styles.labelHeading}>
+                  <Text as="h5" className={styles.labelHeading}>
                     <FormattedMessage id="form.connectionName" />
-                  </Heading>
+                  </Text>
                 }
                 message={formatMessage({
                   id: "form.connectionName.message",

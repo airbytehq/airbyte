@@ -5,8 +5,3 @@ export enum StepType {
   SET_UP_CONNECTION = "set-up-connection",
   FINAL = "final",
 }
-
-// exp-speedy-connection
-export interface ILocationState<Type> extends Omit<Location, "state"> {
-  state: Type;
-}

@@ -62,6 +62,14 @@
     "offline_conversion_data_set": {
       "type": ["null", "string"]
     },
+    "pixel": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
     "retention_days": {
       "type": ["null", "number"]
     },

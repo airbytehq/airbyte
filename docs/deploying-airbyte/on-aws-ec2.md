@@ -1,98 +1,141 @@
-# Deploy on AWS (Amazon EC2)
+# On AWS (EC2)
 
-This page guides you through deploying Airbyte Open Source on an Amazon EC2 instance by setting up the deployment environment, installing and starting Airbyte, and connecting it to the Amazon EC2 instance.
+:::info
 
-> INFO
->
-> The instructions have been tested on Amazon Linux 2 AMI (HVM)
+The instructions have been tested on `Amazon Linux 2 AMI (HVM)`
 
-## Requirements
+:::
 
-- To test Airbyte, we recommend a `t2.medium` instance
-- To deploy Airbyte in a production environment, we recommend a `t2.large` instance
-- Make sure your Docker Desktop app is running to ensure all services run smoothly
+## Create a new instance
 
-[Create and download an SSH key to connect to the instance](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-key-pairs.html)
+* Launch a new instance
 
-## Set up the environment
+![](../.gitbook/assets/aws_ec2_launch.png)
 
-1. Create an Amazon EC2 instance.
+* Select instance AMI
 
-To connect to your instance, run the following command on your local terminal:
+![](../.gitbook/assets/aws_ec2_ami.png)
 
-```
-SSH_KEY=~/Downloads/dataline-key-airbyte.pem # the file path you downloaded the key
-INSTANCE_IP=REPLACE_WITH_YOUR_INSTANCE_IP # you can find your IP address in the EC2 console under the Instances tab
+* Select instance type
+  * For testing out Airbyte, a `t2.medium` instance is likely sufficient. Airbyte uses a lot of disk space with images and logs, so make sure to provision at least 30GBs of disk per node.
+  * For long-running Airbyte installations, we recommend a `t2.large` instance.
+
+![](../.gitbook/assets/aws_ec2_instance_type.png)
+
+* `Next: Configure Instance Details` 
+  * You can tune parameters or keep the defaults
+* `Next: Add Storage`
+  * You can tune parameters or keep the defaults
+* `Next: Add Tags`
+  * You can tune parameters or keep the defaults
+* `Next: Configure Security Groups`
+  * We are going to allow network for `ssh` 
+
+![](../.gitbook/assets/aws_ec2_security_group.png)
+
+* `Review and Launch`
+* `Launch`
+* Create a ssh key so you can connect to the instance
+  * Download the key \(and don't lose it or you won't be able to connect to the instance\)
+
+![](../.gitbook/assets/aws_ec2_ssh_key.png)
+
+* `Launch Instances`
+
+![](../.gitbook/assets/aws_ec2_instance_view.png)
+
+* Wait for the instance to become `Running`
+
+## Install environment
+
+:::info
+
+Note: The following commands will be entered either on your local terminal or in your ssh session on the instance terminal. The comments above each command block will indicate where to enter the commands.
+
+:::
+
+* Connect to your instance
+
+```bash
+# In your workstation terminal
+SSH_KEY=~/Downloads/airbyte-key.pem # or wherever you've downloaded the key
+INSTANCE_IP=REPLACE_WITH_YOUR_INSTANCE_IP
 chmod 400 $SSH_KEY # or ssh will complain that the key has the wrong permissions
-ssh -i $SSH_KEY ec2-user@$INSTANCE_IP # connect to the aws ec2 instance AMI and the your private IP address
+ssh -i $SSH_KEY ec2-user@$INSTANCE_IP
 ```
 
-2. To install Docker, run the following command in your SSH session on the instance terminal:
+* Install `docker`
 
-```
+```bash
+# In your ssh session on the instance terminal
 sudo yum update -y
 sudo yum install -y docker
 sudo service docker start
 sudo usermod -a -G docker $USER
 ```
 
-3. To install `docker-compose`, run the following command in your ssh session on the instance terminal:
+* Install `docker-compose`
 
-```
+```bash
+# In your ssh session on the instance terminal
 sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 ```
 
-4. To close the SSH connection, run the following command in your SSH session on the instance terminal:
+* Close the ssh connection to ensure the group modification is taken into account
 
-```
+```bash
+# In your ssh session on the instance terminal
 logout
 ```
 
-## Install and start Airbyte
+## Install & start Airbyte
 
-In your local terminal, run the following commands:
+* Connect to your instance
 
-1. Connect to your instance
-
-```
+```bash
+# In your workstation terminal
 ssh -i $SSH_KEY ec2-user@$INSTANCE_IP
 ```
 
-2. Install Airbyte
+* Install Airbyte
 
-```
+```bash
+# In your ssh session on the instance terminal
 mkdir airbyte && cd airbyte
 wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
-docker-compose up -d # run the Docker container
+docker-compose up -d
 ```
 
 ## Connect to Airbyte
 
-> DANGER
->
-> We strongly recommend not exposing Airbyte on Internet available ports for security reasons.
+:::danger
 
-1. Create an SSH tunnel for port 8000
+For security reasons, we strongly recommend to not expose Airbyte on Internet available ports. Future versions will add support for SSL & Authentication.
 
-> INFO
->
-> If you want to use different ports, modify `API_URL` in your .env file and restart Airbyte.
-> Run the following commands in your workstation terminal from the downloaded key folder:
+:::
 
-```
+* Create ssh tunnel for port 8000
+
+:::info
+
+If you want to use different ports you will need to modify `API_URL` in your `.env` file and restart Airbyte.
+
+:::
+
+```bash
 # In your workstation terminal
-SSH_KEY=~/Downloads/dataline-key-airbyte.pem
 ssh -i $SSH_KEY -L 8000:localhost:8000 -N -f ec2-user@$INSTANCE_IP
 ```
 
-2. Visit `http://localhost:8000` to verify the deployment.
+* Just visit [http://localhost:8000](http://localhost:8000) in your browser and start moving some data!
 
-## Get Airbyte logs in CloudWatch
+## Pushing Airbyte logs to CloudWatch
 
-Follow this [guide](https://aws.amazon.com/pt/premiumsupport/knowledge-center/cloudwatch-docker-container-logs-proxy/) to get your logs from your Airbyte Docker containers in CloudWatch.
+If you want to get your logs from your Airbyte Docker containers in CloudWatch, simply follow [this](https://aws.amazon.com/pt/premiumsupport/knowledge-center/cloudwatch-docker-container-logs-proxy/) guide to do so.
 
 ## Troubleshooting
 
-If you encounter any issues, reach out to our community on [Slack](https://slack.airbyte.com/).
+If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../troubleshooting/on-deploying.md) section in our docs for common problems.
+

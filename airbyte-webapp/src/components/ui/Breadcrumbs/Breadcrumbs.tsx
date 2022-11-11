@@ -1,12 +1,28 @@
 import React from "react";
+import styled from "styled-components";
 
-import { Link } from "components";
+const BreadcrumbsContainer = styled.div`
+  font-weight: normal;
+  cursor: default;
+`;
 
-import styles from "./Breadcrumbs.module.scss";
+const LastBreadcrumbsItem = styled.span`
+  font-weight: bold;
+`;
+
+const BreadcrumbsItem = styled.div`
+  display: inline-block;
+  cursor: pointer;
+  color: ${({ theme }) => theme.primaryColor};
+
+  &:hover {
+    opacity: 0.8;
+  }
+`;
 
 export interface BreadcrumbsDataItem {
-  label: string;
-  to?: string;
+  name: string | React.ReactNode;
+  onClick?: () => void;
 }
 
 interface BreadcrumbsProps {
@@ -14,22 +30,20 @@ interface BreadcrumbsProps {
 }
 
 export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ data }) => {
+  const lastIndex = data.length - 1;
+
   return (
-    <div className={styles.container}>
-      {data.map((item, index) => (
-        <span key={index}>
-          {item.to ? (
-            <Link to={item.to} $clear className={styles.item}>
-              {item.label}
-            </Link>
-          ) : (
-            <span className={styles.unlinked} key={index}>
-              {item.label}
-            </span>
-          )}
-          {index !== data.length - 1 && <span> / </span>}
-        </span>
-      ))}
-    </div>
+    <BreadcrumbsContainer>
+      {data.map((item, key) =>
+        key === lastIndex ? (
+          <LastBreadcrumbsItem key={`breadcrumbs-item-${key}`}>{item.name}</LastBreadcrumbsItem>
+        ) : (
+          <span key={`breadcrumbs-item-${key}`}>
+            <BreadcrumbsItem onClick={item.onClick}>{item.name}</BreadcrumbsItem>
+            <span> / </span>
+          </span>
+        )
+      )}
+    </BreadcrumbsContainer>
   );
 };

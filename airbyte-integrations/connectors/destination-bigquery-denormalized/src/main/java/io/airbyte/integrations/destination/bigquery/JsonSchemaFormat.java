@@ -59,6 +59,10 @@ public enum JsonSchemaFormat {
     }
   }
 
+  public String getJsonSchemaFormat() {
+    return jsonSchemaFormat;
+  }
+
   public StandardSQLTypeName getBigQueryType() {
     return bigQueryType;
   }

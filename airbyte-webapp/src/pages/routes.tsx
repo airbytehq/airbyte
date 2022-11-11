@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
-import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
+import ApiErrorBoundary from "components/ApiErrorBoundary";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
 import { useApiHealthPoll } from "hooks/services/Health";
@@ -15,7 +15,6 @@ import MainView from "views/layout/MainView";
 
 import { WorkspaceRead } from "../core/request/AirbyteClient";
 import ConnectionPage from "./ConnectionPage";
-import { ConnectorBuilderPage } from "./ConnectorBuilderPage/ConnectorBuilderPage";
 import DestinationPage from "./DestinationPage";
 import OnboardingPage from "./OnboardingPage";
 import PreferencesPage from "./PreferencesPage";
@@ -44,7 +43,6 @@ const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = ({ workspace }) =
           <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
           <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
           <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
-          <Route path={`${RoutePaths.ConnectorBuilder}/*`} element={<ConnectorBuilderPage />} />
           {workspace.displaySetupWizard ? (
             <Route path={`${RoutePaths.Onboarding}/*`} element={<OnboardingPage />} />
           ) : null}

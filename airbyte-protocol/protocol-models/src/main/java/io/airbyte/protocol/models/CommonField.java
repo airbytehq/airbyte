@@ -57,9 +57,4 @@ public class CommonField<T> {
     return properties;
   }
 
-  @Override
-  public String toString() {
-    return String.format("CommonField{name='%s', type=%s, properties=%s}", name, type, properties);
-  }
-
 }
