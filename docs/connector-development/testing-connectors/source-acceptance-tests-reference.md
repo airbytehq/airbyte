@@ -101,6 +101,7 @@ acceptance_tests:  # Tests configuration
 Verify that a `spec` operation issued to the connector returns a valid connector specification. 
 Additional tests are validating the backward compatibility of the current specification compared to the specification of the previous connector version. If no previous connector version is found (by default the test looks for a docker image with the same name but with the `latest` tag), this test is skipped. 
 These backward compatibility tests can be bypassed by changing the value of the `backward_compatibility_tests_config.disable_for_version` input in `acceptance-test-config.yml` (see below).
+One more test validates the specification against containing exposed secrets. This means fields that potentially could hold a secret value should be explicitly marked with `"airbyte_secret": true`. If an input field like `api_key` / `password` / `client_secret` / etc. is exposed, the test will fail.
 
 | Input                                                            | Type   | Default             | Note                                                                                                                  |
 | :--------------------------------------------------------------- | :----- | :------------------ | :-------------------------------------------------------------------------------------------------------------------- |
