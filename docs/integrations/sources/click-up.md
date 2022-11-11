@@ -11,6 +11,8 @@ This source is capable of syncing the following streams:
 
 * [`user`](https://clickup.com/api/clickupreference/operation/GetAuthorizedUser/)
 * [`teams`](https://clickup.com/api/clickupreference/operation/GetAuthorizedTeams/)
+* [`spaces`](https://clickup.com/api/clickupreference/operation/GetSpaces/)
+* [`folders`](https://clickup.com/api/clickupreference/operation/GetFolders/)
 * [`lists`](https://clickup.com/api/clickupreference/operation/GetLists/)
 * [`tasks`](https://clickup.com/api/clickupreference/operation/GetTasks)
 

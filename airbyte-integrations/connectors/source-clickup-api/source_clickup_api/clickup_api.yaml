@@ -76,6 +76,34 @@ streams:
         $ref: "*ref(definitions.arraySelector)"
   - type: DeclarativeStream
     $options:
+      name: "space"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "team/{{ config['team_id'] }}/space"
+      paginator:
+        $ref: "*ref(definitions.paginator)"
+      record_selector:
+        $ref: "*ref(definitions.arraySelector)"
+  - type: DeclarativeStream
+    $options:
+      name: "folder"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "space/{{ config['space_id'] }}/folder"
+      paginator:
+        $ref: "*ref(definitions.paginator)"
+      record_selector:
+        $ref: "*ref(definitions.arraySelector)"
+  - type: DeclarativeStream
+    $options:
       name: "task"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -102,7 +130,7 @@ streams:
 
 check:
   type: CheckStream
-  stream_names: ["user", "team", "list", "task"]
+  stream_names: ["user", "team", "space", "folder", "list", "task"]
 
 
 
