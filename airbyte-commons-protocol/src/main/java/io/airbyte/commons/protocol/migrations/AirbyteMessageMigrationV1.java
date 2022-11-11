@@ -62,12 +62,15 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
       }
     } else if (oldMessage.getType() == Type.RECORD) {
       JsonNode oldData = newMessage.getRecord().getData();
-      JsonNode newData = upgradeNode(oldData);
+      JsonNode newData = upgradeRecord(oldData);
       newMessage.getRecord().setData(newData);
     }
     return newMessage;
   }
 
+  /**
+   * Perform the {type: foo} -> {$ref: foo} upgrade. Modifies the schema in-place.
+   */
   private void upgradeSchema(JsonNode schema) {
     mutateSchemas(
         this::isPrimitiveTypeDeclaration,
@@ -96,10 +99,13 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
 
   /**
    * Modifies the schema in-place to upgrade from the old-style type declaration to the new-style $ref declaration.
-   * Assumes that the schema contains a primitive declaration, i.e. either something like:
+   * Assumes that the schema is an ObjectNode containing a primitive declaration, i.e. either something like:
    * {"type": "string"}
    * or:
    * {"type": ["string", "object"]}
+   *
+   * In the latter case, the schema may contain subschemas. This method mutually recurses with {@link #mutateSchemas(Function, Consumer, JsonNode)}
+   * to upgrade those subschemas.
    *
    * @param schema An ObjectNode representing a primitive type declaration
    */
@@ -115,11 +121,13 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
       // Otherwise, fall back to type/format
       JsonNode typeNode = schemaNode.get("type");
       if (typeNode.isTextual()) {
+        // If the type is a single string, then replace this node with the appropriate reference type
         String type = typeNode.asText();
         String referenceType = getReferenceType(type, schemaNode);
         schemaNode.removeAll();
         schemaNode.put("$ref", referenceType);
       } else {
+        // If type is an array of strings, then things are more complicated
         List<String> types = StreamSupport.stream(typeNode.spliterator(), false)
             .map(JsonNode::asText)
             // Everything is implicitly nullable by just not declaring the `required `field
@@ -174,8 +182,8 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
   }
 
   /**
-   * Given a primitive (string/int/num/bool) type declaration _without_ an airbyte_type,
-   * get the appropriate $ref type.
+   * Given a primitive (string/int/num/bool) type declaration _without_ an airbyte_type, get the appropriate $ref type.
+   * In most cases, this only depends on the "type" key. When type=string, also checks the "format" key.
    */
   private String getReferenceType(String type, ObjectNode schemaNode) {
     return switch (type) {
@@ -198,13 +206,13 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
       case "number" -> "WellKnownTypes.json#definitions/Number";
       case "boolean" -> "WellKnownTypes.json#definitions/Boolean";
       // This is impossible, because we'll only call this method on string/integer/number/boolean
-      default -> "WellKnownTypes.json#definitions/String";
+      default -> throw new IllegalStateException("Somehow got non-primitive type: " + type + " for schema: " + schemaNode);
     };
   }
 
   /**
-   * Recurses through all type declarations in the schema. For each type declaration that are accepted by matcher,
-   * mutate them using transformer. For all other type declarations, recurse into them.
+   * Generic utility method that recurses through all type declarations in the schema. For each type declaration that are accepted by matcher,
+   * mutate them using transformer. For all other type declarations, recurse into their subschemas (if any).
    *
    * @param schema The JsonSchema node to walk down
    * @param matcher A function which returns true on any schema node that needs to be transformed
@@ -298,7 +306,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
    * Returns a copy of oldData, with numeric values converted to strings.
    * String and boolean values are returned as-is for convenience, i.e. this is not a true deep copy.
    */
-  private static JsonNode upgradeNode(JsonNode oldData) {
+  private static JsonNode upgradeRecord(JsonNode oldData) {
     if (oldData.isNumber()) {
       // Base case: convert numbers to strings
       return Jsons.convertValue(oldData.asText(), TextNode.class);
@@ -312,7 +320,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
         String key = next.getKey();
         JsonNode value = next.getValue();
 
-        JsonNode newValue = upgradeNode(value);
+        JsonNode newValue = upgradeRecord(value);
         newData.set(key, newValue);
       }
 
@@ -321,7 +329,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
       // Recurse into each element of the array
       ArrayNode newData = Jsons.arrayNode();
       for (JsonNode element : oldData) {
-        newData.add(upgradeNode(element));
+        newData.add(upgradeRecord(element));
       }
       return newData;
     } else {
