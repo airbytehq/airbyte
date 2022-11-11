@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "firstName": {
+      "type": ["null", "string"]
+    },
+    "lastName": {
+      "type": ["null", "string"]
+    },
+    "company": {
+      "type": ["null", "string"]
+    },
+    "city": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "timeZoneId": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "phoneStatus": {
+      "type": ["null", "string"]
+    },
+    "linkedInProfile": {
+      "type": ["null", "string"]
+    },
+    "addingDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "customFields": {
+      "type": ["null", "array"]
+    }
+  }
+}
