@@ -15,7 +15,7 @@
       "type": ["null", "string"]
     },
     "status": {
-      "type": ["null", "string"]
+      "type": ["null", "string", "object"]
     },
     "priority": {
       "type": ["null", "string"]
