@@ -1,0 +1,64 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "deliverystats",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["Name"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "message-streams",
+        "json_schema": {},
+        "source_defined_primary_key": [["ID"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "servers",
+        "json_schema": {},
+        "source_defined_primary_key": [["ID"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "messages",
+        "json_schema": {},
+        "source_defined_primary_key": [["MessageID"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "domains",
+        "json_schema": {},
+        "source_defined_primary_key": [["ID"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "bounces",
+        "json_schema": {},
+        "source_defined_primary_key": [["ID"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
