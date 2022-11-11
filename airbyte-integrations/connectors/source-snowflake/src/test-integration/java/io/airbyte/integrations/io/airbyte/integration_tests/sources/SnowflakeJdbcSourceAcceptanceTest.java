@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static io.airbyte.integrations.source.snowflake.SnowflakeDataSourceUtils.AIRBYTE_OSS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -57,12 +58,14 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     TABLE_NAME_WITH_SPACES = "ID AND NAME";
     TABLE_NAME_WITHOUT_PK = "ID_AND_NAME_WITHOUT_PK";
     TABLE_NAME_COMPOSITE_PK = "FULL_NAME_COMPOSITE_PK";
+    TABLE_NAME_AND_TIMESTAMP = "NAME_AND_TIMESTAMP";
     COL_ID = "ID";
     COL_NAME = "NAME";
     COL_UPDATED_AT = "UPDATED_AT";
     COL_FIRST_NAME = "FIRST_NAME";
     COL_LAST_NAME = "LAST_NAME";
     COL_LAST_NAME_WITH_SPACE = "LAST NAME";
+    COL_TIMESTAMP = "TIMESTAMP";
     ID_VALUE_1 = new BigDecimal(1);
     ID_VALUE_2 = new BigDecimal(2);
     ID_VALUE_3 = new BigDecimal(3);
@@ -100,7 +103,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Override
   public AbstractJdbcSource<JDBCType> getJdbcSource() {
-    return new SnowflakeSource();
+    return new SnowflakeSource(AIRBYTE_OSS);
   }
 
   @Test
@@ -165,6 +168,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
   }
 
+  @Override
   protected List<AirbyteMessage> getTestMessages() {
     return List.of(
         new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
@@ -216,7 +220,8 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .withStreamName(streamName)
         .withStreamNamespace(namespace)
         .withCursorField(List.of(COL_ID))
-        .withCursor("5");
+        .withCursor("5")
+        .withCursorRecordCount(1L);
     expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
     return expectedMessages;
   }

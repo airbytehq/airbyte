@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
 
-import { Action, Namespace } from "core/analytics";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
+import { ConnectorCardValues } from "views/Connector/ConnectorForm";
 
 interface Props {
   onNextStep: () => void;
@@ -25,8 +24,6 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
   const [error, setError] = useState<FormError | null>(null);
 
   const { mutateAsync: createDestination } = useCreateDestination();
-
-  const analyticsService = useAnalyticsService();
 
   const getDestinationDefinitionById = (id: string) =>
     destinationDefinitions.find((item) => item.destinationDefinitionId === id);
@@ -68,16 +65,10 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
     const destinationConnector = getDestinationDefinitionById(destinationDefinitionId);
     setDocumentationUrl(destinationConnector?.documentationUrl || "");
 
-    analyticsService.track(Namespace.DESTINATION, Action.SELECT, {
-      actionDescription: "Destination connector type selected",
-      connector_destination: destinationConnector?.name,
-      connector_destination_definition_id: destinationConnector?.destinationDefinitionId,
-    });
-
     setError(null);
     setDestinationDefinitionId(destinationDefinitionId);
   };
-  const onSubmitForm = async (values: { name: string; serviceType: string }) => {
+  const onSubmitForm = async (values: ConnectorCardValues) => {
     await onSubmitDestinationStep({
       ...values,
       destinationDefinitionId: destinationDefinitionSpecification?.destinationDefinitionId,
@@ -90,13 +81,13 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
     <ConnectorCard
       full
       formType="destination"
-      onServiceSelect={onDropDownSelect}
-      onSubmit={onSubmitForm}
-      hasSuccess={successRequest}
-      availableServices={destinationDefinitions}
-      errorMessage={errorMessage}
-      selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
       isLoading={isLoading}
+      hasSuccess={successRequest}
+      errorMessage={errorMessage}
+      availableConnectorDefinitions={destinationDefinitions}
+      onConnectorDefinitionSelect={onDropDownSelect}
+      selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
+      onSubmit={onSubmitForm}
     />
   );
 };

@@ -5,9 +5,11 @@
 package io.airbyte.server.handlers;
 
 import com.github.slugify.Slugify;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.Geography;
@@ -29,7 +31,9 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.notification.NotificationClient;
+import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.NotificationConverter;
+import io.airbyte.server.converters.WorkspaceWebhookConfigsConverter;
 import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.errors.ValueConflictKnownException;
@@ -62,12 +66,13 @@ public class WorkspacesHandler {
     this(configRepository, secretsRepositoryWriter, connectionsHandler, destinationHandler, sourceHandler, UUID::randomUUID);
   }
 
-  public WorkspacesHandler(final ConfigRepository configRepository,
-                           final SecretsRepositoryWriter secretsRepositoryWriter,
-                           final ConnectionsHandler connectionsHandler,
-                           final DestinationHandler destinationHandler,
-                           final SourceHandler sourceHandler,
-                           final Supplier<UUID> uuidSupplier) {
+  @VisibleForTesting
+  WorkspacesHandler(final ConfigRepository configRepository,
+                    final SecretsRepositoryWriter secretsRepositoryWriter,
+                    final ConnectionsHandler connectionsHandler,
+                    final DestinationHandler destinationHandler,
+                    final SourceHandler sourceHandler,
+                    final Supplier<UUID> uuidSupplier) {
     this.configRepository = configRepository;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.connectionsHandler = connectionsHandler;
@@ -103,7 +108,8 @@ public class WorkspacesHandler {
         .withDisplaySetupWizard(displaySetupWizard != null ? displaySetupWizard : false)
         .withTombstone(false)
         .withNotifications(NotificationConverter.toConfigList(workspaceCreate.getNotifications()))
-        .withDefaultGeography(defaultGeography);
+        .withDefaultGeography(defaultGeography)
+        .withWebhookOperationConfigs(WorkspaceWebhookConfigsConverter.toPersistenceWrite(workspaceCreate.getWebhookConfigs(), uuidSupplier));
 
     if (!Strings.isNullOrEmpty(email)) {
       workspace.withEmail(email);
@@ -155,6 +161,11 @@ public class WorkspacesHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // for now we assume there is one workspace and it has a default uuid.
     final StandardWorkspace workspace = configRepository.getWorkspaceBySlug(slugRequestBody.getSlug(), false);
+    return buildWorkspaceRead(workspace);
+  }
+
+  public WorkspaceRead getWorkspaceByConnectionId(final ConnectionIdRequestBody connectionIdRequestBody) {
+    final StandardWorkspace workspace = configRepository.getStandardWorkspaceFromConnection(connectionIdRequestBody.getConnectionId(), false);
     return buildWorkspaceRead(workspace);
   }
 
@@ -250,7 +261,7 @@ public class WorkspacesHandler {
   }
 
   private static WorkspaceRead buildWorkspaceRead(final StandardWorkspace workspace) {
-    return new WorkspaceRead()
+    final WorkspaceRead result = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
         .email(workspace.getEmail())
@@ -263,6 +274,11 @@ public class WorkspacesHandler {
         .securityUpdates(workspace.getSecurityUpdates())
         .notifications(NotificationConverter.toApiList(workspace.getNotifications()))
         .defaultGeography(Enums.convertTo(workspace.getDefaultGeography(), Geography.class));
+    // Add read-only webhook configs.
+    if (workspace.getWebhookOperationConfigs() != null) {
+      result.setWebhookConfigs(WorkspaceWebhookConfigsConverter.toApiReads(workspace.getWebhookOperationConfigs()));
+    }
+    return result;
   }
 
   private void validateWorkspacePatch(final StandardWorkspace persistedWorkspace, final WorkspaceUpdate workspacePatch) {
@@ -292,8 +308,10 @@ public class WorkspacesHandler {
       workspace.setNotifications(NotificationConverter.toConfigList(workspacePatch.getNotifications()));
     }
     if (workspacePatch.getDefaultGeography() != null) {
-      workspace.setDefaultGeography(
-          Enums.convertTo(workspacePatch.getDefaultGeography(), io.airbyte.config.Geography.class));
+      workspace.setDefaultGeography(ApiPojoConverters.toPersistenceGeography(workspacePatch.getDefaultGeography()));
+    }
+    if (workspacePatch.getWebhookConfigs() != null) {
+      workspace.setWebhookOperationConfigs(WorkspaceWebhookConfigsConverter.toPersistenceWrite(workspacePatch.getWebhookConfigs(), uuidSupplier));
     }
   }
 

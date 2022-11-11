@@ -126,11 +126,12 @@ class TestOauth2Authenticator:
             refresh_token="some_refresh_token",
             scopes=["scope1", "scope2"],
             token_expiry_date=pendulum.now().add(days=3),
+            grant_type="some_grant_type",
             refresh_request_body={"custom_field": "in_outbound_request", "another_field": "exists_in_body", "scopes": ["no_override"]},
         )
         body = oauth.build_refresh_request_body()
         expected = {
-            "grant_type": "refresh_token",
+            "grant_type": "some_grant_type",
             "client_id": "some_client_id",
             "client_secret": "some_client_secret",
             "refresh_token": "some_refresh_token",

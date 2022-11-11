@@ -284,7 +284,8 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .withStreamName(streamName)
         .withStreamNamespace(namespace)
         .withCursorField(List.of(COL_ID))
-        .withCursor("5");
+        .withCursor("5")
+        .withCursorRecordCount(1L);
     expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
     return expectedMessages;
   }

@@ -33,13 +33,13 @@ Azure Table Storage uses different [property](https://docs.microsoft.com/en-us/r
 
 ### Features
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental - Append Sync | Yes |
-| Incremental - Dedupe Sync | No |
-| SSL connection | Yes |
-| Namespaces | No |
+| Feature                   | Supported? |
+| :------------------------ | :--------- |
+| Full Refresh Sync         | Yes        |
+| Incremental - Append Sync | Yes        |
+| Incremental - Dedupe Sync | No         |
+| SSL connection            | Yes        |
+| Namespaces                | No         |
 
 ### Performance considerations
 
@@ -65,8 +65,9 @@ We recommend creating a restricted key specifically for Airbyte access. This wil
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.2   | 2021-12-23 | [14212](https://github.com/airbytehq/airbyte/pull/14212) | Adding incremental load capability |
-| 0.1.1   | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |
+| Version | Date       | Pull Request                                             | Subject                                           |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.1.3   | 2022-08-12 | [15591](https://github.com/airbytehq/airbyte/pull/15591) | Clean instantiation of AirbyteStream              |
+| 0.1.2   | 2021-12-23 | [14212](https://github.com/airbytehq/airbyte/pull/14212) | Adding incremental load capability                |
+| 0.1.1   | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434)   | Update fields in source-connectors specifications |
 
