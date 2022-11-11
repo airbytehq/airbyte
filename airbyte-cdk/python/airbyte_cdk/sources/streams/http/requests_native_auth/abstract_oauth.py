@@ -122,10 +122,6 @@ class AbstractOauth2Authenticator(AuthBase):
     def get_grant_type(self) -> str:
         """Returns grant_type specified for requesting access_token"""
 
-    @abstractmethod
-    def get_grant_type(self) -> str:
-        """Returns grant_type specified for requesting access_token"""
-
     @property
     @abstractmethod
     def access_token(self) -> str:
