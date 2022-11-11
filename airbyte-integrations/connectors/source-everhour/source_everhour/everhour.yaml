@@ -42,7 +42,21 @@ definitions:
           - stream: "*ref(definitions.projects_stream)"
             parent_key: "id"
             stream_slice_field: "parent_id"
-
+  time_records_stream:
+    $options:
+      name: "time_records"
+    primary_key: "id"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "projects/{{ stream_slice.parent_id }}/time"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.projects_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
   clients_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -68,6 +82,7 @@ streams:
   - "*ref(definitions.time_stream)"
   - "*ref(definitions.users_stream)"
   - "*ref(definitions.tasks_stream)"
+  - "*ref(definitions.time_records_stream)"
 
 check:
   stream_names:
