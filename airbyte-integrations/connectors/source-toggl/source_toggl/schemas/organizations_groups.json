@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "at": {
+      "type": "string"
+    },
+    "group_id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "users": {
+      "type": ["null", "array"]
+    },
+    "workspaces": {
+      "type": "array"
+    }
+  }
+}
