@@ -27,15 +27,21 @@ import java.util.Objects;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.sql.SQLException;
+import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.base.JavaBaseConstants;
+import java.util.stream.Collectors;
 
 public class TeradataDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TeradataDestinationAcceptanceTest.class);
+	 private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
 	private JsonNode configJson;
 	private JdbcDatabase database;
 	private DataSource dataSource;
 	private TeradataDestination destination = new TeradataDestination();
+	private final JdbcSourceOperations sourceOperations = JdbcUtils.getDefaultSourceOperations();
 
 	@Override
 	protected String getImageName() {
@@ -68,7 +74,6 @@ public class TeradataDestinationAcceptanceTest extends DestinationAcceptanceTest
 		return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
 				.map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA)).collect(Collectors.toList());
 
-		return null;
 	}
 
 	private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
@@ -79,6 +84,24 @@ public class TeradataDestinationAcceptanceTest extends DestinationAcceptanceTest
 				sourceOperations::rowToJson);
 		return actual;
 	}
+	
+	private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
+	    try (final DSLContext dslContext = DSLContextFactory.create(
+	    		jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+	    		jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
+	        DatabaseDriver.TERADATA.getDriverClassName(),
+	        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+	        SQLDialect.POSTGRES)) {
+	      return new Database(dslContext)
+	          .query(ctx -> {
+	            ctx.execute("set time zone 'UTC';");
+	            return ctx.fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+	                .stream()
+	                .map(this::getJsonFromRecord)
+	                .collect(Collectors.toList());
+	          });
+	    }
+	  }
 
 	@Override
 	protected void setup(TestDestinationEnv testEnv) {
