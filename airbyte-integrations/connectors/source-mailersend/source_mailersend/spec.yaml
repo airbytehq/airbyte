@@ -11,6 +11,7 @@ connectionSpecification:
     api_token:
       type: string
       description: Your API Token. See <a href="https://www.mailersend.com/help/managing-api-tokens">here</a>.
+      airbyte_secret: true
     domain_id:
       type: string
       description: The domain entity in mailersend
@@ -19,7 +20,6 @@ connectionSpecification:
         - linkana.com
     start_date:
       type: number
-      description: Timestamp is assumed to be UTC. Must be lower than date_to.
+      description: Timestamp is assumed to be UTC.
       examples:
-        # - "2022-11-06"
         - 123131321
