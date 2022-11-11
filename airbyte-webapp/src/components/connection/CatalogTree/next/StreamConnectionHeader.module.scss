@@ -6,7 +6,7 @@ $icon-size: 15px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  padding: variables.$spacing-lg calc(variables.$spacing-lg * 2);
+  padding: variables.$spacing-lg calc(#{variables.$spacing-lg} * 2);
 }
 
 .connector {
