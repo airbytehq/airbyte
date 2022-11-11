@@ -19323,6 +19323,37 @@
     "custom": false,
     "releaseStage": "generally_available"
   }, {
+    "sourceDefinitionId": "ec5f3102-fb31-4916-99ae-864faf8e7e25",
+    "name": "SAP Fieldglass",
+    "dockerRepository": "airbyte/source-sap-fieldglass",
+    "dockerImageTag": "0.1.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/sap-fieldglass",
+    "sourceType": "api",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/sap-fieldglass",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Sap Fieldglass Spec",
+        "type": "object",
+        "required": [ "api_key" ],
+        "additionalProperties": true,
+        "properties": {
+          "api_key": {
+            "type": "string",
+            "description": "API Key",
+            "airbyte_secret": true
+          }
+        }
+      },
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha"
+  }, {
     "sourceDefinitionId": "8d7ef552-2c0f-11ec-8d3d-0242ac130003",
     "name": "SearchMetrics",
     "dockerRepository": "airbyte/source-search-metrics",
@@ -20068,7 +20099,7 @@
     "sourceDefinitionId": "e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2",
     "name": "Snowflake",
     "dockerRepository": "airbyte/source-snowflake",
-    "dockerImageTag": "0.1.24",
+    "dockerImageTag": "0.1.25",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/snowflake",
     "icon": "snowflake.svg",
     "sourceType": "database",
@@ -20092,7 +20123,6 @@
                 "auth_type": {
                   "type": "string",
                   "const": "OAuth",
-                  "default": "OAuth",
                   "order": 0
                 },
                 "client_id": {
@@ -20133,7 +20163,6 @@
                 "auth_type": {
                   "type": "string",
                   "const": "username/password",
-                  "default": "username/password",
                   "order": 0
                 },
                 "username": {
@@ -20617,38 +20646,6 @@
           }
         }
       }
-    },
-    "tombstone": false,
-    "public": true,
-    "custom": false,
-    "releaseStage": "alpha"
-  }, {
-    "sourceDefinitionId": "74cbd708-46c3-4512-9c93-abd5c3e9a94d",
-    "name": "Statuspage",
-    "dockerRepository": "airbyte/source-statuspage",
-    "dockerImageTag": "0.1.0",
-    "documentationUrl": "https://docs.airbyte.com/integrations/sources/statuspage",
-    "sourceType": "api",
-    "spec": {
-      "documentationUrl": "https://docs.airbyte.com/integrations/sources/statuspage",
-      "connectionSpecification": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "title": "Statuspage Spec",
-        "type": "object",
-        "required": [ "api_key" ],
-        "additionalProperties": true,
-        "properties": {
-          "api_key": {
-            "title": "API Key",
-            "type": "string",
-            "description": "Your API Key. See <a href=\"https://developer.statuspage.io/#section/Authentication/api_key\">here</a>.",
-            "airbyte_secret": true
-          }
-        }
-      },
-      "supportsNormalization": false,
-      "supportsDBT": false,
-      "supported_destination_sync_modes": [ ]
     },
     "tombstone": false,
     "public": true,
