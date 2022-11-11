@@ -3,7 +3,9 @@
   "type": "object",
   "properties": {
     "meeting_id": {
-      "type": ["string"]
+      "type": [
+        "string"
+      ]
     },
     "custom_questions": {
       "type": "array",

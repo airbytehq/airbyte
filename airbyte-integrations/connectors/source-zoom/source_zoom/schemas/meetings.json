@@ -52,7 +52,8 @@
             "type": "string"
           }
         },
-        "required": []
+        "required": [
+        ]
       }
     },
     "password": {
@@ -92,7 +93,8 @@
           "type": "string"
         }
       },
-      "required": []
+      "required": [
+      ]
     },
     "settings": {
       "type": "object",
@@ -134,7 +136,8 @@
               "type": "string"
             }
           },
-          "required": []
+          "required": [
+          ]
         },
         "audio": {
           "type": "string"
@@ -157,7 +160,8 @@
                 "type": "string"
               }
             },
-            "required": []
+            "required": [
+            ]
           }
         },
         "authentication_name": {
@@ -190,11 +194,13 @@
                     }
                   }
                 },
-                "required": []
+                "required": [
+                ]
               }
             }
           },
-          "required": []
+          "required": [
+          ]
         },
         "calendar_type": {
           "type": "number"
@@ -220,7 +226,8 @@
                 "type": "string"
               }
             },
-            "required": []
+            "required": [
+            ]
           }
         },
         "email_notification": {
@@ -259,7 +266,8 @@
                 "type": "string"
               }
             },
-            "required": []
+            "required": [
+            ]
           }
         },
         "host_video": {
@@ -289,11 +297,13 @@
                     "type": "string"
                   }
                 },
-                "required": []
+                "required": [
+                ]
               }
             }
           },
-          "required": []
+          "required": [
+          ]
         },
         "meeting_authentication": {
           "type": "boolean"
@@ -341,7 +351,8 @@
               "type": "number"
             }
           },
-          "required": []
+          "required": [
+          ]
         },
         "watermark": {
           "type": "boolean"
@@ -350,7 +361,8 @@
           "type": "boolean"
         }
       },
-      "required": []
+      "required": [
+      ]
     },
     "start_time": {
       "type": "string"
@@ -382,12 +394,15 @@
             "type": "boolean"
           }
         },
-        "required": []
+        "required": [
+        ]
       }
     },
     "type": {
       "type": "number"
     }
   },
-  "required": []
+  "required": [
+  ]
+
 }

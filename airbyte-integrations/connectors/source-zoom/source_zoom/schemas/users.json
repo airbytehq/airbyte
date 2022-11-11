@@ -19,7 +19,8 @@
             "type": "string"
           }
         },
-        "required": []
+        "required": [
+        ]
       }
     },
     "dept": {
@@ -80,5 +81,6 @@
       "type": "number"
     }
   },
-  "required": []
+  "required": [
+  ]
 }
