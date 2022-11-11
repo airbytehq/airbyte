@@ -123,7 +123,7 @@ public class TeradataDestinationTest {
 		((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
 		((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
 		final TeradataDestination destination = new TeradataDestination();
-		final var actual = destination.check(config);
+		final AirbyteConnectionStatus status = destination.check(config);
 		LOGGER.info(" Status msg of testCheckIncorrectPasswordFailure -   " + actual.getMessage());
 		// State code: 28000; Error code: 8017; Message: [Teradata Database] [TeraJDBC
 		// 17.20.00.12] [Error 8017] [SQLState 28000] The UserId, Password or Account is
