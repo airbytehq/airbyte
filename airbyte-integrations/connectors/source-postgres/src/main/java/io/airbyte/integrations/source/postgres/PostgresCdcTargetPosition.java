@@ -52,7 +52,6 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
   @Override
   public boolean reachedTargetPosition(final JsonNode valueAsJson) {
     final SnapshotMetadata snapshotMetadata = SnapshotMetadata.valueOf(valueAsJson.get("source").get("snapshot").asText().toUpperCase());
-    final PgLsn eventLsn = extractLsn(valueAsJson);
 
     if (SnapshotMetadata.TRUE == snapshotMetadata) {
       return false;
@@ -60,6 +59,7 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
       LOGGER.info("Signalling close because Snapshot is complete");
       return true;
     } else {
+      final PgLsn eventLsn = extractLsn(valueAsJson);
       boolean isEventLSNAfter = targetLsn.compareTo(eventLsn) <= 0;
       if (isEventLSNAfter) {
         LOGGER.info("Signalling close because record's LSN : " + eventLsn + " is after target LSN : " + targetLsn);
