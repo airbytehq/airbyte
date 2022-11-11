@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.9.0
+Low-code: Allow `grant_type` to be specified for OAuthAuthenticator
+
+## 0.8.1
+Low-code: Don't update cursor for non-record messages and fix default loader for connector builder manifests
+
+## 0.8.0
+Low-code: Allow for request and response to be emitted as log messages
+
+## 0.7.1
+Low-code: Decouple yaml manifest parsing from the declarative source implementation
+
+## 0.7.0
+Low-code: Allow connector specifications to be defined in the manifest
+
+## 0.6.0
+Low-code: Add support for monthly and yearly incremental updates for `DatetimeStreamSlicer`
+
 ## 0.5.4
 Low-code: Get response.json in a safe way
 

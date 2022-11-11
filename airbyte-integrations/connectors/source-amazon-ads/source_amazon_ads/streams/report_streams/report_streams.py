@@ -22,7 +22,7 @@ from pendulum import Date
 from pydantic import BaseModel
 from source_amazon_ads.schemas import CatalogModel, MetricsReport, Profile
 from source_amazon_ads.streams.common import BasicAmazonAdsStream
-from source_amazon_ads.utils import iterate_one_by_one
+from source_amazon_ads.utils import get_typed_env, iterate_one_by_one
 
 
 class RecordType(str, Enum):
@@ -112,26 +112,29 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     ]
 
     def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):
+        super().__init__(config, profiles)
         self._state = {}
         self._authenticator = authenticator
         self._session = requests.Session()
         self._model = self._generate_model()
-        self.report_wait_timeout = config.get("report_wait_timeout", 60)
-        self.report_generation_maximum_retries = config.get("report_generation_max_retries", 5)
         self._start_date: Optional[Date] = config.get("start_date")
+        # Timeout duration in minutes for Reports. Default is 180 minutes.
+        self.report_wait_timeout: int = get_typed_env("REPORT_WAIT_TIMEOUT", 180)
+        # Maximum retries Airbyte will attempt for fetching report data. Default is 5.
+        self.report_generation_maximum_retries: int = get_typed_env("REPORT_GENERATION_MAX_RETRIES", 5)
+
         self._report_record_types = config.get("report_record_types", [])
-        super().__init__(config, profiles)
 
     @property
     def model(self) -> CatalogModel:
         return self._model
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         This is base method of CDK Stream class for getting metrics report. It
@@ -262,9 +265,9 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     @backoff.on_exception(
         backoff.expo,
         (
-            requests.exceptions.Timeout,
-            requests.exceptions.ConnectionError,
-            TooManyRequests,
+                requests.exceptions.Timeout,
+                requests.exceptions.ConnectionError,
+                TooManyRequests,
         ),
         max_tries=10,
     )
@@ -301,7 +304,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             yield {"profile": profile, self.cursor_field: report_date}
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         stream_state = stream_state or {}
@@ -411,7 +414,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         if isinstance(exception, ReportGenerationInProgress):
-            return f'Report(s) generation time took more than {self.report_wait_timeout} minutes, please increase the "report_wait_timeout" parameter in configuration.'
+            return f"Report(s) generation time took more than {self.report_wait_timeout} minutes and failed because of Amazon API issues. Please wait some time and run synchronization again."
         return super().get_error_display_message(exception)
 
     def _get_response_error_details(self, response) -> Optional[str]:
