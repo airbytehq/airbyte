@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
+import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.storage.Storage;
@@ -89,7 +90,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
       BigQueryUtils.checkHasCreateAndDeleteDatasetRole(bigquery, datasetId, datasetLocation);
 
-      BigQueryUtils.createDataset(bigquery, datasetId, datasetLocation);
+      final Dataset dataset = BigQueryUtils.getOrCreateDataset(bigquery, datasetId, datasetLocation);
+      if (!dataset.getLocation().equals(datasetLocation)){
+        throw new ConfigErrorException("Actual dataset location doesn't match to location from config");
+      }
       final QueryJobConfiguration queryConfig = QueryJobConfiguration
           .newBuilder(String.format("SELECT * FROM `%s.INFORMATION_SCHEMA.TABLES` LIMIT 1;", datasetId))
           .setUseLegacySql(false)

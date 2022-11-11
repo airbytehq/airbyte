@@ -102,18 +102,19 @@ public class BigQueryUtils {
                                                   final String datasetLocation,
                                                   final Schema schema) {
     if (!existingSchemas.contains(schemaName)) {
-      createDataset(bigquery, schemaName, datasetLocation);
+      getOrCreateDataset(bigquery, schemaName, datasetLocation);
       existingSchemas.add(schemaName);
     }
     BigQueryUtils.createPartitionedTable(bigquery, tmpTableId, schema);
   }
 
-  public static void createDataset(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
+  public static Dataset getOrCreateDataset(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
     final Dataset dataset = bigquery.getDataset(datasetId);
     if (dataset == null || !dataset.exists()) {
       final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
       bigquery.create(datasetInfo);
     }
+    return dataset;
   }
 
   public static void checkHasCreateAndDeleteDatasetRole(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
