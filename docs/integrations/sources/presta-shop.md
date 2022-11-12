@@ -4,6 +4,7 @@ This page contains the setup guide and reference information for the PrestaShop 
 ## Prerequisites
 * Access Key
 * Shop URL
+* Start date
 
 ## Setup guide
 ### Step 1: Set up PrestaShop
@@ -17,8 +18,9 @@ This page contains the setup guide and reference information for the PrestaShop 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **PrestaShop** from the Source type dropdown and enter a name for this connector.
-4. Enter the Access Key that you obtained.
-5. Enter the Shop URL without trailing slash, for example, https://my.prestashop.com, only HTTPS urls are supported.
+4. Enter the **Access Key** that you obtained.
+5. Enter the **Shop URL** without trailing slash, for example, https://my.prestashop.com, only HTTPS urls are supported.
+6. Enter **Start date** in YYYY-MM-DD format. The data added on and after this date will be replicated.
 
 ## Supported sync modes
 
