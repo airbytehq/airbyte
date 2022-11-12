@@ -45,7 +45,7 @@ definitions:
         end_datetime:
           datetime: "{{ now_utc() }}"
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
-        step: "10y"
+        step: "1y"
         datetime_format: "%Y-%m-%d %H:%M:%S"
       requester:
         $ref: "*ref(definitions.requester)"
