@@ -3,6 +3,8 @@ import styled from "styled-components";
 
 interface IProps {
   id: string;
+  checked: boolean;
+  onClick?: () => void;
 }
 
 const CheckBoxWrapper = styled.div`
@@ -49,10 +51,10 @@ const CheckBox = styled.input`
   }
 `;
 
-const SwitchButton: React.FC<IProps> = ({ id }) => {
+const SwitchButton: React.FC<IProps> = ({ id, checked, onClick }) => {
   return (
     <CheckBoxWrapper>
-      <CheckBox id={id} type="checkbox" />
+      <CheckBox id={id} type="checkbox" checked={checked} onClick={onClick} />
       <CheckBoxLabel htmlFor={id} />
     </CheckBoxWrapper>
   );
