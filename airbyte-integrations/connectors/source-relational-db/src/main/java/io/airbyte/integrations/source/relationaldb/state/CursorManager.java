@@ -93,7 +93,7 @@ public class CursorManager<S> {
     final Set<AirbyteStreamNameNamespacePair> allStreamNames = catalog.getStreams()
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
-        .map(AirbyteStreamNameNamespacePair::fromAirbyteSteam)
+        .map(AirbyteStreamNameNamespacePair::fromAirbyteStream)
         .collect(Collectors.toSet());
     allStreamNames.addAll(streamSupplier.get().stream().map(namespacePairFunction).filter(Objects::nonNull).collect(Collectors.toSet()));
 

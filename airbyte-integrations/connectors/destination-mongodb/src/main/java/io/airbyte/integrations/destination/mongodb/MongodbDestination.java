@@ -124,7 +124,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
         }
       }
 
-      writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
+      writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream),
           new MongodbWriteConfig(collectionName, tmpCollectionName, configStream.getDestinationSyncMode(), collection, documentsHash));
     }
     return new MongodbRecordConsumer(writeConfigs, database, catalog, outputRecordCollector);

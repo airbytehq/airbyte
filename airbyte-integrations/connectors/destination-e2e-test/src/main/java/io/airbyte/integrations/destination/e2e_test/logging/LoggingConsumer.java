@@ -41,7 +41,7 @@ public class LoggingConsumer implements AirbyteMessageConsumer {
   public void start() {
     for (final ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
       final AirbyteStream stream = configuredStream.getStream();
-      final AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
+      final AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair.fromAirbyteStream(stream);
       final TestingLogger logger = loggerFactory.create(streamNamePair);
       loggers.put(streamNamePair, logger);
     }

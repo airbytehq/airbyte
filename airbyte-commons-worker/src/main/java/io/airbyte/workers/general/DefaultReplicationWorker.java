@@ -27,6 +27,7 @@ import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
@@ -287,7 +288,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
       Long recordsRead = 0L;
-      final Map<String, ImmutablePair<Set<String>, Integer>> validationErrors = new HashMap<>();
+      final Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors = new HashMap<>();
       try {
         while (!cancelled.get() && !source.isFinished()) {
           final Optional<AirbyteMessage> messageOptional;
@@ -516,14 +517,14 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   }
 
   private static void validateSchema(final RecordSchemaValidator recordSchemaValidator,
-                                     final Map<String, ImmutablePair<Set<String>, Integer>> validationErrors,
+                                     final Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors,
                                      final AirbyteMessage message) {
     if (message.getRecord() == null) {
       return;
     }
 
     final AirbyteRecordMessage record = message.getRecord();
-    final String messageStream = WorkerUtils.streamNameWithNamespace(record.getNamespace(), record.getStream());
+    final AirbyteStreamNameNamespacePair messageStream = AirbyteStreamNameNamespacePair.fromRecordMessage(record);
     // avoid noise by validating only if the stream has less than 10 records with validation errors
     final boolean streamHasLessThenTenErrs =
         validationErrors.get(messageStream) == null || validationErrors.get(messageStream).getRight() < 10;

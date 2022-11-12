@@ -106,7 +106,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
 
     AbstractBigQueryUploader<?> uploader = BigQueryUploaderFactory.getUploader(uploaderConfig);
     uploaderMap.put(
-        AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
+        AirbyteStreamNameNamespacePair.fromAirbyteStream(stream),
         uploader);
   }
 

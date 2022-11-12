@@ -77,7 +77,7 @@ public class CopyConsumerFactory {
     final String stagingFolder = UUID.randomUUID().toString();
     for (final var configuredStream : catalog.getStreams()) {
       final var stream = configuredStream.getStream();
-      final var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
+      final var pair = AirbyteStreamNameNamespacePair.fromAirbyteStream(stream);
       final var copier = streamCopierFactory.create(defaultSchema, config, stagingFolder, configuredStream, namingResolver, database, sqlOperations);
 
       pairToCopier.put(pair, copier);

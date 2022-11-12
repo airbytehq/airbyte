@@ -89,19 +89,19 @@ public class AirbyteStreamNameNamespacePair implements Comparable<AirbyteStreamN
     return new AirbyteStreamNameNamespacePair(msg.getStream(), msg.getNamespace());
   }
 
-  public static AirbyteStreamNameNamespacePair fromAirbyteSteam(final AirbyteStream stream) {
+  public static AirbyteStreamNameNamespacePair fromAirbyteStream(final AirbyteStream stream) {
     return new AirbyteStreamNameNamespacePair(stream.getName(), stream.getNamespace());
   }
 
   public static AirbyteStreamNameNamespacePair fromConfiguredAirbyteSteam(final ConfiguredAirbyteStream stream) {
-    return fromAirbyteSteam(stream.getStream());
+    return fromAirbyteStream(stream.getStream());
   }
 
   public static Set<AirbyteStreamNameNamespacePair> fromConfiguredCatalog(final ConfiguredAirbyteCatalog catalog) {
     final var pairs = new HashSet<AirbyteStreamNameNamespacePair>();
 
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final var pair = fromAirbyteSteam(stream.getStream());
+      final var pair = fromAirbyteStream(stream.getStream());
       pairs.add(pair);
     }
 

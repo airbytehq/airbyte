@@ -70,7 +70,7 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
 
       final AirbyteStream stream = configuredStream.getStream();
       final AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair
-          .fromAirbyteSteam(stream);
+          .fromAirbyteStream(stream);
       streamNameAndNamespaceToWriters.put(streamNamePair, writer);
     }
   }

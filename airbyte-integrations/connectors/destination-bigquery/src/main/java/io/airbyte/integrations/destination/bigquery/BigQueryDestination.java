@@ -233,7 +233,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                           final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap)
       throws IOException {
     uploaderMap.put(
-        AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
+        AirbyteStreamNameNamespacePair.fromAirbyteStream(stream),
         BigQueryUploaderFactory.getUploader(uploaderConfig));
   }
 

@@ -99,7 +99,7 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   Map<AirbyteStreamNameNamespacePair, String> buildTopicMap() {
     return catalog.getStreams().stream()
-        .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream()))
+        .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream()))
         .collect(Collectors.toMap(Function.identity(), pair -> config.getTopicPattern()
             .replaceAll("\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
             .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")),

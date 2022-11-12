@@ -80,7 +80,7 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
 
   Map<AirbyteStreamNameNamespacePair, Producer<GenericRecord>> buildProducerMap() {
     return catalog.getStreams().stream()
-        .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream()))
+        .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream()))
         .collect(Collectors.toMap(Function.identity(), pair -> {
           String topic = nameTransformer.getIdentifier(config.getTopicPattern()
               .replaceAll("\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
