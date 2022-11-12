@@ -81,10 +81,6 @@ public class AirbyteStreamNameNamespacePair implements Comparable<AirbyteStreamN
     return namespace.compareTo(o.getNamespace());
   }
 
-  public static void main(final String[] args) {
-    System.out.println("test".compareTo(null));
-  }
-
   public static AirbyteStreamNameNamespacePair fromRecordMessage(final AirbyteRecordMessage msg) {
     return new AirbyteStreamNameNamespacePair(msg.getStream(), msg.getNamespace());
   }
