@@ -7,6 +7,9 @@ import { BigButton } from "components/CenteredPageComponents";
 // import { useConfig } from "config";
 
 // import HighlightedText from "./HighlightedText";
+import useRouter from "hooks/useRouter";
+import { RoutePaths } from "pages/routePaths";
+
 import TitlesBlock from "./TitlesBlock";
 // import VideoItem from "./VideoItem";
 
@@ -42,6 +45,9 @@ const ButtonContainer = styled.div`
 // { onNextStep }
 const WelcomeStep: React.FC<WelcomeStepProps> = () => {
   // const config = useConfig();
+  const { push } = useRouter();
+
+  const onCreateClick = () => push(`${RoutePaths.ConnectionNew}`);
 
   return (
     <>
@@ -88,7 +94,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = () => {
       {/* </Videos>*/}
       <ButtonContainer>
         {/* onClick={onNextStep}*/}
-        <BigButton shadow>
+        <BigButton shadow onClick={onCreateClick}>
           <FormattedMessage id="onboarding.firstConnection" />
         </BigButton>
       </ButtonContainer>

@@ -7,23 +7,20 @@ import ApiErrorBoundary from "components/ApiErrorBoundary";
 // import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
-// import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 // import { useListWorkspaces } from "services/workspaces/WorkspacesService";
 import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
 
 import { WorkspaceRead } from "../core/request/AirbyteClient";
-import {
-  // AuthenticatedUser,
-  getAuthenticatedUser,
-} from "../services/auth/AuthService";
+import { getAuthenticatedUser } from "../services/auth/AuthService";
 import { LoginPage } from "./AuthPage/LoginPage";
 import SignupPage from "./AuthPage/SignupPage";
 import ConnectionPage from "./ConnectionPage";
 import DestinationPage from "./DestinationPage";
 // import OnboardingPage from "./OnboardingPage";
-// import PreferencesPage from "./PreferencesPage";
+import PreferencesPage from "./PreferencesPage";
 import { RoutePaths } from "./routePaths";
 import SettingsPage from "./SettingsPage";
 import SourcesPage from "./SourcesPage";
@@ -60,12 +57,12 @@ const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = () =>
     );
   };
 
-// const PreferencesRoutes = () => (
-//   <Routes>
-//     <Route path={RoutePaths.Preferences} element={<PreferencesPage/>} />
-//     <Route path="*" element={<Navigate to={RoutePaths.Preferences} />} />
-//   </Routes>
-// );
+const PreferencesRoutes = () => (
+  <Routes>
+    <Route path={RoutePaths.Preferences} element={<PreferencesPage />} />
+    <Route path="*" element={<Navigate to={RoutePaths.Preferences} />} />
+  </Routes>
+);
 
 const AuthRoutes = () => (
   <Routes>
@@ -99,15 +96,13 @@ export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({ 
 };
 
 const RoutingWithWorkspace: React.FC = () => {
-  // const workspace = useCurrentWorkspace();
+  const workspace = useCurrentWorkspace();
   // useAddAnalyticsContextForWorkspace(workspace);
   useApiHealthPoll();
-  const user = getAuthenticatedUser();
 
   return (
     <OnboardingServiceProvider>
-      {/* {workspace.initialSetupComplete ? <MainViewRoutes workspace={workspace} /> : <PreferencesRoutes />}*/}
-      <MainViewRoutes workspace={user.workspaceId} />
+      {workspace.initialSetupComplete ? <MainViewRoutes workspace={workspace} /> : <PreferencesRoutes />}
     </OnboardingServiceProvider>
   );
 };
@@ -134,7 +129,6 @@ export const Routing: React.FC = () => {
         <Routes>
           {OldRoutes}
           <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
-
           <Route path={`${RoutePaths.Workspaces}/:workspaceId/*`} element={<RoutingWithWorkspace />} />
           <Route path="*" element={<AutoSelectFirstWorkspace />} />
         </Routes>

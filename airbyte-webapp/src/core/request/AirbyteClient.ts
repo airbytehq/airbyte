@@ -11,11 +11,11 @@ This API is a collection of HTTP RPC-style methods. While it is not a REST API, 
 Here are some conventions that this API follows:
 * All endpoints are http POST methods.
 * All endpoints accept data via `application/json` request bodies. The API does not accept any data via query params.
-* The naming convention for endpoints is: localhost:8000/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. `localhost:8000/v1/connections/create`.
+* The naming convention for endpoints is: localhost:8000/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. `localhost:8000/etl/connections/create`.
 * For all `update` methods, the whole object must be passed in, even the fields that did not change.
 
 Change Management:
-* The major version of the API endpoint can be determined / specified in the URL `localhost:8080/v1/connections/create`
+* The major version of the API endpoint can be determined / specified in the URL `localhost:8080/etl/connections/create`
 * Minor version bumps will be invisible to the end user. The user cannot specify minor versions in requests.
 * All backwards incompatible changes will happen in major version bumps. We will not make backwards incompatible changes in minor version bumps. Examples of non-breaking changes (includes but not limited to...):
   * Adding fields to request or response bodies.
@@ -24,7 +24,6 @@ Change Management:
 
  * OpenAPI spec version: 1.0.0
  */
-import { getAuthenticatedUser } from "services/auth/AuthService";
 import { apiOverride } from "./apiOverride";
 /**
  * Input failed validation
@@ -1635,7 +1634,7 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
 export const createWorkspace = (workspaceCreate: WorkspaceCreate, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<WorkspaceRead>(
     {
-      url: `/v1/workspaces/create`,
+      url: `/etl/workspaces/create`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: workspaceCreate,
@@ -1653,7 +1652,7 @@ export const deleteWorkspace = (
 ) => {
   return apiOverride<void>(
     {
-      url: `/v1/workspaces/delete`,
+      url: `/etl/workspaces/delete`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: workspaceIdRequestBody,
@@ -1666,7 +1665,7 @@ export const deleteWorkspace = (
  * @summary List all workspaces registered in the current Airbyte deployment
  */
 export const listWorkspaces = (options?: SecondParameter<typeof apiOverride>) => {
-  return apiOverride<WorkspaceReadList>({ url: `/v1/workspaces/list`, method: "post" }, options);
+  return apiOverride<WorkspaceReadList>({ url: `/etl/workspaces/list`, method: "post" }, options);
 };
 
 /**
@@ -1678,7 +1677,7 @@ export const getWorkspace = (
 ) => {
   return apiOverride<WorkspaceRead>(
     {
-      url: `/v1/workspaces/get`,
+      url: `/etl/workspaces/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: workspaceIdRequestBody,
@@ -1693,7 +1692,7 @@ export const getWorkspace = (
 export const getWorkspaceBySlug = (slugRequestBody: SlugRequestBody, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<WorkspaceRead>(
     {
-      url: `/v1/workspaces/get_by_slug`,
+      url: `/etl/workspaces/get_by_slug`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: slugRequestBody,
@@ -1708,7 +1707,7 @@ export const getWorkspaceBySlug = (slugRequestBody: SlugRequestBody, options?: S
 export const updateWorkspace = (workspaceUpdate: WorkspaceUpdate, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<WorkspaceRead>(
     {
-      url: `/v1/workspaces/update`,
+      url: `/etl/workspaces/update`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: workspaceUpdate,
@@ -1726,7 +1725,7 @@ export const updateWorkspaceName = (
 ) => {
   return apiOverride<WorkspaceRead>(
     {
-      url: `/v1/workspaces/update_name`,
+      url: `/etl/workspaces/update_name`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: workspaceUpdateName,
@@ -1744,7 +1743,7 @@ export const updateWorkspaceFeedback = (
 ) => {
   return apiOverride<void>(
     {
-      url: `/v1/workspaces/tag_feedback_status_as_done`,
+      url: `/etl/workspaces/tag_feedback_status_as_done`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: workspaceGiveFeedback,
@@ -1759,7 +1758,7 @@ export const updateWorkspaceFeedback = (
 export const tryNotificationConfig = (notification: Notification, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<NotificationRead>(
     {
-      url: `/v1/notifications/try`,
+      url: `/etl/notifications/try`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: notification,
@@ -1777,7 +1776,7 @@ export const createSourceDefinition = (
 ) => {
   return apiOverride<SourceDefinitionRead>(
     {
-      url: `/v1/source_definitions/create`,
+      url: `/etl/source_definitions/create`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceDefinitionCreate,
@@ -1795,7 +1794,7 @@ export const updateSourceDefinition = (
 ) => {
   return apiOverride<SourceDefinitionRead>(
     {
-      url: `/v1/source_definitions/update`,
+      url: `/etl/source_definitions/update`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceDefinitionUpdate,
@@ -1808,7 +1807,7 @@ export const updateSourceDefinition = (
  * @summary List all the sourceDefinitions the current Airbyte deployment is configured to use
  */
 export const listSourceDefinitions = (options?: SecondParameter<typeof apiOverride>) => {
-  return apiOverride<SourceDefinitionReadList>({ url: `/v1/source_definitions/list`, method: "post" }, options);
+  return apiOverride<SourceDefinitionReadList>({ url: `/etl/source_definitions/list`, method: "post" }, options);
 };
 
 /**
@@ -1816,7 +1815,7 @@ export const listSourceDefinitions = (options?: SecondParameter<typeof apiOverri
  * @summary List the latest sourceDefinitions Airbyte supports
  */
 export const listLatestSourceDefinitions = (options?: SecondParameter<typeof apiOverride>) => {
-  return apiOverride<SourceDefinitionReadList>({ url: `/v1/source_definitions/list_latest`, method: "post" }, options);
+  return apiOverride<SourceDefinitionReadList>({ url: `/etl/source_definitions/list_latest`, method: "post" }, options);
 };
 
 /**
@@ -1828,7 +1827,7 @@ export const getSourceDefinition = (
 ) => {
   return apiOverride<SourceDefinitionRead>(
     {
-      url: `/v1/source_definitions/get`,
+      url: `/etl/source_definitions/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceDefinitionIdRequestBody,
@@ -1846,7 +1845,7 @@ export const deleteSourceDefinition = (
 ) => {
   return apiOverride<void>(
     {
-      url: `/v1/source_definitions/delete`,
+      url: `/etl/source_definitions/delete`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceDefinitionIdRequestBody,
@@ -1864,7 +1863,7 @@ export const listPrivateSourceDefinitions = (
 ) => {
   return apiOverride<PrivateSourceDefinitionReadList>(
     {
-      url: `/v1/source_definitions/list_private`,
+      url: `/etl/source_definitions/list_private`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: workspaceIdRequestBody,
@@ -1882,7 +1881,7 @@ export const listSourceDefinitionsForWorkspace = (
 ) => {
   return apiOverride<SourceDefinitionReadList>(
     {
-      url: `/v1/source_definitions/list_for_workspace`,
+      url: `/etl/source_definitions/list_for_workspace`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: workspaceIdRequestBody,
@@ -1900,7 +1899,7 @@ export const createCustomSourceDefinition = (
 ) => {
   return apiOverride<SourceDefinitionRead>(
     {
-      url: `/v1/source_definitions/create_custom`,
+      url: `/etl/source_definitions/create_custom`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: customSourceDefinitionCreate,
@@ -1918,7 +1917,7 @@ export const getSourceDefinitionForWorkspace = (
 ) => {
   return apiOverride<SourceDefinitionRead>(
     {
-      url: `/v1/source_definitions/get_for_workspace`,
+      url: `/etl/source_definitions/get_for_workspace`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceDefinitionIdWithWorkspaceId,
@@ -1936,7 +1935,7 @@ export const updateCustomSourceDefinition = (
 ) => {
   return apiOverride<SourceDefinitionRead>(
     {
-      url: `/v1/source_definitions/update_custom`,
+      url: `/etl/source_definitions/update_custom`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: customSourceDefinitionUpdate,
@@ -1954,7 +1953,7 @@ export const deleteCustomSourceDefinition = (
 ) => {
   return apiOverride<void>(
     {
-      url: `/v1/source_definitions/delete_custom`,
+      url: `/etl/source_definitions/delete_custom`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceDefinitionIdWithWorkspaceId,
@@ -1972,7 +1971,7 @@ export const grantSourceDefinitionToWorkspace = (
 ) => {
   return apiOverride<PrivateSourceDefinitionRead>(
     {
-      url: `/v1/source_definitions/grant_definition`,
+      url: `/etl/source_definitions/grant_definition`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceDefinitionIdWithWorkspaceId,
@@ -1990,7 +1989,7 @@ export const revokeSourceDefinitionFromWorkspace = (
 ) => {
   return apiOverride<void>(
     {
-      url: `/v1/source_definitions/revoke_definition`,
+      url: `/etl/source_definitions/revoke_definition`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceDefinitionIdWithWorkspaceId,
@@ -2008,7 +2007,7 @@ export const getSourceDefinitionSpecification = (
 ) => {
   return apiOverride<SourceDefinitionSpecificationRead>(
     {
-      url: `/v1/source_definition_specifications/get`,
+      url: `/etl/source_definition_specifications/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceDefinitionIdWithWorkspaceId,
@@ -2022,7 +2021,7 @@ export const getSourceDefinitionSpecification = (
  */
 export const createSource = (sourceCreate: SourceCreate, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<SourceRead>(
-    { url: `/v1/sources/create`, method: "post", headers: { "Content-Type": "application/json" }, data: sourceCreate },
+    { url: `/etl/sources/create`, method: "post", headers: { "Content-Type": "application/json" }, data: sourceCreate },
     options
   );
 };
@@ -2032,7 +2031,7 @@ export const createSource = (sourceCreate: SourceCreate, options?: SecondParamet
  */
 export const updateSource = (sourceUpdate: SourceUpdate, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<SourceRead>(
-    { url: `/v1/sources/update`, method: "post", headers: { "Content-Type": "application/json" }, data: sourceUpdate },
+    { url: `/etl/sources/update`, method: "post", headers: { "Content-Type": "application/json" }, data: sourceUpdate },
     options
   );
 };
@@ -2047,7 +2046,7 @@ export const listSourcesForWorkspace = (
 ) => {
   return apiOverride<SourceReadList>(
     {
-      url: `/v1/sources/list`,
+      url: `/etl/sources/list`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: workspaceIdRequestBody,
@@ -2062,7 +2061,7 @@ export const listSourcesForWorkspace = (
 export const getSource = (sourceIdRequestBody: SourceIdRequestBody, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<SourceRead>(
     {
-      url: `/v1/sources/get`,
+      url: `/etl/sources/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceIdRequestBody,
@@ -2076,7 +2075,7 @@ export const getSource = (sourceIdRequestBody: SourceIdRequestBody, options?: Se
  */
 export const searchSources = (sourceSearch: SourceSearch, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<SourceReadList>(
-    { url: `/v1/sources/search`, method: "post", headers: { "Content-Type": "application/json" }, data: sourceSearch },
+    { url: `/etl/sources/search`, method: "post", headers: { "Content-Type": "application/json" }, data: sourceSearch },
     options
   );
 };
@@ -2090,7 +2089,7 @@ export const cloneSource = (
 ) => {
   return apiOverride<SourceRead>(
     {
-      url: `/v1/sources/clone`,
+      url: `/etl/sources/clone`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceCloneRequestBody,
@@ -2108,7 +2107,7 @@ export const deleteSource = (
 ) => {
   return apiOverride<void>(
     {
-      url: `/v1/sources/delete`,
+      url: `/etl/sources/delete`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceIdRequestBody,
@@ -2126,7 +2125,7 @@ export const checkConnectionToSource = (
 ) => {
   return apiOverride<CheckConnectionRead>(
     {
-      url: `/v1/sources/check_connection`,
+      url: `/etl/sources/check_connection`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceIdRequestBody,
@@ -2144,7 +2143,7 @@ export const checkConnectionToSourceForUpdate = (
 ) => {
   return apiOverride<CheckConnectionRead>(
     {
-      url: `/v1/sources/check_connection_for_update`,
+      url: `/etl/sources/check_connection_for_update`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceUpdate,
@@ -2162,7 +2161,7 @@ export const discoverSchemaForSource = (
 ) => {
   return apiOverride<SourceDiscoverSchemaRead>(
     {
-      url: `/v1/sources/discover_schema`,
+      url: `/etl/sources/discover_schema`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceDiscoverSchemaRequestBody,
@@ -2180,7 +2179,7 @@ export const createDestinationDefinition = (
 ) => {
   return apiOverride<DestinationDefinitionRead>(
     {
-      url: `/v1/destination_definitions/create`,
+      url: `/etl/destination_definitions/create`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationDefinitionCreate,
@@ -2198,7 +2197,7 @@ export const updateDestinationDefinition = (
 ) => {
   return apiOverride<DestinationDefinitionRead>(
     {
-      url: `/v1/destination_definitions/update`,
+      url: `/etl/destination_definitions/update`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationDefinitionUpdate,
@@ -2212,7 +2211,7 @@ export const updateDestinationDefinition = (
  */
 export const listDestinationDefinitions = (options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<DestinationDefinitionReadList>(
-    { url: `/v1/destination_definitions/list`, method: "post" },
+    { url: `/etl/destination_definitions/list`, method: "post" },
     options
   );
 };
@@ -2223,7 +2222,7 @@ export const listDestinationDefinitions = (options?: SecondParameter<typeof apiO
  */
 export const listLatestDestinationDefinitions = (options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<DestinationDefinitionReadList>(
-    { url: `/v1/destination_definitions/list_latest`, method: "post" },
+    { url: `/etl/destination_definitions/list_latest`, method: "post" },
     options
   );
 };
@@ -2237,7 +2236,7 @@ export const getDestinationDefinition = (
 ) => {
   return apiOverride<DestinationDefinitionRead>(
     {
-      url: `/v1/destination_definitions/get`,
+      url: `/etl/destination_definitions/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationDefinitionIdRequestBody,
@@ -2255,7 +2254,7 @@ export const deleteDestinationDefinition = (
 ) => {
   return apiOverride<void>(
     {
-      url: `/v1/destination_definitions/delete`,
+      url: `/etl/destination_definitions/delete`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationDefinitionIdRequestBody,
@@ -2273,7 +2272,7 @@ export const listPrivateDestinationDefinitions = (
 ) => {
   return apiOverride<PrivateDestinationDefinitionReadList>(
     {
-      url: `/v1/destination_definitions/list_private`,
+      url: `/etl/destination_definitions/list_private`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: workspaceIdRequestBody,
@@ -2291,7 +2290,7 @@ export const listDestinationDefinitionsForWorkspace = (
 ) => {
   return apiOverride<DestinationDefinitionReadList>(
     {
-      url: `/v1/destination_definitions/list_for_workspace`,
+      url: `/etl/destination_definitions/list_for_workspace`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: workspaceIdRequestBody,
@@ -2309,7 +2308,7 @@ export const createCustomDestinationDefinition = (
 ) => {
   return apiOverride<DestinationDefinitionRead>(
     {
-      url: `/v1/destination_definitions/create_custom`,
+      url: `/etl/destination_definitions/create_custom`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: customDestinationDefinitionCreate,
@@ -2327,7 +2326,7 @@ export const getDestinationDefinitionForWorkspace = (
 ) => {
   return apiOverride<DestinationDefinitionRead>(
     {
-      url: `/v1/destination_definitions/get_for_workspace`,
+      url: `/etl/destination_definitions/get_for_workspace`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationDefinitionIdWithWorkspaceId,
@@ -2345,7 +2344,7 @@ export const updateCustomDestinationDefinition = (
 ) => {
   return apiOverride<DestinationDefinitionRead>(
     {
-      url: `/v1/destination_definitions/update_custom`,
+      url: `/etl/destination_definitions/update_custom`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: customDestinationDefinitionUpdate,
@@ -2363,7 +2362,7 @@ export const deleteCustomDestinationDefinition = (
 ) => {
   return apiOverride<void>(
     {
-      url: `/v1/destination_definitions/delete_custom`,
+      url: `/etl/destination_definitions/delete_custom`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationDefinitionIdWithWorkspaceId,
@@ -2381,7 +2380,7 @@ export const grantDestinationDefinitionToWorkspace = (
 ) => {
   return apiOverride<PrivateDestinationDefinitionRead>(
     {
-      url: `/v1/destination_definitions/grant_definition`,
+      url: `/etl/destination_definitions/grant_definition`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationDefinitionIdWithWorkspaceId,
@@ -2399,7 +2398,7 @@ export const revokeDestinationDefinitionFromWorkspace = (
 ) => {
   return apiOverride<void>(
     {
-      url: `/v1/destination_definitions/revoke_definition`,
+      url: `/etl/destination_definitions/revoke_definition`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationDefinitionIdWithWorkspaceId,
@@ -2417,7 +2416,7 @@ export const getDestinationDefinitionSpecification = (
 ) => {
   return apiOverride<DestinationDefinitionSpecificationRead>(
     {
-      url: `/v1/destination_definition_specifications/get`,
+      url: `/etl/destination_definition_specifications/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationDefinitionIdWithWorkspaceId,
@@ -2435,7 +2434,7 @@ export const createDestination = (
 ) => {
   return apiOverride<DestinationRead>(
     {
-      url: `/v1/destinations/create`,
+      url: `/etl/destinations/create`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationCreate,
@@ -2453,7 +2452,7 @@ export const updateDestination = (
 ) => {
   return apiOverride<DestinationRead>(
     {
-      url: `/v1/destinations/update`,
+      url: `/etl/destinations/update`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationUpdate,
@@ -2471,7 +2470,7 @@ export const listDestinationsForWorkspace = (
 ) => {
   return apiOverride<DestinationReadList>(
     {
-      url: `/v1/destinations/list`,
+      url: `/etl/destinations/list`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: workspaceIdRequestBody,
@@ -2489,7 +2488,7 @@ export const getDestination = (
 ) => {
   return apiOverride<DestinationRead>(
     {
-      url: `/v1/destinations/get`,
+      url: `/etl/destinations/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationIdRequestBody,
@@ -2507,7 +2506,7 @@ export const searchDestinations = (
 ) => {
   return apiOverride<DestinationReadList>(
     {
-      url: `/v1/destinations/search`,
+      url: `/etl/destinations/search`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationSearch,
@@ -2525,7 +2524,7 @@ export const checkConnectionToDestination = (
 ) => {
   return apiOverride<CheckConnectionRead>(
     {
-      url: `/v1/destinations/check_connection`,
+      url: `/etl/destinations/check_connection`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationIdRequestBody,
@@ -2543,7 +2542,7 @@ export const checkConnectionToDestinationForUpdate = (
 ) => {
   return apiOverride<CheckConnectionRead>(
     {
-      url: `/v1/destinations/check_connection_for_update`,
+      url: `/etl/destinations/check_connection_for_update`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationUpdate,
@@ -2561,7 +2560,7 @@ export const deleteDestination = (
 ) => {
   return apiOverride<void>(
     {
-      url: `/v1/destinations/delete`,
+      url: `/etl/destinations/delete`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationIdRequestBody,
@@ -2579,7 +2578,7 @@ export const cloneDestination = (
 ) => {
   return apiOverride<DestinationRead>(
     {
-      url: `/v1/destinations/clone`,
+      url: `/etl/destinations/clone`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationCloneRequestBody,
@@ -2594,7 +2593,7 @@ export const cloneDestination = (
 export const createConnection = (connectionCreate: ConnectionCreate, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<ConnectionRead>(
     {
-      url: `/v1/connections/create`,
+      url: `/etl/connections/create`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: connectionCreate,
@@ -2609,7 +2608,7 @@ export const createConnection = (connectionCreate: ConnectionCreate, options?: S
 export const updateConnection = (connectionUpdate: ConnectionUpdate, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<ConnectionRead>(
     {
-      url: `/v1/connections/update`,
+      url: `/etl/connections/update`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: connectionUpdate,
@@ -2628,7 +2627,7 @@ export const listConnectionsForWorkspace = (
 ) => {
   return apiOverride<ConnectionReadList>(
     {
-      url: `/v1/connections/list`,
+      url: `/etl/connections/list`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: workspaceIdRequestBody,
@@ -2647,7 +2646,7 @@ export const listAllConnectionsForWorkspace = (
 ) => {
   return apiOverride<ConnectionReadList>(
     {
-      url: `/v1/connections/list_all`,
+      url: `/etl/connections/list_all`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: workspaceIdRequestBody,
@@ -2665,7 +2664,7 @@ export const getConnection = (
 ) => {
   return apiOverride<ConnectionRead>(
     {
-      url: `/v1/connections/get`,
+      url: `/etl/connections/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: connectionIdRequestBody,
@@ -2683,7 +2682,7 @@ export const getState = (
 ) => {
   return apiOverride<ConnectionState>(
     {
-      url: `/v1/state/get`,
+      url: `/etl/state/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: connectionIdRequestBody,
@@ -2701,7 +2700,7 @@ export const createOrUpdateState = (
 ) => {
   return apiOverride<ConnectionState>(
     {
-      url: `/v1/state/create_or_update`,
+      url: `/etl/state/create_or_update`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: connectionStateCreateOrUpdate,
@@ -2719,7 +2718,7 @@ export const searchConnections = (
 ) => {
   return apiOverride<ConnectionReadList>(
     {
-      url: `/v1/connections/search`,
+      url: `/etl/connections/search`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: connectionSearch,
@@ -2737,7 +2736,7 @@ export const deleteConnection = (
 ) => {
   return apiOverride<void>(
     {
-      url: `/v1/connections/delete`,
+      url: `/etl/connections/delete`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: connectionIdRequestBody,
@@ -2755,7 +2754,7 @@ export const syncConnection = (
 ) => {
   return apiOverride<JobInfoRead>(
     {
-      url: `/v1/connections/sync`,
+      url: `/etl/connections/sync`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: connectionIdRequestBody,
@@ -2773,7 +2772,7 @@ export const resetConnection = (
 ) => {
   return apiOverride<JobInfoRead>(
     {
-      url: `/v1/connections/reset`,
+      url: `/etl/connections/reset`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: connectionIdRequestBody,
@@ -2791,7 +2790,7 @@ export const checkOperation = (
 ) => {
   return apiOverride<CheckOperationRead>(
     {
-      url: `/v1/operations/check`,
+      url: `/etl/operations/check`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: operatorConfiguration,
@@ -2806,7 +2805,7 @@ export const checkOperation = (
 export const createOperation = (operationCreate: OperationCreate, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<OperationRead>(
     {
-      url: `/v1/operations/create`,
+      url: `/etl/operations/create`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: operationCreate,
@@ -2821,7 +2820,7 @@ export const createOperation = (operationCreate: OperationCreate, options?: Seco
 export const updateOperation = (operationUpdate: OperationUpdate, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<OperationRead>(
     {
-      url: `/v1/operations/update`,
+      url: `/etl/operations/update`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: operationUpdate,
@@ -2840,7 +2839,7 @@ export const listOperationsForConnection = (
 ) => {
   return apiOverride<OperationReadList>(
     {
-      url: `/v1/operations/list`,
+      url: `/etl/operations/list`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: connectionIdRequestBody,
@@ -2858,7 +2857,7 @@ export const getOperation = (
 ) => {
   return apiOverride<OperationRead>(
     {
-      url: `/v1/operations/get`,
+      url: `/etl/operations/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: operationIdRequestBody,
@@ -2876,7 +2875,7 @@ export const deleteOperation = (
 ) => {
   return apiOverride<void>(
     {
-      url: `/v1/operations/delete`,
+      url: `/etl/operations/delete`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: operationIdRequestBody,
@@ -2894,7 +2893,7 @@ export const executeSourceCheckConnection = (
 ) => {
   return apiOverride<CheckConnectionRead>(
     {
-      url: `/v1/scheduler/sources/check_connection`,
+      url: `/etl/scheduler/sources/check_connection`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceCoreConfig,
@@ -2912,7 +2911,7 @@ export const executeSourceDiscoverSchema = (
 ) => {
   return apiOverride<SourceDiscoverSchemaRead>(
     {
-      url: `/v1/scheduler/sources/discover_schema`,
+      url: `/etl/scheduler/sources/discover_schema`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceCoreConfig,
@@ -2930,7 +2929,7 @@ export const executeDestinationCheckConnection = (
 ) => {
   return apiOverride<CheckConnectionRead>(
     {
-      url: `/v1/scheduler/destinations/check_connection`,
+      url: `/etl/scheduler/destinations/check_connection`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationCoreConfig,
@@ -2948,7 +2947,7 @@ export const listMigrations = (
 ) => {
   return apiOverride<DbMigrationReadList>(
     {
-      url: `/v1/db_migrations/list`,
+      url: `/etl/db_migrations/list`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: dbMigrationRequestBody,
@@ -2966,7 +2965,7 @@ export const executeMigrations = (
 ) => {
   return apiOverride<DbMigrationExecutionRead>(
     {
-      url: `/v1/db_migrations/migrate`,
+      url: `/etl/db_migrations/migrate`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: dbMigrationRequestBody,
@@ -2985,7 +2984,7 @@ export const setInstancewideSourceOauthParams = (
 ) => {
   return apiOverride<void>(
     {
-      url: `/v1/source_oauths/oauth_params/create`,
+      url: `/etl/source_oauths/oauth_params/create`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: setInstancewideSourceOauthParamsRequestBody,
@@ -3003,7 +3002,7 @@ export const getSourceOAuthConsent = (
 ) => {
   return apiOverride<OAuthConsentRead>(
     {
-      url: `/v1/source_oauths/get_consent_url`,
+      url: `/etl/source_oauths/get_consent_url`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceOauthConsentRequest,
@@ -3021,7 +3020,7 @@ export const completeSourceOAuth = (
 ) => {
   return apiOverride<CompleteOAuthResponse>(
     {
-      url: `/v1/source_oauths/complete_oauth`,
+      url: `/etl/source_oauths/complete_oauth`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: completeSourceOauthRequest,
@@ -3039,7 +3038,7 @@ export const getDestinationOAuthConsent = (
 ) => {
   return apiOverride<OAuthConsentRead>(
     {
-      url: `/v1/destination_oauths/get_consent_url`,
+      url: `/etl/destination_oauths/get_consent_url`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationOauthConsentRequest,
@@ -3057,7 +3056,7 @@ export const completeDestinationOAuth = (
 ) => {
   return apiOverride<CompleteOAuthResponse>(
     {
-      url: `/v1/destination_oauths/complete_oauth`,
+      url: `/etl/destination_oauths/complete_oauth`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: completeDestinationOAuthRequest,
@@ -3076,7 +3075,7 @@ export const setInstancewideDestinationOauthParams = (
 ) => {
   return apiOverride<void>(
     {
-      url: `/v1/destination_oauths/oauth_params/create`,
+      url: `/etl/destination_oauths/oauth_params/create`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: setInstancewideDestinationOauthParamsRequestBody,
@@ -3092,16 +3091,11 @@ export const webBackendListConnectionsForWorkspace = (
   workspaceIdRequestBody: WorkspaceIdRequestBody,
   options?: SecondParameter<typeof apiOverride>
 ) => {
-  const user = getAuthenticatedUser();
   return apiOverride<WebBackendConnectionReadList>(
     {
-      // url: `/v1/web_backend/connections/list`,
       url: `/etl/web_backend/connections/list`,
       method: "post",
-      headers: { 
-        "Content-Type": "application/json",
-        "Authorization": user?.token
-      },
+      headers: { "Content-Type": "application/json" },
       data: workspaceIdRequestBody,
     },
     options
@@ -3117,7 +3111,7 @@ export const webBackendListAllConnectionsForWorkspace = (
 ) => {
   return apiOverride<WebBackendConnectionReadList>(
     {
-      url: `/v1/web_backend/connections/list_all`,
+      url: `/etl/web_backend/connections/list_all`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: workspaceIdRequestBody,
@@ -3135,7 +3129,7 @@ export const webBackendGetConnection = (
 ) => {
   return apiOverride<WebBackendConnectionRead>(
     {
-      url: `/v1/web_backend/connections/get`,
+      url: `/etl/web_backend/connections/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: webBackendConnectionRequestBody,
@@ -3153,7 +3147,7 @@ export const webBackendCreateConnection = (
 ) => {
   return apiOverride<WebBackendConnectionRead>(
     {
-      url: `/v1/web_backend/connections/create`,
+      url: `/etl/web_backend/connections/create`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: webBackendConnectionCreate,
@@ -3171,7 +3165,7 @@ export const webBackendUpdateConnection = (
 ) => {
   return apiOverride<WebBackendConnectionRead>(
     {
-      url: `/v1/web_backend/connections/update`,
+      url: `/etl/web_backend/connections/update`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: webBackendConnectionUpdate,
@@ -3189,7 +3183,7 @@ export const webBackendSearchConnections = (
 ) => {
   return apiOverride<WebBackendConnectionReadList>(
     {
-      url: `/v1/web_backend/connections/search`,
+      url: `/etl/web_backend/connections/search`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: webBackendConnectionSearch,
@@ -3207,7 +3201,7 @@ export const getStateType = (
 ) => {
   return apiOverride<ConnectionStateType>(
     {
-      url: `/v1/web_backend/state/get_type`,
+      url: `/etl/web_backend/state/get_type`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: connectionIdRequestBody,
@@ -3225,7 +3219,7 @@ export const webBackendGetWorkspaceState = (
 ) => {
   return apiOverride<WebBackendWorkspaceStateResult>(
     {
-      url: `/v1/web_backend/workspace/state`,
+      url: `/etl/web_backend/workspace/state`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: webBackendWorkspaceState,
@@ -3239,7 +3233,7 @@ export const webBackendGetWorkspaceState = (
  */
 export const listJobsFor = (jobListRequestBody: JobListRequestBody, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<JobReadList>(
-    { url: `/v1/jobs/list`, method: "post", headers: { "Content-Type": "application/json" }, data: jobListRequestBody },
+    { url: `/etl/jobs/list`, method: "post", headers: { "Content-Type": "application/json" }, data: jobListRequestBody },
     options
   );
 };
@@ -3249,7 +3243,7 @@ export const listJobsFor = (jobListRequestBody: JobListRequestBody, options?: Se
  */
 export const getJobInfo = (jobIdRequestBody: JobIdRequestBody, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<JobInfoRead>(
-    { url: `/v1/jobs/get`, method: "post", headers: { "Content-Type": "application/json" }, data: jobIdRequestBody },
+    { url: `/etl/jobs/get`, method: "post", headers: { "Content-Type": "application/json" }, data: jobIdRequestBody },
     options
   );
 };
@@ -3260,7 +3254,7 @@ export const getJobInfo = (jobIdRequestBody: JobIdRequestBody, options?: SecondP
 export const getJobInfoLight = (jobIdRequestBody: JobIdRequestBody, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<JobInfoLightRead>(
     {
-      url: `/v1/jobs/get-light`,
+      url: `/etl/jobs/get-light`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: jobIdRequestBody,
@@ -3274,7 +3268,7 @@ export const getJobInfoLight = (jobIdRequestBody: JobIdRequestBody, options?: Se
  */
 export const cancelJob = (jobIdRequestBody: JobIdRequestBody, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<JobInfoRead>(
-    { url: `/v1/jobs/cancel`, method: "post", headers: { "Content-Type": "application/json" }, data: jobIdRequestBody },
+    { url: `/etl/jobs/cancel`, method: "post", headers: { "Content-Type": "application/json" }, data: jobIdRequestBody },
     options
   );
 };
@@ -3285,7 +3279,7 @@ export const cancelJob = (jobIdRequestBody: JobIdRequestBody, options?: SecondPa
 export const getJobDebugInfo = (jobIdRequestBody: JobIdRequestBody, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<JobDebugInfoRead>(
     {
-      url: `/v1/jobs/get_debug_info`,
+      url: `/etl/jobs/get_debug_info`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: jobIdRequestBody,
@@ -3298,7 +3292,7 @@ export const getJobDebugInfo = (jobIdRequestBody: JobIdRequestBody, options?: Se
  * @summary Health Check
  */
 export const getHealthCheck = (options?: SecondParameter<typeof apiOverride>, signal?: AbortSignal) => {
-  return apiOverride<HealthCheckRead>({ url: `/v1/health`, method: "get", signal }, options);
+  return apiOverride<HealthCheckRead>({ url: `/etl/health`, method: "get", signal }, options);
 };
 
 /**
@@ -3307,7 +3301,7 @@ export const getHealthCheck = (options?: SecondParameter<typeof apiOverride>, si
 export const getLogs = (logsRequestBody: LogsRequestBody, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<Blob>(
     {
-      url: `/v1/logs/get`,
+      url: `/etl/logs/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: logsRequestBody,
@@ -3321,7 +3315,7 @@ export const getLogs = (logsRequestBody: LogsRequestBody, options?: SecondParame
  * @summary Returns the openapi specification
  */
 export const getOpenApiSpec = (options?: SecondParameter<typeof apiOverride>, signal?: AbortSignal) => {
-  return apiOverride<Blob>({ url: `/v1/openapi`, method: "get", signal, responseType: "blob" }, options);
+  return apiOverride<Blob>({ url: `/etl/openapi`, method: "get", signal, responseType: "blob" }, options);
 };
 
 /**
@@ -3333,7 +3327,7 @@ export const setWorkflowInAttempt = (
 ) => {
   return apiOverride<InternalOperationResult>(
     {
-      url: `/v1/attempt/set_workflow_in_attempt`,
+      url: `/etl/attempt/set_workflow_in_attempt`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: setWorkflowInAttemptRequestBody,

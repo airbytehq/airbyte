@@ -1,3 +1,7 @@
+import { merge } from "lodash";
+
+import { getAuthenticatedUser } from "services/auth/AuthService";
+
 import { Config } from "../../config";
 import { CommonRequestError } from "./CommonRequestError";
 import { RequestMiddleware } from "./RequestMiddleware";
@@ -50,6 +54,8 @@ export const apiOverride = async <T, U = unknown>(
   // to get rid of it from all environment variables.
   const requestUrl = `${apiUrl.replace(/\/v1\/?$/, "")}${url.startsWith("/") ? "" : "/"}${url}`;
 
+  const user = getAuthenticatedUser();
+
   for (const middleware of options.middlewares) {
     ({ headers } = await middleware({ headers }));
   }
@@ -57,7 +63,7 @@ export const apiOverride = async <T, U = unknown>(
   const response = await fetch(`${requestUrl}${new URLSearchParams(params)}`, {
     method,
     ...(data ? { body: getRequestBody(data) } : {}),
-    headers,
+    headers: merge(headers, { Authorization: user?.token }),
     signal: signal ?? options.signal,
   });
 

@@ -28,61 +28,9 @@ const ConnectionsTable: React.FC<IProps> = ({ connections }) => {
 
   const data = getConnectionTableData(connections, sourceDefinitions, destinationDefinitions, "connection");
 
-  // const data = [
-  //   {
-  //     name: "Amazon Ads <> MySQL",
-  //     status: "Active",
-  //     lastSync: 1,
-  //     entityName: "Amazon Ads",
-  //     connectorName: "MySQL",
-  //     connectionId: "",
-  //     lastSyncStatus: "1 day ago",
-  //     enabled: true,
-  //   },
-  //   {
-  //     name: "Amazon Seller Partner ...",
-  //     status: "Inactive",
-  //     lastSync: 2,
-  //     entityName: "Amazon Seller Partner",
-  //     connectorName: "Snowflake",
-  //     connectionId: "",
-  //     lastSyncStatus: "1 hour ago",
-  //     enabled: false,
-  //   },
-  //   {
-  //     name: "Amazon Ads <> MySQL",
-  //     status: "Active",
-  //     lastSync: 3,
-  //     entityName: "Amazon Ads",
-  //     connectorName: "MySQL",
-  //     connectionId: "",
-  //     lastSyncStatus: "1 day ago",
-  //     enabled: true,
-  //   },
-  //   {
-  //     name: "Amazon Seller Partner ...",
-  //     status: "Inactive",
-  //     lastSync: 4,
-  //     entityName: "Amazon Seller Partner",
-  //     connectorName: "Snowflake",
-  //     connectionId: "",
-  //     lastSyncStatus: "1 hour ago",
-  //     enabled: false,
-  //   },
-  //   {
-  //     name: "Amazon Ads <> MySQL",
-  //     status: "Active",
-  //     lastSync: 5,
-  //     entityName: "Amazon Ads",
-  //     connectorName: "MySQL",
-  //     connectionId: "",
-  //     lastSyncStatus: "1 day ago",
-  //     enabled: true,
-  //   },
-  // ];
-
   const onChangeStatus = useCallback(
     async (connectionId: string) => {
+      console.log(connectionId);
       const connection = connections.find((item) => item.connectionId === connectionId);
 
       if (connection) {
