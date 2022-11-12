@@ -41,7 +41,8 @@ class RecordSchemaValidatorTest {
   @Test
   void testValidateInvalidSchema() throws Exception {
     final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput));
-    assertThrows(RecordSchemaValidationException.class, () -> recordSchemaValidator.validateSchema(INVALID_RECORD.getRecord(), AirbyteStreamNameNamespacePair.fromRecordMessage(INVALID_RECORD.getRecord())));
+    assertThrows(RecordSchemaValidationException.class, () -> recordSchemaValidator.validateSchema(INVALID_RECORD.getRecord(),
+        AirbyteStreamNameNamespacePair.fromRecordMessage(INVALID_RECORD.getRecord())));
   }
 
 }

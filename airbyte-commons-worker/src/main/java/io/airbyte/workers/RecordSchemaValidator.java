@@ -38,7 +38,8 @@ public class RecordSchemaValidator {
    * @param message
    * @throws RecordSchemaValidationException
    */
-  public void validateSchema(final AirbyteRecordMessage message, final AirbyteStreamNameNamespacePair messageStream) throws RecordSchemaValidationException {
+  public void validateSchema(final AirbyteRecordMessage message, final AirbyteStreamNameNamespacePair messageStream)
+      throws RecordSchemaValidationException {
     final JsonNode messageData = message.getData();
     final JsonNode matchingSchema = streams.get(messageStream);
 
