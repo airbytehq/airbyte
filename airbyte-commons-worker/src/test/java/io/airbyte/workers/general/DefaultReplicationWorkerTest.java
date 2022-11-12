@@ -483,8 +483,8 @@ class DefaultReplicationWorkerTest {
     when(messageTracker.getTotalBytesEmitted()).thenReturn(100L);
     when(messageTracker.getTotalSourceStateMessagesEmitted()).thenReturn(3L);
     when(messageTracker.getTotalDestinationStateMessagesEmitted()).thenReturn(1L);
-    when(messageTracker.getStreamToEmittedBytes()).thenReturn(Collections.singletonMap(STREAM1, 100L));
-    when(messageTracker.getStreamToEmittedRecords()).thenReturn(Collections.singletonMap(STREAM1, 12L));
+    when(messageTracker.getStreamToEmittedBytes()).thenReturn(Collections.singletonMap(new AirbyteStreamNameNamespacePair(STREAM1, null), 100L));
+    when(messageTracker.getStreamToEmittedRecords()).thenReturn(Collections.singletonMap(new AirbyteStreamNameNamespacePair(STREAM1, null), 12L));
     when(messageTracker.getMaxSecondsToReceiveSourceStateMessage()).thenReturn(5L);
     when(messageTracker.getMeanSecondsToReceiveSourceStateMessage()).thenReturn(4L);
     when(messageTracker.getMaxSecondsBetweenStateMessageEmittedAndCommitted()).thenReturn(Optional.of(6L));
@@ -599,9 +599,10 @@ class DefaultReplicationWorkerTest {
     when(messageTracker.getTotalRecordsCommitted()).thenReturn(Optional.of(6L));
     when(messageTracker.getTotalSourceStateMessagesEmitted()).thenReturn(3L);
     when(messageTracker.getTotalDestinationStateMessagesEmitted()).thenReturn(2L);
-    when(messageTracker.getStreamToEmittedBytes()).thenReturn(Collections.singletonMap(STREAM1, 100L));
-    when(messageTracker.getStreamToEmittedRecords()).thenReturn(Collections.singletonMap(STREAM1, 12L));
-    when(messageTracker.getStreamToCommittedRecords()).thenReturn(Optional.of(Collections.singletonMap(STREAM1, 6L)));
+    when(messageTracker.getStreamToEmittedBytes()).thenReturn(Collections.singletonMap(new AirbyteStreamNameNamespacePair(STREAM1, null), 100L));
+    when(messageTracker.getStreamToEmittedRecords()).thenReturn(Collections.singletonMap(new AirbyteStreamNameNamespacePair(STREAM1, null), 12L));
+    when(messageTracker.getStreamToCommittedRecords())
+        .thenReturn(Optional.of(Collections.singletonMap(new AirbyteStreamNameNamespacePair(STREAM1, null), 6L)));
     when(messageTracker.getMaxSecondsToReceiveSourceStateMessage()).thenReturn(10L);
     when(messageTracker.getMeanSecondsToReceiveSourceStateMessage()).thenReturn(8L);
     when(messageTracker.getMaxSecondsBetweenStateMessageEmittedAndCommitted()).thenReturn(Optional.of(12L));

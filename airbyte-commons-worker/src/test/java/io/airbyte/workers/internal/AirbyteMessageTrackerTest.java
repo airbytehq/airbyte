@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.StateDeltaTracker.StateDeltaTrackerException;
 import io.airbyte.workers.internal.state_aggregator.StateAggregator;
@@ -107,10 +108,10 @@ class AirbyteMessageTrackerTest {
     messageTracker.acceptFromSource(r3);
     messageTracker.acceptFromSource(r3);
 
-    final Map<String, Long> expected = new HashMap<>();
-    expected.put(STREAM_1, 1L);
-    expected.put(STREAM_2, 2L);
-    expected.put(STREAM_3, 3L);
+    final HashMap<AirbyteStreamNameNamespacePair, Long> expected = new HashMap<>();
+    expected.put(AirbyteStreamNameNamespacePair.fromRecordMessage(r1.getRecord()), 1L);
+    expected.put(AirbyteStreamNameNamespacePair.fromRecordMessage(r2.getRecord()), 2L);
+    expected.put(AirbyteStreamNameNamespacePair.fromRecordMessage(r3.getRecord()), 3L);
 
     assertEquals(expected, messageTracker.getStreamToEmittedRecords());
   }
@@ -132,10 +133,10 @@ class AirbyteMessageTrackerTest {
     messageTracker.acceptFromSource(r3);
     messageTracker.acceptFromSource(r3);
 
-    final Map<String, Long> expected = new HashMap<>();
-    expected.put(STREAM_1, r1Bytes);
-    expected.put(STREAM_2, r2Bytes * 2);
-    expected.put(STREAM_3, r3Bytes * 3);
+    final Map<AirbyteStreamNameNamespacePair, Long> expected = new HashMap<>();
+    expected.put(AirbyteStreamNameNamespacePair.fromRecordMessage(r1.getRecord()), r1Bytes);
+    expected.put(AirbyteStreamNameNamespacePair.fromRecordMessage(r2.getRecord()), r2Bytes * 2);
+    expected.put(AirbyteStreamNameNamespacePair.fromRecordMessage(r3.getRecord()), r3Bytes * 3);
 
     assertEquals(expected, messageTracker.getStreamToEmittedBytes());
   }
@@ -160,14 +161,14 @@ class AirbyteMessageTrackerTest {
     messageTracker.acceptFromSource(s2); // emit state 2
 
     final Map<Short, Long> countsByIndex = new HashMap<>();
-    final Map<String, Long> expected = new HashMap<>();
+    final Map<AirbyteStreamNameNamespacePair, Long> expected = new HashMap<>();
     Mockito.when(mStateDeltaTracker.getStreamToCommittedRecords()).thenReturn(countsByIndex);
 
     countsByIndex.put((short) 0, 1L);
     countsByIndex.put((short) 1, 2L);
     // result only contains counts up to state 1
-    expected.put(STREAM_1, 1L);
-    expected.put(STREAM_2, 2L);
+    expected.put(AirbyteStreamNameNamespacePair.fromRecordMessage(r1.getRecord()), 1L);
+    expected.put(AirbyteStreamNameNamespacePair.fromRecordMessage(r2.getRecord()), 2L);
     assertEquals(expected, messageTracker.getStreamToCommittedRecords().get());
 
     countsByIndex.clear();
@@ -177,9 +178,9 @@ class AirbyteMessageTrackerTest {
     countsByIndex.put((short) 1, 3L);
     countsByIndex.put((short) 2, 1L);
     // result updated with counts between state 1 and state 2
-    expected.put(STREAM_1, 3L);
-    expected.put(STREAM_2, 3L);
-    expected.put(STREAM_3, 1L);
+    expected.put(AirbyteStreamNameNamespacePair.fromRecordMessage(r1.getRecord()), 3L);
+    expected.put(AirbyteStreamNameNamespacePair.fromRecordMessage(r2.getRecord()), 3L);
+    expected.put(AirbyteStreamNameNamespacePair.fromRecordMessage(r3.getRecord()), 1L);
     assertEquals(expected, messageTracker.getStreamToCommittedRecords().get());
   }
 
