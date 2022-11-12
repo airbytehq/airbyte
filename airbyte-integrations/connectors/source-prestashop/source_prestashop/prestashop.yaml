@@ -15,17 +15,22 @@ definitions:
         Output-Format: JSON
       request_parameters:
         display: full
+        limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
-      class_name: source_prestashop.components.LimitOffsetPaginator
+      type: DefaultPaginator
+      url_base: "*ref(definitions.requester.url_base)"
       pagination_strategy:
         type: "OffsetIncrement"
         page_size: 50
-      limit_offset_option:
-        inject_into: "request_parameter"
-        field_name: "limit"
+      page_token_option:
+        field_name: page_token
+        inject_into: request_parameter
+      page_size_option:
+        inject_into: request_parameter
+        field_name: page_size
     requester:
       $ref: "*ref(definitions.requester)"
   base_stream:
