@@ -4,6 +4,21 @@ definitions:
   selector:
     extractor:
       field_pointer: []
+  selector_features:
+    extractor:
+      field_pointer: ["features"]
+  selector_products:
+    extractor:
+      field_pointer: ["products"]
+  selector_ideas:
+    extractor:
+      field_pointer: ["ideas"]
+  selector_users:
+    extractor:
+      field_pointer: ["users"]
+  selector_goals:
+    extractor:
+      field_pointer: ["goals"]
   requester:
     url_base: "{{ config['url'] }}/api/v1"
     http_method: "GET"
@@ -34,26 +49,46 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   features_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector_features)"
     $options:
       name: "features"
       path: "/features"
   products_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector_products)"
     $options:
       name: "products"
       path: "/products"
   ideas_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector_ideas)"
     $options:
       name: "ideas"
       path: "/ideas"
   users_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector_users)"
     $options:
       name: "users"
       path: "/users"
   goals_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector_goals)"
     $options:
       name: "goals"
       path: "/goals"
