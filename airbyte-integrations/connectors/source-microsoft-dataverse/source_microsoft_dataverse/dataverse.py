@@ -47,6 +47,7 @@ class DataverseType(Enum):
     Status = AirbyteType.Integer
     State = AirbyteType.Integer
     Picklist = AirbyteType.Integer
+    Lookup = AirbyteType.String
     Virtual = None
 
 

@@ -27,9 +27,7 @@ class SourceMicrosoftDataverse(AbstractSource):
                 dataverse_type = attribute["AttributeType"]
                 if dataverse_type == "Lookup":
                     attribute["LogicalName"] = "_" + attribute["LogicalName"] + "_value"
-                    attribute_type = {"type": ["null", "string"]}
-                else:
-                    attribute_type = convert_dataverse_type(dataverse_type)
+                attribute_type = convert_dataverse_type(dataverse_type)
 
                 if not attribute_type:
                     continue
