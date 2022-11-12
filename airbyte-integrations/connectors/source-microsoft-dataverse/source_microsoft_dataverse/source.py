@@ -24,7 +24,12 @@ class SourceMicrosoftDataverse(AbstractSource):
         for entity in response_json["value"]:
             schema = {"properties": {}}
             for attribute in entity["Attributes"]:
-                attribute_type = convert_dataverse_type(attribute["AttributeType"])
+                dataverse_type = attribute["AttributeType"]
+                if dataverse_type == "Lookup":
+                    attribute["LogicalName"] = "_" + attribute["LogicalName"] + "_value"
+                    attribute_type = {"type": ["null", "string"]}
+                else:
+                    attribute_type = convert_dataverse_type(dataverse_type)
 
                 if not attribute_type:
                     continue
@@ -86,7 +91,7 @@ class SourceMicrosoftDataverse(AbstractSource):
                 "primary_key": catalog.primary_key,
                 "schema": catalog.stream.json_schema,
                 "odata_maxpagesize": config["odata_maxpagesize"],
-                "authenticator": auth
+                "authenticator": auth,
             }
 
             if catalog.sync_mode == SyncMode.incremental:

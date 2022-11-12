@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from enum import Enum
 from typing import Any, Mapping, MutableMapping, Optional
 
@@ -45,6 +46,7 @@ class DataverseType(Enum):
     Decimal = AirbyteType.Number
     Status = AirbyteType.Integer
     State = AirbyteType.Integer
+    Picklist = AirbyteType.Integer
     Virtual = None
 
 
