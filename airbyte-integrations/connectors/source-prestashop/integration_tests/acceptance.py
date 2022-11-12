@@ -25,7 +25,7 @@ def create_config_fixture():
         "url": "http://localhost:8080",
         "_allow_http": True,
         "access_key": "59662QEPFNCJ3KFL3VCT5VNQ4NHVUF4Y",
-        "start_date": "2020-07-01",
+        "start_date": "2021-05-25",
     }
 
     with open(config_filename, "w+") as fp:
