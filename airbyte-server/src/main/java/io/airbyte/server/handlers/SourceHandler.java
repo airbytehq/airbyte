@@ -213,11 +213,15 @@ public class SourceHandler {
     final var workspaceIdRequestBody = new WorkspaceIdRequestBody()
         .workspaceId(source.getWorkspaceId());
 
-    connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)
+    final List<UUID> uuidsToDelete = connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)
         .getConnections().stream()
         .filter(con -> con.getSourceId().equals(source.getSourceId()))
         .map(ConnectionRead::getConnectionId)
-        .forEach(connectionsHandler::deleteConnection);
+        .toList();
+
+    for (final UUID uuidToDelete : uuidsToDelete) {
+      connectionsHandler.deleteConnection(uuidToDelete);
+    }
 
     final var spec = getSpecFromSourceId(source.getSourceId());
     final var fullConfig = secretsRepositoryReader.getSourceConnectionWithSecrets(source.getSourceId()).getConfiguration();
