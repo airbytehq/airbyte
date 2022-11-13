@@ -6,8 +6,10 @@ import { Heading } from "components/ui/Heading";
 import { Text } from "components/ui/Text";
 import { Tooltip } from "components/ui/Tooltip";
 
+import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { getIcon } from "utils/imageUtils";
 import { links } from "utils/links";
 
@@ -20,9 +22,13 @@ interface ConnectionOnboardingProps {
 }
 
 export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCreate }) => {
+  const workspace = useCurrentWorkspace();
   // TODO: Those should be parallelized
-  const { sourceDefinitions } = useSourceDefinitionList();
-  const { destinationDefinitions } = useDestinationDefinitionList();
+  const sourceDefinitions = useAvailableConnectorDefinitions(useSourceDefinitionList().sourceDefinitions, workspace);
+  const destinationDefinitions = useAvailableConnectorDefinitions(
+    useDestinationDefinitionList().destinationDefinitions,
+    workspace
+  );
 
   const [highlightedSource, setHighlightedSource] = useState<0 | 1 | 2 | 3>(1);
   const [highlightedDestination, setHighlightedDestination] = useState<0 | 1 | 2 | 3>(0);
@@ -41,7 +47,6 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
       "424892c4-daac-4491-b35d-c6688ba547ba",
       "25c5221d-dce2-4163-ade9-739ef790f503",
       "22f6c74f-5699-40ff-833c-4a879ea40133",
-      "f7a7d195-377f-cf5b-70a5-be6b819019dc",
     ],
     []
   );
@@ -73,6 +78,8 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
               placement="right"
               control={
                 <button
+                  data-testid={`onboardingSource-${index}`}
+                  data-sourceDefinitionId={source?.sourceDefinitionId}
                   className={styles.connectorButton}
                   onClick={() => onCreate(source?.sourceDefinitionId)}
                   onMouseEnter={() => setHighlightedSource(index as 0 | 1 | 2)}
@@ -89,6 +96,7 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
             placement="right"
             control={
               <button
+                data-testid="onboardingSource-more"
                 className={styles.connectorButton}
                 onClick={() => onCreate()}
                 onMouseEnter={() => setHighlightedSource(3)}
@@ -132,6 +140,23 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
               <FormattedMessage id="connection.onboarding.addDestination" values={{ destination: destination?.name }} />
             </Tooltip>
           ))}
+          <Tooltip
+            placement="right"
+            control={
+              <button
+                className={styles.connectorButton}
+                onClick={() => onCreate()}
+                onMouseEnter={() => setHighlightedDestination(3)}
+              >
+                <PlusIcon className={styles.moreIcon} />
+              </button>
+            }
+          >
+            <FormattedMessage
+              id="connection.onboarding.moreDestinations"
+              values={{ count: Math.floor(destinationDefinitions.length / 10) * 10 }}
+            />
+          </Tooltip>
         </div>
       </div>
       <div className={styles.footer}>
