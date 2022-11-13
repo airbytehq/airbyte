@@ -34,14 +34,14 @@ export const BulkEditServiceProvider: React.FC<
     update: (streams: SyncSchemaStream[]) => void;
   }>
 > = ({ children, nodes, update }) => {
-  const { setStatus } = useFormikContext();
+  const { setStatus, status } = useFormikContext();
   const [selectedBatchNodes, { reset, toggle, add }] = useSet<string | undefined>(new Set());
   const [options, setOptions] = useState<Partial<AirbyteStreamConfiguration>>(defaultOptions);
 
   const isActive = selectedBatchNodes.size > 0;
   useEffect(() => {
-    setStatus({ editControlsVisible: !isActive });
-  }, [isActive, setStatus]);
+    setStatus({ ...status, editControlsVisible: !isActive });
+  }, [isActive, setStatus, status]);
 
   const resetBulk = () => {
     reset();

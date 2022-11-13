@@ -17,7 +17,7 @@ export type IndexerType = null | "required" | "sourceDefined";
 
 interface PathPopoutBaseProps {
   paths: Path[];
-  pathType: "required" | "sourceDefined";
+  pathType: IndexerType;
   placeholder?: React.ReactNode;
 }
 
