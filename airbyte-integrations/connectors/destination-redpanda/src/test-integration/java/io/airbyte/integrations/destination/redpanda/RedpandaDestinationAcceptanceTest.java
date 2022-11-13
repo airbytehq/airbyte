@@ -22,8 +22,6 @@ import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.TopicListing;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
@@ -137,16 +135,10 @@ public class RedpandaDestinationAcceptanceTest extends DestinationAcceptanceTest
                                              String streamName,
                                              String namespace,
                                              JsonNode streamSchema) {
-        Map<String, Object> props = ImmutableMap.<String, Object>builder()
-            .put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, redpandaContainer.getBootstrapServers())
-            .put(ConsumerConfig.GROUP_ID_CONFIG, redpandaNameTransformer.getIdentifier(namespace + "-" + streamName))
-            .put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-            .put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
-            .put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.connect.json.JsonDeserializer")
-            .build();
-
         List<JsonNode> records = new ArrayList<>();
-        try (KafkaConsumer<String, JsonNode> redpandaConsumer = new KafkaConsumer<>(props)) {
+        String bootstrapServers = redpandaContainer.getBootstrapServers();
+        String groupId = redpandaNameTransformer.getIdentifier(namespace + "-" + streamName);
+        try (RedpandaConsumer<String, JsonNode> redpandaConsumer = RedpandaConsumerFactory.getInstance(bootstrapServers, groupId)) {
             String topicName = redpandaNameTransformer.topicName(namespace, streamName);
             redpandaConsumer.subscribe(Collections.singletonList(topicName));
             redpandaConsumer.poll(Duration.ofSeconds(5)).iterator()

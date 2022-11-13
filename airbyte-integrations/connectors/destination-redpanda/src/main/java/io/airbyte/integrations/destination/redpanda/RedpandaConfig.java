@@ -30,7 +30,7 @@ public class RedpandaConfig {
 
     private final int socketConnectionSetupTimeoutMaxMs;
 
-    public RedpandaConfig(String bootstrapServers, long bufferMemory, String compressionType, int retries,
+    private RedpandaConfig(String bootstrapServers, long bufferMemory, String compressionType, int retries,
                           int batchSize, Optional<Integer> topicNumPartitions, Optional<Short> topicReplicationFactor,
                           int socketConnectionSetupTimeoutMs, int socketConnectionSetupTimeoutMaxMs) {
         this.bootstrapServers = bootstrapServers;

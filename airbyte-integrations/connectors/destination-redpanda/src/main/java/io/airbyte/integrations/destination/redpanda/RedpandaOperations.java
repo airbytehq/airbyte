@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.io.Closeable;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
@@ -65,6 +66,18 @@ public class RedpandaOperations implements Closeable {
         }
     }
 
+    public Set<String> listTopics() {
+
+        var listTopics = adminClient.listTopics();
+
+        try {
+            return syncWrapper(listTopics::names);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
     public void putRecord(String topic, String key, JsonNode data, Consumer<Exception> consumer) {
         var producerRecord = new ProducerRecord<>(topic, key, data);
 
@@ -92,13 +105,6 @@ public class RedpandaOperations implements Closeable {
         kafkaProducer.flush();
     }
 
-    @Override
-    public void close() {
-        kafkaProducer.flush();
-        kafkaProducer.close();
-        adminClient.close();
-    }
-
     private <T> T syncWrapper(Supplier<Future<T>> asyncFunction) throws ExecutionException {
         try {
             return asyncFunction.get().get();
@@ -124,6 +130,13 @@ public class RedpandaOperations implements Closeable {
     ) {
 
 
+    }
+
+    @Override
+    public void close() {
+        kafkaProducer.flush();
+        kafkaProducer.close();
+        adminClient.close();
     }
 
 }

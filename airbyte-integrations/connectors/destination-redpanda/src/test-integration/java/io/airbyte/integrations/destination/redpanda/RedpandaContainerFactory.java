@@ -2,7 +2,7 @@ package io.airbyte.integrations.destination.redpanda;
 
 import org.testcontainers.redpanda.RedpandaContainer;
 
-public class RedpandaContainerFactory {
+class RedpandaContainerFactory {
 
     private RedpandaContainerFactory() {
 
