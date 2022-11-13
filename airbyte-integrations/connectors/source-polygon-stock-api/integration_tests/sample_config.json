@@ -6,6 +6,6 @@
   "stocksTicker": "AAPL",
   "multiplier": "1",
   "timespan": "day",
-  "from": "2021-07-22",
-  "to": "2021-07-22" 
+  "start_date": "2021-07-22",
+  "end_date": "2021-07-22"
 }

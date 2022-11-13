@@ -21,12 +21,19 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
+
+        
+  stream_slicer:
+    start_datetime: "{{ config['start_date'] }}T00:00:00.000000+0000"
+    end_datetime: "{{ config['start_date'] }}T00:00:00.000000+0000"
+    step: "1d"
+
   stock_api_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "stock_api"
       primary_key: "id"
-      path: "/v2/aggs/ticker/{{ config['stocksTicker'] }}/range/{{ config['multiplier'] }}/{{ config['timespan'] }}/{{ config['from'] }}/{{ config['to'] }}?adjusted={{ config['adjusted'] }}&sort={{ config['sort'] }}&limit=120&apiKey={{ config['apiKey'] }}"
+      path: "/v2/aggs/ticker/{{ config['stocksTicker'] }}/range/{{ config['multiplier'] }}/{{ config['timespan'] }}/{{ config['start_date'] }}/{{ config['end_date'] }}?adjusted={{ config['adjusted'] }}&sort={{ config['sort'] }}&limit=120&apiKey={{ config['apiKey'] }}"
 streams:
   - "*ref(definitions.stock_api_stream)"
 

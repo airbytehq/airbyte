@@ -1,11 +1,11 @@
 {
-  "apiKey": "YOUR_API_KEY",
+  "apiKey": "INVALID_API_KEY",
   "limit": "120",
   "sort": "asc",
   "adjusted": "true",
-  "stocksTicker": "MICROSOFT",
+  "stocksTicker": "MSFT",
   "multiplier": "1",
   "timespan": "day",
-  "from": "2021-07-22",
-  "to": "2021-07-22" 
+  "start_date": "2021-07-22",
+  "end_date": "2021-07-22"
 }
