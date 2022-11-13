@@ -103,6 +103,15 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("tinyint")
+            .fullSourceDataType("tinyint(1) unsigned")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .addInsertValues("null", "0", "1", "2", "3")
+            .addExpectedValues(null, "0", "1", "2", "3")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("tinyint")
             .fullSourceDataType("tinyint(2)")
             .airbyteType(JsonSchemaType.INTEGER)
             .addInsertValues("null", "-128", "127")

@@ -12,13 +12,17 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.Geography;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.init.YamlSeedConfigPersistence;
-import io.airbyte.config.persistence.ConfigPersistence;
+import io.airbyte.config.init.ApplyDefinitionsHelper;
+import io.airbyte.config.init.DefinitionsProvider;
+import io.airbyte.config.init.LocalDefinitionsProvider;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.DatabaseConfigPersistence;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
+import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -65,8 +69,8 @@ public class BootloaderApp {
   private final Runnable postLoadExecution;
   private final FeatureFlags featureFlags;
   private final SecretMigrator secretMigrator;
-  private ConfigPersistence configPersistence;
-  private ConfigPersistence yamlSeedConfigPersistence;
+  private ConfigRepository configRepository;
+  private DefinitionsProvider localDefinitionsProvider;
   private Database configDatabase;
   private Database jobDatabase;
   private JobPersistence jobPersistence;
@@ -125,7 +129,8 @@ public class BootloaderApp {
 
     postLoadExecution = () -> {
       try {
-        configPersistence.loadData(yamlSeedConfigPersistence);
+        final ApplyDefinitionsHelper applyDefinitionsHelper = new ApplyDefinitionsHelper(configRepository, localDefinitionsProvider);
+        applyDefinitionsHelper.apply();
 
         if (featureFlags.forceSecretMigration() || !jobPersistence.isSecretMigrated()) {
           if (this.secretMigrator != null) {
@@ -134,7 +139,7 @@ public class BootloaderApp {
           }
         }
         LOGGER.info("Loaded seed data..");
-      } catch (final IOException | JsonValidationException e) {
+      } catch (final IOException | JsonValidationException | ConfigNotFoundException e) {
         throw new RuntimeException(e);
       }
     };
@@ -166,9 +171,6 @@ public class BootloaderApp {
     runFlywayMigration(configs, configDbMigrator, jobDbMigrator);
     LOGGER.info("Ran Flyway migrations.");
 
-    final ConfigRepository configRepository =
-        new ConfigRepository(configPersistence, configDatabase);
-
     createWorkspaceIfNoneExists(configRepository);
     LOGGER.info("Default workspace created.");
 
@@ -189,16 +191,8 @@ public class BootloaderApp {
     return new Database(dslContext);
   }
 
-  private static ConfigPersistence getConfigPersistence(final Database configDatabase) throws IOException {
-    final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
-        .copySecrets(true)
-        .build();
-
-    return DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
-  }
-
-  private static ConfigPersistence getYamlSeedConfigPersistence() throws IOException {
-    return new YamlSeedConfigPersistence(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
+  private static DefinitionsProvider getLocalDefinitionsProvider() throws IOException {
+    return new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
   }
 
   private static Database getJobDatabase(final DSLContext dslContext) throws IOException {
@@ -212,8 +206,8 @@ public class BootloaderApp {
   private void initPersistences(final DSLContext configsDslContext, final DSLContext jobsDslContext) {
     try {
       configDatabase = getConfigDatabase(configsDslContext);
-      configPersistence = getConfigPersistence(configDatabase);
-      yamlSeedConfigPersistence = getYamlSeedConfigPersistence();
+      configRepository = new ConfigRepository(configDatabase);
+      localDefinitionsProvider = getLocalDefinitionsProvider();
       jobDatabase = getJobDatabase(jobsDslContext);
       jobPersistence = getJobPersistence(jobDatabase);
     } catch (final IOException e) {
@@ -236,11 +230,17 @@ public class BootloaderApp {
 
       // TODO Will be converted to an injected singleton during DI migration
       final Database configDatabase = getConfigDatabase(configsDslContext);
-      final ConfigPersistence configPersistence = getConfigPersistence(configDatabase);
+      final ConfigRepository configRepository = new ConfigRepository(configDatabase);
       final Database jobDatabase = getJobDatabase(jobsDslContext);
       final JobPersistence jobPersistence = getJobPersistence(jobDatabase);
+
+      final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configsDslContext, configs);
+      final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configsDslContext, configs);
+      final SecretsRepositoryReader secretsRepositoryReader = new SecretsRepositoryReader(configRepository, secretsHydrator);
+      final SecretsRepositoryWriter secretsRepositoryWriter = new SecretsRepositoryWriter(configRepository, secretPersistence, Optional.empty());
+
       final SecretMigrator secretMigrator =
-          new SecretMigrator(configPersistence, jobPersistence, SecretPersistence.getLongLived(configsDslContext, configs));
+          new SecretMigrator(secretsRepositoryReader, secretsRepositoryWriter, configRepository, jobPersistence, secretPersistence);
       final Flyway configsFlyway = FlywayFactory.create(configsDataSource, BootloaderApp.class.getSimpleName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
           ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
       final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, BootloaderApp.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
@@ -279,8 +279,11 @@ public class BootloaderApp {
         .withSlug(workspaceId.toString())
         .withInitialSetupComplete(false)
         .withDisplaySetupWizard(true)
-        .withTombstone(false);
-    configRepository.writeStandardWorkspace(workspace);
+        .withTombstone(false)
+        .withDefaultGeography(Geography.AUTO);
+    // NOTE: it's safe to use the NoSecrets version since we know that the user hasn't supplied any
+    // secrets yet.
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
   }
 
   private static void assertNonBreakingMigration(final JobPersistence jobPersistence, final AirbyteVersion airbyteVersion)

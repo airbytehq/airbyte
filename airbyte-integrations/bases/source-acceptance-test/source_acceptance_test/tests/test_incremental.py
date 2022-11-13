@@ -176,13 +176,8 @@ class TestIncremental(BaseTest):
     ):
         """
         Incremental test that makes calls the read method without a state checkpoint. Then we partition the results by stream and
-        slice checkpoints resulting in batches of messages that look like:
-        <state message>
-        <record message>
-        ...
-        <record message>
-
-        Using these batches, we then make additional read method calls using the state message and verify the correctness of the
+        slice checkpoints.
+        Then we make additional read method calls using the state message and verify the correctness of the
         messages in the response.
         """
         if inputs.skip_comprehensive_incremental_tests:
@@ -212,15 +207,7 @@ class TestIncremental(BaseTest):
                 record_value <= state_value
             ), f"First incremental sync should produce records younger or equal to cursor value from the state. Stream: {stream_name}"
 
-        # Create partitions made up of one state message followed by any records that come before the next state
-        filtered_messages = [message for message in output if message.type == Type.STATE or message.type == Type.RECORD]
-        right_index = len(filtered_messages)
-        checkpoint_messages = []
-        for index, message in reversed(list(enumerate(filtered_messages))):
-            if message.type == Type.STATE:
-                message_group = (filtered_messages[index], filtered_messages[index + 1 : right_index])
-                checkpoint_messages.insert(0, message_group)
-                right_index = index
+        checkpoint_messages = filter_output(output, type_=Type.STATE)
 
         # We sometimes have duplicate identical state messages in a stream which we can filter out to speed things up
         checkpoint_messages = [message for index, message in enumerate(checkpoint_messages) if message not in checkpoint_messages[:index]]
@@ -229,11 +216,9 @@ class TestIncremental(BaseTest):
         min_batches_to_test = 10
         sample_rate = len(checkpoint_messages) // min_batches_to_test
         stream_name_to_per_stream_state = dict()
-        for idx, message_batch in enumerate(checkpoint_messages):
-            assert len(message_batch) > 0 and message_batch[0].type == Type.STATE
-            state_input, complete_state = self.get_next_state_input(
-                message_batch, latest_state, stream_name_to_per_stream_state, is_per_stream
-            )
+        for idx, state_message in enumerate(checkpoint_messages):
+            assert state_message.type == Type.STATE
+            state_input, complete_state = self.get_next_state_input(state_message, stream_name_to_per_stream_state, is_per_stream)
 
             if len(checkpoint_messages) >= min_batches_to_test and idx % sample_rate != 0:
                 continue
@@ -259,15 +244,14 @@ class TestIncremental(BaseTest):
 
     def get_next_state_input(
         self,
-        message_batch: List[AirbyteStateMessage],
-        latest_state: MutableMapping,
+        state_message: AirbyteStateMessage,
         stream_name_to_per_stream_state: MutableMapping,
         is_per_stream,
     ) -> Tuple[Union[List[MutableMapping], MutableMapping], MutableMapping]:
         if is_per_stream:
             # Including all the latest state values from previous batches, update the combined stream state
             # with the current batch's stream state and then use it in the following read() request
-            current_state = message_batch[0].state
+            current_state = state_message.state
             if current_state and current_state.type == AirbyteStateType.STREAM:
                 per_stream = current_state.stream
                 if per_stream.stream_state:
@@ -276,8 +260,8 @@ class TestIncremental(BaseTest):
                     )
             state_input = [
                 {"type": "STREAM", "stream": {"stream_descriptor": {"name": stream_name}, "stream_state": stream_state}}
-                for stream_name, stream_state in latest_state.items()
+                for stream_name, stream_state in stream_name_to_per_stream_state.items()
             ]
             return state_input, stream_name_to_per_stream_state
         else:
-            return message_batch[0].state.data, message_batch[0].state.data
+            return state_message.state.data, state_message.state.data

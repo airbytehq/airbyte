@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper.MAX_FIRST_RECORD_WAIT_TIME;
@@ -43,6 +47,20 @@ public class CdcConfigurationHelperTest {
     assertThrows(IllegalArgumentException.class, () -> CdcConfigurationHelper.checkFirstRecordWaitTime(tooLongConfig));
     assertEquals(Optional.of(tooLongTimeout), CdcConfigurationHelper.getFirstRecordWaitSeconds(tooLongConfig));
     assertEquals(MAX_FIRST_RECORD_WAIT_TIME, CdcConfigurationHelper.getFirstRecordWaitTime(tooLongConfig));
+  }
+
+  @Test
+  void testServerTimeConfig() {
+    final JsonNode emptyConfig = Jsons.jsonNode(Collections.emptyMap());
+    assertDoesNotThrow(() -> CdcConfigurationHelper.checkServerTimeZoneConfig(emptyConfig));
+
+    final JsonNode normalConfig = Jsons.jsonNode(Map.of("replication_method",
+        Map.of("method", "CDC", "server_time_zone", "America/Los_Angeles")));
+    assertDoesNotThrow(() -> CdcConfigurationHelper.checkServerTimeZoneConfig(normalConfig));
+
+    final JsonNode invalidConfig = Jsons.jsonNode(Map.of("replication_method",
+        Map.of("method", "CDC", "server_time_zone", "CEST")));
+    assertThrows(IllegalArgumentException.class, () -> CdcConfigurationHelper.checkServerTimeZoneConfig(invalidConfig));
   }
 
 }

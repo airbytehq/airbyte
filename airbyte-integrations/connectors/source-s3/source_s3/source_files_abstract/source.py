@@ -41,7 +41,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
     @abstractmethod
     def documentation_url(self) -> str:
         """
-        :return: link to docs page for this source e.g. "https://docs.airbyte.io/integrations/sources/s3"
+        :return: link to docs page for this source e.g. "https://docs.airbyte.com/integrations/sources/s3"
         """
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:

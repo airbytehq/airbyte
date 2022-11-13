@@ -170,17 +170,18 @@ describe("#mapFormPropsToOperation", () => {
 });
 
 describe("#useInitialValues", () => {
-  it("should generate initial values w/ no edit mode", () => {
+  it("should generate initial values w/ no 'not create' mode", () => {
     const { result } = renderHook(() =>
       useInitialValues(
         mockConnection as WebBackendConnectionRead,
         mockDestinationDefinition as DestinationDefinitionSpecificationRead
       )
     );
-    expect(result).toMatchSnapshot();
+    expect(result.current).toMatchSnapshot();
+    expect(result.current.name).toBeDefined();
   });
 
-  it("should generate initial values w/ edit mode: false", () => {
+  it("should generate initial values w/ 'not create' mode: false", () => {
     const { result } = renderHook(() =>
       useInitialValues(
         mockConnection as WebBackendConnectionRead,
@@ -188,10 +189,11 @@ describe("#useInitialValues", () => {
         false
       )
     );
-    expect(result).toMatchSnapshot();
+    expect(result.current).toMatchSnapshot();
+    expect(result.current.name).toBeDefined();
   });
 
-  it("should generate initial values w/ edit mode: true", () => {
+  it("should generate initial values w/ 'not create' mode: true", () => {
     const { result } = renderHook(() =>
       useInitialValues(
         mockConnection as WebBackendConnectionRead,
@@ -199,7 +201,8 @@ describe("#useInitialValues", () => {
         true
       )
     );
-    expect(result).toMatchSnapshot();
+    expect(result.current).toMatchSnapshot();
+    expect(result.current.name).toBeUndefined();
   });
 
   // This is a low-priority test

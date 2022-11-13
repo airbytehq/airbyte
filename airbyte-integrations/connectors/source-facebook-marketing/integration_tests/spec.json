@@ -1,6 +1,6 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/facebook-marketing",
-  "changelogUrl": "https://docs.airbyte.io/integrations/sources/facebook-marketing",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/facebook-marketing",
+  "changelogUrl": "https://docs.airbyte.com/integrations/sources/facebook-marketing",
   "connectionSpecification": {
     "title": "Source Facebook Marketing",
     "type": "object",
@@ -27,12 +27,11 @@
         "order": 2,
         "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2017-01-26T00:00:00Z"],
-        "type": "string",
-        "format": "date-time"
+        "type": "string"
       },
       "access_token": {
         "title": "Access Token",
-        "description": "The value of the access token generated. See the <a href=\"https://docs.airbyte.io/integrations/sources/facebook-marketing\">docs</a> for more information",
+        "description": "The value of the access token generated. See the <a href=\"https://docs.airbyte.com/integrations/sources/facebook-marketing\">docs</a> for more information",
         "order": 3,
         "airbyte_secret": true,
         "type": "string"
@@ -174,6 +173,7 @@
                   "social_spend",
                   "spend",
                   "total_postbacks",
+                  "total_postbacks_detailed",
                   "unique_actions",
                   "unique_clicks",
                   "unique_conversions",
@@ -232,12 +232,15 @@
                   "hourly_stats_aggregated_by_audience_time_zone",
                   "image_asset",
                   "impression_device",
+                  "is_conversion_id_modeled",
                   "link_url_asset",
+                  "mmm",
                   "place_page_id",
                   "platform_position",
                   "product_id",
                   "publisher_platform",
                   "region",
+                  "skan_campaign_id",
                   "skan_conversion_id",
                   "title_asset",
                   "video_asset"

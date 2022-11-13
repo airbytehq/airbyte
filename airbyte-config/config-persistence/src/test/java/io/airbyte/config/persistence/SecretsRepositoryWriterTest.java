@@ -11,10 +11,10 @@ import static io.airbyte.config.persistence.MockData.MOCK_SERVICE_ACCOUNT_2;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -25,14 +25,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.Geography;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.WebhookConfig;
+import io.airbyte.config.WebhookOperationConfigs;
 import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
@@ -42,15 +44,13 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -88,6 +88,11 @@ class SecretsRepositoryWriterTest {
 
   private static final String PASSWORD_PROPERTY_NAME = "password";
   private static final String PASSWORD_FIELD_NAME = "_secret";
+  private static final String TEST_EMAIL = "test-email";
+  private static final String TEST_WORKSPACE_NAME = "test-workspace-name";
+  private static final String TEST_WORKSPACE_SLUG = "test-workspace-slug";
+  private static final String TEST_WEBHOOK_NAME = "test-webhook-name";
+  private static final String TEST_AUTH_TOKEN = "test-auth-token";
 
   private ConfigRepository configRepository;
   private MemorySecretPersistence longLivedSecretPersistence;
@@ -225,43 +230,6 @@ class SecretsRepositoryWriterTest {
 
     // verify that the round trip works.
     assertEquals(SOURCE_WITH_FULL_CONFIG.getConfiguration(), ephemeralSecretsHydrator.hydrate(split));
-  }
-
-  @SuppressWarnings("unchecked")
-  @Test
-  void testReplaceAllConfigs() throws IOException {
-    final Map<AirbyteConfig, Stream<?>> configs = new HashMap<>();
-    configs.put(ConfigSchema.STANDARD_SOURCE_DEFINITION, Stream.of(Jsons.clone(SOURCE_DEF)));
-    configs.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION, Stream.of(Jsons.clone(DEST_DEF)));
-    configs.put(ConfigSchema.SOURCE_CONNECTION, Stream.of(Jsons.clone(SOURCE_WITH_FULL_CONFIG)));
-    configs.put(ConfigSchema.DESTINATION_CONNECTION, Stream.of(Jsons.clone(DESTINATION_WITH_FULL_CONFIG)));
-
-    secretsRepositoryWriter.replaceAllConfigs(configs, false);
-
-    final ArgumentCaptor<Map<AirbyteConfig, Stream<?>>> argument = ArgumentCaptor.forClass(Map.class);
-    verify(configRepository).replaceAllConfigsNoSecrets(argument.capture(), eq(false));
-    final Map<AirbyteConfig, ? extends List<?>> actual = argument.getValue().entrySet()
-        .stream()
-        .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().collect(Collectors.toList())));
-
-    assertEquals(SOURCE_DEF, actual.get(ConfigSchema.STANDARD_SOURCE_DEFINITION).get(0));
-    assertEquals(DEST_DEF, actual.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION).get(0));
-
-    // we can't easily get the pointer, so verify the secret has been stripped out and then make sure
-    // the rest of the object meets expectations.
-    final SourceConnection actualSource = (SourceConnection) actual.get(ConfigSchema.SOURCE_CONNECTION).get(0);
-    assertTrue(actualSource.getConfiguration().get(PASSWORD_PROPERTY_NAME).has(PASSWORD_FIELD_NAME));
-    ((ObjectNode) actualSource.getConfiguration()).remove(PASSWORD_PROPERTY_NAME);
-    final SourceConnection expectedSource = Jsons.clone(SOURCE_WITH_FULL_CONFIG);
-    ((ObjectNode) expectedSource.getConfiguration()).remove(PASSWORD_PROPERTY_NAME);
-    assertEquals(expectedSource, actualSource);
-
-    final DestinationConnection actualDest = (DestinationConnection) actual.get(ConfigSchema.DESTINATION_CONNECTION).get(0);
-    assertTrue(actualDest.getConfiguration().get(PASSWORD_PROPERTY_NAME).has(PASSWORD_FIELD_NAME));
-    ((ObjectNode) actualDest.getConfiguration()).remove(PASSWORD_PROPERTY_NAME);
-    final DestinationConnection expectedDest = Jsons.clone(DESTINATION_WITH_FULL_CONFIG);
-    ((ObjectNode) expectedDest.getConfiguration()).remove(PASSWORD_PROPERTY_NAME);
-    assertEquals(expectedDest, actualDest);
   }
 
   // this only works if the secrets store has one secret.
@@ -431,6 +399,40 @@ class SecretsRepositoryWriterTest {
     verify(configRepository).writeWorkspaceServiceAccountNoSecrets(Jsons.clone(workspaceServiceAccount).withJsonCredential(Jsons.jsonNode(
         Map.of(PASSWORD_FIELD_NAME, jsonSecretNewCoordinate.getFullCoordinate()))).withHmacKey(Jsons.jsonNode(
             Map.of(PASSWORD_FIELD_NAME, hmacSecretNewCoordinate.getFullCoordinate()))));
+  }
+
+  @Test
+  @DisplayName("writeWorkspace should ensure that secret fields are replaced")
+  void testWriteWorkspaceSplitsAuthTokens() throws JsonValidationException, IOException {
+    final ConfigRepository configRepository = mock(ConfigRepository.class);
+    final SecretPersistence secretPersistence = mock(SecretPersistence.class);
+    final SecretsRepositoryWriter secretsRepositoryWriter =
+        spy(new SecretsRepositoryWriter(configRepository, jsonSchemaValidator, Optional.of(secretPersistence), Optional.of(secretPersistence)));
+    final var webhookConfigs = new WebhookOperationConfigs().withWebhookConfigs(List.of(
+        new WebhookConfig()
+            .withName(TEST_WEBHOOK_NAME)
+            .withAuthToken(TEST_AUTH_TOKEN)
+            .withId(UUID.randomUUID())));
+    final var workspace = new StandardWorkspace()
+        .withWorkspaceId(UUID.randomUUID())
+        .withCustomerId(UUID.randomUUID())
+        .withEmail(TEST_EMAIL)
+        .withName(TEST_WORKSPACE_NAME)
+        .withSlug(TEST_WORKSPACE_SLUG)
+        .withInitialSetupComplete(false)
+        .withDisplaySetupWizard(true)
+        .withNews(false)
+        .withAnonymousDataCollection(false)
+        .withSecurityUpdates(false)
+        .withTombstone(false)
+        .withNotifications(Collections.emptyList())
+        .withDefaultGeography(Geography.AUTO)
+        // Serialize it to a string, then deserialize it to a JsonNode.
+        .withWebhookOperationConfigs(Jsons.jsonNode(webhookConfigs));
+    secretsRepositoryWriter.writeWorkspace(workspace);
+    final var workspaceArgumentCaptor = ArgumentCaptor.forClass(StandardWorkspace.class);
+    verify(configRepository, times(1)).writeStandardWorkspaceNoSecrets(workspaceArgumentCaptor.capture());
+    assertFalse(Jsons.serialize(workspaceArgumentCaptor.getValue().getWebhookOperationConfigs()).contains(TEST_AUTH_TOKEN));
   }
 
 }
