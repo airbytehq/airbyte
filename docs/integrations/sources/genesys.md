@@ -6,6 +6,8 @@ The Genesys source retrieves data from [Genesys](https://www.genesys.com/) using
 ## Setup Guide
 
 ### Requirements
+We are using `OAuth2` as this is the only supported authentication method. So you will need to follow the steps below to generate the `Client ID` and `Client Secret`. 
+
 - Genesys region
 - Client ID
 - Client Secret
