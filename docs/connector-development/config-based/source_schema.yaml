@@ -222,6 +222,9 @@ definitions:
         default: "expires_in"
       refresh_request_body:
         type: object
+      grant_type:
+        type: string
+        default: "refresh_token"
   Paginator:
     type: object
     anyOf:
