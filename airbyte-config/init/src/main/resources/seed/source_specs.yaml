@@ -2697,6 +2697,33 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-datascope:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/datascope"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Datascope Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "start_date"
+      additionalProperties: true
+      properties:
+        start_date:
+          title: "Start Date"
+          type: "string"
+          description: "Start date for the data to be replicated"
+          examples:
+          - "dd/mm/YYYY HH:MM"
+          pattern: "^[0-9]{2}/[0-9]{2}/[0-9]{4} [0-9]{2}:[0-9]{2}$"
+        api_key:
+          title: "Authorization"
+          type: "string"
+          description: "API Key"
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-delighted:0.1.4"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -3967,7 +3994,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-freshdesk:0.3.7"
+- dockerImage: "airbyte/source-freshdesk:0.3.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/freshdesk"
     connectionSpecification:
@@ -12059,6 +12086,24 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
+- dockerImage: "airbyte/source-sap-fieldglass:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/sap-fieldglass"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Sap Fieldglass Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          description: "API Key"
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-search-metrics:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/seacrh-metrics"
@@ -12260,6 +12305,26 @@
             \ could take in effect longer than with more smaller time slices. If there\
             \ are a lot of data per day, set this setting to 1. If there is only very\
             \ little data per day, you might change the setting to 10 or more."
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-sendinblue:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/sendinblue"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Sendinblue Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API Key"
+          type: "string"
+          description: "Your API Key. See <a href=\"https://developers.sendinblue.com/docs/getting-started\"\
+            >here</a>."
+          airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -12708,7 +12773,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.24"
+- dockerImage: "airbyte/source-snowflake:0.1.26"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snowflake"
     connectionSpecification:
@@ -12737,7 +12802,6 @@
               auth_type:
                 type: "string"
                 const: "OAuth"
-                default: "OAuth"
                 order: 0
               client_id:
                 type: "string"
@@ -12774,7 +12838,6 @@
               auth_type:
                 type: "string"
                 const: "username/password"
-                default: "username/password"
                 order: 0
               username:
                 description: "The username you created to allow Airbyte to access\
@@ -13195,6 +13258,26 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
+- dockerImage: "airbyte/source-statuspage:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/statuspage"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Statuspage Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API Key"
+          type: "string"
+          description: "Your API Key. See <a href=\"https://developer.statuspage.io/#section/Authentication/api_key\"\
+            >here</a>."
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-stripe:0.1.40"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
@@ -14234,6 +14317,76 @@
           type: "string"
           description: "Identifier for the grant issued by an agreement"
           airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-xero:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/xero"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Xero Spec"
+      type: "object"
+      required:
+      - "authentication"
+      - "start_date"
+      - "scopes"
+      - "tenant_id"
+      - "client_id"
+      - "client_secret"
+      additionalProperties: true
+      properties:
+        client_id:
+          title: "Client ID"
+          type: "string"
+          description: "Enter your Xero application's Client ID"
+        client_secret:
+          title: "Client Secret"
+          type: "string"
+          description: "Enter your Xero application's Client Secret"
+          airbyte_secret: true
+        tenant_id:
+          title: "Tenant ID"
+          type: "string"
+          description: "Enter your Xero organization's Tenant ID"
+        scopes:
+          title: "Scopes"
+          type: "string"
+          description: "Enter your required list of scopes (delimited by comma)"
+        authentication:
+          type: "object"
+          title: "Authentication"
+          description: "Type and additional credentials of the Xero API connection"
+          oneOf:
+          - title: "Authenticate via Xero (OAuth) (unsupported yet)"
+            type: "object"
+            required:
+            - "auth_type"
+            - "refresh_token"
+            properties:
+              auth_type:
+                type: "string"
+                const: "oauth"
+              refresh_token:
+                title: "Refresh Token"
+                type: "string"
+                description: "Enter your Xero application's refresh token"
+                airbyte_secret: true
+          - title: "Custom Connections Authentication"
+            type: "object"
+            required:
+            - "auth_type"
+            properties:
+              auth_type:
+                type: "string"
+                const: "custom_connection"
+        start_date:
+          type: "string"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          description: "UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ. Any\
+            \ data with created_at before this data will not be synced."
+          examples:
+          - "2022-03-01T00:00:00Z"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
