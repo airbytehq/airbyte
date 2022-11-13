@@ -1,8 +1,43 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Generator: Adobe Illustrator 25.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 500 500" style="enable-background:new 0 0 500 500;" xml:space="preserve">
-<style type="text/css">
+
+<svg
+   version="1.1"
+   id="Layer_1"
+   x="0px"
+   y="0px"
+   viewBox="0 0 310.81073 365.07761"
+   xml:space="preserve"
+   sodipodi:docname="firestore.svg"
+   width="310.81073"
+   height="365.07761"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+   id="defs539" /><sodipodi:namedview
+   id="namedview537"
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1.0"
+   inkscape:showpageshadow="2"
+   inkscape:pageopacity="0.0"
+   inkscape:pagecheckerboard="0"
+   inkscape:deskcolor="#d1d1d1"
+   showgrid="false"
+   inkscape:zoom="2.054"
+   inkscape:cx="155.55015"
+   inkscape:cy="182.08374"
+   inkscape:window-width="3840"
+   inkscape:window-height="2083"
+   inkscape:window-x="0"
+   inkscape:window-y="40"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="Layer_1" />
+<style
+   type="text/css"
+   id="style512">
 	.st0{fill:#FFC24A;}
 	.st1{fill:#F4BD62;}
 	.st2{fill:#F6820C;}
@@ -12,19 +47,52 @@
 	.st6{fill-rule:evenodd;clip-rule:evenodd;fill:#757575;}
 	.st7{fill-rule:evenodd;clip-rule:evenodd;fill:#FFFFFF;}
 </style>
-<g>
-	<path class="st0" d="M94.7,362.1l2.2-3.1l104.5-198.3l0.2-2.1L155.5,72c-3.9-7.3-14.7-5.4-16,2.7L94.7,362.1z"/>
-	<path class="st1" d="M235.2,224.1l34.3-35.1l-34.3-65.5c-3.3-6.2-12.4-6.2-15.6,0l-18.3,35v3L235.2,224.1z"/>
-	<polygon class="st2" points="94.7,362.1 95.7,361.1 99.3,359.6 233.1,226.4 234.7,221.8 201.4,158.2 	"/>
-	<path class="st3" d="M239.5,429.3l121-67.5l-34.6-212.9c-1.1-6.7-9.3-9.3-14-4.5L94.7,362.1l120.4,67.2
-		C222.6,433.6,231.9,433.6,239.5,429.3"/>
-	<path class="st4" d="M359.5,361.2L325.2,150c-1.1-6.6-7.9-9.3-12.6-4.6L96,361.7l119,66.5c7.5,4.2,16.7,4.2,24.3,0L359.5,361.2z"/>
-	<path class="st5" d="M239.5,427.3c-7.6,4.2-16.9,4.2-24.5,0L95.6,361.1l-1,1L215,429.3c7.6,4.2,16.9,4.2,24.5,0l121-67.5l-0.3-1.8
-		L239.5,427.3z"/>
+<g
+   id="g534"
+   transform="translate(-94.6,-67.447408)">
+	<path
+   class="st0"
+   d="M 94.7,362.1 96.9,359 201.4,160.7 201.6,158.6 155.5,72 c -3.9,-7.3 -14.7,-5.4 -16,2.7 z"
+   id="path514" />
+	<path
+   class="st1"
+   d="M 235.2,224.1 269.5,189 235.2,123.5 c -3.3,-6.2 -12.4,-6.2 -15.6,0 l -18.3,35 v 3 z"
+   id="path516" />
+	<polygon
+   class="st2"
+   points="99.3,359.6 233.1,226.4 234.7,221.8 201.4,158.2 94.7,362.1 95.7,361.1 "
+   id="polygon518" />
+	<path
+   class="st3"
+   d="m 239.5,429.3 121,-67.5 -34.6,-212.9 c -1.1,-6.7 -9.3,-9.3 -14,-4.5 L 94.7,362.1 215.1,429.3 c 7.5,4.3 16.8,4.3 24.4,0"
+   id="path520" />
+	<path
+   class="st4"
+   d="M 359.5,361.2 325.2,150 c -1.1,-6.6 -7.9,-9.3 -12.6,-4.6 L 96,361.7 215,428.2 c 7.5,4.2 16.7,4.2 24.3,0 z"
+   id="path522" />
+	<path
+   class="st5"
+   d="m 239.5,427.3 c -7.6,4.2 -16.9,4.2 -24.5,0 l -119.4,-66.2 -1,1 120.4,67.2 c 7.6,4.2 16.9,4.2 24.5,0 l 121,-67.5 -0.3,-1.8 z"
+   id="path524" />
 	
-		<ellipse transform="matrix(0.1598 -0.9872 0.9872 0.1598 -68.6506 614.5333)" class="st6" cx="326.7" cy="347.6" rx="78.7" ry="78.7"/>
-	<polygon class="st7" points="291.1,326.2 326.1,308.5 362.1,326.2 362.1,344.2 326.1,326.4 291.1,344.2 	"/>
-	<polygon class="st7" points="291.1,356.9 326.1,339.1 362.1,356.9 362.1,374.8 326.1,357 291.1,374.8 	"/>
-	<polygon class="st7" points="326.2,374.4 336.4,369.6 354.4,377.9 326.2,391.4 	"/>
+		<circle
+   transform="matrix(0.1598,-0.9872,0.9872,0.1598,-68.6506,614.5333)"
+   class="st6"
+   cx="326.70001"
+   cy="347.60001"
+   id="ellipse526"
+   r="78.699997" />
+	<polygon
+   class="st7"
+   points="362.1,326.2 362.1,344.2 326.1,326.4 291.1,344.2 291.1,326.2 326.1,308.5 "
+   id="polygon528" />
+	<polygon
+   class="st7"
+   points="362.1,356.9 362.1,374.8 326.1,357 291.1,374.8 291.1,356.9 326.1,339.1 "
+   id="polygon530" />
+	<polygon
+   class="st7"
+   points="354.4,377.9 326.2,391.4 326.2,374.4 336.4,369.6 "
+   id="polygon532" />
 </g>
 </svg>
