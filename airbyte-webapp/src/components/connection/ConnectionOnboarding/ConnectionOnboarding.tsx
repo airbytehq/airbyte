@@ -38,18 +38,18 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
 
   const sourceIds = useMemo(
     () => [
-      "e7778cfc-e97c-4458-9ecb-b4f2bba8946c",
-      "71607ba1-c0ac-4799-8049-7f4b90dd50f7",
-      "6acf6b55-4f1e-4fca-944e-1a3caef8aba8",
+      "e7778cfc-e97c-4458-9ecb-b4f2bba8946c", // Facebook
+      "decd338e-5647-4c0b-adf4-da0e75f5a750", // Postgres
+      "71607ba1-c0ac-4799-8049-7f4b90dd50f7", // Google Sheets
     ],
     []
   );
 
   const destinationIds = useMemo(
     () => [
-      "424892c4-daac-4491-b35d-c6688ba547ba",
-      "25c5221d-dce2-4163-ade9-739ef790f503",
-      "22f6c74f-5699-40ff-833c-4a879ea40133",
+      "22f6c74f-5699-40ff-833c-4a879ea40133", // BigQuery
+      "424892c4-daac-4491-b35d-c6688ba547ba", // Snowflake
+      "25c5221d-dce2-4163-ade9-739ef790f503", // Postgres
     ],
     []
   );
