@@ -1,3 +1,5 @@
+import { faCircleQuestion } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
@@ -79,7 +81,13 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
       </Heading>
       <div className={styles.connectors}>
         <Text bold as="div" className={styles.sourcesTitle}>
-          <Tooltip control={<FormattedMessage id="connection.onboarding.sources" />}>
+          <Tooltip
+            control={
+              <>
+                <FormattedMessage id="connection.onboarding.sources" /> <FontAwesomeIcon icon={faCircleQuestion} />
+              </>
+            }
+          >
             <FormattedMessage id="connection.onboarding.sourcesDescription" />
           </Tooltip>
         </Text>
@@ -128,7 +136,13 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
           <AirbyteIllustration sourceHighlighted={highlightedSource} destinationHighlighted={highlightedDestination} />
         </div>
         <Text bold as="div" className={styles.destinationsTitle}>
-          <Tooltip control={<FormattedMessage id="connection.onboarding.destinations" />}>
+          <Tooltip
+            control={
+              <span>
+                <FormattedMessage id="connection.onboarding.destinations" /> <FontAwesomeIcon icon={faCircleQuestion} />
+              </span>
+            }
+          >
             <FormattedMessage id="connection.onboarding.destinationsDescription" />
           </Tooltip>
         </Text>
@@ -165,9 +179,13 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
             control={
               <button
                 className={styles.connectorButton}
-                onClick={() => onCreate()}
+                // onMouseEnter doesn't trigger on disabled buttons in React
+                // https://github.com/facebook/react/issues/10109
+                // Thus we just disable it via aria-disabled and make it non focusable via tabindex
                 onMouseEnter={() => setHighlightedDestination(3)}
+                aria-disabled="true"
                 aria-label={moreDestinationsTooltip}
+                tabIndex={-1}
               >
                 <PlusIcon className={styles.moreIcon} />
               </button>

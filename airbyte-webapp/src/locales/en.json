@@ -340,7 +340,7 @@
   "connection.onboarding.title": "<b>Connections</b> link Sources to Destinations",
   "connection.onboarding.createFirst": "Create your first connection",
   "connection.onboarding.sources": "Sources",
-  "connection.onboarding.sourcesDescription": "A source is where Airbyte pulls data from. Airbyte supports many sources across APIs, databases, and files",
+  "connection.onboarding.sourcesDescription": "A source is where Airbyte pulls data from. Airbyte supports many sources across APIs, databases, and files.",
   "connection.onboarding.moreSources": "Connect to any of Airbyte’s {count}+ sources",
   "connection.onboarding.addSource": "Connect to {source}",
   "connection.onboarding.destinations": "Destinations",
