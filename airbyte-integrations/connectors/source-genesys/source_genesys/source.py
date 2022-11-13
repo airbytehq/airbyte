@@ -235,7 +235,7 @@ class UserGroups(GenesysStream):
 
 class SourceGenesys(AbstractSource):
     @staticmethod
-    def get_connection_response(self, config: Mapping[str, Any]):
+    def get_connection_response(config: Mapping[str, Any]):
         GENESYS_TENANT_ENDPOINT_MAP: Dict = {
             "Americas (US East)": "https://login.mypurecloud.com",
             "Americas (US East 2)": "https://login.use2.us-gov-pure.cloud",
@@ -280,7 +280,7 @@ class SourceGenesys(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        response = self.get_connection_response(self, config)
+        response = self.get_connection_response(config)
         response.raise_for_status()
 
         args = {"authenticator": TokenAuthenticator(response.json()["access_token"])}
