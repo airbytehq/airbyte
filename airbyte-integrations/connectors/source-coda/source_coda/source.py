@@ -41,14 +41,6 @@ class CodaStream(HttpStream, ABC):
         return response.json()['items']
 
 
-class UserDetails(CodaStream):
-
-    primary_key = "USER_DETAILS"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "whoami"
 
 
 class Docs(CodaStream):
@@ -167,7 +159,6 @@ class SourceCoda(AbstractSource):
         }
 
         return [
-            UserDetails(**stream_args),
             Docs(**stream_args),
             Permissions(**additional_args),
             Categories(**stream_args),
