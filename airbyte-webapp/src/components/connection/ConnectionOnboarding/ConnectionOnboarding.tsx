@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
 import { Button } from "components/ui/Button";
 import { Heading } from "components/ui/Heading";
@@ -22,6 +22,7 @@ interface ConnectionOnboardingProps {
 }
 
 export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCreate }) => {
+  const { formatMessage } = useIntl();
   const workspace = useCurrentWorkspace();
   // TODO: Those should be parallelized
   const sourceDefinitions = useAvailableConnectorDefinitions(useSourceDefinitionList().sourceDefinitions, workspace);
@@ -61,6 +62,16 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
     [destinationDefinitions, destinationIds]
   );
 
+  const moreSourcesTooltip = formatMessage(
+    { id: "connection.onboarding.moreSources" },
+    { count: Math.floor(sourceDefinitions.length / 10) * 10 }
+  );
+
+  const moreDestinationsTooltip = formatMessage(
+    { id: "connection.onboarding.moreDestinations" },
+    { count: Math.floor(destinationDefinitions.length / 10) * 10 }
+  );
+
   return (
     <div className={styles.container}>
       <Heading as="h2" size="lg" centered className={styles.heading}>
@@ -73,24 +84,28 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
           </Tooltip>
         </Text>
         <div className={styles.sources}>
-          {sources.map((source, index) => (
-            <Tooltip
-              placement="right"
-              control={
-                <button
-                  data-testid={`onboardingSource-${index}`}
-                  data-sourceDefinitionId={source?.sourceDefinitionId}
-                  className={styles.connectorButton}
-                  onClick={() => onCreate(source?.sourceDefinitionId)}
-                  onMouseEnter={() => setHighlightedSource(index as 0 | 1 | 2)}
-                >
-                  <div className={styles.connectorIcon}>{getIcon(source?.icon)}</div>
-                </button>
-              }
-            >
-              <FormattedMessage id="connection.onboarding.addSource" values={{ source: source?.name }} />
-            </Tooltip>
-          ))}
+          {sources.map((source, index) => {
+            const tooltipText = formatMessage({ id: "connection.onboarding.addSource" }, { source: source?.name });
+            return (
+              <Tooltip
+                placement="right"
+                control={
+                  <button
+                    data-testid={`onboardingSource-${index}`}
+                    data-sourceDefinitionId={source?.sourceDefinitionId}
+                    aria-label={tooltipText}
+                    className={styles.connectorButton}
+                    onClick={() => onCreate(source?.sourceDefinitionId)}
+                    onMouseEnter={() => setHighlightedSource(index as 0 | 1 | 2)}
+                  >
+                    <div className={styles.connectorIcon}>{getIcon(source?.icon)}</div>
+                  </button>
+                }
+              >
+                {tooltipText}
+              </Tooltip>
+            );
+          })}
 
           <Tooltip
             placement="right"
@@ -100,15 +115,13 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
                 className={styles.connectorButton}
                 onClick={() => onCreate()}
                 onMouseEnter={() => setHighlightedSource(3)}
+                aria-label={moreSourcesTooltip}
               >
                 <PlusIcon className={styles.moreIcon} />
               </button>
             }
           >
-            <FormattedMessage
-              id="connection.onboarding.moreSources"
-              values={{ count: Math.floor(sourceDefinitions.length / 10) * 10 }}
-            />
+            {moreSourcesTooltip}
           </Tooltip>
         </div>
         <div className={styles.airbyte} aria-hidden="true">
@@ -120,26 +133,33 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
           </Tooltip>
         </Text>
         <div className={styles.destinations}>
-          {destinations.map((destination, index) => (
-            <Tooltip
-              placement="right"
-              control={
-                <button
-                  className={styles.connectorButton}
-                  // onMouseEnter doesn't trigger on disabled buttons in React
-                  // https://github.com/facebook/react/issues/10109
-                  // Thus we just disable it via aria-disabled and make it non focusable via tabindex
-                  onMouseEnter={() => setHighlightedDestination(index as 0 | 1 | 2 | 3)}
-                  aria-disabled="true"
-                  tabIndex={-1}
-                >
-                  <div className={styles.connectorIcon}>{getIcon(destination?.icon)}</div>
-                </button>
-              }
-            >
-              <FormattedMessage id="connection.onboarding.addDestination" values={{ destination: destination?.name }} />
-            </Tooltip>
-          ))}
+          {destinations.map((destination, index) => {
+            const tooltipText = formatMessage(
+              { id: "connection.onboarding.addDestination" },
+              { destination: destination?.name }
+            );
+            return (
+              <Tooltip
+                placement="right"
+                control={
+                  <button
+                    className={styles.connectorButton}
+                    // onMouseEnter doesn't trigger on disabled buttons in React
+                    // https://github.com/facebook/react/issues/10109
+                    // Thus we just disable it via aria-disabled and make it non focusable via tabindex
+                    onMouseEnter={() => setHighlightedDestination(index as 0 | 1 | 2 | 3)}
+                    aria-disabled="true"
+                    aria-label={tooltipText}
+                    tabIndex={-1}
+                  >
+                    <div className={styles.connectorIcon}>{getIcon(destination?.icon)}</div>
+                  </button>
+                }
+              >
+                {tooltipText}
+              </Tooltip>
+            );
+          })}
           <Tooltip
             placement="right"
             control={
@@ -147,15 +167,13 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
                 className={styles.connectorButton}
                 onClick={() => onCreate()}
                 onMouseEnter={() => setHighlightedDestination(3)}
+                aria-label={moreDestinationsTooltip}
               >
                 <PlusIcon className={styles.moreIcon} />
               </button>
             }
           >
-            <FormattedMessage
-              id="connection.onboarding.moreDestinations"
-              values={{ count: Math.floor(destinationDefinitions.length / 10) * 10 }}
-            />
+            {moreDestinationsTooltip}
           </Tooltip>
         </div>
       </div>
