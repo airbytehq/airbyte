@@ -8,9 +8,15 @@ import logging
 import typing
 from dataclasses import dataclass, fields
 from enum import Enum, EnumMeta
-from typing import Any, List, Mapping, Union
+from typing import Any, Iterator, List, Mapping, MutableMapping, Union
 
-from airbyte_cdk.models import ConnectorSpecification
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    AirbyteStateMessage,
+    ConfiguredAirbyteCatalog,
+    ConnectorSpecification,
+)
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
@@ -35,12 +41,14 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
     VALID_TOP_LEVEL_FIELDS = {"check", "definitions", "spec", "streams", "version"}
 
-    def __init__(self, source_config: ConnectionDefinition):
+    def __init__(self, source_config: ConnectionDefinition, debug: bool = False):
         """
         :param source_config(Mapping[str, Any]): The manifest of low-code components that describe the source connector
+        :param debug(bool): True if debug mode is enabled
         """
         self.logger = logging.getLogger(f"airbyte.{self.name}")
         self._source_config = source_config
+        self._debug = debug
         self._factory = DeclarativeComponentFactory()
 
         self._validate_source()
@@ -73,6 +81,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         will first attempt to load the spec from the manifest's spec block, otherwise it will load it from "spec.yaml" or "spec.json"
         in the project root.
         """
+        self._configure_logger_level(logger)
         self._emit_manifest_debug_message(extra_args={"source_name": self.name, "parsed_config": json.dumps(self._source_config)})
 
         spec = self._source_config.get("spec")
@@ -83,6 +92,27 @@ class ManifestDeclarativeSource(DeclarativeSource):
             return spec_component.generate_spec()
         else:
             return super().spec(logger)
+
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+        self._configure_logger_level(logger)
+        return super().check(logger, config)
+
+    def read(
+        self,
+        logger: logging.Logger,
+        config: Mapping[str, Any],
+        catalog: ConfiguredAirbyteCatalog,
+        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+    ) -> Iterator[AirbyteMessage]:
+        self._configure_logger_level(logger)
+        yield from super().read(logger, config, catalog, state)
+
+    def _configure_logger_level(self, logger: logging.Logger):
+        """
+        Set the log level to logging.DEBUG if debug mode is enabled
+        """
+        if self._debug:
+            logger.setLevel(logging.DEBUG)
 
     def _validate_source(self):
         full_config = {}

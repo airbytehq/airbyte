@@ -51,13 +51,10 @@ class FreshdeskStream(HttpStream, ABC):
             return float(response.headers.get("Retry-After", 0))
 
     def should_retry(self, response: requests.Response) -> bool:
-        if isinstance(response.json(), dict):
-            if response.status_code == requests.codes.FORBIDDEN and response.json().get("code") == "require_feature":
-                self.forbidden_stream = True
-                setattr(self, "raise_on_http_errors", False)
-                self.logger.warn(f"Stream `{self.name}` is not available. {response.json().get('message')}")
-            else:
-                return super().should_retry(response)
+        if response.status_code == requests.codes.FORBIDDEN:
+            self.forbidden_stream = True
+            setattr(self, "raise_on_http_errors", False)
+            self.logger.warn(f"Stream `{self.name}` is not available. {response.text}")
         return super().should_retry(response)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -98,8 +95,9 @@ class FreshdeskStream(HttpStream, ABC):
         )
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        data = response.json()
-        return {} if self.forbidden_stream else data if data else []
+        if self.forbidden_stream:
+            return []
+        return response.json() or []
 
 
 class IncrementalFreshdeskStream(FreshdeskStream, IncrementalMixin):

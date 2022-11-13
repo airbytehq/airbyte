@@ -6,10 +6,20 @@ on:
   - pull_request_target
 
 jobs:
-  triage:
+  add-label-based-on-file-changes:
+    name: "Label PRs based on files changes"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/labeler@v3
+      - name: Checkout Airbyte Repo for PAT command
+        uses: actions/checkout@v2
+      - name: Check PAT rate limits
+        # Cannot share PAT outside of JOB context
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.OCTAVIA_4_ROOT_ACCESS }} \
+            ${{ secrets.OCTAVIA_PAT }}
+      - name: "Label PR based on changed files"
+        uses: actions/labeler@v3
         with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          repo-token: "${{ env.PAT }}"
           sync-labels: true
