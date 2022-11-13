@@ -52,7 +52,7 @@ class DefaultApiImpl(DefaultApi):
         spec:
           documentation_url: https://docsurl.com
           connection_specification:
-            title: Source Name Spec
+            title: Source Name Spec # 'TODO: Replace this with the name of your source.'
             type: object
             required:
               - api_key
