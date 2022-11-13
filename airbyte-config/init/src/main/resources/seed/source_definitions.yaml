@@ -216,6 +216,13 @@
   icon: cliskhouse.svg
   sourceType: database
   releaseStage: alpha
+- name: ClickUp
+  sourceDefinitionId: 311a7a27-3fb5-4f7e-8265-5e4afe258b66
+  dockerRepository: airbyte/source-clickup-api
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/click-up
+  sourceType: api
+  releaseStage: alpha
 - name: Close.com
   sourceDefinitionId: dfffecb7-9a13-43e9-acdc-b92af7997ca9
   dockerRepository: airbyte/source-close-com
@@ -1345,6 +1352,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/smaily
   sourceType: api
   releaseStage: alpha
+- name: SmartEngage
+  sourceDefinitionId: 21cc4a17-a011-4485-8a3e-e2341a91ab9f
+  dockerRepository: airbyte/source-smartengage
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/smartengage
+  sourceType: api
+  releaseStage: alpha
 - name: Smartsheets
   sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
   dockerRepository: airbyte/source-smartsheets
@@ -1537,6 +1551,13 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/youtube-analytics-business
   icon: youtube.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Vantage
+  sourceDefinitionId: 28ce1fbd-1e15-453f-aa9f-da6c4d928e92
+  dockerRepository: airbyte/source-vantage
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/vantage
   sourceType: api
   releaseStage: alpha
 - name: VictorOps
