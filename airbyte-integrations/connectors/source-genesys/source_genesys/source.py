@@ -10,12 +10,15 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from source_genesys.authenicator import GenesysOAuthAuthenticator
 
 
 class GenesysStream(HttpStream, ABC):
     url_base = "https://api.mypurecloud.com.au/api/v2/"
     page_size = 500
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def backoff_time(self, response: requests.Response) -> Optional[int]:
         delay_time = response.headers.get("Retry-After")
@@ -234,8 +237,23 @@ class UserGroups(GenesysStream):
 
 
 class SourceGenesys(AbstractSource):
-    @staticmethod
-    def get_connection_response(config: Mapping[str, Any]):
+    def build_refresh_request_body(self) -> Mapping[str, Any]:
+
+        return {
+            "grant_type": "client_credentials",
+            "client_id": self.get_client_id(),
+            "client_secret": self.get_client_secret(),
+        }
+
+    def check_connection(self, logger, config) -> Tuple[bool, any]:
+        """
+        TODO: Implement true connection checks using an endpoint that is always live
+        Testing connection availability for the connector by granting the credentials.
+        """
+        return True, None
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+
         GENESYS_TENANT_ENDPOINT_MAP: Dict = {
             "Americas (US East)": "https://login.mypurecloud.com",
             "Americas (US East 2)": "https://login.use2.us-gov-pure.cloud",
@@ -249,41 +267,13 @@ class SourceGenesys(AbstractSource):
             "Asia Pacific (Seoul)": "https://login.apne2.pure.cloud",
             "Asia Pacific (Sydney)": "https://login.mypurecloud.com.au",
         }
+        base_url = GENESYS_TENANT_ENDPOINT_MAP.get(config["tenant_endpoint"])
+        args = {"authenticator": GenesysOAuthAuthenticator(base_url, config["client_id"], config["client_secret"])}
 
-        token_refresh_endpoint = GENESYS_TENANT_ENDPOINT_MAP.get(config["tenant_endpoint"])
-        token_refresh_endpoint = token_refresh_endpoint + "/oauth/token"
-        client_id = config["client_id"]
-        client_secret = config["client_secret"]
-        refresh_token = None
-        headers = {"content-type": "application/x-www-form-urlencoded"}
-        data = {"grant_type": "client_credentials", "client_id": client_id, "client_secret": client_secret, "refresh_token": refresh_token}
+        # response = self.get_connection_response(config)
+        # response.raise_for_status()
 
-        try:
-            response = requests.request(method="POST", url=token_refresh_endpoint, data=data, headers=headers)
-        except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
-        return response
-
-    def build_refresh_request_body(self) -> Mapping[str, Any]:
-        return {
-            "grant_type": "client_credentials",
-            "client_id": self.get_client_id(),
-            "client_secret": self.get_client_secret(),
-        }
-        
-
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        TODO: Implement true connection checks using an endpoint that is always live
-        Testing connection availability for the connector by granting the credentials.
-        """
-        return True, None
-
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        response = self.get_connection_response(config)
-        response.raise_for_status()
-
-        args = {"authenticator": TokenAuthenticator(response.json()["access_token"])}
+        # args = {"authenticator": TokenAuthenticator(response.json()["access_token"])}
         return [
             RoutingOutboundEvents(**args),
             RoutingRoutingAssessments(**args),
