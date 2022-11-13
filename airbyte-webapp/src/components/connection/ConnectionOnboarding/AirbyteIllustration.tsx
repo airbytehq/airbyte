@@ -36,19 +36,19 @@ export const AirbyteIllustration: React.FC<AirbyteIllustrationProps> = ({
     <path
       id="sourcePath1"
       d="M0 115H31.8265C46.1566 115 59.798 121.149 69.2887 131.885L75.6792 139.115C85.1699 149.851 98.8113 156 113.141 156H179"
-      stroke-linejoin="round"
+      strokeLinejoin="round"
       {...(sourceHighlighted === 1 ? highlightedSource : regularPath)}
     />
     <path
       id="sourcePath2"
       d="M0 202H30.1023C45.422 202 59.8962 194.977 69.3771 182.943L75.5908 175.057C85.0717 163.023 99.5459 156 114.866 156H179"
-      stroke-linejoin="round"
+      strokeLinejoin="round"
       {...(sourceHighlighted === 2 ? highlightedSource : regularPath)}
     />
     <path
       id="sourcePath3"
       d="M0 288H16.2406C38.7565 288 58.495 272.95 64.4563 251.238L80.5116 192.762C86.4729 171.049 106.211 156 128.727 156H179"
-      stroke-linejoin="round"
+      strokeLinejoin="round"
       {...(sourceHighlighted === 3 ? highlightedSource : regularPath)}
     />
     {/* We need to render the highlighted element once more, so it will overlap the other dashed lines (since there's no z-index in SVG) */}
@@ -81,13 +81,13 @@ export const AirbyteIllustration: React.FC<AirbyteIllustrationProps> = ({
     {/* We need to render the highlighted element once more, so it will overlap the other dashed lines (since there's no z-index in SVG) */}
     <use xlinkHref={`#destinationPath${destinationHighlighted}`} />
 
-    <circle cx="0" cy="0" r="6" fill="#1A194D" stroke="white" strokeWidth={2}>
+    <circle cx="0" cy="0" r="6" fill={styles.dotColor} stroke="white" strokeWidth={2}>
       <animateMotion dur="3s" repeatCount="indefinite" rotate="auto">
         {/* Animate the dot along the current highlighted source path */}
         <mpath xlinkHref={`#sourcePath${sourceHighlighted}`} />
       </animateMotion>
     </circle>
-    <circle cx="0" cy="0" r="6" fill="#1A194D" stroke="white" strokeWidth={2}>
+    <circle cx="0" cy="0" r="6" fill={styles.dotColor} stroke="white" strokeWidth={2}>
       <animateMotion dur="3s" repeatCount="indefinite" rotate="auto" keyPoints="1;0" keyTimes="0;1" calcMode="linear">
         <mpath xlinkHref={`#destinationPath${destinationHighlighted}`} />
       </animateMotion>
@@ -159,12 +159,12 @@ export const AirbyteIllustration: React.FC<AirbyteIllustrationProps> = ({
         <feBlend mode="normal" in="SourceGraphic" in2="effect4_dropShadow_3082_52204" result="shape" />
       </filter>
       <linearGradient id="highlightedSource" x1="490" y1="25" x2="5.00002" y2="115" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#FF6A4D" />
-        <stop offset="1" stopColor="#615EFF" />
+        <stop stopColor={styles.gradientOrange} />
+        <stop offset="1" stopColor={styles.gradientBlue} />
       </linearGradient>
       <linearGradient id="highlightedDestination" x1="492" y1="25" x2="-2" y2="115" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#FF6A4D" />
-        <stop offset="1" stopColor="#615EFF" />
+        <stop stopColor={styles.gradientOrange} />
+        <stop offset="1" stopColor={styles.gradientBlue} />
       </linearGradient>
     </defs>
   </svg>
