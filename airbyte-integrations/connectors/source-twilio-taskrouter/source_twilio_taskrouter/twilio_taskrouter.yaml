@@ -40,12 +40,12 @@ definitions:
           field_name: "page_size"
         pagination_strategy:
           type: "CursorPagination"
-          cursor_value: "{{ headers['url']['next'] }}"
-          page_size: 2
+          cursor_value: "{{ response['meta']['next_page_url'] }}"
+          page_size: 50
           stop_condition: "null" 
         page_token_option:
           inject_into: "path"
-        url_base: "https://taskrouter.twilio.com"
+        url_base: "https://taskrouter.twilio.com/v1/Workspaces"
   workspaces_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
