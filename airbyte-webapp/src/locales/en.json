@@ -327,17 +327,26 @@
   "destinations.frequentlyUsed": "Most frequently used destinations",
   "destinations.dontHaveYourOwnDestination": "Don’t have your own destination yet?",
   "destinations.startWith": "Start with {name}",
-
+  
   "connection.stream.syncMode": "{syncMode} - {destinationSyncMode}",
 
   "destinationSyncMode.append": "Append",
   "destinationSyncMode.append_dedup": "Deduped + history",
   "destinationSyncMode.overwrite": "Overwrite",
-
+  
   "syncMode.full_refresh": "Full refresh",
   "syncMode.incremental": "Incremental",
-
-  "connection.emptyStateFooter": "or play around in our <demoLnk>demo instance</demoLnk>.",
+  
+  "connection.onboarding.title": "<b>Connections</b> link Sources to Destinations.",
+  "connection.onboarding.createFirst": "Create your first connection",
+  "connection.onboarding.sources": "Sources",
+  "connection.onboarding.sourcesDescription": "A source is where Airbyte pulls data from. Airbyte supports hundreds of sources across APIs, databases, and files",
+  "connection.onboarding.moreSources": "Connect to one of {count}+ sources",
+  "connection.onboarding.addSource": "Connect to {source}",
+  "connection.onboarding.destinations": "Destinations",
+  "connection.onboarding.destinationsDescription": "A destination is where Airbyte sends data. These are typically data warehouses or databases.",
+  "connection.onboarding.addDestination": "Connect a source in order to send data to {destination}",
+  "connection.onboarding.demoInstance": "or play around in our <demoLnk>demo instance</demoLnk>.",
   "connection.resetModalTitle": "Stream configuration changed",
   "connection.streamResetHint": "Due to changes in the stream configuration, we recommend a data reset. A reset will delete data in the destination of the affected streams and then re-sync that data. Skipping the reset is discouraged and might lead to unexpected behavior.",
   "connection.streamFullResetHint": "Due to changes in the stream configuration, we recommend a data reset. A reset will delete data in the destination of the affected streams and then re-sync that data. Skipping the reset is discouraged and might lead to unexpected behavior.",
@@ -345,7 +354,6 @@
   "connection.saveWithFullReset": "Reset all streams (recommended)",
   "connection.save": "Save connection",
   "connection.title": "Connection",
-  "connection.description": "<b>Connections</b> link Sources to Destinations.",
   "connection.fromTo": "{source} → {destination}",
   "connection.connectionSettings": "Connection settings",
   "connection.resetData": "Reset your data",
@@ -378,7 +386,6 @@
   "connection.geographyUpdateError": "There was an error updating the data residency for this connection.",
 
   "connection.newConnection": "New connection",
-  "connection.createFirst": "Create your first connection",
   "connection.newConnectionTitle": "New connection",
   "connection.noConnections": "Connection list is empty",
   "connection.disabledConnection": "Disabled connection",

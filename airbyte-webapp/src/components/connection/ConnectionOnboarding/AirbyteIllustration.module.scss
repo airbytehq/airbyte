@@ -1,0 +1,6 @@
+@use "scss/colors";
+
+:export {
+  darkBlue: colors.$dark-blue-900;
+  logoColor: colors.$blue-400;
+}
