@@ -1,3 +1,4 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "auth_token": "invalid authentication token",
+  "doc_id": "invalid document id",
 }

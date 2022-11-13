@@ -26,8 +26,6 @@ class CodaStream(HttpStream, ABC):
         super().__init__(**kwargs)
         self.limit = 25
 
-
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return response.json().get("nextPageToken", None)
 
@@ -42,10 +40,6 @@ class CodaStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json()['items']
 
-
-"""
-    Source stream paths defined in coda
-"""
 
 class UserDetails(CodaStream):
 
