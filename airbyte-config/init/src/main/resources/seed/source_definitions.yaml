@@ -587,6 +587,13 @@
   icon: intercom.svg
   sourceType: api
   releaseStage: generally_available
+- name: Intruder
+  sourceDefinitionId: 3d15163b-11d8-412f-b808-795c9b2c3a3a
+  dockerRepository: airbyte/source-intruder
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/intruder
+  sourceType: api
+  releaseStage: alpha
 - name: Iterable
   sourceDefinitionId: 2e875208-0c0b-4ee4-9e92-1cb3156ea799
   dockerRepository: airbyte/source-iterable
