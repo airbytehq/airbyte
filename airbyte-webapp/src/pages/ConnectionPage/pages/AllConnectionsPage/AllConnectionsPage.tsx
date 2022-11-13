@@ -18,7 +18,6 @@ import ConnectionsTable from "./components/ConnectionsTable";
 
 const AllConnectionsPage: React.FC = () => {
   const navigate = useNavigate();
-  // const { formatMessage } = useIntl();
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
   const { connections } = useConnectionList();

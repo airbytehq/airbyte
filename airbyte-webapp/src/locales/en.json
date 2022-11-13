@@ -337,7 +337,7 @@
   "syncMode.full_refresh": "Full refresh",
   "syncMode.incremental": "Incremental",
   
-  "connection.onboarding.title": "<b>Connections</b> link Sources to Destinations.",
+  "connection.onboarding.title": "<b>Connections</b> link Sources to Destinations",
   "connection.onboarding.createFirst": "Create your first connection",
   "connection.onboarding.sources": "Sources",
   "connection.onboarding.sourcesDescription": "A source is where Airbyte pulls data from. Airbyte supports hundreds of sources across APIs, databases, and files",
