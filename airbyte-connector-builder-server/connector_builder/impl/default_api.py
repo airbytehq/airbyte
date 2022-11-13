@@ -26,8 +26,7 @@ from jsonschema import ValidationError
 
 
 class DefaultApiImpl(DefaultApi):
-    def __init__(self):
-        self.logger = logging.getLogger("airbyte.connector-builder")
+    logger = logging.getLogger("airbyte.connector-builder")
 
     async def get_manifest_template(self) -> str:
         return "Hello World"
@@ -57,9 +56,6 @@ class DefaultApiImpl(DefaultApi):
         :param stream_read_request_body: Input parameters to trigger the read operation for a stream
         :return: Airbyte record messages produced by the sync grouped by slice and page
         """
-        return self.temp_read_stream(stream_read_request_body)
-
-    def temp_read_stream(self, stream_read_request_body: StreamReadRequestBody = Body(None, description="")) -> StreamRead:
         try:
             adapter = self._create_low_code_adapter(stream_read_request_body)
         except ValidationError as error:
@@ -109,6 +105,9 @@ class DefaultApiImpl(DefaultApi):
         return StreamRead(logs=log_messages, slices=[single_slice])
 
     def _create_request_from_log_message(self, log_message: AirbyteLogMessage) -> Optional[HttpRequest]:
+        # TODO: As a temporary stopgap, the CDK emits request data as a log message string. Ideally this should come in the
+        # form of a custom message object defined in the Airbyte protocol, but this unblocks us in the immediate while the
+        # protocol change is worked on.
         raw_request = log_message.message.partition("request:")[2]
         try:
             request = json.loads(raw_request)
@@ -121,6 +120,9 @@ class DefaultApiImpl(DefaultApi):
             return None
 
     def _create_response_from_log_message(self, log_message: AirbyteLogMessage) -> Optional[HttpResponse]:
+        # TODO: As a temporary stopgap, the CDK emits response data as a log message string. Ideally this should come in the
+        # form of a custom message object defined in the Airbyte protocol, but this unblocks us in the immediate while the
+        # protocol change is worked on.
         raw_response = log_message.message.partition("response:")[2]
         try:
             response = json.loads(raw_response)
@@ -133,213 +135,3 @@ class DefaultApiImpl(DefaultApi):
     @staticmethod
     def _create_low_code_adapter(stream_read_request_body: StreamReadRequestBody) -> LowCodeSourceAdapter:
         return LowCodeSourceAdapter(stream_read_request_body.manifest)
-
-
-WIKI_MANIFEST = {
-    "version": "0.1.0",
-    "definitions": {
-        "selector": {"extractor": {"field_pointer": ["items"]}},
-        "requester": {
-            "url_base": "https://wikimedia.org/api/rest_v1/metrics/pageviews",
-            "http_method": "GET",
-            "request_options_provider": {
-                "request_headers": {"User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbytehq/airbyte)"}
-            },
-        },
-        "top_stream_slicer": {
-            "type": "DatetimeStreamSlicer",
-            "start_datetime": {"datetime": "{{config.start}}", "datetime_format": "%Y%m%d"},
-            "end_datetime": {"datetime": "{{config.start}}", "datetime_format": "%Y%m%d"},
-            "step": "1d",
-            "cursor_field": "timestamp",
-            "datetime_format": "%Y/%m/%d",
-        },
-        "per_article_stream_slicer": {
-            "type": "DatetimeStreamSlicer",
-            "start_datetime": "{{config.start}}",
-            "end_datetime": "{{config.end}}",
-            "step": "1d",
-            "cursor_field": "timestamp",
-            "datetime_format": "%Y%m%d",
-        },
-        "per_article_requester": {
-            "$options": {
-                "url_base": "https://wikimedia.org/api/rest_v1/metrics/pageviews",
-                "http_method": "GET",
-                "request_options_provider": {
-                    "request_headers": {"User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbytehq/airbyte)"}
-                },
-            },
-            "path": "/per-article/{{config.project}}/{{config.access}}/{{config.agent}}/{{config.article}}/daily/{{stream_slice.start_time}}/{{stream_slice.end_time}}",
-        },
-        "top_requester": {
-            "$options": {
-                "url_base": "https://wikimedia.org/api/rest_v1/metrics/pageviews",
-                "http_method": "GET",
-                "request_options_provider": {
-                    "request_headers": {"User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbytehq/airbyte)"}
-                },
-            },
-            "path": "/top/{{config.project}}/{{config.access}}/{{stream_slice.start_time}}",
-        },
-        "per_article_retriever": {
-            "record_selector": {"extractor": {"field_pointer": ["items"]}},
-            "paginator": {"type": "NoPagination"},
-            "requester": {
-                "$options": {
-                    "url_base": "https://wikimedia.org/api/rest_v1/metrics/pageviews",
-                    "http_method": "GET",
-                    "request_options_provider": {
-                        "request_headers": {"User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbytehq/airbyte)"}
-                    },
-                },
-                "path": "/per-article/{{config.project}}/{{config.access}}/{{config.agent}}/{{config.article}}/daily/{{stream_slice.start_time}}/{{stream_slice.end_time}}",
-            },
-            "stream_slicer": {
-                "type": "DatetimeStreamSlicer",
-                "start_datetime": "{{config.start}}",
-                "end_datetime": "{{config.end}}",
-                "step": "1d",
-                "cursor_field": "timestamp",
-                "datetime_format": "%Y%m%d",
-            },
-        },
-        "top_retriever": {
-            "record_selector": {"extractor": {"field_pointer": ["items"]}},
-            "paginator": {"type": "NoPagination"},
-            "requester": {
-                "$options": {
-                    "url_base": "https://wikimedia.org/api/rest_v1/metrics/pageviews",
-                    "http_method": "GET",
-                    "request_options_provider": {
-                        "request_headers": {"User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbytehq/airbyte)"}
-                    },
-                },
-                "path": "/top/{{config.project}}/{{config.access}}/{{stream_slice.start_time}}",
-            },
-            "stream_slicer": {
-                "type": "DatetimeStreamSlicer",
-                "start_datetime": {"datetime": "{{config.start}}", "datetime_format": "%Y%m%d"},
-                "end_datetime": {"datetime": "{{config.start}}", "datetime_format": "%Y%m%d"},
-                "step": "1d",
-                "cursor_field": "timestamp",
-                "datetime_format": "%Y/%m/%d",
-            },
-        },
-        "per_article_stream": {
-            "retriever": {
-                "record_selector": {"extractor": {"field_pointer": ["items"]}},
-                "paginator": {"type": "NoPagination"},
-                "requester": {
-                    "$options": {
-                        "url_base": "https://wikimedia.org/api/rest_v1/metrics/pageviews",
-                        "http_method": "GET",
-                        "request_options_provider": {
-                            "request_headers": {
-                                "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbytehq/airbyte)"
-                            }
-                        },
-                    },
-                    "path": "/per-article/{{config.project}}/{{config.access}}/{{config.agent}}/{{config.article}}/daily/{{stream_slice.start_time}}/{{stream_slice.end_time}}",
-                },
-                "stream_slicer": {
-                    "type": "DatetimeStreamSlicer",
-                    "start_datetime": "{{config.start}}",
-                    "end_datetime": "{{config.end}}",
-                    "step": "1d",
-                    "cursor_field": "timestamp",
-                    "datetime_format": "%Y%m%d",
-                },
-            },
-            "$options": {"name": "per-article"},
-            "class_name": "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream",
-        },
-        "top_stream": {
-            "retriever": {
-                "record_selector": {"extractor": {"field_pointer": ["items"]}},
-                "paginator": {"type": "NoPagination"},
-                "requester": {
-                    "$options": {
-                        "url_base": "https://wikimedia.org/api/rest_v1/metrics/pageviews",
-                        "http_method": "GET",
-                        "request_options_provider": {
-                            "request_headers": {
-                                "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbytehq/airbyte)"
-                            }
-                        },
-                    },
-                    "path": "/top/{{config.project}}/{{config.access}}/{{stream_slice.start_time}}",
-                },
-                "stream_slicer": {
-                    "type": "DatetimeStreamSlicer",
-                    "start_datetime": {"datetime": "{{config.start}}", "datetime_format": "%Y%m%d"},
-                    "end_datetime": {"datetime": "{{config.start}}", "datetime_format": "%Y%m%d"},
-                    "step": "1d",
-                    "cursor_field": "timestamp",
-                    "datetime_format": "%Y/%m/%d",
-                },
-            },
-            "$options": {"name": "top"},
-            "class_name": "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream",
-        },
-    },
-    "streams": [
-        {
-            "retriever": {
-                "record_selector": {"extractor": {"field_pointer": ["items"]}},
-                "paginator": {"type": "NoPagination"},
-                "requester": {
-                    "$options": {
-                        "url_base": "https://wikimedia.org/api/rest_v1/metrics/pageviews",
-                        "http_method": "GET",
-                        "request_options_provider": {
-                            "request_headers": {
-                                "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbytehq/airbyte)"
-                            }
-                        },
-                    },
-                    "path": "/per-article/{{config.project}}/{{config.access}}/{{config.agent}}/{{config.article}}/daily/{{stream_slice.start_time}}/{{stream_slice.end_time}}",
-                },
-                "stream_slicer": {
-                    "type": "DatetimeStreamSlicer",
-                    "start_datetime": "{{config.start}}",
-                    "end_datetime": "{{config.end}}",
-                    "step": "1d",
-                    "cursor_field": "timestamp",
-                    "datetime_format": "%Y%m%d",
-                },
-            },
-            "$options": {"name": "per-article"},
-            "class_name": "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream",
-        },
-        {
-            "retriever": {
-                "record_selector": {"extractor": {"field_pointer": ["items"]}},
-                "paginator": {"type": "NoPagination"},
-                "requester": {
-                    "$options": {
-                        "url_base": "https://wikimedia.org/api/rest_v1/metrics/pageviews",
-                        "http_method": "GET",
-                        "request_options_provider": {
-                            "request_headers": {
-                                "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbytehq/airbyte)"
-                            }
-                        },
-                    },
-                    "path": "/top/{{config.project}}/{{config.access}}/{{stream_slice.start_time}}",
-                },
-                "stream_slicer": {
-                    "type": "DatetimeStreamSlicer",
-                    "start_datetime": {"datetime": "{{config.start}}", "datetime_format": "%Y%m%d"},
-                    "end_datetime": {"datetime": "{{config.start}}", "datetime_format": "%Y%m%d"},
-                    "step": "1d",
-                    "cursor_field": "timestamp",
-                    "datetime_format": "%Y/%m/%d",
-                },
-            },
-            "$options": {"name": "top"},
-            "class_name": "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream",
-        },
-    ],
-    "check": {"stream_names": ["per-article", "top"], "class_name": "airbyte_cdk.sources.declarative.checks.check_stream.CheckStream"},
-}
