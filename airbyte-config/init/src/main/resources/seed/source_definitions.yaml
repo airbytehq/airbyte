@@ -216,6 +216,13 @@
   icon: cliskhouse.svg
   sourceType: database
   releaseStage: alpha
+- name: ClickUp
+  sourceDefinitionId: 311a7a27-3fb5-4f7e-8265-5e4afe258b66
+  dockerRepository: airbyte/source-clickup-api
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/click-up
+  sourceType: api
+  releaseStage: alpha
 - name: Close.com
   sourceDefinitionId: dfffecb7-9a13-43e9-acdc-b92af7997ca9
   dockerRepository: airbyte/source-close-com
