@@ -4,6 +4,7 @@
   "notifications.error.somethingWentWrong": "Something went wrong",
   "notifications.error.noMessage": "No error message",
 
+  "sidebar.homepage": "Homepage",
   "sidebar.sources": "Sources",
   "sidebar.destinations": "Destinations",
   "sidebar.admin": "Admin",
@@ -249,6 +250,7 @@
   "sources.incrementalDefault": "{value} (default)",
   "sources.incrementalSourceCursor": "Incremental - source-defined cursor",
   "sources.full_refresh": "Full refresh",
+  "sources.frequentlyUsed": "Suggested sources",
   "sources.incremental": "Incremental - based on...",
   "sources.newSource": "New source",
   "sources.createFirst": "Connect your first source",
@@ -366,6 +368,14 @@
   "connection.catalogTree.sourceDefined": "'<source defined>",
   "connection.catalogTree.sourceSchema": "'<source schema>",
   "connection.catalogTree.destinationSchema": "'<destination schema>",
+
+  "connection.geographyTitle": "Data residency",
+  "connection.requestNewGeography": "Request a new geography",
+  "connection.geographyDescription": "Depending on your network configuration, you may need to <lnk>add IP addresses</lnk> to your allowlist.",
+  "connection.geography.auto": "Airbyte Default",
+  "connection.geography.us": "United States",
+  "connection.geography.eu": "European Union",
+  "connection.geographyUpdateError": "There was an error updating the data residency for this connection.",
 
   "connection.newConnection": "New connection",
   "connection.createFirst": "Create your first connection",
@@ -510,6 +520,11 @@
   "settings.account": "Account",
   "settings.accountSettings.updateEmailSuccess": "Email updated",
   "settings.cookiePreferences": "Cookie Preferences",
+  "settings.dataResidency": "Data Residency",
+  "settings.defaultDataResidency": "Default Data Residency",
+  "settings.defaultGeography": "Geography",
+  "settings.defaultDataResidencyDescription": "Choose the default preferred data processing location for all of your connections. The default data residency setting only affects new connections. Existing connections will retain their data residency setting. <lnk>Learn more</lnk>.",
+  "settings.defaultDataResidencyUpdateError": "There was an error updating the default data residency for this workspace.",
 
   "connector.requestConnectorBlock": "Request a new connector",
   "connector.requestConnector": "Request a new connector",
@@ -565,6 +580,7 @@
   "ui.keyValuePairV3": "{key}, {value}",
   "ui.learnMore": "Learn more",
   "ui.secretTextArea.hidden": "Contents hidden. Click to show.",
+  "ui.stepIndicator.currentStep": "(current step)",
 
   "airbyte.datatype.string": "String",
   "airbyte.datatype.date": "Date",
@@ -583,8 +599,15 @@
   "airbyte.datatype.boolean": "Boolean",
 
   "connectorBuilder.downloadYaml": "Download YAML",
-  "connectorBuilder.expandConfiguration": "Expand this pane to continue building your connector",
   "connectorBuilder.testButton": "Test",
   "connectorBuilder.configMenuTitle": "Configure Test Input",
-  "connectorBuilder.configMenuConfirm": "Confirm"
+  "connectorBuilder.configMenuConfirm": "Confirm",
+  "connectorBuilder.recordsTab": "Records",
+  "connectorBuilder.requestTab": "Request",
+  "connectorBuilder.responseTab": "Response",
+  "connectorBuilder.resultsPlaceholder": "Click Test to fetch data for this stream",
+  "connectorBuilder.sliceLabel": "Slice",
+  "connectorBuilder.connectorLogs": "Connector logs",
+  "connectorBuilder.invalidYamlDownload": "Cannot download while YAML content is invalid.",
+  "connectorBuilder.invalidYamlTest": "Cannot test stream while YAML content is invalid."
 }
