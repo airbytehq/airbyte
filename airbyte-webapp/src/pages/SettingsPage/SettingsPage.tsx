@@ -32,6 +32,7 @@ export const SettingsRoute = {
   Configuration: "configuration",
   Notifications: "notifications",
   Metrics: "metrics",
+  DataResidency: "data-residency",
 } as const;
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {

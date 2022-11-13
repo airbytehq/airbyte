@@ -1,17 +1,17 @@
+import classNames from "classnames";
 import React from "react";
 
 import { getIcon } from "utils/imageUtils";
 
 import styles from "./ConnectorIcon.module.scss";
 
-interface Props {
+interface ConnectorIconProps {
   icon?: string;
   className?: string;
-  small?: boolean;
 }
 
-export const ConnectorIcon: React.FC<Props> = ({ icon }) => (
-  <div className={styles.content} aria-hidden="true">
+export const ConnectorIcon: React.FC<ConnectorIconProps> = ({ className, icon }) => (
+  <div className={classNames(styles.content, className)} aria-hidden="true">
     {getIcon(icon)}
   </div>
 );

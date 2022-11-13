@@ -207,49 +207,10 @@ For more information about the grading system, see [Product Release Stages](http
 
 ## Destinations
 
-| Connector                                                  | Product Release Stage| Available in Cloud? |
-|:-----------------------------------------------------------| :------------------- | :------------------ |
-| [Amazon SQS](destinations/amazon-sqs.md)                   | Alpha                | No                  |
-| [Amazon Datalake](destinations/aws-datalake.md)            | Alpha                | No                  |
-| [AzureBlobStorage](destinations/azureblobstorage.md)       | Alpha                | Yes                 |
-| [BigQuery](destinations/bigquery.md)                       | Generally Available  | Yes                 |
-| [Cassandra](destinations/cassandra.md)                     | Alpha                | No                  |
-| [Chargify (Keen)](destinations/chargify.md)                | Alpha                | Yes                 |
-| [ClickHouse](destinations/clickhouse.md)                   | Alpha                | Yes                 |
-| [Databricks](destinations/databricks.md)                   | Alpha                | No                  |
-| [DynamoDB](destinations/dynamodb.md)                       | Alpha                | No                  |
-| [Elasticsearch](destinations/elasticsearch.md)             | Alpha                | No                  |
-| [End-to-End Testing](destinations/e2e-test.md)             | Alpha                | Yes                 |
-| [Firebolt](destinations/firebolt.md)                       | Alpha                | Yes                 |
-| [Google Cloud Storage (GCS)](destinations/gcs.md)          | Beta                 | Yes                 |
-| [Google Pubsub](destinations/pubsub.md)                    | Alpha                | Yes                 |
-| [Google Sheets](destinations/google-sheets.md)             | Alpha                | Yes                 |
-| [Heap Analytics](destinations/heap-analytics.md)           | Alpha                | No                 |
-| [Kafka](destinations/kafka.md)                             | Alpha                | No                  |
-| [Keen](destinations/keen.md)                               | Alpha                | No                  |
-| [Kinesis](destinations/kinesis.md)                         | Alpha                | No                  |
-| [Local CSV](destinations/local-csv.md)                     | Alpha                | No                  |
-| [Local JSON](destinations/local-json.md)                   | Alpha                | No                  |
-| [MariaDB ColumnStore](destinations/mariadb-columnstore.md) | Alpha                | No                  |
-| [MeiliSearch](destinations/meilisearch.md)                 | Alpha                | No                  |
-| [MongoDB](destinations/mongodb.md)                         | Alpha                | No                  |
-| [MQTT](destinations/mqtt.md)                               | Alpha                | No                  |
-| [MS SQL Server](destinations/mssql.md)                     | Alpha                | Yes                 |
-| [MySQL](destinations/mysql.md)                             | Alpha                | Yes                 |
-| [Oracle](destinations/oracle.md)                           | Alpha                | Yes                 |
-| [Postgres](destinations/postgres.md)                       | Alpha                | Yes                 |
-| [Pulsar](destinations/pulsar.md)                           | Alpha                | No                  |
-| [R2](destinations/r2.md)                                   | Alpha                | No                  |
-| [RabbitMQ](destinations/rabbitmq.md)                       | Alpha                | No                  |
-| [Redis](destinations/redis.md)                             | Alpha                | No                  |
-| [Redshift](destinations/redshift.md)                       | Beta                 | Yes                 |
-| [Rockset](destinations/rockset.md)                         | Alpha                | No                  |
-| [S3](destinations/s3.md)                                   | Generally Available  | Yes                 |
-| [Scylla](destinations/scylla.md)                           | Alpha                | No                  |
-| [SFTP JSON](destinations/sftp-json.md)                     | Alpha                | Yes                 |
-| [Snowflake](destinations/snowflake.md)                     | Generally Available  | Yes                 |
-| [SQLite](destinations/sqlite.md)                           | Alpha                | No                  |
-| [Streamr](destinations/streamr.md)                         | Alpha                | No                  |
-| [TiDB](destinations/tidb.md)                               | Alpha                | No                  |
-| [Typesense](destinations/typesense.md)                     | Alpha                | No                  |
-| [Yugabytedb](destinations/yugabytedb.md)                   | Alpha                | No                  |
+<iframe
+    src="https://airbyte.metabaseapp.com/public/question/263d737e-533a-4cc2-a1cf-4c8c7eca87d6#titled=false&hide_download_button=true"
+    frameborder="0"
+    width="600"
+    height="2000"
+    allowtransparency
+></iframe>

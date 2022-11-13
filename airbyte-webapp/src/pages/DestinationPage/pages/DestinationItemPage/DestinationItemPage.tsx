@@ -1,5 +1,5 @@
 import React, { Suspense, useMemo } from "react";
-import { FormattedMessage } from "react-intl";
+import { useIntl } from "react-intl";
 import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 
 import { LoadingPage } from "components";
@@ -9,7 +9,7 @@ import { HeadTitle } from "components/common/HeadTitle";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import { Breadcrumbs } from "components/ui/Breadcrumbs";
-import { DropDownOptionDataItem } from "components/ui/DropDown";
+import { DropdownMenuOptionType } from "components/ui/DropdownMenu";
 import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -29,6 +29,7 @@ const DestinationItemPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.DESTINATION_ITEM);
   const params = useParams() as { "*": StepsTypes | ""; id: string };
   const navigate = useNavigate();
+  const { formatMessage } = useIntl();
   const currentStep = useMemo<string>(() => (params["*"] === "" ? StepsTypes.OVERVIEW : params["*"]), [params]);
 
   const { sources } = useSourceList();
@@ -41,8 +42,6 @@ const DestinationItemPage: React.FC = () => {
 
   const { connections } = useConnectionList();
 
-  const onClickBack = () => navigate("..");
-
   const onSelectStep = (id: string) => {
     const path = id === StepsTypes.OVERVIEW ? "." : id.toLowerCase();
     navigate(path);
@@ -50,30 +49,32 @@ const DestinationItemPage: React.FC = () => {
 
   const breadcrumbsData = [
     {
-      name: <FormattedMessage id="admin.destinations" />,
-      onClick: onClickBack,
+      label: formatMessage({ id: "admin.destinations" }),
+      to: "..",
     },
-    { name: destination.name },
+    { label: destination.name },
   ];
 
   const connectionsWithDestination = connections.filter(
     (connectionItem) => connectionItem.destinationId === destination.destinationId
   );
 
-  const sourcesDropDownData = useMemo(
+  const sourceDropdownOptions: DropdownMenuOptionType[] = useMemo(
     () =>
       sources.map((item) => {
         const sourceDef = sourceDefinitions.find((sd) => sd.sourceDefinitionId === item.sourceDefinitionId);
         return {
-          label: item.name,
+          as: "button",
+          icon: <ConnectorIcon icon={sourceDef?.icon} />,
+          iconPosition: "right",
+          displayName: item.name,
           value: item.sourceId,
-          img: <ConnectorIcon icon={sourceDef?.icon} />,
         };
       }),
     [sources, sourceDefinitions]
   );
 
-  const onSelect = (data: DropDownOptionDataItem) => {
+  const onSelect = (data: DropdownMenuOptionType) => {
     const path = `../${RoutePaths.ConnectionNew}`;
     const state =
       data.value === "create-new-item"
@@ -113,7 +114,7 @@ const DestinationItemPage: React.FC = () => {
                 <>
                   <TableItemTitle
                     type="source"
-                    dropDownData={sourcesDropDownData}
+                    dropdownOptions={sourceDropdownOptions}
                     onSelect={onSelect}
                     entityName={destination.name}
                     entity={destination.destinationName}
