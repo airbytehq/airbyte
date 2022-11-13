@@ -8,7 +8,5 @@
       "type": ["string", "null"]
     }
   },
-  "required": [
-    "tag_id"
-  ]
+  "required": ["tag_id"]
 }

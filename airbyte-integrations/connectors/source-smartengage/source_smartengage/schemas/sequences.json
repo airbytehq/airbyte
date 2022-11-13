@@ -8,7 +8,5 @@
       "type": ["string", "null"]
     }
   },
-  "required": [
-    "sequence_id"
-  ]
+  "required": ["sequence_id"]
 }

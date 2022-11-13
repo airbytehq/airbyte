@@ -17,7 +17,5 @@
       "type": ["string", "null"]
     }
   },
-  "required": [
-    "avatar_id"
-  ]
+  "required": ["avatar_id"]
 }
