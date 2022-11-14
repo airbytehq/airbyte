@@ -37,6 +37,8 @@ public class BasicTestDataComparator implements TestDataComparator {
       final Iterator<Map.Entry<String, JsonNode>> expectedDataIterator = expectedData.fields();
       LOGGER.info("Expected row {}", expectedData);
       LOGGER.info("Actual row   {}", actualData);
+      LOGGER.info("expectedData.size()   {}", expectedData.size());
+      LOGGER.info("actualData.size()   {}", actualData.size());
       assertEquals(expectedData.size(), actualData.size(), "Unequal row size");
       while (expectedDataIterator.hasNext()) {
         final Map.Entry<String, JsonNode> expectedEntry = expectedDataIterator.next();
