@@ -32,7 +32,7 @@ public class AirbyteStreamNameNamespacePair implements Comparable<AirbyteStreamN
   }
 
   /**
-   * As this is used as a metrics tag, enforce lower snake case.
+   * As this is used as a metrics tag, enforce snake case.
    */
   @Override
   public String toString() {
