@@ -8,7 +8,7 @@ acceptance_tests:
         # unfortunately timeout plugin takes into account setup code as well (docker setup)
         timeout_seconds: 300
         backward_compatibility_tests_config:
-          disable_for_version: "0.1.0"
+          disable_for_version: "0.2.0"
   connection:
     tests:
       - config_path: "secrets/config.json"
