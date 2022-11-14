@@ -51,6 +51,8 @@ jobs:
               - 'airbyte-!(cdk|integrations|webapp|webapp-e2e-tests)/**'
               - 'airbyte-integrations/connectors/(destination-jdbc|destination-postgres|source-jdbc|source-postgres)/**'
               - 'airbyte-config/init/src/main/resources/seed/(source|destination)_definitions.yaml'
+              - 'docker-compose*.yaml'
+              - '(charts|kube)/**'
             build:
               - '.github/**'
               - 'buildSrc/**'
