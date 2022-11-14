@@ -17,6 +17,9 @@ export const connectorDefinitionKeys = {
 
 /**
  * Retrieve all source and destination specifications available in this instance.
+ * This will include connector specifications which should temporarily be
+ * forbidden to create new connections for. Those need to be filtered out with
+ * {@code useAvailableConnectorDefinitions}.
  */
 export const useConnectorSpecifications = (): ConnectorSpecifications => {
   const sourceService = useGetSourceDefinitionService();

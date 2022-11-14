@@ -8,7 +8,9 @@ import { Heading } from "components/ui/Heading";
 import { Text } from "components/ui/Text";
 import { Tooltip } from "components/ui/Tooltip";
 
+import { DestinationDefinitionRead, SourceDefinitionRead } from "core/request/AirbyteClient";
 import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
+import { useExperiment } from "hooks/services/Experiment";
 import { useConnectorSpecifications } from "services/connector/ConnectorDefinitions";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { getIcon } from "utils/imageUtils";
@@ -22,55 +24,91 @@ interface ConnectionOnboardingProps {
   onCreate: (sourceConnectorTypeId?: string) => void;
 }
 
+const DEFAULT_SOURCES = [
+  "e7778cfc-e97c-4458-9ecb-b4f2bba8946c", // Facebook
+  "decd338e-5647-4c0b-adf4-da0e75f5a750", // Postgres
+  "71607ba1-c0ac-4799-8049-7f4b90dd50f7", // Google Sheets
+];
+
+const DEFAULT_DESTINATIONS = [
+  "22f6c74f-5699-40ff-833c-4a879ea40133", // BigQuery
+  "424892c4-daac-4491-b35d-c6688ba547ba", // Snowflake
+  "25c5221d-dce2-4163-ade9-739ef790f503", // Postgres
+];
+
+interface ConnectorSpecificationMap {
+  sourceDefinitions: Record<string, SourceDefinitionRead>;
+  destinationDefinitions: Record<string, DestinationDefinitionRead>;
+}
+
+/**
+ * Gets all available connectors, filter out the ones that should not get new
+ * connections (via the {@code useAvailableConnectorDefintions} hook) and convert
+ * them to a map by id, to access them faster.
+ */
+export const useConnectorSpecificationMap = (): ConnectorSpecificationMap => {
+  const workspace = useCurrentWorkspace();
+  const { sourceDefinitions: sources, destinationDefinitions: destinations } = useConnectorSpecifications();
+
+  const filteredSources = useAvailableConnectorDefinitions(sources, workspace);
+  const filteredDestinations = useAvailableConnectorDefinitions(destinations, workspace);
+
+  const sourceDefinitions = useMemo(
+    () =>
+      filteredSources.reduce<Record<string, SourceDefinitionRead>>((map, def) => {
+        map[def.sourceDefinitionId] = def;
+        return map;
+      }, {}),
+    [filteredSources]
+  );
+
+  const destinationDefinitions = useMemo(
+    () =>
+      filteredDestinations.reduce<Record<string, DestinationDefinitionRead>>((map, def) => {
+        map[def.destinationDefinitionId] = def;
+        return map;
+      }, {}),
+    [filteredDestinations]
+  );
+
+  return { sourceDefinitions, destinationDefinitions };
+};
+
 export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCreate }) => {
   const { formatMessage } = useIntl();
-  const workspace = useCurrentWorkspace();
-  const connectorSpecifications = useConnectorSpecifications();
-  const sourceDefinitions = useAvailableConnectorDefinitions(connectorSpecifications.sourceDefinitions, workspace);
-  const destinationDefinitions = useAvailableConnectorDefinitions(
-    connectorSpecifications.destinationDefinitions,
-    workspace
-  );
+  const { sourceDefinitions, destinationDefinitions } = useConnectorSpecificationMap();
 
   const [highlightedSource, setHighlightedSource] = useState<0 | 1 | 2 | 3>(1);
   const [highlightedDestination, setHighlightedDestination] = useState<0 | 1 | 2 | 3>(0);
 
-  const sourceIds = useMemo(
-    () => [
-      "e7778cfc-e97c-4458-9ecb-b4f2bba8946c", // Facebook
-      "decd338e-5647-4c0b-adf4-da0e75f5a750", // Postgres
-      "71607ba1-c0ac-4799-8049-7f4b90dd50f7", // Google Sheets
-    ],
-    []
-  );
-
-  const destinationIds = useMemo(
-    () => [
-      "22f6c74f-5699-40ff-833c-4a879ea40133", // BigQuery
-      "424892c4-daac-4491-b35d-c6688ba547ba", // Snowflake
-      "25c5221d-dce2-4163-ade9-739ef790f503", // Postgres
-    ],
-    []
-  );
+  const sourceIds = useExperiment("connection.onboarding.sources", "").split(",");
+  const destinationIds = useExperiment("connection.onboarding.destinations", "").split(",");
 
   const sources = useMemo(
-    () => sourceIds.map((id) => sourceDefinitions.find((def) => def.sourceDefinitionId === id)),
+    () =>
+      DEFAULT_SOURCES.map(
+        (defaultId, index) => sourceDefinitions[sourceIds[index] || defaultId] ?? sourceDefinitions[defaultId]
+      ),
     [sourceDefinitions, sourceIds]
   );
 
   const destinations = useMemo(
-    () => destinationIds.map((id) => destinationDefinitions.find((def) => def.destinationDefinitionId === id)),
+    () =>
+      DEFAULT_DESTINATIONS.map(
+        (defaultId, index) =>
+          destinationDefinitions[destinationIds[index] || defaultId] ?? destinationDefinitions[defaultId]
+      ),
     [destinationDefinitions, destinationIds]
   );
 
   const moreSourcesTooltip = formatMessage(
     { id: "connection.onboarding.moreSources" },
-    { count: Math.floor(sourceDefinitions.length / 10) * 10 }
+    { count: Math.floor(Object.keys(sourceDefinitions).length / 10) * 10 }
   );
 
   const moreDestinationsTooltip = formatMessage(
     { id: "connection.onboarding.moreDestinations" },
-    { count: Math.floor(destinationDefinitions.length / 10) * 10 }
+    { count: Math.floor(Object.keys(destinationDefinitions).length / 10) * 10 }
   );
 
   return (
