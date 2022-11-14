@@ -49,8 +49,7 @@ class SourceFaker(Source):
         if type(config["count"]) == int or type(config["count"]) == float:
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         else:
-            yield AirbyteConnectionStatus(status=Status.FAILED)
-            exit(1)
+            return AirbyteConnectionStatus(status=Status.FAILED)
 
     def discover(self, logger: AirbyteLogger, config: Dict[str, any]) -> AirbyteCatalog:
         """
