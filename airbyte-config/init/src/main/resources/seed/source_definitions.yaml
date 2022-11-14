@@ -641,6 +641,13 @@
   icon: hubspot.svg
   sourceType: api
   releaseStage: generally_available
+- name: IP2Whois
+  sourceDefinitionId: f23b7b7c-d705-49a3-9042-09add3b104a5
+  dockerRepository: airbyte/source-ip2whois
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/ip2whois
+  sourceType: api
+  releaseStage: alpha
 - name: IBM Db2
   sourceDefinitionId: 447e0381-3780-4b46-bb62-00a4e3c8b8e2
   dockerRepository: airbyte/source-db2
@@ -672,11 +679,11 @@
   icon: intercom.svg
   sourceType: api
   releaseStage: generally_available
-- name: IP2Whois
-  sourceDefinitionId: f23b7b7c-d705-49a3-9042-09add3b104a5
-  dockerRepository: airbyte/source-ip2whois
+- name: Intruder
+  sourceDefinitionId: 3d15163b-11d8-412f-b808-795c9b2c3a3a
+  dockerRepository: airbyte/source-intruder
   dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.com/integrations/sources/ip2whois
+  documentationUrl: https://docs.airbyte.com/integrations/sources/intruder
   sourceType: api
   releaseStage: alpha
 - name: Iterable
