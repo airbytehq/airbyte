@@ -36,7 +36,8 @@
   }
 
   &.selected {
-    background-color: colors.$blue-transparent;
+    background-color: colors.$blue;
+    opacity: 0.1;
   }
 }
 

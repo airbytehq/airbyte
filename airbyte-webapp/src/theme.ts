@@ -13,7 +13,6 @@ export const theme = {
   blue800: scss.blue800,
   blue900: scss.blue900,
   blue: scss.blue,
-  blueTransparent: scss.blueTransparent,
 
   darkBlue50: scss.darkBlue50,
   darkBlue100: scss.darkBlue100,
