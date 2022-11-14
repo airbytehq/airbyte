@@ -2,12 +2,9 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { PillSelect } from "components/ui/PillSelect";
-import { Text } from "components/ui/Text";
 import { Tooltip } from "components/ui/Tooltip";
 
 import { Path } from "core/domain/catalog";
-
-import styles from "./StreamPathSelect.module.scss";
 
 export const pathDisplayName = (path: Path): string => path.join(".");
 
@@ -39,11 +36,9 @@ export const StreamPathSelect: React.FC<PathPopoutProps> = (props) => {
       const text = props.isMulti ? props.path.map(pathDisplayName).join(", ") : pathDisplayName(props.path);
 
       return (
-        <Text className={styles.text}>
-          <Tooltip placement="bottom-start" control={text}>
-            {text}
-          </Tooltip>
-        </Text>
+        <Tooltip placement="bottom-start" control={text}>
+          {text}
+        </Tooltip>
       );
     }
 
