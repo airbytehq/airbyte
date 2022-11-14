@@ -1221,16 +1221,33 @@ public abstract class DestinationAcceptanceTest {
                                              final ConfiguredAirbyteCatalog catalog,
                                              final boolean runNormalization)
       throws Exception {
+	  LOGGER.info("After sync messages : ");
+	  LOGGER.info("messages : " + messages.size());
+	    for(int i = 0; i < messages.size(); i++) {
+	    	LOGGER.info("each messages : " + messages.get(i));
+	    }
+	    LOGGER.info("messages : " + messages.size());
+	    
+	    
     final List<AirbyteMessage> destinationOutput = runSync(config, messages, catalog,
         runNormalization);
+    LOGGER.info("After sync destinationOutput : ");
     
+    LOGGER.info("destinationOutput : " + destinationOutput.size());
+    for(int i = 0; i < destinationOutput.size(); i++) {
+    	LOGGER.info("each destination : " + destinationOutput.get(i));
+    }
+    LOGGER.info("destinationOutput : " + destinationOutput.size());
 
+    LOGGER.info("After sync expectedStateMessage : ");
     final AirbyteMessage expectedStateMessage = reversed(messages)
         .stream()
         .filter(m -> m.getType() == Type.STATE)
         .findFirst()
         .orElseThrow(() -> new IllegalArgumentException(
             "All message sets used for testing should include a state record"));
+    
+    LOGGER.info("expectedStateMessage : " + expectedStateMessage);
 
     Collections.reverse(destinationOutput);
     final AirbyteMessage actualStateMessage = destinationOutput
@@ -1241,7 +1258,7 @@ public abstract class DestinationAcceptanceTest {
           fail("Destination failed to output state");
           return null;
         });
-
+    LOGGER.info("actualStateMessage : " + actualStateMessage);
     assertEquals(expectedStateMessage, actualStateMessage);
   }
 
