@@ -4,10 +4,15 @@
 
 package io.airbyte.server.converters;
 
+import static io.airbyte.api.model.generated.OperatorWebhook.WebhookTypeEnum.DBTCLOUD;
+import static io.airbyte.api.model.generated.OperatorWebhook.WebhookTypeEnum.GENERIC;
+
 import com.google.common.base.Preconditions;
 import io.airbyte.api.model.generated.OperationRead;
 import io.airbyte.api.model.generated.OperatorConfiguration;
 import io.airbyte.api.model.generated.OperatorNormalization.OptionEnum;
+import io.airbyte.api.model.generated.OperatorWebhookDbtCloud;
+import io.airbyte.api.model.generated.OperatorWebhookGeneric;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.OperatorNormalization;
@@ -15,6 +20,8 @@ import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.OperatorWebhook;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class OperationsConverter {
 
@@ -44,10 +51,7 @@ public class OperationsConverter {
       case WEBHOOK -> {
         Preconditions.checkArgument(operatorConfig.getWebhook() != null);
         // TODO(mfsiega-airbyte): check that the webhook config id references a real webhook config.
-        standardSyncOperation.withOperatorWebhook(new OperatorWebhook()
-            .withExecutionUrl(operatorConfig.getWebhook().getExecutionUrl())
-            .withExecutionBody(operatorConfig.getWebhook().getExecutionBody())
-            .withWebhookConfigId(operatorConfig.getWebhook().getWebhookConfigId()));
+        standardSyncOperation.withOperatorWebhook(webhookOperatorFromConfig(operatorConfig.getWebhook()));
         // Null out the other configs, since it's mutually exclusive. We need to do this if it's an update.
         standardSyncOperation.withOperatorNormalization(null);
         standardSyncOperation.withOperatorDbt(null);
@@ -82,10 +86,7 @@ public class OperationsConverter {
       }
       case WEBHOOK -> {
         Preconditions.checkArgument(standardSyncOperation.getOperatorWebhook() != null);
-        operatorConfiguration.webhook(new io.airbyte.api.model.generated.OperatorWebhook()
-            .webhookConfigId(standardSyncOperation.getOperatorWebhook().getWebhookConfigId())
-            .executionUrl(standardSyncOperation.getOperatorWebhook().getExecutionUrl())
-            .executionBody(standardSyncOperation.getOperatorWebhook().getExecutionBody()));
+        operatorConfiguration.webhook(webhookOperatorFromPersistence(standardSyncOperation.getOperatorWebhook()));
       }
     }
     return new OperationRead()
@@ -93,6 +94,64 @@ public class OperationsConverter {
         .operationId(standardSyncOperation.getOperationId())
         .name(standardSyncOperation.getName())
         .operatorConfiguration(operatorConfiguration);
+  }
+
+  private static OperatorWebhook webhookOperatorFromConfig(io.airbyte.api.model.generated.OperatorWebhook webhookConfig) {
+    final var operatorWebhook = new OperatorWebhook().withWebhookConfigId(webhookConfig.getWebhookConfigId());
+    if (webhookConfig.getWebhookType() == null) {
+      return operatorWebhook
+          .withExecutionUrl(webhookConfig.getExecutionUrl())
+          .withExecutionBody(webhookConfig.getExecutionBody());
+    }
+    switch (webhookConfig.getWebhookType()) {
+      case DBTCLOUD -> {
+        return operatorWebhook
+            .withExecutionUrl(String.format("https://cloud.getdbt.com/api/v2/accounts/%d/jobs/%d/run/", webhookConfig.getDbtCloud().getAccountId(),
+                webhookConfig.getDbtCloud().getJobId()))
+            .withExecutionBody("{\"cause\": \"airbyte\"}");
+      }
+      case GENERIC -> {
+        return operatorWebhook
+            .withExecutionUrl(webhookConfig.getGeneric().getExecutionUrl())
+            .withExecutionBody(webhookConfig.getGeneric().getExecutionBody());
+      }
+    }
+    throw new IllegalArgumentException("Unsupported webhook operation type");
+  }
+
+  private static io.airbyte.api.model.generated.OperatorWebhook webhookOperatorFromPersistence(final OperatorWebhook persistedWebhook) {
+    final io.airbyte.api.model.generated.OperatorWebhook webhookOperator = new io.airbyte.api.model.generated.OperatorWebhook()
+        .webhookConfigId(persistedWebhook.getWebhookConfigId());
+    OperatorWebhookDbtCloud dbtCloudOperator = DbtCloudOperationConverter.parseFrom(persistedWebhook);
+    if (dbtCloudOperator != null) {
+      webhookOperator.webhookType(DBTCLOUD).dbtCloud(DbtCloudOperationConverter.parseFrom(persistedWebhook));
+    } else {
+      webhookOperator.webhookType(GENERIC).generic(new OperatorWebhookGeneric()
+          .executionBody(persistedWebhook.getExecutionBody())
+          .executionUrl(persistedWebhook.getExecutionUrl()));
+      // NOTE: double-write until the frontend starts using the new fields.
+      webhookOperator.executionUrl(persistedWebhook.getExecutionUrl()).executionBody(persistedWebhook.getExecutionBody());
+    }
+    return webhookOperator;
+  }
+
+  private static class DbtCloudOperationConverter {
+
+    final static Pattern dbtUrlPattern = Pattern.compile("^https://cloud\\.getdbt\\.com/api/v2/accounts/(\\d+)/jobs/(\\d+)/run/$");
+    private static final int ACCOUNT_REGEX_GROUP = 1;
+    private static final int JOB_REGEX_GROUP = 2;
+
+    private static OperatorWebhookDbtCloud parseFrom(OperatorWebhook persistedWebhook) {
+      Matcher dbtCloudUrlMatcher = dbtUrlPattern.matcher(persistedWebhook.getExecutionUrl());
+      final var dbtCloudConfig = new OperatorWebhookDbtCloud();
+      if (dbtCloudUrlMatcher.matches()) {
+        dbtCloudConfig.setAccountId(Integer.valueOf(dbtCloudUrlMatcher.group(ACCOUNT_REGEX_GROUP)));
+        dbtCloudConfig.setJobId(Integer.valueOf(dbtCloudUrlMatcher.group(JOB_REGEX_GROUP)));
+        return dbtCloudConfig;
+      }
+      return null;
+    }
+
   }
 
 }
