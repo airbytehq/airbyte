@@ -56,23 +56,23 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
     () => [
       {
         Header: <FormattedMessage id="form.field.name" />,
-        headerClassName: styles.headerCell,
+        thClassName: styles.headerCell,
         accessor: "path",
-        className: styles.textCell,
+        tdClassName: styles.textCell,
         Cell: ({ cell }: CellProps<SyncSchemaField>) => pathDisplayName(cell.value),
       },
       {
         Header: <FormattedMessage id="form.field.dataType" />,
-        headerClassName: styles.headerCell,
+        thClassName: styles.headerCell,
         accessor: "dataType",
-        className: styles.dataTypeCell,
+        tdClassName: styles.dataTypeCell,
         Cell: ({ row }: CellProps<SyncSchemaField>) => useTranslateDataType(row.original),
       },
       {
         Header: <>{shouldDefineCursor && <FormattedMessage id="form.field.cursorField" />}</>,
-        headerClassName: styles.headerCell,
+        thClassName: styles.headerCell,
         accessor: "cursorField",
-        className: styles.checkboxCell,
+        tdClassName: styles.checkboxCell,
         Cell: ({ row }: CellProps<SyncSchemaField>) => {
           return (
             shouldDefineCursor &&
@@ -84,9 +84,9 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
       },
       {
         Header: <FormattedMessage id="form.field.primaryKey" />,
-        headerClassName: styles.headerCell,
+        thClassName: styles.headerCell,
         accessor: "primaryKey",
-        className: styles.textCell,
+        tdClassName: styles.textCell,
         Cell: ({ row }: CellProps<SyncSchemaField>) => {
           return (
             shouldDefinePk &&
@@ -104,17 +104,17 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
     () => [
       {
         Header: <FormattedMessage id="form.field.name" />,
-        headerClassName: styles.headerCell,
+        thClassName: styles.headerCell,
         accessor: "cleanedName",
-        className: styles.textCell,
+        tdClassName: styles.textCell,
         Cell: ({ row }: CellProps<SyncSchemaField>) => row.original.cleanedName,
       },
       {
         // In the design, but we may be unable to get the destination data type
         Header: <FormattedMessage id="form.field.dataType" />,
-        headerClassName: styles.headerCell,
+        thClassName: styles.headerCell,
         accessor: "format",
-        className: styles.dataTypeCell,
+        tdClassName: styles.dataTypeCell,
         Cell: ({ row }: CellProps<SyncSchemaField>) => useTranslateDataType(row.original),
       },
     ],
@@ -125,19 +125,19 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
     () => [
       {
         Header: <div className={styles.connectorIconContainer}>{renderIcon(sourceDefinition.icon)} Source</div>,
-        headerClassName: styles.headerGroupCell,
+        thClassName: styles.headerGroupCell,
         id: "source icon",
         columns: sourceColumns,
       },
       {
         Header: <FontAwesomeIcon icon={faArrowRight} />,
-        headerClassName: styles.headerGroupCell,
+        thClassName: styles.headerGroupCell,
         id: "arrow",
         columns: [
           {
             accessor: "key",
-            headerClassName: styles.headerCell,
-            className: styles.arrowCell,
+            thClassName: styles.headerCell,
+            tdClassName: styles.arrowCell,
             Cell: () => <FontAwesomeIcon icon={faArrowRight} />,
           },
         ],
@@ -146,8 +146,8 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
         Header: (
           <div className={styles.connectorIconContainer}>{renderIcon(destinationDefinition.icon)} Destination</div>
         ),
-        headerClassName: styles.headerGroupCell,
-        className: styles.bodyCell,
+        thClassName: styles.headerGroupCell,
+        tdClassName: styles.bodyCell,
         id: "destination icon",
         columns: destinationColumns,
       },
