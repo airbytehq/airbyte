@@ -367,6 +367,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/dv-360
   sourceType: api
   releaseStage: alpha
+- name: DynamoDB
+  sourceDefinitionId: 50401137-8871-4c5a-abb7-1f5fda35545a
+  dockerRepository: airbyte/source-dynamodb
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dynamodb
+  sourceType: api
+  releaseStage: alpha
 - name: E2E Testing
   sourceDefinitionId: d53f9084-fa6b-4a5a-976c-5b8392f4ad8a
   dockerRepository: airbyte/source-e2e-test
