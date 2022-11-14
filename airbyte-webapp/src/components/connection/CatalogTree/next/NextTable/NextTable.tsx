@@ -58,8 +58,8 @@ export const NextTable: React.FC<TableProps> = memo(({ columns, data, onClickRow
                   {
                     className: classNames(
                       styles.th,
-                      // @ts-ignore will be fixed when with typings
-                      column.headerClassName
+                      // @ts-expect-error will be fixed when with typings
+                      column.thClassName
                     ),
                   },
                 ])}
@@ -88,8 +88,8 @@ export const NextTable: React.FC<TableProps> = memo(({ columns, data, onClickRow
                       {
                         className: classNames(
                           styles.td,
-                          // @ts-ignore will be fixed when with typings
-                          cell.column.className
+                          // @ts-expect-error will be fixed when with typings
+                          cell.column.tdClassName
                         ),
                       },
                     ])}
