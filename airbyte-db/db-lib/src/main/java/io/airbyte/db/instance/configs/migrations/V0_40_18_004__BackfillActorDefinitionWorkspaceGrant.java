@@ -13,10 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // TODO: update migration description in the class name
-public class V0_40_18_003__BackfillActorDefinitionWorkspaceGrant extends BaseJavaMigration {
+public class V0_40_18_004__BackfillActorDefinitionWorkspaceGrant extends BaseJavaMigration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(
-      V0_40_18_003__BackfillActorDefinitionWorkspaceGrant.class);
+      V0_40_18_004__BackfillActorDefinitionWorkspaceGrant.class);
 
   @Override
   public void migrate(final Context context) throws Exception {
