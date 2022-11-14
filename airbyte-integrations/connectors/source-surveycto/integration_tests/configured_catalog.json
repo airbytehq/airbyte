@@ -1,23 +1,23 @@
 {
-  "type": "CATALOG",
-  "catalog": {
-    "streams": [
-      {
-        "name": "application",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {}
-        },
+  "streams": [
+    {
+      "stream": {
+        "name": "baseline_ig",
+        "json_schema": {},
         "supported_sync_modes": [
-          "incremental",
-          "full_refresh"
+          "full_refresh",
+          "incremental"
         ],
-        "supported_destination_sync_modes": [
-          "overwrite",
-          "append_dedup"
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "CompletionDate"
         ]
-      }
-    ]
-  }
+      },
+      "sync_mode": "incremental",
+      "cursor_field": [
+        "CompletionDate"
+      ],
+      "destination_sync_mode": "append"
+    }
+  ]
 }
