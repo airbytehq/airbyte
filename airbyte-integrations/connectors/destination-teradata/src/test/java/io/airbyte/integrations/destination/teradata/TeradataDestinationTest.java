@@ -135,7 +135,7 @@ public class TeradataDestinationTest {
 	public void testCheckIncorrectUsernameFailure() {
 		final var config = buildConfigNoJdbcParameters();
 		LOGGER.info(" config in testCheckIncorrectUsernameFailure -   " + config);
-		((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "");
+		((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "dummy");
 		((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
 		final TeradataDestination destination = new TeradataDestination();
 		final AirbyteConnectionStatus status = destination.check(config);
