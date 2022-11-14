@@ -49,6 +49,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 
 	@Override
 	protected String getImageName() {
+		LOGGER.info("TeradataDestinationAcceptanceTest - getImageName");
 		return "airbyte/destination-teradata:dev";
 	}
 

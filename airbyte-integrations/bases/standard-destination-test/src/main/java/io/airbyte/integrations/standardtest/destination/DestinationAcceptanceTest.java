@@ -254,6 +254,7 @@ public abstract class DestinationAcceptanceTest {
   }
 
   protected boolean supportsDBT() {
+	LOGGER.info("DestinationAcceptanceTest - supportsDBT");  
     return false;
   }
 
@@ -544,6 +545,8 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   public void specDBTValueShouldBeCorrect() throws WorkerException {
+	  LOGGER.info("supportsDBT() : " + supportsDBT());
+	  LOGGER.info("dbtFromSpec() : " + dbtFromSpec());
     assertEquals(dbtFromSpec(), supportsDBT());
   }
 
