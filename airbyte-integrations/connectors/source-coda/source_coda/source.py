@@ -38,6 +38,7 @@ class CodaStream(HttpStream, ABC):
             return {"limit": self.limit}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        print(response.json())
         return response.json()['items']
 
 
