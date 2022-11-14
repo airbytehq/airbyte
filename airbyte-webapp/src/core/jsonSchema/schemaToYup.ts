@@ -65,7 +65,7 @@ export const buildYupFormForJsonSchema = (
       schema = yup.boolean();
       break;
     case "integer":
-      schema = yup.number();
+      schema = yup.number().transform((value) => (isNaN(value) ? undefined : value));
 
       if (jsonSchema?.minimum !== undefined) {
         schema = schema.min(jsonSchema?.minimum);

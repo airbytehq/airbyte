@@ -77,4 +77,18 @@ public class DynamodbChecker {
     }
   }
 
+  /**
+   * Checks that DynamoDb custom endpoint uses a variant that only uses HTTPS
+   *
+   * @param endpoint URL string representing an accessible S3 bucket
+   */
+  public static boolean testCustomEndpointSecured(final String endpoint) {
+    // if user does not use a custom endpoint, do not fail
+    if (endpoint == null || endpoint.length() == 0) {
+      return true;
+    } else {
+      return endpoint.startsWith("https://");
+    }
+  }
+
 }

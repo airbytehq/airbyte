@@ -2,7 +2,7 @@ import React, { Suspense, useEffect, useMemo } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
-import ApiErrorBoundary from "components/ApiErrorBoundary";
+import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 import LoadingPage from "components/LoadingPage";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
@@ -13,7 +13,6 @@ import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useQuery } from "hooks/useQuery";
 import { useExperimentSpeedyConnection } from "packages/cloud/components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
-import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useIntercom";
 import { Auth } from "packages/cloud/views/auth";
 import { CreditsPage } from "packages/cloud/views/credits";
 import MainView from "packages/cloud/views/layout/MainView";
@@ -114,7 +113,6 @@ const MainRoutes: React.FC = () => {
 
 const MainViewRoutes = () => {
   useApiHealthPoll();
-  useIntercom();
   const query = useQuery<{ from: string }>();
 
   return (
