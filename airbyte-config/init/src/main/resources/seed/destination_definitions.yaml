@@ -248,6 +248,12 @@
           memory_limit: "1Gi"
           memory_request: "1Gi"
   releaseStage: beta
+- name: Redpanda
+  destinationDefinitionId: 825c5ee3-ed9a-4dd1-a2b6-79ed722f7b13
+  dockerRepository: airbyte/destination-redpanda
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/redpanda
+  releaseStage: alpha  
 - name: Rockset
   destinationDefinitionId: 2c9d93a7-9a17-4789-9de9-f46f0097eb70
   dockerRepository: airbyte/destination-rockset
