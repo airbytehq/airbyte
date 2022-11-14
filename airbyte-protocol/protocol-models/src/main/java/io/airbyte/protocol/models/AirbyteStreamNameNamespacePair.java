@@ -36,7 +36,7 @@ public class AirbyteStreamNameNamespacePair implements Comparable<AirbyteStreamN
    */
   @Override
   public String toString() {
-    return "namespace" + "_" + name;
+    return (namespace != null ? namespace : "") + "_" + name;
   }
 
   @Override
