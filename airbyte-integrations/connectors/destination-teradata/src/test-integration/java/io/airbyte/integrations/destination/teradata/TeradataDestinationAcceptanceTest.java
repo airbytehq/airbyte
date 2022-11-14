@@ -110,7 +110,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 		LOGGER.info("TeradataDestinationAcceptanceTest : retrieveRecordsFromTable : actual size : " + actual.size());
 		LOGGER.info("TeradataDestinationAcceptanceTest : retrieveRecordsFromTable : actual : " + actual);
 		for(int i = 0; i < actual.size(); i ++ ) {
-			LOGGER.info("TeradataDestinationAcceptanceTest : retrieveRecordsFromTable : actual size : " + actual.get());
+			LOGGER.info("TeradataDestinationAcceptanceTest : retrieveRecordsFromTable : actual size : " + actual.get(i));
 		}
 		return actual;
 	}
