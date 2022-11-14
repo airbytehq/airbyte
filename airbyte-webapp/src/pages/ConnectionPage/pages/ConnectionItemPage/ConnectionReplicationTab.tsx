@@ -41,13 +41,8 @@ export const ConnectionReplicationTab: React.FC = () => {
 
   const [saved, setSaved] = useState(false);
 
-  const {
-    connection,
-    schemaRefreshing,
-    schemaHasBeenRefreshed,
-    updateConnection,
-    discardRefreshedSchema: clearRefreshedSchema,
-  } = useConnectionEditService();
+  const { connection, schemaRefreshing, schemaHasBeenRefreshed, updateConnection, discardRefreshedSchema } =
+    useConnectionEditService();
   const { initialValues, mode, schemaError, getErrorMessage, setSubmitError } = useConnectionFormService();
   const allowSubOneHourCronExpressions = useFeature(FeatureItem.AllowSyncSubOneHourCronExpressions);
 
@@ -164,7 +159,7 @@ export const ConnectionReplicationTab: React.FC = () => {
   useConfirmCatalogDiff();
 
   useUnmount(() => {
-    clearRefreshedSchema();
+    discardRefreshedSchema();
   });
 
   return (
@@ -191,7 +186,7 @@ export const ConnectionReplicationTab: React.FC = () => {
                 dirty={dirty}
                 resetForm={async () => {
                   resetForm();
-                  clearRefreshedSchema();
+                  discardRefreshedSchema();
                 }}
                 successMessage={saved && !dirty && <FormattedMessage id="form.changesSaved" />}
                 errorMessage={getErrorMessage(isValid, dirty)}
