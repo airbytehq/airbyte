@@ -173,7 +173,7 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
         return !!state.providers?.includes("password");
       },
       hasCorporateEmail(): boolean {
-        return !FREE_EMAIL_SERVICE_PROVIDERS.some((provider) => state.currentUser?.email.includes(provider));
+        return !FREE_EMAIL_SERVICE_PROVIDERS.some((provider) => state.currentUser?.email.endsWith(`@${provider}`));
       },
       async login(values: { email: string; password: string }): Promise<void> {
         await authService.login(values.email, values.password);
