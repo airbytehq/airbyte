@@ -56,7 +56,7 @@ public class SnowflakeDatabase {
   private static final String CONNECTION_STRING_IDENTIFIER_KEY = "application";
   private static final String CONNECTION_STRING_IDENTIFIER_VAL = "Airbyte_Connector";
 
-  public static HikariDataSource createDataSource(final JsonNode config) {
+  public static HikariDataSource createDataSource(final JsonNode config, final String airbyteEnvironment) {
     final HikariDataSource dataSource = new HikariDataSource();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?",
@@ -129,7 +129,7 @@ public class SnowflakeDatabase {
 
     // https://docs.snowflake.com/en/user-guide/jdbc-parameters.html#application
     // identify airbyte traffic to snowflake to enable partnership & optimization opportunities
-    properties.put("application", "airbyte");
+    properties.put("application", airbyteEnvironment); // see envs in OssCloudEnvVarConsts class
     // Needed for JDK17 - see
     // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
     properties.put("JDBC_QUERY_RESULT_FORMAT", "JSON");
