@@ -5,10 +5,10 @@
 import json
 import logging
 from json import JSONDecodeError
-from typing import List, Optional
+from typing import Iterable, Optional, Union
 from urllib.parse import parse_qs, urljoin, urlparse
 
-from airbyte_cdk.models import AirbyteLogMessage, Type
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
 from connector_builder.generated.apis.default_api_interface import DefaultApi
 from connector_builder.generated.models.http_request import HttpRequest
 from connector_builder.generated.models.http_response import HttpResponse
@@ -65,44 +65,60 @@ class DefaultApiImpl(DefaultApi):
 
         single_slice = StreamReadSlices(pages=[])
         log_messages = []
-
-        first_page = True
-        current_records: List[object] = []
-        current_page_request: Optional[HttpRequest] = None
-        current_page_response: Optional[HttpResponse] = None
         try:
-            # Message groups are partitioned according to when request log messages are received. Subsequent response log messages
-            # and record messages belong to the prior request log message and when we encounter another request, append the latest
-            # message group
-            for message in adapter.read_stream(stream_read_request_body.stream, stream_read_request_body.config):
-                if first_page and message.type == Type.LOG and message.log.message.startswith("request:"):
-                    first_page = False
-                    request = self._create_request_from_log_message(message.log)
-                    current_page_request = request
-                elif message.type == Type.LOG and message.log.message.startswith("request:"):
-                    if not current_page_request or not current_page_response:
-                        self.logger.warning("Every message grouping should have at least one request and response")
-                    single_slice.pages.append(
-                        StreamReadPages(request=current_page_request, response=current_page_response, records=current_records)
-                    )
-                    current_page_request = self._create_request_from_log_message(message.log)
-                    current_records = []
-                elif message.type == Type.LOG and message.log.message.startswith("response:"):
-                    current_page_response = self._create_response_from_log_message(message.log)
-                elif message.type == Type.LOG:
-                    log_messages.append({"message": message.log.message})
-                elif message.type == Type.RECORD:
-                    current_records.append(message.record.data)
-            else:
-                if not current_page_request or not current_page_response:
-                    self.logger.warning("Every message grouping should have at least one request and response")
-                single_slice.pages.append(
-                    StreamReadPages(request=current_page_request, response=current_page_response, records=current_records)
-                )
+            for message_group in self._get_message_groups(
+                adapter.read_stream(stream_read_request_body.stream, stream_read_request_body.config)
+            ):
+                if isinstance(message_group, AirbyteLogMessage):
+                    log_messages.append({"message": message_group.message})
+                else:
+                    single_slice.pages.append(message_group)
         except KeyError as error:
             return KnownExceptionInfo(message=error.args[0])
 
         return StreamRead(logs=log_messages, slices=[single_slice])
+
+    def _get_message_groups(self, messages: Iterable[AirbyteMessage]) -> Iterable[Union[StreamReadPages, AirbyteLogMessage]]:
+        """
+        Message groups are partitioned according to when request log messages are received. Subsequent response log messages
+        and record messages belong to the prior request log message and when we encounter another request, append the latest
+        message group.
+
+        Messages received from the CDK read operation will always arrive in the following order:
+        {type: LOG, log: {message: "request: ..."}}
+        {type: LOG, log: {message: "response: ..."}}
+        ... 0 or more record messages
+        {type: RECORD, record: {data: ...}}
+        {type: RECORD, record: {data: ...}}
+        Repeats for each request/response made
+
+        Note: The exception is that normal log messages can be received at any time which are not incorporated into grouping
+        """
+        first_page = True
+        current_records = []
+        current_page_request: Optional[HttpRequest] = None
+        current_page_response: Optional[HttpResponse] = None
+        for message in messages:
+            if first_page and message.type == Type.LOG and message.log.message.startswith("request:"):
+                first_page = False
+                request = self._create_request_from_log_message(message.log)
+                current_page_request = request
+            elif message.type == Type.LOG and message.log.message.startswith("request:"):
+                if not current_page_request or not current_page_response:
+                    self.logger.warning("Every message grouping should have at least one request and response")
+                yield StreamReadPages(request=current_page_request, response=current_page_response, records=current_records)
+                current_page_request = self._create_request_from_log_message(message.log)
+                current_records = []
+            elif message.type == Type.LOG and message.log.message.startswith("response:"):
+                current_page_response = self._create_response_from_log_message(message.log)
+            elif message.type == Type.LOG:
+                yield message.log
+            elif message.type == Type.RECORD:
+                current_records.append(message.record.data)
+        else:
+            if not current_page_request or not current_page_response:
+                self.logger.warning("Every message grouping should have at least one request and response")
+            yield StreamReadPages(request=current_page_request, response=current_page_response, records=current_records)
 
     def _create_request_from_log_message(self, log_message: AirbyteLogMessage) -> Optional[HttpRequest]:
         # TODO: As a temporary stopgap, the CDK emits request data as a log message string. Ideally this should come in the

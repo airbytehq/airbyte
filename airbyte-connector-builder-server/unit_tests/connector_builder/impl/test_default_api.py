@@ -205,6 +205,68 @@ def test_read_stream():
             assert actual_page == expected_pages[i]
 
 
+def test_read_stream_with_logs():
+    request = {
+        "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
+        "headers": {"Content-Type": "application/json"},
+        "body": {"custom": "field"},
+    }
+    response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
+    expected_pages = [
+        StreamReadPages(
+            request=HttpRequest(
+                url="https://demonslayers.com/api/v1/hashiras",
+                parameters={"era": ["taisho"]},
+                headers={"Content-Type": "application/json"},
+                body={"custom": "field"},
+            ),
+            response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
+            records=[{"name": "Shinobu Kocho"}, {"name": "Muichiro Tokito"}],
+        ),
+        StreamReadPages(
+            request=HttpRequest(
+                url="https://demonslayers.com/api/v1/hashiras",
+                parameters={"era": ["taisho"]},
+                headers={"Content-Type": "application/json"},
+                body={"custom": "field"},
+            ),
+            response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
+            records=[{"name": "Mitsuri Kanroji"}],
+        ),
+    ]
+    expected_logs = [
+        {"message": "log message before the request"},
+        {"message": "log message during the page"},
+        {"message": "log message after the response"},
+    ]
+
+    mock_source_adapter = MagicMock()
+    mock_source_adapter.read_stream.return_value = [
+        AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="log message before the request")),
+        request_log_message(request),
+        response_log_message(response),
+        record_message("hashiras", {"name": "Shinobu Kocho"}),
+        AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="log message during the page")),
+        record_message("hashiras", {"name": "Muichiro Tokito"}),
+        AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="log message after the response")),
+    ]
+
+    with patch.object(DefaultApiImpl, "_create_low_code_adapter", return_value=mock_source_adapter):
+        api = DefaultApiImpl()
+
+        loop = asyncio.get_event_loop()
+        actual_response: StreamRead = loop.run_until_complete(
+            api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras"))
+        )
+
+        single_slice = actual_response.slices[0]
+        for i, actual_page in enumerate(single_slice.pages):
+            assert actual_page == expected_pages[i]
+
+        for i, actual_log in enumerate(actual_response.logs):
+            assert actual_log == expected_logs[i]
+
+
 def test_read_stream_no_records():
     request = {
         "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
