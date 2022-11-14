@@ -31,12 +31,12 @@ public class AirbyteStreamNameNamespacePair implements Comparable<AirbyteStreamN
     return namespace;
   }
 
+  /**
+   * As this is used as a metrics tag, enforce lower snake case.
+   */
   @Override
   public String toString() {
-    return "AirbyteStreamNameNamespacePair{" +
-        "name='" + name + '\'' +
-        ", namespace='" + namespace + '\'' +
-        '}';
+    return "namespace" + "_" + name;
   }
 
   @Override
