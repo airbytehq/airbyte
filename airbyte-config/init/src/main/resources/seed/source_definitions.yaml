@@ -641,6 +641,13 @@
   icon: hubspot.svg
   sourceType: api
   releaseStage: generally_available
+- name: IP2Whois
+  sourceDefinitionId: f23b7b7c-d705-49a3-9042-09add3b104a5
+  dockerRepository: airbyte/source-ip2whois
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/ip2whois
+  sourceType: api
+  releaseStage: alpha
 - name: IBM Db2
   sourceDefinitionId: 447e0381-3780-4b46-bb62-00a4e3c8b8e2
   dockerRepository: airbyte/source-db2
@@ -672,11 +679,11 @@
   icon: intercom.svg
   sourceType: api
   releaseStage: generally_available
-- name: IP2Whois
-  sourceDefinitionId: f23b7b7c-d705-49a3-9042-09add3b104a5
-  dockerRepository: airbyte/source-ip2whois
+- name: Intruder
+  sourceDefinitionId: 3d15163b-11d8-412f-b808-795c9b2c3a3a
+  dockerRepository: airbyte/source-intruder
   dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.com/integrations/sources/ip2whois
+  documentationUrl: https://docs.airbyte.com/integrations/sources/intruder
   sourceType: api
   releaseStage: alpha
 - name: Iterable
@@ -877,6 +884,13 @@
   icon: microsoft-teams.svg
   sourceType: api
   releaseStage: alpha
+- name: Microsoft Dataverse
+  sourceDefinitionId: 9220e3de-3b60-4bb2-a46f-046d59ea235a
+  dockerRepository: airbyte/source-microsoft-dataverse
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-dataverse
+  sourceType: api
+  releaseStage: alpha
 - name: Mixpanel
   sourceDefinitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
   dockerRepository: airbyte/source-mixpanel
@@ -912,7 +926,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 1.0.12
+  dockerImageTag: 1.0.13
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -1253,6 +1267,14 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/rki-covid
   sourceType: api
   releaseStage: alpha
+- name: RSS
+  sourceDefinitionId: 0efee448-6948-49e2-b786-17db50647908
+  dockerRepository: airbyte/source-rss
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/rss
+  icon: rss.svg
+  sourceType: api
+  releaseStage: alpha
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
@@ -1454,11 +1476,11 @@
 - name: Tempo
   sourceDefinitionId: d1aa448b-7c54-498e-ad95-263cbebcd2db
   dockerRepository: airbyte/source-tempo
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/tempo
   icon: tempo.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: TiDB
   sourceDefinitionId: 0dad1a35-ccf8-4d03-b73e-6788c00b13ae
   dockerRepository: airbyte/source-tidb

@@ -5906,6 +5906,32 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
+- dockerImage: "airbyte/source-ip2whois:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/ip2whois"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Ip2whois Spec"
+      type: "object"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API key"
+          type: "string"
+          description: "Your API Key. See <a href=\"https://www.ip2whois.com/developers-api\"\
+            >here</a>."
+          airbyte_secret: true
+        domain:
+          title: "Domain"
+          type: "string"
+          description: "Domain name. See <a href=\"https://www.ip2whois.com/developers-api\"\
+            >here</a>."
+          examples:
+          - "www.google.com"
+          - "www.facebook.com"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-db2:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/db2"
@@ -6111,29 +6137,23 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-ip2whois:0.1.0"
+- dockerImage: "airbyte/source-intruder:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/sources/ip2whois"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/intruder"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
-      title: "Ip2whois Spec"
+      title: "Intruder Spec"
       type: "object"
+      required:
+      - "access_token"
       additionalProperties: true
       properties:
-        api_key:
-          title: "API key"
+        access_token:
+          title: "API Access token"
           type: "string"
-          description: "Your API Key. See <a href=\"https://www.ip2whois.com/developers-api\"\
+          description: "Your API Access token. See <a href=\"https://developers.intruder.io/docs/authentication\"\
             >here</a>."
           airbyte_secret: true
-        domain:
-          title: "Domain"
-          type: "string"
-          description: "Domain name. See <a href=\"https://www.ip2whois.com/developers-api\"\
-            >here</a>."
-          examples:
-          - "www.google.com"
-          - "www.facebook.com"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -7936,6 +7956,54 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+- dockerImage: "airbyte/source-microsoft-dataverse:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/microsoft-dataverse"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Microsoft Dataverse Spec"
+      type: "object"
+      required:
+      - "url"
+      - "tenant_id"
+      - "client_id"
+      - "client_secret_value"
+      additionalProperties: true
+      properties:
+        url:
+          type: "string"
+          description: "URL to Microsoft Dataverse API"
+          title: "URL"
+          examples:
+          - "https://<org-id>.crm.dynamics.com"
+          order: 0
+        tenant_id:
+          type: "string"
+          description: "Tenant Id of your Microsoft Dataverse Instance"
+          title: "Tenant Id"
+          airbyte_secret: true
+          order: 1
+        client_id:
+          type: "string"
+          description: "App Registration Client Id"
+          title: "Client Id"
+          airbyte_secret: true
+          order: 2
+        client_secret_value:
+          type: "string"
+          description: "App Registration Client Secret"
+          title: "Client Secret"
+          airbyte_secret: true
+          order: 3
+        odata_maxpagesize:
+          type: "integer"
+          description: "Max number of results per page. Default=5000"
+          title: "Max page size"
+          default: 5000
+          order: 4
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-mixpanel:0.1.29"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mixpanel"
@@ -8341,7 +8409,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.12"
+- dockerImage: "airbyte/source-mysql:1.0.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -8424,9 +8492,6 @@
               mode:
                 type: "string"
                 const: "preferred"
-                enum:
-                - "preferred"
-                default: "preferred"
                 order: 0
           - title: "required"
             description: "Require SSL mode."
@@ -8436,9 +8501,6 @@
               mode:
                 type: "string"
                 const: "required"
-                enum:
-                - "required"
-                default: "required"
                 order: 0
           - title: "Verify CA"
             description: "Verify CA SSL mode."
@@ -8449,9 +8511,6 @@
               mode:
                 type: "string"
                 const: "verify_ca"
-                enum:
-                - "verify_ca"
-                default: "verify_ca"
                 order: 0
               ca_certificate:
                 type: "string"
@@ -8494,9 +8553,6 @@
               mode:
                 type: "string"
                 const: "verify_identity"
-                enum:
-                - "verify_identity"
-                default: "verify_identity"
                 order: 0
               ca_certificate:
                 type: "string"
@@ -8545,9 +8601,6 @@
               method:
                 type: "string"
                 const: "STANDARD"
-                enum:
-                - "STANDARD"
-                default: "STANDARD"
                 order: 0
           - title: "Logical Replication (CDC)"
             description: "CDC uses the Binlog to detect inserts, updates, and deletes.\
@@ -8558,9 +8611,6 @@
               method:
                 type: "string"
                 const: "CDC"
-                enum:
-                - "CDC"
-                default: "CDC"
                 order: 0
               initial_waiting_seconds:
                 type: "integer"
@@ -11695,6 +11745,22 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-rss:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/rss"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "RSS Spec"
+      type: "object"
+      required:
+      - "url"
+      properties:
+        url:
+          type: "string"
+          description: "RSS Feed URL"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-s3:0.1.26"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -13552,7 +13618,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tempo:0.2.6"
+- dockerImage: "airbyte/source-tempo:0.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/"
     connectionSpecification:
