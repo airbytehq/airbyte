@@ -13,7 +13,8 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 /**
- * The job orchestrator helps abstract over container launcher application differences across replication, normalization, and custom dbt operators.
+ * The job orchestrator helps abstract over container launcher application differences across
+ * replication, normalization, and custom dbt operators.
  *
  * @param <INPUT> job input type
  */
@@ -32,7 +33,6 @@ public interface JobOrchestrator<INPUT> {
         getInputClass());
   }
 
-  
   /**
    * Contains the unique logic that belongs to each type of job.
    *

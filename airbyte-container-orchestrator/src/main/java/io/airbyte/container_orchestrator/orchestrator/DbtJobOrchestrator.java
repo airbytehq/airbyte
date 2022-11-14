@@ -38,10 +38,9 @@ public class DbtJobOrchestrator implements JobOrchestrator<OperatorDbtInput> {
   private final JobRunConfig jobRunConfig;
 
   public DbtJobOrchestrator(final Configs configs,
-      final WorkerConfigs workerConfigs,
-      final ProcessFactory processFactory,
-      final JobRunConfig jobRunConfig
-  ) {
+                            final WorkerConfigs workerConfigs,
+                            final ProcessFactory processFactory,
+                            final JobRunConfig jobRunConfig) {
     this.configs = configs;
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
@@ -79,9 +78,9 @@ public class DbtJobOrchestrator implements JobOrchestrator<OperatorDbtInput> {
         workerConfigs.getResourceRequirements(),
         new DbtTransformationRunner(
             processFactory, NormalizationRunnerFactory.create(
-            destinationLauncherConfig.getDockerImage(),
-            processFactory,
-            NormalizationRunnerFactory.NORMALIZATION_VERSION)));
+                destinationLauncherConfig.getDockerImage(),
+                processFactory,
+                NormalizationRunnerFactory.NORMALIZATION_VERSION)));
 
     log.info("Running dbt worker...");
     final Path jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(),

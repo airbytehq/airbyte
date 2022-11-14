@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.container_orchestrator;
+package io.airbyte.container_orchestrator.config;
 
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
@@ -48,7 +48,7 @@ class ContainerOrchestratorFactory {
   }
 
   @Singleton
-  EnvConfigs envConfigs(@Named("envs") final Map<String, String> env) {
+  EnvConfigs envConfigs(@Named("envVars") final Map<String, String> env) {
     return new EnvConfigs(env);
   }
 
@@ -72,9 +72,9 @@ class ContainerOrchestratorFactory {
   @Singleton
   @Requires(env = Environment.KUBERNETES)
   ProcessFactory kubeProcessFactory(
-      final WorkerConfigs workerConfigs,
-      final EnvConfigs configs,
-      @Value("${micronaut.server.port}") final int serverPort)
+                                    final WorkerConfigs workerConfigs,
+                                    final EnvConfigs configs,
+                                    @Value("${micronaut.server.port}") final int serverPort)
       throws UnknownHostException {
     final var localIp = InetAddress.getLocalHost().getHostAddress();
     final var kubeHeartbeatUrl = localIp + ":" + serverPort;
@@ -93,14 +93,14 @@ class ContainerOrchestratorFactory {
 
   @Singleton
   JobOrchestrator<?> jobOrchestrator(
-      @Named("application") final String application,
-      final EnvConfigs envConfigs,
-      final ProcessFactory processFactory,
-      final FeatureFlags featureFlags,
-      final WorkerConfigs workerConfigs,
-      final AirbyteMessageSerDeProvider serdeProvider,
-      final AirbyteMessageVersionedMigratorFactory migratorFactory,
-      final JobRunConfig jobRunConfig) {
+                                     @Named("application") final String application,
+                                     final EnvConfigs envConfigs,
+                                     final ProcessFactory processFactory,
+                                     final FeatureFlags featureFlags,
+                                     final WorkerConfigs workerConfigs,
+                                     final AirbyteMessageSerDeProvider serdeProvider,
+                                     final AirbyteMessageVersionedMigratorFactory migratorFactory,
+                                     final JobRunConfig jobRunConfig) {
     return switch (application) {
       case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(envConfigs, processFactory, featureFlags, serdeProvider,
           migratorFactory, jobRunConfig);

@@ -10,19 +10,22 @@ import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.container_orchestrator.orchestrator.JobOrchestrator;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.micronaut.runtime.Micronaut;
+import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Entrypoint for the application responsible for launching containers and handling all message passing for replication, normalization, and dbt. Also,
- * the current version relies on a heartbeat from a Temporal worker. This will also be removed in the future so this can run fully async.
+ * Entrypoint for the application responsible for launching containers and handling all message
+ * passing for replication, normalization, and dbt. Also, the current version relies on a heartbeat
+ * from a Temporal worker. This will also be removed in the future so this can run fully async.
  * <p>
- * This application retrieves most of its configuration from copied files from the calling Temporal worker.
+ * This application retrieves most of its configuration from copied files from the calling Temporal
+ * worker.
  * <p>
- * This app uses default logging which is directly captured by the calling Temporal worker. In the future this will need to independently interact
- * with cloud storage.
+ * This app uses default logging which is directly captured by the calling Temporal worker. In the
+ * future this will need to independently interact with cloud storage.
  */
 @SuppressWarnings({"PMD.AvoidCatchingThrowable", "PMD.DoNotTerminateVM"})
 @Singleton
@@ -50,9 +53,9 @@ public class Application {
   private final AsyncStateManager asyncStateManager;
 
   public Application(
-      final String application,
-      final JobOrchestrator<?> jobOrchestrator,
-      final AsyncStateManager asyncStateManager) {
+                     @Named("application") final String application,
+                     final JobOrchestrator<?> jobOrchestrator,
+                     final AsyncStateManager asyncStateManager) {
     this.application = application;
     this.jobOrchestrator = jobOrchestrator;
     this.asyncStateManager = asyncStateManager;
@@ -61,8 +64,9 @@ public class Application {
   /**
    * Configures logging/mdc scope, and creates all objects necessary to handle state updates.
    * <p>
-   * Handles state updates (including writing failures) and running the job orchestrator. As much of the initialization as possible should go in here,
-   * so it's logged properly and the state storage is updated appropriately.
+   * Handles state updates (including writing failures) and running the job orchestrator. As much of
+   * the initialization as possible should go in here, so it's logged properly and the state storage
+   * is updated appropriately.
    */
   @VisibleForTesting
   int run() {

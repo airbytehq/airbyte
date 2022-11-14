@@ -35,13 +35,16 @@ import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This process allows creating and managing a pod outside the lifecycle of the launching application. Unlike {@link KubePodProcess} there is no
- * heartbeat mechanism that requires the launching pod and the launched pod to co-exist for the duration of execution for the launched pod.
+ * This process allows creating and managing a pod outside the lifecycle of the launching
+ * application. Unlike {@link KubePodProcess} there is no heartbeat mechanism that requires the
+ * launching pod and the launched pod to co-exist for the duration of execution for the launched
+ * pod.
  * <p>
- * Instead, this process creates the pod and interacts with a document store on cloud storage to understand the state of the created pod.
+ * Instead, this process creates the pod and interacts with a document store on cloud storage to
+ * understand the state of the created pod.
  * <p>
- * The document store is considered to be the truth when retrieving the status for an async pod process. If the store isn't updated by the underlying
- * pod, it will appear as failed.
+ * The document store is considered to be the truth when retrieving the status for an async pod
+ * process. If the store isn't updated by the underlying pod, it will appear as failed.
  */
 @Slf4j
 public class AsyncOrchestratorPodProcess implements KubePod {
@@ -60,14 +63,14 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   private final Integer serverPort;
 
   public AsyncOrchestratorPodProcess(
-      final KubePodInfo kubePodInfo,
-      final DocumentStoreClient documentStoreClient,
-      final KubernetesClient kubernetesClient,
-      final String secretName,
-      final String secretMountPath,
-      final String googleApplicationCredentials,
-      final Map<String, String> environmentVariables,
-      final Integer serverPort) {
+                                     final KubePodInfo kubePodInfo,
+                                     final DocumentStoreClient documentStoreClient,
+                                     final KubernetesClient kubernetesClient,
+                                     final String secretName,
+                                     final String secretMountPath,
+                                     final String googleApplicationCredentials,
+                                     final Map<String, String> environmentVariables,
+                                     final Integer serverPort) {
     this.kubePodInfo = kubePodInfo;
     this.documentStoreClient = documentStoreClient;
     this.kubernetesClient = kubernetesClient;
@@ -255,9 +258,9 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
   // but does that mean there won't be a docker equivalent?
   public void create(final Map<String, String> allLabels,
-      final ResourceRequirements resourceRequirements,
-      final Map<String, String> fileMap,
-      final Map<Integer, Integer> portMap) {
+                     final ResourceRequirements resourceRequirements,
+                     final Map<String, String> fileMap,
+                     final Map<Integer, Integer> portMap) {
     final List<Volume> volumes = new ArrayList<>();
     final List<VolumeMount> volumeMounts = new ArrayList<>();
     final List<EnvVar> envVars = new ArrayList<>();
@@ -306,21 +309,21 @@ public class AsyncOrchestratorPodProcess implements KubePod {
             "sh",
             "-c",
             String.format("""
-                    i=0
-                    until [ $i -gt 60 ]
-                    do
-                      echo "$i - waiting for config file transfer to complete..."
-                      # check if the upload-complete file exists, if so exit without error
-                      if [ -f "%s/%s" ]; then
-                        exit 0
-                      fi
-                      i=$((i+1))
-                      sleep 1
-                    done
-                    echo "config files did not transfer in time"
-                    # no upload-complete file was created in time, exit with error
-                    exit 1
-                    """,
+                          i=0
+                          until [ $i -gt 60 ]
+                          do
+                            echo "$i - waiting for config file transfer to complete..."
+                            # check if the upload-complete file exists, if so exit without error
+                            if [ -f "%s/%s" ]; then
+                              exit 0
+                            fi
+                            i=$((i+1))
+                            sleep 1
+                          done
+                          echo "config files did not transfer in time"
+                          # no upload-complete file was created in time, exit with error
+                          exit 1
+                          """,
                 KubePodProcess.CONFIG_DIR,
                 KubePodProcess.SUCCESS_FILE_NAME)))
         .build();
@@ -362,7 +365,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .inNamespace(kubePodInfo.namespace())
         .withName(kubePodInfo.name())
         .waitUntilCondition(p -> !p.getStatus().getInitContainerStatuses().isEmpty()
-                && p.getStatus().getInitContainerStatuses().get(0).getState().getWaiting() == null,
+            && p.getStatus().getInitContainerStatuses().get(0).getState().getWaiting() == null,
             5, TimeUnit.MINUTES);
 
     final var podStatus = kubernetesClient.pods()

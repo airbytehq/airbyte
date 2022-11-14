@@ -9,7 +9,7 @@ import io.airbyte.commons.temporal.sync.OrchestratorConstants;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.persistence.job.models.JobRunConfig;
-import io.micronaut.context.event.ApplicationEventListener;
+import io.micronaut.runtime.event.annotation.EventListener;
 import io.micronaut.runtime.server.event.ServerStartupEvent;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
@@ -21,25 +21,43 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Singleton
-public class LoggingEventListener implements ApplicationEventListener<ServerStartupEvent> {
+public class EventListeners {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  private final Map<String, String> envs;
+  private final Map<String, String> envVars;
   private final EnvConfigs configs;
   private final JobRunConfig jobRunConfig;
 
-  LoggingEventListener(@Named("envs") final Map<String, String> envs, final EnvConfigs configs, final JobRunConfig jobRunConfig) {
-    this.envs = envs;
+  EventListeners(@Named("envVars") final Map<String, String> envVars, final EnvConfigs configs, final JobRunConfig jobRunConfig) {
+    this.envVars = envVars;
     this.configs = configs;
     this.jobRunConfig = jobRunConfig;
   }
 
-  @Override
-  public void onApplicationEvent(final ServerStartupEvent event) {
-    log.info("started logging");
+  /**
+   * Configures the environment variables for this app.
+   * <p>
+   * Should this be replaced with env-vars set on the container itself?
+   *
+   * @param unused required so Micronaut knows when to run this event-listener, but not used
+   */
+  @EventListener
+  void setEnvVars(final ServerStartupEvent unused) {
+    log.info("settings env vars");
+
     OrchestratorConstants.ENV_VARS_TO_TRANSFER.stream()
-        .filter(envs::containsKey)
-        .forEach(envVar -> System.setProperty(envVar, envs.get(envVar)));
+        .filter(envVars::containsKey)
+        .forEach(envVar -> System.setProperty(envVar, envVars.get(envVar)));
+  }
+
+  /**
+   * Configures the logging for this app.
+   *
+   * @param unused required so Micronaut knows when to run this event-listener, but not used
+   */
+  @EventListener
+  public void setLogging(final ServerStartupEvent unused) {
+    log.info("started logging");
 
     // make sure the new configuration is picked up
     final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);

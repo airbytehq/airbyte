@@ -3,7 +3,7 @@ micronaut:
     port: 9000
 
 airbyte:
-  config-dir: /tmp/conorc
+  config-dir: /Users/cole/data/con-orc
 #  local:
 #    docker-mount: ${LOCAL_DOCKER_MOUNT:}
 #    root: ${LOCAL_ROOT:}

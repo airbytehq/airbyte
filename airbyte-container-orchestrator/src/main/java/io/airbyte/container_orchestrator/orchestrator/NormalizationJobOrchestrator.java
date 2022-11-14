@@ -54,7 +54,7 @@ public class NormalizationJobOrchestrator implements JobOrchestrator<Normalizati
   @Trace(operationName = JOB_ORCHESTRATOR_OPERATION_NAME)
   @Override
   public Optional<String> runJob() throws Exception {
-//    final JobRunConfig jobRunConfig = readJobRunConfig();
+    // final JobRunConfig jobRunConfig = readJobRunConfig();
     final NormalizationInput normalizationInput = readInput();
 
     final IntegrationLauncherConfig destinationLauncherConfig = JobOrchestrator.readAndDeserializeFile(
