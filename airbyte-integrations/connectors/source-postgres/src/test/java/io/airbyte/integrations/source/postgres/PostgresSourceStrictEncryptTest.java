@@ -116,6 +116,9 @@ public class PostgresSourceStrictEncryptTest {
 
       final ImmutableMap<Object, Object> configBuilderWithSslModeRequire = getDatabaseConfigBuilderWithSSLMode(db, "require").build();
       final JsonNode config = Jsons.jsonNode(configBuilderWithSslModeRequire);
+      ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(ImmutableMap.builder()
+              .put("tunnel_method", "NO_TUNNEL")
+              .build()));
       final AirbyteConnectionStatus connectionStatusForPreferredMode = new PostgresSourceStrictEncrypt().check(config);
       assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatusForPreferredMode.getStatus());
     }
