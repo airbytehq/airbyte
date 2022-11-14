@@ -142,6 +142,7 @@ const schema: AirbyteJSONSchema = {
   },
 };
 
+jest.mock("hooks/services/AppMonitoringService");
 jest.mock("hooks/services/Analytics");
 
 jest.mock("hooks/services/useWorkspace", () => ({
