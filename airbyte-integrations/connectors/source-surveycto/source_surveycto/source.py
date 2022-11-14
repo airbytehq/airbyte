@@ -96,7 +96,6 @@ class SurveyctoStream(SurveyStream, IncrementalMixin):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         ix = self.state[self.cursor_field] 
-        
         return {'date': ix.strftime(self.date_format_scto)}
 
     def request_headers(
@@ -124,19 +123,19 @@ class SurveyctoStream(SurveyStream, IncrementalMixin):
                 data["KEY"] = o
  
                 starttime = data["starttime"]
-                a = datetime.strptime(starttime,'%b %d, %Y %I:%M:%S %p').strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                a = datetime.strptime(starttime, self.date_format_scto).strftime(self.dateformat)
                 data["starttime"] = a
 
                 endtime = data["endtime"]
-                a = datetime.strptime(endtime,'%b %d, %Y %I:%M:%S %p').strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                a = datetime.strptime(endtime, self.date_format_scto).strftime(self.dateformat)
                 data["endtime"] = a
 
                 completiondate = data["CompletionDate"]
-                a = datetime.strptime(completiondate,'%b %d, %Y %I:%M:%S %p').strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                a = datetime.strptime(completiondate, self.date_format_scto).strftime(self.dateformat)
                 data["CompletionDate"] = a
 
                 submissiondate = data["SubmissionDate"]
-                a = datetime.strptime(submissiondate,'%b %d, %Y %I:%M:%S %p').strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                a = datetime.strptime(submissiondate, self.date_format_scto).strftime(self.dateformat)
                 data["SubmissionDate"] = a
 
                 
@@ -175,5 +174,4 @@ class SourceSurveycto(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:    
         streams = self.generate_streams(config=config)
         return streams
-
 
