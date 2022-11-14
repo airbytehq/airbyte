@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+retries=3
+
 function pull_dockerhub_image_with_retries() {
     local image=$1
     local retries=$2
@@ -29,8 +31,6 @@ function main() {
                 exit 1
                 ;;
         esac
-    else
-        retries=3
     done
     shift "$(($OPTIND -1))"
 
