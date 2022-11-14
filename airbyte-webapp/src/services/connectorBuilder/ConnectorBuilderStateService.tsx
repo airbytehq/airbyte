@@ -36,7 +36,7 @@ const useJsonManifest = () => {
 
 const useSelected = () => {
   const { jsonManifest } = useJsonManifest();
-  const configJson = useConfig();
+  const { configJson } = useConfig();
   const streamListRead = useListStreams({ manifest: jsonManifest, config: configJson });
   const streams = streamListRead.streams;
 
