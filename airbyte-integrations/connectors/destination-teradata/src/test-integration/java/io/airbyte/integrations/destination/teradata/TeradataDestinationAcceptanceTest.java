@@ -35,10 +35,10 @@ import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.factory.DSLContextFactory;
 import org.jooq.DSLContext;
 
-public class TeradataDestinationAcceptanceTest extends DestinationAcceptanceTest {
+public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TeradataDestinationAcceptanceTest.class);
-	 private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+	private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
 	private JsonNode configJson;
 	private JdbcDatabase database;
@@ -73,7 +73,10 @@ public class TeradataDestinationAcceptanceTest extends DestinationAcceptanceTest
 	@Override
 	protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv, final String streamName,
 			final String namespace, final JsonNode streamSchema) throws Exception {
-
+		LOGGER.info("TeradataDestinationAcceptanceTest : streamName : " + streamName);
+		LOGGER.info("TeradataDestinationAcceptanceTest : namespace : " + namespace);
+		LOGGER.info("TeradataDestinationAcceptanceTest : streamSchema : " + streamSchema);
+		LOGGER.info("TeradataDestinationAcceptanceTest : testEnv : " + testEnv);
 		return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
 				.map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA)).collect(Collectors.toList());
 
@@ -81,13 +84,13 @@ public class TeradataDestinationAcceptanceTest extends DestinationAcceptanceTest
 
 	private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
 			throws SQLException {
-
+		LOGGER.info("TeradataDestinationAcceptanceTest : tableName : " + tableName);
+		LOGGER.info("TeradataDestinationAcceptanceTest : schemaName : " + schemaName);
 		final List<JsonNode> actual = database.bufferedResultSetQuery(
-				connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
+				connection -> connection.createStatement().executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName)),
 				sourceOperations::rowToJson);
 		return actual;
 	}
-	
 
 	@Override
 	protected void setup(TestDestinationEnv testEnv) {
@@ -97,10 +100,13 @@ public class TeradataDestinationAcceptanceTest extends DestinationAcceptanceTest
 
 		try {
 			this.configJson = Jsons.clone(getStaticConfig());
+			LOGGER.info("TeradataDestinationAcceptanceTest : setup - configJson : " + configJson);
 			((ObjectNode) configJson).put("schema", schemaName);
 
 			dataSource = getDataSource(configJson);
+			LOGGER.info("TeradataDestinationAcceptanceTest : setup - dataSource : " + dataSource);
 			database = getDatabase(dataSource);
+			LOGGER.info("TeradataDestinationAcceptanceTest : setup - database : " + database);
 			database.execute(createSchemaQuery);
 		} catch (Exception e) {
 			AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "setup failed");
@@ -109,6 +115,16 @@ public class TeradataDestinationAcceptanceTest extends DestinationAcceptanceTest
 
 	@Override
 	protected void tearDown(TestDestinationEnv testEnv) {
+	}
+
+	@Override
+	protected boolean supportsNormalization() {
+		return false;
+	}
+
+	@Override
+	protected boolean supportsDBT() {
+		return false;
 	}
 
 	protected DataSource getDataSource(final JsonNode config) {
