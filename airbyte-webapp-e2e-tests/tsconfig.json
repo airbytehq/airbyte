@@ -14,7 +14,7 @@
     "resolveJsonModule": true,
     "jsx": "react-jsx",
     "noFallthroughCasesInSwitch": true,
-    "types": ["cypress"],
+    "types": ["cypress", "node"],
     "lib": ["es2015", "dom"],
     "isolatedModules": false,
     "allowJs": true,

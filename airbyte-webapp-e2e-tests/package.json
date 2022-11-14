@@ -21,6 +21,7 @@
     ]
   },
   "devDependencies": {
+    "@types/node": "^18.11.9",
     "cypress": "^9.2.0",
     "cypress-postgres": "^1.1.1",
     "eslint-plugin-cypress": "^2.12.1",
