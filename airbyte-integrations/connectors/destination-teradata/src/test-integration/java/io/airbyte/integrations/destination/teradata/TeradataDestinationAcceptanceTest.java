@@ -98,7 +98,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 	protected void setup(TestDestinationEnv testEnv) {
 		final String schemaName = Strings.addRandomSuffix("integration_test", "_", 5);
 		final String createSchemaQuery = String
-				.format(String.format("CREATE DATABASE %s AS PERM = 1e9 SKEW = 10 PERCENT;", schemaName));
+				.format(String.format("CREATE DATABASE %s AS PERMANENT = 1048576", schemaName));
 
 		try {
 			this.configJson = Jsons.clone(getStaticConfig());
