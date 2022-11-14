@@ -1775,6 +1775,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/wikipedia-pageviews
   sourceType: api
   releaseStage: alpha
+- name: WorkRamp
+  sourceDefinitionId: 05b0bce2-4ec4-4534-bb1a-5d0127bd91b7
+  dockerRepository: airbyte/source-workramp
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/workramp
+  sourceType: api
+  releaseStage: alpha
 - name: Yandex Metrica
   sourceDefinitionId: 7865dce4-2211-4f6a-88e5-9d0fe161afe7
   dockerRepository: airbyte/source-yandex-metrica
