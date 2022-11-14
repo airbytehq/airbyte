@@ -18,6 +18,7 @@ import io.airbyte.api.model.generated.SourceOauthConsentRequest;
 import io.airbyte.commons.constants.AirbyteSecretConstants;
 import io.airbyte.commons.json.JsonPaths;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
@@ -31,6 +32,7 @@ import io.airbyte.oauth.OAuthImplementationFactory;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.tracker.TrackingMetadata;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.server.handlers.helpers.OAuthPathExtractor;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.http.HttpClient;
@@ -62,46 +64,48 @@ public class OAuthHandler {
     this.secretsRepositoryReader = secretsRepositoryReader;
   }
 
-  public OAuthConsentRead getSourceOAuthConsent(final SourceOauthConsentRequest sourceDefinitionIdRequestBody)
+  public OAuthConsentRead getSourceOAuthConsent(final SourceOauthConsentRequest sourceOauthConsentRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSourceDefinition sourceDefinition =
-        configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId());
+        configRepository.getStandardSourceDefinition(sourceOauthConsentRequest.getSourceDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(sourceDefinition);
     final ConnectorSpecification spec = sourceDefinition.getSpec();
-    final Map<String, Object> metadata = generateSourceMetadata(sourceDefinitionIdRequestBody.getSourceDefinitionId());
+    final Map<String, Object> metadata = generateSourceMetadata(sourceOauthConsentRequest.getSourceDefinitionId());
     final OAuthConsentRead result;
     if (OAuthConfigSupplier.hasOAuthConfigSpecification(spec)) {
-      JsonNode oAuthInputConfigurationForConsent;
+      final JsonNode oAuthInputConfigurationForConsent;
 
-      if (sourceDefinitionIdRequestBody.getSourceId() == null) {
-        oAuthInputConfigurationForConsent = sourceDefinitionIdRequestBody.getoAuthInputConfiguration();
+      if (sourceOauthConsentRequest.getSourceId() == null) {
+        oAuthInputConfigurationForConsent = sourceOauthConsentRequest.getoAuthInputConfiguration();
       } else {
         final SourceConnection hydratedSourceConnection =
-            secretsRepositoryReader.getSourceConnectionWithSecrets(sourceDefinitionIdRequestBody.getSourceId());
+            secretsRepositoryReader.getSourceConnectionWithSecrets(sourceOauthConsentRequest.getSourceId());
 
-        List<String> fieldsToGet =
-            buildJsonPathFromOAuthFlowInitParameters(spec.getAuthSpecification().getOauth2Specification().getOauthFlowInitParameters());
+        final List<String> fieldsToGet =
+            buildJsonPathFromOAuthFlowInitParameters(
+                OAuthPathExtractor.extractOauthConfigurationPaths(
+                    spec.getAdvancedAuth().getOauthConfigSpecification().getOauthUserInputFromConnectorConfigSpecification()));
 
-        JsonNode oAuthInputConfigurationFromDB = getOAuthInputConfiguration(hydratedSourceConnection.getConfiguration(), fieldsToGet);
+        final JsonNode oAuthInputConfigurationFromDB = getOAuthInputConfiguration(hydratedSourceConnection.getConfiguration(), fieldsToGet);
 
         oAuthInputConfigurationForConsent = getOauthFromDBIfNeeded(oAuthInputConfigurationFromDB,
-            sourceDefinitionIdRequestBody.getoAuthInputConfiguration());
+            sourceOauthConsentRequest.getoAuthInputConfiguration());
       }
 
       result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getSourceConsentUrl(
-          sourceDefinitionIdRequestBody.getWorkspaceId(),
-          sourceDefinitionIdRequestBody.getSourceDefinitionId(),
-          sourceDefinitionIdRequestBody.getRedirectUrl(),
+          sourceOauthConsentRequest.getWorkspaceId(),
+          sourceOauthConsentRequest.getSourceDefinitionId(),
+          sourceOauthConsentRequest.getRedirectUrl(),
           oAuthInputConfigurationForConsent,
           spec.getAdvancedAuth().getOauthConfigSpecification()));
     } else {
       result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getSourceConsentUrl(
-          sourceDefinitionIdRequestBody.getWorkspaceId(),
-          sourceDefinitionIdRequestBody.getSourceDefinitionId(),
-          sourceDefinitionIdRequestBody.getRedirectUrl(), Jsons.emptyObject(), null));
+          sourceOauthConsentRequest.getWorkspaceId(),
+          sourceOauthConsentRequest.getSourceDefinitionId(),
+          sourceOauthConsentRequest.getRedirectUrl(), Jsons.emptyObject(), null));
     }
     try {
-      trackingClient.track(sourceDefinitionIdRequestBody.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
+      trackingClient.track(sourceOauthConsentRequest.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
     } catch (final Exception e) {
       LOGGER.error(ERROR_MESSAGE, e);
     }
@@ -117,18 +121,19 @@ public class OAuthHandler {
     final Map<String, Object> metadata = generateDestinationMetadata(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
     final OAuthConsentRead result;
     if (OAuthConfigSupplier.hasOAuthConfigSpecification(spec)) {
-      JsonNode oAuthInputConfigurationForConsent;
+      final JsonNode oAuthInputConfigurationForConsent;
 
       if (destinationDefinitionIdRequestBody.getDestinationId() == null) {
         oAuthInputConfigurationForConsent = destinationDefinitionIdRequestBody.getoAuthInputConfiguration();
       } else {
-        final SourceConnection hydratedSourceConnection =
-            secretsRepositoryReader.getSourceConnectionWithSecrets(destinationDefinitionIdRequestBody.getDestinationId());
+        final DestinationConnection hydratedSourceConnection =
+            secretsRepositoryReader.getDestinationConnectionWithSecrets(destinationDefinitionIdRequestBody.getDestinationId());
 
-        List<String> fieldsToGet =
-            buildJsonPathFromOAuthFlowInitParameters(spec.getAuthSpecification().getOauth2Specification().getOauthFlowInitParameters());
+        final List<String> fieldsToGet =
+            buildJsonPathFromOAuthFlowInitParameters(OAuthPathExtractor.extractOauthConfigurationPaths(
+                spec.getAdvancedAuth().getOauthConfigSpecification().getOauthUserInputFromConnectorConfigSpecification()));
 
-        JsonNode oAuthInputConfigurationFromDB = getOAuthInputConfiguration(hydratedSourceConnection.getConfiguration(), fieldsToGet);
+        final JsonNode oAuthInputConfigurationFromDB = getOAuthInputConfiguration(hydratedSourceConnection.getConfiguration(), fieldsToGet);
 
         oAuthInputConfigurationForConsent = getOauthFromDBIfNeeded(oAuthInputConfigurationFromDB,
             destinationDefinitionIdRequestBody.getoAuthInputConfiguration());
@@ -255,15 +260,15 @@ public class OAuthHandler {
   }
 
   @VisibleForTesting
-  List<String> buildJsonPathFromOAuthFlowInitParameters(List<List<String>> oAuthFlowInitParameters) {
+  List<String> buildJsonPathFromOAuthFlowInitParameters(final List<List<String>> oAuthFlowInitParameters) {
     return oAuthFlowInitParameters.stream()
         .map(path -> "$." + String.join(".", path))
         .toList();
   }
 
   @VisibleForTesting
-  JsonNode getOauthFromDBIfNeeded(JsonNode oAuthInputConfigurationFromDB, JsonNode oAuthInputConfigurationFromInput) {
-    Map<String, String> result = new HashMap<>();
+  JsonNode getOauthFromDBIfNeeded(final JsonNode oAuthInputConfigurationFromDB, final JsonNode oAuthInputConfigurationFromInput) {
+    final Map<String, String> result = new HashMap<>();
 
     Jsons.deserializeToStringMap(oAuthInputConfigurationFromInput)
         .forEach((k, v) -> {
@@ -278,7 +283,7 @@ public class OAuthHandler {
   }
 
   @VisibleForTesting
-  JsonNode getOAuthInputConfiguration(JsonNode hydratedSourceConnectionConfiguration, List<String> pathsToGet) {
+  JsonNode getOAuthInputConfiguration(final JsonNode hydratedSourceConnectionConfiguration, final List<String> pathsToGet) {
     return Jsons.jsonNode(pathsToGet.stream().map(path -> Map.entry(path,
         JsonPaths.getSingleValue(hydratedSourceConnectionConfiguration, path)))
         .collect(Collectors.toMap(
