@@ -58,8 +58,7 @@
 }
 
 .purpleBackground {
-  background-color: colors.$blue;
-  opacity: 0.1;
+  background-color: rgba(colors.$blue, 0.1);
 }
 
 .noHeader {
