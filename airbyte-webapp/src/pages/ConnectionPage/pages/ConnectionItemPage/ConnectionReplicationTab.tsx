@@ -41,8 +41,13 @@ export const ConnectionReplicationTab: React.FC = () => {
 
   const [saved, setSaved] = useState(false);
 
-  const { connection, schemaRefreshing, schemaHasBeenRefreshed, updateConnection, clearRefreshedSchema } =
-    useConnectionEditService();
+  const {
+    connection,
+    schemaRefreshing,
+    schemaHasBeenRefreshed,
+    updateConnection,
+    discardRefreshedSchema: clearRefreshedSchema,
+  } = useConnectionEditService();
   const { initialValues, mode, schemaError, getErrorMessage, setSubmitError } = useConnectionFormService();
   const allowSubOneHourCronExpressions = useFeature(FeatureItem.AllowSyncSubOneHourCronExpressions);
 
@@ -135,7 +140,6 @@ export const ConnectionReplicationTab: React.FC = () => {
         }
 
         setSaved(true);
-        clearRefreshedSchema();
       } catch (e) {
         setSubmitError(e);
       }
@@ -151,7 +155,6 @@ export const ConnectionReplicationTab: React.FC = () => {
       mode,
       openModal,
       saveConnection,
-      clearRefreshedSchema,
       setSubmitError,
       workspaceId,
       allowSubOneHourCronExpressions,
