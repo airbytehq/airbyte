@@ -16,7 +16,7 @@ export const destinationDefinitionKeys = {
   detail: (id: string) => [...destinationDefinitionKeys.all, "details", id] as const,
 };
 
-function useGetDestinationDefinitionService(): DestinationDefinitionService {
+export function useGetDestinationDefinitionService(): DestinationDefinitionService {
   const { apiUrl } = useConfig();
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();

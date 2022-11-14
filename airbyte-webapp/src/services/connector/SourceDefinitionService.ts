@@ -16,7 +16,7 @@ export const sourceDefinitionKeys = {
   detail: (id: string) => [...sourceDefinitionKeys.all, "details", id] as const,
 };
 
-function useGetSourceDefinitionService(): SourceDefinitionService {
+export function useGetSourceDefinitionService(): SourceDefinitionService {
   const { apiUrl } = useConfig();
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();

@@ -9,8 +9,7 @@ import { Text } from "components/ui/Text";
 import { Tooltip } from "components/ui/Tooltip";
 
 import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
-import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
-import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { useConnectorSpecifications } from "services/connector/ConnectorDefinitions";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { getIcon } from "utils/imageUtils";
 import { links } from "utils/links";
@@ -26,10 +25,10 @@ interface ConnectionOnboardingProps {
 export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCreate }) => {
   const { formatMessage } = useIntl();
   const workspace = useCurrentWorkspace();
-  // TODO: Those should be parallelized
-  const sourceDefinitions = useAvailableConnectorDefinitions(useSourceDefinitionList().sourceDefinitions, workspace);
+  const connectorSpecifications = useConnectorSpecifications();
+  const sourceDefinitions = useAvailableConnectorDefinitions(connectorSpecifications.sourceDefinitions, workspace);
   const destinationDefinitions = useAvailableConnectorDefinitions(
-    useDestinationDefinitionList().destinationDefinitions,
+    connectorSpecifications.destinationDefinitions,
     workspace
   );
 
