@@ -82,15 +82,15 @@ class MicrosoftDataverseStream(HttpStream, ABC):
             "Cache-Control": "no-cache",
             "OData-Version": "4.0",
             "Content-Type": "application/json",
-            "Prefer": "odata.maxpagesize=" + str(self.odata_maxpagesize)
+            "Prefer": "odata.maxpagesize=" + str(self.odata_maxpagesize),
         }
 
     def path(
-            self,
-            *,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return self.stream_path
 

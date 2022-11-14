@@ -7,7 +7,6 @@ from unittest.mock import MagicMock
 
 import pytest
 from pytest import fixture
-
 from source_microsoft_dataverse.source import MicrosoftDataverseStream
 
 

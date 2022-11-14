@@ -1,6 +1,9 @@
-import pytest
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
 
-from source_microsoft_dataverse.dataverse import convert_dataverse_type, AirbyteType
+import pytest
+from source_microsoft_dataverse.dataverse import AirbyteType, convert_dataverse_type
 
 
 @pytest.mark.parametrize("dataverse_type,expected_result", [

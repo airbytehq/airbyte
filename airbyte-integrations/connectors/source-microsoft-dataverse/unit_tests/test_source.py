@@ -1,12 +1,12 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import json
 from unittest import mock
 from unittest.mock import MagicMock
 
 from airbyte_cdk.models import SyncMode
-
 from source_microsoft_dataverse.dataverse import AirbyteType
 from source_microsoft_dataverse.source import SourceMicrosoftDataverse
 from source_microsoft_dataverse.streams import IncrementalMicrosoftDataverseStream, MicrosoftDataverseStream
