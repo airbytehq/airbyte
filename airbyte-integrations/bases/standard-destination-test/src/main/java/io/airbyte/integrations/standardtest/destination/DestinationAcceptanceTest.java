@@ -1208,6 +1208,7 @@ public abstract class DestinationAcceptanceTest {
   }
 
   protected AirbyteDestination getDestination() {
+	  LOGGER.info("DestinationAcceptanceTest : getDestination - getImageName : " + getImageName());
     return new DefaultAirbyteDestination(
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null));
   }
@@ -1276,7 +1277,7 @@ public abstract class DestinationAcceptanceTest {
     while (!destination.isFinished()) {
       destination.attemptRead().ifPresent(destinationOutput::add);
     }
-
+    LOGGER.info("DestinationAcceptanceTest : runSync - destination : " + destination);
     destination.close();
 
     if (!runNormalization) {
