@@ -59,13 +59,6 @@
         "type": "string",
         "order": 6
       },
-      "ssl": {
-        "title": "Connect using SSL",
-        "description": "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
-        "type": "boolean",
-        "default": false,
-        "order": 7
-      },
       "ssl_mode": {
         "title": "SSL Modes",
         "description": "SSL connection modes. \n <ul><li><b>disable</b> - Disables encryption of communication between Airbyte and source database</li>\n <li><b>allow</b> - Enables encryption only when required by the source database</li>\n <li><b>prefer</b> - allows unencrypted connection only if the source database does not support encryption</li>\n <li><b>require</b> - Always require encryption. If the source database server does not support encryption, connection will fail</li>\n  <li><b>verify-ca</b> - Always require encryption and verifies that the source database server has a valid SSL certificate</li>\n  <li><b>verify-full</b> - This is the most secure mode. Always require encryption and verifies the identity of the source database server</li></ul>\n Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",
