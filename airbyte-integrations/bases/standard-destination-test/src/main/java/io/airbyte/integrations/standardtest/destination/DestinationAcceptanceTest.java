@@ -501,6 +501,7 @@ public abstract class DestinationAcceptanceTest {
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
     final JsonNode config = getConfig();
+    LOGGER.info("testLineBreakCharacters - testLineBreakCharacters : ");
     LOGGER.info("testLineBreakCharacters - config : " + config);
     LOGGER.info("testLineBreakCharacters - catalog.getStreams().get(0).getName() : " + catalog.getStreams().get(0).getName());
     LOGGER.info("testLineBreakCharacters - catalog.getStreams().get(0).getName() : " + catalog.getStreams().get(0).getName());
