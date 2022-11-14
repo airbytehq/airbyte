@@ -41,7 +41,9 @@ def find_connectors_with_bad_strictness_level() -> List[str]:
 def main():
     connectors_with_bad_strictness_level = find_connectors_with_bad_strictness_level()
     if connectors_with_bad_strictness_level:
-        logging.error(f"The following GA connectors must enable high test strictness level: {connectors_with_bad_strictness_level}")
+        logging.error(
+            f"The following GA connectors must enable high test strictness level: {connectors_with_bad_strictness_level}. Please check this documentation for details: https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference/#strictness-level"
+        )
         sys.exit(1)
     else:
         sys.exit(0)
