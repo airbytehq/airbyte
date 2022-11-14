@@ -1,3 +1,7 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "form_id": "wrong form_id",
+  "server_name": "wrong server_name",
+  "username": "wrong username",
+  "password": "wrong password",
+  "start_date": "wrong date"
 }
