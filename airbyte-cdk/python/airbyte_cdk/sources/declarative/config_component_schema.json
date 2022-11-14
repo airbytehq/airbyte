@@ -515,6 +515,17 @@
             },
             "refresh_request_body": {
               "type": "object"
+            },
+            "grant_type": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "default": "refresh_token"
             }
           }
         }
