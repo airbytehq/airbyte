@@ -4,7 +4,6 @@ import { useConfig } from "config";
 import { ConnectorBuilderRequestService } from "core/domain/connectorBuilder/ConnectorBuilderRequestService";
 import {
   StreamReadRequestBody,
-  StreamReadRequestBodyConfig,
   StreamReadRequestBodyManifest,
   StreamsListRequestBody,
 } from "core/request/ConnectorBuilderClient";
@@ -14,8 +13,7 @@ import { useInitService } from "services/useInitService";
 
 const connectorBuilderKeys = {
   all: ["connectorBuilder"] as const,
-  read: (streamName: string, manifest: StreamReadRequestBodyManifest, config: StreamReadRequestBodyConfig) =>
-    [...connectorBuilderKeys.all, "read", { streamName, manifest, config }] as const,
+  read: (streamName: string) => [...connectorBuilderKeys.all, "read", { streamName }] as const,
   list: (manifest: StreamReadRequestBodyManifest) => [...connectorBuilderKeys.all, "list", { manifest }] as const,
 };
 
@@ -31,11 +29,10 @@ function useConnectorBuilderService() {
 export const useReadStream = (params: StreamReadRequestBody) => {
   const service = useConnectorBuilderService();
 
-  return useQuery(
-    connectorBuilderKeys.read(params.stream, params.manifest, params.config),
-    () => service.readStream(params),
-    { refetchOnWindowFocus: false, enabled: false }
-  );
+  return useQuery(connectorBuilderKeys.read(params.stream), () => service.readStream(params), {
+    refetchOnWindowFocus: false,
+    enabled: false,
+  });
 };
 
 export const useListStreams = (params: StreamsListRequestBody) => {

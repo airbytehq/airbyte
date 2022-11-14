@@ -3,7 +3,7 @@ import React from "react";
 import { useIntl } from "react-intl";
 import { useMutation } from "react-query";
 
-import { FormChangeTracker } from "components/FormChangeTracker";
+import { FormChangeTracker } from "components/common/FormChangeTracker";
 
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { generateMessageFromError } from "utils/errorStatusMessage";

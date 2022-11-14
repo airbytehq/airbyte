@@ -2,30 +2,35 @@ import { faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { Field, Form, Formik, FieldArray, FieldProps, FormikHelpers } from "formik";
+import { ReactNode } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
-import { array, object, number } from "yup";
+import * as yup from "yup";
 
-import { FormChangeTracker } from "components/FormChangeTracker";
+import { FormChangeTracker } from "components/common/FormChangeTracker";
 import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
 import { Input } from "components/ui/Input";
+import { Text } from "components/ui/Text";
 
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { DbtCloudJob, useDbtIntegration } from "packages/cloud/services/dbtCloud";
 import { RoutePaths } from "pages/routePaths";
 
+import dbtLogo from "./dbt-bit_tm.svg";
 import styles from "./DbtCloudTransformationsCard.module.scss";
+import octaviaWorker from "./octavia-worker.png";
 
 interface DbtJobListValues {
   jobs: DbtCloudJob[];
 }
 
-const dbtCloudJobListSchema = object({
-  jobs: array().of(
-    object({
-      account: number().required().positive().integer(),
-      job: number().required().positive().integer(),
+const dbtCloudJobListSchema = yup.object({
+  jobs: yup.array().of(
+    yup.object({
+      account: yup.number().required().positive().integer(),
+      job: yup.number().required().positive().integer(),
     })
   ),
 });
@@ -47,12 +52,12 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
   };
 
   return (
-    <Formik // TODO extract to parent component, see if that helps with input focus issues
+    <Formik
       onSubmit={onSubmit}
       initialValues={{ jobs: dbtCloudJobs }}
       validationSchema={dbtCloudJobListSchema}
       render={({ values, isValid, dirty }) => {
-        return (
+        return hasDbtIntegration ? (
           <Form className={styles.jobListForm}>
             <FormChangeTracker changed={dirty} />
             <FieldArray
@@ -62,29 +67,33 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
                   <Card
                     title={
                       <span className={styles.jobListTitle}>
-                        Transformations
-                        {hasDbtIntegration && (
-                          <Button
-                            variant="secondary"
-                            onClick={() => push({ account: "", job: "" })}
-                            icon={<FontAwesomeIcon icon={faPlus} />}
-                          >
-                            Add transformation
-                          </Button>
-                        )}
+                        <FormattedMessage id="connection.dbtCloudJobs.cardTitle" />
+                        <Button
+                          variant="secondary"
+                          onClick={() => push({ account: "", job: "" })}
+                          icon={<FontAwesomeIcon icon={faPlus} />}
+                        >
+                          <FormattedMessage id="connection.dbtCloudJobs.addJob" />
+                        </Button>
                       </span>
                     }
                   >
-                    {hasDbtIntegration ? (
-                      <DbtJobsList jobs={values.jobs} remove={remove} isValid={isValid} dirty={dirty} />
-                    ) : (
-                      <NoDbtIntegration className={styles.jobListContainer} />
-                    )}
+                    <DbtJobsList jobs={values.jobs} remove={remove} isValid={isValid} dirty={dirty} />
                   </Card>
                 );
               }}
             />
           </Form>
+        ) : (
+          <Card
+            title={
+              <span className={styles.jobListTitle}>
+                <FormattedMessage id="connection.dbtCloudJobs.cardTitle" />
+              </span>
+            }
+          >
+            <NoDbtIntegration />
+          </Card>
         );
       }}
     />
@@ -102,14 +111,20 @@ const DbtJobsList = ({
   isValid: boolean;
   dirty: boolean;
 }) => (
-  <div className={classNames(styles.jobListContainer, styles.emptyListContent)}>
-    <p className={styles.contextExplanation}>After an Airbyte sync job has completed, the following jobs will run</p>
+  <div className={classNames(styles.jobListContainer)}>
     {jobs.length ? (
-      jobs.map((_j, i) => <JobsListItem key={i} jobIndex={i} removeJob={() => remove(i)} />)
+      <>
+        <Text className={styles.contextExplanation}>
+          <FormattedMessage id="connection.dbtCloudJobs.explanation" />
+        </Text>
+        {jobs.map((_, i) => (
+          <JobsListItem key={i} jobIndex={i} removeJob={() => remove(i)} />
+        ))}
+      </>
     ) : (
       <>
-        <img src="/images/octavia/worker.png" alt="An octopus wearing a hard hat, tools at the ready" />
-        No transformations
+        <img src={octaviaWorker} alt="" className={styles.emptyListImage} />
+        <FormattedMessage id="connection.dbtCloudJobs.noJobs" />
       </>
     )}
     <div className={styles.jobListButtonGroup}>
@@ -125,11 +140,12 @@ const DbtJobsList = ({
 
 // TODO give feedback on validation errors (red outline and validation message)
 const JobsListItem = ({ jobIndex, removeJob }: { jobIndex: number; removeJob: () => void }) => {
+  const { formatMessage } = useIntl();
   return (
     <Card className={styles.jobListItem}>
       <div className={styles.jobListItemIntegrationName}>
-        <img src="/images/external/dbt-bit_tm.png" alt="dbt logo" />
-        dbt Cloud transform
+        <img src={dbtLogo} alt="" className={styles.dbtLogo} />
+        <FormattedMessage id="connection.dbtCloudJobs.job.title" />
       </div>
       <div className={styles.jobListItemInputGroup}>
         <div className={styles.jobListItemInput}>
@@ -137,7 +153,7 @@ const JobsListItem = ({ jobIndex, removeJob }: { jobIndex: number; removeJob: ()
             {({ field }: FieldProps<string>) => (
               <>
                 <label htmlFor={`jobs.${jobIndex}.account`} className={styles.jobListItemInputLabel}>
-                  Account ID
+                  <FormattedMessage id="connection.dbtCloudJobs.job.accountId" />
                 </label>
                 <Input {...field} type="text" />
               </>
@@ -149,33 +165,40 @@ const JobsListItem = ({ jobIndex, removeJob }: { jobIndex: number; removeJob: ()
             {({ field }: FieldProps<string>) => (
               <>
                 <label htmlFor={`jobs.${jobIndex}.job`} className={styles.jobListItemInputLabel}>
-                  Job ID
+                  <FormattedMessage id="connection.dbtCloudJobs.job.jobId" />
                 </label>
                 <Input {...field} type="text" />
               </>
             )}
           </Field>
         </div>
-        <button type="button" className={styles.jobListItemDelete} onClick={removeJob}>
+        <Button
+          variant="clear"
+          size="lg"
+          className={styles.jobListItemDelete}
+          onClick={removeJob}
+          aria-label={formatMessage({ id: "connection.dbtCloudJobs.job.deleteButton" })}
+        >
           <FontAwesomeIcon icon={faXmark} />
-        </button>
+        </Button>
       </div>
     </Card>
   );
 };
 
-const NoDbtIntegration = ({ className }: { className: string }) => {
+const NoDbtIntegration = () => {
   const { workspaceId } = useCurrentWorkspace();
   const dbtSettingsPath = `/${RoutePaths.Workspaces}/${workspaceId}/${RoutePaths.Settings}/dbt-cloud`;
   return (
-    <div className={classNames(className, styles.emptyListContent)}>
-      <p className={styles.contextExplanation}>After an Airbyte sync job has completed, the following jobs will run</p>
-      <p className={styles.contextExplanation}>
-        Go to your <Link to={dbtSettingsPath}>settings</Link> to connect your dbt Cloud account
-      </p>
-      <DbtCloudSignupBanner />
+    <div className={classNames(styles.jobListContainer)}>
+      <Text className={styles.contextExplanation}>
+        <FormattedMessage
+          id="connection.dbtCloudJobs.noIntegration"
+          values={{
+            settingsLink: (linkText: ReactNode) => <Link to={dbtSettingsPath}>{linkText}</Link>,
+          }}
+        />
+      </Text>
     </div>
   );
 };
-
-const DbtCloudSignupBanner = () => <div />;

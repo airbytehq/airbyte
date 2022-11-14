@@ -1,0 +1,56 @@
+version: "0.1.0"
+
+definitions:
+  schema_loader:
+    type: JsonSchema
+    file_path: "./source_sentry/schemas/{{ options.name }}.json"
+  selector:
+    extractor:
+      field_pointer:
+        - "{{ options['name'] }}"
+  requester:
+    url_base: "https://api.recruitee.com/c/{{ config.company_id }}"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+    primary_key: "id"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  candidates_stream:
+    # Docs: https://docs.recruitee.com/reference/candidates-get
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "candidates"
+      path: "/candidates"
+  offers_stream:
+    # Docs: https://docs.recruitee.com/reference/offers-get
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "offers"
+      path: "/offers"
+  departments_stream:
+    # Docs: https://docs.recruitee.com/reference/departments-get
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "departments"
+      path: "/departments"
+
+streams:
+  - "*ref(definitions.candidates_stream)"
+  - "*ref(definitions.offers_stream)"
+  - "*ref(definitions.departments_stream)"
+
+check:
+  stream_names:
+    - "candidates"
+    - "offers"
+    - "departments"
