@@ -2,13 +2,13 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_coda.source import CodaStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-import logging
+from source_coda.source import CodaStream
 
 logger = logging.getLogger()
 logger.level = logging.DEBUG
@@ -54,6 +54,7 @@ def test_parse_response(patch_base_class):
     expected_parsed_object = response.json()['items'][0]
     assert next(iter(stream.parse_response(**inputs))) == expected_parsed_object
 
+
 def test_request_headers(patch_base_class):
     stream = CodaStream(authenticator=authenticator)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
@@ -65,6 +66,7 @@ def test_http_method(patch_base_class):
     stream = CodaStream(authenticator=authenticator)
     expected_method = "GET"
     assert stream.http_method == expected_method
+
 
 @pytest.mark.parametrize(
     ("http_status", "should_retry"),

@@ -2,10 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 
-import pytest
 from source_coda.source import SourceCoda
 
 
@@ -21,6 +19,7 @@ class MockResponse:
         if self.status_code != 200:
             raise Exception("Bad things happened")
 
+
 def mocked_requests_get(fail=False):
     def wrapper(*args, **kwargs):
         if fail:
@@ -30,20 +29,19 @@ def mocked_requests_get(fail=False):
             {"name": "John", "loginId": "john@example.com", "type": "user", "href": "https://coda.io/apis/v1/whoami", "tokenName": "as", "scoped": False, "pictureLink": "https://images-coda.io", "workspace":{
                 "id": "test-id",
                 "type": "workspace",
-                "browserLink": "https://coda.io/link", 
+                "browserLink": "https://coda.io/link",
                 "name": "title"
             }}, 200
         )
 
     return wrapper
 
+
 @patch("requests.get", side_effect=mocked_requests_get())
 def test_check_connection(mocker):
     source = SourceCoda()
     logger_mock, config_mock = MagicMock(), MagicMock()
     assert source.check_connection(logger_mock, config_mock) == (True, None)
-
-
 
 
 def test_streams(mocker):

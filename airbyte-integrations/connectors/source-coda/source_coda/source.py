@@ -1,24 +1,21 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-import logging
+
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from requests.auth import AuthBase
-
 BASE_URL = "https://coda.io/apis/v1/"
+
 
 # Basic full refresh stream
 class CodaStream(HttpStream, ABC):
-   
 
     url_base = BASE_URL
 
@@ -39,9 +36,7 @@ class CodaStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         print(response.json())
-        return response.json()['items']
-
-
+        return response.json()["items"]
 
 
 class Docs(CodaStream):
@@ -68,18 +63,14 @@ class Permissions(CodaStream):
         return f"docs/{self._doc_id}/acl/permissions"
 
 
-
 class Categories(CodaStream):
 
     primary_key = "CATEGORIES"
-
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "categories"
-
-
 
 
 class Pages(CodaStream):
@@ -95,6 +86,7 @@ class Pages(CodaStream):
     ) -> str:
         return f"docs/{self._doc_id}/pages"
 
+
 class Tables(CodaStream):
 
     primary_key = "TABLES"
@@ -107,7 +99,6 @@ class Tables(CodaStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"docs/{self._doc_id}/tables"
-
 
 
 class Formulas(CodaStream):
@@ -123,6 +114,7 @@ class Formulas(CodaStream):
     ) -> str:
         return f"docs/{self._doc_id}/formulas"
 
+
 class Controls(CodaStream):
 
     primary_key = "CONTROLS"
@@ -136,28 +128,24 @@ class Controls(CodaStream):
     ) -> str:
         return f"docs/{self._doc_id}/controls"
 
+
 # Source
 class SourceCoda(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             token = config.get("auth_token")
             headers = {"Authorization": f"Bearer {token}"}
-            response = requests.get(f"{BASE_URL}whoami", headers=headers)
+            requests.get(f"{BASE_URL}whoami", headers=headers)
             return True, None
         except Exception as e:
             return False, e
-
-
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         stream_args = {
             "authenticator": TokenAuthenticator(token=config.get("auth_token")),
         }
 
-        additional_args = {
-            **stream_args,
-            'doc_id': config.get('doc_id')
-        }
+        additional_args = {**stream_args, "doc_id": config.get("doc_id")}
 
         return [
             Docs(**stream_args),
