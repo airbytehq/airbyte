@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "properties": {
+      "id": { "type": "string" },
+      "customerId": { "type": "string" },
+      "email": { "type": "string" },
+      "firstName": { "type": "string" },
+      "lastName": { "type": "string" },
+      "companyName": { "type": "string" },
+      "jobTitle": { "type": "string" },
+      "country": { "type": "string" },
+      "state": { "type": "string" },
+      "city": { "type": "string" },
+      "tags": {
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "customProps": {
+         "type": "array",
+         "items": { "type": "string" }
+       },     
+      "campaignId": { "type": "string" },
+      "campaignName": { "type": "string" },
+      "createdDate": { "type": "string" },
+      "score": { "type": "number" },
+      "comment": { "type": "string" },
+      "checkbox": { "type": "boolean" },
+      "additionalQuestions": [],
+      "feedbackTags": [],
+      "notes": [],
+      "status": { "type": "string" },
+      "assigned": { "type": "string" },
+      "ratingCategory": { "type": "string" },
+      "resolved": { "type": "boolean" },
+      "channel": { "type": "string" },
+      "metricsType": { "type": "string" },
+      "isBogus": { "type": "boolean" }
+    }
+}
