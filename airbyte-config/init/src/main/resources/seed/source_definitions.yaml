@@ -884,6 +884,13 @@
   icon: microsoft-teams.svg
   sourceType: api
   releaseStage: alpha
+- name: Microsoft Dataverse
+  sourceDefinitionId: 9220e3de-3b60-4bb2-a46f-046d59ea235a
+  dockerRepository: airbyte/source-microsoft-dataverse
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-dataverse
+  sourceType: api
+  releaseStage: alpha
 - name: Mixpanel
   sourceDefinitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
   dockerRepository: airbyte/source-mixpanel
