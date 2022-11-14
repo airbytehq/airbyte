@@ -10,6 +10,7 @@ import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useExperimentSpeedyConnection } from "packages/cloud/components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
 import { SpeedyConnectionBanner } from "packages/cloud/components/experiments/SpeedyConnection/SpeedyConnectionBanner";
 import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
+import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import SideBar from "packages/cloud/views/layout/SideBar";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
@@ -21,6 +22,7 @@ import styles from "./MainView.module.scss";
 
 const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
   const { formatMessage } = useIntl();
+  useIntercom();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
   const showCreditsBanner =
