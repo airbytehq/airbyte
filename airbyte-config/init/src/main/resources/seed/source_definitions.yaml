@@ -1575,6 +1575,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/visma-economic
   sourceType: api
   releaseStage: alpha
+- name: Vitally
+  sourceDefinitionId: 6c6d8b0c-db35-4cd1-a7de-0ca8b080f5ac
+  dockerRepository: airbyte/source-vitally
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/vitally
+  sourceType: api
+  releaseStage: alpha
 - name: Xero
   sourceDefinitionId: 6fd1e833-dd6e-45ec-a727-ab917c5be892
   dockerRepository: airbyte/source-xero
