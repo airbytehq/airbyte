@@ -15,8 +15,8 @@ def test_check_connection(mocker):
 
 def test_streams(mocker):
     source = SourceCoda()
-    config_mock = MagicMock()
+    mocker.patch.object(source, "get_auth", return_value="dummy_token")
+    config_mock = {"playground": False, "auth_token": "dummy_authtoken", "doc_id": "dummy_doc_id"}
     streams = source.streams(config_mock)
-    # TODO: replace this with your streams number
-    expected_streams_number = 2
+    expected_streams_number = 7
     assert len(streams) == expected_streams_number
