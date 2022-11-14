@@ -15,10 +15,21 @@ interface CodeEditorProps {
   onMount?: (editor: editor.IStandaloneCodeEditor) => void;
 }
 
+// Converts 3-character hex values into 6-character ones.
+// Required for custom monaco theme, because it fails when receiving 3-character hex values.
+// Only needed for non-dev mode, as that is when hex values get minified to 3 characters.
+function expandHexValue(input: string) {
+  const match = /^#([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])$/.exec(input);
+  if (match) {
+    return `#${match[1].repeat(2)}${match[2].repeat(2)}${match[3].repeat(2)}`;
+  }
+  return input;
+}
+
 function cssCustomPropToHex(cssCustomProperty: string) {
   const varName = cssCustomProperty.replace(/var\(|\)/g, "");
   const bodyStyles = window.getComputedStyle(document.body);
-  return bodyStyles.getPropertyValue(varName).trim();
+  return expandHexValue(bodyStyles.getPropertyValue(varName).trim());
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
