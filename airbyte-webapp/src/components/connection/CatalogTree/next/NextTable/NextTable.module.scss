@@ -1,5 +1,13 @@
 @use "scss/colors";
 
+// ------- <table/> --------
+.table {
+  border-spacing: 0;
+  width: 100%;
+  max-width: 100%;
+  border-radius: 10px;
+}
+
 // --------- <th/> ---------
 .th {
   background: colors.$grey-50;

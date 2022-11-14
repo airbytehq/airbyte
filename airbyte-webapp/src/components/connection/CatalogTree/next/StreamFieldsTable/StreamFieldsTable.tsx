@@ -155,5 +155,5 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
     [sourceDefinition.icon, sourceColumns, destinationDefinition.icon, destinationColumns]
   );
 
-  return <NextTable columns={columns} data={syncSchemaFields} light />;
+  return <NextTable columns={columns} data={syncSchemaFields} />;
 };

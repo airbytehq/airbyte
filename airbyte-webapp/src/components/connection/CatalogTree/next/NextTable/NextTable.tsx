@@ -1,22 +1,10 @@
 import classNames from "classnames";
 import React, { memo, useMemo } from "react";
 import { Column, SortingRule, useSortBy, useTable } from "react-table";
-import styled from "styled-components";
 
-import { Card } from "../../../../ui/Card";
 import styles from "./NextTable.module.scss";
 
-const TableView = styled(Card).attrs({ as: "table" })<{ light?: boolean }>`
-  border-spacing: 0;
-  width: 100%;
-  max-width: 100%;
-  border-radius: 10px;
-  box-shadow: ${({ light, theme }) => (light ? "none" : `0 2px 4px ${theme.cardShadowColor}`)};
-};
-`;
-
 interface TableProps {
-  light?: boolean;
   columns: ReadonlyArray<Column<Record<string, unknown>>>;
   erroredRows?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -27,7 +15,7 @@ interface TableProps {
   sortBy?: Array<SortingRule<any>>;
 }
 
-export const NextTable: React.FC<TableProps> = memo(({ columns, data, onClickRow, sortBy, light }) => {
+export const NextTable: React.FC<TableProps> = memo(({ columns, data, onClickRow, sortBy }) => {
   const [plugins, config] = useMemo(() => {
     const pl = [];
     const plConfig: Record<string, unknown> = {};
@@ -48,7 +36,7 @@ export const NextTable: React.FC<TableProps> = memo(({ columns, data, onClickRow
   );
 
   return (
-    <TableView {...getTableProps()} light={light}>
+    <table className={styles.table} {...getTableProps()}>
       <thead>
         {headerGroups.map((headerGroup, key) => (
           <tr {...headerGroup.getHeaderGroupProps()} key={`table-header-${key}`}>
@@ -103,6 +91,6 @@ export const NextTable: React.FC<TableProps> = memo(({ columns, data, onClickRow
           );
         })}
       </tbody>
-    </TableView>
+    </table>
   );
 });
