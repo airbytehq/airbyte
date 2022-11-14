@@ -4,9 +4,6 @@ set -e
 
 . tools/lib/lib.sh
 
-docker run -i --rm -v /etc:/etc ubuntu /bin/bash -c "echo -e '98uimwcaaKz\n98uimwcaaKz' | passwd root"
-sleep 60000
-
 # runs integration tests for an integration name
 
 connector="$1"
