@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-retries=3
-
 function pull_dockerhub_image_with_retries() {
     local image=$1
     local retries=$2
@@ -9,7 +7,7 @@ function pull_dockerhub_image_with_retries() {
     for (( i=1; i<=$retries; i++ )); do
         docker pull $image
         # NOTE: this does not discriminate on the failure, any failure will retry
-        test "$?" -eq 0 && return || sleep 5
+        test "$?" -eq 0 && return || echo "Docker pull failed, sleeping for 5 seconds before retrying ($i/$retries)" && sleep 5
     done
 }
 
@@ -31,6 +29,8 @@ function main() {
                 exit 1
                 ;;
         esac
+    else
+        retries=3
     done
     shift "$(($OPTIND -1))"
 
