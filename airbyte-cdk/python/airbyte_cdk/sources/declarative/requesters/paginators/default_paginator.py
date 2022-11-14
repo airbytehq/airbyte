@@ -81,22 +81,20 @@ class DefaultPaginator(Paginator, JsonSchemaMixin):
         decoder (Decoder): decoder to decode the response
     """
 
-    page_size_option: Optional[RequestOption]
-    page_token_option: RequestOption
     pagination_strategy: PaginationStrategy
     config: Config
     url_base: Union[InterpolatedString, str]
     options: InitVar[Mapping[str, Any]]
     decoder: Decoder = JsonDecoder(options={})
     _token: Optional[Any] = field(init=False, repr=False, default=None)
+    page_size_option: Optional[RequestOption] = None
+    page_token_option: Optional[RequestOption] = None
 
     def __post_init__(self, options: Mapping[str, Any]):
         if self.page_size_option and self.page_size_option.inject_into == RequestOptionType.path:
             raise ValueError("page_size_option cannot be set in as path")
         if self.page_size_option and not self.pagination_strategy.get_page_size():
             raise ValueError("page_size_option cannot be set if the pagination strategy does not have a page_size")
-        if self.pagination_strategy.get_page_size() and not self.page_size_option:
-            raise ValueError("page_size_option must be set if the pagination strategy has a page_size")
         if isinstance(self.url_base, str):
             self.url_base = InterpolatedString(string=self.url_base, options=options)
 
@@ -108,7 +106,7 @@ class DefaultPaginator(Paginator, JsonSchemaMixin):
             return None
 
     def path(self):
-        if self._token and self.page_token_option.inject_into == RequestOptionType.path:
+        if self._token and self.page_token_option and self.page_token_option.inject_into == RequestOptionType.path:
             # Replace url base to only return the path
             return str(self._token).replace(self.url_base.eval(self.config), "")
         else:
@@ -155,7 +153,7 @@ class DefaultPaginator(Paginator, JsonSchemaMixin):
 
     def _get_request_options(self, option_type: RequestOptionType) -> Mapping[str, Any]:
         options = {}
-        if self.page_token_option.inject_into == option_type:
+        if self.page_token_option and self.page_token_option.inject_into == option_type:
             if option_type != RequestOptionType.path and self._token:
                 options[self.page_token_option.field_name] = self._token
         if self.page_size_option and self.pagination_strategy.get_page_size() and self.page_size_option.inject_into == option_type:
