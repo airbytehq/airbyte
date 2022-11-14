@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
@@ -64,7 +65,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final UUID connectionId) {
 
     ApmTraceUtils
-        .addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionId.toString(), JOB_ID_KEY, jobRunConfig.getJobId(), SOURCE_DOCKER_IMAGE_KEY,
+        .addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), CONNECTION_ID_KEY, connectionId.toString(), JOB_ID_KEY,
+            jobRunConfig.getJobId(), SOURCE_DOCKER_IMAGE_KEY,
             sourceLauncherConfig.getDockerImage(),
             DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage()));
 
