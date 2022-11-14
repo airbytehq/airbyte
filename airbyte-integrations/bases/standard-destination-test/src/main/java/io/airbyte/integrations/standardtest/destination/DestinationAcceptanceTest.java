@@ -527,6 +527,7 @@ public abstract class DestinationAcceptanceTest {
 
     runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, false);
     final String defaultSchema = getDefaultSchema(config);
+    LOGGER.info("defaultSchema :  " +  defaultSchema);
     retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessages, defaultSchema);
   }
 
@@ -1259,6 +1260,7 @@ public abstract class DestinationAcceptanceTest {
           return null;
         });
     LOGGER.info("actualStateMessage : " + actualStateMessage);
+    LOGGER.info("Assert Equals  of expectedStateMessage and actualStateMessage: - runSyncAndVerifyStateOutput " +  assertEquals(expectedStateMessage, actualStateMessage));
     assertEquals(expectedStateMessage, actualStateMessage);
   }
 
@@ -1327,7 +1329,11 @@ public abstract class DestinationAcceptanceTest {
     final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getName();
+      LOGGER.info("DestinationAcceptanceTest : retrieveRawRecordsAndAssertSameMessages - streamName : " + streamName);
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
+      LOGGER.info("DestinationAcceptanceTest : retrieveRawRecordsAndAssertSameMessages - schema : " + schema);
+      LOGGER.info("DestinationAcceptanceTest : retrieveRawRecordsAndAssertSameMessages - streamName : " + streamName);
+      LOGGER.info("DestinationAcceptanceTest : retrieveRawRecordsAndAssertSameMessages - stream.getJsonSchema() : " + stream.getJsonSchema());
       final List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema,
           stream.getJsonSchema())
               .stream()
@@ -1336,7 +1342,8 @@ public abstract class DestinationAcceptanceTest {
               .toList();
       actualMessages.addAll(msgList);
     }
-    
+    LOGGER.info("DestinationAcceptanceTest : retrieveRawRecordsAndAssertSameMessages - messages : " + messages);
+    LOGGER.info("DestinationAcceptanceTest : retrieveRawRecordsAndAssertSameMessages - actualMessages : " + actualMessages);
     assertSameMessages(messages, actualMessages, false);
   }
 
@@ -1356,7 +1363,8 @@ public abstract class DestinationAcceptanceTest {
         .map(recordMessage -> pruneAirbyteInternalFields ? safePrune(recordMessage) : recordMessage)
         .map(AirbyteRecordMessage::getData)
         .collect(Collectors.toList());
-
+    LOGGER.info("DestinationAcceptanceTest : retrieveRawRecordsAndAssertSameMessages - expectedProcessed : " + expectedProcessed);
+    LOGGER.info("DestinationAcceptanceTest : retrieveRawRecordsAndAssertSameMessages - actualProcessed : " + actualProcessed);
     testDataComparator.assertSameData(expectedProcessed, actualProcessed);
   }
 

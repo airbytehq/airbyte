@@ -74,6 +74,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 	@Override
 	protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv, final String streamName,
 			final String namespace, final JsonNode streamSchema) throws Exception {
+		LOGGER.info("DestinationAcceptanceTest : retrieveRawRecordsAndAssertSameMessages - schema : " + schema);
 		LOGGER.info("TeradataDestinationAcceptanceTest : streamName : " + streamName);
 		LOGGER.info("TeradataDestinationAcceptanceTest : namespace : " + namespace);
 		LOGGER.info("TeradataDestinationAcceptanceTest : streamSchema : " + streamSchema);
