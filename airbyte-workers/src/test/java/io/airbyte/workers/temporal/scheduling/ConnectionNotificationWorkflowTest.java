@@ -13,7 +13,9 @@ import static org.mockito.Mockito.when;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.commons.temporal.scheduling.ConnectionNotificationWorkflow;
 import io.airbyte.config.SlackNotificationConfiguration;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.notification.SlackNotificationClient;
+import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.scheduling.activities.NotifySchemaChangeActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.SlackConfigActivityImpl;
 import io.airbyte.workers.temporal.support.TemporalProxyHelper;
@@ -85,7 +87,8 @@ class ConnectionNotificationWorkflowTest {
   }
 
   @Test
-  void sendSchemaChangeNotificationNonBreakingChangeTest() throws IOException, InterruptedException, ApiException {
+  void sendSchemaChangeNotificationNonBreakingChangeTest()
+      throws IOException, InterruptedException, ApiException, JsonValidationException, ConfigNotFoundException {
     notificationsWorker.registerActivitiesImplementations(mNotifySchemaChangeActivity, mSlackConfigActivity);
     testEnv.start();
 
@@ -93,9 +96,8 @@ class ConnectionNotificationWorkflowTest {
         client.newWorkflowStub(ConnectionNotificationWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(NOTIFICATIONS_QUEUE).build());
 
     final UUID connectionId = UUID.randomUUID();
-    final boolean isBreaking = false;
 
-    workflow.sendSchemaChangeNotification(connectionId, isBreaking);
+    workflow.sendSchemaChangeNotification(connectionId);
 
     verify(mNotifySchemaChangeActivity, times(1)).notifySchemaChange(any(SlackNotificationClient.class), any(UUID.class), any(boolean.class));
   }

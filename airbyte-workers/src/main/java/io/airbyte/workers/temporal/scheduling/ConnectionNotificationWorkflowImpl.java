@@ -9,8 +9,12 @@ import io.airbyte.commons.temporal.scheduling.ConnectionNotificationWorkflow;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.SlackNotificationConfiguration;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.notification.SlackNotificationClient;
+import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
+import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
 import io.airbyte.workers.temporal.scheduling.activities.NotifySchemaChangeActivity;
 import io.airbyte.workers.temporal.scheduling.activities.SlackConfigActivity;
 import java.io.IOException;
@@ -25,15 +29,19 @@ public class ConnectionNotificationWorkflowImpl implements ConnectionNotificatio
   private NotifySchemaChangeActivity notifySchemaChangeActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private SlackConfigActivity slackConfigActivity;
+  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  private ConfigFetchActivity configFetchActivity;
 
   @Override
-  public boolean sendSchemaChangeNotification(UUID connectionId, boolean isBreaking) throws IOException, InterruptedException, ApiException {
+  public boolean sendSchemaChangeNotification(UUID connectionId)
+      throws IOException, InterruptedException, ApiException, ConfigNotFoundException, JsonValidationException {
+    StandardSync standardSync = configFetchActivity.getStandardSync(connectionId);
     Optional<SlackNotificationConfiguration> slackConfig = slackConfigActivity.fetchSlackConfiguration(connectionId);
     if (slackConfig.isPresent()) {
       Notification notification = new Notification().withNotificationType(NotificationType.SLACK).withSendOnFailure(false).withSendOnSuccess(false)
           .withSlackConfiguration(slackConfig.get());
       SlackNotificationClient notificationClient = new SlackNotificationClient(notification);
-      return notifySchemaChangeActivity.notifySchemaChange(notificationClient, connectionId, isBreaking);
+      return notifySchemaChangeActivity.notifySchemaChange(notificationClient, connectionId, standardSync.getBreakingChange());
     } else {
       return false;
     }
