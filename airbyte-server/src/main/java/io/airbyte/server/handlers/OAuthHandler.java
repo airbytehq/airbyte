@@ -81,15 +81,9 @@ public class OAuthHandler {
         final SourceConnection hydratedSourceConnection =
             secretsRepositoryReader.getSourceConnectionWithSecrets(sourceOauthConsentRequest.getSourceId());
 
-        final List<String> fieldsToGet =
-            buildJsonPathFromOAuthFlowInitParameters(
-                OAuthPathExtractor.extractOauthConfigurationPaths(
-                    spec.getAdvancedAuth().getOauthConfigSpecification().getOauthUserInputFromConnectorConfigSpecification()));
-
-        final JsonNode oAuthInputConfigurationFromDB = getOAuthInputConfiguration(hydratedSourceConnection.getConfiguration(), fieldsToGet);
-
-        oAuthInputConfigurationForConsent = getOauthFromDBIfNeeded(oAuthInputConfigurationFromDB,
-            sourceOauthConsentRequest.getoAuthInputConfiguration());
+        oAuthInputConfigurationForConsent = getOAuthInputConfigurationForConsent(spec,
+            hydratedSourceConnection.getConfiguration(),
+            sourceOauthConsentRequest.getoAuthInputConfiguration() );
       }
 
       result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getSourceConsentUrl(
@@ -112,47 +106,43 @@ public class OAuthHandler {
     return result;
   }
 
-  public OAuthConsentRead getDestinationOAuthConsent(final DestinationOauthConsentRequest destinationDefinitionIdRequestBody)
+  public OAuthConsentRead getDestinationOAuthConsent(final DestinationOauthConsentRequest destinationOauthConsentRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardDestinationDefinition destinationDefinition =
-        configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
+        configRepository.getStandardDestinationDefinition(destinationOauthConsentRequest.getDestinationDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(destinationDefinition);
     final ConnectorSpecification spec = destinationDefinition.getSpec();
-    final Map<String, Object> metadata = generateDestinationMetadata(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
+    final Map<String, Object> metadata = generateDestinationMetadata(destinationOauthConsentRequest.getDestinationDefinitionId());
     final OAuthConsentRead result;
     if (OAuthConfigSupplier.hasOAuthConfigSpecification(spec)) {
       final JsonNode oAuthInputConfigurationForConsent;
 
-      if (destinationDefinitionIdRequestBody.getDestinationId() == null) {
-        oAuthInputConfigurationForConsent = destinationDefinitionIdRequestBody.getoAuthInputConfiguration();
+      if (destinationOauthConsentRequest.getDestinationId() == null) {
+        oAuthInputConfigurationForConsent = destinationOauthConsentRequest.getoAuthInputConfiguration();
       } else {
         final DestinationConnection hydratedSourceConnection =
-            secretsRepositoryReader.getDestinationConnectionWithSecrets(destinationDefinitionIdRequestBody.getDestinationId());
+            secretsRepositoryReader.getDestinationConnectionWithSecrets(destinationOauthConsentRequest.getDestinationId());
 
-        final List<String> fieldsToGet =
-            buildJsonPathFromOAuthFlowInitParameters(OAuthPathExtractor.extractOauthConfigurationPaths(
-                spec.getAdvancedAuth().getOauthConfigSpecification().getOauthUserInputFromConnectorConfigSpecification()));
+        oAuthInputConfigurationForConsent = getOAuthInputConfigurationForConsent(spec,
+            hydratedSourceConnection.getConfiguration(),
+            destinationOauthConsentRequest.getoAuthInputConfiguration() );
 
-        final JsonNode oAuthInputConfigurationFromDB = getOAuthInputConfiguration(hydratedSourceConnection.getConfiguration(), fieldsToGet);
-
-        oAuthInputConfigurationForConsent = getOauthFromDBIfNeeded(oAuthInputConfigurationFromDB,
-            destinationDefinitionIdRequestBody.getoAuthInputConfiguration());
       }
 
       result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getDestinationConsentUrl(
-          destinationDefinitionIdRequestBody.getWorkspaceId(),
-          destinationDefinitionIdRequestBody.getDestinationDefinitionId(),
-          destinationDefinitionIdRequestBody.getRedirectUrl(),
+          destinationOauthConsentRequest.getWorkspaceId(),
+          destinationOauthConsentRequest.getDestinationDefinitionId(),
+          destinationOauthConsentRequest.getRedirectUrl(),
           oAuthInputConfigurationForConsent,
           spec.getAdvancedAuth().getOauthConfigSpecification()));
     } else {
       result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getDestinationConsentUrl(
-          destinationDefinitionIdRequestBody.getWorkspaceId(),
-          destinationDefinitionIdRequestBody.getDestinationDefinitionId(),
-          destinationDefinitionIdRequestBody.getRedirectUrl(), Jsons.emptyObject(), null));
+          destinationOauthConsentRequest.getWorkspaceId(),
+          destinationOauthConsentRequest.getDestinationDefinitionId(),
+          destinationOauthConsentRequest.getRedirectUrl(), Jsons.emptyObject(), null));
     }
     try {
-      trackingClient.track(destinationDefinitionIdRequestBody.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
+      trackingClient.track(destinationOauthConsentRequest.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
     } catch (final Exception e) {
       LOGGER.error(ERROR_MESSAGE, e);
     }
@@ -245,6 +235,19 @@ public class OAuthHandler {
     // TODO validate requestBody.getParams() against
     // spec.getAdvancedAuth().getOauthConfigSpecification().getCompleteOauthServerInputSpecification()
     configRepository.writeDestinationOAuthParam(param);
+  }
+
+  private JsonNode getOAuthInputConfigurationForConsent(final ConnectorSpecification spec,
+                                                    final JsonNode hydratedSourceConnectionConfiguration,
+                                                    final JsonNode destinationDefinitionIdRequestBody) {
+    final List<String> fieldsToGet =
+        buildJsonPathFromOAuthFlowInitParameters(OAuthPathExtractor.extractOauthConfigurationPaths(
+            spec.getAdvancedAuth().getOauthConfigSpecification().getOauthUserInputFromConnectorConfigSpecification()));
+
+    final JsonNode oAuthInputConfigurationFromDB = getOAuthInputConfiguration(hydratedSourceConnectionConfiguration, fieldsToGet);
+
+    return getOauthFromDBIfNeeded(oAuthInputConfigurationFromDB,
+        destinationDefinitionIdRequestBody);
   }
 
   private Map<String, Object> generateSourceMetadata(final UUID sourceDefinitionId)
