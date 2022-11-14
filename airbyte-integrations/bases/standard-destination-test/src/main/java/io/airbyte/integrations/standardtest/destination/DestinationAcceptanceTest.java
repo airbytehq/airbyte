@@ -1260,7 +1260,6 @@ public abstract class DestinationAcceptanceTest {
           return null;
         });
     LOGGER.info("actualStateMessage : " + actualStateMessage);
-    LOGGER.info("Assert Equals  of expectedStateMessage and actualStateMessage: - runSyncAndVerifyStateOutput " +  assertEquals(expectedStateMessage, actualStateMessage));
     assertEquals(expectedStateMessage, actualStateMessage);
   }
 
