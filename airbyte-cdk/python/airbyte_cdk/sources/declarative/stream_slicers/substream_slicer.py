@@ -5,7 +5,7 @@
 from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, List, Mapping, Optional
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
@@ -138,6 +138,12 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
                     for parent_record in parent_stream.read_records(
                         sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
                     ):
+                        # Skip non-records (eg AirbyteLogMessage)
+                        if isinstance(parent_record, AirbyteMessage):
+                            if parent_record.type == Type.RECORD:
+                                parent_record = parent_record.record.data
+                            else:
+                                continue
                         empty_parent_slice = False
                         stream_state_value = parent_record.get(parent_field)
                         yield {stream_state_field: stream_state_value, "parent_slice": parent_slice}

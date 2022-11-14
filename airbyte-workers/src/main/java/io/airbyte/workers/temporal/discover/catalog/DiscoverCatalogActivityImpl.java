@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.discover.catalog;
 
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DOCKER_IMAGE_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
@@ -91,7 +92,8 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
   public ConnectorJobOutput run(final JobRunConfig jobRunConfig,
                                 final IntegrationLauncherConfig launcherConfig,
                                 final StandardDiscoverCatalogInput config) {
-    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DOCKER_IMAGE_KEY, launcherConfig.getDockerImage()));
+    ApmTraceUtils.addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), JOB_ID_KEY, jobRunConfig.getJobId(), DOCKER_IMAGE_KEY,
+        launcherConfig.getDockerImage()));
     final JsonNode fullConfig = secretsHydrator.hydrate(config.getConnectionConfiguration());
 
     final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput()

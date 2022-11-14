@@ -82,6 +82,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class JobCreationAndStatusUpdateActivityTest {
 
+  public static final String REASON = "reason";
   @Mock
   private SyncJobFactory mJobFactory;
 
@@ -354,8 +355,7 @@ class JobCreationAndStatusUpdateActivityTest {
     void setJobSuccess() throws IOException {
       jobCreationAndStatusUpdateActivity.jobSuccess(new JobSuccessInput(JOB_ID, ATTEMPT_ID, CONNECTION_ID, standardSyncOutput));
 
-      verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput, jobOutput.getSync().getStandardSyncSummary().getTotalStats(),
-          jobOutput.getSync().getNormalizationSummary());
+      verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput);
       verify(mJobPersistence).succeedAttempt(JOB_ID, ATTEMPT_ID);
       verify(mJobNotifier).successJob(Mockito.any());
       verify(mJobtracker).trackSync(Mockito.any(), eq(JobState.SUCCEEDED));
@@ -394,10 +394,10 @@ class JobCreationAndStatusUpdateActivityTest {
       Mockito.when(mJobPersistence.getJob(JOB_ID))
           .thenReturn(mJob);
 
-      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, 1, CONNECTION_ID, "reason"));
+      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, 1, CONNECTION_ID, REASON));
 
       verify(mJobPersistence).failJob(JOB_ID);
-      verify(mJobNotifier).failJob(eq("reason"), Mockito.any());
+      verify(mJobNotifier).failJob(eq(REASON), Mockito.any());
       verify(mJobErrorReporter).reportSyncJobFailure(eq(CONNECTION_ID), eq(failureSummary), Mockito.any());
     }
 
@@ -416,13 +416,35 @@ class JobCreationAndStatusUpdateActivityTest {
     }
 
     @Test
+    void setJobFailureWithNullJobSyncConfig() throws IOException {
+      final Attempt mAttempt = Mockito.mock(Attempt.class);
+      Mockito.when(mAttempt.getFailureSummary()).thenReturn(Optional.of(failureSummary));
+
+      final JobConfig mJobConfig = Mockito.mock(JobConfig.class);
+      Mockito.when(mJobConfig.getSync()).thenReturn(null);
+
+      final Job mJob = Mockito.mock(Job.class);
+      Mockito.when(mJob.getScope()).thenReturn(CONNECTION_ID.toString());
+      Mockito.when(mJob.getConfig()).thenReturn(mJobConfig);
+      Mockito.when(mJob.getLastFailedAttempt()).thenReturn(Optional.of(mAttempt));
+
+      Mockito.when(mJobPersistence.getJob(JOB_ID))
+          .thenReturn(mJob);
+
+      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, 1, CONNECTION_ID, REASON));
+
+      verify(mJobPersistence).failJob(JOB_ID);
+      verify(mJobNotifier).failJob(eq(REASON), Mockito.any());
+      verify(mJobErrorReporter).reportSyncJobFailure(eq(CONNECTION_ID), eq(failureSummary), Mockito.any());
+    }
+
+    @Test
     void setAttemptFailure() throws IOException {
       jobCreationAndStatusUpdateActivity
           .attemptFailure(new AttemptFailureInput(JOB_ID, ATTEMPT_ID, CONNECTION_ID, standardSyncOutput, failureSummary));
 
       verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
-      verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput, jobOutput.getSync().getStandardSyncSummary().getTotalStats(),
-          jobOutput.getSync().getNormalizationSummary());
+      verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput);
       verify(mJobPersistence).writeAttemptFailureSummary(JOB_ID, ATTEMPT_ID, failureSummary);
     }
 
