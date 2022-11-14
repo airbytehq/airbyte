@@ -186,7 +186,14 @@ public class WorkspacesHandler {
 
     LOGGER.debug("Patched Workspace before persisting: {}", workspace);
 
-    persistStandardWorkspace(workspace);
+    if (workspacePatch.getWebhookConfigs() == null) {
+      // We aren't persisting any secrets. It's safe (and necessary) to use the NoSecrets variant because
+      // we never hydrated them in the first place.
+      configRepository.writeStandardWorkspaceNoSecrets(workspace);
+    } else {
+      // We're saving new webhook configs, so we need to persist the secrets.
+      persistStandardWorkspace(workspace);
+    }
 
     // after updating email or tracking info, we need to re-identify the instance.
     TrackingClientSingleton.get().identify(workspaceId);
@@ -204,7 +211,9 @@ public class WorkspacesHandler {
         .withName(workspaceUpdateName.getName())
         .withSlug(generateUniqueSlug(workspaceUpdateName.getName()));
 
-    persistStandardWorkspace(persistedWorkspace);
+    // NOTE: it's safe (and necessary) to use the NoSecrets variant because we never hydrated them in
+    // the first place.
+    configRepository.writeStandardWorkspaceNoSecrets(persistedWorkspace);
 
     return buildWorkspaceReadFromId(workspaceId);
   }

@@ -1,8 +1,8 @@
-@use "../../../../scss/variables";
+@use "scss/variables";
 
 .content {
-  max-width: 1279px;
-  margin: 0 auto;
+  max-width: calc(100% - 2 * (#{variables.$spacing-xl}));
+  margin: 0 variables.$spacing-xl;
   padding-bottom: variables.$spacing-md;
 
   > form {
