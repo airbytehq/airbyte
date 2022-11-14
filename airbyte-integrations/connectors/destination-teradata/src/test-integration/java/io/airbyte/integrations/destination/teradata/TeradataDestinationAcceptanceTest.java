@@ -49,7 +49,6 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 
 	@Override
 	protected String getImageName() {
-		LOGGER.info("TeradataDestinationAcceptanceTest - getImageName");
 		return "airbyte/destination-teradata:dev";
 	}
 
@@ -89,7 +88,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 		LOGGER.info("TeradataDestinationAcceptanceTest : tableName : " + tableName);
 		LOGGER.info("TeradataDestinationAcceptanceTest : schemaName : " + schemaName);
 		final List<JsonNode> actual = database.bufferedResultSetQuery(
-				connection -> connection.createStatement().executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName)),
+				connection -> connection.createStatement().executeQuery(String.format("SELECT * FROM %s.%s", schemaName, tableName)),
 				sourceOperations::rowToJson);
 		return actual;
 	}
