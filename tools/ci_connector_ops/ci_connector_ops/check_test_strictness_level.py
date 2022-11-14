@@ -13,7 +13,7 @@ RELEASE_STAGE_TO_STRICTNESS_LEVEL_MAPPING = {"generally_available": "high"}
 
 def find_connectors_with_bad_strictness_level() -> List[str]:
     """Check if changed connectors have the expected SAT test strictness level according to their release stage.
-    1. Identifies changed connectors
+    1. Identify changed connectors
     2. Retrieve their release stage from the catalog
     3. Parse their acceptance test config file
     4. Check if the test strictness level matches the strictness level expected for their release stage.
