@@ -501,7 +501,7 @@ public abstract class DestinationAcceptanceTest {
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
     final JsonNode config = getConfig();
-
+    LOGGER.info("testLineBreakCharacters - config : " + config);
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
         new AirbyteMessage()
             .withType(Type.RECORD)
@@ -1220,6 +1220,7 @@ public abstract class DestinationAcceptanceTest {
       throws Exception {
     final List<AirbyteMessage> destinationOutput = runSync(config, messages, catalog,
         runNormalization);
+    
 
     final AirbyteMessage expectedStateMessage = reversed(messages)
         .stream()
@@ -1315,7 +1316,7 @@ public abstract class DestinationAcceptanceTest {
               .toList();
       actualMessages.addAll(msgList);
     }
-
+    
     assertSameMessages(messages, actualMessages, false);
   }
 
