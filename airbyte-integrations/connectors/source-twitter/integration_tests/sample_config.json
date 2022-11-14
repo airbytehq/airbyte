@@ -1,5 +1,7 @@
 {
-  "api_key":"AAAAAAAAAAAAAAAAAAAAAKkrbgEAAAAARPWLaxlFo0vUOGavorPuTCzk1lM%3D2GJWOiEM15n5csdO42sm244kzyw9I0jIXEYxt6HmR7H3ZAcGXA" ,
-  "query":"sivakasi"
+  "api_key":"your api key" ,
+  "query":"your search query",
+  "start_time": "2022-11-10T10:00:50Z",
+  "end_time": "2022-11-11T10:00:50Z"
 
 }
