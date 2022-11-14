@@ -9,7 +9,7 @@ import { HeadTitle } from "components/common/HeadTitle";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import { Breadcrumbs } from "components/ui/Breadcrumbs";
-import { DropDownOptionDataItem } from "components/ui/DropDown";
+import { DropdownMenuOptionType } from "components/ui/DropdownMenu";
 import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -59,20 +59,22 @@ const DestinationItemPage: React.FC = () => {
     (connectionItem) => connectionItem.destinationId === destination.destinationId
   );
 
-  const sourcesDropDownData = useMemo(
+  const sourceDropdownOptions: DropdownMenuOptionType[] = useMemo(
     () =>
       sources.map((item) => {
         const sourceDef = sourceDefinitions.find((sd) => sd.sourceDefinitionId === item.sourceDefinitionId);
         return {
-          label: item.name,
+          as: "button",
+          icon: <ConnectorIcon icon={sourceDef?.icon} />,
+          iconPosition: "right",
+          displayName: item.name,
           value: item.sourceId,
-          img: <ConnectorIcon icon={sourceDef?.icon} />,
         };
       }),
     [sources, sourceDefinitions]
   );
 
-  const onSelect = (data: DropDownOptionDataItem) => {
+  const onSelect = (data: DropdownMenuOptionType) => {
     const path = `../${RoutePaths.ConnectionNew}`;
     const state =
       data.value === "create-new-item"
@@ -112,7 +114,7 @@ const DestinationItemPage: React.FC = () => {
                 <>
                   <TableItemTitle
                     type="source"
-                    dropDownData={sourcesDropDownData}
+                    dropdownOptions={sourceDropdownOptions}
                     onSelect={onSelect}
                     entityName={destination.name}
                     entity={destination.destinationName}
