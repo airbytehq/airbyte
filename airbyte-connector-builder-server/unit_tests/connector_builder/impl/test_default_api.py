@@ -18,6 +18,8 @@ from connector_builder.generated.models.streams_list_read import StreamsListRead
 from connector_builder.generated.models.streams_list_read_streams import StreamsListReadStreams
 from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
 from connector_builder.impl.default_api import DefaultApiImpl
+from fastapi import HTTPException
+
 
 MANIFEST = {
     "version": "0.1.0",
@@ -341,31 +343,33 @@ def test_invalid_manifest():
         "check": {"stream_names": ["hashiras"], "class_name": "airbyte_cdk.sources.declarative.checks.check_stream.CheckStream"},
     }
 
-    expected_error = KnownExceptionInfo(
-        message="Invalid connector manifest with error: 'streams' is a required property", exception_class_name="ValidationError"
-    )
+    expected_status_code = 400
+    expected_detail = "Invalid connector manifest with error: 'streams' is a required property"
 
     api = DefaultApiImpl()
     loop = asyncio.get_event_loop()
-    actual_response = loop.run_until_complete(
-        api.read_stream(StreamReadRequestBody(manifest=invalid_manifest, config={}, stream="hashiras"))
-    )
+    with pytest.raises(HTTPException) as actual_exception:
+        loop.run_until_complete(
+            api.read_stream(StreamReadRequestBody(manifest=invalid_manifest, config={}, stream="hashiras"))
+        )
 
-    assert actual_response == expected_error
+    assert actual_exception.value.status_code == expected_status_code
+    assert actual_exception.value.detail == expected_detail
 
 
 def test_read_stream_returns_error_if_stream_does_not_exist():
-    expected_error = KnownExceptionInfo(
-        message="The requested stream not_in_manifest was not found in the source. Available streams: dict_keys(['hashiras', 'breathing-techniques'])"
-    )
+    expected_status_code = 400
+    expected_detail ="Could not perform read with with error: The requested stream not_in_manifest was not found in the source. Available streams: dict_keys(['hashiras', 'breathing-techniques'])"
 
     api = DefaultApiImpl()
     loop = asyncio.get_event_loop()
-    actual_response = loop.run_until_complete(
-        api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config={}, stream="not_in_manifest"))
-    )
+    with pytest.raises(HTTPException) as actual_exception:
+        loop.run_until_complete(
+            api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config={}, stream="not_in_manifest"))
+        )
 
-    assert actual_response == expected_error
+    assert actual_exception.value.status_code == expected_status_code
+    assert actual_exception.value.detail == expected_detail
 
 
 @pytest.mark.parametrize(

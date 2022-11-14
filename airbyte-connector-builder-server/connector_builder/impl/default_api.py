@@ -5,14 +5,13 @@
 import json
 import logging
 from json import JSONDecodeError
-from typing import Iterable, Optional, Union
+from typing import Iterable, Optional, Union, Dict, Any
 from urllib.parse import parse_qs, urljoin, urlparse
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
 from connector_builder.generated.apis.default_api_interface import DefaultApi
 from connector_builder.generated.models.http_request import HttpRequest
 from connector_builder.generated.models.http_response import HttpResponse
-from connector_builder.generated.models.known_exception_info import KnownExceptionInfo
 from connector_builder.generated.models.stream_read import StreamRead
 from connector_builder.generated.models.stream_read_pages import StreamReadPages
 from connector_builder.generated.models.stream_read_request_body import StreamReadRequestBody
@@ -21,7 +20,7 @@ from connector_builder.generated.models.streams_list_read import StreamsListRead
 from connector_builder.generated.models.streams_list_read_streams import StreamsListReadStreams
 from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
 from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapter
-from fastapi import Body
+from fastapi import Body, HTTPException
 from jsonschema import ValidationError
 
 
@@ -37,7 +36,10 @@ class DefaultApiImpl(DefaultApi):
         :param streams_list_request_body: Input parameters to retrieve the list of available streams
         :return: Stream objects made up of a stream name and the HTTP URL it will send requests to
         """
-        adapter = LowCodeSourceAdapter(streams_list_request_body.manifest)
+        try:
+            adapter = self._create_low_code_adapter(manifest=streams_list_request_body.manifest)
+        except ValidationError as error:
+            raise HTTPException(status_code=400, detail=f"Invalid connector manifest with error: {error.message}")
 
         stream_list_read = []
         for http_stream in adapter.get_http_streams(streams_list_request_body.config):
@@ -57,11 +59,10 @@ class DefaultApiImpl(DefaultApi):
         :return: Airbyte record messages produced by the sync grouped by slice and page
         """
         try:
-            adapter = self._create_low_code_adapter(stream_read_request_body)
+            adapter = self._create_low_code_adapter(manifest=stream_read_request_body.manifest)
         except ValidationError as error:
-            return KnownExceptionInfo(
-                message=f"Invalid connector manifest with error: {error.message}", exception_class_name=ValidationError.__name__
-            )
+            # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
+            raise HTTPException(status_code=400, detail=f"Invalid connector manifest with error: {error.message}")
 
         single_slice = StreamReadSlices(pages=[])
         log_messages = []
@@ -73,8 +74,9 @@ class DefaultApiImpl(DefaultApi):
                     log_messages.append({"message": message_group.message})
                 else:
                     single_slice.pages.append(message_group)
-        except KeyError as error:
-            return KnownExceptionInfo(message=error.args[0])
+        except Exception as error:
+            # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
+            raise HTTPException(status_code=400, detail=f"Could not perform read with with error: {error.args[0]}")
 
         return StreamRead(logs=log_messages, slices=[single_slice])
 
@@ -149,5 +151,5 @@ class DefaultApiImpl(DefaultApi):
             return None
 
     @staticmethod
-    def _create_low_code_adapter(stream_read_request_body: StreamReadRequestBody) -> LowCodeSourceAdapter:
-        return LowCodeSourceAdapter(stream_read_request_body.manifest)
+    def _create_low_code_adapter(manifest: Dict[str, Any]) -> LowCodeSourceAdapter:
+        return LowCodeSourceAdapter(manifest=manifest)
