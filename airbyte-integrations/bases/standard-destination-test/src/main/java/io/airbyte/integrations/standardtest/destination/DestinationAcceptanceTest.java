@@ -502,6 +502,8 @@ public abstract class DestinationAcceptanceTest {
         catalog);
     final JsonNode config = getConfig();
     LOGGER.info("testLineBreakCharacters - config : " + config);
+    LOGGER.info("testLineBreakCharacters - catalog.getStreams().get(0).getName() : " + catalog.getStreams().get(0).getName());
+    LOGGER.info("testLineBreakCharacters - catalog.getStreams().get(0).getName() : " + catalog.getStreams().get(0).getName());
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
         new AirbyteMessage()
             .withType(Type.RECORD)
