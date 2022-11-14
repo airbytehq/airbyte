@@ -14399,6 +14399,35 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-vitally:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/vitally"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Vitally Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "status"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          title: "API Token"
+          description: "The API Token for a Vitally account."
+          airbyte_secret: true
+        status:
+          type: "string"
+          title: "Status"
+          description: "Status of the Vitally accounts. One of the following values;\
+            \ active, churned, activeOrChurned."
+          enum:
+          - "active"
+          - "churned"
+          - "activeOrChurned"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-xero:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/xero"
