@@ -238,7 +238,7 @@ def test_get_expected_schema_structure(schema, pathes):
         },
       },
       "option1"
-    )],
+      )],
 )
 def test_get_node(schema, key):
     schema_helper = JsonSchemaHelper(schema)
