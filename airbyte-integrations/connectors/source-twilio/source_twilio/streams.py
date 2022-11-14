@@ -209,6 +209,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
                 yield record
         self._cursor_value = max_cursor
 
+
 class TwilioNestedStream(TwilioStream):
     """
     Basic class for the streams that are dependant on the results of another stream output (parent-child relations).
