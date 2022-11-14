@@ -201,11 +201,13 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        max_cursor = self.state.get(self.cursor_field, self._start_date)
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
             record[self.cursor_field] = pendulum.parse(record[self.cursor_field], strict=False).to_iso8601_string()
-            self._cursor_value = max(self.state.get(self.cursor_field, self._start_date), record[self.cursor_field])
-            yield record
-
+            max_cursor = max(max_cursor, record[self.cursor_field])
+            if self.state.get(self.cursor_field, self._start_date) <= record[self.cursor_field]:
+                yield record
+        self._cursor_value = max_cursor
 
 class TwilioNestedStream(TwilioStream):
     """
