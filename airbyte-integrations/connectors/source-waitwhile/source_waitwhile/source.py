@@ -160,6 +160,18 @@ class WaitwhileStream(HttpStream, ABC):
 
         return params
 
+    def adapt_datetatime_fields(self, records):
+        dt_fields = ["completedTime", "serveTime", "bookingTime", "lastVisit",
+                     "waitlistTime", "created", "updated", "removedTime", "cancelTime"]
+        new_records = []
+        for rec in records:
+            for key in dt_fields:
+                if key in rec:
+                    if rec[key]:
+                        rec[key] = rec[key].replace("Z", "")
+            new_records.append(rec)
+        return new_records
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         :return an iterable containing each record in the response
@@ -168,6 +180,7 @@ class WaitwhileStream(HttpStream, ABC):
             return []
 
         response_json = response.json().get("results")
+        response_json = self.adapt_datetatime_fields(response_json)
         if response_json:
             yield from response_json
 
@@ -211,6 +224,18 @@ class WaitwhileStreamTime(HttpStream, ABC):
             params.update(**next_page_token)
         return params
 
+    def adapt_datetatime_fields(self, records):
+        dt_fields = ["completedTime", "serveTime", "bookingTime", "lastVisit",
+                     "waitlistTime", "created", "updated", "removedTime", "cancelTime"]
+        new_records = []
+        for rec in records:
+            for key in dt_fields:
+                if key in rec:
+                    if rec[key]:
+                        rec[key] = rec[key].replace("Z", "")
+            new_records.append(rec)
+        return new_records
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         :return an iterable containing each record in the response
@@ -219,6 +244,7 @@ class WaitwhileStreamTime(HttpStream, ABC):
             return []
 
         response_json = response.json().get("results")
+        response_json = self.adapt_datetatime_fields(response_json)
         if response_json:
             yield from response_json
 
