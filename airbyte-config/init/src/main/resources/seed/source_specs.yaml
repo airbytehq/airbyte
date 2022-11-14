@@ -2233,6 +2233,46 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-clickup-api:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "ClickUp Api Spec"
+      type: "object"
+      required:
+      - "api_token"
+      additionalProperties: true
+      properties:
+        api_token:
+          type: "string"
+          description: "Every ClickUp API call required authentication. This field\
+            \ is your personal API token. See <a href=\"https://clickup.com/api/developer-portal/authentication/#personal-token\"\
+            >here</a>."
+          airbyte_secret: true
+        team_id:
+          type: "string"
+          description: "The ID of your team in ClickUp. Retrieve it from the `/team`\
+            \ of the ClickUp API. See <a href=\"https://clickup.com/api/clickupreference/operation/GetAuthorizedTeams/\"\
+            >here</a>."
+        space_id:
+          type: "string"
+          description: "The ID of your space in your workspace. Retrieve it from the\
+            \ `/team/{team_id}/space` of the ClickUp API. See <a href=\"https://clickup.com/api/clickupreference/operation/GetSpaces/\"\
+            >here</a>."
+        folder_id:
+          type: "string"
+          description: "The ID of your folder in your space. Retrieve it from the\
+            \ `/space/{space_id}/folder` of the ClickUp API. See <a href=\"https://clickup.com/api/clickupreference/operation/GetFolders/\"\
+            >here</a>."
+        list_id:
+          type: "string"
+          description: "The ID of your list in your folder. Retrieve it from the `/folder/{folder_id}/list`\
+            \ of the ClickUp API. See <a href=\"https://clickup.com/api/clickupreference/operation/GetLists/\"\
+            >here</a>."
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-close-com:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/close-com"
@@ -2957,6 +2997,75 @@
             \ the value of the filter"
           default: []
           order: 4
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-dynamodb:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/dynamodb"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Dynamodb Source Spec"
+      type: "object"
+      required:
+      - "access_key_id"
+      - "secret_access_key"
+      additionalProperties: false
+      properties:
+        endpoint:
+          title: "Dynamodb Endpoint"
+          type: "string"
+          default: ""
+          description: "the URL of the Dynamodb database"
+          examples:
+          - "https://{aws_dynamo_db_url}.com"
+        region:
+          title: "Dynamodb Region"
+          type: "string"
+          default: ""
+          description: "The region of the Dynamodb database"
+          enum:
+          - ""
+          - "us-east-1"
+          - "us-east-2"
+          - "us-west-1"
+          - "us-west-2"
+          - "af-south-1"
+          - "ap-east-1"
+          - "ap-south-1"
+          - "ap-northeast-1"
+          - "ap-northeast-2"
+          - "ap-northeast-3"
+          - "ap-southeast-1"
+          - "ap-southeast-2"
+          - "ca-central-1"
+          - "cn-north-1"
+          - "cn-northwest-1"
+          - "eu-central-1"
+          - "eu-north-1"
+          - "eu-south-1"
+          - "eu-west-1"
+          - "eu-west-2"
+          - "eu-west-3"
+          - "sa-east-1"
+          - "me-south-1"
+          - "us-gov-east-1"
+          - "us-gov-west-1"
+        access_key_id:
+          title: "Dynamodb Key Id"
+          type: "string"
+          description: "The access key id to access Dynamodb. Airbyte requires read\
+            \ permissions to the database"
+          airbyte_secret: true
+          examples:
+          - "A012345678910EXAMPLE"
+        secret_access_key:
+          title: "Dynamodb Access Key"
+          type: "string"
+          description: "The corresponding secret to the access key id."
+          airbyte_secret: true
+          examples:
+          - "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -5866,6 +5975,32 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
+- dockerImage: "airbyte/source-ip2whois:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/ip2whois"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Ip2whois Spec"
+      type: "object"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API key"
+          type: "string"
+          description: "Your API Key. See <a href=\"https://www.ip2whois.com/developers-api\"\
+            >here</a>."
+          airbyte_secret: true
+        domain:
+          title: "Domain"
+          type: "string"
+          description: "Domain name. See <a href=\"https://www.ip2whois.com/developers-api\"\
+            >here</a>."
+          examples:
+          - "www.google.com"
+          - "www.facebook.com"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-db2:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/db2"
@@ -6071,29 +6206,23 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-ip2whois:0.1.0"
+- dockerImage: "airbyte/source-intruder:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/sources/ip2whois"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/intruder"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
-      title: "Ip2whois Spec"
+      title: "Intruder Spec"
       type: "object"
+      required:
+      - "access_token"
       additionalProperties: true
       properties:
-        api_key:
-          title: "API key"
+        access_token:
+          title: "API Access token"
           type: "string"
-          description: "Your API Key. See <a href=\"https://www.ip2whois.com/developers-api\"\
+          description: "Your API Access token. See <a href=\"https://developers.intruder.io/docs/authentication\"\
             >here</a>."
           airbyte_secret: true
-        domain:
-          title: "Domain"
-          type: "string"
-          description: "Domain name. See <a href=\"https://www.ip2whois.com/developers-api\"\
-            >here</a>."
-          examples:
-          - "www.google.com"
-          - "www.facebook.com"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -7305,6 +7434,37 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-mailersend:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/mailersend"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Mailersend Spec"
+      type: "object"
+      required:
+      - "api_token"
+      - "domain_id"
+      additionalProperties: true
+      properties:
+        api_token:
+          type: "string"
+          description: "Your API Token. See <a href=\"https://www.mailersend.com/help/managing-api-tokens\"\
+            >here</a>."
+          airbyte_secret: true
+        domain_id:
+          type: "string"
+          description: "The domain entity in mailersend"
+          examples:
+          - "airbyte.com"
+          - "linkana.com"
+        start_date:
+          type: "number"
+          description: "Timestamp is assumed to be UTC."
+          examples:
+          - 123131321
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-mailgun:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailgun"
@@ -7865,6 +8025,54 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+- dockerImage: "airbyte/source-microsoft-dataverse:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/microsoft-dataverse"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Microsoft Dataverse Spec"
+      type: "object"
+      required:
+      - "url"
+      - "tenant_id"
+      - "client_id"
+      - "client_secret_value"
+      additionalProperties: true
+      properties:
+        url:
+          type: "string"
+          description: "URL to Microsoft Dataverse API"
+          title: "URL"
+          examples:
+          - "https://<org-id>.crm.dynamics.com"
+          order: 0
+        tenant_id:
+          type: "string"
+          description: "Tenant Id of your Microsoft Dataverse Instance"
+          title: "Tenant Id"
+          airbyte_secret: true
+          order: 1
+        client_id:
+          type: "string"
+          description: "App Registration Client Id"
+          title: "Client Id"
+          airbyte_secret: true
+          order: 2
+        client_secret_value:
+          type: "string"
+          description: "App Registration Client Secret"
+          title: "Client Secret"
+          airbyte_secret: true
+          order: 3
+        odata_maxpagesize:
+          type: "integer"
+          description: "Max number of results per page. Default=5000"
+          title: "Max page size"
+          default: 5000
+          order: 4
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-mixpanel:0.1.29"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mixpanel"
@@ -8270,7 +8478,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.12"
+- dockerImage: "airbyte/source-mysql:1.0.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -8353,9 +8561,6 @@
               mode:
                 type: "string"
                 const: "preferred"
-                enum:
-                - "preferred"
-                default: "preferred"
                 order: 0
           - title: "required"
             description: "Require SSL mode."
@@ -8365,9 +8570,6 @@
               mode:
                 type: "string"
                 const: "required"
-                enum:
-                - "required"
-                default: "required"
                 order: 0
           - title: "Verify CA"
             description: "Verify CA SSL mode."
@@ -8378,9 +8580,6 @@
               mode:
                 type: "string"
                 const: "verify_ca"
-                enum:
-                - "verify_ca"
-                default: "verify_ca"
                 order: 0
               ca_certificate:
                 type: "string"
@@ -8423,9 +8622,6 @@
               mode:
                 type: "string"
                 const: "verify_identity"
-                enum:
-                - "verify_identity"
-                default: "verify_identity"
                 order: 0
               ca_certificate:
                 type: "string"
@@ -8474,9 +8670,6 @@
               method:
                 type: "string"
                 const: "STANDARD"
-                enum:
-                - "STANDARD"
-                default: "STANDARD"
                 order: 0
           - title: "Logical Replication (CDC)"
             description: "CDC uses the Binlog to detect inserts, updates, and deletes.\
@@ -8487,9 +8680,6 @@
               method:
                 type: "string"
                 const: "CDC"
-                enum:
-                - "CDC"
-                default: "CDC"
                 order: 0
               initial_waiting_seconds:
                 type: "integer"
@@ -11624,6 +11814,22 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-rss:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/rss"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "RSS Spec"
+      type: "object"
+      required:
+      - "url"
+      properties:
+        url:
+          type: "string"
+          description: "RSS Feed URL"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-s3:0.1.26"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -12643,6 +12849,25 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-smartengage:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/smartengage"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "SmartEngage Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API Key"
+          type: "string"
+          description: "API Key"
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-smartsheets:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/smartsheets"
@@ -13462,7 +13687,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tempo:0.2.6"
+- dockerImage: "airbyte/source-tempo:0.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/"
     connectionSpecification:
@@ -14259,6 +14484,26 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
+- dockerImage: "airbyte/source-vantage:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/vantage"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Vantage Spec"
+      type: "object"
+      required:
+      - "access_token"
+      additionalProperties: true
+      properties:
+        access_token:
+          title: "API Access Token"
+          type: "string"
+          description: "Your API Access token. See <a href=\"https://vantage.readme.io/reference/authentication\"\
+            >here</a>."
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "farosai/airbyte-victorops-source:0.1.23"
   spec:
     documentationUrl: "https://docs.faros.ai"
@@ -14317,6 +14562,35 @@
           type: "string"
           description: "Identifier for the grant issued by an agreement"
           airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-vitally:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/vitally"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Vitally Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "status"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          title: "API Token"
+          description: "The API Token for a Vitally account."
+          airbyte_secret: true
+        status:
+          type: "string"
+          title: "Status"
+          description: "Status of the Vitally accounts. One of the following values;\
+            \ active, churned, activeOrChurned."
+          enum:
+          - "active"
+          - "churned"
+          - "activeOrChurned"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -15856,6 +16130,30 @@
           examples:
           - "FR"
           - "IN"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-workramp:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/workramp"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Workramp Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "academy_id"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          title: "API Token"
+          description: "The API Token for Workramp"
+          airbyte_secret: true
+        academy_id:
+          type: "string"
+          title: "Academy ID"
+          description: "The id of the Academy"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
