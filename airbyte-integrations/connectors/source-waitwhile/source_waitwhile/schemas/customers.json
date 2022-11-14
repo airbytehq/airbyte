@@ -20,7 +20,9 @@
       "type": "array"
     },
     "lastVisit": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "updated": {
       "type": "string",

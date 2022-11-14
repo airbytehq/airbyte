@@ -23,6 +23,105 @@ from source_hubspot.constants import API_KEY_CREDENTIALS, OAUTH_CREDENTIALS, PRI
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
 
+# Relevant properties for deals stream
+relevant_rebil_properties = ['hubspot_owner_id',
+                             'reg_nr',
+                             'dealstage',
+                             'faktisk_innkjopspris__til_kontrakt_',
+                             'salgspris__forventet',
+                             'tilbudet',
+                             'totale_reparasjonskostnader_exomreg',
+                             'bremser_kostnad',
+                             'bulker_kostnad',
+                             'dekk_kostnad',
+                             'eu_kontroll_kostnad',
+                             'felger_kostnad',
+                             'kosmetiske_utbedringer_kostnad',
+                             'lakkering_kostnad',
+                             'omregistreringsavgift',
+                             'service_kostnad',
+                             'transport_kostnad',
+                             'utvidet_garanti_kostnad',
+                             'innbytte_',
+                             'createdate',
+                             'pipeline',
+                             'dealname',
+                             'referent___owner',
+                             'faktisk_salgspris_inkl__ekstratjenester',
+                             'finansiering____0__hvis_ingen_finansiering__100__hvis_fullfinans___salg_',
+                             'gratis_forsikring_',
+                             'heftelser_',
+                             'kostnad_evt__ekstratjenester__feks_hengerfeste__transport_',
+                             'rente_finansiering____',
+                             'leveringsadresse',
+                             'lost_reason',
+                             'pricing_owner',
+                             'dealeier___salg_',
+                             'type_salg',
+                             'dekkhotell_',
+                             'salgspris__hoy',
+                             'salgspris__lav',
+                             'merke',
+                             'modell',
+                             'totale_kostnader_inkl__generell_klargjoring',
+                             'har_bilen_behov_for_flekking_',
+                             'har_bilen_behov_for_verksted_eksternt_',
+                             'har_bilen_behov_for_verksted_internt_',
+                             'hvilken_grad_av_polering_trenger_bilen_',
+                             'hvor_mange_felger_trenger_polering_',
+                             'oppkjoper',
+                             'tilbud_sendt___send_sms_',
+                             'innbytte__til_oppkjoper_eller_selge_selv_',
+                             'dekk_og_bremser__hvordan_er_tilstanden_pa_dekk_og_bremser__evt__nar_ble_dette_byttet_ut_sist_',
+                             'kollisjonsskader__kategorier___korrekt_',
+                             'neste_eu_kontroll',
+                             'neste_service__nar_er_neste_service__evt_nar_var_bilen_din_sist_pa_service_',
+                             'servicehistorystatus',
+                             'skader_og_bruksmerker__kjenner_du_til_noen_skader_pa_bilen_',
+                             'tilstanden_til_bilen__kategorier___cloned_',
+                             'utstyr__hvilket_utstyr_har_bilen_din_',
+                             'behov_for_polering____tilstandssjekk',
+                             'har_bilen_behov_for_a_flekkes_panytt_',
+                             'definere_utstyrsvariant',
+                             'tekst_ding_melding',
+                             'retur___arsak_for_retur_av_bil',
+                             'status_varelagerfinansiering',
+                             'maks_tilbud__til_innkjopskonsulent___salg_v_innbytte_',
+                             'hvor_kommer_henvendelsen_fra_',
+                             'total_pakost',
+                             'hs_object_id',
+                             'vin_nummer',
+                             'tekst_til_ding_melding_',
+                             'prediksjon_fra_prismodell',
+                             'arsmodell',
+                             'automat_manuell',
+                             'drivstoff',
+                             'farge',
+                             'forstegangsregistrert_dato',
+                             'forstegangsregistrert_i_norge',
+                             'hybridkategori',
+                             'kilometerstand',
+                             'komplett_servicehistorikk__',
+                             'land_importert_fra',
+                             'lost_reason_innkjop___evt__kort_forklaring',
+                             'lost_reason_innkjop_ny',
+                             'lost_reason_salg',
+                             'etternavn',
+                             'fornavn',
+                             'fornavn_medeier',
+                             'service_1___dato',
+                             'service_1___kilometer',
+                             'service_2___dato',
+                             'service_2___kilometer',
+                             'service_3___dato',
+                             'service_3___kilometer',
+                             'service_4___dato',
+                             'service_4___kilometer',
+                             'service_5___dato',
+                             'service_5___kilometer__cloned_',
+                             'service___kommentar___annet',
+                             'n6_6_bulkoppretting']
+
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
 
@@ -52,7 +151,8 @@ CUSTOM_FIELD_TYPE_TO_VALUE = {
     int: "integer",
 }
 
-CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
+CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k,
+                              v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
 
 
 def retry_connection_handler(**kwargs):
@@ -61,7 +161,8 @@ def retry_connection_handler(**kwargs):
     def log_retry_attempt(details):
         _, exc, _ = sys.exc_info()
         logger.info(str(exc))
-        logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
+        logger.info(
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
     def giveup_handler(exc):
         if isinstance(exc, (HubspotInvalidAuth, HubspotAccessDenied)):
@@ -85,9 +186,12 @@ def retry_after_handler(fixed_retry_after=None, **kwargs):
         _, exc, _ = sys.exc_info()
         if isinstance(exc, HubspotRateLimited):
             # HubSpot API does not always return Retry-After value for 429 HTTP error
-            retry_after = fixed_retry_after if fixed_retry_after else int(exc.response.headers.get("Retry-After", 3))
-            logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
-            time.sleep(retry_after + 1)  # extra second to cover any fractions of second
+            retry_after = fixed_retry_after if fixed_retry_after else int(
+                exc.response.headers.get("Retry-After", 3))
+            logger.info(
+                f"Rate limit reached. Sleeping for {retry_after} seconds")
+            # extra second to cover any fractions of second
+            time.sleep(retry_after + 1)
 
     def log_giveup(_details):
         logger.error("Max retry limit reached")
@@ -142,7 +246,8 @@ class API:
         elif credentials_title == API_KEY_CREDENTIALS:
             self._session.params["hapikey"] = credentials.get("api_key")
         else:
-            raise Exception("No supported `credentials_title` specified. See spec.yaml for references")
+            raise Exception(
+                "No supported `credentials_title` specified. See spec.yaml for references")
 
         self._session.headers = {
             "Content-Type": "application/json",
@@ -186,7 +291,8 @@ class API:
     def post(
         self, url: str, data: Mapping[str, Any], params: MutableMapping[str, Any] = None
     ) -> Tuple[Union[Mapping[str, Any], List[Mapping[str, Any]]], requests.Response]:
-        response = self._session.post(self.BASE_URL + url, params=params, json=data)
+        response = self._session.post(
+            self.BASE_URL + url, params=params, json=data)
         return self._parse_and_handle_errors(response), response
 
 
@@ -207,7 +313,8 @@ class Stream(HttpStream, ABC):
     offset = 0
     primary_key = None
     filter_old_records: bool = True
-    denormalize_records: bool = False  # one record from API response can result in multiple records emitted
+    # one record from API response can result in multiple records emitted
+    denormalize_records: bool = False
     raise_on_http_errors: bool = True
 
     @property
@@ -263,7 +370,8 @@ class Stream(HttpStream, ABC):
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == HTTPStatus.FORBIDDEN:
             setattr(self, "raise_on_http_errors", False)
-            logger.warning("You have not permission to API for this stream. " "Please check your scopes for Hubspot account.")
+            logger.warning(
+                "You have not permission to API for this stream. " "Please check your scopes for Hubspot account.")
         return super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
@@ -281,7 +389,8 @@ class Stream(HttpStream, ABC):
     def get_json_schema(self) -> Mapping[str, Any]:
         json_schema = super().get_json_schema()
         if self.properties:
-            json_schema["properties"]["properties"] = {"type": "object", "properties": self.properties}
+            json_schema["properties"]["properties"] = {
+                "type": "object", "properties": self.properties}
         return json_schema
 
     def handle_request(
@@ -291,19 +400,26 @@ class Stream(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None,
         properties: IURLPropertyRepresentation = None,
     ) -> requests.Response:
-        request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        request_params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        request_headers = self.request_headers(
+            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        request_params = self.request_params(
+            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         if properties:
             request_params.update(properties.as_url_param())
 
         request = self._create_prepared_request(
-            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            path=self.path(stream_state=stream_state,
+                           stream_slice=stream_slice, next_page_token=next_page_token),
+            headers=dict(request_headers, **
+                         self.authenticator.get_auth_header()),
             params=request_params,
-            json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            json=self.request_body_json(
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            data=self.request_body_data(
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
         )
-        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        request_kwargs = self.request_kwargs(
+            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
         if self.use_cache:
             # use context manager to handle and store cassette metadata
@@ -332,7 +448,8 @@ class Stream(HttpStream, ABC):
         #  and the official documentation, this does not exist at the moment.
 
         group_by_pk = self.primary_key and not self.denormalize_records
-        post_processor: IRecordPostProcessor = GroupByKey(self.primary_key) if group_by_pk else StoreAsIs()
+        post_processor: IRecordPostProcessor = GroupByKey(
+            self.primary_key) if group_by_pk else StoreAsIs()
         response = None
 
         properties = self._property_wrapper
@@ -373,7 +490,8 @@ class Stream(HttpStream, ABC):
                         next_page_token=next_page_token,
                         properties=properties,
                     )
-                    records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+                    records = self._transform(self.parse_response(
+                        response, stream_state=stream_state, stream_slice=stream_slice))
 
                 if self.filter_old_records:
                     records = self._filter_old_records(records)
@@ -398,7 +516,8 @@ class Stream(HttpStream, ABC):
                 errors = body["errors"]
                 if len(errors) > 0:
                     error = errors[0]
-                    missing_scopes = error.get("context", {}).get("requiredScopes")
+                    missing_scopes = error.get(
+                        "context", {}).get("requiredScopes")
                     return f"Invalid permissions for {self.name}. Please ensure the all scopes are authorized for. Missing scopes {missing_scopes}"
         return super().parse_response_error_message(response)
 
@@ -429,7 +548,8 @@ class Stream(HttpStream, ABC):
             dt = pendulum.from_timestamp(int(field_value) / 1000)
             return cls._convert_datetime_to_string(dt, declared_format=declared_format)
         except (ValueError, TypeError) as ex:
-            logger.warning(f"Couldn't parse timestamp in {field_name}. Field value: {field_value}. Ex: {ex}")
+            logger.warning(
+                f"Couldn't parse timestamp in {field_name}. Field value: {field_value}. Ex: {ex}")
 
         return field_value
 
@@ -453,14 +573,17 @@ class Stream(HttpStream, ABC):
                 return None
 
         if declared_format in ["date", "date-time"]:
-            field_value = cls._cast_datetime(field_name, field_value, declared_format=declared_format)
+            field_value = cls._cast_datetime(
+                field_name, field_value, declared_format=declared_format)
 
         actual_field_type = type(field_value)
-        actual_field_type_name = CUSTOM_FIELD_TYPE_TO_VALUE.get(actual_field_type)
+        actual_field_type_name = CUSTOM_FIELD_TYPE_TO_VALUE.get(
+            actual_field_type)
         if actual_field_type_name in declared_field_types:
             return field_value
 
-        target_type_name = next(filter(lambda t: t != "null", declared_field_types))
+        target_type_name = next(
+            filter(lambda t: t != "null", declared_field_types))
         target_type = CUSTOM_FIELD_VALUE_TO_TYPE.get(target_type_name)
 
         if target_type_name == "number":
@@ -476,7 +599,8 @@ class Stream(HttpStream, ABC):
         try:
             casted_value = target_type(field_value)
         except ValueError:
-            logger.exception(f"Could not cast `{field_value}` to `{target_type}`")
+            logger.exception(
+                f"Could not cast `{field_value}` to `{target_type}`")
             return field_value
 
         return casted_value
@@ -521,7 +645,8 @@ class Stream(HttpStream, ABC):
         elif isinstance(value, str):
             value = pendulum.parse(value)
         else:
-            raise ValueError(f"Unsupported type of datetime field {type(value)}")
+            raise ValueError(
+                f"Unsupported type of datetime field {type(value)}")
         return value
 
     def _filter_old_records(self, records: Iterable) -> Iterable:
@@ -572,14 +697,16 @@ class Stream(HttpStream, ABC):
                     'message': 'This hapikey (....) does not have proper permissions! (requires any of [automation-access])',
                     'correlationId': '111111-2222-3333-4444-55555555555'}
                 """
-                self.logger.warning(f"Stream `{self.name}` cannot be procced. {response.get('message')}")
+                self.logger.warning(
+                    f"Stream `{self.name}` cannot be procced. {response.get('message')}")
                 return
 
             if response.get(self.data_field) is None:
                 """
                 When the response doen't have the stream's data, raise an exception.
                 """
-                raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
+                raise RuntimeError("Unexpected API response: {} not in {}".format(
+                    self.data_field, response.keys()))
 
             yield from response[self.data_field]
 
@@ -612,7 +739,8 @@ class Stream(HttpStream, ABC):
                 "type": ["null", field_type],
             }
 
-        converted_type, field_format = KNOWN_CONVERTIBLE_SCHEMA_TYPES.get(field_type) or (None, None)
+        converted_type, field_format = KNOWN_CONVERTIBLE_SCHEMA_TYPES.get(
+            field_type) or (None, None)
 
         if not converted_type:
             converted_type = "string"
@@ -635,7 +763,8 @@ class Stream(HttpStream, ABC):
             return {}
 
         props = {}
-        data, response = self._api.get(f"/properties/v2/{self.entity}/properties")
+        data, response = self._api.get(
+            f"/properties/v2/{self.entity}/properties")
         for row in data:
             props[row["name"]] = self._get_field_props(row["type"])
 
@@ -658,7 +787,8 @@ class Stream(HttpStream, ABC):
             if "associations" in record:
                 associations = record.pop("associations")
                 for name, association in associations.items():
-                    record[name] = [row["id"] for row in association.get("results", [])]
+                    record[name] = [row["id"]
+                                    for row in association.get("results", [])]
             yield record
 
 
@@ -734,17 +864,20 @@ class IncrementalStream(Stream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        records = super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
+        records = super().read_records(sync_mode, cursor_field=cursor_field,
+                                       stream_slice=stream_slice, stream_state=stream_state)
         latest_cursor = None
         for record in records:
             cursor = self._field_to_datetime(record[self.updated_at_field])
-            latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+            latest_cursor = max(
+                cursor, latest_cursor) if latest_cursor else cursor
             yield record
 
         is_last_slice = False
         if self.last_slice:
             is_last_slice = stream_slice == self.last_slice
-        self._update_state(latest_cursor=latest_cursor, is_last_record=is_last_slice)
+        self._update_state(latest_cursor=latest_cursor,
+                           is_last_record=is_last_slice)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         return self.state
@@ -786,9 +919,11 @@ class IncrementalStream(Stream, ABC):
         updated entities in incremental synch.
         """
         if latest_cursor:
-            new_state = max(latest_cursor, self._state) if self._state else latest_cursor
+            new_state = max(
+                latest_cursor, self._state) if self._state else latest_cursor
             if new_state != self._state:
-                logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
+                logger.info(
+                    f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
                 self._state = new_state
                 self._start_date = self._state
         if is_last_record:
@@ -804,7 +939,8 @@ class IncrementalStream(Stream, ABC):
         now_ts = int(pendulum.now().timestamp() * 1000)
         start_ts = int(self._start_date.timestamp() * 1000)
         max_delta = now_ts - start_ts
-        chunk_size = int(chunk_size.total_seconds() * 1000) if self.need_chunk else max_delta
+        chunk_size = int(chunk_size.total_seconds() *
+                         1000) if self.need_chunk else max_delta
 
         for ts in range(start_ts, now_ts, chunk_size):
             end_ts = ts + chunk_size
@@ -826,7 +962,8 @@ class IncrementalStream(Stream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params = super().request_params(stream_state=stream_state,
+                                        stream_slice=stream_slice, next_page_token=next_page_token)
         if stream_slice:
             params.update(stream_slice)
         return params
@@ -891,20 +1028,23 @@ class CRMSearchStream(IncrementalStream, ABC):
         return list(stream_records.values()), raw_response
 
     def _read_associations(self, records: Iterable) -> Iterable[Mapping[str, Any]]:
-        records_by_pk = {record[self.primary_key]: record for record in records}
+        records_by_pk = {record[self.primary_key]                         : record for record in records}
         identifiers = list(map(lambda x: x[self.primary_key], records))
         associations_stream = AssociationsStream(
             api=self._api, start_date=self._start_date, credentials=self._credentials, parent_stream=self, identifiers=identifiers
         )
-        slices = associations_stream.stream_slices(sync_mode=SyncMode.full_refresh)
+        slices = associations_stream.stream_slices(
+            sync_mode=SyncMode.full_refresh)
 
         for _slice in slices:
             logger.info(f"Reading {_slice} associations of {self.entity}")
-            associations = associations_stream.read_records(stream_slice=_slice, sync_mode=SyncMode.full_refresh)
+            associations = associations_stream.read_records(
+                stream_slice=_slice, sync_mode=SyncMode.full_refresh)
             for group in associations:
                 current_record = records_by_pk[group["from"]["id"]]
                 associations_list = current_record.get(_slice, [])
-                associations_list.extend(association["toObjectId"] for association in group["to"])
+                associations_list.extend(
+                    association["toObjectId"] for association in group["to"])
                 current_record[_slice] = associations_list
         return records_by_pk.values()
 
@@ -939,7 +1079,8 @@ class CRMSearchStream(IncrementalStream, ABC):
 
             for record in records:
                 cursor = self._field_to_datetime(record[self.updated_at_field])
-                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+                latest_cursor = max(
+                    cursor, latest_cursor) if latest_cursor else cursor
                 yield record
 
             next_page_token = self.next_page_token(raw_response)
@@ -965,7 +1106,8 @@ class CRMSearchStream(IncrementalStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = {"archived": str(self._include_archived_only).lower(), "associations": self.associations, "limit": self.limit}
+        params = {"archived": str(self._include_archived_only).lower(
+        ), "associations": self.associations, "limit": self.limit}
         if next_page_token:
             params.update(next_page_token.get("params", {}))
         return params
@@ -994,7 +1136,8 @@ class CRMSearchStream(IncrementalStream, ABC):
                 if not self._state:
                     self._state = self._start_date
                 else:
-                    self._state = self._start_date = max(self._state, self._start_date)
+                    self._state = self._start_date = max(
+                        self._state, self._start_date)
 
 
 class CRMObjectStream(Stream):
@@ -1021,7 +1164,8 @@ class CRMObjectStream(Stream):
         self._include_archived_only = include_archived_only
 
         if not self.entity:
-            raise ValueError("Entity must be set either on class or instance level")
+            raise ValueError(
+                "Entity must be set either on class or instance level")
 
 
 class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
@@ -1088,7 +1232,8 @@ class Campaigns(Stream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         for row in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
-            record, response = self._api.get(f"/email/public/v1/campaigns/{row['id']}")
+            record, response = self._api.get(
+                f"/email/public/v1/campaigns/{row['id']}")
             yield {**row, **record}
 
 
@@ -1097,7 +1242,8 @@ class ContactLists(IncrementalStream):
     Docs: https://legacydocs.hubspot.com/docs/methods/lists/get_lists
     """
 
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    transformer: TypeTransformer = TypeTransformer(
+        TransformConfig.DefaultSchemaNormalization)
 
     url = "/contacts/v1/lists"
     data_field = "lists"
@@ -1145,7 +1291,8 @@ class ContactsListMemberships(Stream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params = super().request_params(stream_state=stream_state,
+                                        stream_slice=stream_slice, next_page_token=next_page_token)
         params.update({"showListMemberships": True})
         return params
 
@@ -1217,6 +1364,7 @@ class EmailEvents(IncrementalStream):
     primary_key = "id"
     scopes = {"content"}
 
+
 class DealsRecent(IncrementalStream):
     """Deals Recent, API v1
     Docs: Docs: https://legacydocs.hubspot.com/docs/methods/deals/get_deals_modified
@@ -1228,7 +1376,6 @@ class DealsRecent(IncrementalStream):
     created_at_field = "timestamp"
     primary_key = "dealId"
     scopes = {"crm.objects.deals.read"}
-
 
     def _filter_old_records(self, records: Iterable) -> Iterable:
         """Skip records that was updated before our start_date"""
@@ -1256,20 +1403,19 @@ class DealsRecent(IncrementalStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
 
-
         params = {"count": 100, "includePropertyVersions": True}
         if next_page_token:
             params["offset"] = next_page_token["offset"]
         if self.state:
-            params.update({"since": int(self._state.timestamp() * 1000), "count": 100})
+            params.update(
+                {"since": int(self._state.timestamp() * 1000), "count": 100})
         return params
-        
+
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         self.set_sync(sync_mode)
         return [None]
-
 
     def read_records(
         self,
@@ -1285,10 +1431,9 @@ class DealsRecent(IncrementalStream):
         next_page_token = None
         latest_cursor = None
 
-
         while not pagination_complete:
-            response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
-
+            response = self.handle_request(
+                stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
 
             logger.info(f"Total Data: {response.json().get('total')}")
 
@@ -1296,23 +1441,22 @@ class DealsRecent(IncrementalStream):
 
             logger.info(f"Offset: {response.json().get('offset')}")
 
-            records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
-
-            
+            records = self._transform(self.parse_response(
+                response, stream_state=stream_state, stream_slice=stream_slice))
 
             if self.filter_old_records:
                 records = self._filter_old_records(records)
 
             for record in records:
-                cursor = self._field_to_datetime(record['properties']['hs_lastmodifieddate']['timestamp'])
-                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+                cursor = self._field_to_datetime(
+                    record['properties']['hs_lastmodifieddate']['timestamp'])
+                latest_cursor = max(
+                    cursor, latest_cursor) if latest_cursor else cursor
 
                 yield record
 
-
             logger.info(f"Latest Cusrsor: {latest_cursor}")
             has_more = response.json().get('hasMore')
-
 
             if has_more:
                 next_page_token = {"offset": response.json().get('offset')}
@@ -1320,11 +1464,11 @@ class DealsRecent(IncrementalStream):
             else:
                 pagination_complete = True
 
-
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
         self._update_state(latest_cursor=latest_cursor, is_last_record=True)
+
 
 class Engagements(IncrementalStream):
     """Engagements, API v1
@@ -1337,7 +1481,8 @@ class Engagements(IncrementalStream):
     updated_at_field = "lastUpdated"
     created_at_field = "createdAt"
     primary_key = "id"
-    scopes = {"crm.objects.companies.read", "crm.objects.contacts.read", "crm.objects.deals.read", "tickets", "e-commerce"}
+    scopes = {"crm.objects.companies.read", "crm.objects.contacts.read",
+              "crm.objects.deals.read", "tickets", "e-commerce"}
 
     @property
     def url(self):
@@ -1358,7 +1503,8 @@ class Engagements(IncrementalStream):
         if next_page_token:
             params["offset"] = next_page_token["offset"]
         if self.state:
-            params.update({"since": int(self._state.timestamp() * 1000), "count": 100})
+            params.update(
+                {"since": int(self._state.timestamp() * 1000), "count": 100})
         return params
 
     def stream_slices(
@@ -1381,15 +1527,18 @@ class Engagements(IncrementalStream):
         latest_cursor = None
 
         while not pagination_complete:
-            response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
-            records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+            response = self.handle_request(
+                stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
+            records = self._transform(self.parse_response(
+                response, stream_state=stream_state, stream_slice=stream_slice))
 
             if self.filter_old_records:
                 records = self._filter_old_records(records)
 
             for record in records:
                 cursor = self._field_to_datetime(record[self.updated_at_field])
-                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+                latest_cursor = max(
+                    cursor, latest_cursor) if latest_cursor else cursor
                 yield record
 
             next_page_token = self.next_page_token(response)
@@ -1498,6 +1647,18 @@ class MarketingEmails(Stream):
     scopes = {"content"}
 
 
+class DealsHistory(Stream):
+    """Deals, API v3
+    Docs: https://legacydocs.hubspot.com/docs/methods/deals
+    """
+    url = "/crm/v3/objects/deals?limit=30&propertiesWithHistory=" + \
+        '%2C'.join(relevant_rebil_properties) + '&archived=false'
+    updated_at_field = "updatedAt"
+    created_at_field = "createdAt"
+    primary_key = "id"
+    scopes = {"crm.objects.owners.read", "crm.objects.deals.read"}
+
+
 class Owners(Stream):
     """Owners, API v3
     Docs: https://legacydocs.hubspot.com/docs/methods/owners/get_owners
@@ -1536,7 +1697,8 @@ class PropertyHistory(Stream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = {self.limit_field: self.limit, "propertyMode": "value_and_history"}
+        params = {self.limit_field: self.limit,
+                  "propertyMode": "value_and_history"}
         if next_page_token:
             params.update(next_page_token)
         return params
