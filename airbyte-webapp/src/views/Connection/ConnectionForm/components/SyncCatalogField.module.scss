@@ -1,7 +1,5 @@
-@use "scss/_variables";
-
 .header {
-  margin: variables.$spacing-md 0 0;
+  margin: 10px 0 6px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -9,5 +7,4 @@
   font-weight: 500;
   font-size: 14px;
   line-height: 17px;
-  padding: variables.$spacing-md variables.$spacing-xl;
 }
