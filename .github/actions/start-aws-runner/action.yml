@@ -8,11 +8,11 @@ inputs:
   github-token:
     required: true
   ec2-image-id:
-    # github-self-hosted-runner-ubuntu-20-100g-disk-with-cypress-deps
-    default: "ami-0f2173e027c28eb12"
+    # new runner ami based on ubuntu-jammy-22.04-amd64 (ami-03ba6c40a876f6ed6)
+    default: "ami-0dc556422f327772c"
     required: true
   ec2-instance-type:
-    default: "c5.2xlarge"
+    default: "c5a.8xlarge"
     required: true
   subnet-id:
     default: "subnet-0469a9e68a379c1d3"
