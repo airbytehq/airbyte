@@ -25,12 +25,6 @@ definitions:
       pagination_strategy:
         type: "OffsetIncrement"
         page_size: 50
-      page_token_option:
-        field_name: page_token
-        inject_into: request_parameter
-      page_size_option:
-        inject_into: request_parameter
-        field_name: page_size
     requester:
       $ref: "*ref(definitions.requester)"
   base_stream:
