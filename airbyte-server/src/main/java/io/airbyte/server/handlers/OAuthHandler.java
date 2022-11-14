@@ -74,7 +74,7 @@ public class OAuthHandler {
       JsonNode oAuthInputConfigurationForConsent;
 
       if (sourceDefinitionIdRequestBody.getSourceId() == null) {
-        oAuthInputConfigurationForConsent = sourceDefinitionIdRequestBody.getoAuthInputConfiguration()
+        oAuthInputConfigurationForConsent = sourceDefinitionIdRequestBody.getoAuthInputConfiguration();
       } else {
         final SourceConnection hydratedSourceConnection =
             secretsRepositoryReader.getSourceConnectionWithSecrets(sourceDefinitionIdRequestBody.getSourceId());
