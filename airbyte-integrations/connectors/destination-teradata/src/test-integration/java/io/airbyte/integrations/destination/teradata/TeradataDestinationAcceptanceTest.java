@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.factory.DSLContextFactory;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.Test;
 
 public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
