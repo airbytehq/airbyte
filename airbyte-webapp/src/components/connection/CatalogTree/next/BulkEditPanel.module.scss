@@ -5,6 +5,7 @@
   margin-right: variables.$spacing-xl;
   padding-right: 0 !important;
   display: flex;
+  min-width: unset !important;
   flex-direction: column;
 
   &.streamsCounterCell {
@@ -66,6 +67,11 @@
 }
 
 .buttonCell {
+  min-width: unset !important;
   display: flex;
   justify-content: flex-end;
+}
+
+.syncModeSelect {
+  width: 100%;
 }

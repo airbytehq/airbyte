@@ -111,12 +111,13 @@ export const BulkEditPanel: React.FC = () => {
           <Switch small checked={options.selected} onChange={() => onChangeOption({ selected: !options.selected })} />
         </div>
       </HeaderCell>
-      <HeaderCell flex={1}>
+      <HeaderCell flex={1} className={styles.headerCell}>
         <p className={classNames(styles.text, styles.headerText)}>
           <FormattedMessage id="form.syncMode" />
         </p>
         <div className={styles.syncCellContent}>
           <SyncModeSelect
+            className={styles.syncModeSelect}
             variant="strong-blue"
             value={{
               syncMode: options.syncMode,
@@ -127,7 +128,7 @@ export const BulkEditPanel: React.FC = () => {
           />
         </div>
       </HeaderCell>
-      <HeaderCell flex={1}>
+      <HeaderCell flex={1} className={styles.headerCell}>
         <p className={classNames(styles.text, styles.headerText)}>
           <FormattedMessage id="form.cursorField" />
         </p>
@@ -143,7 +144,7 @@ export const BulkEditPanel: React.FC = () => {
           />
         </div>
       </HeaderCell>
-      <HeaderCell flex={1}>
+      <HeaderCell flex={1} className={styles.headerCell}>
         <p className={classNames(styles.text, styles.headerText)}>
           <FormattedMessage id="form.primaryKey" />
         </p>

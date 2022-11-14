@@ -41,7 +41,7 @@ export const BulkEditServiceProvider: React.FC<
   const isActive = selectedBatchNodes.size > 0;
   useEffect(() => {
     setStatus({ ...status, editControlsVisible: !isActive });
-  }, [isActive, setStatus, status]);
+  }, [setStatus, isActive]);
 
   const resetBulk = () => {
     reset();

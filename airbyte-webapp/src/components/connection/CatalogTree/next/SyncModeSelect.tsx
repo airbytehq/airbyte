@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
@@ -18,13 +19,14 @@ interface SyncModeOption {
 }
 
 interface SyncModeSelectProps {
+  className?: string;
   onChange?: (option: DropDownOptionDataItem<SyncModeValue>) => void;
   options: SyncModeOption[];
   value: Partial<SyncModeValue>;
   variant?: PillButtonVariant;
 }
 
-export const SyncModeSelect: React.FC<SyncModeSelectProps> = ({ variant, options, onChange, value }) => {
+export const SyncModeSelect: React.FC<SyncModeSelectProps> = ({ className, variant, options, onChange, value }) => {
   const pillSelectOptions = useMemo(() => {
     return options.map(({ value }) => {
       const { syncMode, destinationSyncMode } = value;
@@ -47,7 +49,7 @@ export const SyncModeSelect: React.FC<SyncModeSelectProps> = ({ variant, options
       options={pillSelectOptions}
       value={value}
       onChange={onChange}
-      className={styles.pillSelect}
+      className={classNames(styles.pillSelect, className)}
     />
   );
 };

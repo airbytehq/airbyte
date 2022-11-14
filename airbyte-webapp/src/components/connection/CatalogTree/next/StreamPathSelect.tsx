@@ -15,7 +15,7 @@ export type IndexerType = null | "required" | "sourceDefined";
 
 interface StreamPathSelectBaseProps {
   paths: Path[];
-  pathType: "required" | "sourceDefined" | null;
+  pathType: IndexerType;
   placeholder?: React.ReactNode;
   variant?: PillButtonVariant;
   disabled?: boolean;
