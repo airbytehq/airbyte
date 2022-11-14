@@ -11,6 +11,9 @@ tests:
       status: "failed"
   discovery:
     - config_path: "secrets/config.json"
+      backward_compatibility_tests_config:
+        # 0.1.0 contains queries that overwhelm the API server on this test
+        disable_for_version: "0.1.0"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
