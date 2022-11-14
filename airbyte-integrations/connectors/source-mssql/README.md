@@ -1,6 +1,37 @@
 # MsSQL (SQL Server) Source
 
-## Performance Test
+## Documentation
+This is the repository for the MsSQL only source connector in Java.
+For information about how to use this connector within Airbyte, see [User Documentation](https://docs.airbyte.io/integrations/sources/mssql)
+
+## Local development
+
+#### Building via Gradle
+From the Airbyte repository root, run:
+```
+./gradlew :airbyte-integrations:connectors:source-mssql:build
+```
+
+### Locally running the connector docker image
+
+#### Build
+Build the connector image via Gradle:
+```
+./gradlew :airbyte-integrations:connectors:source-mssql:airbyteDocker
+```
+When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
+the Dockerfile.
+
+## Testing
+We use `JUnit` for Java tests.
+
+### Acceptance Tests
+To run acceptance and custom integration tests:
+```
+./gradlew :airbyte-integrations:connectors:source-mssql:integrationTest
+```
+
+### Performance Test
 
 To run performance tests in commandline:
 ```shell

@@ -16,13 +16,11 @@ import org.codehaus.plexus.util.StringUtils;
 
 public class MssqlCdcHelper {
 
-  // legacy replication method config before version 0.4.0
+  // legacy replication method config before version 0.4.18
   // it is an enum with possible values: STANDARD and CDC
-  private static final String LEGACY_REPLICATION_FIELD = "replication_method";
-  // new replication method config since version 0.4.0
+  private static final String REPLICATION_FIELD = "replication_method";
+  // new replication method config since version 0.4.18
   // it is an oneOf object
-  private static final String REPLICATION_FIELD = "replication";
-  private static final String REPLICATION_TYPE_FIELD = "replication_type";
   private static final String METHOD_FIELD = "method";
   private static final String CDC_SNAPSHOT_ISOLATION_FIELD = "snapshot_isolation";
   private static final String CDC_DATA_TO_SYNC_FIELD = "data_to_sync";
@@ -98,29 +96,28 @@ public class MssqlCdcHelper {
   @VisibleForTesting
   static boolean isCdc(final JsonNode config) {
     // new replication method config since version 0.4.0
-    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
-      final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
+    // and support upgrading from 0.4.17 to newer versions.
+    if (config.hasNonNull(REPLICATION_FIELD) && config.get(REPLICATION_FIELD).isObject()) {
+      final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
       return ReplicationMethod.valueOf(replicationConfig.get(METHOD_FIELD).asText()) == ReplicationMethod.CDC;
     }
     // legacy replication method config before version 0.4.0
-    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isTextual()) {
-      return ReplicationMethod.valueOf(config.get(LEGACY_REPLICATION_FIELD).asText()) == ReplicationMethod.CDC;
+    if (config.hasNonNull(REPLICATION_FIELD) && config.get(REPLICATION_FIELD).isTextual()) {
+      return ReplicationMethod.valueOf(config.get(REPLICATION_FIELD).asText()) == ReplicationMethod.CDC;
     }
-    if (config.hasNonNull(REPLICATION_FIELD)) {
-      final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
-      return ReplicationMethod.valueOf(replicationConfig.get(REPLICATION_TYPE_FIELD).asText()) == ReplicationMethod.CDC;
-    }
-
     return false;
   }
 
   @VisibleForTesting
   static SnapshotIsolation getSnapshotIsolationConfig(final JsonNode config) {
     // new replication method config since version 0.4.0
-    if (config.hasNonNull(REPLICATION_FIELD)) {
+    if (config.hasNonNull(REPLICATION_FIELD) && config.get(REPLICATION_FIELD).isObject()) {
       final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
-      final JsonNode snapshotIsolation = replicationConfig.get(CDC_SNAPSHOT_ISOLATION_FIELD);
-      return SnapshotIsolation.from(snapshotIsolation.asText());
+      // support upgrading from 0.4.17 to newer versions.
+      if (replicationConfig.hasNonNull(CDC_SNAPSHOT_ISOLATION_FIELD)) {
+        final JsonNode snapshotIsolation = replicationConfig.get(CDC_SNAPSHOT_ISOLATION_FIELD);
+        return SnapshotIsolation.from(snapshotIsolation.asText());
+      }
     }
     return SnapshotIsolation.SNAPSHOT;
   }
@@ -128,10 +125,13 @@ public class MssqlCdcHelper {
   @VisibleForTesting
   static DataToSync getDataToSyncConfig(final JsonNode config) {
     // new replication method config since version 0.4.0
-    if (config.hasNonNull(REPLICATION_FIELD)) {
+    if (config.hasNonNull(REPLICATION_FIELD) && config.get(REPLICATION_FIELD).isObject()) {
       final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
-      final JsonNode dataToSync = replicationConfig.get(CDC_DATA_TO_SYNC_FIELD);
-      return DataToSync.from(dataToSync.asText());
+      // support upgrading from 0.4.17 to newer versions.
+      if (replicationConfig.hasNonNull(CDC_DATA_TO_SYNC_FIELD)) {
+        final JsonNode dataToSync = replicationConfig.get(CDC_DATA_TO_SYNC_FIELD);
+        return DataToSync.from(dataToSync.asText());
+      }
     }
     return DataToSync.EXISTING_AND_NEW;
   }
