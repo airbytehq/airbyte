@@ -841,9 +841,6 @@ public class DefaultJobPersistence implements JobPersistence {
 
   @Override
   public Optional<AirbyteProtocolVersionRange> getCurrentProtocolVersionRange() throws IOException {
-    // TODO This is duplicated in
-    // airbyte-bootloader/src/main/java/io/airbyte/bootloader/ProtocolVersionChecker.java
-    // consolidate once both are merged
     final Optional<Version> min = getAirbyteProtocolVersionMin();
     final Optional<Version> max = getAirbyteProtocolVersionMax();
 

@@ -63,13 +63,6 @@ class ProtocolVersionCheckerTest {
   }
 
   @Test
-  void testGetCurrentRange() throws IOException {
-    setCurrentProtocolRangeRange(V0_0_0, V1_0_0);
-
-    assertEquals(new AirbyteProtocolVersionRange(V0_0_0, V1_0_0), protocolVersionChecker.getCurrentProtocolVersionRange());
-  }
-
-  @Test
   void testGetTargetRange() throws IOException {
     setTargetProtocolRangeRange(V1_0_0, V2_0_0);
 
@@ -317,6 +310,7 @@ class ProtocolVersionCheckerTest {
   }
 
   private void setCurrentProtocolRangeRange(final Version min, final Version max) throws IOException {
+    when(jobPersistence.getCurrentProtocolVersionRange()).thenReturn(Optional.of(new AirbyteProtocolVersionRange(min, max)));
     when(jobPersistence.getAirbyteProtocolVersionMin()).thenReturn(Optional.of(min));
     when(jobPersistence.getAirbyteProtocolVersionMax()).thenReturn(Optional.of(max));
   }

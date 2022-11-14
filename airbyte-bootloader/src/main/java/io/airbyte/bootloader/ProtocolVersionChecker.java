@@ -61,7 +61,7 @@ public class ProtocolVersionChecker {
    */
   public Optional<AirbyteProtocolVersionRange> validate(final boolean supportAutoUpgrade) throws IOException {
     final Optional<AirbyteVersion> currentAirbyteVersion = getCurrentAirbyteVersion();
-    final AirbyteProtocolVersionRange currentRange = getCurrentProtocolVersionRange();
+    final Optional<AirbyteProtocolVersionRange> currentRange = jobPersistence.getCurrentProtocolVersionRange();
     final AirbyteProtocolVersionRange targetRange = getTargetProtocolVersionRange();
 
     // Checking if there is a pre-existing version of airbyte.
@@ -73,13 +73,13 @@ public class ProtocolVersionChecker {
       return Optional.of(targetRange);
     }
 
-    if (currentRange.equals(targetRange)) {
+    if (currentRange.isEmpty() || currentRange.get().equals(targetRange)) {
       log.info("Using AirbyteProtocolVersion range [{}:{}]", targetRange.min().serialize(), targetRange.max().serialize());
       return Optional.of(targetRange);
     }
 
     log.info("Detected an AirbyteProtocolVersion range change from [{}:{}] to [{}:{}]",
-        currentRange.min().serialize(), currentRange.max().serialize(),
+        currentRange.get().min().serialize(), currentRange.get().max().serialize(),
         targetRange.min().serialize(), targetRange.max().serialize());
 
     final Map<ActorType, Set<UUID>> conflicts = getConflictingActorDefinitions(targetRange);
@@ -121,22 +121,6 @@ public class ProtocolVersionChecker {
 
   protected Optional<AirbyteVersion> getCurrentAirbyteVersion() throws IOException {
     return jobPersistence.getVersion().map(AirbyteVersion::new);
-  }
-
-  protected AirbyteProtocolVersionRange getCurrentProtocolVersionRange() throws IOException {
-    Optional<Version> min = jobPersistence.getAirbyteProtocolVersionMin();
-    Optional<Version> max = jobPersistence.getAirbyteProtocolVersionMax();
-
-    if (min.isPresent() != max.isPresent()) {
-      // Flagging this because this would be highly suspicious but not bad enough that we should fail
-      // hard.
-      // If the new config is fine, the system should self-heal.
-      log.warn("Inconsistent AirbyteProtocolVersion found, only one of min/max was found. (min:{}, max:{})",
-          min.map(Version::serialize).orElse(""), max.map(Version::serialize).orElse(""));
-    }
-
-    return new AirbyteProtocolVersionRange(min.orElse(AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION),
-        max.orElse(AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION));
   }
 
   protected AirbyteProtocolVersionRange getTargetProtocolVersionRange() {
