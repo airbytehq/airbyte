@@ -11,11 +11,14 @@ definitions:
       type: ApiKeyAuthenticator
       header: "apikey"
       api_token: "{{ config['apikey'] }}"
+    request_options_provider:
+      request_parameters:
+        query: "{{ options['query'] }}"
+
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
-      #type: "NoPagination"
       type: "DefaultPaginator"
       $options:
         url_base: "*ref(definitions.requester.url_base)"
@@ -39,12 +42,15 @@ definitions:
       name: "activities"
       primary_key: "ActivityID"
       path: "/activities"
+      query: "BIKING"
   campsites_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "campsites"
       primary_key: "CampsiteID"
       path: "/campsites"
+      query: "Overflow"
+
   events_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -57,54 +63,63 @@ definitions:
       name: "facilities"
       primary_key: "FacilityID"
       path: "/facilities"
+      query: "Cattail Slough Recreation Area - Boat Ramp"
   facilityaddresses_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "facilityaddresses"
       primary_key: "FacilityAddressID"
       path: "/facilityaddresses"
+      query: "VA"
   links_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "links"
       primary_key: "EntityLinkID"
       path: "/links"
+      query: "Forest Service Web Site"
   media_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "media"
       primary_key: "EntityMediaID"
       path: "/media"
+      query: "Silver Cove Site #24"
   organizations_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "organizations"
       primary_key: "OrgID"
       path: "/organizations"
+      query: "Bureau of Land Management"
   permits_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "permits"
       primary_key: "PermitEntranceID"
       path: "/permits"
+      query: "Duncan Lake (op)"
   recreationareas_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "recreationareas"
       primary_key: "RecAreaID"
       path: "/recareas"
+      query: "Vallecito Reservoir"
   recreationareaaddresses_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "recreationareaaddresses"
       primary_key: "RecAreaAddressID"
       path: "/recareaaddresses"
+      query: "Durango"
   tours_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "tours"
       primary_key: "TourID"
       path: "/tours"
+      query: "Summer Solstice"
 
 streams:
   - "*ref(definitions.organizations_stream)"
