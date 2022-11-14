@@ -22,4 +22,3 @@ tests:
       skip_comprehensive_incremental_tests: true
   full_refresh:
     - config_path: "secrets/config.json"
-# TODO remove this change
