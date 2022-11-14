@@ -276,7 +276,12 @@ public class OAuthHandler {
     Jsons.deserializeToStringMap(oAuthInputConfigurationFromInput)
         .forEach((k, v) -> {
           if (AirbyteSecretConstants.SECRETS_MASK.equals(v)) {
-            result.put(k, oAuthInputConfigurationFromDB.get(k).textValue());
+            if (oAuthInputConfigurationFromDB.has(k)) {
+              result.put(k, oAuthInputConfigurationFromDB.get(k).textValue());
+            } else {
+              LOGGER.warn("Missing the k {} in the config store in DB", k);
+            }
+
           } else {
             result.put(k, v);
           }
