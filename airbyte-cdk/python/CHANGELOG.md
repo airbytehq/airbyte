@@ -1,5 +1,79 @@
 # Changelog
 
+## 0.9.1
+Low-code: Fix filtering vars in `InterpolatedRequestInputProvider.eval_request_inputs`
+
+## 0.9.0
+Low-code: Allow `grant_type` to be specified for OAuthAuthenticator
+
+## 0.8.1
+Low-code: Don't update cursor for non-record messages and fix default loader for connector builder manifests
+
+## 0.8.0
+Low-code: Allow for request and response to be emitted as log messages
+
+## 0.7.1
+Low-code: Decouple yaml manifest parsing from the declarative source implementation
+
+## 0.7.0
+Low-code: Allow connector specifications to be defined in the manifest
+
+## 0.6.0
+Low-code: Add support for monthly and yearly incremental updates for `DatetimeStreamSlicer`
+
+## 0.5.4
+Low-code: Get response.json in a safe way
+
+## 0.5.3
+Low-code: Replace EmptySchemaLoader with DefaultSchemaLoader to retain backwards compatibility
+Low-code: Evaluate backoff strategies at runtime
+
+## 0.5.2
+Low-code: Allow for read even when schemas are not defined for a connector yet
+
+## 0.4.2
+Low-code: Fix off by one error with the stream slicers
+
+## 0.4.1
+Low-code: Fix a few bugs with the stream slicers
+
+## 0.4.0
+Low-code: Add support for custom error messages on error response filters
+
+## 0.3.0
+Publish python typehints via `py.typed` file. 
+
+## 0.2.3
+- Propagate options to InterpolatedRequestInputProvider
+
+## 0.2.2
+- Report config validation errors as failed connection status during `check`.
+- Report config validation errors as `config_error` failure type.
+
+## 0.2.1
+
+- Low-code: Always convert stream slices output to an iterator
+
+## 0.2.0
+
+- Replace caching method: VCR.py -> requests-cache with SQLite backend
+
+## 0.1.104
+
+- Protocol change: `supported_sync_modes` is now a required properties on AirbyteStream. [#15591](https://github.com/airbytehq/airbyte/pull/15591)
+
+## 0.1.103
+
+- Low-code: added hash filter to jinja template
+
+## 0.1.102
+
+- Low-code: Fix check for streams that do not define a stream slicer
+
+## 0.1.101
+
+- Low-code: $options do not overwrite parameters that are already set
+
 ## 0.1.100
 
 - Low-code: Pass stream_slice to read_records when reading from CheckStream

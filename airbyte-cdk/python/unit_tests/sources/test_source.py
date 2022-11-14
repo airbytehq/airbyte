@@ -60,12 +60,12 @@ def catalog():
     configured_catalog = {
         "streams": [
             {
-                "stream": {"name": "mock_http_stream", "json_schema": {}},
+                "stream": {"name": "mock_http_stream", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
                 "destination_sync_mode": "overwrite",
                 "sync_mode": "full_refresh",
             },
             {
-                "stream": {"name": "mock_stream", "json_schema": {}},
+                "stream": {"name": "mock_stream", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
                 "destination_sync_mode": "overwrite",
                 "sync_mode": "full_refresh",
             },
@@ -317,7 +317,11 @@ def test_read_catalog(source):
     configured_catalog = {
         "streams": [
             {
-                "stream": {"name": "mystream", "json_schema": {"type": "object", "properties": {"k": "v"}}},
+                "stream": {
+                    "name": "mystream",
+                    "json_schema": {"type": "object", "properties": {"k": "v"}},
+                    "supported_sync_modes": ["full_refresh"],
+                },
                 "destination_sync_mode": "overwrite",
                 "sync_mode": "full_refresh",
             }
@@ -421,8 +425,8 @@ def test_source_config_no_transform(abstract_source, catalog):
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
     assert len(records) == 2 * 5
     assert [r.record.data for r in records] == [{"value": 23}] * 2 * 5
-    assert http_stream.get_json_schema.call_count == 1
-    assert non_http_stream.get_json_schema.call_count == 1
+    assert http_stream.get_json_schema.call_count == 5
+    assert non_http_stream.get_json_schema.call_count == 5
 
 
 def test_source_config_transform(abstract_source, catalog):

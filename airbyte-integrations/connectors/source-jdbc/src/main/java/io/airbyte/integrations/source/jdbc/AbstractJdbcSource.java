@@ -20,6 +20,9 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
 import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullTableName;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -40,7 +43,7 @@ import io.airbyte.db.jdbc.streaming.JdbcStreamingQueryConfig;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
-import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
+import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
@@ -81,7 +84,7 @@ import org.slf4j.LoggerFactory;
  * relational DB source which can be accessed via JDBC driver. If you are implementing a connector
  * for a relational DB which has a JDBC driver, make an effort to use this class.
  */
-public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbSource<Datatype, JdbcDatabase> implements Source {
+public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Datatype, JdbcDatabase> implements Source {
 
   public static final String SSL_MODE = "sslMode";
 
@@ -136,12 +139,23 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     this.sourceOperations = sourceOperations;
   }
 
+  @Override
+  protected AutoCloseableIterator<JsonNode> queryTableFullRefresh(final JdbcDatabase database,
+                                                                  final List<String> columnNames,
+                                                                  final String schemaName,
+                                                                  final String tableName) {
+    LOGGER.info("Queueing query for table: {}", tableName);
+    return queryTable(database, String.format("SELECT %s FROM %s",
+        enquoteIdentifierList(columnNames, getQuoteString()),
+        getFullTableName(schemaName, tableName, getQuoteString())));
+  }
+
   /**
    * Configures a list of operations that can be used to check the connection to the source.
    *
    * @return list of consumers that run queries for the check command.
    */
-  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
+  protected List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
     return ImmutableList.of(database -> {
       LOGGER.info("Attempting to get metadata from the database to see if we can connect.");
       database.bufferedResultSetQuery(connection -> connection.getMetaData().getCatalogs(), sourceOperations::rowToJson);
@@ -193,7 +207,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                 .map(f -> {
                   final Datatype datatype = getFieldType(f);
                   final JsonSchemaType jsonType = getType(datatype);
-                  LOGGER.info("Table {} column {} (type {}[{}]) -> {}",
+                  LOGGER.info("Table {} column {} (type {}[{}], nullable {}) -> {}",
                       fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_NAME).asText(),
                       f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
@@ -258,7 +272,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
    * @param field Essential column information returned from
    *        {@link AbstractJdbcSource#getColumnMetadata}.
    */
-  public Datatype getFieldType(final JsonNode field) {
+  private Datatype getFieldType(final JsonNode field) {
     return sourceOperations.getFieldType(field);
   }
 
@@ -387,7 +401,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                                          final Connection connection,
                                          final List<String> columnNames,
                                          final String schemaName,
-                                         final String tableName) throws SQLException {
+                                         final String tableName)
+      throws SQLException {
     return sourceOperations.enquoteIdentifierList(connection, columnNames);
   }
 
@@ -514,7 +529,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
    * @param config configuration
    * @return map containing relevant parsed values including location of keystore or an empty map
    */
-  public Map<String, String> parseSSLConfig(final JsonNode config) {
+  protected Map<String, String> parseSSLConfig(final JsonNode config) {
     LOGGER.debug("source config: {}", config);
 
     final Map<String, String> additionalParameters = new HashMap<>();
@@ -571,7 +586,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
    * @param sslParams
    * @return SSL portion of JDBC question params or and empty string
    */
-  public String toJDBCQueryParams(final Map<String, String> sslParams) {
+  protected String toJDBCQueryParams(final Map<String, String> sslParams) {
     return Objects.isNull(sslParams) ? ""
         : sslParams.entrySet()
             .stream()

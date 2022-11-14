@@ -4,11 +4,14 @@
 
 package io.airbyte.cron.selfhealing;
 
+import static io.airbyte.cron.MicronautCronRunner.SCHEDULED_TRACE_OPERATION_NAME;
+
+import datadog.trace.api.Trace;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.env.Environment;
-import io.micronaut.scheduling.annotation.Scheduled;
 import jakarta.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +20,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -47,10 +51,12 @@ public class WorkspaceCleaner {
    *
    * NOTE: this is currently only intended to work for docker
    */
-  @Scheduled(fixedRate = "1d")
+  @Trace(operationName = SCHEDULED_TRACE_OPERATION_NAME)
   public void deleteOldFiles() throws IOException {
     final Date oldestAllowed = getDateFromDaysAgo(maxAgeFilesInDays);
     log.info("Deleting files older than {} days ({})", maxAgeFilesInDays, oldestAllowed);
+
+    ApmTraceUtils.addTagsToTrace(Map.of("oldest_date_allowed", oldestAllowed, "max_age", maxAgeFilesInDays));
 
     final AtomicInteger counter = new AtomicInteger(0);
     Files.walk(workspaceRoot)

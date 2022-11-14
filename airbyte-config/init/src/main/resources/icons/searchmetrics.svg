@@ -1,13 +1,57 @@
-<?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
- "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
-<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
- width="225.000000pt" height="225.000000pt" viewBox="0 0 225.000000 225.000000"
- preserveAspectRatio="xMidYMid meet">
-<metadata>
-Created by potrace 1.16, written by Peter Selinger 2001-2019
-</metadata>
-<g transform="translate(0.000000,225.000000) scale(0.100000,-0.100000)"
-fill="#000000" stroke="none">
-</g>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="61.733433"
+   height="61.672066"
+   viewBox="0 0 61.733433 61.672066"
+   version="1.1"
+   id="svg136"
+   sodipodi:docname="searchmetrics.svg"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs140" />
+  <sodipodi:namedview
+     id="namedview138"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="3.0770975"
+     inkscape:cx="179.22734"
+     inkscape:cy="31.198231"
+     inkscape:window-width="3840"
+     inkscape:window-height="2083"
+     inkscape:window-x="0"
+     inkscape:window-y="40"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg136" />
+  <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+  <title
+     id="title129">Logo color dark</title>
+  <desc
+     id="desc131">Created with Sketch.</desc>
+  <path
+     d="m 47.987403,34.252201 0.04119,0.02034 0.02085,-0.01017 6.852169,3.426084 -0.02034,0.01068 6.852162,3.426085 v 6.852169 L 37.409151,60.140036 c -2.015583,1.00729 -4.237606,1.53203 -6.491154,1.53203 -2.253039,0 -4.475062,-0.52474 -6.490645,-1.53203 v 0 L 0.08222,47.967217 V 41.115048 L 24.427352,53.28736 c 2.015583,1.007792 4.237606,1.532535 6.490645,1.532535 2.253548,0 4.475571,-0.524743 6.491154,-1.532535 v 0 L 54.881267,44.551302 48.02859,41.125218 37.409151,46.435191 c -2.015583,1.007283 -4.237606,1.532535 -6.491154,1.532535 -2.253039,0 -4.475062,-0.525252 -6.490645,-1.532535 v 0 l -17.492963,-8.746736 6.852677,-3.426084 10.640286,5.320143 c 2.015583,1.007791 4.237606,1.532534 6.490645,1.532534 2.253548,0 4.475571,-0.524743 6.491154,-1.532534 v 0 L 47.987403,34.293388 Z M 30.918252,27.409897 c 2.253039,0 4.47557,0.524743 6.490645,1.532534 v 0 l 3.746422,1.873211 v 0 l -3.828286,1.914397 c -2.015583,1.007792 -4.237606,1.532535 -6.491154,1.532535 -2.25304,0 -4.475062,-0.524743 -6.490645,-1.532535 v 0 l -3.746422,-1.87321 3.828286,-1.914398 c 2.015583,-1.007791 4.237605,-1.532534 6.491154,-1.532534 z M 30.836282,0 c 2.253039,0 4.475062,0.524743 6.490645,1.532026 v 0 l 24.345137,12.172821 v 6.811491 L 37.408795,8.384704 C 35.393721,7.376912 33.171189,6.852678 30.91815,6.852678 c -2.25304,0 -4.475571,0.524234 -6.490646,1.532026 v 0 l -17.534149,8.767075 6.852677,3.426084 10.681472,-5.34099 c 2.015075,-1.007283 4.237606,-1.532026 6.490646,-1.532026 2.253039,0 4.475571,0.524743 6.490645,1.532026 v 0 l 17.451777,8.726397 -6.852677,3.426084 -10.5991,-5.299804 c -2.015074,-1.007283 -4.237606,-1.532026 -6.490645,-1.532026 -2.25304,0 -4.475571,0.524743 -6.490646,1.532026 v 0 L 13.746032,27.430541 0,20.557524 V 13.704847 L 24.345132,1.532026 C 26.360715,0.524743 28.582738,0 30.836286,0 Z"
+     id="Combined-Shape"
+     fill="#12ae3a"
+     style="fill-rule:evenodd;stroke:none;stroke-width:1" />
+  <metadata
+     id="metadata198">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:title>Logo color dark</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
 </svg>

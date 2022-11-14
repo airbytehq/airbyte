@@ -36,6 +36,8 @@ To use a Google Cloud Storage bucket:
 3. Grant the [`Storage Object Admin` role](https://cloud.google.com/storage/docs/access-control/iam-roles#standard-roles) to the Google Cloud [Service Account](https://cloud.google.com/iam/docs/service-accounts).
 4. Make sure your Cloud Storage bucket is accessible from the machine running Airbyte. The easiest way to verify if Airbyte is able to connect to your bucket is via the check connection tool in the UI.
 
+Your bucket must be encrypted using a Google-managed encryption key (this is the default setting when creating a new bucket). We currently do not support buckets using customer-managed encryption keys (CMEK). You can view this setting under the "Configuration" tab of your GCS bucket, in the `Encryption type` row.
+
 #### Using `INSERT`
 
 You can use BigQuery's [`INSERT`](https://cloud.google.com/bigquery/docs/reference/standard-sql/dml-syntax) statement to upload data directly from your source to BigQuery. While this is faster to set up initially, we strongly recommend not using this option for anything other than a quick demo. Due to the Google BigQuery SDK client limitations, using `INSERT` is 10x slower than using a Google Cloud Storage bucket, and you may see some failures for big datasets and slow sources (For example, if reading from a source takes more than 10-12 hours). For more details, refer to https://github.com/airbytehq/airbyte/issues/3549
@@ -134,6 +136,9 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                  |
 |:--------|:-----------|:----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| 1.2.7   | 2022-11-11 | [#19358](https://github.com/airbytehq/airbyte/pull/19358) | fixed check method to capture mismatch dataset location                                                                  |
+| 1.2.6   | 2022-11-10 | [#18554](https://github.com/airbytehq/airbyte/pull/18554) | Improve check connection method to handle more errors                                                                    |
+| 1.2.5   | 2022-10-19 | [#18162](https://github.com/airbytehq/airbyte/pull/18162) | Improve error logs                                                                                                       |
 | 1.2.4   | 2022-09-26 | [#16890](https://github.com/airbytehq/airbyte/pull/16890) | Add user-agent header                                                                                                    |
 | 1.2.3   | 2022-09-22 | [#17054](https://github.com/airbytehq/airbyte/pull/17054) | Respect stream namespace                                                                                                 |
 | 1.2.1   | 2022-09-14 | [#15668](https://github.com/airbytehq/airbyte/pull/15668) | (bugged, do not use) Wrap logs in AirbyteLogMessage                                                                      |
@@ -184,6 +189,9 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                  |
 |:--------|:-----------|:----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| 1.2.7   | 2022-11-11 | [#19358](https://github.com/airbytehq/airbyte/pull/19358) | fixed check method to capture mismatch dataset location                                                                  |
+| 1.2.6   | 2022-11-10 | [#18554](https://github.com/airbytehq/airbyte/pull/18554) | Improve check connection method to handle more errors                                                                    |
+| 1.2.5   | 2022-10-19 | [#18162](https://github.com/airbytehq/airbyte/pull/18162) | Improve error logs                                                                                                       |
 | 1.2.4   | 2022-09-26 | [#16890](https://github.com/airbytehq/airbyte/pull/16890) | Add user-agent header                                                                                                    |
 | 1.2.3   | 2022-09-22 | [#17054](https://github.com/airbytehq/airbyte/pull/17054) | Respect stream namespace                                                                                                 |
 | 1.2.2   | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668)  | (bugged, do not use) Wrap logs in AirbyteLogMessage                                                                      |
