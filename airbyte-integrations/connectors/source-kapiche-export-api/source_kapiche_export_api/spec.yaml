@@ -1,0 +1,19 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Kapiche Export Api Spec
+  type: object
+  required:
+    - api_token
+    - export_api_url
+  properties:
+    api_token:
+      title: API TOKEN
+      type: string
+      description: Auth tokens to use for the Export API.
+      airbyte_secret: true
+    export_api_url:
+      title: Export URL (botanic)
+      type: string
+      description: Export url that is consumed to get all the export metadata.
+      airbyte_secret: false
