@@ -84,9 +84,9 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
           <Text bold as="div" className={styles.sourcesTitle}>
             <Tooltip
               control={
-                <>
+                <span>
                   <FormattedMessage id="connection.onboarding.sources" /> <FontAwesomeIcon icon={faCircleQuestion} />
-                </>
+                </span>
               }
             >
               <FormattedMessage id="connection.onboarding.sourcesDescription" />
@@ -96,11 +96,12 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
             const tooltipText = formatMessage({ id: "connection.onboarding.addSource" }, { source: source?.name });
             return (
               <Tooltip
+                key={source?.sourceDefinitionId}
                 placement="right"
                 control={
                   <button
                     data-testid={`onboardingSource-${index}`}
-                    data-sourceDefinitionId={source?.sourceDefinitionId}
+                    data-source-definition-id={source?.sourceDefinitionId}
                     aria-label={tooltipText}
                     className={styles.connectorButton}
                     onClick={() => onCreate(source?.sourceDefinitionId)}
@@ -155,6 +156,7 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
             );
             return (
               <Tooltip
+                key={destination?.destinationDefinitionId}
                 placement="right"
                 control={
                   <button
