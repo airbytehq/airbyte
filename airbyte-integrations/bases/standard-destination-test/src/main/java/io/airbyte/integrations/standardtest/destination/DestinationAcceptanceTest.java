@@ -342,6 +342,7 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   public void testGetSpec() throws WorkerException {
+	LOGGER.info("Satish =============================testGetSpec ");
     assertNotNull(runSpec());
   }
 
@@ -351,6 +352,7 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   public void testCheckConnection() throws Exception {
+	  LOGGER.info("Satish =============================testCheckConnection ");
     assertEquals(Status.SUCCEEDED, runCheck(getConfig()).getStatus());
   }
 
@@ -360,6 +362,7 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   public void testCheckConnectionInvalidCredentials() throws Exception {
+	  LOGGER.info("Satish =============================testCheckConnectionInvalidCredentials ");
     assertEquals(Status.FAILED, runCheck(getFailCheckConfig()).getStatus());
   }
 
@@ -371,6 +374,7 @@ public abstract class DestinationAcceptanceTest {
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testSync(final String messagesFilename, final String catalogFilename)
       throws Exception {
+	  LOGGER.info("Satish =============================testSync ");
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename),
         AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
@@ -394,6 +398,7 @@ public abstract class DestinationAcceptanceTest {
   public void testSyncWithLargeRecordBatch(final String messagesFilename,
                                            final String catalogFilename)
       throws Exception {
+	  LOGGER.info("Satish =============================testSyncWithLargeRecordBatch ");
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename),
         AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
@@ -423,6 +428,7 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   public void testSecondSync() throws Exception {
+	  LOGGER.info("Satish =============================testSecondSync ");
     if (!implementsOverwrite()) {
       LOGGER.info("Destination's spec.json does not support overwrite sync mode.");
       return;
@@ -494,6 +500,7 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   public void testLineBreakCharacters() throws Exception {
+	  LOGGER.info("Satish =============================testLineBreakCharacters ");
     final AirbyteCatalog catalog =
         Jsons.deserialize(
             MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
@@ -533,6 +540,7 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   public void specNormalizationValueShouldBeCorrect() throws Exception {
+	  LOGGER.info("Satish =============================specNormalizationValueShouldBeCorrect ");
     final boolean normalizationFromSpec = normalizationFromSpec();
     assertEquals(normalizationFromSpec, supportsNormalization());
     if (normalizationFromSpec) {
@@ -549,6 +557,7 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   public void specDBTValueShouldBeCorrect() throws WorkerException {
+	  LOGGER.info("Satish =============================specDBTValueShouldBeCorrect ");
 	  LOGGER.info("supportsDBT() : " + supportsDBT());
 	  LOGGER.info("dbtFromSpec() : " + dbtFromSpec());
     assertEquals(dbtFromSpec(), supportsDBT());
@@ -560,6 +569,7 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   public void testIncrementalSync() throws Exception {
+	  LOGGER.info("Satish =============================testIncrementalSync ");
     if (!implementsAppend()) {
       LOGGER.info("Destination's spec.json does not include '\"supportsIncremental\" ; true'");
       return;
@@ -620,6 +630,7 @@ public abstract class DestinationAcceptanceTest {
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename)
       throws Exception {
+	  LOGGER.info("Satish =============================testSyncWithNormalization ");
     if (!normalizationFromSpec()) {
       return;
     }
@@ -650,6 +661,7 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   public void testIncrementalDedupeSync() throws Exception {
+	  LOGGER.info("Satish =============================testIncrementalDedupeSync ");
     if (!implementsAppendDedup()) {
       LOGGER.info(
           "Destination's spec.json does not include 'append_dedupe' in its '\"supportedDestinationSyncModes\"'");
@@ -755,6 +767,7 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   void testSyncVeryBigRecords() throws Exception {
+	  LOGGER.info("Satish =============================testSyncVeryBigRecords ");
     if (!implementsRecordSizeLimitChecks()) {
       return;
     }
@@ -827,6 +840,7 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   public void testCustomDbtTransformations() throws Exception {
+	  LOGGER.info("Satish =============================testCustomDbtTransformations ");
     if (!dbtFromSpec()) {
       return;
     }
@@ -911,6 +925,7 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   void testCustomDbtTransformationsFailure() throws Exception {
+	  LOGGER.info("Satish =============================testCustomDbtTransformationsFailure ");
     if (!normalizationFromSpec() || !dbtFromSpec()) {
       // we require normalization implementation for this destination, because we make sure to install
       // required dbt dependency in the normalization docker image in order to run this test successfully
@@ -946,6 +961,7 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   void testSyncUsesAirbyteStreamNamespaceIfNotNull() throws Exception {
+	  LOGGER.info("Satish =============================testSyncUsesAirbyteStreamNamespaceIfNotNull ");
     if (!implementsNamespaces()) {
       return;
     }
@@ -978,6 +994,7 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   void testSyncWriteSameTableNameDifferentNamespace() throws Exception {
+	  LOGGER.info("Satish =============================testSyncWriteSameTableNameDifferentNamespace ");
     if (!implementsNamespaces()) {
       return;
     }
@@ -1046,6 +1063,7 @@ public abstract class DestinationAcceptanceTest {
                              final String namespace,
                              final String normalizedNamespace)
       throws Exception {
+	  LOGGER.info("Satish =============================testNamespaces ");
     final Optional<NamingConventionTransformer> nameTransformer = getNameTransformer();
     nameTransformer.ifPresent(
         namingConventionTransformer -> assertNamespaceNormalization(testCaseId, normalizedNamespace,
@@ -1086,6 +1104,7 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   public void testEntrypointEnvVar() throws Exception {
+	  LOGGER.info("Satish =============================testEntrypointEnvVar ");
     final String entrypoint = EntrypointEnvChecker.getEntrypointEnvVariable(
         processFactory,
         JOB_ID,
@@ -1105,6 +1124,7 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   public void testSyncNotFailsWithNewFields() throws Exception {
+	  LOGGER.info("Satish =============================testSyncNotFailsWithNewFields ");
     if (!implementsOverwrite()) {
       LOGGER.info("Destination's spec.json does not support overwrite sync mode.");
       return;
