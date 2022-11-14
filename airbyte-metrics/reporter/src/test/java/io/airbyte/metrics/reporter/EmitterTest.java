@@ -25,6 +25,12 @@ class EmitterTest {
   private MetricClient client;
   private MetricRepository repo;
 
+  private static final String SYNC_QUEUE = "SYNC";
+  private static final String AWS_QUEUE = "AWS";
+
+  private static final String EU_REGION = "EU";
+  private static final String AUTO_REGION = "AUTO";
+
   @BeforeEach
   void setUp() {
     client = mock(MetricClient.class);
@@ -33,29 +39,35 @@ class EmitterTest {
 
   @Test
   void TestNumPendingJobs() {
-    final var value = 101;
-    when(repo.numberOfPendingJobs()).thenReturn(value);
+    final var value = Map.of(AUTO_REGION, 101, EU_REGION, 20);
+    when(repo.numberOfPendingJobsByGeography()).thenReturn(value);
 
     final var emitter = new NumPendingJobs(client, repo);
     emitter.Emit();
 
     assertEquals(Duration.ofSeconds(15), emitter.getDuration());
-    verify(repo).numberOfPendingJobs();
-    verify(client).gauge(OssMetricsRegistry.NUM_PENDING_JOBS, value);
+    verify(repo).numberOfPendingJobsByGeography();
+    verify(client).gauge(OssMetricsRegistry.NUM_PENDING_JOBS, 101,
+        new MetricAttribute(MetricTags.GEOGRAPHY, AUTO_REGION));
+    verify(client).gauge(OssMetricsRegistry.NUM_PENDING_JOBS, 20,
+        new MetricAttribute(MetricTags.GEOGRAPHY, EU_REGION));
     verify(client).count(OssMetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
   }
 
   @Test
   void TestNumRunningJobs() {
-    final var value = 101;
-    when(repo.numberOfRunningJobs()).thenReturn(value);
+    final var value = Map.of(SYNC_QUEUE, 101, AWS_QUEUE, 20);
+    when(repo.numberOfRunningJobsByTaskQueue()).thenReturn(value);
 
     final var emitter = new NumRunningJobs(client, repo);
     emitter.Emit();
 
     assertEquals(Duration.ofSeconds(15), emitter.getDuration());
-    verify(repo).numberOfRunningJobs();
-    verify(client).gauge(OssMetricsRegistry.NUM_RUNNING_JOBS, value);
+    verify(repo).numberOfRunningJobsByTaskQueue();
+    verify(client).gauge(OssMetricsRegistry.NUM_RUNNING_JOBS, 101,
+        new MetricAttribute(MetricTags.ATTEMPT_QUEUE, SYNC_QUEUE));
+    verify(client).gauge(OssMetricsRegistry.NUM_RUNNING_JOBS, 20,
+        new MetricAttribute(MetricTags.ATTEMPT_QUEUE, AWS_QUEUE));
     verify(client).count(OssMetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
   }
 
@@ -75,29 +87,36 @@ class EmitterTest {
 
   @Test
   void TestOldestRunningJob() {
-    final var value = 101;
-    when(repo.oldestRunningJobAgeSecs()).thenReturn((long) value);
+    final var value = Map.of(SYNC_QUEUE, 101.0, AWS_QUEUE, 20.0);
+    when(repo.oldestRunningJobAgeSecsByTaskQueue()).thenReturn(value);
 
     final var emitter = new OldestRunningJob(client, repo);
     emitter.Emit();
 
     assertEquals(Duration.ofSeconds(15), emitter.getDuration());
-    verify(repo).oldestRunningJobAgeSecs();
-    verify(client).gauge(OssMetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS, value);
+    verify(repo).oldestRunningJobAgeSecsByTaskQueue();
+    verify(client).gauge(OssMetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS, 101,
+        new MetricAttribute(MetricTags.ATTEMPT_QUEUE, SYNC_QUEUE));
+    verify(client).gauge(OssMetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS, 20,
+        new MetricAttribute(MetricTags.ATTEMPT_QUEUE, AWS_QUEUE));
     verify(client).count(OssMetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
   }
 
   @Test
   void TestOldestPendingJob() {
-    final var value = 101;
-    when(repo.oldestPendingJobAgeSecs()).thenReturn((long) value);
+    final var value = Map.of(AUTO_REGION, 101.0, EU_REGION, 20.0);
+    when(repo.oldestPendingJobAgeSecsByGeography()).thenReturn(value);
 
     final var emitter = new OldestPendingJob(client, repo);
     emitter.Emit();
 
     assertEquals(Duration.ofSeconds(15), emitter.getDuration());
-    verify(repo).oldestPendingJobAgeSecs();
-    verify(client).gauge(OssMetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, value);
+    verify(repo).oldestPendingJobAgeSecsByGeography();
+    verify(client).gauge(OssMetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, 101,
+        new MetricAttribute(MetricTags.GEOGRAPHY, AUTO_REGION));
+    verify(client).gauge(OssMetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, 20,
+        new MetricAttribute(MetricTags.GEOGRAPHY, EU_REGION));
+
     verify(client).count(OssMetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
   }
 

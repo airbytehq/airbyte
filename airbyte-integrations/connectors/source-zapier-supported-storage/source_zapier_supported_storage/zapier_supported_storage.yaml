@@ -1,0 +1,34 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://store.zapier.com/api"
+    http_method: "GET"
+    request_options_provider:
+      request_parameters:
+        secret: "{{ config['secret'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  zapier_supported_storage_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "zapier_supported_storage"
+      path: "/records"
+
+streams:
+  - "*ref(definitions.zapier_supported_storage_stream)"
+
+check:
+  stream_names:
+    - "zapier_supported_storage"

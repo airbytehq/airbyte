@@ -12,7 +12,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import io.airbyte.commons.json.Jsons;
@@ -32,8 +31,8 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
 import io.airbyte.config.persistence.ConfigRepository.SourceAndDefinition;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
+import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.init.DatabaseInitializationException;
@@ -78,7 +77,6 @@ class ConfigRepositoryE2EReadWriteTest {
   private Database database;
   private ConfigRepository configRepository;
   private DatabaseConfigPersistence configPersistence;
-  private JsonSecretsProcessor jsonSecretsProcessor;
   private Flyway flyway;
   private final static String DOCKER_IMAGE_TAG = "1.2.0";
   private final static String CONFIG_HASH = "ConfigHash";
@@ -96,12 +94,12 @@ class ConfigRepositoryE2EReadWriteTest {
   void setup() throws IOException, JsonValidationException, SQLException, DatabaseInitializationException, InterruptedException {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
+    flyway = FlywayFactory.create(dataSource, ConfigRepositoryE2EReadWriteTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
         ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
     database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(false);
-    jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
-    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
-    configRepository = spy(new ConfigRepository(configPersistence, database));
+    configPersistence = spy(new DatabaseConfigPersistence(database));
+    configRepository = spy(new ConfigRepository(configPersistence, database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
+        new StandardSyncPersistence(database)));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, flyway);
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
@@ -156,6 +154,22 @@ class ConfigRepositoryE2EReadWriteTest {
   void testWorkspaceCountConnectionsDeprecated() throws IOException {
     final UUID workspaceId = MockData.standardWorkspaces().get(1).getWorkspaceId();
     assertEquals(1, configRepository.countConnectionsForWorkspace(workspaceId));
+  }
+
+  @Test
+  void testFetchActorsUsingDefinition() throws IOException {
+    final UUID destinationDefinitionId = MockData.publicDestinationDefinition().getDestinationDefinitionId();
+    final UUID sourceDefinitionId = MockData.publicSourceDefinition().getSourceDefinitionId();
+    final List<DestinationConnection> destinationConnections = configRepository.listDestinationsForDefinition(
+        destinationDefinitionId);
+    final List<SourceConnection> sourceConnections = configRepository.listSourcesForDefinition(
+        sourceDefinitionId);
+
+    assertThat(destinationConnections)
+        .containsExactlyElementsOf(MockData.destinationConnections().stream().filter(d -> d.getDestinationDefinitionId().equals(
+            destinationDefinitionId) && !d.getTombstone()).collect(Collectors.toList()));
+    assertThat(sourceConnections).containsExactlyElementsOf(MockData.sourceConnections().stream().filter(d -> d.getSourceDefinitionId().equals(
+        sourceDefinitionId) && !d.getTombstone()).collect(Collectors.toList()));
   }
 
   @Test
@@ -299,11 +313,20 @@ class ConfigRepositoryE2EReadWriteTest {
 
   @Test
   void testListWorkspaceSources() throws IOException {
-    UUID workspaceId = MockData.standardWorkspaces().get(1).getWorkspaceId();
+    final UUID workspaceId = MockData.standardWorkspaces().get(1).getWorkspaceId();
     final List<SourceConnection> expectedSources = MockData.sourceConnections().stream()
         .filter(source -> source.getWorkspaceId().equals(workspaceId)).collect(Collectors.toList());
     final List<SourceConnection> sources = configRepository.listWorkspaceSourceConnection(workspaceId);
     assertThat(sources).hasSameElementsAs(expectedSources);
+  }
+
+  @Test
+  void testListWorkspaceDestinations() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final List<DestinationConnection> expectedDestinations = MockData.destinationConnections().stream()
+        .filter(destination -> destination.getWorkspaceId().equals(workspaceId)).collect(Collectors.toList());
+    final List<DestinationConnection> destinations = configRepository.listWorkspaceDestinationConnection(workspaceId);
+    assertThat(destinations).hasSameElementsAs(expectedDestinations);
   }
 
   @Test
@@ -515,17 +538,17 @@ class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  void testGetMostRecentActorCatalogFetchEventForSources() throws SQLException, IOException, JsonValidationException {
+  void testGetMostRecentActorCatalogFetchEventForSource() throws SQLException, IOException, JsonValidationException {
     for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
       configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
     }
 
-    OffsetDateTime now = OffsetDateTime.now();
-    OffsetDateTime yesterday = now.minusDays(1l);
+    final OffsetDateTime now = OffsetDateTime.now();
+    final OffsetDateTime yesterday = now.minusDays(1l);
 
-    List<ActorCatalogFetchEvent> fetchEvents = MockData.actorCatalogFetchEventsSameSource();
-    ActorCatalogFetchEvent fetchEvent1 = fetchEvents.get(0);
-    ActorCatalogFetchEvent fetchEvent2 = fetchEvents.get(1);
+    final List<ActorCatalogFetchEvent> fetchEvents = MockData.actorCatalogFetchEventsSameSource();
+    final ActorCatalogFetchEvent fetchEvent1 = fetchEvents.get(0);
+    final ActorCatalogFetchEvent fetchEvent2 = fetchEvents.get(1);
 
     database.transaction(ctx -> {
       insertCatalogFetchEvent(
@@ -542,13 +565,37 @@ class ConfigRepositoryE2EReadWriteTest {
       return null;
     });
 
-    Optional<ActorCatalogFetchEvent> result =
+    final Optional<ActorCatalogFetchEvent> result =
         configRepository.getMostRecentActorCatalogFetchEventForSource(fetchEvent1.getActorId());
 
     assertEquals(fetchEvent2.getActorCatalogId(), result.get().getActorCatalogId());
   }
 
-  private void insertCatalogFetchEvent(DSLContext ctx, UUID sourceId, UUID catalogId, OffsetDateTime creationDate) {
+  @Test
+  void testGetMostRecentActorCatalogFetchEventForSources() throws SQLException, IOException, JsonValidationException {
+    for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
+      configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
+    }
+
+    database.transaction(ctx -> {
+      MockData.actorCatalogFetchEventsForAggregationTest().forEach(actorCatalogFetchEvent -> insertCatalogFetchEvent(
+          ctx,
+          actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorId(),
+          actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorCatalogId(),
+          actorCatalogFetchEvent.getCreatedAt()));
+
+      return null;
+    });
+
+    final Map<UUID, ActorCatalogFetchEvent> result =
+        configRepository.getMostRecentActorCatalogFetchEventForSources(List.of(MockData.SOURCE_ID_1,
+            MockData.SOURCE_ID_2));
+
+    assertEquals(MockData.ACTOR_CATALOG_ID_1, result.get(MockData.SOURCE_ID_1).getActorCatalogId());
+    assertEquals(MockData.ACTOR_CATALOG_ID_3, result.get(MockData.SOURCE_ID_2).getActorCatalogId());
+  }
+
+  private void insertCatalogFetchEvent(final DSLContext ctx, final UUID sourceId, final UUID catalogId, final OffsetDateTime creationDate) {
     ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
         .columns(
             ACTOR_CATALOG_FETCH_EVENT.ID,

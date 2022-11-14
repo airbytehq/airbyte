@@ -7,12 +7,9 @@ package io.airbyte.config.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.config.persistence.split_secrets.SecretCoordinateToPayload;
@@ -23,13 +20,8 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * This class takes secrets as arguments but never returns a secrets as return values (even the ones
@@ -123,6 +115,7 @@ public class SecretsRepositoryWriter {
    * @param spec connector specification
    * @return partial config
    */
+  @SuppressWarnings("unused")
   private JsonNode statefulSplitSecrets(final UUID workspaceId, final JsonNode fullConfig, final ConnectorSpecification spec) {
     return splitSecretConfig(workspaceId, fullConfig, spec, longLivedSecretPersistence);
   }
@@ -194,74 +187,6 @@ public class SecretsRepositoryWriter {
       return splitSecretConfig.getPartialConfig();
     } else {
       return fullConfig;
-    }
-  }
-
-  public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
-    if (longLivedSecretPersistence.isPresent()) {
-      final var augmentedMap = new HashMap<>(configs);
-
-      // get all source defs so that we can use their specs when storing secrets.
-      @SuppressWarnings("unchecked")
-      final List<StandardSourceDefinition> sourceDefs =
-          (List<StandardSourceDefinition>) augmentedMap.get(ConfigSchema.STANDARD_SOURCE_DEFINITION).collect(Collectors.toList());
-      // restore data in the map that gets consumed downstream.
-      augmentedMap.put(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefs.stream());
-      final Map<UUID, ConnectorSpecification> sourceDefIdToSpec = sourceDefs
-          .stream()
-          .collect(Collectors.toMap(StandardSourceDefinition::getSourceDefinitionId, StandardSourceDefinition::getSpec));
-
-      // get all destination defs so that we can use their specs when storing secrets.
-      @SuppressWarnings("unchecked")
-      final List<StandardDestinationDefinition> destinationDefs =
-          (List<StandardDestinationDefinition>) augmentedMap.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION).collect(Collectors.toList());
-      augmentedMap.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefs.stream());
-      final Map<UUID, ConnectorSpecification> destinationDefIdToSpec = destinationDefs
-          .stream()
-          .collect(Collectors.toMap(StandardDestinationDefinition::getDestinationDefinitionId, StandardDestinationDefinition::getSpec));
-
-      if (augmentedMap.containsKey(ConfigSchema.SOURCE_CONNECTION)) {
-        final Stream<?> augmentedValue = augmentedMap.get(ConfigSchema.SOURCE_CONNECTION)
-            .map(config -> {
-              final SourceConnection source = (SourceConnection) config;
-
-              if (!sourceDefIdToSpec.containsKey(source.getSourceDefinitionId())) {
-                throw new RuntimeException(new ConfigNotFoundException(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId()));
-              }
-
-              final var partialConfig = statefulSplitSecrets(
-                  source.getWorkspaceId(),
-                  source.getConfiguration(),
-                  sourceDefIdToSpec.get(source.getSourceDefinitionId()));
-
-              return source.withConfiguration(partialConfig);
-            });
-        augmentedMap.put(ConfigSchema.SOURCE_CONNECTION, augmentedValue);
-      }
-
-      if (augmentedMap.containsKey(ConfigSchema.DESTINATION_CONNECTION)) {
-        final Stream<?> augmentedValue = augmentedMap.get(ConfigSchema.DESTINATION_CONNECTION)
-            .map(config -> {
-              final DestinationConnection destination = (DestinationConnection) config;
-
-              if (!destinationDefIdToSpec.containsKey(destination.getDestinationDefinitionId())) {
-                throw new RuntimeException(
-                    new ConfigNotFoundException(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId()));
-              }
-
-              final var partialConfig = statefulSplitSecrets(
-                  destination.getWorkspaceId(),
-                  destination.getConfiguration(),
-                  destinationDefIdToSpec.get(destination.getDestinationDefinitionId()));
-
-              return destination.withConfiguration(partialConfig);
-            });
-        augmentedMap.put(ConfigSchema.DESTINATION_CONNECTION, augmentedValue);
-      }
-
-      configRepository.replaceAllConfigsNoSecrets(augmentedMap, dryRun);
-    } else {
-      configRepository.replaceAllConfigsNoSecrets(configs, dryRun);
     }
   }
 
@@ -350,7 +275,7 @@ public class SecretsRepositoryWriter {
     try {
       final StandardWorkspace existingWorkspace = configRepository.getStandardWorkspaceNoSecrets(workspaceId, includeTombstone);
       return existingWorkspace == null ? Optional.empty() : Optional.of(existingWorkspace);
-    } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
+    } catch (final JsonValidationException | IOException | ConfigNotFoundException e) {
       return Optional.empty();
     }
   }
