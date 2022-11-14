@@ -5,21 +5,21 @@
 
 # from airbyte_cdk.models import SyncMode
 # from pytest import fixture
-# from source_surveycto.source import IncrementalSurveyctoStream
+# from source_surveycto.source import SurveyctoStream
 
 
 # @fixture
 # def patch_incremental_base_class(mocker):
 #     # Mock abstract methods to enable instantiating abstract class
-#     mocker.patch.object(IncrementalSurveyctoStream, "path", "v0/example_endpoint")
-#     mocker.patch.object(IncrementalSurveyctoStream, "primary_key", "test_primary_key")
-#     mocker.patch.object(IncrementalSurveyctoStream, "__abstractmethods__", set())
+#     mocker.patch.object(SurveyctoStream, "path", "v0/example_endpoint")
+#     mocker.patch.object(SurveyctoStream, "primary_key", "test_primary_key")
+#     mocker.patch.object(SurveyctoStream, "__abstractmethods__", set())
 
 
 # def test_cursor_field(patch_incremental_base_class):
-#     stream = IncrementalSurveyctoStream()
+#     stream = SurveyctoStream()
 #     # TODO: replace this with your expected cursor field
-#     expected_cursor_field = []
+#     expected_cursor_field = 'KEY'
 #     assert stream.cursor_field == expected_cursor_field
 
 
