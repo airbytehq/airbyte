@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.s3;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,28 +20,6 @@ public class WriteConfig {
   private final String fullOutputPath;
   private final DestinationSyncMode syncMode;
   private final List<String> storedFiles;
-  private final JsonNode jsonSchema;
-  private final String location;
-
-  public WriteConfig(final String namespace,
-                     final String streamName,
-                     final String outputBucketPath,
-                     final String pathFormat,
-                     final String fullOutputPath,
-                     final DestinationSyncMode syncMode,
-                     final JsonNode jsonSchema,
-                     final String location) {
-    this.namespace = namespace;
-    this.streamName = streamName;
-    this.outputBucketPath = outputBucketPath;
-    this.pathFormat = pathFormat;
-    this.fullOutputPath = fullOutputPath;
-    this.syncMode = syncMode;
-    this.storedFiles = new ArrayList<>();
-    this.jsonSchema = jsonSchema;
-    this.location = location;
-  }
-
 
   public WriteConfig(final String namespace,
                      final String streamName,
@@ -57,8 +34,6 @@ public class WriteConfig {
     this.fullOutputPath = fullOutputPath;
     this.syncMode = syncMode;
     this.storedFiles = new ArrayList<>();
-    this.jsonSchema = null;
-    this.location = null;
   }
 
   public String getNamespace() {
@@ -87,14 +62,6 @@ public class WriteConfig {
 
   public List<String> getStoredFiles() {
     return storedFiles;
-  }
-
-  public JsonNode getJsonSchema() {
-    return jsonSchema;
-  }
-
-  public String getLocation() {
-    return location;
   }
 
   public void addStoredFile(final String file) {

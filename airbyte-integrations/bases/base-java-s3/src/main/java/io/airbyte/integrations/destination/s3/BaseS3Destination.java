@@ -11,7 +11,6 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
-import io.airbyte.integrations.destination.s3.constant.GlueConstants;
 import io.airbyte.integrations.destination.s3.util.S3NameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -64,28 +63,13 @@ public abstract class BaseS3Destination extends BaseConnector implements Destina
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     final S3DestinationConfig s3Config = configFactory.getS3DestinationConfig(config, storageProvider());
-    final GlueDestinationConfig glueConfig = GlueDestinationConfig.getInstance(config);
-    if (!StringUtils.isBlank(glueConfig.getDatabase())) {
-      return new S3GlueConsumerFactory().create(
-          outputRecordCollector,
-          new S3StorageOperations(nameTransformer, s3Config.getS3Client(), s3Config),
-          //TODO (itaseski) add Glue name transformer
-          new GlueOperations(glueConfig.getAWSGlueInstance()),
-          nameTransformer,
-          SerializedBufferFactory.getCreateFunction(s3Config, FileBuffer::new),
-          s3Config,
-          glueConfig,
-          catalog
-      );
-    } else {
-      return new S3ConsumerFactory().create(
-          outputRecordCollector,
-          new S3StorageOperations(nameTransformer, s3Config.getS3Client(), s3Config),
-          nameTransformer,
-          SerializedBufferFactory.getCreateFunction(s3Config, FileBuffer::new),
-          s3Config,
-          catalog);
-    }
+    return new S3ConsumerFactory().create(
+        outputRecordCollector,
+        new S3StorageOperations(nameTransformer, s3Config.getS3Client(), s3Config),
+        nameTransformer,
+        SerializedBufferFactory.getCreateFunction(s3Config, FileBuffer::new),
+        s3Config,
+        catalog);
   }
 
   public abstract StorageProvider storageProvider();

@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.s3;
+package io.airbyte.integrations.destination.s3_glue;
 
 import com.amazonaws.services.glue.AWSGlue;
 import com.amazonaws.services.glue.model.Column;
@@ -14,7 +14,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +33,6 @@ public class GlueOperations implements MetastoreOperations {
         this.objectMapper = new ObjectMapper();
     }
 
-    //TODO (itaseski) can location change after table is created?
     @Override
     public void upsertTable(String databaseName, String tableName, String location, JsonNode jsonSchema,
                             String serializationLibrary) {
@@ -51,6 +49,7 @@ public class GlueOperations implements MetastoreOperations {
                 .withTableInput(
                     new TableInput()
                         .withName(tableName)
+                        //.withTableType("GOVERNED")
                         .withStorageDescriptor(
                             new StorageDescriptor()
                                 .withLocation(location)
@@ -162,7 +161,8 @@ public class GlueOperations implements MetastoreOperations {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         awsGlueClient.shutdown();
     }
+
 }

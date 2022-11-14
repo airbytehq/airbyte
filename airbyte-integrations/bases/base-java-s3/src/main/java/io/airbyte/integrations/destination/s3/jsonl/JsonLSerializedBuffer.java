@@ -33,10 +33,13 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
 
   private PrintWriter printWriter;
 
-  protected JsonLSerializedBuffer(final BufferStorage bufferStorage, final boolean gzipCompression) throws Exception {
+  private final boolean flattenData;
+
+  protected JsonLSerializedBuffer(final BufferStorage bufferStorage, final boolean gzipCompression, final boolean flattenData) throws Exception {
     super(bufferStorage);
     // we always want to compress jsonl files
     withCompression(gzipCompression);
+    this.flattenData = flattenData;
   }
 
   @Override
@@ -49,8 +52,12 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
     final ObjectNode json = MAPPER.createObjectNode();
     json.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
     json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
-    Map<String, JsonNode> data = MAPPER.convertValue(recordMessage.getData(), new TypeReference<>() {});
-    json.setAll(data);
+    if (flattenData) {
+      Map<String, JsonNode> data = MAPPER.convertValue(recordMessage.getData(), new TypeReference<>() {});
+      json.setAll(data);
+    } else {
+      json.set(JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getData());
+    }
     printWriter.println(Jsons.serialize(json));
   }
 
@@ -70,7 +77,8 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
       final CompressionType compressionType = config == null
           ? S3DestinationConstants.DEFAULT_COMPRESSION_TYPE
           : config.getCompressionType();
-      return new JsonLSerializedBuffer(createStorageFunction.call(), compressionType != CompressionType.NO_COMPRESSION);
+      final boolean flattenData = config != null && config.getFlattenData();
+      return new JsonLSerializedBuffer(createStorageFunction.call(), compressionType != CompressionType.NO_COMPRESSION, flattenData);
     };
 
   }

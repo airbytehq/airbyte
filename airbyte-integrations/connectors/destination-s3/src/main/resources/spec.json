@@ -384,23 +384,6 @@
           "{sync_id}"
         ],
         "order": 8
-      },
-      "glue_database": {
-        "type": "string",
-        "description": "Name of the glue database for creating the tables, leave blank if no integration",
-        "title": "Glue database name",
-        "examples": ["airbyte_database"],
-        "order": 9
-      },
-      "serialization_library": {
-        "title": "Serialization Library",
-        "description": "The library that your query engine will use for reading and writing data in your lake.",
-        "type": "string",
-        "enum": [
-          "org.openx.data.jsonserde.JsonSerDe",
-          "org.apache.hive.hcatalog.data.JsonSerDe"
-        ],
-        "default": "org.openx.data.jsonserde.JsonSerDe"
       }
     }
   }

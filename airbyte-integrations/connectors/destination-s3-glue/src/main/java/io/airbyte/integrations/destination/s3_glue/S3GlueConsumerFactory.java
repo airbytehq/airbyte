@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.s3;
+package io.airbyte.integrations.destination.s3_glue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
@@ -13,6 +13,9 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunct
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
+import io.airbyte.integrations.destination.s3.BlobStorageOperations;
+import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.WriteConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -24,7 +27,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jetty.util.ajax.JSON;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
@@ -44,7 +46,7 @@ public class S3GlueConsumerFactory {
                                          final S3DestinationConfig s3Config,
                                          final GlueDestinationConfig glueConfig,
                                          final ConfiguredAirbyteCatalog catalog) {
-        final List<WriteConfig> writeConfigs = createWriteConfigs(storageOperations, s3Config, catalog);
+        final List<S3GlueWriteConfig> writeConfigs = createWriteConfigs(storageOperations, s3Config, catalog);
         return new BufferedStreamConsumer(
             outputRecordCollector,
             onStartFunction(storageOperations, writeConfigs),
@@ -57,7 +59,7 @@ public class S3GlueConsumerFactory {
             storageOperations::isValidData);
     }
 
-    private static List<WriteConfig> createWriteConfigs(final BlobStorageOperations storageOperations,
+    private static List<S3GlueWriteConfig> createWriteConfigs(final BlobStorageOperations storageOperations,
                                                         final S3DestinationConfig config,
                                                         final ConfiguredAirbyteCatalog catalog) {
         return catalog.getStreams()
@@ -66,7 +68,7 @@ public class S3GlueConsumerFactory {
             .collect(Collectors.toList());
     }
 
-    private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(
+    private static Function<ConfiguredAirbyteStream, S3GlueWriteConfig> toWriteConfig(
         final BlobStorageOperations storageOperations,
         final S3DestinationConfig s3Config) {
         return stream -> {
@@ -81,15 +83,15 @@ public class S3GlueConsumerFactory {
             final JsonNode jsonSchema = abStream.getJsonSchema();
             final String location = "s3://" + s3Config.getBucketName() + "/" +
                 fullOutputPath.substring(0, fullOutputPath.lastIndexOf("/") + 1);
-            final WriteConfig writeConfig =
-                new WriteConfig(namespace, streamName, bucketPath, customOutputFormat, fullOutputPath, syncMode,
+            final S3GlueWriteConfig writeConfig =
+                new S3GlueWriteConfig(namespace, streamName, bucketPath, customOutputFormat, fullOutputPath, syncMode,
                     jsonSchema, location);
             LOGGER.info("Write config: {}", writeConfig);
             return writeConfig;
         };
     }
 
-    private OnStartFunction onStartFunction(final BlobStorageOperations storageOperations, final List<WriteConfig> writeConfigs) {
+    private OnStartFunction onStartFunction(final BlobStorageOperations storageOperations, final List<S3GlueWriteConfig> writeConfigs) {
         return () -> {
             LOGGER.info("Preparing bucket in destination started for {} streams", writeConfigs.size());
             for (final WriteConfig writeConfig : writeConfigs) {
@@ -114,12 +116,11 @@ public class S3GlueConsumerFactory {
     }
 
     private CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> flushBufferFunction(final BlobStorageOperations storageOperations,
-                                                                                                                 final List<WriteConfig> writeConfigs,
+                                                                                                                 final List<S3GlueWriteConfig> writeConfigs,
                                                                                                                  final ConfiguredAirbyteCatalog catalog) {
         final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig =
             writeConfigs.stream()
-                .collect(Collectors.toUnmodifiableMap(
-                    S3GlueConsumerFactory::toNameNamespacePair, Function.identity()));
+                .collect(Collectors.toUnmodifiableMap(S3GlueConsumerFactory::toNameNamespacePair, Function.identity()));
 
         return (pair, writer) -> {
             LOGGER.info("Flushing buffer for stream {} ({}) to storage", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
@@ -145,7 +146,7 @@ public class S3GlueConsumerFactory {
 
     private OnCloseFunction onCloseFunction(final BlobStorageOperations storageOperations,
                                             final MetastoreOperations metastoreOperations,
-                                            final List<WriteConfig> writeConfigs,
+                                            final List<S3GlueWriteConfig> writeConfigs,
                                             GlueDestinationConfig glueDestinationConfig,
                                             S3DestinationConfig s3DestinationConfig) {
         return (hasFailed) -> {
@@ -157,18 +158,13 @@ public class S3GlueConsumerFactory {
                 }
                 LOGGER.info("Cleaning up destination completed.");
             } else {
-                if (s3DestinationConfig.getFormatConfig().getFormat() == S3Format.JSONL) {
-                    for (final WriteConfig writeConfig : writeConfigs) {
-                        metastoreOperations.upsertTable(glueDestinationConfig.getDatabase(),
-                            writeConfig.getStreamName(), writeConfig.getLocation(), writeConfig.getJsonSchema(),
-                            glueDestinationConfig.getSerializationLibrary());
-                    }
+                for (final S3GlueWriteConfig writeConfig : writeConfigs) {
+                    metastoreOperations.upsertTable(glueDestinationConfig.getDatabase(),
+                        writeConfig.getStreamName(), writeConfig.getLocation(), writeConfig.getJsonSchema(),
+                        glueDestinationConfig.getSerializationLibrary());
                 }
             }
         };
     }
-
-
-
 
 }
