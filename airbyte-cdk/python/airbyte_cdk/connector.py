@@ -7,11 +7,18 @@ import json
 import logging
 import os
 import pkgutil
+import time
 from abc import ABC, abstractmethod
 from typing import Any, Generic, Mapping, Optional, Protocol, TypeVar
 
 import yaml
-from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteControlConnectorConfigMessage,
+    AirbyteControlMessage,
+    ConnectorSpecification,
+    OrchestratorType,
+)
 
 
 def load_optional_package_file(package: str, filename: str) -> Optional[bytes]:
@@ -94,12 +101,38 @@ class _WriteConfigProtocol(Protocol):
         ...
 
 
+class MutableConfig(dict):
+    def __init__(self, raw_config, parent=None):
+        self.parent = parent
+        super(MutableConfig, self).__init__(raw_config)
+        for item, value in self.items():
+            if isinstance(value, dict):
+                self[item] = MutableConfig(value, parent=self)
+
+    def __setitem__(self, item, value):
+        previous_value = self.get(item)
+        super(MutableConfig, self).__setitem__(item, value)
+        if value != previous_value:
+            self.emit_airbyte_control_message()
+
+    def emit_airbyte_control_message(self):
+        if self.parent is not None:
+            self.parent.emit_airbyte_control_message()
+        else:
+            control_message = AirbyteControlMessage(
+                type=OrchestratorType.CONNECTOR_CONFIG,
+                emitted_at=time.time() * 1000,
+                connectorConfig=AirbyteControlConnectorConfigMessage(config=self),
+            )
+            print(control_message.json())
+
+
 class DefaultConnectorMixin:
     # can be overridden to change an input config
-    def configure(self: _WriteConfigProtocol, config: Mapping[str, Any], temp_dir: str) -> Mapping[str, Any]:
+    def configure(self: _WriteConfigProtocol, config: Mapping[str, Any], temp_dir: str) -> MutableConfig[str, Any]:
         config_path = os.path.join(temp_dir, "config.json")
         self.write_config(config, config_path)
-        return config
+        return MutableConfig(config)
 
 
 class Connector(DefaultConnectorMixin, BaseConnector[Mapping[str, Any]], ABC):
