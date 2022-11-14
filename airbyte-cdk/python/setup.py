@@ -15,7 +15,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="airbyte-cdk",
-    version="0.2.1",
+    version="0.9.2",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -42,6 +42,7 @@ setup(
         "Tracker": "https://github.com/airbytehq/airbyte/issues",
     },
     packages=find_packages(exclude=("unit_tests",)),
+    package_data={"airbyte_cdk": ["py.typed"]},
     install_requires=[
         "backoff",
         # pinned to the last working version for us temporarily while we fix
@@ -51,6 +52,7 @@ setup(
         "jsonref~=0.2",
         "pendulum",
         "pydantic~=1.9.2",
+        "python-dateutil",
         "PyYAML~=5.4",
         "requests",
         "requests_cache",

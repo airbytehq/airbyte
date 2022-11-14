@@ -9,6 +9,9 @@ that requires port-forwarding. It stores connector and connection IDs that it cr
 which means the script will delete every connector and connection ID that it created and stored in that file.
 comment
 
+echo "Sourcing environment variables from .env"
+source .env
+
 cd "$(dirname "$0")"
 source load_test_utils.sh
 

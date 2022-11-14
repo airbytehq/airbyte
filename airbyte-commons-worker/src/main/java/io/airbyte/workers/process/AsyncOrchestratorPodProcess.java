@@ -4,10 +4,8 @@
 
 package io.airbyte.workers.process;
 
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.workers.storage.DocumentStoreClient;
@@ -41,10 +39,10 @@ import lombok.extern.slf4j.Slf4j;
  * application. Unlike {@link KubePodProcess} there is no heartbeat mechanism that requires the
  * launching pod and the launched pod to co-exist for the duration of execution for the launched
  * pod.
- *
+ * <p>
  * Instead, this process creates the pod and interacts with a document store on cloud storage to
  * understand the state of the created pod.
- *
+ * <p>
  * The document store is considered to be the truth when retrieving the status for an async pod
  * process. If the store isn't updated by the underlying pod, it will appear as failed.
  */
@@ -61,7 +59,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   private final String secretMountPath;
   private final String googleApplicationCredentials;
   private final AtomicReference<Optional<Integer>> cachedExitValue;
-  private final boolean useStreamCapableState;
+  private final Map<String, String> environmentVariables;
   private final Integer serverPort;
 
   public AsyncOrchestratorPodProcess(
@@ -71,7 +69,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
                                      final String secretName,
                                      final String secretMountPath,
                                      final String googleApplicationCredentials,
-                                     final boolean useStreamCapableState,
+                                     final Map<String, String> environmentVariables,
                                      final Integer serverPort) {
     this.kubePodInfo = kubePodInfo;
     this.documentStoreClient = documentStoreClient;
@@ -80,7 +78,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     this.secretMountPath = secretMountPath;
     this.googleApplicationCredentials = googleApplicationCredentials;
     this.cachedExitValue = new AtomicReference<>(Optional.empty());
-    this.useStreamCapableState = useStreamCapableState;
+    this.environmentVariables = environmentVariables;
     this.serverPort = serverPort;
   }
 
@@ -192,10 +190,12 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   public boolean waitFor(final long timeout, final TimeUnit unit) throws InterruptedException {
     // implementation copied from Process.java since this isn't a real Process
     long remainingNanos = unit.toNanos(timeout);
-    if (hasExited())
+    if (hasExited()) {
       return true;
-    if (timeout <= 0)
+    }
+    if (timeout <= 0) {
       return false;
+    }
 
     final long deadline = System.nanoTime() + remainingNanos;
     do {
@@ -204,8 +204,9 @@ public class AsyncOrchestratorPodProcess implements KubePod {
       // We are waiting polling every 500ms for status. The trade-off here is between how often
       // we poll our status storage (GCS) and how reactive we are to detect that a process is done.
       Thread.sleep(Math.min(TimeUnit.NANOSECONDS.toMillis(remainingNanos) + 1, 500));
-      if (hasExited())
+      if (hasExited()) {
         return true;
+      }
       remainingNanos = deadline - System.nanoTime();
     } while (remainingNanos > 0);
 
@@ -238,7 +239,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
   /**
    * Checks terminal states first, then running, then initialized. Defaults to not started.
-   *
+   * <p>
    * The order matters here!
    */
   public AsyncKubePodStatus getDocStoreStatus() {
@@ -294,14 +295,38 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
     }
 
-    final EnvConfigs envConfigs = new EnvConfigs();
-    envVars.add(new EnvVar(EnvConfigs.METRIC_CLIENT, envConfigs.getMetricClient(), null));
-    envVars.add(new EnvVar(EnvConfigs.DD_AGENT_HOST, envConfigs.getDDAgentHost(), null));
-    envVars.add(new EnvVar(EnvConfigs.DD_DOGSTATSD_PORT, envConfigs.getDDDogStatsDPort(), null));
-    envVars.add(new EnvVar(EnvConfigs.PUBLISH_METRICS, Boolean.toString(envConfigs.getPublishMetrics()), null));
-    envVars.add(new EnvVar(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, Boolean.toString(useStreamCapableState), null));
+    // Copy all additionally provided environment variables
+    envVars.addAll(environmentVariables.entrySet().stream().map(e -> new EnvVar(e.getKey(), e.getValue(), null)).toList());
+
     final List<ContainerPort> containerPorts = KubePodProcess.createContainerPortList(portMap);
     containerPorts.add(new ContainerPort(serverPort, null, null, null, null));
+
+    final var initContainer = new ContainerBuilder()
+        .withName(KubePodProcess.INIT_CONTAINER_NAME)
+        .withImage("busybox:1.35")
+        .withVolumeMounts(volumeMounts)
+        .withCommand(List.of(
+            "sh",
+            "-c",
+            String.format("""
+                          i=0
+                          until [ $i -gt 60 ]
+                          do
+                            echo "$i - waiting for config file transfer to complete..."
+                            # check if the upload-complete file exists, if so exit without error
+                            if [ -f "%s/%s" ]; then
+                              exit 0
+                            fi
+                            i=$((i+1))
+                            sleep 1
+                          done
+                          echo "config files did not transfer in time"
+                          # no upload-complete file was created in time, exit with error
+                          exit 1
+                          """,
+                KubePodProcess.CONFIG_DIR,
+                KubePodProcess.SUCCESS_FILE_NAME)))
+        .build();
 
     final var mainContainer = new ContainerBuilder()
         .withName(KubePodProcess.MAIN_CONTAINER_NAME)
@@ -321,9 +346,11 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .withLabels(allLabels)
         .endMetadata()
         .withNewSpec()
-        .withServiceAccount("airbyte-admin").withAutomountServiceAccountToken(true)
+        .withServiceAccount("airbyte-admin")
+        .withAutomountServiceAccountToken(true)
         .withRestartPolicy("Never")
         .withContainers(mainContainer)
+        .withInitContainers(initContainer)
         .withVolumes(volumes)
         .endSpec()
         .build();
@@ -337,9 +364,9 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     kubernetesClient.pods()
         .inNamespace(kubePodInfo.namespace())
         .withName(kubePodInfo.name())
-        .waitUntilCondition(p -> {
-          return !p.getStatus().getContainerStatuses().isEmpty() && p.getStatus().getContainerStatuses().get(0).getState().getWaiting() == null;
-        }, 5, TimeUnit.MINUTES);
+        .waitUntilCondition(p -> !p.getStatus().getInitContainerStatuses().isEmpty()
+            && p.getStatus().getInitContainerStatuses().get(0).getState().getWaiting() == null,
+            5, TimeUnit.MINUTES);
 
     final var podStatus = kubernetesClient.pods()
         .inNamespace(kubePodInfo.namespace())
@@ -348,7 +375,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .getStatus();
 
     final var containerState = podStatus
-        .getContainerStatuses()
+        .getInitContainerStatuses()
         .get(0)
         .getState();
 
@@ -383,7 +410,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         // several issues with copying files. See https://github.com/airbytehq/airbyte/issues/8643 for
         // details.
         final String command = String.format("kubectl cp %s %s/%s:%s -c %s", tmpFile, podDefinition.getMetadata().getNamespace(),
-            podDefinition.getMetadata().getName(), containerPath, "main");
+            podDefinition.getMetadata().getName(), containerPath, KubePodProcess.INIT_CONTAINER_NAME);
         log.info(command);
 
         proc = Runtime.getRuntime().exec(command);
