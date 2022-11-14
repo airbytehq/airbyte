@@ -208,3 +208,41 @@ def test_get_object_strucutre(object, pathes):
 )
 def test_get_expected_schema_structure(schema, pathes):
     assert get_expected_schema_structure(schema) == pathes
+
+
+@pytest.mark.parametrize(
+    "schema, key",
+    [({
+        "title": "Key_inside_oneOf",
+        "description": "Tests that keys can be found inside lists of dicts",
+        "type": "object",
+        "properties": {
+          "credentials": {
+            "type": "object",
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "common": {"type": "string", "const": "option1", "default": "option1"},
+                  "option1": {"type": "string"},
+                },
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "common": {"type": "string", "const": "option2", "default": "option2"},
+                },
+              },
+            ],
+          }
+        },
+      },
+      "option1"
+    )],
+)
+def test_get_node(schema, key):
+    schema_helper = JsonSchemaHelper(schema)
+    variant_paths = schema_helper.find_nodes(keys=[key])
+
+    for path in variant_paths:
+        assert schema_helper.get_node(path)

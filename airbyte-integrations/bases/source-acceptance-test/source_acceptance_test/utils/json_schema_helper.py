@@ -4,7 +4,7 @@
 
 
 from functools import reduce
-from typing import Any, List, Mapping, Optional, Set
+from typing import Any, Dict, List, Mapping, Optional, Set, Text, Union
 
 import pendulum
 from jsonref import JsonRef
@@ -129,14 +129,22 @@ class JsonSchemaHelper:
         """
         variant_paths = []
 
-        def traverse_schema(_schema, path=None):
+        def traverse_schema(_schema: Union[Dict[Text, Any], List], path=None):
             path = path or []
             if path and path[-1] in keys:
                 variant_paths.append(path)
-            for item in _schema:
-                next_obj = _schema[item] if isinstance(_schema, dict) else item
-                if isinstance(next_obj, (list, dict)):
-                    traverse_schema(next_obj, [*path, item])
+            for i, item in enumerate(_schema):
+                if isinstance(_schema, dict):
+                    path_key = item
+                    next_obj = _schema[path_key]
+                elif isinstance(_schema, list):
+                    path_key = i
+                    next_obj = _schema[path_key]
+                else:
+                    next_obj = item
+
+                if isinstance(next_obj, (dict, list)):
+                    traverse_schema(next_obj, [*path, path_key])
 
         traverse_schema(self._schema)
         return variant_paths
