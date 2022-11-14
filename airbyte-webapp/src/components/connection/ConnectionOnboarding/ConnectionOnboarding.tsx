@@ -80,18 +80,18 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
         <FormattedMessage id="connection.onboarding.title" />
       </Heading>
       <div className={styles.connectors}>
-        <Text bold as="div" className={styles.sourcesTitle}>
-          <Tooltip
-            control={
-              <>
-                <FormattedMessage id="connection.onboarding.sources" /> <FontAwesomeIcon icon={faCircleQuestion} />
-              </>
-            }
-          >
-            <FormattedMessage id="connection.onboarding.sourcesDescription" />
-          </Tooltip>
-        </Text>
         <div className={styles.sources}>
+          <Text bold as="div" className={styles.sourcesTitle}>
+            <Tooltip
+              control={
+                <>
+                  <FormattedMessage id="connection.onboarding.sources" /> <FontAwesomeIcon icon={faCircleQuestion} />
+                </>
+              }
+            >
+              <FormattedMessage id="connection.onboarding.sourcesDescription" />
+            </Tooltip>
+          </Text>
           {sources.map((source, index) => {
             const tooltipText = formatMessage({ id: "connection.onboarding.addSource" }, { source: source?.name });
             return (
@@ -135,18 +135,19 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
         <div className={styles.airbyte} aria-hidden="true">
           <AirbyteIllustration sourceHighlighted={highlightedSource} destinationHighlighted={highlightedDestination} />
         </div>
-        <Text bold as="div" className={styles.destinationsTitle}>
-          <Tooltip
-            control={
-              <span>
-                <FormattedMessage id="connection.onboarding.destinations" /> <FontAwesomeIcon icon={faCircleQuestion} />
-              </span>
-            }
-          >
-            <FormattedMessage id="connection.onboarding.destinationsDescription" />
-          </Tooltip>
-        </Text>
         <div className={styles.destinations}>
+          <Text bold as="div" className={styles.destinationsTitle}>
+            <Tooltip
+              control={
+                <span>
+                  <FormattedMessage id="connection.onboarding.destinations" />{" "}
+                  <FontAwesomeIcon icon={faCircleQuestion} />
+                </span>
+              }
+            >
+              <FormattedMessage id="connection.onboarding.destinationsDescription" />
+            </Tooltip>
+          </Text>
           {destinations.map((destination, index) => {
             const tooltipText = formatMessage(
               { id: "connection.onboarding.addDestination" },

@@ -19,16 +19,28 @@
   }
 }
 
-.sourcesTitle, .destinationsTitle {
+.sourcesTitle,
+.destinationsTitle {
   color: colors.$dark-blue-400;
   text-align: center;
   cursor: help;
+
+  // Required to have the title centered (no matter it's length) above the buttons
+  // without extending the size of this flex box, which would cause the buttons to be
+  // unaligned with the illustration
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  margin-top: -1.5 * variables.$spacing-xl;
 }
 
-.sources, .destinations {
+.sources,
+.destinations {
   display: flex;
   width: fit-content;
   flex-direction: column;
+  position: relative;
 
   // Manual spacing/margin to align with the illustration in the center
   gap: 12px;
@@ -36,33 +48,8 @@
 }
 
 .connectors {
-  display: grid;
-  row-gap: variables.$spacing-xl;
-
-  .sourcesTitle {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .destinationsTitle {
-    grid-column: 3;
-    grid-row: 1;
-  }
-
-  .sources {
-    grid-column: 1;
-    grid-row: 2;
-  }
-
-  .airbyte {
-    grid-column: 2;
-    grid-row: 2;
-  }
-
-  .destinations {
-    grid-column: 3;
-    grid-row: 2;
-  }
+  display: flex;
+  margin-top: variables.$spacing-2xl;
 }
 
 .connectorButton {
@@ -82,12 +69,14 @@
     opacity: 0.7;
   }
 
-  &:hover, &:focus-visible {
+  &:hover,
+  &:focus-visible {
     box-shadow: 0 10px 19px rgba(colors.$dark-blue-900, 0.16);
   }
 }
 
-.connectorIcon, .moreIcon {
+.connectorIcon,
+.moreIcon {
   width: 38px;
   height: 38px;
 }
