@@ -83,8 +83,8 @@ class AdUnitPerReferrerItem(CustomBaseModel):
             referrer=row_dict.get('Dimension.CUSTOM_CRITERIA').replace("referrer=", ""),
             advertiser_name=row_dict.get('Dimension.ADVERTISER_NAME'),
             impressions=AdUnitPerHourItem.convert_to_int_or_return_zero(row_dict.get('Column.TOTAL_LINE_ITEM_LEVEL_IMPRESSIONS')),
-            cpm_cpc_revenue=AdUnitPerHourItem.convert_to_int_or_return_zero(row_dict.get('Column.TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE')),
-            eCpm=AdUnitPerHourItem.convert_to_int_or_return_zero(row_dict.get('Column.TOTAL_LINE_ITEM_LEVEL_WITHOUT_CPD_AVERAGE_ECPM')),
+            cpm_cpc_revenue=AdUnitPerHourItem.convert_to_int_or_return_zero(row_dict.get('Column.TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE'))/1e6,
+            eCpm=AdUnitPerHourItem.convert_to_int_or_return_zero(row_dict.get('Column.TOTAL_LINE_ITEM_LEVEL_WITHOUT_CPD_AVERAGE_ECPM'))/1e6,
             click=AdUnitPerHourItem.convert_to_int_or_return_zero(row_dict.get('Column.TOTAL_LINE_ITEM_LEVEL_CLICKS')),
             date=datetime.strptime(row_dict.get('Dimension.DATE'), '%Y-%m-%d'),
             customer_name=row_dict.get('customer_name')

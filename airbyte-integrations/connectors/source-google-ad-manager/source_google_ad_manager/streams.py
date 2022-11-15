@@ -4,7 +4,6 @@
 
 
 from abc import ABC, abstractmethod
-from zoneinfo import ZoneInfo
 from typing import Any, Iterable, Mapping, Optional, List
 import logging
 import time
@@ -12,7 +11,6 @@ import requests
 from pendulum import parse as pendulum_parse, now as pendulum_now
 from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
 from airbyte_cdk.sources.streams import Stream, IncrementalMixin
-from datetime import datetime
 from googleads import ad_manager
 from googleads.errors import AdManagerReportError
 from typing import Any, Mapping, Union, List
@@ -216,6 +214,7 @@ class AdUnitPerHourReportStream(BaseGoogleAdManagerReportStream):
         super().__init__(google_ad_manager_client, start_date, timezone)
         self.customer_name = customer_name
         last_date_pulled = pendulum_parse(self.state.get(self.cursor_field))
+        last_date_pulled = last_date_pulled.subtract(days=1)  # just to make sure we are pulling the data for the last day, and have all the value corrected
         start_date = convert_time_to_dict(last_date_pulled)
         end_date = convert_time_to_dict(self.today_date)
         self.report_job = self.generate_report_query(start_date=start_date, end_date=end_date)
@@ -281,6 +280,7 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
         super().__init__(google_ad_manager_client, start_date, timezone)
         targeting_values = self.get_custom_targeting_keys_ids("referrer")  # @TODO: I can make this manual instead of getting from the api.
         last_date_pulled = pendulum_parse(self.state.get(self.cursor_field))
+        last_date_pulled = last_date_pulled.subtract(days=1)  # just to make sure we are pulling the data for the last day, and have all the value corrected
         start_date = convert_time_to_dict(last_date_pulled)
         end_date = convert_time_to_dict(self.today_date)
         self.customer_name = customer_name
