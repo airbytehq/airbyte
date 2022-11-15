@@ -63,6 +63,7 @@ jobs:
             cli:
               - 'airbyte-api/**'
               - 'octavia-cli/**'
+              - 'airbyte-connector-builder-server/**'
             connectors:
               - 'airbyte-cdk/**'
               - 'airbyte-protocol/**'
