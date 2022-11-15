@@ -14,9 +14,11 @@ import {
 } from "pages/replicationPage";
 import { openSourceDestinationFromGrid, goToSourcePage } from "pages/sourcePage";
 import { goToSettingsPage } from "pages/settingsConnectionPage";
-import { update } from "cypress/types/lodash";
+import { PopulatePostgresDBSource } from "../commands/db";
 
 describe("Connection main actions", () => {
+  before(PopulatePostgresDBSource);
+
   beforeEach(() => {
     initialSetupCompleted();
   });
@@ -171,7 +173,11 @@ describe("Connection main actions", () => {
 
     let loadedConnection: any = null; // Should be a WebBackendConnectionRead
     cy.wait("@getConnection").then((interception) => {
-      const { scheduleType: readScheduleType, scheduleData: readScheduleData, ...connectionRead } = interception.response?.body;
+      const {
+        scheduleType: readScheduleType,
+        scheduleData: readScheduleData,
+        ...connectionRead
+      } = interception.response?.body;
       loadedConnection = connectionRead;
 
       expect(loadedConnection).not.to.eq(null);
