@@ -18,6 +18,12 @@
   documentationUrl: https://docs.airbyte.com/integrations/destinations/amazon-sqs
   icon: amazonsqs.svg
   releaseStage: alpha
+- name: Apache Doris
+  destinationDefinitionId: 05c161bf-ca73-4d48-b524-d392be417002
+  dockerRepository: airbyte/destination-doris
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/doris
+  releaseStage: alpha
 - name: AWS Datalake
   destinationDefinitionId: 99878c90-0fbd-46d3-9d98-ffde879d17fc
   dockerRepository: airbyte/destination-aws-datalake
