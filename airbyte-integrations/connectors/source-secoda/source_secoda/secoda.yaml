@@ -15,7 +15,7 @@ definitions:
       api_token: "{{ config['api_key'] }}"
     error_handler:
       response_filters:
-        - http_codes: [ 500 ]
+        - http_codes: [500]
           action: FAIL
   cursor_paginator:
     type: DefaultPaginator

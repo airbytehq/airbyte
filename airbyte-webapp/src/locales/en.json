@@ -550,6 +550,7 @@
   "connector.connectorsInDevelopment.docLink": "See our <lnk>documentation</lnk> for more details.",
   "connector.setupGuide": "Setup Guide",
   "connector.setupGuide.notFound": "No Setup Guide found for this connector.",
+  "connector.exampleValues": "Example {count, plural, one {value} other {values}}",
 
   "credits.credits": "Credits",
   "credits.whatAreCredits": "What are credits?",
@@ -580,6 +581,7 @@
   "ui.keyValuePairV3": "{key}, {value}",
   "ui.learnMore": "Learn more",
   "ui.secretTextArea.hidden": "Contents hidden. Click to show.",
+  "ui.stepIndicator.currentStep": "(current step)",
 
   "airbyte.datatype.string": "String",
   "airbyte.datatype.date": "Date",
@@ -605,5 +607,8 @@
   "connectorBuilder.requestTab": "Request",
   "connectorBuilder.responseTab": "Response",
   "connectorBuilder.resultsPlaceholder": "Click Test to fetch data for this stream",
-  "connectorBuilder.sliceLabel": "Slice"
+  "connectorBuilder.sliceLabel": "Slice",
+  "connectorBuilder.connectorLogs": "Connector logs",
+  "connectorBuilder.invalidYamlDownload": "Cannot download while YAML content is invalid.",
+  "connectorBuilder.invalidYamlTest": "Cannot test stream while YAML content is invalid."
 }
