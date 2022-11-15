@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import time
 from abc import ABC, abstractmethod
 from typing import Any, Callable, MutableMapping
