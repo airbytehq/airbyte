@@ -1,11 +1,10 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-from bigquery_schema_generator.generate_schema import SchemaGenerator
-from gbqschema_converter.gbqschema_to_jsonschema import json_representation as converter
-import json
-import sys
 
+
+import requests
+import base64
 
 from abc import ABC
 from imaplib import _Authenticator
@@ -16,16 +15,9 @@ from airbyte_cdk.models import SyncMode
 from datetime import datetime, timedelta 
 from  dateutil.parser import parse
 
-import requests
-import asyncio
-import base64
-import time
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import AirbyteCatalog
 from airbyte_cdk.sources.streams import Stream, IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, NoAuth
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.sources.streams.core import Stream
 
@@ -151,9 +143,6 @@ class SurveyctoStream(SurveyStream, IncrementalMixin):
 class SourceSurveycto(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         return True, None
-
-    def no_auth(self):
-        return NoAuth()  
 
     def generate_streams(self, config: str) -> List[Stream]:
         forms = config.get("form_id", [])
