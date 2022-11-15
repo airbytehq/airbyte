@@ -57,7 +57,9 @@ public class ActivityBeanFactory {
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("notifyActivities")
-  public List<Object> notifyActivities(final NotifySchemaChangeActivity notifySchemaChangeActivity, SlackConfigActivity slackConfigActivity, ConfigFetchActivity configFetchActivity) {
+  public List<Object> notifyActivities(final NotifySchemaChangeActivity notifySchemaChangeActivity,
+                                       SlackConfigActivity slackConfigActivity,
+                                       ConfigFetchActivity configFetchActivity) {
     return List.of(notifySchemaChangeActivity, slackConfigActivity, configFetchActivity);
   }
 
