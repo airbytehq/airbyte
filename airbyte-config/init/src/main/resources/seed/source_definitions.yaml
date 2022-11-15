@@ -21,6 +21,13 @@
   icon: airtable.svg
   sourceType: api
   releaseStage: alpha
+- name: Aha
+  sourceDefinitionId: 81ca39dc-4534-4dd2-b848-b0cfd2c11fce
+  dockerRepository: airbyte/source-aha
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/aha
+  sourceType: api
+  releaseStage: alpha
 - name: Alpha Vantage
   sourceDefinitionId: db385323-9333-4fec-bec3-9e0ca9326c90
   dockerRepository: airbyte/source-alpha-vantage
@@ -477,6 +484,13 @@
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshservice
   icon: freshservice.svg
+  sourceType: api
+  releaseStage: alpha
+- name: GetLago
+  sourceDefinitionId: e1a3866b-d3b2-43b6-b6d7-8c1ee4d7f53f
+  dockerRepository: airbyte/source-getlago
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/getlago
   sourceType: api
   releaseStage: alpha
 - name: Gridly
@@ -1287,6 +1301,12 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/rss
   icon: rss.svg
+- name: Rocket.chat
+  sourceDefinitionId: 921d9608-3915-450b-8078-0af18801ea1b
+  dockerRepository: airbyte/source-rocket-chat
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/rocket-chat
+  icon: rocket-chat.svg
   sourceType: api
   releaseStage: alpha
 - name: S3
