@@ -10,16 +10,36 @@ airbytePython {
     moduleDirectory 'connector_builder'
 }
 
+task generateOpenApiPythonServer(type: GenerateTask){
+    outputs.upToDateWhen { false }
 
-task generateApiServer(type: GenerateTask) {
+    def generatedCodeDir = "$buildDir/server"
     inputSpec = "$rootDir.absolutePath/airbyte-connector-builder-server/src/main/openapi/openapi.yaml"
     outputDir = "$buildDir/airbyte_connector_builder_server"
 
-    generatorName = "python"
-    packageName = "airbyte_connector_builder_server"
+    generatorName = "python-fastapi"
+    configFile = "$projectDir/openapi/generator_config.yaml"
+    templateDir = "$projectDir/openapi/templates"
+    packageName = "connector_builder.generated"
+
+    // After we generate, we're only interested in the API declaration and the generated pydantic models.
+    // So we copy those from the build/ directory
+    doLast {
+        def sourceDir = "$generatedCodeDir/src/connector_builder/generated/"
+        def targetDir = "$projectDir/connector_builder/generated"
+        mkdir targetDir
+        copy {
+            from "$sourceDir/apis"
+            include "*_interface.py", "__init__.py"
+            into "$targetDir/apis"
+        }
+        copy {
+            from "$sourceDir/models"
+            include "*.py"
+            into "$targetDir/models"
+        }
+    }
 }
 
-blackFormat.dependsOn generateApiServer
-isortFormat.dependsOn generateApiServer
-flakeCheck.dependsOn generateApiServer
-installReqs.dependsOn generateApiServer
+project.build.dependsOn(generateOpenApiPythonServer)
+    

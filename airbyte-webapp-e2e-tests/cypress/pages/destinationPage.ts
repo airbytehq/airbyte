@@ -1,5 +1,5 @@
 const newDestination = "button[data-id='new-destination'";
-const addSourceButton = "div[data-testid='select-source']";
+const addSourceButton = "button[data-id='select-source']";
 
 export const goToDestinationPage = () => {
   cy.intercept("/api/v1/destinations/list").as("getDestinationsList");
