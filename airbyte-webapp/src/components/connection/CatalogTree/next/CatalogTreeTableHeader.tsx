@@ -1,34 +1,20 @@
-import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Cell, Header } from "components/SimpleTableComponents";
 import { CheckBox } from "components/ui/CheckBox";
-import { Text } from "components/ui/Text";
 import { InfoTooltip, TooltipLearnMoreLink } from "components/ui/Tooltip";
 
 import { useBulkEditService } from "hooks/services/BulkEdit/BulkEditService";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { links } from "utils/links";
 
-import styles from "./CatalogTreeTableHeader.module.scss";
-
-const TextCell: React.FC<React.PropsWithChildren<{ flex?: number }>> = ({ flex, children }) => {
-  return (
-    <Cell flex={flex}>
-      <Text size="sm" className={styles.cellText}>
-        {children}
-      </Text>
-    </Cell>
-  );
-};
-
 export const CatalogTreeTableHeader: React.FC = () => {
   const { mode } = useConnectionFormService();
   const { onCheckAll, selectedBatchNodeIds, allChecked } = useBulkEditService();
 
   return (
-    <Header className={styles.headerContainer}>
-      <div className={styles.checkboxCell}>
+    <Header>
+      <Cell>
         {mode !== "readonly" && (
           <CheckBox
             onChange={onCheckAll}
@@ -36,42 +22,49 @@ export const CatalogTreeTableHeader: React.FC = () => {
             checked={allChecked}
           />
         )}
-      </div>
-      <TextCell flex={0.5}>
+      </Cell>
+      <Cell>
         <FormattedMessage id="sources.sync" />
-      </TextCell>
-      {/* <TextCell>
+      </Cell>
+      <Cell>
         <FormattedMessage id="form.fields" />
-      </TextCell> */}
-      <TextCell flex={1}>
+      </Cell>
+      <Cell>
         <FormattedMessage id="form.namespace" />
-      </TextCell>
-      <TextCell flex={1}>
+      </Cell>
+      <Cell>
         <FormattedMessage id="form.streamName" />
-      </TextCell>
-      <TextCell flex={2}>
+      </Cell>
+      <Cell>
         <FormattedMessage id="form.syncMode" />
         <InfoTooltip>
           <FormattedMessage id="connectionForm.syncType.info" />
           <TooltipLearnMoreLink url={links.syncModeLink} />
         </InfoTooltip>
-      </TextCell>
-      <TextCell flex={1}>
+      </Cell>
+      <Cell>
         <FormattedMessage id="form.cursorField" />
         <InfoTooltip>
           <FormattedMessage id="connectionForm.cursor.info" />
         </InfoTooltip>
-      </TextCell>
-      <TextCell flex={1}>
+      </Cell>
+      <Cell>
         <FormattedMessage id="form.primaryKey" />
-      </TextCell>
-      <div className={styles.arrowPlaceholder} />
-      <TextCell flex={1}>
+      </Cell>
+      <Cell />
+      <Cell>
         <FormattedMessage id="form.namespace" />
-      </TextCell>
-      <TextCell flex={1}>
+      </Cell>
+      <Cell>
         <FormattedMessage id="form.streamName" />
-      </TextCell>
+      </Cell>
+      <Cell>
+        <FormattedMessage id="form.syncMode" />
+        <InfoTooltip>
+          <FormattedMessage id="connectionForm.syncType.info" />
+          <TooltipLearnMoreLink url={links.syncModeLink} />
+        </InfoTooltip>
+      </Cell>
     </Header>
   );
 };
