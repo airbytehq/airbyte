@@ -96,7 +96,40 @@ def test_sub_slicer(last_record, expected, records):
     stream_slice = next(slicer.stream_slices(SyncMode, {})) if records else {}
     slicer.update_cursor(stream_slice=stream_slice, last_record=last_record)
     assert slicer.get_stream_state() == expected
-    expected_request_body = {'location_ids': ['some_id'],
-                             'query': {'filter': {'date_time_filter': {'updated_at': {'start_at': '2022-09-05T10:10:10.000Z'}}},
+
+
+@pytest.mark.parametrize(
+    "last_record, records, expected_data",
+    [
+        (
+                {"2022-09-05T10:10:10.000000Z": "2022-09-05T10:10:10.000000Z"},
+                [{"id": "some_id1"}],
+                {'location_ids': ["some_id1"], 'start_date': '2022-09-05T10:10:10.000Z'}
+        ),
+        (
+                {"2022-09-05T10:10:10.000000Z": "2022-09-05T10:10:10.000000Z"},
+                [{"id": f"some_id{x}"} for x in range(11)],
+                {'location_ids': [f"some_id{x}" for x in range(10)], 'start_date': '2022-09-05T10:10:10.000Z'}
+        ),
+    ],
+)
+def test_sub_slicer_request_body(last_record, records, expected_data):
+    date_time = "2022-09-05T10:10:10.000000Z"
+    parent_slicer = SquareSlicer(cursor_field=date_time, options=None, request_cursor_field=None)
+    SquareSlicer.read_records = MagicMock(return_value=records)
+    slicer = SquareSubstreamSlicer(
+        cursor_field=date_time,
+        options=None,
+        request_cursor_field=None,
+        parent_stream=parent_slicer
+    )
+    stream_slice = next(slicer.stream_slices(SyncMode, {})) if records else {}
+    slicer.update_cursor(stream_slice=stream_slice, last_record=last_record)
+    expected_request_body = {'location_ids': expected_data.get('location_ids'),
+                             'query': {'filter': {'date_time_filter':
+                                                      {'updated_at':
+                                                           {'start_at': expected_data.get('start_date')}
+                                                       }
+                                                  },
                                        'sort': {'sort_field': 'UPDATED_AT', 'sort_order': 'ASC'}}}
     assert slicer.get_request_body_json(stream_state=slicer.get_stream_state(), stream_slice=stream_slice) == expected_request_body
