@@ -31,15 +31,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
 import javax.xml.bind.DatatypeConverter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Source operation skeleton for JDBC compatible databases.
  */
 public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implements JdbcCompatibleSourceOperations<Datatype> {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcCompatibleSourceOperations.class);
   /**
    * A Date representing the earliest date in CE. Any date before this is in BCE.
    */
@@ -50,6 +47,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     // the first call communicates with the database. after that the result is cached.
     final int columnCount = queryContext.getMetaData().getColumnCount();
     final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+
     for (int i = 1; i <= columnCount; i++) {
       // attempt to access the column. this allows us to know if it is null before we do type-specific
       // parsing. if it is null, we can move on. while awkward, this seems to be the agreed upon way of
@@ -62,6 +60,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
       // convert to java types that will convert into reasonable json.
       setJsonField(queryContext, i, jsonNode);
     }
+
     return jsonNode;
   }
 

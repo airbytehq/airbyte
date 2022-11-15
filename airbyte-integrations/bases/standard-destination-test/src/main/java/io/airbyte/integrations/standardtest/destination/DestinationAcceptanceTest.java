@@ -254,7 +254,6 @@ public abstract class DestinationAcceptanceTest {
   }
 
   protected boolean supportsDBT() {
-	LOGGER.info("DestinationAcceptanceTest - supportsDBT");  
     return false;
   }
 
@@ -342,7 +341,6 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   public void testGetSpec() throws WorkerException {
-	LOGGER.info("Satish =============================testGetSpec ");
     assertNotNull(runSpec());
   }
 
@@ -352,7 +350,6 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   public void testCheckConnection() throws Exception {
-	  LOGGER.info("Satish =============================testCheckConnection ");
     assertEquals(Status.SUCCEEDED, runCheck(getConfig()).getStatus());
   }
 
@@ -362,7 +359,6 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   public void testCheckConnectionInvalidCredentials() throws Exception {
-	  LOGGER.info("Satish =============================testCheckConnectionInvalidCredentials ");
     assertEquals(Status.FAILED, runCheck(getFailCheckConfig()).getStatus());
   }
 
@@ -374,7 +370,6 @@ public abstract class DestinationAcceptanceTest {
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testSync(final String messagesFilename, final String catalogFilename)
       throws Exception {
-	  LOGGER.info("Satish =============================testSync ");
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename),
         AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
@@ -398,7 +393,6 @@ public abstract class DestinationAcceptanceTest {
   public void testSyncWithLargeRecordBatch(final String messagesFilename,
                                            final String catalogFilename)
       throws Exception {
-	  LOGGER.info("Satish =============================testSyncWithLargeRecordBatch ");
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename),
         AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
@@ -428,7 +422,6 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   public void testSecondSync() throws Exception {
-	  LOGGER.info("Satish =============================testSecondSync ");
     if (!implementsOverwrite()) {
       LOGGER.info("Destination's spec.json does not support overwrite sync mode.");
       return;
@@ -500,7 +493,6 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   public void testLineBreakCharacters() throws Exception {
-	  LOGGER.info("Satish =============================testLineBreakCharacters ");
     final AirbyteCatalog catalog =
         Jsons.deserialize(
             MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
@@ -508,10 +500,7 @@ public abstract class DestinationAcceptanceTest {
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
     final JsonNode config = getConfig();
-    LOGGER.info("testLineBreakCharacters - testLineBreakCharacters : ");
-    LOGGER.info("testLineBreakCharacters - config : " + config);
-    LOGGER.info("testLineBreakCharacters - catalog.getStreams().get(0).getName() : " + catalog.getStreams().get(0).getName());
-    LOGGER.info("testLineBreakCharacters - catalog.getStreams().get(0).getName() : " + catalog.getStreams().get(0).getName());
+
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
         new AirbyteMessage()
             .withType(Type.RECORD)
@@ -534,13 +523,11 @@ public abstract class DestinationAcceptanceTest {
 
     runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, false);
     final String defaultSchema = getDefaultSchema(config);
-    LOGGER.info("defaultSchema :  " +  defaultSchema);
     retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessages, defaultSchema);
   }
 
   @Test
   public void specNormalizationValueShouldBeCorrect() throws Exception {
-	  LOGGER.info("Satish =============================specNormalizationValueShouldBeCorrect ");
     final boolean normalizationFromSpec = normalizationFromSpec();
     assertEquals(normalizationFromSpec, supportsNormalization());
     if (normalizationFromSpec) {
@@ -557,9 +544,6 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   public void specDBTValueShouldBeCorrect() throws WorkerException {
-	  LOGGER.info("Satish =============================specDBTValueShouldBeCorrect ");
-	  LOGGER.info("supportsDBT() : " + supportsDBT());
-	  LOGGER.info("dbtFromSpec() : " + dbtFromSpec());
     assertEquals(dbtFromSpec(), supportsDBT());
   }
 
@@ -569,7 +553,6 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   public void testIncrementalSync() throws Exception {
-	  LOGGER.info("Satish =============================testIncrementalSync ");
     if (!implementsAppend()) {
       LOGGER.info("Destination's spec.json does not include '\"supportsIncremental\" ; true'");
       return;
@@ -630,7 +613,6 @@ public abstract class DestinationAcceptanceTest {
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename)
       throws Exception {
-	  LOGGER.info("Satish =============================testSyncWithNormalization ");
     if (!normalizationFromSpec()) {
       return;
     }
@@ -661,7 +643,6 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   public void testIncrementalDedupeSync() throws Exception {
-	  LOGGER.info("Satish =============================testIncrementalDedupeSync ");
     if (!implementsAppendDedup()) {
       LOGGER.info(
           "Destination's spec.json does not include 'append_dedupe' in its '\"supportedDestinationSyncModes\"'");
@@ -767,7 +748,6 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   void testSyncVeryBigRecords() throws Exception {
-	  LOGGER.info("Satish =============================testSyncVeryBigRecords ");
     if (!implementsRecordSizeLimitChecks()) {
       return;
     }
@@ -840,7 +820,6 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   public void testCustomDbtTransformations() throws Exception {
-	  LOGGER.info("Satish =============================testCustomDbtTransformations ");
     if (!dbtFromSpec()) {
       return;
     }
@@ -925,7 +904,6 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   void testCustomDbtTransformationsFailure() throws Exception {
-	  LOGGER.info("Satish =============================testCustomDbtTransformationsFailure ");
     if (!normalizationFromSpec() || !dbtFromSpec()) {
       // we require normalization implementation for this destination, because we make sure to install
       // required dbt dependency in the normalization docker image in order to run this test successfully
@@ -961,7 +939,6 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   void testSyncUsesAirbyteStreamNamespaceIfNotNull() throws Exception {
-	  LOGGER.info("Satish =============================testSyncUsesAirbyteStreamNamespaceIfNotNull ");
     if (!implementsNamespaces()) {
       return;
     }
@@ -994,7 +971,6 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   void testSyncWriteSameTableNameDifferentNamespace() throws Exception {
-	  LOGGER.info("Satish =============================testSyncWriteSameTableNameDifferentNamespace ");
     if (!implementsNamespaces()) {
       return;
     }
@@ -1063,7 +1039,6 @@ public abstract class DestinationAcceptanceTest {
                              final String namespace,
                              final String normalizedNamespace)
       throws Exception {
-	  LOGGER.info("Satish =============================testNamespaces ");
     final Optional<NamingConventionTransformer> nameTransformer = getNameTransformer();
     nameTransformer.ifPresent(
         namingConventionTransformer -> assertNamespaceNormalization(testCaseId, normalizedNamespace,
@@ -1104,7 +1079,6 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   public void testEntrypointEnvVar() throws Exception {
-	  LOGGER.info("Satish =============================testEntrypointEnvVar ");
     final String entrypoint = EntrypointEnvChecker.getEntrypointEnvVariable(
         processFactory,
         JOB_ID,
@@ -1124,7 +1098,6 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   public void testSyncNotFailsWithNewFields() throws Exception {
-	  LOGGER.info("Satish =============================testSyncNotFailsWithNewFields ");
     if (!implementsOverwrite()) {
       LOGGER.info("Destination's spec.json does not support overwrite sync mode.");
       return;
@@ -1232,7 +1205,6 @@ public abstract class DestinationAcceptanceTest {
   }
 
   protected AirbyteDestination getDestination() {
-	  LOGGER.info("DestinationAcceptanceTest : getDestination - getImageName : " + getImageName());
     return new DefaultAirbyteDestination(
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null));
   }
@@ -1242,33 +1214,15 @@ public abstract class DestinationAcceptanceTest {
                                              final ConfiguredAirbyteCatalog catalog,
                                              final boolean runNormalization)
       throws Exception {
-	  LOGGER.info("After sync messages : ");
-	  LOGGER.info("messages : " + messages.size());
-	    for(int i = 0; i < messages.size(); i++) {
-	    	LOGGER.info("each messages : " + messages.get(i));
-	    }
-	    LOGGER.info("messages : " + messages.size());
-	    
-	    
     final List<AirbyteMessage> destinationOutput = runSync(config, messages, catalog,
         runNormalization);
-    LOGGER.info("After sync destinationOutput : ");
-    
-    LOGGER.info("destinationOutput : " + destinationOutput.size());
-    for(int i = 0; i < destinationOutput.size(); i++) {
-    	LOGGER.info("each destination : " + destinationOutput.get(i));
-    }
-    LOGGER.info("destinationOutput : " + destinationOutput.size());
 
-    LOGGER.info("After sync expectedStateMessage : ");
     final AirbyteMessage expectedStateMessage = reversed(messages)
         .stream()
         .filter(m -> m.getType() == Type.STATE)
         .findFirst()
         .orElseThrow(() -> new IllegalArgumentException(
             "All message sets used for testing should include a state record"));
-    
-    LOGGER.info("expectedStateMessage : " + expectedStateMessage);
 
     Collections.reverse(destinationOutput);
     final AirbyteMessage actualStateMessage = destinationOutput
@@ -1279,7 +1233,7 @@ public abstract class DestinationAcceptanceTest {
           fail("Destination failed to output state");
           return null;
         });
-    LOGGER.info("actualStateMessage : " + actualStateMessage);
+
     assertEquals(expectedStateMessage, actualStateMessage);
   }
 
@@ -1319,7 +1273,7 @@ public abstract class DestinationAcceptanceTest {
     while (!destination.isFinished()) {
       destination.attemptRead().ifPresent(destinationOutput::add);
     }
-    LOGGER.info("DestinationAcceptanceTest : runSync - destination : " + destination);
+
     destination.close();
 
     if (!runNormalization) {
@@ -1348,11 +1302,7 @@ public abstract class DestinationAcceptanceTest {
     final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getName();
-      LOGGER.info("DestinationAcceptanceTest : retrieveRawRecordsAndAssertSameMessages - streamName : " + streamName);
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
-      LOGGER.info("DestinationAcceptanceTest : retrieveRawRecordsAndAssertSameMessages - schema : " + schema);
-      LOGGER.info("DestinationAcceptanceTest : retrieveRawRecordsAndAssertSameMessages - streamName : " + streamName);
-      LOGGER.info("DestinationAcceptanceTest : retrieveRawRecordsAndAssertSameMessages - stream.getJsonSchema() : " + stream.getJsonSchema());
       final List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema,
           stream.getJsonSchema())
               .stream()
@@ -1361,8 +1311,7 @@ public abstract class DestinationAcceptanceTest {
               .toList();
       actualMessages.addAll(msgList);
     }
-    LOGGER.info("DestinationAcceptanceTest : retrieveRawRecordsAndAssertSameMessages - messages : " + messages);
-    LOGGER.info("DestinationAcceptanceTest : retrieveRawRecordsAndAssertSameMessages - actualMessages : " + actualMessages);
+
     assertSameMessages(messages, actualMessages, false);
   }
 
@@ -1382,8 +1331,7 @@ public abstract class DestinationAcceptanceTest {
         .map(recordMessage -> pruneAirbyteInternalFields ? safePrune(recordMessage) : recordMessage)
         .map(AirbyteRecordMessage::getData)
         .collect(Collectors.toList());
-    LOGGER.info("DestinationAcceptanceTest : retrieveRawRecordsAndAssertSameMessages - expectedProcessed : " + expectedProcessed);
-    LOGGER.info("DestinationAcceptanceTest : retrieveRawRecordsAndAssertSameMessages - actualProcessed : " + actualProcessed);
+
     testDataComparator.assertSameData(expectedProcessed, actualProcessed);
   }
 

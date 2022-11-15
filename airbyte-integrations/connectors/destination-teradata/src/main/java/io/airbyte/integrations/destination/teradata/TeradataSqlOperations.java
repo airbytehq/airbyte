@@ -29,10 +29,6 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
                                     final String schemaName,
                                     final String tmpTableName)
       throws SQLException {
-	  LOGGER.info("insertRecordsInternal : records - " + records);
-	  LOGGER.info("insertRecordsInternal : records size - " + records.size());
-	  LOGGER.info("insertRecordsInternal : schemaName - " + schemaName);
-	  LOGGER.info("insertRecordsInternal : tmpTableName - " + tmpTableName);
     if (records.isEmpty()) {
       return;
     }
@@ -56,7 +52,6 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
           pstmt.addBatch();
         }
         int updateCounts[] = pstmt.executeBatch();
-        LOGGER.info("insertRecordsInternal : records updated - " + updateCounts);
       } catch (final SQLException e) {
         AirbyteTraceMessageUtility.emitSystemErrorTrace(e,
             "Connector failed while inserting records to staging table");
