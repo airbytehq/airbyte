@@ -42,24 +42,23 @@ public class DorisDestinationAcceptanceTest extends DestinationAcceptanceTest {
     return "airbyte/destination-doris:dev";
   }
 
-
   @BeforeAll
-  public static void getConnect(){
+  public static void getConnect() {
     JsonNode config = Jsons.deserialize(IOs.readFile(Paths.get("../../../secrets/config.json")));
     String dbUrl = String.format(DB_URL_PATTERN, config.get("host").asText(), PORT);
     try {
       Class.forName(JDBC_DRIVER);
-      conn = DriverManager.getConnection(dbUrl, config.get("username").asText(),config.get("password")==null?"":config.get("password").asText());
+      conn =
+          DriverManager.getConnection(dbUrl, config.get("username").asText(), config.get("password") == null ? "" : config.get("password").asText());
     } catch (Exception e) {
       e.printStackTrace();
     }
 
   }
 
-
   @AfterAll
   public static void closeConnect() throws SQLException {
-    if(conn!=null){
+    if (conn != null) {
       conn.close();
     }
   }
@@ -85,22 +84,21 @@ public class DorisDestinationAcceptanceTest extends DestinationAcceptanceTest {
                                            String streamName,
                                            String namespace,
                                            JsonNode streamSchema)
-          throws IOException, SQLException {
+      throws IOException, SQLException {
     // TODO Implement this method to retrieve records which written to the destination by the connector.
     // Records returned from this method will be compared against records provided to the connector
     // to verify they were written correctly
 
     final String tableName = namingResolver.getIdentifier(streamName);
 
-
-    String query =  String.format(
-            "SELECT * FROM %s.%s ORDER BY %s ASC;", configJson.get("database").asText(), tableName,
-            JavaBaseConstants.COLUMN_NAME_EMITTED_AT) ;
+    String query = String.format(
+        "SELECT * FROM %s.%s ORDER BY %s ASC;", configJson.get("database").asText(), tableName,
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     PreparedStatement stmt = conn.prepareStatement(query);
     ResultSet resultSet = stmt.executeQuery();
 
     List<JsonNode> res = new ArrayList<>();
-    while(resultSet.next()){
+    while (resultSet.next()) {
       String sss = resultSet.getString(JavaBaseConstants.COLUMN_NAME_DATA);
       res.add(Jsons.deserialize(StringEscapeUtils.unescapeJava(sss)));
     }
@@ -125,6 +123,5 @@ public class DorisDestinationAcceptanceTest extends DestinationAcceptanceTest {
   public void testSecondSync() throws Exception {
     // PubSub cannot overwrite messages, its always append only
   }
-
 
 }

@@ -4,6 +4,10 @@
 
 package io.airbyte.integrations.destination.doris;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -15,9 +19,6 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.*;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,9 +27,9 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class DorisDestinationTest {
 
@@ -40,11 +41,11 @@ class DorisDestinationTest {
   private static final String TASKS_FILE = new StandardNameTransformer().getRawTableName(TASKS_STREAM_NAME) + ".csv";;
   private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
-              .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "john").put("id", "10").build()))
+          .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "john").put("id", "10").build()))
           .withEmittedAt(NOW.toEpochMilli()));
   private static final AirbyteMessage MESSAGE_USERS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
-              .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "susan").put("id", "30").build()))
+          .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "susan").put("id", "30").build()))
           .withEmittedAt(NOW.toEpochMilli()));
   private static final AirbyteMessage MESSAGE_TASKS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
@@ -99,7 +100,9 @@ class DorisDestinationTest {
     FileUtils.touch(looksLikeADirectoryButIsAFile.toFile());
     final DorisDestination destination = spy(DorisDestination.class);
     doReturn(looksLikeADirectoryButIsAFile).when(destination).getTempPathDir(any());
-    // final JsonNode config = Jsons.jsonNode(ImmutableMap.of(DorisDestination.DESTINATION_TEMP_PATH_FIELD, looksLikeADirectoryButIsAFile.toString()));
+    // final JsonNode config =
+    // Jsons.jsonNode(ImmutableMap.of(DorisDestination.DESTINATION_TEMP_PATH_FIELD,
+    // looksLikeADirectoryButIsAFile.toString()));
     final AirbyteConnectionStatus actual = destination.check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED);
 
@@ -112,13 +115,15 @@ class DorisDestinationTest {
 
   @Test
   void testCheckInvalidDestinationFolder() {
-//    final Path relativePath = Path.of("../tmp/conf.d/");
-//    final JsonNode config = Jsons.jsonNode(ImmutableMap.of(DorisDestination.DESTINATION_TEMP_PATH_FIELD, relativePath.toString()));
+    // final Path relativePath = Path.of("../tmp/conf.d/");
+    // final JsonNode config =
+    // Jsons.jsonNode(ImmutableMap.of(DorisDestination.DESTINATION_TEMP_PATH_FIELD,
+    // relativePath.toString()));
     final AirbyteConnectionStatus actual = new DorisDestination().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED);
     // the message includes the random file path, so just verify it exists and then remove it when we do
     // rest of the comparison.
-   assertNotNull(actual.getMessage());
+    assertNotNull(actual.getMessage());
     actual.setMessage(null);
     assertEquals(expected, actual);
   }
