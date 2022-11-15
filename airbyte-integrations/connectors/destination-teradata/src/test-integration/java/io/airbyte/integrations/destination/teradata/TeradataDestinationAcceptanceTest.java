@@ -75,10 +75,6 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 	@Override
 	protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv, final String streamName,
 			final String namespace, final JsonNode streamSchema) throws Exception {
-		LOGGER.info("TeradataDestinationAcceptanceTest : streamName : " + streamName);
-		LOGGER.info("TeradataDestinationAcceptanceTest : namespace : " + namespace);
-		LOGGER.info("TeradataDestinationAcceptanceTest : streamSchema : " + streamSchema);
-		LOGGER.info("TeradataDestinationAcceptanceTest : testEnv : " + testEnv);
 		return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
 				.map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA)).collect(Collectors.toList());
 
@@ -86,31 +82,10 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 
 	private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
 			throws SQLException {
-		LOGGER.info("TeradataDestinationAcceptanceTest : tableName : " + tableName);
-		LOGGER.info("TeradataDestinationAcceptanceTest : schemaName : " + schemaName);
 		final List<JsonNode> actual = database.bufferedResultSetQuery(
 				connection -> connection.createStatement()
 						.executeQuery(String.format("SELECT * FROM %s.%s", schemaName, tableName)),
 						JdbcUtils.getDefaultSourceOperations()::rowToJson);
-		
-
-
-		final List<JsonNode> actual1 =  database.bufferedResultSetQuery(
-	        connection -> {
-	          var statement = connection.createStatement();
-	          return statement.executeQuery(
-	              String.format("SELECT * FROM %s.%s", schemaName, tableName));
-	        },
-	        rs -> Jsons.deserialize(rs.getString(JavaBaseConstants.COLUMN_NAME_DATA)));
-	  
-		
-		LOGGER.info("TeradataDestinationAcceptanceTest : retrieveRecordsFromTable : actual1 size : " + actual1.size());
-		LOGGER.info("TeradataDestinationAcceptanceTest : retrieveRecordsFromTable : actual1 : " + actual1);
-		LOGGER.info("TeradataDestinationAcceptanceTest : retrieveRecordsFromTable : actual size : " + actual.size());
-		LOGGER.info("TeradataDestinationAcceptanceTest : retrieveRecordsFromTable : actual : " + actual);
-		for(int i = 0; i < actual.size(); i ++ ) {
-			LOGGER.info("TeradataDestinationAcceptanceTest : retrieveRecordsFromTable : actual size : " + actual.get(i));
-		}
 		return actual;
 	}
 
@@ -122,13 +97,10 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 
 		try {
 			this.configJson = Jsons.clone(getStaticConfig());
-			LOGGER.info("TeradataDestinationAcceptanceTest : setup - configJson : " + configJson);
 			((ObjectNode) configJson).put("schema", schemaName);
 
 			dataSource = getDataSource(configJson);
-			LOGGER.info("TeradataDestinationAcceptanceTest : setup - dataSource : " + dataSource);
 			database = getDatabase(dataSource);
-			LOGGER.info("TeradataDestinationAcceptanceTest : setup - database : " + database);
 			database.execute(createSchemaQuery);
 		} catch (Exception e) {
 			AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "setup failed");
