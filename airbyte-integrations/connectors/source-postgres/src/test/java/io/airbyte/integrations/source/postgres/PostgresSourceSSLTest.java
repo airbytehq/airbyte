@@ -58,24 +58,24 @@ class PostgresSourceSSLTest {
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME,
           SCHEMA_NAME,
-          Field.of("id", JsonSchemaType.NUMBER),
-          Field.of("name", JsonSchemaType.STRING),
-          Field.of("power", JsonSchemaType.NUMBER))
+          Field.of("id", JsonSchemaType.NUMBER_V1),
+          Field.of("name", JsonSchemaType.STRING_V1),
+          Field.of("power", JsonSchemaType.NUMBER_V1))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME + "2",
           SCHEMA_NAME,
-          Field.of("id", JsonSchemaType.NUMBER),
-          Field.of("name", JsonSchemaType.STRING),
-          Field.of("power", JsonSchemaType.NUMBER))
+          Field.of("id", JsonSchemaType.NUMBER_V1),
+          Field.of("name", JsonSchemaType.STRING_V1),
+          Field.of("power", JsonSchemaType.NUMBER_V1))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)),
       CatalogHelpers.createAirbyteStream(
           "names",
           SCHEMA_NAME,
-          Field.of("first_name", JsonSchemaType.STRING),
-          Field.of("last_name", JsonSchemaType.STRING),
-          Field.of("power", JsonSchemaType.NUMBER))
+          Field.of("first_name", JsonSchemaType.STRING_V1),
+          Field.of("last_name", JsonSchemaType.STRING_V1),
+          Field.of("power", JsonSchemaType.NUMBER_V1))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
@@ -202,7 +202,7 @@ class PostgresSourceSSLTest {
   @Test
   void testAllowSSLWithCdcReplicationMethod() throws Exception {
 
-    JsonNode config = getCDCAndSslModeConfig("allow");
+    final JsonNode config = getCDCAndSslModeConfig("allow");
 
     final AirbyteConnectionStatus actual = new PostgresSource().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
@@ -212,14 +212,14 @@ class PostgresSourceSSLTest {
   @Test
   void testPreferSSLWithCdcReplicationMethod() throws Exception {
 
-    JsonNode config = getCDCAndSslModeConfig("prefer");
+    final JsonNode config = getCDCAndSslModeConfig("prefer");
 
     final AirbyteConnectionStatus actual = new PostgresSource().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
     assertTrue(actual.getMessage().contains("In CDC replication mode ssl value 'prefer' is invalid"));
   }
 
-  private JsonNode getCDCAndSslModeConfig(String sslMode) {
+  private JsonNode getCDCAndSslModeConfig(final String sslMode) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.SSL_KEY, true)
         .put(JdbcUtils.SSL_MODE_KEY, Map.of(JdbcUtils.MODE_KEY, sslMode))
