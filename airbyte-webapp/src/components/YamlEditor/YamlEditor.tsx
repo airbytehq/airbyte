@@ -70,7 +70,7 @@ export const YamlEditor: React.FC = () => {
         <CodeEditor
           value={yamlValue}
           language="yaml"
-          theme="airbyte"
+          theme="airbyte-light"
           onChange={(value) => setYamlValue(value ?? "")}
           lineNumberCharacterWidth={6}
           onMount={(editor) => (yamlEditorRef.current = editor)}

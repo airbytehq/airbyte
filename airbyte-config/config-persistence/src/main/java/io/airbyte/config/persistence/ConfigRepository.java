@@ -28,6 +28,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.AirbyteProtocolVersionRange;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.ConfigSchema;
@@ -248,6 +249,10 @@ public class ConfigRepository {
     }
 
     return sourceDefinitions;
+  }
+
+  public Map<UUID, Map.Entry<io.airbyte.config.ActorType, Version>> getActorDefinitionToProtocolVersionMap() throws IOException {
+    return database.query(ConfigWriter::getActorDefinitionsInUseToProtocolVersion);
   }
 
   public List<StandardSourceDefinition> listPublicSourceDefinitions(final boolean includeTombstone) throws IOException {

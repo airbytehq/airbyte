@@ -4,13 +4,9 @@
       "stream": {
         "name": "emails",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "update_time"
-        ]
+        "default_cursor_field": ["update_time"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
@@ -19,13 +15,9 @@
       "stream": {
         "name": "landing_pages",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "update_time"
-        ]
+        "default_cursor_field": ["update_time"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
@@ -34,13 +26,9 @@
       "stream": {
         "name": "segmentations",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "update_time"
-        ]
+        "default_cursor_field": ["update_time"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
