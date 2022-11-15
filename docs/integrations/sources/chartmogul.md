@@ -1,4 +1,10 @@
 # Chartmogul
+This page contains the setup guide and reference information for the Chartmogul source connector.
+
+## Prerequisites
+* API key
+* Start date
+* Interval
 
 ## Sync overview
 
