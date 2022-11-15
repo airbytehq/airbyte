@@ -26,7 +26,7 @@ class Oauth2AuthenticatorSquare(DeclarativeOauth2Authenticator):
         """
         token, expires_at = super().refresh_access_token()
         expires_in = pendulum.parse(expires_at) - pendulum.now()
-        return token, expires_in.seconds
+        return token, expires_in.in_seconds()
 
 
 @dataclass

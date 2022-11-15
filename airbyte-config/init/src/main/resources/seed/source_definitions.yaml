@@ -1460,7 +1460,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/square
   icon: square.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - sourceDefinitionId: 7a4327c4-315a-11ec-8d3d-0242ac130003
   name: Strava
   dockerRepository: airbyte/source-strava
