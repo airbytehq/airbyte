@@ -126,10 +126,6 @@ def test_sub_slicer_request_body(last_record, records, expected_data):
     stream_slice = next(slicer.stream_slices(SyncMode, {})) if records else {}
     slicer.update_cursor(stream_slice=stream_slice, last_record=last_record)
     expected_request_body = {'location_ids': expected_data.get('location_ids'),
-                             'query': {'filter': {'date_time_filter':
-                                                      {'updated_at':
-                                                           {'start_at': expected_data.get('start_date')}
-                                                       }
-                                                  },
+                             'query': {'filter': {'date_time_filter': {'updated_at': {'start_at': expected_data.get('start_date')}}},
                                        'sort': {'sort_field': 'UPDATED_AT', 'sort_order': 'ASC'}}}
     assert slicer.get_request_body_json(stream_state=slicer.get_stream_state(), stream_slice=stream_slice) == expected_request_body
