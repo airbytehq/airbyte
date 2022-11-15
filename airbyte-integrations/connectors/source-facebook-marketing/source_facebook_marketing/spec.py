@@ -5,7 +5,7 @@
 import logging
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type, Literal
 
 from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.adsinsights import AdsInsights
@@ -33,10 +33,12 @@ class InsightConfig(BaseModel):
         description="The name value of insight",
     )
 
-    level: Optional[ValidLevel] = Field(
+    level: Optional[List[ValidLevel]] = Field(
         title="Level",
         description="Chosen level for API",
-        default="ad",
+        default=["ad"],
+        min_items=1,
+        max_items=1
     )
 
     fields: Optional[List[ValidFields]] = Field(
