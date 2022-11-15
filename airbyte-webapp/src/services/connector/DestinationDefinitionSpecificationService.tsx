@@ -1,6 +1,6 @@
 import { useQuery } from "react-query";
 
-import { useConfig } from "config";
+// import { useConfig } from "config";
 import { DestinationDefinitionSpecificationService } from "core/domain/connector/DestinationDefinitionSpecificationService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
@@ -17,12 +17,12 @@ export const destinationDefinitionSpecificationKeys = {
 };
 
 function useGetService() {
-  const { apiUrl } = useConfig();
+  // const { apiUrl } = useConfig();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   return useInitService(
-    () => new DestinationDefinitionSpecificationService(apiUrl, requestAuthMiddleware),
-    [apiUrl, requestAuthMiddleware]
+    () => new DestinationDefinitionSpecificationService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
+    [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
   );
 }
 
