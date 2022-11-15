@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.Version;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.JsonSchemaReferenceTypes;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -22,25 +23,6 @@ import java.util.function.Function;
 import java.util.stream.StreamSupport;
 
 public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<AirbyteMessage, io.airbyte.protocol.models.v0.AirbyteMessage> {
-
-  private static final Set<String> PRIMITIVE_TYPES = ImmutableSet.of(
-    "string",
-    "number",
-    "integer",
-    "boolean"
-  );
-  private static final Map<String, String> AIRBYTE_TYPE_TO_REFERENCE_TYPE = ImmutableMap.of(
-      "timestamp_with_timezone", "WellKnownTypes.json#definitions/TimestampWithTimezone",
-      "timestamp_without_timezone", "WellKnownTypes.json#definitions/TimestampWithoutTimezone",
-      "time_with_timezone", "WellKnownTypes.json#definitions/TimeWithTimezone",
-      "time_without_timezone", "WellKnownTypes.json#definitions/TimeWithoutTimezone",
-      "integer", "WellKnownTypes.json#definitions/Integer",
-      // these types never actually use airbyte_type, but including them for consistency
-      "string", "WellKnownTypes.json#definitions/String",
-      "number", "WellKnownTypes.json#definitions/Number",
-      "boolean", "WellKnownTypes.json#definitions/Boolean",
-      "date", "WellKnownTypes.json#definitions/Date"
-  );
 
   @Override
   public AirbyteMessage downgrade(io.airbyte.protocol.models.v0.AirbyteMessage oldMessage) {
@@ -91,9 +73,9 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
     JsonNode typeNode = schema.get("type");
     if (typeNode.isArray()) {
       return StreamSupport.stream(typeNode.spliterator(), false)
-          .anyMatch(n -> PRIMITIVE_TYPES.contains(n.asText()));
+          .anyMatch(n -> JsonSchemaReferenceTypes.PRIMITIVE_JSON_TYPES.contains(n.asText()));
     } else {
-      return PRIMITIVE_TYPES.contains(typeNode.asText());
+      return JsonSchemaReferenceTypes.PRIMITIVE_JSON_TYPES.contains(typeNode.asText());
     }
   }
 
@@ -114,7 +96,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
 
     if (schemaNode.hasNonNull("airbyte_type")) {
       // If airbyte_type is defined, always respect it
-      String referenceType = AIRBYTE_TYPE_TO_REFERENCE_TYPE.get(schemaNode.get("airbyte_type").asText());
+      String referenceType = JsonSchemaReferenceTypes.AIRBYTE_TYPE_TO_REFERENCE_TYPE.get(schemaNode.get("airbyte_type").asText());
       schemaNode.removeAll();
       schemaNode.put("$ref", referenceType);
     } else {
@@ -213,6 +195,8 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
   /**
    * Generic utility method that recurses through all type declarations in the schema. For each type declaration that are accepted by matcher,
    * mutate them using transformer. For all other type declarations, recurse into their subschemas (if any).
+   *
+   * Note that this modifies the schema in-place. Callers who need a copy of the old schema should save schema.deepCopy() before calling this method.
    *
    * @param schema The JsonSchema node to walk down
    * @param matcher A function which returns true on any schema node that needs to be transformed
