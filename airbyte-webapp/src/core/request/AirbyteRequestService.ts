@@ -11,6 +11,7 @@ abstract class AirbyteRequestService {
   constructor(rootUrl: string, private middlewares: RequestMiddleware[] = []) {
     // Remove the `/v1/` at the end of the URL if it exists, during the transition period
     // to remove it from all cloud environments
+    debugger;
     this.rootUrl = rootUrl.replace(/\/v1\/?$/, "");
   }
 
