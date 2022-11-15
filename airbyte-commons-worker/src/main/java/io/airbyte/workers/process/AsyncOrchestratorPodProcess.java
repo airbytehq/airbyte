@@ -359,7 +359,6 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
     // should only create after the kubernetes API creates the pod
     final var createdPod = kubernetesClient.pods()
-
         .inNamespace(getInfo().namespace())
         .createOrReplace(podToCreate);
 
