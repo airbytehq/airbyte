@@ -46,18 +46,25 @@ const Menu = styled.ul`
   width: 100%;
 `;
 
-const Text = styled.div`
-  margin-top: 7px;
-  color: #4f46e5;
-  padding-left: 10px;
-  font-weight: bold;
+const MenuItem = styled.li`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
-const TextSetting = styled.div`
-  color: black;
-  padding-left: 15px;
-  font-weight: bold;
+const Text = styled.div`
+  margin-top: 1px;
+  padding-left: 10px;
+  font-weight: 500;
+  font-size: 18px;
 `;
+
+// const TextSetting = styled.div`
+//   color: black;
+//   padding-left: 15px;
+//   font-weight: bold;
+// `;
 
 const TextLogo = styled.div`
   margin-top: 7px;
@@ -77,36 +84,35 @@ const Logo = styled.div`
   font-weight: normal;
 `;
 
-const ButtonCenter = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+// const ButtonCenter = styled.div`
+//   display: flex;
+//   flex-direction: column;
+//   justify-content: center;
+//   align-items: center;
+// `;
+
+// const Button = styled.button`
+//   border: none;
+//   border-radius: 8px;
+//   margin-bottom: 50px;
+//   padding: 15px 30px;
+//   display: flex;
+//   flex-direction: row;
+//   justify-content: center;
+//   align-items: center;
+//   background-color: #eae9ff;
+// `;
+
+const MenuItemIcon = styled(FontAwesomeIcon)`
+  font-size: 18px;
+  line-height: 18px;
 `;
 
-const Button = styled.button`
-  border: none;
-  border-radius: 8px;
-  margin-bottom: 50px;
-  padding: 15px 30px;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  background-color: #eae9ff;
-`;
-
-const HelpIcon = styled(FontAwesomeIcon)`
-  font-size: 21px;
-  line-height: 21px;
-  color: #4f46e5;
-`;
-
-const SettingIcon = styled(FontAwesomeIcon)`
-  font-size: 21px;
-  line-height: 21px;
-  color: black;
-`;
+// const SettingIcon = styled(FontAwesomeIcon)`
+//   font-size: 21px;
+//   line-height: 21px;
+//   color: black;
+// `;
 
 export const useCalculateSidebarStyles = () => {
   const { location } = useRouter();
@@ -119,6 +125,17 @@ export const useCalculateSidebarStyles = () => {
   return ({ isActive }: { isActive: boolean }) => menuItemStyle(isActive);
 };
 
+export const useCalculateSidebarItemStyles = (route: string) => {
+  const { location } = useRouter();
+
+  const menuItemStyle = () => {
+    const isActive = location.pathname.split("/").length >= 4 && location.pathname.split("/")[3] === route;
+    return classnames(styles.menuItem, { [styles.active]: isActive }, { [styles.inActive]: !isActive });
+  };
+
+  return menuItemStyle();
+};
+
 export const getPopoutStyles = (isOpen?: boolean) => {
   return classnames(styles.menuItem, { [styles.popoutOpen]: isOpen });
 };
@@ -126,8 +143,6 @@ export const getPopoutStyles = (isOpen?: boolean) => {
 const SideBar: React.FC = () => {
   const config = useConfig();
   // const workspace = useCurrentWorkspace();
-
-  const navLinkClassName = useCalculateSidebarStyles();
 
   return (
     <Bar>
@@ -141,14 +156,14 @@ const SideBar: React.FC = () => {
           </Logo>
         </Link>
         <Menu>
-          <li>
-            <NavLink className={navLinkClassName} to={RoutePaths.Connections}>
-              <HelpIcon icon={faHome} />
+          <MenuItem>
+            <NavLink className={useCalculateSidebarItemStyles(RoutePaths.Connections)} to={RoutePaths.Connections}>
+              <MenuItemIcon icon={faHome} />
               <Text>
                 <FormattedMessage id="sidebar.DaspireDashboard" />
               </Text>
             </NavLink>
-          </li>
+          </MenuItem>
           {/* {workspace.displaySetupWizard ? (*/}
           {/*  <li>*/}
           {/*    <NavLink className={navLinkClassName} to={RoutePaths.Onboarding}>*/}
@@ -188,7 +203,7 @@ const SideBar: React.FC = () => {
       <Menu>
         {/* <li>*/}
         {/*  <a href={config.links.updateLink} target="_blank" rel="noreferrer" className={styles.menuItem}>*/}
-        {/*    <HelpIcon icon={faRocket} />*/}
+        {/*    <MenuItemIcon icon={faRocket} />*/}
         {/*    <Text>*/}
         {/*      <FormattedMessage id="sidebar.update" />*/}
         {/*    </Text>*/}
@@ -218,7 +233,15 @@ const SideBar: React.FC = () => {
         {/*    </Text>*/}
         {/*  </NavLink>*/}
         {/* </li>*/}
-        <li>
+        <MenuItem>
+          <NavLink className={useCalculateSidebarItemStyles(RoutePaths.Settings)} to={RoutePaths.Settings}>
+            <MenuItemIcon icon={faGear} />
+            <Text>
+              <FormattedMessage id="sidebar.DaspireSetting" />
+            </Text>
+          </NavLink>
+        </MenuItem>
+        {/* <li>
           <ButtonCenter>
             <Button>
               <SettingIcon icon={faGear} />
@@ -227,7 +250,7 @@ const SideBar: React.FC = () => {
               </TextSetting>
             </Button>
           </ButtonCenter>
-        </li>
+        </li> */}
         {config.version ? (
           <li>
             <Version primary />

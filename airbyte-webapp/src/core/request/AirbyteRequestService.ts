@@ -12,7 +12,6 @@ abstract class AirbyteRequestService {
     // Remove the `/v1/` at the end of the URL if it exists, during the transition period
     // to remove it from all cloud environments
     this.rootUrl = rootUrl.replace(/\/v1\/?$/, "");
-    // console.log( this.rootUrl );
   }
 
   protected get requestOptions(): ApiOverrideRequestOptions {

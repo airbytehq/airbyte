@@ -20,7 +20,6 @@ import {
   WebBackendConnectionRead,
   WebBackendConnectionUpdate,
 } from "../../core/request/AirbyteClient";
-// import { getAuthenticatedUser } from "../../services/auth/AuthService";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
@@ -62,7 +61,6 @@ export interface ListConnection {
 function useWebConnectionService() {
   const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
-
   return useInitService(
     () => new WebBackendConnectionService(config.apiUrl, middlewares),
     [config.apiUrl, middlewares]
@@ -223,9 +221,7 @@ export const useRemoveConnectionsFromList = (): ((connectionIds: string[]) => vo
 
 const useConnectionList = (): ListConnection => {
   const workspace = useCurrentWorkspace();
-  // const user = getAuthenticatedUser();
   const service = useWebConnectionService();
-
   return useSuspenseQuery(connectionsKeys.lists(), () => service.list(workspace.workspaceId));
 };
 
