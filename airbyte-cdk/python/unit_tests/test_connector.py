@@ -8,14 +8,13 @@ import logging
 import os
 import sys
 import tempfile
-import time
 from pathlib import Path
 from typing import Any, Mapping
 
 import pytest
 import yaml
 from airbyte_cdk import AirbyteSpec, Connector
-from airbyte_cdk.connector import MutableConfig
+from airbyte_cdk.config_observation import ConfigObserver, ObservedDict
 from airbyte_cdk.models import AirbyteConnectionStatus
 
 logger = logging.getLogger("airbyte")
@@ -84,6 +83,16 @@ def test_write_config(integration, mock_config):
         assert mock_config == json.loads(actual.read())
 
 
+def test_configure(integration, mock_config):
+    temp_dir = tempfile.gettempdir()
+    config = integration.configure(mock_config, temp_dir)
+    assert isinstance(config, ObservedDict)
+    assert isinstance(config.observer, ConfigObserver)
+    assert config.observer.config == config
+    assert config.observer.config_path == os.path.join(temp_dir, "config.json")
+    assert config.observer.write_config_fn == integration.write_config
+
+
 class TestConnectorSpec:
     CONNECTION_SPECIFICATION = {
         "type": "object",
@@ -132,39 +141,3 @@ class TestConnectorSpec:
     def test_no_spec_file_raises_exception(self, integration):
         with pytest.raises(FileNotFoundError, match="Unable to find spec."):
             integration.spec(logger)
-
-
-class TestMutableConfig:
-    def test_emit_message_when_updated_with_new_value(self, capsys):
-        config = MutableConfig({"key_a": "value_a", "key_b": "value_b"})
-        # Check nothing is printed on init
-        captured = capsys.readouterr()
-        assert not captured.out
-        before_time = time.time() * 1000
-        config["key_a"] = "new_value_a"
-        after_time = time.time() * 1000
-        captured = capsys.readouterr()
-        raw_control_message = json.loads(captured.out)
-        assert raw_control_message["type"] == "CONNECTOR_CONFIG"
-        assert raw_control_message["connectorConfig"] == {"config": {"key_a": "new_value_a", "key_b": "value_b"}}
-        assert before_time < raw_control_message["emitted_at"] < after_time
-
-    def test_emit_message_when_updated_with_new_nested_value(self, capsys):
-        config = MutableConfig({"key_a": {"key_a_a": "value_a_a"}, "key_b": "value_b"})
-        # Check nothing is printed on
-        captured = capsys.readouterr()
-        assert not captured.out
-        before_time = time.time() * 1000
-        config["key_a"]["key_a_a"] = "new_value_a_a"
-        after_time = time.time() * 1000
-        captured = capsys.readouterr()
-        raw_control_message = json.loads(captured.out)
-        assert raw_control_message["type"] == "CONNECTOR_CONFIG"
-        assert raw_control_message["connectorConfig"] == {"config": {"key_a": {"key_a_a": "new_value_a_a"}, "key_b": "value_b"}}
-        assert before_time < raw_control_message["emitted_at"] < after_time
-
-    def test_not_emit_message_when_updated_with_same_value(self, capsys):
-        config = MutableConfig({"key_a": "value_a", "key_b": "value_b"})
-        config["key_a"] = "value_a"
-        captured = capsys.readouterr()
-        assert not captured.out
