@@ -114,7 +114,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                  final AirbyteApiClient airbyteApiClient,
                                  final AirbyteMessageSerDeProvider serDeProvider,
                                  final AirbyteMessageVersionedMigratorFactory migratorFactory,
-                                 final WorkerConfigs workerConfigs) {
+                                 @Named("replicationWorkerConfigs") final WorkerConfigs workerConfigs) {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
