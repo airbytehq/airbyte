@@ -34,9 +34,7 @@ function getIcon(toastType: ToastType) {
   return ICON_MAPPING[toastType];
 }
 
-export const Toast: React.FC<ToastProps> = (props) => {
-  const { type = ToastType.INFO, onAction, onClose, title, text } = props;
-
+export const Toast: React.FC<ToastProps> = ({ type = ToastType.INFO, onAction, onClose, title, text }) => {
   return (
     <div className={classNames(styles.toastContainer, styles[type])}>
       <div className={classNames(styles.iconContainer)}>
