@@ -1182,14 +1182,14 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/postmarkapp
   sourceType: api
   releaseStage: alpha
-- name: Prestashop
+- name: PrestaShop
   sourceDefinitionId: d60a46d4-709f-4092-a6b7-2457f7d455f5
   dockerRepository: airbyte/source-prestashop
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/presta-shop
   icon: prestashop.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Primetric
   sourceDefinitionId: f636c3c6-4077-45ac-b109-19fc62a283c1
   dockerRepository: airbyte/source-primetric
@@ -1328,7 +1328,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 1.0.25
+  dockerImageTag: 1.0.26
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
