@@ -4,27 +4,27 @@ dependencies:
   version: 1.17.1
 - name: airbyte-bootloader
   repository: https://airbytehq.github.io/helm-charts/
-  version: 0.40.40
+  version: 0.40.43
 - name: temporal
   repository: https://airbytehq.github.io/helm-charts/
-  version: 0.40.40
+  version: 0.40.43
 - name: webapp
   repository: https://airbytehq.github.io/helm-charts/
-  version: 0.40.40
+  version: 0.40.43
 - name: server
   repository: https://airbytehq.github.io/helm-charts/
-  version: 0.40.40
+  version: 0.40.43
 - name: worker
   repository: https://airbytehq.github.io/helm-charts/
-  version: 0.40.40
+  version: 0.40.43
 - name: pod-sweeper
   repository: https://airbytehq.github.io/helm-charts/
-  version: 0.40.40
+  version: 0.40.43
 - name: metrics
   repository: https://airbytehq.github.io/helm-charts/
-  version: 0.40.40
+  version: 0.40.43
 - name: cron
   repository: https://airbytehq.github.io/helm-charts/
-  version: 0.40.40
-digest: sha256:d6b432e0202e04571f1ed229d34c39ff5f0945538934c7f8086a0f68a4f7ab2f
-generated: "2022-11-01T21:08:34.786286801Z"
+  version: 0.40.43
+digest: sha256:a5f3b4573c6f05c6ef390294ff8e37622c776a2b254bd27445eabf182357b64c
+generated: "2022-11-15T22:06:28.832895028Z"
