@@ -10,7 +10,6 @@ import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, Level, Type
 from connector_builder.generated.models.http_request import HttpRequest
 from connector_builder.generated.models.http_response import HttpResponse
-from connector_builder.generated.models.known_exception_info import KnownExceptionInfo
 from connector_builder.generated.models.stream_read import StreamRead
 from connector_builder.generated.models.stream_read_pages import StreamReadPages
 from connector_builder.generated.models.stream_read_request_body import StreamReadRequestBody
@@ -19,7 +18,6 @@ from connector_builder.generated.models.streams_list_read_streams import Streams
 from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
 from connector_builder.impl.default_api import DefaultApiImpl
 from fastapi import HTTPException
-
 
 MANIFEST = {
     "version": "0.1.0",
@@ -382,7 +380,7 @@ def test_read_stream_invalid_group_format():
 
 def test_read_stream_returns_error_if_stream_does_not_exist():
     expected_status_code = 400
-    expected_detail ="Could not perform read with with error: The requested stream not_in_manifest was not found in the source. Available streams: dict_keys(['hashiras', 'breathing-techniques'])"
+    expected_detail = "Could not perform read with with error: The requested stream not_in_manifest was not found in the source. Available streams: dict_keys(['hashiras', 'breathing-techniques'])"
 
     api = DefaultApiImpl()
     loop = asyncio.get_event_loop()

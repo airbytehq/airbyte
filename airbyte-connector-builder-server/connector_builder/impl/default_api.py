@@ -5,7 +5,7 @@
 import json
 import logging
 from json import JSONDecodeError
-from typing import Iterable, Optional, Union, Dict, Any
+from typing import Any, Dict, Iterable, Optional, Union
 from urllib.parse import parse_qs, urljoin, urlparse
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
