@@ -4,7 +4,15 @@
 
 package io.airbyte.server;
 
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.db.Database;
+import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.server.apis.AttemptApiController;
 import io.airbyte.server.apis.ConnectionApiController;
 import io.airbyte.server.apis.DbMigrationApiController;
@@ -86,13 +94,33 @@ import io.airbyte.server.handlers.StateHandler;
 import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendGeographiesHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
+import io.airbyte.server.scheduler.EventRunner;
+import io.airbyte.server.scheduler.SynchronousSchedulerClient;
+import java.net.http.HttpClient;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
+import org.flywaydb.core.Flyway;
 import org.slf4j.MDC;
 
 public interface ServerFactory {
 
-  ServerRunnable create(final AirbyteVersion airbyteVersion,
+  ServerRunnable create(final SynchronousSchedulerClient synchronousSchedulerClient,
+                        final ConfigRepository configRepository,
+                        final SecretsRepositoryReader secretsRepositoryReader,
+                        final SecretsRepositoryWriter secretsRepositoryWriter,
+                        final JobPersistence jobPersistence,
+                        final Database configsDatabase,
+                        final Database jobsDatabase,
+                        final TrackingClient trackingClient,
+                        final WorkerEnvironment workerEnvironment,
+                        final LogConfigs logConfigs,
+                        final AirbyteVersion airbyteVersion,
+                        final Path workspaceRoot,
+                        final HttpClient httpClient,
+                        final EventRunner eventRunner,
+                        final Flyway configsFlyway,
+                        final Flyway jobsFlyway,
                         final AttemptHandler attemptHandler,
                         final ConnectionsHandler connectionsHandler,
                         final DbMigrationHandler dbMigrationHandler,
@@ -115,7 +143,22 @@ public interface ServerFactory {
   class Api implements ServerFactory {
 
     @Override
-    public ServerRunnable create(final AirbyteVersion airbyteVersion,
+    public ServerRunnable create(final SynchronousSchedulerClient synchronousSchedulerClient,
+                                 final ConfigRepository configRepository,
+                                 final SecretsRepositoryReader secretsRepositoryReader,
+                                 final SecretsRepositoryWriter secretsRepositoryWriter,
+                                 final JobPersistence jobPersistence,
+                                 final Database configsDatabase,
+                                 final Database jobsDatabase,
+                                 final TrackingClient trackingClient,
+                                 final WorkerEnvironment workerEnvironment,
+                                 final LogConfigs logConfigs,
+                                 final AirbyteVersion airbyteVersion,
+                                 final Path workspaceRoot,
+                                 final HttpClient httpClient,
+                                 final EventRunner eventRunner,
+                                 final Flyway configsFlyway,
+                                 final Flyway jobsFlyway,
                                  final AttemptHandler attemptHandler,
                                  final ConnectionsHandler connectionsHandler,
                                  final DbMigrationHandler dbMigrationHandler,
