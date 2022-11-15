@@ -133,18 +133,12 @@ class JsonSchemaHelper:
             path = path or []
             if path and path[-1] in keys:
                 variant_paths.append(path)
-
-            next_node = None
-            for i, item in enumerate(_schema):
-                if isinstance(_schema, dict):
-                    next_node = _schema[item]
-                    next_node_path = [*path, item]
-                elif isinstance(_schema, list):
-                    next_node = _schema[i]
-                    next_node_path = [*path, i]
-
-                if isinstance(next_node, (dict, list)):
-                    traverse_schema(next_node, next_node_path)
+            if isinstance(_schema, dict):
+                for item in _schema:
+                    traverse_schema(_schema[item], [*path, item])
+            elif isinstance(_schema, list):
+                for i, item in enumerate(_schema):
+                    traverse_schema(_schema[i], [*path, i])
 
         traverse_schema(self._schema)
         return variant_paths

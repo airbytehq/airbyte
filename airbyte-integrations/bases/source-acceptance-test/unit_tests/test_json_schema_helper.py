@@ -213,6 +213,7 @@ def test_get_expected_schema_structure(schema, pathes):
 @pytest.mark.parametrize(
     "keys, num_paths, last_value",
     [
+        (["description"], 1, "Tests that keys can be found inside lists of dicts"),
         (["option1"], 2, {"a_key": "a_value"}),
         (["option2"], 1, ["value1", "value2"]),
         (["nonexistent_key"], 0, None),
