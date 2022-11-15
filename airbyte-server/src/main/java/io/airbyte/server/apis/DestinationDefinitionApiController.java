@@ -28,19 +28,19 @@ public class DestinationDefinitionApiController implements DestinationDefinition
 
   @Override
   public DestinationDefinitionRead createCustomDestinationDefinition(final CustomDestinationDefinitionCreate customDestinationDefinitionCreate) {
-    return ApiHelper.execute(() -> destinationDefinitionsHandler.createCustomDestinationDefinition(customDestinationDefinitionCreate));
+    return ConfigurationApi.execute(() -> destinationDefinitionsHandler.createCustomDestinationDefinition(customDestinationDefinitionCreate));
   }
 
   // TODO: Deprecate this route in favor of createCustomDestinationDefinition
   // since all connector definitions created through the API are custom
   @Override
   public DestinationDefinitionRead createDestinationDefinition(final DestinationDefinitionCreate destinationDefinitionCreate) {
-    return ApiHelper.execute(() -> destinationDefinitionsHandler.createPrivateDestinationDefinition(destinationDefinitionCreate));
+    return ConfigurationApi.execute(() -> destinationDefinitionsHandler.createPrivateDestinationDefinition(destinationDefinitionCreate));
   }
 
   @Override
   public void deleteCustomDestinationDefinition(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
-    ApiHelper.execute(() -> {
+    ConfigurationApi.execute(() -> {
       destinationDefinitionsHandler.deleteCustomDestinationDefinition(destinationDefinitionIdWithWorkspaceId);
       return null;
     });
@@ -48,7 +48,7 @@ public class DestinationDefinitionApiController implements DestinationDefinition
 
   @Override
   public void deleteDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
-    ApiHelper.execute(() -> {
+    ConfigurationApi.execute(() -> {
       destinationDefinitionsHandler.deleteDestinationDefinition(destinationDefinitionIdRequestBody);
       return null;
     });
@@ -56,43 +56,43 @@ public class DestinationDefinitionApiController implements DestinationDefinition
 
   @Override
   public DestinationDefinitionRead getDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
-    return ApiHelper.execute(() -> destinationDefinitionsHandler.getDestinationDefinition(destinationDefinitionIdRequestBody));
+    return ConfigurationApi.execute(() -> destinationDefinitionsHandler.getDestinationDefinition(destinationDefinitionIdRequestBody));
   }
 
   @Override
   public DestinationDefinitionRead getDestinationDefinitionForWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
-    return ApiHelper.execute(() -> destinationDefinitionsHandler.getDestinationDefinitionForWorkspace(destinationDefinitionIdWithWorkspaceId));
+    return ConfigurationApi.execute(() -> destinationDefinitionsHandler.getDestinationDefinitionForWorkspace(destinationDefinitionIdWithWorkspaceId));
   }
 
   @Override
   public PrivateDestinationDefinitionRead grantDestinationDefinitionToWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
-    return ApiHelper
+    return ConfigurationApi
         .execute(() -> destinationDefinitionsHandler.grantDestinationDefinitionToWorkspace(destinationDefinitionIdWithWorkspaceId));
   }
 
   @Override
   public DestinationDefinitionReadList listDestinationDefinitions() {
-    return ApiHelper.execute(destinationDefinitionsHandler::listDestinationDefinitions);
+    return ConfigurationApi.execute(destinationDefinitionsHandler::listDestinationDefinitions);
   }
 
   @Override
   public DestinationDefinitionReadList listDestinationDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return ApiHelper.execute(() -> destinationDefinitionsHandler.listDestinationDefinitionsForWorkspace(workspaceIdRequestBody));
+    return ConfigurationApi.execute(() -> destinationDefinitionsHandler.listDestinationDefinitionsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
   public DestinationDefinitionReadList listLatestDestinationDefinitions() {
-    return ApiHelper.execute(destinationDefinitionsHandler::listLatestDestinationDefinitions);
+    return ConfigurationApi.execute(destinationDefinitionsHandler::listLatestDestinationDefinitions);
   }
 
   @Override
   public PrivateDestinationDefinitionReadList listPrivateDestinationDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return ApiHelper.execute(() -> destinationDefinitionsHandler.listPrivateDestinationDefinitions(workspaceIdRequestBody));
+    return ConfigurationApi.execute(() -> destinationDefinitionsHandler.listPrivateDestinationDefinitions(workspaceIdRequestBody));
   }
 
   @Override
   public void revokeDestinationDefinitionFromWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
-    ApiHelper.execute(() -> {
+    ConfigurationApi.execute(() -> {
       destinationDefinitionsHandler.revokeDestinationDefinitionFromWorkspace(destinationDefinitionIdWithWorkspaceId);
       return null;
     });
@@ -100,12 +100,12 @@ public class DestinationDefinitionApiController implements DestinationDefinition
 
   @Override
   public DestinationDefinitionRead updateCustomDestinationDefinition(final CustomDestinationDefinitionUpdate customDestinationDefinitionUpdate) {
-    return ApiHelper.execute(() -> destinationDefinitionsHandler.updateCustomDestinationDefinition(customDestinationDefinitionUpdate));
+    return ConfigurationApi.execute(() -> destinationDefinitionsHandler.updateCustomDestinationDefinition(customDestinationDefinitionUpdate));
   }
 
   @Override
   public DestinationDefinitionRead updateDestinationDefinition(final DestinationDefinitionUpdate destinationDefinitionUpdate) {
-    return ApiHelper.execute(() -> destinationDefinitionsHandler.updateDestinationDefinition(destinationDefinitionUpdate));
+    return ConfigurationApi.execute(() -> destinationDefinitionsHandler.updateDestinationDefinition(destinationDefinitionUpdate));
   }
 
 }
