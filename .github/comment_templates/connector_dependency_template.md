@@ -41,11 +41,11 @@ NOTE ⚠️ Changes in this PR affect the following connectors. Make sure to do 
 <details open>
 <summary>
 
-### Other Modules
+### {other_status_summary} Other Modules ({num_others})
 
 </summary>
 
-{others}
+{others_rows}
 
 </details>
 
