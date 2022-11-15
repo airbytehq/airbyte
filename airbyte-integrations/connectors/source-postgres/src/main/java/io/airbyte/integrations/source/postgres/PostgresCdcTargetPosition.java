@@ -101,4 +101,8 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
         .orElseThrow(() -> new IllegalStateException("Could not find LSN"));
   }
 
+  @Override
+  public boolean isHeartbeatSupported() {
+    return true;
+  }
 }

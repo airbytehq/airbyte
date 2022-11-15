@@ -68,8 +68,8 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     lastHeartbeatPosition = null;
   }
 
-  // #18987 The following logic incorporates heartbeat (CDC postgres only for now):
-  // 1. Wait on queue the either the configured time first or 1 min after a record received
+  // The following logic incorporates heartbeat (CDC postgres only for now):
+  // 1. Wait on queue either the configured time first or 1 min after a record received
   // 2. If nothing came out of queue finish sync
   // 3. If received heartbeat: check if hearbeat_lsn reached target or hasn't changed in a while
   // finish sync
@@ -83,9 +83,10 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
       final ChangeEvent<String, String> next;
       try {
-        // #18987: waitTime here is largely meaningless with heartbeats but leaving for backward
-        // compatibility
-        // for connectors not implementing heartbeat yet (MySql, MSSql)
+        // #18987: waitTime is still required with heartbeats for backward
+        // compatibility with connectors not implementing heartbeat
+        // yet (MySql, MSSql), And also due to postgres taking a long time
+        // initially staying on "searching for WAL resume position"
         final Duration waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME : this.firstRecordWaitTime;
         next = queue.poll(waitTime.getSeconds(), TimeUnit.SECONDS);
       } catch (final InterruptedException e) {
@@ -104,22 +105,24 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
         continue;
       }
 
-      // check if heartbeat and read hearbeat position
-      LOGGER.debug("checking heartbeat lsn for: {}", next);
-      final Long heartbeatPos = targetPosition.getHeartbeatPosition(next);
-      if (heartbeatPos != null) {
-        // wrap up sync if heartbeat position crossed the target OR heartbeat position hasn't changed for
-        // too long
-        if (targetPosition.reachedTargetPosition(heartbeatPos)
-            || (heartbeatPos.equals(this.lastHeartbeatPosition) && heartbeatPosNotChanging())) {
-          LOGGER.info("Closing: Heartbeat indicates sync is done");
-          requestClose();
+      if (targetPosition.isHeartbeatSupported()) {
+        // check if heartbeat and read hearbeat position
+        LOGGER.debug("checking heartbeat lsn for: {}", next);
+        final Long heartbeatPos = targetPosition.getHeartbeatPosition(next);
+        if (heartbeatPos != null) {
+          // wrap up sync if heartbeat position crossed the target OR heartbeat position hasn't changed for
+          // too long
+          if (targetPosition.reachedTargetPosition(heartbeatPos)
+              || (heartbeatPos.equals(this.lastHeartbeatPosition) && heartbeatPosNotChanging())) {
+            LOGGER.info("Closing: Heartbeat indicates sync is done");
+            requestClose();
+          }
+          if (!heartbeatPos.equals(this.lastHeartbeatPosition)) {
+            this.tsLastHeartbeat = LocalDateTime.now();
+            this.lastHeartbeatPosition = heartbeatPos;
+          }
+          continue;
         }
-        if (!heartbeatPos.equals(this.lastHeartbeatPosition)) {
-          this.tsLastHeartbeat = LocalDateTime.now();
-          this.lastHeartbeatPosition = heartbeatPos;
-        }
-        continue;
       }
 
       final JsonNode eventAsJson = Jsons.deserialize(next.value());

@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
-import io.debezium.engine.ChangeEvent;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
@@ -83,15 +82,5 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition {
         + " is after target file : "
         + fileName + " , target position : " + position);
     return true;
-  }
-
-  @Override
-  public boolean reachedTargetPosition(final Long lsn) {
-    return false;
-  }
-
-  @Override
-  public Long getHeartbeatPosition(final ChangeEvent<String, String> heartbeatEvent) {
-    return null;
   }
 }

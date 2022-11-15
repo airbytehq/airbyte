@@ -11,7 +11,6 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
 import io.debezium.connector.sqlserver.Lsn;
-import io.debezium.engine.ChangeEvent;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -39,16 +38,6 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition {
       // if not snapshot or is snapshot but last record in snapshot.
       return SnapshotMetadata.TRUE != snapshotMetadata;
     }
-  }
-
-  @Override
-  public Long getHeartbeatPosition(final ChangeEvent<String, String> heartbeatEvent) {
-    return null;
-  }
-
-  @Override
-  public boolean reachedTargetPosition(final Long lsn) {
-    return false;
   }
 
   private Lsn extractLsn(final JsonNode valueAsJson) {
