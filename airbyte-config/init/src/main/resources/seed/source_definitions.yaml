@@ -21,6 +21,13 @@
   icon: airtable.svg
   sourceType: api
   releaseStage: alpha
+- name: Aha
+  sourceDefinitionId: 81ca39dc-4534-4dd2-b848-b0cfd2c11fce
+  dockerRepository: airbyte/source-aha
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/aha
+  sourceType: api
+  releaseStage: alpha
 - name: Alpha Vantage
   sourceDefinitionId: db385323-9333-4fec-bec3-9e0ca9326c90
   dockerRepository: airbyte/source-alpha-vantage
