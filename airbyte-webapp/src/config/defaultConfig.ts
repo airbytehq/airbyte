@@ -6,6 +6,7 @@ const defaultConfig: Config = {
   segment: { enabled: true, token: "" },
   healthCheckInterval: 20000,
   version: "dev",
+  // TODO: hard coding this just to check the deployment issue.
   // apiUrl: `${window.location.protocol}//${window.location.hostname}:8001/api`,
   apiUrl: `http://143.198.204.26:8888/daspire`,
   integrationUrl: "/docs",

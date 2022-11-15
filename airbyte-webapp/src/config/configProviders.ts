@@ -20,8 +20,10 @@ const windowConfigProvider: ConfigProvider = async () => {
 };
 
 const envConfigProvider: ConfigProvider = async () => {
+  console.log(`${process.env.REACT_APP_API_URL}`);
   return {
-    apiUrl: process.env.REACT_APP_API_URL,
+    // TODO: hard coding this just to check the deployment issue.
+    apiUrl: `http://143.198.204.26:8888/daspire`, // process.env.REACT_APP_API_URL,
     integrationUrl: process.env.REACT_APP_INTEGRATION_DOCS_URLS,
     segment: {
       token: process.env.REACT_APP_SEGMENT_TOKEN,
