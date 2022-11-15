@@ -1179,6 +1179,13 @@
   icon: onesignal.svg
   sourceType: api
   releaseStage: alpha
+- name: Open Exchange Rates
+  sourceDefinitionId: 77d5ca6b-d345-4dce-ba1e-1935a75778b8
+  dockerRepository: airbyte/source-open-exchange-rates
+  dockerImageTag: dev
+  documentationUrl: https://docs.airbyte.com/integrations/sources/openexchangerates
+  sourceType: api
+  releaseStage: alpha
 - name: OpenWeather
   sourceDefinitionId: d8540a80-6120-485d-b7d6-272bca477d9b
   dockerRepository: airbyte/source-openweather
