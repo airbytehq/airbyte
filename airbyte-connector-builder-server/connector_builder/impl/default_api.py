@@ -85,19 +85,19 @@ class DefaultApiImpl(DefaultApi):
         :param streams_list_request_body: Input parameters to retrieve the list of available streams
         :return: Stream objects made up of a stream name and the HTTP URL it will send requests to
         """
-        try:
-            adapter = self._create_low_code_adapter(manifest=streams_list_request_body.manifest)
-        except ValidationError as error:
-            raise HTTPException(status_code=400, detail=f"Invalid connector manifest with error: {error.message}")
+        adapter = self._create_low_code_adapter(manifest=streams_list_request_body.manifest)
 
         stream_list_read = []
-        for http_stream in adapter.get_http_streams(streams_list_request_body.config):
-            stream_list_read.append(
-                StreamsListReadStreams(
-                    name=http_stream.name,
-                    url=urljoin(http_stream.url_base, http_stream.path()),
+        try:
+            for http_stream in adapter.get_http_streams(streams_list_request_body.config):
+                stream_list_read.append(
+                    StreamsListReadStreams(
+                        name=http_stream.name,
+                        url=urljoin(http_stream.url_base, http_stream.path()),
+                    )
                 )
-            )
+        except Exception as error:
+            raise HTTPException(status_code=400, detail=f"Could not list streams with with error: {error.args[0]}")
         return StreamsListRead(streams=stream_list_read)
 
     async def read_stream(self, stream_read_request_body: StreamReadRequestBody = Body(None, description="")) -> StreamRead:
@@ -107,11 +107,7 @@ class DefaultApiImpl(DefaultApi):
         :param stream_read_request_body: Input parameters to trigger the read operation for a stream
         :return: Airbyte record messages produced by the sync grouped by slice and page
         """
-        try:
-            adapter = self._create_low_code_adapter(manifest=stream_read_request_body.manifest)
-        except ValidationError as error:
-            # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
-            raise HTTPException(status_code=400, detail=f"Invalid connector manifest with error: {error.message}")
+        adapter = self._create_low_code_adapter(manifest=stream_read_request_body.manifest)
 
         single_slice = StreamReadSlices(pages=[])
         log_messages = []
@@ -156,7 +152,7 @@ class DefaultApiImpl(DefaultApi):
                 current_page_request = request
             elif message.type == Type.LOG and message.log.message.startswith("request:"):
                 if not current_page_request or not current_page_response:
-                    self.logger.warning("Every message grouping should have at least one request and response")
+                    raise ValueError("Every message grouping should have at least one request and response")
                 yield StreamReadPages(request=current_page_request, response=current_page_response, records=current_records)
                 current_page_request = self._create_request_from_log_message(message.log)
                 current_records = []
@@ -168,7 +164,7 @@ class DefaultApiImpl(DefaultApi):
                 current_records.append(message.record.data)
         else:
             if not current_page_request or not current_page_response:
-                self.logger.warning("Every message grouping should have at least one request and response")
+                raise ValueError("Every message grouping should have at least one request and response")
             yield StreamReadPages(request=current_page_request, response=current_page_response, records=current_records)
 
     def _create_request_from_log_message(self, log_message: AirbyteLogMessage) -> Optional[HttpRequest]:
@@ -201,4 +197,8 @@ class DefaultApiImpl(DefaultApi):
 
     @staticmethod
     def _create_low_code_adapter(manifest: Dict[str, Any]) -> LowCodeSourceAdapter:
-        return LowCodeSourceAdapter(manifest=manifest)
+        try:
+            return LowCodeSourceAdapter(manifest=manifest)
+        except ValidationError as error:
+            # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
+            raise HTTPException(status_code=400, detail=f"Invalid connector manifest with error: {error.message}")

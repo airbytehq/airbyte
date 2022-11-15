@@ -1,11 +1,50 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+from abc import ABC
+from typing import Optional, Mapping, Any, Union, List
 from unittest.mock import MagicMock
 
+import pytest
+import requests
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, Level, Type
+from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapter
+
+
+class MockConcreteStream(HttpStream, ABC):
+    """
+    Test class used to verify errors are correctly thrown when the adapter receives unexpected outputs
+    """
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        return None
+
+    def url_base(self) -> str:
+        return ""
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        return ""
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[str]:
+        return None
+
 
 MANIFEST = {
     "version": "0.1.0",
@@ -79,7 +118,6 @@ INVALID_MANIFEST = {
 
 def test_get_http_streams():
     expected_urls = {"https://demonslayers.com/api/v1/breathing_techniques", "https://demonslayers.com/api/v1/hashiras"}
-    # manifest["definitions"]["requester"]["url_base"] = 'https://demonslayers.com/api/{{ config.api_version }}/'
 
     adapter = LowCodeSourceAdapter(MANIFEST)
     actual_streams = adapter.get_http_streams(config={})
@@ -87,6 +125,30 @@ def test_get_http_streams():
 
     assert len(actual_streams) == len(expected_urls)
     assert actual_urls == expected_urls
+
+
+def test_get_http_streams_non_declarative_streams():
+    non_declarative_stream = MockConcreteStream()
+
+    mock_source = MagicMock()
+    mock_source.streams.return_value = [non_declarative_stream]
+
+    adapter = LowCodeSourceAdapter(MANIFEST)
+    adapter._source = mock_source
+    with pytest.raises(TypeError):
+        adapter.get_http_streams(config={})
+
+
+def test_get_http_streams_non_http_stream():
+    declarative_stream_non_http_retriever = DeclarativeStream(name="hashiras", primary_key="id", retriever=MagicMock(), config={}, options={})
+
+    mock_source = MagicMock()
+    mock_source.streams.return_value = [declarative_stream_non_http_retriever]
+
+    adapter = LowCodeSourceAdapter(MANIFEST)
+    adapter._source = mock_source
+    with pytest.raises(TypeError):
+        adapter.get_http_streams(config={})
 
 
 def test_read_streams():
@@ -111,11 +173,11 @@ def test_read_streams():
         ),
     ]
     mock_source = MagicMock()
-    mock_source.read.returns = expected_messages
+    mock_source.read.return_value = expected_messages
 
     adapter = LowCodeSourceAdapter(MANIFEST)
     adapter._source = mock_source
-    actual_messages = adapter.read_stream("hashiras", {})
+    actual_messages = list(adapter.read_stream("hashiras", {}))
 
-    for i, actual_message in enumerate(actual_messages):
-        assert actual_message == expected_messages[i]
+    for i, expected_message in enumerate(expected_messages):
+        assert actual_messages[i] == expected_message

@@ -357,6 +357,29 @@ def test_invalid_manifest():
     assert actual_exception.value.detail == expected_detail
 
 
+def test_read_stream_invalid_group_format():
+    response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
+
+    mock_source_adapter = MagicMock()
+    mock_source_adapter.read_stream.return_value = [
+        response_log_message(response),
+        record_message("hashiras", {"name": "Shinobu Kocho"}),
+        record_message("hashiras", {"name": "Muichiro Tokito"}),
+    ]
+
+    with patch.object(DefaultApiImpl, "_create_low_code_adapter", return_value=mock_source_adapter):
+        api = DefaultApiImpl()
+
+        loop = asyncio.get_event_loop()
+        with pytest.raises(HTTPException) as actual_exception:
+            loop.run_until_complete(
+                api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras"))
+            )
+
+        assert actual_exception.value.status_code == 400
+        assert actual_exception.value.detail == "Could not perform read with with error: Every message grouping should have at least one request and response"
+
+
 def test_read_stream_returns_error_if_stream_does_not_exist():
     expected_status_code = 400
     expected_detail ="Could not perform read with with error: The requested stream not_in_manifest was not found in the source. Available streams: dict_keys(['hashiras', 'breathing-techniques'])"
