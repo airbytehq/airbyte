@@ -34,7 +34,6 @@ class EventsStream(HttpStream):
   def parse_response(self, response: requests.Response, **_) -> Iterable[Mapping]:
     print("############################# Extracting")
     print("#############################" + response.request.url)
-    print("#############################")
 
     if len(response.json()) < self.page_size:
       self.interrupt_execution = True
@@ -119,16 +118,28 @@ class WithdrawEvents(EventsStream):
     return f"api/company/{self.company_id}/search"
 
 
-class SaleEvents(EventsStream):
-  def path(self, **_) -> str:
-    return f"api/company/{self.company_id}/search"
-
-
-class RoyaltyEvents(EventsStream):
-  def path(self, **_) -> str:
-    return f"api/company/{self.company_id}/search"
-
-
 class BurnedNftsEvents(EventsStream):
+  def path(self, **_) -> str:
+    return f"api/company/{self.company_id}/search"
+
+
+# Create this class to better manipulate marketplace related events
+class MarketplaceEvents(EventsStream):
+  def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+    for record in super().read_records(*args, **kwargs):
+      if record["id"] == self._cursor_value:
+        self.interrupt_execution = True
+        return None
+      if record["blockeventdata"]["tenant"] != "onefootball":
+        return None
+      yield record
+
+
+class SaleEvents(MarketplaceEvents):
+  def path(self, **_) -> str:
+    return f"api/company/{self.company_id}/search"
+
+
+class RoyaltyEvents(MarketplaceEvents):
   def path(self, **_) -> str:
     return f"api/company/{self.company_id}/search"
