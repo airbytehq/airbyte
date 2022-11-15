@@ -41,7 +41,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
     final int columnTypeInt = resultSet.getMetaData().getColumnType(colIndex);
     final String columnName = resultSet.getMetaData().getColumnName(colIndex);
     final JDBCType columnType = safeGetJdbcType(columnTypeInt);
-
+    LOGGER.info("JdbcSourceOperations : setJsonField - columnType - " + columnType);
     // https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
     switch (columnType) {
       case BIT, BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);

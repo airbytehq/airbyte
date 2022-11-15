@@ -37,6 +37,7 @@ import javax.xml.bind.DatatypeConverter;
  */
 public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implements JdbcCompatibleSourceOperations<Datatype> {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcCompatibleSourceOperations.class);
   /**
    * A Date representing the earliest date in CE. Any date before this is in BCE.
    */
@@ -46,8 +47,9 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
     // the first call communicates with the database. after that the result is cached.
     final int columnCount = queryContext.getMetaData().getColumnCount();
+    LOGGER.info("AbstractJdbcCompatibleSourceOperations : column Count : rowToJson - " + columnCount);
     final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-
+    LOGGER.info("AbstractJdbcCompatibleSourceOperations :  jsonNode - " + jsonNode);
     for (int i = 1; i <= columnCount; i++) {
       // attempt to access the column. this allows us to know if it is null before we do type-specific
       // parsing. if it is null, we can move on. while awkward, this seems to be the agreed upon way of
@@ -58,6 +60,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
       }
 
       // convert to java types that will convert into reasonable json.
+      LOGGER.info("AbstractJdbcCompatibleSourceOperations : queryContext - " + queryContext);
       setJsonField(queryContext, i, jsonNode);
     }
 
@@ -142,6 +145,8 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   protected void putDefault(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+	  LOGGER.info("AbstractJdbcCompatibleSourceOperations : putDefault - columnName - " + columnName);
+	  LOGGER.info("AbstractJdbcCompatibleSourceOperations : putDefault - resultSet.getString(index) - " + resultSet.getString(index));
     node.put(columnName, resultSet.getString(index));
   }
 
