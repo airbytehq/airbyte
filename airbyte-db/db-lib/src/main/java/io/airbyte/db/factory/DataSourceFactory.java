@@ -182,6 +182,7 @@ public class DataSourceFactory {
     private String password;
     private int port = 5432;
     private String username;
+    private static final String CONNECT_TIMEOUT_KEY = "connectTimeout";
     private static final Duration CONNECT_TIMEOUT_DEFAULT = Duration.ofSeconds(60);
 
     private DataSourceBuilder() {}
@@ -208,13 +209,21 @@ public class DataSourceFactory {
         final String pgPropertyConnectTimeout = CONNECT_TIMEOUT.getName();
         // If the PGProperty.CONNECT_TIMEOUT was set by the user, then take its value, if not take the
         // default
-        return (connectionProperties.containsKey(pgPropertyConnectTimeout)
-            && (Long.parseLong(connectionProperties.get(pgPropertyConnectTimeout)) > 0))
-                ? Duration.ofSeconds(Long.parseLong(connectionProperties.get(pgPropertyConnectTimeout))).toMillis()
-                : Duration.ofSeconds(Long.parseLong(Objects.requireNonNull(CONNECT_TIMEOUT.getDefaultValue()))).toMillis();
-
+        if (connectionProperties.containsKey(pgPropertyConnectTimeout)
+            && (Long.parseLong(connectionProperties.get(pgPropertyConnectTimeout)) >= 0)) {
+          return Duration.ofSeconds(Long.parseLong(connectionProperties.get(pgPropertyConnectTimeout))).toMillis();
+        } else {
+          return Duration.ofSeconds(Long.parseLong(Objects.requireNonNull(CONNECT_TIMEOUT.getDefaultValue()))).toMillis();
+        }
+      }
+      final Duration connectionTimeout;
+      connectionTimeout =
+          connectionProperties.containsKey(CONNECT_TIMEOUT_KEY) ? Duration.ofSeconds(Long.parseLong(connectionProperties.get(CONNECT_TIMEOUT_KEY)))
+              : CONNECT_TIMEOUT_DEFAULT;
+      if (connectionTimeout.getSeconds() == 0) {
+        return connectionTimeout.toMillis();
       } else {
-        return CONNECT_TIMEOUT_DEFAULT.toMillis();
+        return (connectionTimeout.compareTo(CONNECT_TIMEOUT_DEFAULT) > 0 ? connectionTimeout : CONNECT_TIMEOUT_DEFAULT).toMillis();
       }
     }
 
