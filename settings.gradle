@@ -88,7 +88,6 @@ include ':airbyte-worker-models'
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     include ':airbyte-bootloader'
     include ':airbyte-config:specs'
-    include ':airbyte-connector-builder-server'
     include ':airbyte-container-orchestrator'
     include ':airbyte-cron'
     include ':airbyte-metrics:reporter'
@@ -137,6 +136,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
 
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "OCTAVIA_CLI") {
     include ':octavia-cli'
+    include ':airbyte-connector-builder-server'
 }
 
 // connectors
