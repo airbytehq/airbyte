@@ -1,20 +1,24 @@
 import { faArrowRight, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
+import classNames from "classnames";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
+import { ModificationIcon } from "components/icons/ModificationIcon";
 import { Cell, Row } from "components/SimpleTableComponents";
 import { CheckBox } from "components/ui/CheckBox";
 import { Switch } from "components/ui/Switch";
 import { Text } from "components/ui/Text";
 
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 import { StreamHeaderProps } from "../StreamHeader";
 import styles from "./CatalogTreeTableRow.module.scss";
 import { StreamPathSelect } from "./StreamPathSelect";
 import { SyncModeSelect } from "./SyncModeSelect";
+
 export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   stream,
   destName,
@@ -30,7 +34,6 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   // isRowExpanded,
   fields,
   onExpand,
-  changedSelected,
   hasError,
   disabled,
 }) => {
@@ -46,38 +49,74 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
     [syncMode, destinationSyncMode]
   );
 
+  const { initialValues } = useConnectionFormService();
+
+  const statusToDisplay = useMemo(() => {
+    const rowStatusChanged =
+      initialValues.syncCatalog.streams.find(
+        (item) => item.stream?.name === stream.stream?.name && item.stream?.namespace === stream.stream?.namespace
+      )?.config?.selected !== stream.config?.selected;
+
+    const rowChanged =
+      initialValues.syncCatalog.streams.find(
+        (item) => item.stream?.name === stream.stream?.name && item.stream?.namespace === stream.stream?.namespace
+      )?.config !== stream.config;
+
+    // todo: the following should also evaluate if the stream is "new" from a refresh + is also enabled
+    if (rowStatusChanged) {
+      return isStreamEnabled ? "added" : "removed";
+    }
+    // todo: the following should also evaluate if there are changes from the diff
+    else if (rowChanged) {
+      return "changed";
+    } else if (!isStreamEnabled && !rowStatusChanged) {
+      return "disabled";
+    }
+    return "unchanged";
+  }, [
+    initialValues.syncCatalog.streams,
+    stream.config,
+    stream.stream?.name,
+    stream.stream?.namespace,
+    isStreamEnabled,
+  ]);
+
   const [isSelected, selectForBulkEdit] = useBulkEditSelect(stream.id);
 
   const paths = useMemo(() => primitiveFields.map((field) => field.path), [primitiveFields]);
   const fieldCount = fields?.length ?? 0;
   const onRowClick = fieldCount > 0 ? () => onExpand() : undefined;
 
-  const iconStyle = classnames(styles.icon, {
-    [styles.plus]: isStreamEnabled,
-    [styles.minus]: !isStreamEnabled,
-  });
-
   const streamHeaderContentStyle = classnames(styles.streamHeaderContent, {
-    [styles.enabledChange]: changedSelected && isStreamEnabled,
-    [styles.disabledChange]: changedSelected && !isStreamEnabled,
-    [styles.selected]: isSelected,
+    [styles.added]: statusToDisplay === "added",
+    [styles.removed]: statusToDisplay === "removed",
+    [styles.changed]: isSelected || statusToDisplay === "changed",
     [styles.error]: hasError,
-    [styles.disabled]: !changedSelected && !isStreamEnabled,
+    [styles.disabled]: statusToDisplay === "disabled",
   });
 
+  const statusIcon = useMemo(() => {
+    if (statusToDisplay === "added") {
+      return <FontAwesomeIcon icon={faPlus} size="2x" className={classNames(styles.icon, styles.plus)} />;
+    } else if (statusToDisplay === "removed") {
+      return <FontAwesomeIcon icon={faMinus} size="2x" className={classNames(styles.icon, styles.minus)} />;
+    } else if (statusToDisplay === "changed") {
+      return (
+        // todo: styles need adjusting, especially color and possibly alignment
+        <span className={classNames(styles.icon, styles.changed)}>
+          <ModificationIcon />
+        </span>
+      );
+    }
+    return null;
+  }, [statusToDisplay]);
+
+  console.log({ statusToDisplay });
   return (
     <Row onClick={onRowClick} className={streamHeaderContentStyle}>
       {!disabled && (
         <div className={styles.streamRowCheckboxCell}>
-          {changedSelected && (
-            <div>
-              {isStreamEnabled ? (
-                <FontAwesomeIcon icon={faPlus} size="2x" className={iconStyle} />
-              ) : (
-                <FontAwesomeIcon icon={faMinus} size="2x" className={iconStyle} />
-              )}
-            </div>
-          )}
+          {statusIcon}
           <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
         </div>
       )}

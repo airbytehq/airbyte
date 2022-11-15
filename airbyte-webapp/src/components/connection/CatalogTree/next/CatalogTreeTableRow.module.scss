@@ -12,6 +12,10 @@
   &.minus {
     color: colors.$red;
   }
+
+  &.changed {
+    color: colors.$blue-900;
+  }
 }
 
 .streamHeaderContent {
@@ -31,11 +35,11 @@
     cursor: pointer;
   }
 
-  &.disabledChange {
+  &.removed {
     background-color: colors.$red-50;
   }
 
-  &.enabledChange {
+  &.added {
     background-color: colors.$green-50;
   }
 
@@ -43,7 +47,7 @@
     border: 1px solid colors.$red;
   }
 
-  &.selected {
+  &.changed {
     background-color: colors.$blue-transparent;
   }
 
