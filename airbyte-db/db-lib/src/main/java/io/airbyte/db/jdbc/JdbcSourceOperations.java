@@ -103,12 +103,13 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public boolean isCursorType(JDBCType type) {
+  public boolean isCursorType(final JDBCType type) {
     return ALLOWED_CURSOR_TYPES.contains(type);
   }
 
   @Override
   public JsonSchemaType getJsonType(final JDBCType jdbcType) {
+    // TODO(akashkulk) : Migrate to well known types here
     return switch (jdbcType) {
       case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
       case TINYINT, SMALLINT -> JsonSchemaType.INTEGER;

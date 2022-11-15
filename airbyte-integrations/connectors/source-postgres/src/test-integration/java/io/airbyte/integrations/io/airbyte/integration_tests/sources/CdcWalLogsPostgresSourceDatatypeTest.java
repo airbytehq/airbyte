@@ -34,7 +34,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   private JsonNode stateAfterFirstSync;
 
   @Override
-  protected List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
+  protected List<AirbyteMessage> runRead(final ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
     if (stateAfterFirstSync == null) {
       throw new RuntimeException("stateAfterFirstSync is null");
     }
@@ -42,7 +42,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   }
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     final Database database = setupDatabase();
     initTests();
     for (final TestDataHolder test : testDataHolders) {
@@ -157,7 +157,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
           TestDataHolder.builder()
               .sourceType("timetz")
               .fullSourceDataType(fullSourceType)
-              .airbyteType(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
+              .airbyteType(JsonSchemaType.TIME_WITH_TIMEZONE_V1)
               .addInsertValues("null", "'13:00:01'", "'13:00:00+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.012345Z+8'", "'13:00:06.00000Z-8'")
               // A time value without time zone will use the time zone set on the database, which is Z-7,
               // so 13:00:01 is returned as 13:00:01-07.
@@ -175,7 +175,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
           TestDataHolder.builder()
               .sourceType("timestamp")
               .fullSourceDataType(fullSourceType)
-              .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+              .airbyteType(JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1)
               .addInsertValues(
                   "'infinity'",
                   "'-infinity'")
