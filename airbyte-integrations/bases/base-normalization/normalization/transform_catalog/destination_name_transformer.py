@@ -28,7 +28,7 @@ DESTINATION_SIZE_LIMITS = {
     # https://stackoverflow.com/questions/68358686/what-is-the-maximum-length-of-a-column-in-clickhouse-can-it-be-modified
     DestinationType.CLICKHOUSE.value: 63,
     # https://docs.pingcap.com/tidb/stable/tidb-limitations
-    DestinationType.TIDB.value: 64,    
+    DestinationType.TIDB.value: 64,
     # https://docs.teradata.com/r/Teradata-VantageTM-SQL-Fundamentals-17.20/Basic-SQL-Syntax/Object-Names
     DestinationType.TERADATA.value: 128,
 }
@@ -237,7 +237,7 @@ class DestinationNameTransformer:
             else:
                 result = input_name.upper()
         elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
-            pass        
+            pass
         elif self.destination_type.value == DestinationType.TIDB.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
@@ -280,7 +280,7 @@ class DestinationNameTransformer:
             else:
                 result = input_name.upper()
         elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
-            pass        
+            pass
         elif self.destination_type.value == DestinationType.TIDB.value:
             result = input_name.lower()
         elif self.destination_type.value == DestinationType.TERADATA.value:

@@ -58,7 +58,7 @@ class TransformConfig:
             DestinationType.ORACLE.value: self.transform_oracle,
             DestinationType.MSSQL.value: self.transform_mssql,
             DestinationType.CLICKHOUSE.value: self.transform_clickhouse,
-            DestinationType.TIDB.value: self.transform_tidb,            
+            DestinationType.TIDB.value: self.transform_tidb,
             DestinationType.TERADATA.value: self.transform_teradata,
         }[integration_type.value](config)
 
@@ -192,6 +192,7 @@ class TransformConfig:
                 dbt_config["sslkey"] = client_key.replace("client.key", "client.pk8")
 
         return dbt_config
+
     @staticmethod
     def transform_teradata(config: Dict[str, Any]):
         print("transform_teradata")

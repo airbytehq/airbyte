@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.teradata;
@@ -7,26 +7,18 @@ package io.airbyte.integrations.destination.teradata;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.util.function.Consumer;
+import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.List;
-import java.util.Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-public class TeradataDestination extends AbstractJdbcDestination  implements Destination {
+public class TeradataDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TeradataDestination.class);
   /**
@@ -38,9 +30,8 @@ public class TeradataDestination extends AbstractJdbcDestination  implements Des
    */
   public static final String DEFAULT_SCHEMA_NAME = "public";
 
-
   public static void main(String[] args) throws Exception {
-	  new IntegrationRunner(new TeradataDestination()).run(args);
+    new IntegrationRunner(new TeradataDestination()).run(args);
   }
 
   public TeradataDestination() {
@@ -48,9 +39,10 @@ public class TeradataDestination extends AbstractJdbcDestination  implements Des
   }
 
   @Override
-  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {   
-      return Collections.emptyMap();
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    return Collections.emptyMap();
   }
+
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
     final String schema = Optional.ofNullable(config.get(JdbcUtils.SCHEMA_KEY)).map(JsonNode::asText).orElse(DEFAULT_SCHEMA_NAME);
@@ -66,11 +58,11 @@ public class TeradataDestination extends AbstractJdbcDestination  implements Des
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
-    
+
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
-        configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
-     }
+      configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+    }
     return Jsons.jsonNode(configBuilder.build());
   }
-}
 
+}
