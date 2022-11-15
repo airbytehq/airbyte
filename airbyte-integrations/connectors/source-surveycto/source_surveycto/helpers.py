@@ -43,10 +43,7 @@ class Helpers(object):
 
         for data in response_json:
             try:
-                key = data["KEY"]
-                o = key.replace('uuid:', '')
-                data["KEY"] = o
-
+        
                 starttime = data["starttime"]
                 a = datetime.strptime(starttime,'%b %d, %Y %I:%M:%S %p').strftime('%Y-%m-%dT%H:%M:%S+00:00')
                 data["starttime"] = a

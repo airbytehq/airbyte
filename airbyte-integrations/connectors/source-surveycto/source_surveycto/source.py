@@ -117,11 +117,7 @@ class SurveyctoStream(SurveyStream, IncrementalMixin):
     
         for data in self.response_json:
             try:
-
-                key = data["KEY"]
-                o = key.replace('uuid:', '')
-                data["KEY"] = o
- 
+                
                 starttime = data["starttime"]
                 a = datetime.strptime(starttime, self.date_format_scto).strftime(self.dateformat)
                 data["starttime"] = a
