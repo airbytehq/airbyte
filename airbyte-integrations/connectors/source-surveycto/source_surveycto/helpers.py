@@ -41,6 +41,10 @@ class Helpers(object):
         response = http.get(url, headers = {'Authorization': 'Basic ' + auth_token })
         response_json = response.json()
 
+        if response.status_code != 200 and response_json['error']: 
+            message = response_json['error']['message']
+            raise Exception(message)
+
         for data in response_json:
             try:
         
