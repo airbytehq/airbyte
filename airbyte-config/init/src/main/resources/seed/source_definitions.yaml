@@ -1294,6 +1294,12 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/rss
   icon: rss.svg
+- name: Rocket.chat
+  sourceDefinitionId: 921d9608-3915-450b-8078-0af18801ea1b
+  dockerRepository: airbyte/source-rocket-chat
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/rocket-chat
+  icon: rocket-chat.svg
   sourceType: api
   releaseStage: alpha
 - name: S3
