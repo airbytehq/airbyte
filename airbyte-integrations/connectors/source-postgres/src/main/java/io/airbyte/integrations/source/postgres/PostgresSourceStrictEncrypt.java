@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -40,6 +41,11 @@ public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements 
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
+    final ArrayNode modifiedSslModes = spec.getConnectionSpecification().get("properties").get("ssl_mode").get("oneOf").deepCopy();
+    // Assume that the first item is the "disable" option; remove it
+    modifiedSslModes.remove(0);
+    ((ObjectNode) spec.getConnectionSpecification().get("properties").get("ssl_mode")).remove("oneOf");
+    ((ObjectNode) spec.getConnectionSpecification().get("properties").get("ssl_mode")).put("oneOf", modifiedSslModes);
     return spec;
   }
 
