@@ -3,4 +3,4 @@ micronaut:
     port: 9000
 
 airbyte:
-  config-dir: /config
+  config-dir: src/test/resources/files

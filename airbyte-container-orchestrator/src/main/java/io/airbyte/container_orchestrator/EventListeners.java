@@ -11,10 +11,12 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.micronaut.runtime.event.annotation.EventListener;
 import io.micronaut.runtime.server.event.ServerStartupEvent;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.lang.invoke.MethodHandles;
 import java.util.Map;
+import java.util.function.BiFunction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.slf4j.Logger;
@@ -27,11 +29,27 @@ public class EventListeners {
   private final Map<String, String> envVars;
   private final EnvConfigs configs;
   private final JobRunConfig jobRunConfig;
+  private final BiFunction<String, String, Void> propertySetter;
 
+  @Inject
   EventListeners(@Named("envVars") final Map<String, String> envVars, final EnvConfigs configs, final JobRunConfig jobRunConfig) {
+    this(envVars, configs, jobRunConfig, (name, value) -> {
+      System.setProperty(name, value);
+      return null;
+    });
+  }
+
+  /**
+   * Exists only for overriding the default property setter for testing
+   */
+  EventListeners(@Named("envVars") final Map<String, String> envVars,
+                 final EnvConfigs configs,
+                 final JobRunConfig jobRunConfig,
+                 final BiFunction<String, String, Void> propertySetter) {
     this.envVars = envVars;
     this.configs = configs;
     this.jobRunConfig = jobRunConfig;
+    this.propertySetter = propertySetter;
   }
 
   /**
@@ -47,7 +65,7 @@ public class EventListeners {
 
     OrchestratorConstants.ENV_VARS_TO_TRANSFER.stream()
         .filter(envVars::containsKey)
-        .forEach(envVar -> System.setProperty(envVar, envVars.get(envVar)));
+        .forEach(envVar -> propertySetter.apply(envVar, envVars.get(envVar)));
   }
 
   /**

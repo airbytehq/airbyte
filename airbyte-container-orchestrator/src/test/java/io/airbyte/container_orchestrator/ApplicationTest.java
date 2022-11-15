@@ -42,4 +42,17 @@ class ApplicationTest {
     verify(asyncStateManager).write(AsyncKubePodStatus.SUCCEEDED, output);
   }
 
+  @Test
+  void testJobFailedWritesFailedStatus() throws Exception {
+    when(jobOrchestrator.runJob()).thenThrow(new Exception());
+    final var app = new Application(application, jobOrchestrator, asyncStateManager);
+    final var code = app.run();
+
+    assertEquals(1, code);
+    verify(jobOrchestrator).runJob();
+    verify(asyncStateManager).write(AsyncKubePodStatus.INITIALIZING);
+    verify(asyncStateManager).write(AsyncKubePodStatus.RUNNING);
+    verify(asyncStateManager).write(AsyncKubePodStatus.FAILED);
+  }
+
 }
