@@ -12,6 +12,7 @@ import { useRefreshSourceSchemaWithConfirmationOnDirty } from "views/Connection/
 
 import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
 import styles from "./SchemaChangesDetected.module.scss";
+import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 
 export const useSchemaChanges = (schemaChange: SchemaChange) => {
   const isSchemaChangesFeatureEnabled = process.env.REACT_APP_AUTO_DETECT_SCHEMA_CHANGES === "true";
@@ -36,9 +37,10 @@ export const SchemaChangesDetected: React.FC = () => {
     schemaRefreshing,
     schemaHasBeenRefreshed,
   } = useConnectionEditService();
+  const { hasFormChanges } = useFormChangeTrackerService();
 
   const { hasBreakingSchemaChange, hasNonBreakingSchemaChange } = useSchemaChanges(schemaChange);
-  const refreshSchema = useRefreshSourceSchemaWithConfirmationOnDirty(false);
+  const refreshSchema = useRefreshSourceSchemaWithConfirmationOnDirty(hasFormChanges);
   const location = useLocation();
   const navigate = useNavigate();
 
