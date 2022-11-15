@@ -15,8 +15,6 @@ definitions:
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
-    paginator:
-      type: NoPagination
     requester:
       $ref: "*ref(definitions.requester)"
   base_stream:
@@ -30,22 +28,21 @@ definitions:
       primary_key: "sid"
     retriever:
       $ref: "*ref(definitions.base_stream.retriever)"
-      record_selector:
-        extractor:
-          field_pointer: ["workspaces"]
       paginator:
         type: "DefaultPaginator"
         page_size_option:
           inject_into: "request_parameter"
-          field_name: "page_size"
+          field_name: "PageSize"
         pagination_strategy:
           type: "CursorPagination"
-          cursor_value: "{{ response['meta']['next_page_url'] }}"
+          cursor_value: "{{response['meta']['next_page_url']}}"
           page_size: 50
-          stop_condition: "null" 
         page_token_option:
           inject_into: "path"
-        url_base: "https://taskrouter.twilio.com/v1/Workspaces"
+        url_base: "https://taskrouter.twilio.com"
+      record_selector:
+        extractor:
+          field_pointer: ["workspaces"]
   workspaces_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -68,8 +65,6 @@ streams:
   - "*ref(definitions.allworkspaces_stream)"
   - "*ref(definitions.workers_stream)"
 
-
 check:
   stream_names:
     - "allworkspaces"
-
