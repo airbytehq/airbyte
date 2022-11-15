@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.10.0
+Emit `AirbyteControlMessage.ConnectorConfig` on `config` mutation.
+
 ## 0.9.1
 Low-code: Fix filtering vars in `InterpolatedRequestInputProvider.eval_request_inputs`
 
