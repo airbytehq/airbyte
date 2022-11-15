@@ -219,6 +219,29 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-aha:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/aha"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Aha Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "url"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          description: "API Key"
+          title: "API Bearer Token"
+        url:
+          type: "string"
+          description: "URL"
+          title: "Aha Url Instance"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-alpha-vantage:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/alpha-vantage"
@@ -4206,6 +4229,26 @@
           examples:
           - "2020-10-01T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-getlago:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/getlago"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Getlago Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API Key"
+          type: "string"
+          description: "Your API Key. See <a href=\"https://doc.getlago.com/docs/api/intro\"\
+            >here</a>."
+          airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -11872,6 +11915,39 @@
         url:
           type: "string"
           description: "RSS Feed URL"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-rocket-chat:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/rocket-chat"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Rocket Chat Spec"
+      type: "object"
+      required:
+      - "token"
+      - "user_id"
+      - "endpoint"
+      additionalProperties: true
+      properties:
+        endpoint:
+          title: "Endpoint"
+          type: "string"
+          description: "Your rocket.chat instance URL."
+          examples:
+          - "https://airbyte-connector-poc.rocket.chat"
+          - "https://hey.yoursite.com"
+        token:
+          title: "Token"
+          type: "string"
+          description: "Your API Token. See <a href=\"https://developer.rocket.chat/reference/api/rest-api/endpoints/other-important-endpoints/access-tokens-endpoints\"\
+            >here</a>. The token is case sensitive."
+          airbyte_secret: true
+        user_id:
+          title: "User ID."
+          type: "string"
+          description: "Your User Id."
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
