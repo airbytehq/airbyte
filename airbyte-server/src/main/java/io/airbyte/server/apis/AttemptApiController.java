@@ -27,7 +27,7 @@ public class AttemptApiController implements AttemptApi {
 
   @Override
   public InternalOperationResult setWorkflowInAttempt(final SetWorkflowInAttemptRequestBody requestBody) {
-    return ApiHelper.execute(() -> attemptHandler.setWorkflowInAttempt(requestBody));
+    return ConfigurationApi.execute(() -> attemptHandler.setWorkflowInAttempt(requestBody));
   }
 
 }
