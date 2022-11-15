@@ -11,7 +11,7 @@ import {
   ConnectorSpecification,
   ConnectorT,
 } from "core/domain/connector";
-import { SynchronousJobRead } from "core/request/AirbyteClient";
+import { DestinationRead, SourceRead, SynchronousJobRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { generateMessageFromError } from "utils/errorStatusMessage";
@@ -57,6 +57,10 @@ interface ConnectorCardEditProps extends ConnectorCardBaseProps {
   isEditMode: true;
   connector: ConnectorT;
 }
+
+const getConnectorId = (connectorRead: DestinationRead | SourceRead) => {
+  return "sourceId" in connectorRead ? connectorRead.sourceId : connectorRead.destinationId;
+};
 
 export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEditProps> = ({
   title,
@@ -180,6 +184,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
             successMessage={
               props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
             }
+            connectorId={isEditMode ? getConnectorId(props.connector) : undefined}
           />
           {/* Show the job log only if advanced mode is turned on or the actual job failed (not the check inside the job) */}
           {job && (advancedMode || !job.succeeded) && <JobItem job={job} />}

@@ -1,5 +1,9 @@
 name: Airbyte CI
 
+env:
+  S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+  S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+
 on:
   #ability to start task manually in Web UI
   workflow_dispatch:
