@@ -23,5 +23,5 @@
   display: flex;
   flex-direction: column;
   gap: variables.$spacing-sm;
-  padding: 0 15px 0 40px;
+  padding: 0 15px variables.$spacing-md 40px;
 }
