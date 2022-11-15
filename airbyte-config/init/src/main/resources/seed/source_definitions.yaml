@@ -479,6 +479,13 @@
   icon: freshservice.svg
   sourceType: api
   releaseStage: alpha
+- name: GetLago
+  sourceDefinitionId: e1a3866b-d3b2-43b6-b6d7-8c1ee4d7f53f
+  dockerRepository: airbyte/source-getlago
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/getlago
+  sourceType: api
+  releaseStage: alpha
 - name: Gridly
   sourceDefinitionId: 6cbea164-3237-433b-9abb-36d384ee4cbf
   dockerRepository: airbyte/source-gridly
