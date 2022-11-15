@@ -253,7 +253,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
 
   @Override
   public JsonSchemaType getJsonType(final JDBCType jdbcType) {
-    return switch (jdbcType) {
+    /*return switch (jdbcType) {
       case BOOLEAN -> JsonSchemaType.BOOLEAN;
       case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER;
       case FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
@@ -266,6 +266,22 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
       case TIMESTAMP_WITH_TIMEZONE -> JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE;
 
       default -> JsonSchemaType.STRING;
+    };*/
+
+        // TODO : Is this mapping correct? Double check this.
+    return switch (jdbcType) {
+      case BOOLEAN -> JsonSchemaType.BOOLEAN_V1;
+      case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER_V1;
+      case FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER_V1;
+      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.BINARY_DATA_V1;
+      case ARRAY -> JsonSchemaType.ARRAY;
+      case DATE -> JsonSchemaType.DATE_V1;
+      case TIME -> JsonSchemaType.TIME_WITHOUT_TIMEZONE_V1;
+      case TIME_WITH_TIMEZONE -> JsonSchemaType.TIME_WITH_TIMEZONE_V1;
+      case TIMESTAMP -> JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1;
+      case TIMESTAMP_WITH_TIMEZONE -> JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1;
+
+      default -> JsonSchemaType.STRING_V1;
     };
   }
 
@@ -278,7 +294,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
                                                 final String columnName,
                                                 final ResultSet resultSet,
                                                 final int index,
-                                                Class<T> clazz)
+                                                final Class<T> clazz)
       throws SQLException {
     final T object = getObject(resultSet, index, clazz);
     node.put(columnName, object.getValue());
@@ -329,7 +345,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public boolean isCursorType(JDBCType type) {
+  public boolean isCursorType(final JDBCType type) {
     return PostgresUtils.ALLOWED_CURSOR_TYPES.contains(type);
   }
 

@@ -210,6 +210,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       catalog.setStreams(streams);
     }
 
+    // We can *potentially* upgrade here. However, this will be an issue since we will likely incur data loss
+    // return AirbyteMessageMigrationV1.upgrade(catalog);
     return catalog;
   }
 
@@ -475,7 +477,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     if (PostgresUtils.isCdc(config)) {
       if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
-        String sslModeValue = config.get(SSL_MODE).get(MODE).asText();
+        final String sslModeValue = config.get(SSL_MODE).get(MODE).asText();
         if (INVALID_CDC_SSL_MODES.contains(sslModeValue)) {
           return new AirbyteConnectionStatus()
               .withStatus(Status.FAILED)

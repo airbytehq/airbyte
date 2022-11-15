@@ -5,12 +5,14 @@
 package io.airbyte.protocol.models;
 
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.protocol.models.WellKnownTypesUtil.WellKnownTypesPrimitive;
 import java.util.Map;
 import java.util.Objects;
 
 public class JsonSchemaType {
 
   public static final String TYPE = "type";
+  public static final String REF = "$ref";
   public static final String FORMAT = "format";
   public static final String DATE_TIME = "date-time";
   public static final String DATE = "date";
@@ -23,6 +25,18 @@ public class JsonSchemaType {
   public static final String CONTENT_ENCODING = "contentEncoding";
   public static final String BASE_64 = "base64";
   public static final String AIRBYTE_TYPE = "airbyte_type";
+
+  public static final JsonSchemaType STRING_V1 = JsonSchemaType.builder(WellKnownTypesPrimitive.STRING).build();
+  public static final JsonSchemaType BINARY_DATA_V1 = JsonSchemaType.builder(WellKnownTypesPrimitive.BINARY_DATA).build();
+  public static final JsonSchemaType DATE_V1 = JsonSchemaType.builder(WellKnownTypesPrimitive.DATE).build();
+  public static final JsonSchemaType TIMESTAMP_WITH_TIMEZONE_V1 = JsonSchemaType.builder(WellKnownTypesPrimitive.TIMESTAMP_WITH_TIMEZONE).build();
+  public static final JsonSchemaType TIMESTAMP_WITHOUT_TIMEZONE_V1 = JsonSchemaType.builder(WellKnownTypesPrimitive.TIMESTAMP_WITHOUT_TIMEZONE).build();
+  public static final JsonSchemaType TIME_WITH_TIMEZONE_V1 = JsonSchemaType.builder(WellKnownTypesPrimitive.TIME_WITH_TIMEZONE).build();
+  public static final JsonSchemaType TIME_WITHOUT_TIMEZONE_V1 = JsonSchemaType.builder(WellKnownTypesPrimitive.TIME_WITHOUT_TIMEZONE).build();
+  public static final JsonSchemaType NUMBER_V1 = JsonSchemaType.builder(WellKnownTypesPrimitive.NUMBER).build();
+  public static final JsonSchemaType INTEGER_V1 = JsonSchemaType.builder(WellKnownTypesPrimitive.INTEGER).build();
+  public static final JsonSchemaType BOOLEAN_V1 = JsonSchemaType.builder(WellKnownTypesPrimitive.BOOLEAN).build();
+
 
   public static final JsonSchemaType STRING = JsonSchemaType.builder(JsonSchemaPrimitive.STRING).build();
   public static final JsonSchemaType NUMBER = JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER).build();
@@ -62,6 +76,10 @@ public class JsonSchemaType {
     return new Builder(type);
   }
 
+  public static Builder builder(final WellKnownTypesPrimitive type) {
+    return new Builder(type);
+  }
+
   public Map<String, String> getJsonSchemaTypeMap() {
     return jsonSchemaTypeMap;
   }
@@ -73,6 +91,11 @@ public class JsonSchemaType {
     private Builder(final JsonSchemaPrimitive type) {
       typeMapBuilder = ImmutableMap.builder();
       typeMapBuilder.put(TYPE, type.name().toLowerCase());
+    }
+
+    private Builder(final WellKnownTypesPrimitive type) {
+      typeMapBuilder = ImmutableMap.builder();
+      typeMapBuilder.put(REF, WellKnownTypesUtil.PRIMITIVE_TO_REFERENCE_TYPE.get(type));
     }
 
     public Builder withFormat(final String value) {
