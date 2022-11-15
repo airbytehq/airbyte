@@ -42,6 +42,6 @@ public class JsonSchemaReferenceTypes {
       "string", STRING_REFERENCE,
       "number", NUMBER_REFERENCE,
       "boolean", BOOLEAN_REFERENCE,
-      "date", DATE_REFERENCE);
-
+      "date", DATE_REFERENCE
+  );
 }
