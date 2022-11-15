@@ -1,5 +1,5 @@
 {
-  "form_id": "survey cto form_id",
+  "form_id": ["survey cto form_id"],
   "server_name": "server name for the survey cto",
   "username": "username for the surveycto",
   "password": "password",
