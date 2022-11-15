@@ -42,8 +42,7 @@ public class Jsons {
   // Object Mapper is thread-safe
   private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initMapper();
 
-  private static final ObjectMapper YAML_OBJECT_MAPPER = MoreMappers.initYamlMapper(
-      new YAMLFactory());
+  private static final ObjectMapper YAML_OBJECT_MAPPER = MoreMappers.initYamlMapper(new YAMLFactory());
   private static final ObjectWriter OBJECT_WRITER = OBJECT_MAPPER.writer(new JsonPrettyPrinter());
 
   public static <T> String serialize(final T object) {
@@ -146,8 +145,7 @@ public class Jsons {
     }
   }
 
-  public static <T> Optional<T> tryObject(final JsonNode jsonNode,
-                                          final TypeReference<T> typeReference) {
+  public static <T> Optional<T> tryObject(final JsonNode jsonNode, final TypeReference<T> typeReference) {
     try {
       return Optional.of(OBJECT_MAPPER.convertValue(jsonNode, typeReference));
     } catch (final Exception e) {
@@ -202,21 +200,15 @@ public class Jsons {
     return node;
   }
 
-  public static void replaceNestedValue(final JsonNode json,
-                                        final List<String> keys,
-                                        final JsonNode replacement) {
+  public static void replaceNestedValue(final JsonNode json, final List<String> keys, final JsonNode replacement) {
     replaceNested(json, keys, (node, finalKey) -> node.put(finalKey, replacement));
   }
 
-  public static void replaceNestedString(final JsonNode json,
-                                         final List<String> keys,
-                                         final String replacement) {
+  public static void replaceNestedString(final JsonNode json, final List<String> keys, final String replacement) {
     replaceNested(json, keys, (node, finalKey) -> node.put(finalKey, replacement));
   }
 
-  public static void replaceNestedInt(final JsonNode json,
-                                      final List<String> keys,
-                                      final int replacement) {
+  public static void replaceNestedInt(final JsonNode json, final List<String> keys, final int replacement) {
     replaceNested(json, keys, (node, finalKey) -> node.put(finalKey, replacement));
   }
 
@@ -302,9 +294,7 @@ public class Jsons {
    * If subMap contains a null key, then instead it is replaced with prefix. I.e. {null: value} is
    * treated as {prefix: value} when merging into originalMap.
    */
-  public static void mergeMaps(final Map<String, Object> originalMap,
-                               final String prefix,
-                               final Map<String, Object> subMap) {
+  public static void mergeMaps(final Map<String, Object> originalMap, final String prefix, final Map<String, Object> subMap) {
     originalMap.putAll(subMap.entrySet().stream().collect(toMap(
         e -> {
           final String key = e.getKey();
