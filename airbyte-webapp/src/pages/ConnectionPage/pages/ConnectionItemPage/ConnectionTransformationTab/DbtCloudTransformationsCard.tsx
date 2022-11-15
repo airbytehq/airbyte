@@ -10,12 +10,13 @@ import * as yup from "yup";
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
+import { DropdownMenu } from "components/ui/DropdownMenu";
 import { Input } from "components/ui/Input";
 import { Text } from "components/ui/Text";
 
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { DbtCloudJob, useDbtIntegration, useAvailableDbtJobs } from "packages/cloud/services/dbtCloud";
+import { DbtCloudJob, DbtCloudJobInfo, useDbtIntegration, useAvailableDbtJobs } from "packages/cloud/services/dbtCloud";
 import { RoutePaths } from "pages/routePaths";
 
 import dbtLogo from "./dbt-bit_tm.svg";
@@ -70,13 +71,20 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
                     title={
                       <span className={styles.jobListTitle}>
                         <FormattedMessage id="connection.dbtCloudJobs.cardTitle" />
-                        <Button
-                          variant="secondary"
-                          onClick={() => push({ account: "", job: "" })}
-                          icon={<FontAwesomeIcon icon={faPlus} />}
+                        <DropdownMenu
+                          options={availableDbtJobs.map((job) => ({ displayName: job.jobName, value: job }))}
+                          onChange={(selection) => {
+                            const { accountId, jobId } = selection.value as DbtCloudJobInfo;
+                            const selectedJob: DbtCloudJob = { account: `${accountId}`, job: `${jobId}` };
+                            push(selectedJob);
+                          }}
                         >
-                          <FormattedMessage id="connection.dbtCloudJobs.addJob" />
-                        </Button>
+                          {() => (
+                            <Button variant="secondary" icon={<FontAwesomeIcon icon={faPlus} />}>
+                              <FormattedMessage id="connection.dbtCloudJobs.addJob" />
+                            </Button>
+                          )}
+                        </DropdownMenu>
                       </span>
                     }
                   >

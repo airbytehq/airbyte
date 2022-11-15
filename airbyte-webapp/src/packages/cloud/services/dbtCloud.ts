@@ -28,6 +28,7 @@ export interface DbtCloudJob {
   job: string;
   operationId?: string;
 }
+export type { DbtCloudJobInfo } from "packages/cloud/lib/domain/dbtCloud/api";
 const dbtCloudDomain = "https://cloud.getdbt.com";
 const webhookConfigName = "dbt cloud";
 const executionBody = `{"cause": "airbyte"}`;
