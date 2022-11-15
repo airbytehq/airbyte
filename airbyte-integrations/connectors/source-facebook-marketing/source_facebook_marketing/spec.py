@@ -84,15 +84,21 @@ class ConnectorConfig(BaseConfig):
         def schema_extra(schema: Dict[str, Any], model: Type["ConnectorConfig"]) -> None:
             schema["properties"]["end_date"].pop("format")
 
+    access_token: str = Field(
+        title="Access Token",
+        order=0,
+        airbyte_secret=True,
+    )
+
     account_id: str = Field(
         title="Account ID",
-        order=0,
+        order=1,
         examples=["111111111111111"],
     )
 
     start_date: datetime = Field(
         title="Start Date",
-        order=1,
+        order=2,
         pattern=DATE_TIME_PATTERN,
         examples=["2017-01-25T00:00:00Z"],
     )
@@ -100,16 +106,10 @@ class ConnectorConfig(BaseConfig):
     end_date: Optional[datetime] = Field(
         title="End Date",
         description="The field is the date until which to pull data. If not specified,  we will use the latest data available.",
-        order=2,
+        order=3,
         pattern=EMPTY_PATTERN + "|" + DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
         default_factory=lambda: datetime.now(tz=timezone.utc),
-    )
-
-    access_token: str = Field(
-        title="Access Token",
-        order=3,
-        airbyte_secret=True,
     )
 
     include_deleted: bool = Field(
