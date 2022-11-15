@@ -2,6 +2,8 @@ import { getIn, useFormikContext } from "formik";
 import { JSONSchema7 } from "json-schema";
 import { useCallback, useMemo } from "react";
 
+import { ConnectorSpecification } from "core/domain/connector";
+import { useAppMonitoringService } from "hooks/services/AppMonitoringService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 
 import { useConnectorForm } from "./connectorFormContext";
@@ -130,6 +132,7 @@ interface AuthenticationHook {
 }
 
 export const useAuthentication = (): AuthenticationHook => {
+  const { trackError } = useAppMonitoringService();
   const { values, getFieldMeta, submitCount } = useFormikContext<ConnectorFormValues>();
   const { getValues, selectedConnectorDefinitionSpecification: connectorSpec } = useConnectorForm();
 
@@ -140,7 +143,27 @@ export const useAuthentication = (): AuthenticationHook => {
 
   const spec = connectorSpec?.connectionSpecification as JSONSchema7;
 
-  const valuesWithDefaults = useMemo(() => getValues(values), [getValues, values]);
+  const getValuesSafe = useCallback(
+    (values: ConnectorFormValues<unknown>) => {
+      try {
+        // We still see cases where calling `getValues` which will eventually use the yupSchema.cast method
+        // crashes based on the passed in values. To temporarily make sure we're not crashing the form, we're
+        // falling back to `values` in case the cast fails. This is a temporary patch, and we need to investigate
+        // all the failures happening here properly.
+        return getValues(values);
+      } catch (e) {
+        console.error(`getValues in useAuthentication failed.`, e);
+        trackError(e, {
+          id: "useAuthentication.getValues",
+          connector: connectorSpec ? ConnectorSpecification.id(connectorSpec) : null,
+        });
+        return values;
+      }
+    },
+    [connectorSpec, getValues, trackError]
+  );
+
+  const valuesWithDefaults = useMemo(() => getValuesSafe(values), [getValuesSafe, values]);
 
   const isAuthButtonVisible = useMemo(() => {
     const shouldShowAdvancedAuth =
