@@ -12,13 +12,16 @@
 // This function is called when a project is opened or re-opened (e.g. due to
 // the project's config changing)
 
-import PluginEvents = Cypress.PluginEvents;
-import PluginConfigOptions = Cypress.PluginConfigOptions;
+import Cypress from "cypress"
+
 
 /**
  * @type {Cypress.PluginConfig}
  */
-module.exports = (on: PluginEvents, config: PluginConfigOptions) => {
+module.exports = (on: Cypress.PluginEvents, config: Cypress.PluginConfigOptions) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
+    on("task", {
+        dbQuery:(query)=> require("cypress-postgres")(query.query,query.connection)
+    });
 };
