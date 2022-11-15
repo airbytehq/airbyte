@@ -13,9 +13,11 @@ import static org.mockito.Mockito.when;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.commons.temporal.scheduling.ConnectionNotificationWorkflow;
 import io.airbyte.config.SlackNotificationConfiguration;
+import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.notification.SlackNotificationClient;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.NotifySchemaChangeActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.SlackConfigActivityImpl;
 import io.airbyte.workers.temporal.support.TemporalProxyHelper;
@@ -47,9 +49,10 @@ class ConnectionNotificationWorkflowTest {
 
   private NotifySchemaChangeActivityImpl mNotifySchemaChangeActivity;
   private SlackConfigActivityImpl mSlackConfigActivity;
+  private ConfigFetchActivityImpl mConfigFetchActivity;
 
   @BeforeEach
-  void setUp() throws IOException, InterruptedException, ApiException {
+  void setUp() throws IOException, InterruptedException, ApiException, JsonValidationException, ConfigNotFoundException {
     testEnv = TestWorkflowEnvironment.newInstance();
     notificationsWorker = testEnv.newWorker(NOTIFICATIONS_QUEUE);
     client = testEnv.getWorkflowClient();
@@ -71,6 +74,8 @@ class ConnectionNotificationWorkflowTest {
     when(mSlackConfigActivity.fetchSlackConfiguration(any(UUID.class))).thenReturn(
         Optional.ofNullable(new SlackNotificationConfiguration().withWebhook("webhook")));
 
+    mConfigFetchActivity = mock(ConfigFetchActivityImpl.class);
+
     final BeanIdentifier activityOptionsBeanIdentifier = mock(BeanIdentifier.class);
     final BeanRegistration activityOptionsBeanRegistration = mock(BeanRegistration.class);
     when(activityOptionsBeanIdentifier.getName()).thenReturn("shortActivityOptions");
@@ -89,7 +94,7 @@ class ConnectionNotificationWorkflowTest {
   @Test
   void sendSchemaChangeNotificationNonBreakingChangeTest()
       throws IOException, InterruptedException, ApiException, JsonValidationException, ConfigNotFoundException {
-    notificationsWorker.registerActivitiesImplementations(mNotifySchemaChangeActivity, mSlackConfigActivity);
+    notificationsWorker.registerActivitiesImplementations(mNotifySchemaChangeActivity, mSlackConfigActivity, mConfigFetchActivity);
     testEnv.start();
 
     final ConnectionNotificationWorkflow workflow =
@@ -97,6 +102,7 @@ class ConnectionNotificationWorkflowTest {
 
     final UUID connectionId = UUID.randomUUID();
 
+    when(mConfigFetchActivity.getStandardSync(connectionId)).thenReturn(new StandardSync().withBreakingChange(false));
     workflow.sendSchemaChangeNotification(connectionId);
 
     verify(mNotifySchemaChangeActivity, times(1)).notifySchemaChange(any(SlackNotificationClient.class), any(UUID.class), any(boolean.class));
