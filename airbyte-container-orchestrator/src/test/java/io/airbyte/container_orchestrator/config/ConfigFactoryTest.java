@@ -47,7 +47,7 @@ class ConfigFactoryTest {
 
   @Test
   void envVars() {
-    assertEquals(30, envVars.size());
+    assertEquals(29, envVars.size());
   }
 
   @Test
