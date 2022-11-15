@@ -1,4 +1,5 @@
-@use "../../../../../../scss/colors";
+@use "scss/colors";
+@use "scss/variables";
 
 .button {
   padding: 20px 28px 20px 20px;
@@ -9,7 +10,7 @@
   cursor: pointer;
   width: 100%;
   background: colors.$white;
-  border-radius: 10px;
+  border-radius: variables.$border-radius-lg;
   box-shadow: 0 2px 4px colors.$shadowColor;
   border: none;
 }
