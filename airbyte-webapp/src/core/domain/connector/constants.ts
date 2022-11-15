@@ -21,7 +21,6 @@ export const getExcludedConnectorIds = (workspaceId: string) =>
         "707456df-6f4f-4ced-b5c6-03f73bcad1c5", // hide Cassandra Destination https://github.com/airbytehq/airbyte-cloud/issues/2606
         "9f760101-60ae-462f-9ee6-b7a9dafd454d", // hide Kafka Destination https://github.com/airbytehq/airbyte-cloud/issues/2610
         "294a4790-429b-40ae-9516-49826b9702e1", // hide MariaDB Destination https://github.com/airbytehq/airbyte-cloud/issues/2611
-        "8b746512-8c2e-6ac1-4adc-b59faafd473c", // hide MongoDB Destination https://github.com/airbytehq/airbyte-cloud/issues/2612
         "f3802bc4-5406-4752-9e8d-01e504ca8194", // hide MQTT Destination https://github.com/airbytehq/airbyte-cloud/issues/2613
         "2340cbba-358e-11ec-8d3d-0242ac130203", // hide Pular Destination https://github.com/airbytehq/airbyte-cloud/issues/2614
         "2c9d93a7-9a17-4789-9de9-f46f0097eb70", // hide Rockset Destination https://github.com/airbytehq/airbyte-cloud/issues/2615
@@ -33,5 +32,10 @@ export const getExcludedConnectorIds = (workspaceId: string) =>
         ...(workspaceId !== "54135667-ce73-4820-a93c-29fe1510d348" // Shopify workspace for review
           ? ["9da77001-af33-4bcd-be46-6252bf9342b9"] // Shopify
           : []),
+        // revert me
+        ...(workspaceId !== "d705a766-e9e3-4689-85cb-52143422317d" // `oauth-testing` workspace for review
+          ? ["78752073-6d96-447d-8a93-2b6953f3c787"] // Youtube Analytics Business
+          : []),
+        //
       ]
     : [];

@@ -1,6 +1,4 @@
-import { load, YAMLException } from "js-yaml";
 import React, { useContext, useEffect, useState } from "react";
-import { useDebounce, useLocalStorage } from "react-use";
 
 import {
   StreamReadRequestBodyConfig,
@@ -9,44 +7,35 @@ import {
 } from "core/request/ConnectorBuilderClient";
 
 import { useListStreams } from "./ConnectorBuilderApiService";
-import { template } from "./YamlTemplate";
 
 interface Context {
-  yamlManifest: string;
   jsonManifest: StreamsListRequestBodyManifest;
+  yamlIsValid: boolean;
   streams: StreamsListReadStreamsItem[];
   selectedStream: StreamsListReadStreamsItem;
+  selectedSlice: number;
+  selectedPage: number;
   configString: string;
   configJson: StreamReadRequestBodyConfig;
-  setYamlManifest: (yamlValue: string) => void;
+  setJsonManifest: (jsonValue: StreamsListRequestBodyManifest) => void;
+  setYamlIsValid: (value: boolean) => void;
   setSelectedStream: (streamName: string) => void;
+  setSelectedSlice: (sliceIndex: number) => void;
+  setSelectedPage: (pageIndex: number) => void;
   setConfigString: (configString: string) => void;
 }
 
 export const ConnectorBuilderStateContext = React.createContext<Context | null>(null);
 
-const useYamlManifest = () => {
-  const [locallyStoredYaml, setLocallyStoredYaml] = useLocalStorage<string>("connectorBuilderYaml", template);
-  const [yamlManifest, setYamlManifest] = useState(locallyStoredYaml ?? "");
-  useDebounce(() => setLocallyStoredYaml(yamlManifest), 500, [yamlManifest]);
-
+const useJsonManifest = () => {
   const [jsonManifest, setJsonManifest] = useState<StreamsListRequestBodyManifest>({});
-  useEffect(() => {
-    try {
-      const json = load(yamlManifest) as StreamsListRequestBodyManifest;
-      setJsonManifest(json);
-    } catch (err) {
-      if (err instanceof YAMLException) {
-        console.error(`Connector manifest yaml is not valid! Error: ${err}`);
-      }
-    }
-  }, [yamlManifest]);
+  const [yamlIsValid, setYamlIsValid] = useState(true);
 
-  return { yamlManifest, jsonManifest, setYamlManifest };
+  return { jsonManifest, yamlIsValid, setJsonManifest, setYamlIsValid };
 };
 
-const useStreams = () => {
-  const { jsonManifest } = useYamlManifest();
+const useSelected = () => {
+  const { jsonManifest } = useJsonManifest();
   const streamListRead = useListStreams({ manifest: jsonManifest });
   const streams = streamListRead.streams;
 
@@ -56,7 +45,23 @@ const useStreams = () => {
     url: "",
   };
 
-  return { streams, selectedStream, setSelectedStream };
+  const [streamToSelectedSlice, setStreamToSelectedSlice] = useState({ [selectedStreamName]: 0 });
+  const setSelectedSlice = (sliceIndex: number) => {
+    setStreamToSelectedSlice((prev) => {
+      return { ...prev, [selectedStreamName]: sliceIndex };
+    });
+  };
+  const selectedSlice = streamToSelectedSlice[selectedStreamName] ?? 0;
+
+  const [streamToSelectedPage, setStreamToSelectedPage] = useState({ [selectedStreamName]: 0 });
+  const setSelectedPage = (pageIndex: number) => {
+    setStreamToSelectedPage((prev) => {
+      return { ...prev, [selectedStreamName]: pageIndex };
+    });
+  };
+  const selectedPage = streamToSelectedPage[selectedStreamName] ?? 0;
+
+  return { streams, selectedStream, selectedSlice, selectedPage, setSelectedStream, setSelectedSlice, setSelectedPage };
 };
 
 const useConfig = () => {
@@ -76,20 +81,14 @@ const useConfig = () => {
 };
 
 export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
-  const { yamlManifest, jsonManifest, setYamlManifest } = useYamlManifest();
-  const { streams, selectedStream, setSelectedStream } = useStreams();
-  const { configString, configJson, setConfigString } = useConfig();
+  const jsonManifest = useJsonManifest();
+  const selected = useSelected();
+  const config = useConfig();
 
   const ctx = {
-    yamlManifest,
-    jsonManifest,
-    streams,
-    selectedStream,
-    configString,
-    configJson,
-    setYamlManifest,
-    setSelectedStream,
-    setConfigString,
+    ...jsonManifest,
+    ...selected,
+    ...config,
   };
 
   return <ConnectorBuilderStateContext.Provider value={ctx}>{children}</ConnectorBuilderStateContext.Provider>;

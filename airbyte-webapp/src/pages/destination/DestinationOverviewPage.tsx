@@ -5,7 +5,7 @@ import { ConnectorIcon } from "components/common/ConnectorIcon";
 import { StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
 import { DestinationConnectionTable } from "components/destination/DestinationConnectionTable";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
-import { DropDownOptionDataItem } from "components/ui/DropDown";
+import { DropdownMenuOptionType } from "components/ui/DropdownMenu";
 
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useGetDestination } from "hooks/services/useDestinationHook";
@@ -28,20 +28,22 @@ export const DestinationOverviewPage = () => {
     (connectionItem) => connectionItem.destinationId === destination.destinationId
   );
 
-  const sourcesDropDownData = useMemo(
+  const sourceDropdownOptions: DropdownMenuOptionType[] = useMemo(
     () =>
       sources.map((item) => {
         const sourceDef = sourceDefinitions.find((sd) => sd.sourceDefinitionId === item.sourceDefinitionId);
         return {
-          label: item.name,
+          as: "button",
+          icon: <ConnectorIcon icon={sourceDef?.icon} />,
+          iconPosition: "right",
+          displayName: item.name,
           value: item.sourceId,
-          img: <ConnectorIcon icon={sourceDef?.icon} />,
         };
       }),
     [sources, sourceDefinitions]
   );
 
-  const onSelect = (data: DropDownOptionDataItem) => {
+  const onSelect = (data: DropdownMenuOptionType) => {
     const path = `../../${DestinationPaths.NewConnection}`;
     const state =
       data.value === "create-new-item"
@@ -58,7 +60,7 @@ export const DestinationOverviewPage = () => {
     <>
       <TableItemTitle
         type="source"
-        dropDownData={sourcesDropDownData}
+        dropdownOptions={sourceDropdownOptions}
         onSelect={onSelect}
         entityName={destination.name}
         entity={destination.destinationName}
