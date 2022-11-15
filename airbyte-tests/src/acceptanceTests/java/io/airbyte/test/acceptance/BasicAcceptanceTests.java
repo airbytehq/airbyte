@@ -661,7 +661,6 @@ class BasicAcceptanceTests {
 
   @Test
   @Order(14)
-  @RepeatedTest(10)
   void testDeleteConnection() throws Exception {
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
