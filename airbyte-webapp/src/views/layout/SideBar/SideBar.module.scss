@@ -1,6 +1,6 @@
-@use "../../../scss/colors";
-@use "../../../scss/variables";
-@use "../../../scss/z-indices";
+@use "scss/colors";
+@use "scss/variables";
+@use "scss/z-indices";
 
 .nav {
   z-index: z-indices.$sidebar;
@@ -33,6 +33,35 @@
 
   li {
     margin-top: 7px;
+  }
+}
+
+.dropdownMenuButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 70px;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  border-radius: variables.$border-radius-md;
+  color: inherit;
+  text-decoration: none;
+  transition: all variables.$transition-out;
+
+  .text {
+    margin-top: 7px;
+  }
+
+  &.open {
+    background-color: colors.$blue-100;
+  }
+
+  &:hover:not(.open),
+  &:focus-visible:not(.open) {
+    background-color: colors.$grey-50;
   }
 }
 
