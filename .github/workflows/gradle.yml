@@ -103,11 +103,34 @@ jobs:
   #          echo '${{ toJSON(needs) }}'
 
   ## BUILDS
-  octavia-cli-build:
-    needs: changes
-    runs-on: ubuntu-latest
+
+  start-octavia-build-runner:
+    name: "Octavia CLI: Start Build EC2 Runner"
+    needs:
+      - changes
+      - find_valid_pat
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: needs.changes.outputs.cli == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+
+  octavia-cli-build:
+    needs: 
+      - start-octavia-build-runner # required to get output from the start-runner job
+    runs-on: ${{ needs.start-octavia-build-runner.outputs.label }}
     name: "Octavia CLI: Build"
     timeout-minutes: 90
     steps:
@@ -158,6 +181,31 @@ jobs:
 
       - name: Run integration tests
         run: ./tools/bin/integration_tests_octavia.sh
+
+  stop-octavia-build-runner:
+    name: "Octavia CLI: Stop Build EC2 Runner"
+    timeout-minutes: 10
+    needs:
+      - start-octavia-build-runner # required to get output from the start-runner job
+      - octavia-cli-build # required to wait when the main job is done
+    runs-on: ubuntu-latest
+    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
+    # Thus, we check for skipped here.
+    if: ${{ always() && needs.start-octavia-build-runner.result != 'skipped'}}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Stop EC2 runner
+        uses: supertopher/ec2-github-runner@base64v1.0.10
+        with:
+          mode: stop
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          label: ${{ needs.start-octavia-build-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-octavia-build-runner.outputs.ec2-instance-id }}
 
   # Connectors Base
   # In case of self-hosted EC2 errors, remove this block.
