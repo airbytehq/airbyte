@@ -2,9 +2,6 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "users": {
-      "type": "object",
-      "properties": {
         "id":{
           "type": ["null", "string"]
       
@@ -30,7 +27,7 @@
       
         },
         "product_roles":{
-          "type": ["null", "object"]
+          "type": ["null", "array"]
       
         },
         "enabled":{
@@ -54,24 +51,4 @@
       
         }
       }
-    },
-    "pagination": {
-      "type": "object",
-      "properties": {
-        "total_records":{
-          "type": ["null", "integer"]
-      
-        },
-        "total_pages":{
-          "type": ["null", "integer"]
-      
-        },
-        "current_page":{
-          "type": ["null", "integer"]
-      
-        }
-      }
-      
     }
-  }
-}

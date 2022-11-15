@@ -2,9 +2,6 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "goals": {
-      "type": "object",
-      "properties": {
         "id":{
           "type": ["null", "string"]
       
@@ -18,15 +15,15 @@
       
         },
         "effort":{
-          "type": ["null", "string"]
+          "type": ["null", "number"]
       
         },
         "value":{
-          "type": ["null", "string"]
+          "type": ["null", "number"]
       
         },
         "position":{
-          "type": ["null", "string"]
+          "type": ["null", "number"]
       
         },
         "created_at":{
@@ -86,34 +83,13 @@
       
         },
         "releases":{
-          "type": ["null", "string"]
+          "type": ["null", "array"]
       
         },
         "custom_fields":{
-          "type": ["null", "string"]
+          "type": ["null", "array"]
       
-        }
-
-       
+        }       
       }
-    },
-    "pagination": {
-      "type": "object",
-      "properties": {
-        "total_records":{
-          "type": ["null", "integer"]
-      
-        },
-        "total_pages":{
-          "type": ["null", "integer"]
-      
-        },
-        "current_page":{
-          "type": ["null", "integer"]
-      
-        }
-      }
-      
     }
-  }
-}
+
