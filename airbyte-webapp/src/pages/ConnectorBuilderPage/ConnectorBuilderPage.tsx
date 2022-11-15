@@ -20,7 +20,7 @@ const ConnectorBuilderPageInner: React.FC = () => {
       firstPanel={{
         children: <YamlEditor />,
         className: styles.leftPanel,
-        minWidth: 400,
+        minWidth: 100,
       }}
       secondPanel={{
         children: <StreamTestingPanel />,

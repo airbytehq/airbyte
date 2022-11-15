@@ -16,12 +16,12 @@ export const DiffFieldTable: React.FC<DiffFieldTableProps> = ({ fieldTransforms,
   return (
     <table className={styles.table} aria-label={`${diffVerb} fields`}>
       <thead>
-        <tr className={styles.accordionSubHeader}>
+        <tr className={styles.header}>
           <th>
             <DiffHeader diffCount={fieldTransforms.length} diffVerb={diffVerb} diffType="field" />
           </th>
           {diffVerb === "changed" && (
-            <th className={styles.padLeft}>
+            <th>
               <FormattedMessage id="connection.updateSchema.dataType" />
             </th>
           )}
