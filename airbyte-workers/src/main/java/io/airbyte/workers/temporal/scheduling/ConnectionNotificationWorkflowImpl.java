@@ -33,14 +33,14 @@ public class ConnectionNotificationWorkflowImpl implements ConnectionNotificatio
   private ConfigFetchActivity configFetchActivity;
 
   @Override
-  public boolean sendSchemaChangeNotification(UUID connectionId)
+  public boolean sendSchemaChangeNotification(final UUID connectionId)
       throws IOException, InterruptedException, ApiException, ConfigNotFoundException, JsonValidationException {
-    StandardSync standardSync = configFetchActivity.getStandardSync(connectionId);
-    Optional<SlackNotificationConfiguration> slackConfig = slackConfigActivity.fetchSlackConfiguration(connectionId);
+    final StandardSync standardSync = configFetchActivity.getStandardSync(connectionId);
+    final Optional<SlackNotificationConfiguration> slackConfig = slackConfigActivity.fetchSlackConfiguration(connectionId);
     if (slackConfig.isPresent()) {
-      Notification notification = new Notification().withNotificationType(NotificationType.SLACK).withSendOnFailure(false).withSendOnSuccess(false)
+      final Notification notification = new Notification().withNotificationType(NotificationType.SLACK).withSendOnFailure(false).withSendOnSuccess(false)
           .withSlackConfiguration(slackConfig.get());
-      SlackNotificationClient notificationClient = new SlackNotificationClient(notification);
+      final SlackNotificationClient notificationClient = new SlackNotificationClient(notification);
       return notifySchemaChangeActivity.notifySchemaChange(notificationClient, connectionId, standardSync.getBreakingChange());
     } else {
       return false;
