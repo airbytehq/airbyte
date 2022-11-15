@@ -48,6 +48,40 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
   //        THEN show the jobs list and the "+ Add transformation" button
 
   const { hasDbtIntegration, saveJobs, dbtCloudJobs } = useDbtIntegration(connection);
+
+  return hasDbtIntegration ? <DbtJobsForm saveJobs={saveJobs} dbtCloudJobs={dbtCloudJobs} /> : <NoDbtIntegration />;
+};
+
+const NoDbtIntegration = () => {
+  const { workspaceId } = useCurrentWorkspace();
+  const dbtSettingsPath = `/${RoutePaths.Workspaces}/${workspaceId}/${RoutePaths.Settings}/dbt-cloud`;
+  return (
+    <Card
+      title={
+        <span className={styles.jobListTitle}>
+          <FormattedMessage id="connection.dbtCloudJobs.cardTitle" />
+        </span>
+      }
+    >
+      <div className={classNames(styles.jobListContainer)}>
+        <Text className={styles.contextExplanation}>
+          <FormattedMessage
+            id="connection.dbtCloudJobs.noIntegration"
+            values={{
+              settingsLink: (linkText: ReactNode) => <Link to={dbtSettingsPath}>{linkText}</Link>,
+            }}
+          />
+        </Text>
+      </div>
+    </Card>
+  );
+};
+
+interface DbtJobsFormProps {
+  saveJobs: (jobs: DbtCloudJob[]) => Promise<unknown>;
+  dbtCloudJobs: DbtCloudJob[];
+}
+const DbtJobsForm: React.FC<DbtJobsFormProps> = ({ saveJobs, dbtCloudJobs }) => {
   const onSubmit = (values: DbtJobListValues, { resetForm }: FormikHelpers<DbtJobListValues>) => {
     saveJobs(values.jobs).then(() => resetForm({ values }));
   };
@@ -60,7 +94,7 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
       initialValues={{ jobs: dbtCloudJobs }}
       validationSchema={dbtCloudJobListSchema}
       render={({ values, isValid, dirty }) => {
-        return hasDbtIntegration ? (
+        return (
           <Form className={styles.jobListForm}>
             <FormChangeTracker changed={dirty} />
             <FieldArray
@@ -94,16 +128,6 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
               }}
             />
           </Form>
-        ) : (
-          <Card
-            title={
-              <span className={styles.jobListTitle}>
-                <FormattedMessage id="connection.dbtCloudJobs.cardTitle" />
-              </span>
-            }
-          >
-            <NoDbtIntegration />
-          </Card>
         );
       }}
     />
@@ -193,22 +217,5 @@ const JobsListItem = ({ jobIndex, removeJob }: { jobIndex: number; removeJob: ()
         </Button>
       </div>
     </Card>
-  );
-};
-
-const NoDbtIntegration = () => {
-  const { workspaceId } = useCurrentWorkspace();
-  const dbtSettingsPath = `/${RoutePaths.Workspaces}/${workspaceId}/${RoutePaths.Settings}/dbt-cloud`;
-  return (
-    <div className={classNames(styles.jobListContainer)}>
-      <Text className={styles.contextExplanation}>
-        <FormattedMessage
-          id="connection.dbtCloudJobs.noIntegration"
-          values={{
-            settingsLink: (linkText: ReactNode) => <Link to={dbtSettingsPath}>{linkText}</Link>,
-          }}
-        />
-      </Text>
-    </div>
   );
 };
