@@ -25,6 +25,9 @@
     },
     "credentials": {
       "order": 4,
+      "discriminator": {
+        "propertyName": "option_title"
+      },
       "oneOf": [{
           "type": "object",
           "title": "OAuth",
