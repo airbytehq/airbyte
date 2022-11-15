@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - 'docs/**'
+      - "docs/**"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -23,10 +23,10 @@ jobs:
 
       # Node.js is needed for Yarn
       - name: Setup Yarn
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: '16.14.0'
-          cache: 'yarn'
+          node-version: "16.14.0"
+          cache: "yarn"
           cache-dependency-path: docusaurus
 
       - name: Run Docusaurus

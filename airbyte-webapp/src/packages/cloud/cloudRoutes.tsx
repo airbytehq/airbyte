@@ -13,7 +13,6 @@ import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useQuery } from "hooks/useQuery";
 import { useExperimentSpeedyConnection } from "packages/cloud/components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
-import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useIntercom";
 import { Auth } from "packages/cloud/views/auth";
 import { CreditsPage } from "packages/cloud/views/credits";
 import MainView from "packages/cloud/views/layout/MainView";
@@ -114,7 +113,6 @@ const MainRoutes: React.FC = () => {
 
 const MainViewRoutes = () => {
   useApiHealthPoll();
-  useIntercom();
   const query = useQuery<{ from: string }>();
 
   return (

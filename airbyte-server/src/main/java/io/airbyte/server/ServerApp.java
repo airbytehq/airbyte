@@ -70,6 +70,7 @@ import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
 import io.airbyte.validation.json.JsonSchemaValidator;
+import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
@@ -258,11 +259,14 @@ public class ServerApp implements ServerRunnable {
 
     final AttemptHandler attemptHandler = new AttemptHandler(jobPersistence);
 
+    final ConnectionHelper connectionHelper = new ConnectionHelper(configRepository, workspaceHelper);
+
     final ConnectionsHandler connectionsHandler = new ConnectionsHandler(
         configRepository,
         workspaceHelper,
         trackingClient,
-        eventRunner);
+        eventRunner,
+        connectionHelper);
 
     final DestinationHandler destinationHandler = new DestinationHandler(
         configRepository,

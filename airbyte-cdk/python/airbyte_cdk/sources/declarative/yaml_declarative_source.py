@@ -12,13 +12,13 @@ from airbyte_cdk.sources.declarative.types import ConnectionDefinition
 class YamlDeclarativeSource(ManifestDeclarativeSource):
     """Declarative source defined by a yaml file"""
 
-    def __init__(self, path_to_yaml):
+    def __init__(self, path_to_yaml, debug: bool = False):
         """
         :param path_to_yaml: Path to the yaml file describing the source
         """
         self._path_to_yaml = path_to_yaml
         source_config = self._read_and_parse_yaml_file(path_to_yaml)
-        super().__init__(source_config)
+        super().__init__(source_config, debug)
 
     def _read_and_parse_yaml_file(self, path_to_yaml_file) -> ConnectionDefinition:
         package = self.__class__.__module__.split(".")[0]
