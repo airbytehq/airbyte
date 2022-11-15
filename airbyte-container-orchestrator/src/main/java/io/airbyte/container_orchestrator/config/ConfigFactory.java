@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 @Factory
 public class ConfigFactory {
 

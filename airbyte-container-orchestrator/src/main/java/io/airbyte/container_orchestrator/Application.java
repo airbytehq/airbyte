@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * This app uses default logging which is directly captured by the calling Temporal worker. In the
  * future this will need to independently interact with cloud storage.
  */
-@SuppressWarnings({"PMD.AvoidCatchingThrowable", "PMD.DoNotTerminateVM"})
+@SuppressWarnings({"PMD.AvoidCatchingThrowable", "PMD.DoNotTerminateVM", "PMD.AvoidFieldNameMatchingTypeName"})
 @Singleton
 public class Application {
 
@@ -37,8 +37,7 @@ public class Application {
     try (final var ctx = Micronaut.run(Application.class, args)) {
       exitCode = ctx.getBean(Application.class).run();
     } catch (final Throwable t) {
-      log.error("could not run  {}", t.getMessage());
-      t.printStackTrace();
+      log.error("could not run {}: {}", t.getMessage(), t);
     } finally {
       // this mimics the pre-micronaut code, unsure if there is a better way in micronaut to ensure a
       // non-zero exit code
