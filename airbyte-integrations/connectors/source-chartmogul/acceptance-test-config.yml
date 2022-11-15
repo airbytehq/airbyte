@@ -3,7 +3,7 @@
 connector_image: airbyte/source-chartmogul:dev
 tests:
   spec:
-    - spec_path: "source_chartmogul/spec.json"
+    - spec_path: "source_chartmogul/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
