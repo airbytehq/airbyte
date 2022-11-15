@@ -180,7 +180,9 @@ UNSUPPORTED_FILTERING_STREAMS = [
 RESOURCE_PRIMARY_KEY_MAP = {
     "PlatformEventUsageMetric": None, # PlatformEventUsageMetric does not have a primary key
     "FormulaFunctionAllowedType": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_formulafunctionallowedtype.htm
-    "FormulaFunction": "DurableId" # https://developer.salesforce.com/docs/atlas.en-us.sfFieldRef.meta/sfFieldRef/salesforce_field_reference_FormulaFunction.htm
+    "FormulaFunction": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.sfFieldRef.meta/sfFieldRef/salesforce_field_reference_FormulaFunction.htm
+    "TabDefinition": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_tabdefinition.htm
+    "AppDefinition": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_appdefinition.htm
 }
 
 
