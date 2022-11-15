@@ -54,12 +54,12 @@
   width: 228px;
 
   &.update {
-    border-radius: variables.$border-radius-sm;
+    border-radius: variables.$border-radius-md;
 
     & span {
       background-color: rgba(98, 94, 255, 10%);
       padding: variables.$spacing-sm;
-      border-radius: variables.$border-radius-sm;
+      border-radius: variables.$border-radius-md;
     }
   }
 }
