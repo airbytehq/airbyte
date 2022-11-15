@@ -99,7 +99,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 	        connection -> {
 	          var statement = connection.createStatement();
 	          return statement.executeQuery(
-	              String.format("SELECT * FROM %s.%;", schemaName, tableName,
+	              String.format("SELECT * FROM %s.%s", schemaName, tableName,
 	                  JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
 	        },
 	        rs -> Jsons.deserialize(rs.getString(JavaBaseConstants.COLUMN_NAME_DATA)));
