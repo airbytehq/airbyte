@@ -72,7 +72,7 @@
   color: colors.$dark-blue;
   width: 100%;
   cursor: pointer;
-  border-radius: 12px;
+  border-radius: variables.$border-radius-xl;
   height: 70px;
   display: flex;
   flex-direction: column;
