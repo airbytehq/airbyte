@@ -1,4 +1,4 @@
-import { useFormikContext, setIn } from "formik";
+import { useFormikContext, setIn, useField } from "formik";
 import React, { useCallback, useMemo } from "react";
 
 import GroupControls from "components/GroupControls";
@@ -15,7 +15,7 @@ import { GroupLabel } from "./GroupLabel";
 
 interface ConditionSectionProps {
   formField: FormConditionItem;
-  path?: string;
+  path: string;
   disabled?: boolean;
 }
 
@@ -25,6 +25,8 @@ interface ConditionSectionProps {
 export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, path, disabled }) => {
   const { widgetsInfo, setUiWidgetsInfo } = useConnectorForm();
   const { values, setValues } = useFormikContext<ConnectorFormValues>();
+
+  const [, meta] = useField(path);
 
   const currentlySelectedCondition = widgetsInfo[formField.path]?.selectedItem;
 
@@ -73,6 +75,7 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
             value={currentlySelectedCondition}
             name={formField.path}
             isDisabled={disabled}
+            error={typeof meta.error === "string" && !!meta.error}
           />
         </>
       }
