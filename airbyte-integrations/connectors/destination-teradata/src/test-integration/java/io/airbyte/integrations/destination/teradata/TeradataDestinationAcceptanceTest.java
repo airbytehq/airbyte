@@ -88,14 +88,8 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 			throws SQLException {
 		LOGGER.info("TeradataDestinationAcceptanceTest : tableName : " + tableName);
 		LOGGER.info("TeradataDestinationAcceptanceTest : schemaName : " + schemaName);
-		final List<JsonNode> actual = database.bufferedResultSetQuery(
-				connection -> connection.createStatement()
-						.executeQuery(String.format("SELECT * FROM %s.%s", schemaName, tableName)),
-				sourceOperations::rowToJson);
-		
 
-
-		List<JsonNode> actual1 =  database.bufferedResultSetQuery(
+		final List<JsonNode> actual =  database.bufferedResultSetQuery(
 	        connection -> {
 	          var statement = connection.createStatement();
 	          return statement.executeQuery(
@@ -105,8 +99,6 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 	        rs -> Jsons.deserialize(rs.getString(JavaBaseConstants.COLUMN_NAME_DATA)));
 	  
 		
-		LOGGER.info("TeradataDestinationAcceptanceTest : retrieveRecordsFromTable : actual1 size : " + actual1.size());
-		LOGGER.info("TeradataDestinationAcceptanceTest : retrieveRecordsFromTable : actual1 : " + actual1);
 		LOGGER.info("TeradataDestinationAcceptanceTest : retrieveRecordsFromTable : actual size : " + actual.size());
 		LOGGER.info("TeradataDestinationAcceptanceTest : retrieveRecordsFromTable : actual : " + actual);
 		for(int i = 0; i < actual.size(); i ++ ) {
