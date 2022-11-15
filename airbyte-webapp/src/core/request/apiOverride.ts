@@ -49,7 +49,7 @@ export const apiOverride = async <T, U = unknown>(
     throw new Error("Please provide middlewares and config!");
   }
 
-  debugger;
+  // debugger;
   const { apiUrl } = options.config;
   // Remove the `v1/` in the end of the apiUrl for now, during the transition period
   // to get rid of it from all environment variables.
