@@ -46,6 +46,7 @@ import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.Worker;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
@@ -97,6 +98,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private final AirbyteApiClient airbyteApiClient;
   private final AirbyteMessageSerDeProvider serDeProvider;
   private final AirbyteMessageVersionedMigratorFactory migratorFactory;
+  private final WorkerConfigs workerConfigs;
 
   public ReplicationActivityImpl(@Named("containerOrchestratorConfig") final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
                                  @Named("replicationProcessFactory") final ProcessFactory processFactory,
@@ -111,7 +113,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                  final TemporalUtils temporalUtils,
                                  final AirbyteApiClient airbyteApiClient,
                                  final AirbyteMessageSerDeProvider serDeProvider,
-                                 final AirbyteMessageVersionedMigratorFactory migratorFactory) {
+                                 final AirbyteMessageVersionedMigratorFactory migratorFactory,
+                                 final WorkerConfigs workerConfigs) {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
@@ -126,6 +129,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     this.airbyteApiClient = airbyteApiClient;
     this.serDeProvider = serDeProvider;
     this.migratorFactory = migratorFactory;
+    this.workerConfigs = workerConfigs;
   }
 
   // Marking task queue as nullable because we changed activity signature; thus runs started before
@@ -166,7 +170,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                 destinationLauncherConfig,
                 jobRunConfig,
                 syncInput.getResourceRequirements(),
-                () -> context);
+                () -> context,
+                workerConfigs);
           } else {
             workerFactory =
                 getLegacyWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput);
@@ -295,7 +300,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                                                                                                      final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                                      final JobRunConfig jobRunConfig,
                                                                                                                      final ResourceRequirements resourceRequirements,
-                                                                                                                     final Supplier<ActivityExecutionContext> activityContext)
+                                                                                                                     final Supplier<ActivityExecutionContext> activityContext,
+                                                                                                                     final WorkerConfigs workerConfigs)
       throws ApiException {
     final JobIdRequestBody id = new JobIdRequestBody();
     id.setId(Long.valueOf(jobRunConfig.getJobId()));
@@ -313,7 +319,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
         resourceRequirements,
         activityContext,
         serverPort,
-        temporalUtils);
+        temporalUtils,
+        workerConfigs);
   }
 
 }

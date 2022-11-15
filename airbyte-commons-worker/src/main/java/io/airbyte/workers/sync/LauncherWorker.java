@@ -21,6 +21,7 @@ import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.Worker;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.process.AsyncKubePodStatus;
@@ -70,6 +71,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
   private final Supplier<ActivityExecutionContext> activityContext;
   private final Integer serverPort;
   private final TemporalUtils temporalUtils;
+  private final WorkerConfigs workerConfigs;
 
   private final AtomicBoolean cancelled = new AtomicBoolean(false);
   private AsyncOrchestratorPodProcess process;
@@ -84,7 +86,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                         final Class<OUTPUT> outputClass,
                         final Supplier<ActivityExecutionContext> activityContext,
                         final Integer serverPort,
-                        final TemporalUtils temporalUtils) {
+                        final TemporalUtils temporalUtils,
+                        final WorkerConfigs workerConfigs) {
 
     this.connectionId = connectionId;
     this.application = application;
@@ -97,6 +100,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     this.activityContext = activityContext;
     this.serverPort = serverPort;
     this.temporalUtils = temporalUtils;
+    this.workerConfigs = workerConfigs;
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
@@ -174,7 +178,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                 allLabels,
                 resourceRequirements,
                 fileMap,
-                portMap);
+                portMap,
+                workerConfigs.getworkerKubeNodeSelectors());
           } catch (final KubernetesClientException e) {
             ApmTraceUtils.addExceptionToTrace(e);
             throw new WorkerException(

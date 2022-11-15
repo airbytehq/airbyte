@@ -497,7 +497,6 @@ public class KubePodProcess extends Process implements KubePod {
     PodFluent.SpecNested<PodBuilder> podBuilder = new PodBuilder()
         .withApiVersion("v1")
         .withNewMetadata()
-        .withNamespace(namespace)
         .withName(podName)
         .withLabels(labels)
         .withAnnotations(annotations)
