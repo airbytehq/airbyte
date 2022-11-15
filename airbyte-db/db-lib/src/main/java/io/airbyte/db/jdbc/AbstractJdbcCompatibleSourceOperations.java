@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
 import javax.xml.bind.DatatypeConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Source operation skeleton for JDBC compatible databases.
