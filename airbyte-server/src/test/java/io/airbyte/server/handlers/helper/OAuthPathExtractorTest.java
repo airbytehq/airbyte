@@ -8,8 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.server.handlers.helpers.OAuthPathExtractor;
 import java.util.List;
-import org.assertj.core.api.Assertions;
 import java.util.Map;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class OAuthPathExtractorTest {

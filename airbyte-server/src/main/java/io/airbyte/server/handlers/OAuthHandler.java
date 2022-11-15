@@ -6,7 +6,6 @@ package io.airbyte.server.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Iterables;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.generated.CompleteDestinationOAuthRequest;
 import io.airbyte.api.model.generated.CompleteSourceOauthRequest;
