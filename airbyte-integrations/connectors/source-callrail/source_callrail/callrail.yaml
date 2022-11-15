@@ -123,4 +123,5 @@ streams:
 
 check:
   type: CheckStream
-  stream_names: ["calls", "companies", "conversations", "users"]
+  stream_names: 
+    - users
