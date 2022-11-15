@@ -1,11 +1,12 @@
 import { Field, FieldProps, Formik } from "formik";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 // import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
 import { LabeledInput, Link, LoadingButton } from "components";
+import Alert from "components/Alert";
 
 // import { useConfig } from "config";
 // import { useExperiment } from "hooks/services/Experiment";
@@ -221,6 +222,7 @@ export const SignupFormStatusMessage: React.FC = ({ children }) => (
 );
 
 export const SignupForm: React.FC = () => {
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const signUp = useAuthenticationService();
   const navigate = useNavigate();
 
@@ -251,70 +253,83 @@ export const SignupForm: React.FC = () => {
   }, []);
 
   return (
-    <Formik<FormValues>
-      initialValues={{
-        firstName: "",
-        lastName: "",
-        email: "",
-        company: "",
-        password: "",
-        confirmPassword: "",
-      }}
-      validationSchema={validationSchema}
-      onSubmit={
-        async (values) => {
-          signUp.create(values).then(() => {
-            navigate(`/${RoutePaths.Onboarding}`);
-          });
+    <>
+      <Alert
+        message={errorMessage}
+        onClose={() => {
+          setErrorMessage("");
+        }}
+      />
+      <Formik<FormValues>
+        initialValues={{
+          firstName: "",
+          lastName: "",
+          email: "",
+          company: "",
+          password: "",
+          confirmPassword: "",
+        }}
+        validationSchema={validationSchema}
+        onSubmit={
+          async (values) => {
+            signUp
+              .create(values)
+              .then(() => {
+                navigate(`/${RoutePaths.Connections}`);
+              })
+              .catch((err: any) => {
+                setErrorMessage(err.message);
+              });
+          }
+          // .catch(() => {
+          // console.log(err)
+          // if (err instanceof FieldError) {
+          //     setFieldError(err.field, err.message);
+          // } else {
+          //     setStatus(err.message);
+          // }
+          // })
         }
-        // .catch(() => {
-        // console.log(err)
-        // if (err instanceof FieldError) {
-        //     setFieldError(err.field, err.message);
-        // } else {
-        //     setStatus(err.message);
-        // }
-        // })
-      }
-      validateOnBlur
-      validateOnChange
-    >
-      {({ isValid, isSubmitting, status }) => (
-        <Form className={styles.form}>
-          {/* {(showName || showCompanyName) && (*/}
-          <RowFieldItem>
-            <FirstNameField />
-            <LastNameField />
-          </RowFieldItem>
-          {/* )}*/}
-          <FieldItem>
-            <EmailField />
-          </FieldItem>
-          <FieldItem>
-            <CompanyNameField />
-          </FieldItem>
-          <FieldItem>
-            <PasswordField />
-          </FieldItem>
-          <FieldItem>
-            <ConfirmPasswordField />
-          </FieldItem>
-          <BottomBlock>
-            <SignupButton isLoading={isSubmitting} disabled={!isValid} />
-            {status && <SignupFormStatusMessage>{status}</SignupFormStatusMessage>}
-          </BottomBlock>
-          <div className={styles.termsAndPrivacy}>
-            <FormattedMessage id="signup.description" />
-            <Link to="" className={styles.link}>
-              <FormattedMessage id="signup.privacy" />
-            </Link>
-            <FormattedMessage id="signup.and" />
-            <Link to="" className={styles.link}>
-              <FormattedMessage id="signup.terms" />
-            </Link>
-          </div>
-        </Form>
-      )}
-    </Formik>
+        validateOnBlur
+        validateOnChange
+      >
+        {({ isValid, dirty, isSubmitting, status }) => (
+          <Form className={styles.form}>
+            {/* {(showName || showCompanyName) && (*/}
+            <RowFieldItem>
+              <FirstNameField />
+              <LastNameField />
+            </RowFieldItem>
+            {/* )}*/}
+            <FieldItem>
+              <EmailField />
+            </FieldItem>
+            <FieldItem>
+              <CompanyNameField />
+            </FieldItem>
+            <FieldItem>
+              <PasswordField />
+            </FieldItem>
+            <FieldItem>
+              <ConfirmPasswordField />
+            </FieldItem>
+            <BottomBlock>
+              <SignupButton isLoading={isSubmitting} disabled={!(isValid && dirty)} />
+              {status && <SignupFormStatusMessage>{status}</SignupFormStatusMessage>}
+            </BottomBlock>
+            <div className={styles.termsAndPrivacy}>
+              <FormattedMessage id="signup.description" />
+              <Link to="" $clear className={styles.link}>
+                <FormattedMessage id="signup.privacy" />
+              </Link>
+              <FormattedMessage id="signup.and" />
+              <Link to="" $clear className={styles.link}>
+                <FormattedMessage id="signup.terms" />
+              </Link>
+            </div>
+          </Form>
+        )}
+      </Formik>
+    </>
   );
 };

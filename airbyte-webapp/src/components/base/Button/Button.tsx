@@ -64,7 +64,7 @@ const getDisabledOpacity = (props: IStyleProps) => {
     return "1";
   }
 
-  return ".3";
+  return "1";
 };
 
 const getShadowOnHover = (props: IStyleProps) => {
@@ -123,8 +123,8 @@ const Button = styled.button<ButtonProps>`
 
   &:disabled {
     opacity: ${(props) => getDisabledOpacity(props)};
-    background: ${(props) => props.danger && "transparent"};
-    border: ${(props) => props.danger && "none"};
+    background: #d1d5db;
+    border: #d1d5db;
     color: ${(props) => getDisabledTextColor(props)};
     pointer-events: none;
   }

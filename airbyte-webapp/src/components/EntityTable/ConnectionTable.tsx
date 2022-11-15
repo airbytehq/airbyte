@@ -31,7 +31,7 @@ interface IProps {
   onSync: (id: string) => void;
 }
 
-const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeStatus, onSync }) => {
+const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSync }) => {
   const { query, push } = useRouter();
   const allowSync = useFeature(FeatureItem.AllowSync);
 
@@ -81,7 +81,19 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
         Header: "",
         accessor: "lastSync",
         customWidth: 1,
-        Cell: ({ cell }: CellProps<ITableDataItem>) => <SwitchButton id={cell.value} />,
+        Cell: ({ cell }: CellProps<ITableDataItem>) => {
+          console.log(cell);
+          return (
+            <SwitchButton
+              id={`${cell.row.values.connectionId}`}
+              checked={cell.row.values.status === "active" ? true : false}
+              onClick={() => {
+                onChangeStatus(cell.row.values.connectionId);
+              }}
+            />
+          );
+        },
+        // Cell: () => ( <SwitchButton id="checkbox" /> ),
       },
       {
         Header: (
@@ -204,11 +216,14 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
     [allowSync, entity, onChangeStatus, onSync, onSortClick, sortBy, sortOrder]
   );
 
-  console.log(columns, data);
-
   return (
     <Content>
-      <Table columns={columns} data={data} onClickRow={onClickRow} erroredRows />
+      <Table
+        columns={columns}
+        data={data}
+        // onClickRow={onClickRow}
+        erroredRows
+      />
     </Content>
   );
 };
