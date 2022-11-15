@@ -122,9 +122,9 @@ class JsonSchemaHelper:
         return node
 
     def find_nodes(self, keys: List[str]) -> List[List[str]]:
-        """Get all nodes of schema that has specifies properties
+        """Find all paths that lead to nodes with the specified keys.
 
-        :param keys:
+        :param keys: list of keys
         :return: list of json object paths
         """
         variant_paths = []
@@ -133,18 +133,18 @@ class JsonSchemaHelper:
             path = path or []
             if path and path[-1] in keys:
                 variant_paths.append(path)
+
+            next_node = None
             for i, item in enumerate(_schema):
                 if isinstance(_schema, dict):
-                    path_key = item
-                    next_obj = _schema[path_key]
+                    next_node = _schema[item]
+                    next_node_path = [*path, item]
                 elif isinstance(_schema, list):
-                    path_key = i
-                    next_obj = _schema[path_key]
-                else:
-                    next_obj = item
+                    next_node = _schema[i]
+                    next_node_path = [*path, i]
 
-                if isinstance(next_obj, (dict, list)):
-                    traverse_schema(next_obj, [*path, path_key])
+                if isinstance(next_node, (dict, list)):
+                    traverse_schema(next_node, next_node_path)
 
         traverse_schema(self._schema)
         return variant_paths
