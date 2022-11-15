@@ -38,8 +38,9 @@ public class ConnectionNotificationWorkflowImpl implements ConnectionNotificatio
     final StandardSync standardSync = configFetchActivity.getStandardSync(connectionId);
     final Optional<SlackNotificationConfiguration> slackConfig = slackConfigActivity.fetchSlackConfiguration(connectionId);
     if (slackConfig.isPresent()) {
-      final Notification notification = new Notification().withNotificationType(NotificationType.SLACK).withSendOnFailure(false).withSendOnSuccess(false)
-          .withSlackConfiguration(slackConfig.get());
+      final Notification notification =
+          new Notification().withNotificationType(NotificationType.SLACK).withSendOnFailure(false).withSendOnSuccess(false)
+              .withSlackConfiguration(slackConfig.get());
       final SlackNotificationClient notificationClient = new SlackNotificationClient(notification);
       return notifySchemaChangeActivity.notifySchemaChange(notificationClient, connectionId, standardSync.getBreakingChange());
     } else {
