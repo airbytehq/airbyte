@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "open_exchange_rates_stream",
+        "name": "open_exchange_rates",
         "json_schema": {
           "type": "object",
           "properties": {
@@ -1040,6 +1040,7 @@
           }
         },
         "supported_sync_modes": [
+          "full_refresh",
           "incremental"
         ],
         "source_defined_cursor": true,

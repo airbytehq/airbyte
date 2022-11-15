@@ -15,7 +15,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
-class OpenExchangeRatesStream(HttpStream, ABC):
+class OpenExchangeRates(HttpStream, ABC):
     url_base = "https://openexchangerates.org/api/"
 
     primary_key = None
@@ -93,7 +93,7 @@ class SourceOpenExchangeRates(AbstractSource):
         try:
             headers = {"Authorization": f"Token {config['app_id']}"}
 
-            resp = requests.get(f"{OpenExchangeRatesStream.url_base}usage.json", headers=headers)
+            resp = requests.get(f"{OpenExchangeRates.url_base}usage.json", headers=headers)
             status = resp.status_code
 
             logger.info(f"Ping response code: {status}")
@@ -116,4 +116,4 @@ class SourceOpenExchangeRates(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        return [OpenExchangeRatesStream(base=config['base'], start_date=config['start_date'], app_id=config['app_id'])]
+        return [OpenExchangeRates(base=config['base'], start_date=config['start_date'], app_id=config['app_id'])]
