@@ -7,8 +7,6 @@ This page contains the setup guide and reference information for the Amazon Ads 
 * Client Secret
 * Refresh Token
 * Region
-* Report Wait Timeout
-* Report Generation Maximum Retries
 * Start Date (Optional)
 * Profile IDs (Optional)
 
@@ -28,11 +26,9 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 4. Click `Authenticate your Amazon Ads account`.
 5. Log in and Authorize to the Amazon account.
 6. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-7. **Report Wait Timeout** is the maximum number of minutes the connector waits for the generation of a report for streams `Brands Reports`, `Brand Video Reports`, `Display Reports`, `Products Reports`.
-8. **Report Generation Maximum Retries** is the maximum number of attempts the connector tries to generate a report for streams `Brands Reports`, `Brand Video Reports`, `Display Reports`, `Products Reports`.
-9. **Start Date (Optional)** is used for generating reports starting from the specified start date. Should be in YYYY-MM-DD format and not more than 60 days in the past. If not specified today's date is used. The date is treated in the timezone of the processed profile.
-10. **Profile IDs (Optional)** you want to fetch data for. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
-11. Click `Set up source`.
+7. **Start Date (Optional)** is used for generating reports starting from the specified start date. Should be in YYYY-MM-DD format and not more than 60 days in the past. If not specified today's date is used. The date is treated in the timezone of the processed profile.
+8. **Profile IDs (Optional)** you want to fetch data for. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
+9. Click `Set up source`.
 
 **For Airbyte Open Source:**
 

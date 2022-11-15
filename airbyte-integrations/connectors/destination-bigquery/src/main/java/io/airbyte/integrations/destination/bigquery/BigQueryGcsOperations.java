@@ -84,7 +84,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   public void createSchemaIfNotExists(final String datasetId, final String datasetLocation) {
     if (!existingSchemas.contains(datasetId)) {
       LOGGER.info("Creating dataset {}", datasetId);
-      BigQueryUtils.createDataset(bigQuery, datasetId, datasetLocation);
+      BigQueryUtils.getOrCreateDataset(bigQuery, datasetId, datasetLocation);
       existingSchemas.add(datasetId);
     }
   }

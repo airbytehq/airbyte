@@ -14,4 +14,3 @@ connectionSpecification:
         Your Access token. See <a
         href="https://apidocs.launchdarkly.com/#section/Overview/Authentication">here</a>.
       airbyte_secret: true
-

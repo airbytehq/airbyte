@@ -165,6 +165,7 @@ services:
       - AIRBYTE_VERSION=${VERSION}
       - API_URL=${API_URL:-}
       - INTERNAL_API_HOST=${INTERNAL_API_HOST}
+      #- CONNECTOR_BUILDER_API_HOST=${CONNECTOR_BUILDER_API_HOST} #FIXME: Uncomment this block when enabling airbyte-connector-builder
       - OPENREPLAY=${OPENREPLAY:-}
       - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
@@ -209,12 +210,24 @@ services:
       - workspace:${WORKSPACE_ROOT}
     networks:
       - airbyte_internal
+  #airbyte-connector-builder-server: #FIXME: Uncomment this block when enabling airbyte-connector-builder
+  #  image: airbyte/connector-builder-server:${VERSION}
+  #  logging: *default-logging
+  #  container_name: airbyte-connector-builder-server
+  #  restart: unless-stopped
+  #  ports:
+  #    - 8003
+  #  environment:
+  #    - AIRBYTE_VERSION=${VERSION}
+  #  networks:
+  #    - airbyte_internal
   airbyte-proxy:
     image: airbyte/proxy:${VERSION}
     container_name: airbyte-proxy
     ports:
       - 8000:8000
       - 8001:8001
+      #- 8003:8003 FIXME: Uncomment this when enabling airbyte-connector-builder
     environment:
       - BASIC_AUTH_USERNAME=${BASIC_AUTH_USERNAME}
       - BASIC_AUTH_PASSWORD=${BASIC_AUTH_PASSWORD}
