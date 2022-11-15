@@ -1,0 +1,28 @@
+acceptance_tests:
+  basic_read:
+    tests:
+    - config_path: secrets/config.json
+      empty_streams: []
+  connection:
+    tests:
+    - config_path: secrets/config.json
+      status: succeed
+    - config_path: integration_tests/invalid_config.json
+      status: failed
+  discovery:
+    tests:
+    - config_path: secrets/config.json
+  full_refresh:
+    tests:
+    - config_path: secrets/config.json
+      configured_catalog_path: integration_tests/configured_catalog.json
+      ignored_fields:
+        "team": ["members", "last_active"]
+  spec:
+    tests:
+    - spec_path: source_clickup_api/spec.yaml
+      timeout_seconds: 1200
+  incremental:
+    bypass_reason: "Incremental syncs are not supported on this connector."
+connector_image: airbyte/source-clickup-api:dev
+test_strictness_level: low
