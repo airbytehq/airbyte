@@ -83,7 +83,7 @@ public class OAuthHandler {
 
         oAuthInputConfigurationForConsent = getOAuthInputConfigurationForConsent(spec,
             hydratedSourceConnection.getConfiguration(),
-            sourceOauthConsentRequest.getoAuthInputConfiguration() );
+            sourceOauthConsentRequest.getoAuthInputConfiguration());
       }
 
       result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getSourceConsentUrl(
@@ -125,7 +125,7 @@ public class OAuthHandler {
 
         oAuthInputConfigurationForConsent = getOAuthInputConfigurationForConsent(spec,
             hydratedSourceConnection.getConfiguration(),
-            destinationOauthConsentRequest.getoAuthInputConfiguration() );
+            destinationOauthConsentRequest.getoAuthInputConfiguration());
 
       }
 
@@ -238,8 +238,8 @@ public class OAuthHandler {
   }
 
   private JsonNode getOAuthInputConfigurationForConsent(final ConnectorSpecification spec,
-                                                    final JsonNode hydratedSourceConnectionConfiguration,
-                                                    final JsonNode destinationDefinitionIdRequestBody) {
+                                                        final JsonNode hydratedSourceConnectionConfiguration,
+                                                        final JsonNode destinationDefinitionIdRequestBody) {
     final List<String> fieldsToGet =
         buildJsonPathFromOAuthFlowInitParameters(OAuthPathExtractor.extractOauthConfigurationPaths(
             spec.getAdvancedAuth().getOauthConfigSpecification().getOauthUserInputFromConnectorConfigSpecification()));
