@@ -997,6 +997,7 @@ class SellerAnalyticsSalesAndTrafficReports(IncrementalAnalyticsStream):
     result_key = "salesAndTrafficByAsin"
     cursor_field = "queryEndDate"
     fixed_period_in_days = 1
+    availability_sla_days = 2
 
 
 class VendorSalesReports(IncrementalAnalyticsStream):
