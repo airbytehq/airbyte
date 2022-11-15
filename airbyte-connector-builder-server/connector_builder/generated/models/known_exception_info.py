@@ -1,12 +1,13 @@
-# coding: utf-8
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+# coding: utf-8
+
 from __future__ import annotations
+from datetime import date, datetime  # noqa: F401
 
 import re  # noqa: F401
-from datetime import date, datetime  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
 from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
@@ -27,6 +28,5 @@ class KnownExceptionInfo(BaseModel):
     message: str
     exception_class_name: Optional[str] = None
     exception_stack: Optional[List[str]] = None
-
 
 KnownExceptionInfo.update_forward_refs()
