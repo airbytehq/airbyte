@@ -373,7 +373,7 @@
 
   "connection.schemaChange.breaking": "Breaking schema updates detected.",
   "connection.schemaChange.nonBreaking": "Non-breaking schema updates detected.",
-  "connection.schemaChange.reviewCTA": "Review changes",
+  "connection.schemaChange.reviewAction": "Review changes",
 
   "form.frequency": "Replication frequency*",
   "form.cronExpression": "Cron expression*",

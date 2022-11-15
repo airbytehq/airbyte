@@ -46,7 +46,7 @@ export const SchemaChangesDetected: React.FC = () => {
     return null;
   }
 
-  const onReviewCTAClick: React.MouseEventHandler<HTMLButtonElement> = () => {
+  const onReviewActionButtonClick: React.MouseEventHandler<HTMLButtonElement> = () => {
     if (!location.pathname.includes(`/${ConnectionSettingsRoutes.REPLICATION}`)) {
       navigate(ConnectionSettingsRoutes.REPLICATION);
     }
@@ -64,8 +64,8 @@ export const SchemaChangesDetected: React.FC = () => {
       <Text size="lg">
         <FormattedMessage id={`connection.schemaChange.${hasBreakingSchemaChange ? "breaking" : "nonBreaking"}`} />
       </Text>
-      <Button onClick={onReviewCTAClick} isLoading={schemaRefreshing}>
-        <FormattedMessage id="connection.schemaChange.reviewCTA" />
+      <Button onClick={onReviewActionButtonClick} isLoading={schemaRefreshing}>
+        <FormattedMessage id="connection.schemaChange.reviewAction" />
       </Button>
     </div>
   );
