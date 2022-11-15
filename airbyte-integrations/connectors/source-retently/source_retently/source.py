@@ -97,7 +97,11 @@ class RetentlyStream(HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        return next_page_token
+        next_page = next_page_token or {}
+        return {
+            "limit": 1000,
+            **next_page,
+        }
 
 
 class Campaigns(RetentlyStream):
