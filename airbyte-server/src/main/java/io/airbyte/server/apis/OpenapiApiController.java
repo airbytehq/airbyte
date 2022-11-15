@@ -18,7 +18,7 @@ public class OpenapiApiController implements OpenapiApi {
 
   @Override
   public File getOpenApiSpec() {
-    return ApiHelper.execute(openApiConfigHandler::getFile);
+    return ConfigurationApi.execute(openApiConfigHandler::getFile);
   }
 
 }
