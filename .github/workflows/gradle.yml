@@ -186,6 +186,7 @@ jobs:
     name: "Octavia CLI: Stop Build EC2 Runner"
     timeout-minutes: 10
     needs:
+      - find_valid_pat
       - start-octavia-build-runner # required to get output from the start-runner job
       - octavia-cli-build # required to wait when the main job is done
     runs-on: ubuntu-latest
