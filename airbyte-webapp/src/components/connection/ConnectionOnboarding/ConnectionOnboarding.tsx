@@ -41,6 +41,10 @@ interface ConnectorSpecificationMap {
   destinationDefinitions: Record<string, DestinationDefinitionRead>;
 }
 
+const roundConnectorCount = (connectors: Record<string, SourceDefinitionRead | DestinationDefinitionRead>): number => {
+  return Math.floor(Object.keys(connectors).length / 10) * 10;
+};
+
 /**
  * Gets all available connectors, filter out the ones that should not get new
  * connections (via the {@code useAvailableConnectorDefintions} hook) and convert
@@ -103,12 +107,12 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
 
   const moreSourcesTooltip = formatMessage(
     { id: "connection.onboarding.moreSources" },
-    { count: Math.floor(Object.keys(sourceDefinitions).length / 10) * 10 }
+    { count: roundConnectorCount(sourceDefinitions) }
   );
 
   const moreDestinationsTooltip = formatMessage(
     { id: "connection.onboarding.moreDestinations" },
-    { count: Math.floor(Object.keys(destinationDefinitions).length / 10) * 10 }
+    { count: roundConnectorCount(destinationDefinitions) }
   );
 
   return (
