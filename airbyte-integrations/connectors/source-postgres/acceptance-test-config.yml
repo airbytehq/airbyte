@@ -6,3 +6,5 @@ tests:
   spec:
     - spec_path: "src/test-integration/resources/expected_spec.json"
       config_path: "src/test-integration/resources/dummy_config.json"
+  discovery:
+    bypass_reason: "Pending."
