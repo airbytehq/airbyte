@@ -30,6 +30,9 @@
       "action_type": {
         "type": ["null", "string"]
       },
+      "cost_per_conversion": {
+        "type": ["null", "string"]
+      },
       "value": {
         "type": ["null", "number"]
       }
