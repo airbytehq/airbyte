@@ -13,8 +13,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
 
-
 BASE_URL = "https://app.retently.com/api/v2/"
+
 
 class SourceRetently(AbstractSource):
     @staticmethod
@@ -37,6 +37,7 @@ class SourceRetently(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             auth = self.get_authenticator(config)
+            # NOTE: not all retently instances have companies
             stream = Customers(auth)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
@@ -54,7 +55,7 @@ class SourceRetently(AbstractSource):
             Outbox(auth),
             Reports(auth),
             Templates(auth),
-            ]
+        ]
 
 
 class RetentlyStream(HttpStream):
@@ -74,10 +75,15 @@ class RetentlyStream(HttpStream):
     ) -> Iterable[Mapping]:
         resp = response.json()
         data = resp
-        if "data" in resp:
-            data = resp.get("data", dict())
 
-        stream_data = data.get(self.json_path, [])
+        if "data" in resp:
+            data = resp.get("data")
+
+        stream_data = data
+
+        if self.json_path:
+            stream_data = data.get(self.json_path, [])
+
         yield from stream_data
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -114,19 +120,23 @@ class Campaigns(RetentlyStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
+
 class Companies(RetentlyStream):
     json_path = "companies"
 
     def path(
-        self, **kwargs,
+        self,
+        **kwargs,
     ) -> str:
         return "companies"
+
 
 class Customers(RetentlyStream):
     json_path = "subscribers"
 
     def path(
-        self, **kwargs,
+        self,
+        **kwargs,
     ) -> str:
         return "nps/customers"
 
@@ -135,23 +145,28 @@ class Feedback(RetentlyStream):
     json_path = "responses"
 
     def path(
-        self, **kwargs,
+        self,
+        **kwargs,
     ) -> str:
         return "feedback"
+
 
 class Outbox(RetentlyStream):
     json_path = "surveys"
 
     def path(
-        self, **kwargs,
+        self,
+        **kwargs,
     ) -> str:
         return "nps/outbox"
+
 
 class Reports(RetentlyStream):
     json_path = None
 
     def path(
-        self, **kwargs,
+        self,
+        **kwargs,
     ) -> str:
         return "reports"
 
@@ -159,10 +174,12 @@ class Reports(RetentlyStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
+
 class Templates(RetentlyStream):
     json_path = "templates"
 
     def path(
-        self, **kwargs,
+        self,
+        **kwargs,
     ) -> str:
         return "templates"

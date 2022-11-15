@@ -15,13 +15,11 @@
             "type": "object",
             "title": "Authenticate via Retently (OAuth)",
             "required": ["client_id", "client_secret", "refresh_token"],
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
               "auth_type": {
                 "type": "string",
                 "const": "Client",
-                "enum": ["Client"],
-                "default": "Client",
                 "order": 0
               },
               "client_id": {
@@ -47,13 +45,11 @@
             "type": "object",
             "title": "Authenticate with API Token",
             "required": ["api_key"],
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
               "auth_type": {
                 "type": "string",
                 "const": "Token",
-                "enum": ["Token"],
-                "default": "Token",
                 "order": 0
               },
               "api_key": {
