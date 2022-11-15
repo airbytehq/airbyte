@@ -8,6 +8,7 @@ This page guides you through the process of setting up the SurveyCTO source conn
 - Your SurveCTO `Username`
 - Your SurveyCTO `Password`
 - Form ID `Unique Identifier for one of your forms`
+- Start Date `Start Date default`
 
 ## Set up the SurveyCTO source connection
 1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
@@ -18,7 +19,8 @@ This page guides you through the process of setting up the SurveyCTO source conn
 6. Enter a Username for SurveyCTO account.
 7. Enter a Password for SurveyCTO account.
 8. Form ID's (We can multiple forms id here to pull from) 
-9. Click **Set up source**.
+9. Start Date (This can be pass to pull the data from particular date)
+10. Click **Set up source**.
 
 ## Supported sync modes
 
