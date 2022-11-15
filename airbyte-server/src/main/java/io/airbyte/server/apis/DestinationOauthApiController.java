@@ -22,17 +22,17 @@ public class DestinationOauthApiController implements DestinationOauthApi {
 
   @Override
   public Map<String, Object> completeDestinationOAuth(final CompleteDestinationOAuthRequest completeDestinationOAuthRequest) {
-    return ConfigurationApi.execute(() -> oAuthHandler.completeDestinationOAuth(completeDestinationOAuthRequest));
+    return ApiHelper.execute(() -> oAuthHandler.completeDestinationOAuth(completeDestinationOAuthRequest));
   }
 
   @Override
   public OAuthConsentRead getDestinationOAuthConsent(final DestinationOauthConsentRequest destinationOauthConsentRequest) {
-    return ConfigurationApi.execute(() -> oAuthHandler.getDestinationOAuthConsent(destinationOauthConsentRequest));
+    return ApiHelper.execute(() -> oAuthHandler.getDestinationOAuthConsent(destinationOauthConsentRequest));
   }
 
   @Override
   public void setInstancewideDestinationOauthParams(final SetInstancewideDestinationOauthParamsRequestBody setInstancewideDestinationOauthParamsRequestBody) {
-    ConfigurationApi.execute(() -> {
+    ApiHelper.execute(() -> {
       oAuthHandler.setDestinationInstancewideOauthParams(setInstancewideDestinationOauthParamsRequestBody);
       return null;
     });
