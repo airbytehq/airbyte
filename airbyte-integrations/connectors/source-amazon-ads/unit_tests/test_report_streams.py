@@ -704,3 +704,53 @@ def test_products_report_stream_with_custom_record_types(config_gen, custom_reco
         if record['recordType'] not in expected_record_types:
             if flag_match_error:
                 assert False
+
+
+@responses.activate
+@pytest.mark.parametrize(
+    "custom_record_types, expected_record_types, flag_match_error",
+    [
+        (
+                ["campaigns"],
+                ["campaigns"],
+                True
+        ),
+        (
+                ["asins"],
+                ["asins"],
+                True
+        ),
+        (
+                ["campaigns", "adGroups"],
+                ["campaigns", "adGroups"],
+                True
+        ),
+        (
+                [],
+                [],
+                False
+        ),
+        (
+                ["invalid_record_type"],
+                [],
+                True
+        )
+    ]
+)
+def test_brands_video_report_with_custom_record_types(config_gen, custom_record_types, expected_record_types, flag_match_error):
+    setup_responses(
+        init_response_brands=REPORT_INIT_RESPONSE,
+        status_response=REPORT_STATUS_RESPONSE,
+        metric_response=METRIC_RESPONSE,
+    )
+
+    profiles = make_profiles()
+
+    stream = SponsoredBrandsVideoReportStream(config_gen(report_record_types=custom_record_types), profiles, authenticator=mock.MagicMock())
+    stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
+    records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
+    for record in records:
+        print(record)
+        if record['recordType'] not in expected_record_types:
+            if flag_match_error:
+                assert False
