@@ -239,15 +239,15 @@ public class OAuthHandler {
 
   private JsonNode getOAuthInputConfigurationForConsent(final ConnectorSpecification spec,
                                                         final JsonNode hydratedSourceConnectionConfiguration,
-                                                        final JsonNode destinationDefinitionIdRequestBody) {
-    final List<String> fieldsToGet =
+                                                        final JsonNode oAuthInputConfiguration) {
+    final Map<String, String> fieldsToGet =
         buildJsonPathFromOAuthFlowInitParameters(OAuthPathExtractor.extractOauthConfigurationPaths(
             spec.getAdvancedAuth().getOauthConfigSpecification().getOauthUserInputFromConnectorConfigSpecification()));
 
     final JsonNode oAuthInputConfigurationFromDB = getOAuthInputConfiguration(hydratedSourceConnectionConfiguration, fieldsToGet);
 
     return getOauthFromDBIfNeeded(oAuthInputConfigurationFromDB,
-        destinationDefinitionIdRequestBody);
+        oAuthInputConfiguration);
   }
 
   private Map<String, Object> generateSourceMetadata(final UUID sourceDefinitionId)
@@ -263,10 +263,10 @@ public class OAuthHandler {
   }
 
   @VisibleForTesting
-  List<String> buildJsonPathFromOAuthFlowInitParameters(final List<List<String>> oAuthFlowInitParameters) {
-    return oAuthFlowInitParameters.stream()
-        .map(path -> "$." + String.join(".", path))
-        .toList();
+  Map<String, String> buildJsonPathFromOAuthFlowInitParameters(final Map<String, List<String>> oAuthFlowInitParameters) {
+    return oAuthFlowInitParameters.entrySet().stream()
+        .map(entry -> Map.entry(entry.getKey(), "$." + String.join(".", entry.getValue())))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   @VisibleForTesting
@@ -279,7 +279,7 @@ public class OAuthHandler {
             if (oAuthInputConfigurationFromDB.has(k)) {
               result.put(k, oAuthInputConfigurationFromDB.get(k).textValue());
             } else {
-              LOGGER.warn("Missing the k {} in the config store in DB", k);
+              LOGGER.warn("Missing the key {} in the config store in DB", k);
             }
 
           } else {
@@ -291,12 +291,11 @@ public class OAuthHandler {
   }
 
   @VisibleForTesting
-  JsonNode getOAuthInputConfiguration(final JsonNode hydratedSourceConnectionConfiguration, final List<String> pathsToGet) {
-    return Jsons.jsonNode(pathsToGet.stream().map(path -> Map.entry(path,
-        JsonPaths.getSingleValue(hydratedSourceConnectionConfiguration, path)))
+  JsonNode getOAuthInputConfiguration(final JsonNode hydratedSourceConnectionConfiguration, final Map<String, String> pathsToGet) {
+    return Jsons.jsonNode(pathsToGet.entrySet().stream()
         .collect(Collectors.toMap(
-            entry -> Iterables.getLast(List.of(entry.getKey().split("\\."))),
-            entry -> entry.getValue().get())));
+            Map.Entry::getKey,
+            entry -> JsonPaths.getSingleValue(hydratedSourceConnectionConfiguration, entry.getValue()).get())));
   }
 
 }

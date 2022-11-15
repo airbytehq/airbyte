@@ -9,6 +9,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.server.handlers.helpers.OAuthPathExtractor;
 import java.util.List;
 import org.assertj.core.api.Assertions;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class OAuthPathExtractorTest {
@@ -32,12 +33,12 @@ class OAuthPathExtractorTest {
                                                    }
                                              """);
 
-    final List<List<String>> expected = List.of(
-        List.of("tenant_id"),
-        List.of("another", "property"));
+    final Map<String, List<String>> expected = Map.ofEntries(
+        Map.entry("tenant_id", List.of("tenant_id")),
+        Map.entry("another_property", List.of("another", "property")));
 
     Assertions.assertThat(OAuthPathExtractor.extractOauthConfigurationPaths(input))
-        .containsAll(expected);
+        .containsExactlyInAnyOrderEntriesOf(expected);
   }
 
 }

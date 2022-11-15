@@ -157,18 +157,20 @@ class OAuthHandlerTest {
 
   @Test
   void testBuildJsonPathFromOAuthFlowInitParameters() {
-    List<List<String>> input = List.of(
-        List.of("1"),
-        List.of("2", "3"));
+    final Map<String, List<String>> input = Map.ofEntries(
+        Map.entry("field1", List.of("1")),
+        Map.entry("field2", List.of("2", "3")));
 
-    List<String> expected = List.of("$.1", "$.2.3");
+    final Map<String, String> expected = Map.ofEntries(
+        Map.entry("field1", "$.1"),
+        Map.entry("field2", "$.2.3"));
 
     assertEquals(expected, handler.buildJsonPathFromOAuthFlowInitParameters(input));
   }
 
   @Test
   void testGetOAuthInputConfiguration() {
-    JsonNode hydratedConfig = Jsons.deserialize(
+    final JsonNode hydratedConfig = Jsons.deserialize(
         """
         {
           "field1": "1",
@@ -180,12 +182,12 @@ class OAuthHandlerTest {
         }
         """);
 
-    List<String> pathsToGet = List.of(
-        "$.field1",
-        "$.field3.field3_1",
-        "$.field3.field3_2");
+    final Map<String, String> pathsToGet = Map.ofEntries(
+        Map.entry("field1", "$.field1"),
+        Map.entry("field3_1", "$.field3.field3_1"),
+        Map.entry("field3_2", "$.field3.field3_2"));
 
-    JsonNode expected = Jsons.deserialize(
+    final JsonNode expected = Jsons.deserialize(
         """
         {
           "field1": "1",
@@ -199,7 +201,7 @@ class OAuthHandlerTest {
 
   @Test
   void testGetOauthFromDBIfNeeded() {
-    JsonNode fromInput = Jsons.deserialize(
+    final JsonNode fromInput = Jsons.deserialize(
         """
         {
           "testMask": "**********",
@@ -207,7 +209,7 @@ class OAuthHandlerTest {
         }
         """);
 
-    JsonNode fromDb = Jsons.deserialize(
+    final JsonNode fromDb = Jsons.deserialize(
         """
         {
           "testMask": "mask",
@@ -215,7 +217,7 @@ class OAuthHandlerTest {
         }
         """);
 
-    JsonNode expected = Jsons.deserialize(
+    final JsonNode expected = Jsons.deserialize(
         """
         {
           "testMask": "mask",

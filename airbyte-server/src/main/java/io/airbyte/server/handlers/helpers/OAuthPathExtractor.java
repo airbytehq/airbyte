@@ -6,17 +6,19 @@ package io.airbyte.server.handlers.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class OAuthPathExtractor {
 
   private static final String PROPERTIES = "properties";
   private static final String PATH_IN_CONNECTOR_CONFIG = "path_in_connector_config";
 
-  public static List<List<String>> extractOauthConfigurationPaths(final JsonNode configuration) {
+  public static Map<String, List<String>> extractOauthConfigurationPaths(final JsonNode configuration) {
 
     if (configuration.has(PROPERTIES) && configuration.get(PROPERTIES).isObject()) {
-      final List<List<String>> result = new ArrayList<>();
+      final Map<String, List<String>> result = new HashMap<>();
 
       configuration.get(PROPERTIES).fields().forEachRemaining(entry -> {
         final JsonNode value = entry.getValue();
@@ -25,13 +27,13 @@ public class OAuthPathExtractor {
           for (final JsonNode pathPart : value.get(PATH_IN_CONNECTOR_CONFIG)) {
             path.add(pathPart.textValue());
           }
-          result.add(path);
+          result.put(entry.getKey(), path);
         }
       });
 
       return result;
     } else {
-      return new ArrayList<>();
+      return new HashMap<>();
     }
   }
 
