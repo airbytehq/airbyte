@@ -1653,5 +1653,4 @@ public abstract class DestinationAcceptanceTest {
 
   }
 
-
 }
