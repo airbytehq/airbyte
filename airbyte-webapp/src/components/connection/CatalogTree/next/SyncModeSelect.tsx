@@ -4,6 +4,7 @@ import { FormattedMessage } from "react-intl";
 
 import { DropDownOptionDataItem } from "components/ui/DropDown";
 import { PillSelect, PillButtonVariant } from "components/ui/PillSelect";
+import { PillButtonVariant } from "components/ui/PillSelect/PillButton";
 
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 
@@ -24,9 +25,17 @@ interface SyncModeSelectProps {
   options: SyncModeOption[];
   value: Partial<SyncModeValue>;
   variant?: PillButtonVariant;
+  variant?: PillButtonVariant;
 }
 
-export const SyncModeSelect: React.FC<SyncModeSelectProps> = ({ className, variant, options, onChange, value }) => {
+export const SyncModeSelect: React.FC<SyncModeSelectProps> = ({
+  className,
+  variant,
+  options,
+  onChange,
+  value,
+  variant,
+}) => {
   const pillSelectOptions = useMemo(() => {
     return options.map(({ value }) => {
       const { syncMode, destinationSyncMode } = value;
@@ -50,6 +59,7 @@ export const SyncModeSelect: React.FC<SyncModeSelectProps> = ({ className, varia
       value={value}
       onChange={onChange}
       className={classNames(styles.pillSelect, className)}
+      variant={variant}
     />
   );
 };

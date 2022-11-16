@@ -36,11 +36,11 @@
   }
 
   &.removed {
-    background-color: colors.$red-50;
+    background-color: colors.$red-40;
   }
 
   &.added {
-    background-color: colors.$green-50;
+    background-color: colors.$green-30;
   }
 
   &.error {
@@ -48,7 +48,7 @@
   }
 
   &.changed {
-    background-color: colors.$blue-transparent;
+    background-color: colors.$blue-30;
   }
 
   &.disabled {

@@ -2,6 +2,7 @@ import { faArrowRight, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import classNames from "classnames";
+import { isEqual } from "lodash";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
@@ -57,29 +58,26 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
         (item) => item.stream?.name === stream.stream?.name && item.stream?.namespace === stream.stream?.namespace
       )?.config?.selected !== stream.config?.selected;
 
-    const rowChanged =
+    const rowChanged = !isEqual(
       initialValues.syncCatalog.streams.find(
-        (item) => item.stream?.name === stream.stream?.name && item.stream?.namespace === stream.stream?.namespace
-      )?.config !== stream.config;
+        (item) =>
+          item.stream &&
+          stream.stream &&
+          item.stream.name === stream.stream.name &&
+          item.stream.namespace === stream.stream.namespace
+      )?.config,
+      stream.config
+    );
 
-    // todo: the following should also evaluate if the stream is "new" from a refresh + is also enabled
     if (rowStatusChanged) {
       return isStreamEnabled ? "added" : "removed";
-    }
-    // todo: the following should also evaluate if there are changes from the diff
-    else if (rowChanged) {
+    } else if (rowChanged) {
       return "changed";
     } else if (!isStreamEnabled && !rowStatusChanged) {
       return "disabled";
     }
     return "unchanged";
-  }, [
-    initialValues.syncCatalog.streams,
-    stream.config,
-    stream.stream?.name,
-    stream.stream?.namespace,
-    isStreamEnabled,
-  ]);
+  }, [initialValues.syncCatalog.streams, stream, isStreamEnabled]);
 
   const [isSelected, selectForBulkEdit] = useBulkEditSelect(stream.id);
 
@@ -91,6 +89,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
     [styles.added]: statusToDisplay === "added",
     [styles.removed]: statusToDisplay === "removed",
     [styles.changed]: isSelected || statusToDisplay === "changed",
+    [styles.disabled]: statusToDisplay === "disabled",
     [styles.error]: hasError,
   });
 
@@ -110,10 +109,20 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
     return null;
   }, [statusToDisplay]);
 
+  const pillButtonVariant = useMemo(() => {
+    if (statusToDisplay === "added") {
+      return "green";
+    } else if (statusToDisplay === "removed") {
+      return "red";
+    } else if (statusToDisplay === "changed") {
+      return "blue";
+    }
+    return "grey";
+  }, [statusToDisplay]);
+
   const checkboxCellCustomStyle = classnames(styles.checkboxCell, styles.streamRowCheckboxCell);
 
-  console.log({ statusToDisplay });
-  console.log({ statusToDisplay });
+  // todo: the primary key and cursor dropdowns should be full width of the cell
   return (
     <Row onClick={onRowClick} className={streamHeaderContentStyle}>
       {!disabled && (
@@ -145,7 +154,12 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           </Cell>
         ) : (
           // todo: SyncModeSelect should probably have a Tooltip, append/dedupe ends up ellipsing
-          <SyncModeSelect options={availableSyncModes} onChange={onSelectSyncMode} value={syncSchema} />
+          <SyncModeSelect
+            options={availableSyncModes}
+            onChange={onSelectSyncMode}
+            value={syncSchema}
+            variant={pillButtonVariant}
+          />
         )}
       </div>
       <Cell flex={1}>
@@ -155,6 +169,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             paths={paths}
             path={cursorType === "sourceDefined" ? defaultCursorField : cursorField}
             onPathChange={onCursorChange}
+            variant={pillButtonVariant}
           />
         )}
       </Cell>
@@ -166,6 +181,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             path={primaryKey}
             isMulti
             onPathChange={onPrimaryKeyChange}
+            variant={pillButtonVariant}
           />
         )}
       </Cell>
