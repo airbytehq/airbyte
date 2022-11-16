@@ -279,9 +279,9 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     createAndPopulateTimestampTable();
     final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(List.of(
         CatalogHelpers.createAirbyteStream("time_stamp_table", MODELS_SCHEMA,
-            Field.of("id", JsonSchemaType.NUMBER),
-            Field.of("name", JsonSchemaType.STRING),
-            Field.of("created_at", JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE))
+            Field.of("id", JsonSchemaType.NUMBER_V1),
+            Field.of("name", JsonSchemaType.STRING_V1),
+            Field.of("created_at", JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers

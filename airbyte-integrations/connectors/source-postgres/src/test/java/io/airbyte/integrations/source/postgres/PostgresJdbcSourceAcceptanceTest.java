@@ -347,34 +347,34 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME,
             defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
-            Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
-            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
-            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
+            Field.of(COL_ID, JsonSchemaType.INTEGER_V1),
+            Field.of(COL_NAME, JsonSchemaType.STRING_V1),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.DATE_V1),
+            Field.of(COL_WAKEUP_AT, JsonSchemaType.TIME_WITH_TIMEZONE_V1),
+            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1),
+            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_WITHOUT_PK,
             defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
-            Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
-            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
-            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
+            Field.of(COL_ID, JsonSchemaType.INTEGER_V1),
+            Field.of(COL_NAME, JsonSchemaType.STRING_V1),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.DATE_V1),
+            Field.of(COL_WAKEUP_AT, JsonSchemaType.TIME_WITH_TIMEZONE_V1),
+            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1),
+            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(Collections.emptyList()),
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_COMPOSITE_PK,
             defaultNamespace,
-            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
-            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
-            Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
-            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
-            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
+            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING_V1),
+            Field.of(COL_LAST_NAME, JsonSchemaType.STRING_V1),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.DATE_V1),
+            Field.of(COL_WAKEUP_AT, JsonSchemaType.TIME_WITH_TIMEZONE_V1),
+            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1),
+            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));

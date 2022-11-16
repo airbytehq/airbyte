@@ -241,7 +241,7 @@ public abstract class CdcSourceTest {
     final Map<String, List<AirbyteRecordMessage>> recordsPerStream = new HashMap<>();
     for (final AirbyteMessage message : messages) {
       if (message.getType() == Type.RECORD) {
-        AirbyteRecordMessage recordMessage = message.getRecord();
+        final AirbyteRecordMessage recordMessage = message.getRecord();
         recordsPerStream.computeIfAbsent(recordMessage.getStream(), (c) -> new ArrayList<>()).add(recordMessage);
       }
     }
@@ -780,9 +780,9 @@ public abstract class CdcSourceTest {
     final AirbyteStream streamWithoutPK = CatalogHelpers.createAirbyteStream(
         MODELS_STREAM_NAME + "_2",
         MODELS_SCHEMA,
-        Field.of(COL_ID, JsonSchemaType.INTEGER),
-        Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
-        Field.of(COL_MODEL, JsonSchemaType.STRING));
+        Field.of(COL_ID, JsonSchemaType.INTEGER_V1),
+        Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER_V1),
+        Field.of(COL_MODEL, JsonSchemaType.STRING_V1));
     streamWithoutPK.setSourceDefinedPrimaryKey(Collections.emptyList());
     streamWithoutPK.setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));
     addCdcMetadataColumns(streamWithoutPK);
@@ -790,9 +790,9 @@ public abstract class CdcSourceTest {
     final AirbyteStream randomStream = CatalogHelpers.createAirbyteStream(
         MODELS_STREAM_NAME + "_random",
         randomTableSchema(),
-        Field.of(COL_ID + "_random", JsonSchemaType.INTEGER),
-        Field.of(COL_MAKE_ID + "_random", JsonSchemaType.INTEGER),
-        Field.of(COL_MODEL + "_random", JsonSchemaType.STRING))
+        Field.of(COL_ID + "_random", JsonSchemaType.INTEGER_V1),
+        Field.of(COL_MAKE_ID + "_random", JsonSchemaType.INTEGER_V1),
+        Field.of(COL_MODEL + "_random", JsonSchemaType.STRING_V1))
         .withSourceDefinedCursor(true)
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
         .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID + "_random")));
