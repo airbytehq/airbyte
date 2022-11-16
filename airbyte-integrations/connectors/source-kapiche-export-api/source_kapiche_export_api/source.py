@@ -5,12 +5,10 @@
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-import json
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 import pandas as pd
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
@@ -72,23 +70,16 @@ class ExportDataGet(KapicheExportApiStream, ABC):
         self._url_base = url
         self._name = name
     
-    # @property
-    # def name(self) -> str:
-        # """
-        # :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
-        # """
-        # return f'{self._name}-export'
-    # @property
-    # def namespace(self) -> Optional[str]:
-        # """
-        # Override to return the namespace of this stream, e.g. the Postgres schema which this stream will emit records for.
-        # :return: A string containing the name of the namespace.
-        # """
-        # return self._name
+    @property
+    def name(self) -> str:
+        """
+        :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
+        """
+        return f'kapiche-{self._name}'
     
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         if current_stream_state.get(self.cursor_field):
-            if current_stream_state[self.cursor_field] < int(latest_record[self.cursor_field]):
+            if int(current_stream_state[self.cursor_field]) < int(latest_record[self.cursor_field]):
                 return {self.cursor_field: latest_record[self.cursor_field]}
             else:
                 return {self.cursor_field: current_stream_state[self.cursor_field]}
@@ -133,7 +124,7 @@ class ExportDataGet(KapicheExportApiStream, ABC):
     def request_params(
         self,
         start_document_id: int = 1,
-        docs_count: int = 10000,
+        docs_count: int = 100,
         export_format: str = 'parquet',
         ) -> MutableMapping[str, Any]:
 
@@ -161,7 +152,16 @@ class ExportDataGet(KapicheExportApiStream, ABC):
 
     def get_json_schema(self) -> Mapping[str, Any]:
 
-        schema = dict(super().get_json_schema())
+        schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": True,
+            "properties": {
+                "document_id__": {
+                "type": ["null", "integer"]
+                }
+            }
+        }
         request = self._create_prepared_request(
                 path=self.path(),
                 headers=dict(**self.authenticator.get_auth_header()),
@@ -176,7 +176,13 @@ class ExportDataGet(KapicheExportApiStream, ABC):
             if pd.api.types.is_integer_dtype(dtype):
                 schema['properties'][col] = {"type": ["null", "integer"]}
             if pd.api.types.is_float_dtype(dtype):
-                schema['properties'][col] = {"type": ["null", "float"]}
+                schema['properties'][col] = {"type": ["null", "number"]}
+            if pd.api.types.is_datetime64_any_dtype(df[col].dtype):
+                # According to airbyte docs, we need to choose formats with either with or without timezone
+                #  information. Since currently we donot get any timezone info from the product,
+                # we choose to use 'timezone_withouttimestamp' format.
+                # https://docs.airbyte.com/understanding-airbyte/supported-data-types/
+                schema['properties'][col] = {"type": ["null", "string"], "format":"timestamp_without_timezone"}
             else:
                 schema['properties'][col] = {"type": ["null", "string"]}
         return schema
@@ -191,11 +197,15 @@ class ExportDataGet(KapicheExportApiStream, ABC):
         with open(fname, 'wb') as file:
             for content in response.iter_content(chunk_size=None):
                 file.write(content)
-
         df = pd.read_parquet(fname)
-        data_json = json.loads(
-            df.reset_index().to_json(orient='records', date_format='iso')
-        )
+
+        # Substitute all NaNs with "null", otherwise the row will fail Json conversion.
+        df.fillna("null", inplace=True)
+        for col in df.columns:
+            if pd.api.types.is_datetime64_any_dtype(df[col].dtype):
+                df[col] = df[col].dt.strftime(date_format='%Y-%m-%dT%H:%M:%S%z')
+
+        data_json = df.reset_index().to_dict(orient='records')
         yield from data_json
 
     def read_records(
@@ -218,6 +228,8 @@ class ExportDataGet(KapicheExportApiStream, ABC):
 
             response = self._send_request(request, request_kwargs)
             for record in  self.parse_response(response, fname):
+                if int(self._cursor_value) < record[self.cursor_field]:
+                    self._cursor_value = int(record[self.cursor_field])
                 yield record
 
             if response.headers.get('Kapiche-next-document-id'):
@@ -225,6 +237,7 @@ class ExportDataGet(KapicheExportApiStream, ABC):
                 self._cursor_value = next_doc
             else:
                 pagination_complete = True
+
         fname.unlink(missing_ok=True)
         # Always return an empty generator just in case no records were ever yielded
         yield from []    

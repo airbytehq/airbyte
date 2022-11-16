@@ -4,6 +4,7 @@
 
 from http import HTTPStatus
 from unittest.mock import MagicMock
+import pandas as pd
 
 import pytest
 from source_kapiche_export_api.source import KapicheExportApiStream, ExportDataGet
@@ -12,9 +13,8 @@ from source_kapiche_export_api.source import KapicheExportApiStream, ExportDataG
 @pytest.fixture
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(KapicheExportApiStream, "path", "v0/example_endpoint")
-    mocker.patch.object(KapicheExportApiStream, "primary_key", "test_primary_key")
-    mocker.patch.object(KapicheExportApiStream, "__abstractmethods__", set())
+    mocker.patch.object(KapicheExportApiStream, "path", "test_endpoint/")
+    # mocker.patch.object(KapicheExportApiStream, "__abstractmethods__", set())
 
 
 def test_request_params(patch_base_class):
@@ -25,37 +25,50 @@ def test_request_params(patch_base_class):
 
 
 def test_next_page_token(patch_base_class):
-    stream = KapicheExportApiStream()
+    stream = ExportDataGet('mock-uuid', MagicMock(), 'name')
     # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
-    expected_token = None
-    assert stream.next_page_token(**inputs) == expected_token
+    headers = {'Kapiche-next-document-id': 100}
+    response = MagicMock()
+    response.headers = headers
+    inputs = {"response": response}
+
+    expected_token = 100
+    assert stream.next_page_token(**inputs)[stream.cursor_field] == expected_token
 
 
 def test_parse_response(patch_base_class):
-    stream = ExportDataGet('uuid', None)
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected parced object
-    expected_parsed_object = {}
-    assert next(stream.parse_response(**inputs)) == expected_parsed_object
+    stream = ExportDataGet('uuid', MagicMock(), None)
 
+    def iterate_content(*args, **kwargs):
+        with open('./unit_tests/test_data.parquet', 'rb') as file:
+            yield file.read()
 
-def test_request_headers(patch_base_class):
-    stream = KapicheExportApiStream()
-    # TODO: replace this with your input parameters
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
-    expected_headers = {}
-    assert stream.request_headers(**inputs) == expected_headers
-
-
-def test_http_method(patch_base_class):
-    stream = KapicheExportApiStream()
-    # TODO: replace this with your expected http request method
-    expected_method = "GET"
-    assert stream.http_method == expected_method
+    response = MagicMock()
+    expected_parsed_object = [
+        {
+            "document_id__": 490,
+            "Aircraft": "Boeing 777-200ER",
+            "Cabin Flown": "Business Class",
+            "Date Flown": "2019-02-14T00:00:00",
+            "Date Published": "2011-03-04T00:00:00",
+            "NPS Category": "Detractor",
+            "NPS Response": 7.0,
+        },
+        {
+            "document_id__": 491,
+            "Aircraft": "Boeing 777-200ER",
+            "Cabin Flown": "Business Class",
+            "Date Flown": "2018-07-15T00:00:00",
+            "Date Published": "2018-09-07T00:00:00",
+            "NPS Category": "Detractor",
+            "NPS Response": 8.0,
+        }
+    ]
+    response.iter_content = iterate_content
+    inputs = {"response": response, "fname": "./test_data.parquet"}
+    record_iter = stream.parse_response(**inputs)
+    assert next(record_iter) == expected_parsed_object[0]
+    assert next(record_iter) == expected_parsed_object[1]
 
 
 @pytest.mark.parametrize(
@@ -70,12 +83,12 @@ def test_http_method(patch_base_class):
 def test_should_retry(patch_base_class, http_status, should_retry):
     response_mock = MagicMock()
     response_mock.status_code = http_status
-    stream = KapicheExportApiStream()
+    stream = ExportDataGet('uuid', MagicMock(), None)
     assert stream.should_retry(response_mock) == should_retry
 
 
 def test_backoff_time(patch_base_class):
     response_mock = MagicMock()
-    stream = KapicheExportApiStream()
+    stream = ExportDataGet('uuid', MagicMock(), None)
     expected_backoff_time = None
     assert stream.backoff_time(response_mock) == expected_backoff_time
