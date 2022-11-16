@@ -74,7 +74,7 @@ public class EventListeners {
    * @param unused required so Micronaut knows when to run this event-listener, but not used
    */
   @EventListener
-  public void setLogging(final ServerStartupEvent unused) {
+  void setLogging(final ServerStartupEvent unused) {
     log.info("started logging");
 
     // make sure the new configuration is picked up
