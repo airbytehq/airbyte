@@ -4,6 +4,9 @@
     "credentials": {
       "type": "object",
       "title": "Authentication",
+      "discriminator": {
+        "propertyName": "auth_type"
+      },
       "oneOf": [
         {
           "title": "OAuth2.0",
