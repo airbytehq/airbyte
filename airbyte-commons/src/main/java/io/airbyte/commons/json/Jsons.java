@@ -212,9 +212,7 @@ public class Jsons {
     replaceNested(json, keys, (node, finalKey) -> node.put(finalKey, replacement));
   }
 
-  private static void replaceNested(final JsonNode json,
-                                    final List<String> keys,
-                                    final BiConsumer<ObjectNode, String> typedReplacement) {
+  private static void replaceNested(final JsonNode json, final List<String> keys, final BiConsumer<ObjectNode, String> typedReplacement) {
     Preconditions.checkArgument(!keys.isEmpty(), "Must pass at least one key");
     final JsonNode nodeContainingFinalKey = navigateTo(json, keys.subList(0, keys.size() - 1));
     typedReplacement.accept((ObjectNode) nodeContainingFinalKey, keys.get(keys.size() - 1));
