@@ -1,8 +1,10 @@
 import styles from "./AirbyteIllustration.module.scss";
 
+export type HighlightIndex = 0 | 1 | 2 | 3;
+
 interface AirbyteIllustrationProps {
-  sourceHighlighted: 0 | 1 | 2 | 3;
-  destinationHighlighted: 0 | 1 | 2 | 3;
+  sourceHighlighted: HighlightIndex;
+  destinationHighlighted: HighlightIndex;
 }
 
 const regularPath = {

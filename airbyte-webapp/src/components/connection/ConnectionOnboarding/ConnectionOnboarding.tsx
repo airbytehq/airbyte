@@ -16,7 +16,7 @@ import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { getIcon } from "utils/imageUtils";
 import { links } from "utils/links";
 
-import { AirbyteIllustration } from "./AirbyteIllustration";
+import { AirbyteIllustration, HighlightIndex } from "./AirbyteIllustration";
 import styles from "./ConnectionOnboarding.module.scss";
 import { ReactComponent as PlusIcon } from "./plusIcon.svg";
 
@@ -82,8 +82,8 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
   const { formatMessage } = useIntl();
   const { sourceDefinitions, destinationDefinitions } = useConnectorSpecificationMap();
 
-  const [highlightedSource, setHighlightedSource] = useState<0 | 1 | 2 | 3>(1);
-  const [highlightedDestination, setHighlightedDestination] = useState<0 | 1 | 2 | 3>(0);
+  const [highlightedSource, setHighlightedSource] = useState<HighlightIndex>(1);
+  const [highlightedDestination, setHighlightedDestination] = useState<HighlightIndex>(0);
 
   const sourceIds = useExperiment("connection.onboarding.sources", "").split(",");
   const destinationIds = useExperiment("connection.onboarding.destinations", "").split(",");
@@ -205,7 +205,7 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
                     // onMouseEnter doesn't trigger on disabled buttons in React
                     // https://github.com/facebook/react/issues/10109
                     // Thus we just disable it via aria-disabled and make it non focusable via tabindex
-                    onMouseEnter={() => setHighlightedDestination(index as 0 | 1 | 2 | 3)}
+                    onMouseEnter={() => setHighlightedDestination(index as HighlightIndex)}
                     aria-disabled="true"
                     aria-label={tooltipText}
                     tabIndex={-1}
