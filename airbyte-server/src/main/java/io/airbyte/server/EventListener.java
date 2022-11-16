@@ -4,21 +4,20 @@
 
 package io.airbyte.server;
 
-import io.micronaut.context.event.ApplicationEventListener;
-import io.micronaut.discovery.event.ServiceReadyEvent;
+import io.micronaut.runtime.event.ApplicationStartupEvent;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 @Singleton
 @Slf4j
-public class ApplicationInitializer implements ApplicationEventListener<ServiceReadyEvent> {
+public class EventListener {
 
   @Inject
   ServerRunnable serverRunnable;
 
-  @Override
-  public void onApplicationEvent(final ServiceReadyEvent event) {
+  @io.micronaut.runtime.event.annotation.EventListener
+  public void startEmitters(final ApplicationStartupEvent event) {
     try {
       log.error("Starting server");
       serverRunnable.start();
