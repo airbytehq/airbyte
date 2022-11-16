@@ -44,9 +44,9 @@ class AdUnitPerHourItem(CustomBaseModel):
         """
         return AdUnitPerHourItem(
             ad_unit_id=AdUnitPerReferrerItem.convert_to_int_or_return_zero(row_dict.get('Ad unit ID 1')),
-            cpm_cpc_revenue=AdUnitPerHourItem.convert_to_int_or_return_zero(row_dict.get('Column.TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE')),
+            cpm_cpc_revenue=AdUnitPerHourItem.convert_to_int_or_return_zero(row_dict.get('Column.TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE'))/1e6,
             impressions=AdUnitPerHourItem.convert_to_int_or_return_zero(row_dict.get('Column.TOTAL_LINE_ITEM_LEVEL_IMPRESSIONS')),
-            eCpm=AdUnitPerHourItem.convert_to_int_or_return_zero(row_dict.get('Column.TOTAL_LINE_ITEM_LEVEL_WITHOUT_CPD_AVERAGE_ECPM')),
+            eCpm=AdUnitPerHourItem.convert_to_int_or_return_zero(row_dict.get('Column.TOTAL_LINE_ITEM_LEVEL_WITHOUT_CPD_AVERAGE_ECPM'))/1e6,
             unfilled_impressions=AdUnitPerHourItem.convert_to_int_or_return_zero(row_dict.get('Column.TOTAL_INVENTORY_LEVEL_UNFILLED_IMPRESSIONS')),
             ad_unit=row_dict.get('Ad unit 1'),
             hour=AdUnitPerHourItem.convert_to_int_or_return_zero(row_dict.get('Dimension.HOUR')),
