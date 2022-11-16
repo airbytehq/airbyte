@@ -9,7 +9,7 @@ import com.azure.storage.blob.specialized.AppendBlobClient;
 import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
 import com.azure.storage.common.StorageSharedKeyCredential;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.azure_blob_storage.writer.AzureBlobStorageWriter;
 import io.airbyte.integrations.destination.azure_blob_storage.writer.AzureBlobStorageWriterFactory;
@@ -85,7 +85,7 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
 
       final AirbyteStream stream = configuredStream.getStream();
       final AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair
-          .fromAirbyteSteam(stream);
+          .fromAirbyteStream(stream);
       streamNameAndNamespaceToWriters.put(streamNamePair, writer);
     }
   }

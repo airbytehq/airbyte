@@ -30,27 +30,27 @@ public class SourceApiController implements SourceApi {
 
   @Override
   public CheckConnectionRead checkConnectionToSource(final SourceIdRequestBody sourceIdRequestBody) {
-    return ConfigurationApi.execute(() -> schedulerHandler.checkSourceConnectionFromSourceId(sourceIdRequestBody));
+    return ApiHelper.execute(() -> schedulerHandler.checkSourceConnectionFromSourceId(sourceIdRequestBody));
   }
 
   @Override
   public CheckConnectionRead checkConnectionToSourceForUpdate(final SourceUpdate sourceUpdate) {
-    return ConfigurationApi.execute(() -> schedulerHandler.checkSourceConnectionFromSourceIdForUpdate(sourceUpdate));
+    return ApiHelper.execute(() -> schedulerHandler.checkSourceConnectionFromSourceIdForUpdate(sourceUpdate));
   }
 
   @Override
   public SourceRead cloneSource(final SourceCloneRequestBody sourceCloneRequestBody) {
-    return ConfigurationApi.execute(() -> sourceHandler.cloneSource(sourceCloneRequestBody));
+    return ApiHelper.execute(() -> sourceHandler.cloneSource(sourceCloneRequestBody));
   }
 
   @Override
   public SourceRead createSource(final SourceCreate sourceCreate) {
-    return ConfigurationApi.execute(() -> sourceHandler.createSource(sourceCreate));
+    return ApiHelper.execute(() -> sourceHandler.createSource(sourceCreate));
   }
 
   @Override
   public void deleteSource(final SourceIdRequestBody sourceIdRequestBody) {
-    ConfigurationApi.execute(() -> {
+    ApiHelper.execute(() -> {
       sourceHandler.deleteSource(sourceIdRequestBody);
       return null;
     });
@@ -58,27 +58,27 @@ public class SourceApiController implements SourceApi {
 
   @Override
   public SourceDiscoverSchemaRead discoverSchemaForSource(final SourceDiscoverSchemaRequestBody sourceDiscoverSchemaRequestBody) {
-    return ConfigurationApi.execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceId(sourceDiscoverSchemaRequestBody));
+    return ApiHelper.execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceId(sourceDiscoverSchemaRequestBody));
   }
 
   @Override
   public SourceRead getSource(final SourceIdRequestBody sourceIdRequestBody) {
-    return ConfigurationApi.execute(() -> sourceHandler.getSource(sourceIdRequestBody));
+    return ApiHelper.execute(() -> sourceHandler.getSource(sourceIdRequestBody));
   }
 
   @Override
   public SourceReadList listSourcesForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return ConfigurationApi.execute(() -> sourceHandler.listSourcesForWorkspace(workspaceIdRequestBody));
+    return ApiHelper.execute(() -> sourceHandler.listSourcesForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
   public SourceReadList searchSources(final SourceSearch sourceSearch) {
-    return ConfigurationApi.execute(() -> sourceHandler.searchSources(sourceSearch));
+    return ApiHelper.execute(() -> sourceHandler.searchSources(sourceSearch));
   }
 
   @Override
   public SourceRead updateSource(final SourceUpdate sourceUpdate) {
-    return ConfigurationApi.execute(() -> sourceHandler.updateSource(sourceUpdate));
+    return ApiHelper.execute(() -> sourceHandler.updateSource(sourceUpdate));
   }
 
 }
