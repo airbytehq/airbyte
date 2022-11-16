@@ -19,6 +19,7 @@ dependencies {
     implementation project(':airbyte-commons-worker')
     implementation project(':airbyte-config:init')
     implementation project(':airbyte-json-validation')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-metrics:metrics-lib')
     implementation project(':airbyte-worker-models')
 
