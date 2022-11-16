@@ -16,8 +16,31 @@ from mimesis.locales import Locale
 
 from .utils import read_json, random_date_in_range, format_airbyte_time
 
-class Products(Stream):
+class Products(Stream, IncrementalMixin):
   primary_key = None
+  cursor_field = "id"
+
+  def __init__(self, seed: int, records_per_sync: int, records_per_slice: int, **kwargs):
+    super().__init__(**kwargs)
+    self._cursor_value = -1
+    self.seed = seed
+    self.records_per_sync = records_per_sync
+    self.records_per_slice = records_per_slice
+
+  @property
+  def state_checkpoint_interval(self) -> Optional[int]:
+     return self.records_per_slice
+
+  @property
+  def state(self) -> Mapping[str, Any]:
+    if hasattr(self, '_state'):
+      return self._state
+    else:
+      return {self.cursor_field: 0}
+
+  @state.setter
+  def state(self, value: Mapping[str, Any]):
+    self._state = value
 
   def generate_products(self) -> list[Dict]:
     dirname = os.path.dirname(os.path.realpath(__file__))
@@ -31,7 +54,8 @@ class Products(Stream):
 
     for product in products:
         yield product
-    self.state = {"product_count": len(products)}
+
+    self.state = {self.cursor_field: len(products), "seed": self.seed}
 
 class Purchases(Stream, IncrementalMixin):
   primary_key = None
@@ -97,7 +121,7 @@ class Purchases(Stream, IncrementalMixin):
     return purchases
 
   def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-    purchases_count = self.state[self.cursor_field] if hasattr(self.state, self.cursor_field) else 0
+    purchases_count = self.state[self.cursor_field] if self.cursor_field in self.state else 0
 
     if total_user_records <= 0:
       return # if there are no new users, there should be no new purchases
@@ -174,8 +198,9 @@ class Users(Stream, IncrementalMixin):
     return profile
 
   def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-    total_records = self.state[self.cursor_field] if hasattr(self.state, self.cursor_field) else 0
+    total_records = self.state[self.cursor_field] if self.cursor_field in self.state else 0
     records_in_sync = 0
+    records_in_slice = 0
 
     median_record_byte_size = 450
     yield generate_estimate(self.name, self.count-total_records, median_record_byte_size)
@@ -185,6 +210,11 @@ class Users(Stream, IncrementalMixin):
         yield user
         total_records += 1
         records_in_sync += 1
+        records_in_slice += 1
+
+        if records_in_slice >= self.records_per_slice:
+          self.state = {self.cursor_field: total_records, "seed": self.seed}
+          records_in_slice = 0
 
         if records_in_sync == self.records_per_sync:
             break
