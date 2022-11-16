@@ -17,13 +17,13 @@ class TestObservedDict:
         assert mock_observer.update.call_count == 1
         my_observed_dict["key"]["nested_key"] = "new_nested_value"
         assert mock_observer.update.call_count == 2
-        # Setting the same value again should not call observer's update
+        # Setting the same value again should call observer's update
         my_observed_dict["key"]["nested_key"] = "new_nested_value"
-        assert mock_observer.update.call_count == 2
+        assert mock_observer.update.call_count == 3
 
     def test_update_not_called_on_init_with_nested_fields(self, mocker):
         mock_observer = mocker.Mock()
-        ObservedDict({"key": "value", "nested": {"key": "value"}}, mock_observer)
+        ObservedDict({"key": "value", "nested": {"nested_key": "nested_value"}}, mock_observer)
         mock_observer.update.assert_not_called()
 
 

@@ -16,12 +16,13 @@ class BaseObserver(ABC):
 
 
 class ObservedDict(dict):
-    def __init__(self, non_observed_mapping: MutableMapping, observer: BaseObserver) -> None:
-        super().__init__(non_observed_mapping)
+    def __init__(self, non_observed_mapping: MutableMapping, observer: BaseObserver, update_on_unchanged_value=True) -> None:
         self.observer = observer
+        self.update_on_unchanged_value = update_on_unchanged_value
         for item, value in self.items():
             if isinstance(value, MutableMapping):
                 self[item] = ObservedDict(value, observer)
+        super().__init__(non_observed_mapping)
 
     def __setitem__(self, item: Any, value: Any):
         """Override dict__setitem__ by:
@@ -31,7 +32,7 @@ class ObservedDict(dict):
         previous_value = self.get(item)
         value = ObservedDict(value, self.observer) if isinstance(value, MutableMapping) else value
         super(ObservedDict, self).__setitem__(item, value)
-        if value != previous_value:
+        if self.update_on_unchanged_value or value != previous_value:
             self.observer.update()
 
 
