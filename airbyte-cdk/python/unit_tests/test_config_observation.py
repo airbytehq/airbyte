@@ -37,7 +37,10 @@ class TestConfigObserver:
         config_observer.update()
         after_time = time.time() * 1000
         captured = capsys.readouterr()
-        raw_control_message = json.loads(captured.out)
+        airbyte_message = json.loads(captured.out)
+        assert airbyte_message["type"] == "CONTROL"
+        assert "control" in airbyte_message
+        raw_control_message = airbyte_message["control"]
         mock_write_config_fn.assert_called_with(config_observer.config, mock_config_path)
         assert raw_control_message["type"] == "CONNECTOR_CONFIG"
         assert raw_control_message["connectorConfig"] == {"config": dict(config_observer.config)}

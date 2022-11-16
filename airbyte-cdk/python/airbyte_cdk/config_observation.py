@@ -6,7 +6,7 @@ import time
 from abc import ABC, abstractmethod
 from typing import Any, Callable, MutableMapping
 
-from airbyte_cdk.models import AirbyteControlConnectorConfigMessage, AirbyteControlMessage, OrchestratorType
+from airbyte_cdk.models import AirbyteControlConnectorConfigMessage, AirbyteControlMessage, AirbyteMessage, OrchestratorType, Type
 
 
 class BaseObserver(ABC):
@@ -59,4 +59,5 @@ class ConfigObserver(BaseObserver):
             emitted_at=time.time() * 1000,
             connectorConfig=AirbyteControlConnectorConfigMessage(config=self.config),
         )
-        print(control_message.json())
+        airbyte_message = AirbyteMessage(type=Type.CONTROL, control=control_message)
+        print(airbyte_message.json())
