@@ -28,10 +28,11 @@ export const DefaultView: React.FC = () => {
       }
       replace
       // exp-signup-selected-source-definition
-      {...(isSignupSourceSelectorExperiment && {
-        state: { sourceDefinitionId },
-        to: `/${RoutePaths.Workspaces}/${workspaces[0].workspaceId}/${RoutePaths.Connections}/${RoutePaths.ConnectionNew}`,
-      })}
+      {...(isSignupSourceSelectorExperiment &&
+        sourceDefinitionId && {
+          state: { sourceDefinitionId },
+          to: `/${RoutePaths.Workspaces}/${workspaces[0].workspaceId}/${RoutePaths.Connections}/${RoutePaths.ConnectionNew}`,
+        })}
     />
   );
 };

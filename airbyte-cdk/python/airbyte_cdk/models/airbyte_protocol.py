@@ -81,6 +81,7 @@ class AirbyteLogMessage(BaseModel):
 
 class TraceType(Enum):
     ERROR = "ERROR"
+    ESTIMATE = "ESTIMATE"
 
 
 class FailureType(Enum):
@@ -96,6 +97,28 @@ class AirbyteErrorTraceMessage(BaseModel):
     internal_message: Optional[str] = Field(None, description="The internal error that caused the failure")
     stack_trace: Optional[str] = Field(None, description="The full stack trace of the error")
     failure_type: Optional[FailureType] = Field(None, description="The type of error")
+
+
+class EstimateType(Enum):
+    STREAM = "STREAM"
+    SYNC = "SYNC"
+
+
+class AirbyteEstimateTraceMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    name: str = Field(..., description="The name of the stream")
+    type: EstimateType = Field(..., description="The type of estimate", title="estimate type")
+    namespace: Optional[str] = Field(None, description="The namespace of the stream")
+    row_estimate: Optional[int] = Field(
+        None,
+        description="The estimated number of rows to be emitted by this sync for this stream",
+    )
+    byte_estimate: Optional[int] = Field(
+        None,
+        description="The estimated number of bytes to be emitted by this sync for this stream",
+    )
 
 
 class OrchestratorType(Enum):
@@ -213,6 +236,10 @@ class AirbyteTraceMessage(BaseModel):
     type: TraceType = Field(..., description="the type of trace message", title="trace type")
     emitted_at: float = Field(..., description="the time in ms that the message was emitted")
     error: Optional[AirbyteErrorTraceMessage] = Field(None, description="error trace message: the error object")
+    estimate: Optional[AirbyteEstimateTraceMessage] = Field(
+        None,
+        description="Estimate trace message: a guess at how much data will be produced in this sync",
+    )
 
 
 class AirbyteControlMessage(BaseModel):

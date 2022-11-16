@@ -1,11 +1,11 @@
 @use "scss/variables";
 
 .container {
-  padding: variables.$spacing-xl;
+  padding: variables.$spacing-xl variables.$spacing-md variables.$spacing-md variables.$spacing-md;
   display: flex;
   flex-direction: column;
   height: 100%;
-  gap: variables.$spacing-xl;
+  gap: variables.$spacing-lg;
 }
 
 .streamSelector {
@@ -16,9 +16,12 @@
   flex: 0 0 auto;
 }
 
-.resultDisplay {
+.resizablePanelsContainer {
   flex: 1;
   min-height: 0;
+
+  // required to hide the connector logs splitter underneath the resizable panel overlay
+  z-index: 0;
 }
 
 .placeholder {

@@ -4,7 +4,6 @@
 $testIconHeight: 17px;
 
 .container {
-  margin: variables.$spacing-lg 0;
   display: flex;
   gap: variables.$spacing-md;
   height: 36px;
@@ -29,6 +28,7 @@ $testIconHeight: 17px;
 .testButton {
   margin-right: 0;
   flex: 0 0 100px;
+  width: 100px;
 }
 
 .testButtonText {

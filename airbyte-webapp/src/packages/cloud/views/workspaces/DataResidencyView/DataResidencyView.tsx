@@ -3,8 +3,8 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { ControlLabels } from "components";
+import { DataGeographyDropdown } from "components/common/DataGeographyDropdown";
 import { Button } from "components/ui/Button";
-import { DropDown } from "components/ui/DropDown";
 import { Text } from "components/ui/Text";
 
 import { Geography } from "core/request/AirbyteClient";
@@ -44,7 +44,7 @@ export const DataResidencyView: React.FC = () => {
     } catch (e) {
       registerNotification({
         id: "workspaceSettings.defaultGeographyError",
-        title: formatMessage({ id: "connection.geographyUpdateError" }),
+        title: formatMessage({ id: "settings.defaultDataResidencyUpdateError" }),
         isError: true,
       });
     }
@@ -92,16 +92,10 @@ export const DataResidencyView: React.FC = () => {
                       }
                     />
                     <div className={styles.defaultGeographyDropdown}>
-                      <DropDown
-                        options={geographies.map((geography) => ({
-                          label: formatMessage({
-                            id: `connection.geography.${geography}`,
-                            defaultMessage: geography.toUpperCase(),
-                          }),
-                          value: geography,
-                        }))}
+                      <DataGeographyDropdown
+                        geographies={geographies}
                         value={field.value}
-                        onChange={(option) => form.setFieldValue("defaultGeography", option.value)}
+                        onChange={(geography) => form.setFieldValue("defaultGeography", geography)}
                       />
                     </div>
                   </div>

@@ -38,7 +38,7 @@ export const FormRoot: React.FC<FormRootProps> = ({
   selectedConnector,
 }) => {
   const { dirty, isSubmitting, isValid } = useFormikContext<ConnectorFormValues>();
-  const { resetConnectorForm, isLoadingSchema, selectedService, isEditMode, formType } = useConnectorForm();
+  const { resetConnectorForm, isLoadingSchema, selectedConnectorDefinition, isEditMode, formType } = useConnectorForm();
 
   return (
     <Form>
@@ -47,7 +47,7 @@ export const FormRoot: React.FC<FormRootProps> = ({
         <div className={styles.loaderContainer}>
           <Spinner />
           <div className={styles.loadingMessage}>
-            <ShowLoadingMessage connector={selectedService?.name} />
+            <ShowLoadingMessage connector={selectedConnectorDefinition?.name} />
           </div>
         </div>
       )}

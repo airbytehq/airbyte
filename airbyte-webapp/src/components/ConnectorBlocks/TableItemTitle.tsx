@@ -2,20 +2,19 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
-import { Button } from "components/ui/Button";
-import { DropDownOptionDataItem } from "components/ui/DropDown";
+import { DropdownMenu, DropdownMenuOptionType } from "components/ui/DropdownMenu";
 import { Heading } from "components/ui/Heading";
-import { Popout } from "components/ui/Popout";
 import { Text } from "components/ui/Text";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
 
+import { Button } from "../ui/Button";
 import styles from "./TableItemTitle.module.scss";
 
 interface TableItemTitleProps {
   type: "source" | "destination";
-  dropDownData: DropDownOptionDataItem[];
-  onSelect: (item: DropDownOptionDataItem) => void;
+  dropdownOptions: DropdownMenuOptionType[];
+  onSelect: (data: DropdownMenuOptionType) => void;
   entity: string;
   entityName: string;
   entityIcon?: React.ReactNode;
@@ -24,7 +23,7 @@ interface TableItemTitleProps {
 
 const TableItemTitle: React.FC<TableItemTitleProps> = ({
   type,
-  dropDownData,
+  dropdownOptions,
   onSelect,
   entity,
   entityName,
@@ -32,16 +31,6 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
   releaseStage,
 }) => {
   const { formatMessage } = useIntl();
-  const options = [
-    {
-      label: formatMessage({
-        id: `tables.${type}AddNew`,
-      }),
-      value: "create-new-item",
-      primary: true,
-    },
-    ...dropDownData,
-  ];
 
   return (
     <>
@@ -59,25 +48,26 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
         <Heading as="h3" size="sm">
           <FormattedMessage id="tables.connections" />
         </Heading>
-        <Popout
-          data-testid={`select-${type}`}
-          options={options}
-          isSearchable={false}
-          styles={{
-            // TODO: hack to position select. Should be refactored with Headless UI Menu
-            menuPortal: (base) => ({
-              ...base,
-              marginLeft: -130,
-            }),
-          }}
-          menuShouldBlockScroll={false}
+        <DropdownMenu
+          placement="bottom-end"
+          options={[
+            {
+              as: "button",
+              className: styles.primary,
+              displayName: formatMessage({
+                id: `tables.${type}AddNew`,
+              }),
+            },
+            ...dropdownOptions,
+          ]}
           onChange={onSelect}
-          targetComponent={({ onOpen }) => (
-            <Button onClick={onOpen}>
+        >
+          {() => (
+            <Button data-id={`select-${type}`}>
               <FormattedMessage id={`tables.${type}Add`} />
             </Button>
           )}
-        />
+        </DropdownMenu>
       </div>
     </>
   );
