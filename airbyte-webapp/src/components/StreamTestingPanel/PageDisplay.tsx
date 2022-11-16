@@ -1,17 +1,14 @@
 import { Tab } from "@headlessui/react";
 import classNames from "classnames";
+import { useMemo } from "react";
 import { useIntl } from "react-intl";
 
 import { Text } from "components/ui/Text";
 
-import {
-  HttpRequest,
-  HttpResponse,
-  StreamReadSlicesItemPagesItem,
-  StreamReadSlicesItemPagesItemRecordsItem,
-} from "core/request/ConnectorBuilderClient";
+import { StreamReadSlicesItemPagesItem } from "core/request/ConnectorBuilderClient";
 
 import styles from "./PageDisplay.module.scss";
+import { formatJson } from "./utils";
 
 interface PageDisplayProps {
   page: StreamReadSlicesItemPagesItem;
@@ -21,26 +18,35 @@ interface PageDisplayProps {
 interface TabData {
   title: string;
   key: string;
-  content: StreamReadSlicesItemPagesItemRecordsItem[] | HttpRequest | HttpResponse;
+  content: string;
 }
 
 export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className }) => {
   const { formatMessage } = useIntl();
+
+  const formattedRecords = useMemo(() => formatJson(page.records), [page.records]);
+  const formattedRequest = useMemo(() => formatJson(page.request), [page.request]);
+  const formattedResponse = useMemo(() => formatJson(page.response), [page.response]);
+
   const tabs: TabData[] = [
     {
       title: `${formatMessage({ id: "connectorBuilder.recordsTab" })} (${page.records.length})`,
       key: "records",
-      content: page.records,
+      content: formattedRecords,
     },
   ];
   if (page.request) {
-    tabs.push({ title: formatMessage({ id: "connectorBuilder.requestTab" }), key: "request", content: page.request });
+    tabs.push({
+      title: formatMessage({ id: "connectorBuilder.requestTab" }),
+      key: "request",
+      content: formattedRequest,
+    });
   }
   if (page.response) {
     tabs.push({
       title: formatMessage({ id: "connectorBuilder.responseTab" }),
       key: "response",
-      content: page.response,
+      content: formattedResponse,
     });
   }
 
@@ -59,7 +65,7 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className }) => 
         <Tab.Panels className={styles.tabPanelContainer}>
           {tabs.map((tab) => (
             <Tab.Panel className={styles.tabPanel} key={tab.key}>
-              <pre>{JSON.stringify(tab.content, null, 2)}</pre>
+              <pre>{tab.content}</pre>
             </Tab.Panel>
           ))}
         </Tab.Panels>
