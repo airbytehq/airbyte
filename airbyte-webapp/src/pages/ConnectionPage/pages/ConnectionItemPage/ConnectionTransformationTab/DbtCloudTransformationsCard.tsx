@@ -5,7 +5,6 @@ import { Form, Formik, FieldArray, FormikHelpers } from "formik";
 import { ReactNode } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
-import * as yup from "yup";
 
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 import { Button } from "components/ui/Button";
@@ -32,15 +31,6 @@ import octaviaWorker from "./octavia-worker.png";
 interface DbtJobListValues {
   jobs: DbtCloudJob[];
 }
-
-const dbtCloudJobListSchema = yup.object({
-  jobs: yup.array().of(
-    yup.object({
-      account: yup.number().required().positive().integer(),
-      job: yup.number().required().positive().integer(),
-    })
-  ),
-});
 
 export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBackendConnectionRead }) => {
   // Possible render paths:
@@ -107,8 +97,7 @@ const DbtJobsForm: React.FC<DbtJobsFormProps> = ({ saveJobs, dbtCloudJobs }) => 
     <Formik
       onSubmit={onSubmit}
       initialValues={{ jobs }}
-      validationSchema={dbtCloudJobListSchema}
-      render={({ values, isValid, dirty }) => {
+      render={({ values, dirty }) => {
         return (
           <Form className={styles.jobListForm}>
             <FormChangeTracker changed={dirty} />
@@ -137,7 +126,7 @@ const DbtJobsForm: React.FC<DbtJobsFormProps> = ({ saveJobs, dbtCloudJobs }) => 
                       </span>
                     }
                   >
-                    <DbtJobsList jobs={values.jobs} remove={remove} isValid={isValid} dirty={dirty} />
+                    <DbtJobsList jobs={values.jobs} remove={remove} dirty={dirty} />
                   </Card>
                 );
               }}
@@ -149,17 +138,7 @@ const DbtJobsForm: React.FC<DbtJobsFormProps> = ({ saveJobs, dbtCloudJobs }) => 
   );
 };
 
-const DbtJobsList = ({
-  jobs,
-  remove,
-  isValid,
-  dirty,
-}: {
-  jobs: DbtCloudJob[];
-  remove: (i: number) => void;
-  isValid: boolean;
-  dirty: boolean;
-}) => (
+const DbtJobsList = ({ jobs, remove, dirty }: { jobs: DbtCloudJob[]; remove: (i: number) => void; dirty: boolean }) => (
   <div className={classNames(styles.jobListContainer)}>
     {jobs.length ? (
       <>
@@ -180,7 +159,7 @@ const DbtJobsList = ({
       <Button className={styles.jobListButton} type="reset" variant="secondary">
         Cancel
       </Button>
-      <Button className={styles.jobListButton} type="submit" variant="primary" disabled={!dirty || !isValid}>
+      <Button className={styles.jobListButton} type="submit" variant="primary" disabled={!dirty}>
         Save changes
       </Button>
     </div>
