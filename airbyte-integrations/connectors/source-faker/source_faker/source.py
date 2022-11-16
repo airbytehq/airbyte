@@ -13,8 +13,10 @@ from .streams import Products, Purchases, Users
 
 class SourceFaker(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        # As this is an in-memory source, it always succeeds
-        return True, None
+        if type(config["count"]) == int or type(config["count"]) == float:
+            return True, None
+        else:
+            return False, "Count option is missing"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
