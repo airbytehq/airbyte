@@ -12,7 +12,9 @@
       "s3_bucket_name",
       "s3_bucket_path",
       "s3_bucket_region",
-      "format"
+      "format",
+      "glue_database",
+      "glue_serialization_library"
     ],
     "properties": {
       "access_key_id": {

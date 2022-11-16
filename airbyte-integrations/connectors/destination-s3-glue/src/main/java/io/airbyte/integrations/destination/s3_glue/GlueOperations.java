@@ -14,7 +14,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.json.Jsons;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -107,10 +109,14 @@ public class GlueOperations implements MetastoreOperations {
     }
 
     private Collection<Column> transformSchema(JsonNode jsonSchema) {
-        Map<String, JsonNode> properties = objectMapper.convertValue(jsonSchema.get("properties"), new TypeReference<>() {});
-        return properties.entrySet().stream()
-            .map(es -> new Column().withName(es.getKey()).withType(transformSchemaRecursive(es.getValue())))
-            .collect(Collectors.toSet());
+        if (jsonSchema.has("properties")) {
+            Map<String, JsonNode> properties = objectMapper.convertValue(jsonSchema.get("properties"), new TypeReference<>() {});
+            return properties.entrySet().stream()
+                .map(es -> new Column().withName(es.getKey()).withType(transformSchemaRecursive(es.getValue())))
+                .collect(Collectors.toSet());
+        } else {
+            return Collections.emptySet();
+        }
     }
 
     private String transformSchemaRecursive(JsonNode jsonNode) {
