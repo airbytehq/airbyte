@@ -1,19 +1,8 @@
 package io.airbyte.integrations.destination.s3_glue;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.S3BaseJsonlGzipDestinationAcceptanceTest;
-import java.util.Map;
 
 public class S3GlueJsonlGzipDestinationAcceptanceTest extends S3BaseJsonlGzipDestinationAcceptanceTest {
-
-    @Override
-    protected JsonNode getFormatConfig() {
-        // config without compression defaults to GZIP
-        return Jsons.jsonNode(Map.of(
-            "format_type", outputFormat,
-            "flatten_data", true));
-    }
 
     @Override
     protected void tearDown(TestDestinationEnv testEnv) {
@@ -25,5 +14,10 @@ public class S3GlueJsonlGzipDestinationAcceptanceTest extends S3BaseJsonlGzipDes
             glueTestClient.purgeDatabase(glueDestinationConfig.getDatabase());
 
         }
+    }
+
+    @Override
+    protected String getImageName() {
+        return "airbyte/destination-s3-glue:dev";
     }
 }
