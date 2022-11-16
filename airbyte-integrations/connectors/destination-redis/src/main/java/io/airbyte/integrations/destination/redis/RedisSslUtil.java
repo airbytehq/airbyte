@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.redis;
 
 import static io.airbyte.integrations.destination.redis.RedisSslUtil.SslMode.VERIFY_IDENTITY;
@@ -36,7 +40,8 @@ public class RedisSslUtil {
   private static final String TRUST_TYPE = "JKS";
 
   /**
-   * set javax.net.ssl.keyStore and javax.net.ssl.trustStore based on provided ca.crt, client.crt, client.kay
+   * set javax.net.ssl.keyStore and javax.net.ssl.trustStore based on provided ca.crt, client.crt,
+   * client.kay
    *
    * @param sslModeConfig json ssl mode config
    */
@@ -70,8 +75,7 @@ public class RedisSslUtil {
   }
 
   /**
-   * The method generate certificates based on provided ca.crt, client.crt, client.key.
-   * Generated keys
+   * The method generate certificates based on provided ca.crt, client.crt, client.key. Generated keys
    *
    * @param caCertificate certificate to validate client certificate and key.
    * @param clientCertificate The client certificate.
@@ -79,10 +83,10 @@ public class RedisSslUtil {
    * @param clientKeyPassword The client key password.
    */
   private static void initCertificateStores(
-      final String caCertificate,
-      final String clientCertificate,
-      final String clientKey,
-      final String clientKeyPassword)
+                                            final String caCertificate,
+                                            final String clientCertificate,
+                                            final String clientKey,
+                                            final String clientKeyPassword)
       throws IOException, InterruptedException {
 
     LOGGER.info("Try to generate {}", CLIENT_KEY_STORE);
@@ -142,7 +146,7 @@ public class RedisSslUtil {
   public enum SslMode {
 
     DISABLED("disable"),
-    VERIFY_IDENTITY( "verify-full");
+    VERIFY_IDENTITY("verify-full");
 
     public final List<String> spec;
 
@@ -157,6 +161,5 @@ public class RedisSslUtil {
     }
 
   }
-
 
 }
