@@ -1,1 +1,1 @@
-export { populateCitiesTable, populateUsersTable, PopulatePostgresDBSource } from "./db";
+export { populateDBSource, makeChangesInDBSource, cleanDBSource } from "./db";

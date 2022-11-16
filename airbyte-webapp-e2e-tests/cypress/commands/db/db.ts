@@ -1,14 +1,14 @@
 import {
+  alterCitiesTableQuery,
+  createCarsTableQuery,
   createCitiesTableQuery,
   createUsersTableQuery,
+  dropCarsTableQuery,
+  dropCitiesTableQuery,
+  dropUsersTableQuery,
   insertCitiesTableQuery,
   insertUsersTableQuery,
 } from "./queries";
-
-/**
- * Launch docker Postgres instance
- */
-const createDB = () => cy.exec("npm run createdb");
 
 /**
  * Wrapper for DB Query Cypress task
@@ -31,57 +31,21 @@ const composeIsTableExistQuery = (tableName: string) =>
         tablename  = '${tableName}'
       )`;
 
-// Users table
-interface User {
-  id: number;
-  col1: string;
-}
-
-export const populateUsersTable = () => {
-  runDbQuery<TableExistsResponse[]>(composeIsTableExistQuery("users")).then((results) => {
-    const [{ exists }] = results;
-    if (exists) {
-      return;
-    }
-
-    runDbQuery(createUsersTableQuery).then(() => {
-      runDbQuery(insertUsersTableQuery).then(() => {
-        runDbQuery<User[]>("SELECT * FROM users").then((results) => {
-          // just to make sure the table is populated
-          expect(results[0].id).to.equal(1);
-          expect(results[2].col1).to.equal("record3");
-        });
-      });
-    });
-  });
+export const populateDBSource = () => {
+  runDbQuery(createUsersTableQuery);
+  runDbQuery(insertUsersTableQuery);
+  runDbQuery(createCitiesTableQuery);
+  runDbQuery(insertCitiesTableQuery);
 };
 
-// Cities table
-interface City {
-  city_code: string;
-  city: string;
-}
-
-export const populateCitiesTable = () => {
-  runDbQuery<TableExistsResponse[]>(composeIsTableExistQuery("cities")).then((results) => {
-    const [{ exists }] = results;
-    if (exists) {
-      return;
-    }
-
-    runDbQuery(createCitiesTableQuery).then(() => {
-      runDbQuery(insertCitiesTableQuery).then(() => {
-        runDbQuery<City[]>("SELECT * FROM cities").then((results) => {
-          // just to make sure the table is populated
-          expect(results[0].city_code).to.equal("BCN");
-          expect(results[2].city).to.equal("Valencia");
-        });
-      });
-    });
-  });
+export const makeChangesInDBSource = () => {
+  runDbQuery(dropUsersTableQuery);
+  runDbQuery(alterCitiesTableQuery);
+  runDbQuery(createCarsTableQuery);
 };
 
-export const PopulatePostgresDBSource = () => {
-  populateUsersTable();
-  populateCitiesTable();
+export const cleanDBSource = () => {
+  runDbQuery(dropUsersTableQuery);
+  runDbQuery(dropCitiesTableQuery);
+  runDbQuery(dropCarsTableQuery);
 };
