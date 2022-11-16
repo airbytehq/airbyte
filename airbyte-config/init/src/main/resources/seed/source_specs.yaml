@@ -10873,7 +10873,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.23"
+- dockerImage: "airbyte/source-postgres:1.0.24"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -10963,7 +10963,7 @@
           order: 7
           oneOf:
           - title: "disable"
-            additionalProperties: false
+            additionalProperties: true
             description: "Disable SSL."
             required:
             - "mode"
@@ -10971,12 +10971,9 @@
               mode:
                 type: "string"
                 const: "disable"
-                enum:
-                - "disable"
-                default: "disable"
                 order: 0
           - title: "allow"
-            additionalProperties: false
+            additionalProperties: true
             description: "Allow SSL mode."
             required:
             - "mode"
@@ -10984,12 +10981,9 @@
               mode:
                 type: "string"
                 const: "allow"
-                enum:
-                - "allow"
-                default: "allow"
                 order: 0
           - title: "prefer"
-            additionalProperties: false
+            additionalProperties: true
             description: "Prefer SSL mode."
             required:
             - "mode"
@@ -10997,12 +10991,9 @@
               mode:
                 type: "string"
                 const: "prefer"
-                enum:
-                - "prefer"
-                default: "prefer"
                 order: 0
           - title: "require"
-            additionalProperties: false
+            additionalProperties: true
             description: "Require SSL mode."
             required:
             - "mode"
@@ -11010,12 +11001,9 @@
               mode:
                 type: "string"
                 const: "require"
-                enum:
-                - "require"
-                default: "require"
                 order: 0
           - title: "verify-ca"
-            additionalProperties: false
+            additionalProperties: true
             description: "Verify-ca SSL mode."
             required:
             - "mode"
@@ -11024,9 +11012,6 @@
               mode:
                 type: "string"
                 const: "verify-ca"
-                enum:
-                - "verify-ca"
-                default: "verify-ca"
                 order: 0
               ca_certificate:
                 type: "string"
@@ -11057,7 +11042,7 @@
                 airbyte_secret: true
                 order: 4
           - title: "verify-full"
-            additionalProperties: false
+            additionalProperties: true
             description: "Verify-full SSL mode."
             required:
             - "mode"
@@ -11066,9 +11051,6 @@
               mode:
                 type: "string"
                 const: "verify-full"
-                enum:
-                - "verify-full"
-                default: "verify-full"
                 order: 0
               ca_certificate:
                 type: "string"
@@ -11113,9 +11095,6 @@
               method:
                 type: "string"
                 const: "Standard"
-                enum:
-                - "Standard"
-                default: "Standard"
                 order: 0
           - title: "Logical Replication (CDC)"
             description: "Logical replication uses the Postgres write-ahead log (WAL)\
@@ -11131,9 +11110,6 @@
               method:
                 type: "string"
                 const: "CDC"
-                enum:
-                - "CDC"
-                default: "CDC"
                 order: 0
               plugin:
                 type: "string"
@@ -11146,7 +11122,7 @@
                 enum:
                 - "pgoutput"
                 - "wal2json"
-                default: "pgoutput"
+                const: "pgoutput"
                 order: 1
               replication_slot:
                 type: "string"
