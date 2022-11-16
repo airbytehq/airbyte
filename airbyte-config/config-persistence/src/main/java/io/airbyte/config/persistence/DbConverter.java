@@ -77,7 +77,8 @@ public class DbConverter {
                 : Jsons.deserialize(record.get(CONNECTION.SCHEDULE_DATA).data(), ScheduleData.class))
         .withOperationIds(connectionOperationId)
         .withResourceRequirements(
-            Jsons.deserialize(record.get(CONNECTION.RESOURCE_REQUIREMENTS).data(), ResourceRequirements.class))
+            record.get(CONNECTION.RESOURCE_REQUIREMENTS) == null ? null
+                : Jsons.deserialize(record.get(CONNECTION.RESOURCE_REQUIREMENTS).data(), ResourceRequirements.class))
         .withSourceCatalogId(record.get(CONNECTION.SOURCE_CATALOG_ID))
         .withBreakingChange(record.get(CONNECTION.BREAKING_CHANGE))
         .withGeography(Enums.toEnum(record.get(CONNECTION.GEOGRAPHY, String.class), Geography.class).orElseThrow())
