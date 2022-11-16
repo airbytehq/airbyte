@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import requests_mock as req_mock
+from http import HTTPStatus
 from airbyte_cdk.models import SyncMode
 from source_asana.streams import AsanaStream, Sections, Stories, Tags, Tasks, TeamMemberships, Users
 
@@ -30,3 +31,18 @@ def test_next_page_token():
     inputs = {"response": MagicMock()}
     expected = "offset"
     assert expected in stream.next_page_token(**inputs)
+    
+@pytest.mark.parametrize(
+    ("http_status_code", "errors", "should_retry"),
+    [
+        (402, {}, False),
+        (403, {}, False),
+        (404, {}, False),
+        (451, {}, False),
+    ],
+)
+def test_should_retry(http_status_code, errors, should_retry):
+    response_mock = MagicMock()
+    response_mock.status_code = http_status_code
+    stream = Stories(MagicMock())
+    assert stream.should_retry(response_mock) == should_retry
