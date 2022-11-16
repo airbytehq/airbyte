@@ -55,7 +55,7 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
-  
+
   tweets_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:

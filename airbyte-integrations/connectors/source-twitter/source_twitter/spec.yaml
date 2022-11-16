@@ -25,4 +25,3 @@ connectionSpecification:
       title: End Date
       description: End data to retrieve data
       type: string
-
