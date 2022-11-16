@@ -4612,6 +4612,9 @@ containing the updated stream needs to be sent.</div>
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
+  "workflowState" : {
+    "running" : true
+  },
   "job" : {
     "configId" : "configId",
     "sourceDefinition" : {
@@ -10516,6 +10519,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#WebBackendWorkspaceStateResult"><code>WebBackendWorkspaceStateResult</code> - </a></li>
     <li><a href="#WebhookConfigRead"><code>WebhookConfigRead</code> - </a></li>
     <li><a href="#WebhookConfigWrite"><code>WebhookConfigWrite</code> - </a></li>
+    <li><a href="#WorkflowStateRead"><code>WorkflowStateRead</code> - </a></li>
     <li><a href="#WorkspaceCreate"><code>WorkspaceCreate</code> - </a></li>
     <li><a href="#WorkspaceGiveFeedback"><code>WorkspaceGiveFeedback</code> - </a></li>
     <li><a href="#WorkspaceIdRequestBody"><code>WorkspaceIdRequestBody</code> - </a></li>
@@ -11289,6 +11293,7 @@ containing the updated stream needs to be sent.</div>
     <div class="field-items">
       <div class="param">job </div><div class="param-desc"><span class="param-type"><a href="#JobDebugRead">JobDebugRead</a></span>  </div>
 <div class="param">attempts </div><div class="param-desc"><span class="param-type"><a href="#AttemptInfoRead">array[AttemptInfoRead]</a></span>  </div>
+<div class="param">workflowState (optional)</div><div class="param-desc"><span class="param-type"><a href="#WorkflowStateRead">WorkflowStateRead</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -12101,6 +12106,13 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
       <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> human readable name for this webhook e.g. for UI display. </div>
 <div class="param">authToken (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> an auth token, to be passed as the value for an HTTP Authorization header. </div>
 <div class="param">validationUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> if supplied, the webhook config will be validated by checking that this URL returns a 2xx response. </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WorkflowStateRead"><code>WorkflowStateRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">running (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
