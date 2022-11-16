@@ -52,6 +52,8 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
 
   const { initialValues } = useConnectionFormService();
 
+  // todo: the effects of this can probably be written in a more simplified way!
+
   const statusToDisplay = useMemo(() => {
     const rowStatusChanged =
       initialValues.syncCatalog.streams.find(
