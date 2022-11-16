@@ -66,6 +66,7 @@ import io.airbyte.api.client.model.generated.OperationRead;
 import io.airbyte.api.client.model.generated.OperatorConfiguration;
 import io.airbyte.api.client.model.generated.OperatorType;
 import io.airbyte.api.client.model.generated.OperatorWebhook;
+import io.airbyte.api.client.model.generated.OperatorWebhook.WebhookTypeEnum;
 import io.airbyte.api.client.model.generated.OperatorWebhookDbtCloud;
 import io.airbyte.api.client.model.generated.SourceDefinitionIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceDefinitionIdWithWorkspaceId;
@@ -467,6 +468,7 @@ class BasicAcceptanceTests {
             .webhook(new OperatorWebhook()
                 .webhookConfigId(workspaceRead.getWebhookConfigs().get(0).getId())
                 // NOTE: this dbt Cloud config won't actually work, but the sync should still succeed.
+                .webhookType(WebhookTypeEnum.DBTCLOUD)
                 .dbtCloud(new OperatorWebhookDbtCloud().accountId(123).jobId(456)))));
     // create a connection with the new operation.
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
