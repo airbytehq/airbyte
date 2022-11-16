@@ -9,7 +9,7 @@ import styles from "./ConnectorDocumentationLayout.module.scss";
 import { useDocumentationPanelContext } from "./DocumentationPanelContext";
 
 const LazyDocumentationPanel = lazy(() =>
-  import("components/common/DocumentationPanel").then(({ DocumentationPanel }) => ({ default: DocumentationPanel }))
+  import("./DocumentationPanel").then(({ DocumentationPanel }) => ({ default: DocumentationPanel }))
 );
 
 export const ConnectorDocumentationLayout: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
