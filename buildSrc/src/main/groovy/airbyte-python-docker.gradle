@@ -144,6 +144,7 @@ class AirbytePythonDockerPlugin implements Plugin<Project> {
         // attempt to install anything in requirements.txt. by convention this should only be dependencies whose source is located in the project.
 
         if (project.file('requirements.txt').exists()) {
+            //FIXME: Handle this case
             throw new GradleException("Unexpected")
         } else if (project.file('setup.py').exists()) {
             project.task("installLocalReqs", type: Exec) {
