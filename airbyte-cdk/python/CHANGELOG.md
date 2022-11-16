@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.3
+Low-code: Add jinja macro `strptime`
+
 ## 0.9.2
 Low-code: Make `default_paginator.page_token_option` optional
 

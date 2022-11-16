@@ -96,5 +96,12 @@ def day_delta(num_days: int) -> str:
     return (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=num_days)).strftime("%Y-%m-%dT%H:%M:%S.%f%z")
 
 
-_macros_list = [now_local, now_utc, today_utc, timestamp, max, day_delta]
+def strptime(date_string: str, format: str) -> datetime.datetime:
+    """
+    Return a datetime corresponding to date_string, parsed according to format.
+    """
+    return datetime.datetime.strptime(date_string, format)
+
+
+_macros_list = [now_local, now_utc, today_utc, timestamp, max, day_delta, strptime]
 macros = {f.__name__: f for f in _macros_list}
