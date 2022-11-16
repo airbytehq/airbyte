@@ -1,23 +1,20 @@
-@use "../../../../scss/variables";
+@use "scss/variables";
 @use "./DiffSection.module.scss";
 
-.accordionSubHeader {
+.header {
   @extend %sectionSubHeader;
 
-  & .padLeft {
-    padding-left: variables.$spacing-lg;
-  }
+  padding: 0 0 0 30px;
 
   & th {
     font-size: 10px;
     width: 228px;
-    padding-left: variables.$spacing-md;
   }
 }
 
 .table {
   width: 100%;
-  padding-left: variables.$spacing-xl;
+  border-spacing: 0;
 
   & tbody > tr:first-of-type > td:nth-of-type(2) {
     border-radius: variables.$border-radius-sm variables.$border-radius-sm 0 0;
