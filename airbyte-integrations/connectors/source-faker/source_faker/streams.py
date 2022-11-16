@@ -4,10 +4,11 @@
 
 import os
 import random
+import datetime
 from typing import Any, Dict, List, Mapping, Iterable,Optional
 from airbyte_cdk.sources.streams import Stream, IncrementalMixin
 from airbyte_cdk.models import (
-    SyncMode,
+    SyncMode,AirbyteTraceMessage,AirbyteEstimateTraceMessage,TraceType,EstimateType
 )
 
 from mimesis import Datetime, Person
@@ -23,8 +24,11 @@ class Products(Stream):
     return read_json(os.path.join(dirname, "data", "products.json"))
 
   def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-    # return super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
     products = self.generate_products()
+
+    median_record_byte_size = 180
+    yield generate_estimate(self.name, len(products), median_record_byte_size)
+
     for product in products:
         yield product
     self.state = {"product_count": len(products)}
@@ -98,6 +102,9 @@ class Purchases(Stream, IncrementalMixin):
     if total_user_records <= 0:
       return # if there are no new users, there should be no new purchases
 
+    median_record_byte_size = 230
+    yield generate_estimate(self.name, total_user_records-purchases_count  * 1.3, median_record_byte_size)  # a fuzzy guess, some users have purchases, some don't
+
     for i in range(purchases_count, total_user_records):
         purchases = self.generate_purchases(i + 1, purchases_count)
         for purchase in purchases:
@@ -170,6 +177,9 @@ class Users(Stream, IncrementalMixin):
     total_records = self.state[self.cursor_field] if hasattr(self.state, self.cursor_field) else 0
     records_in_sync = 0
 
+    median_record_byte_size = 450
+    yield generate_estimate(self.name, self.count-total_records, median_record_byte_size)
+
     for i in range(total_records, self.count):
         user = self.generate_user(i)
         yield user
@@ -181,6 +191,13 @@ class Users(Stream, IncrementalMixin):
 
     self.state = {self.cursor_field: total_records, "seed": self.seed}
     set_total_user_records(total_records)
+
+def generate_estimate(stream_name: str, total: int, bytes_per_row: int):
+    emitted_at = int(datetime.datetime.now().timestamp() * 1000)
+    estimate_message = AirbyteEstimateTraceMessage(
+        type=EstimateType.STREAM, name=stream_name, row_estimate=round(total), byte_estimate=round(total * bytes_per_row)
+    )
+    return AirbyteTraceMessage(type=TraceType.ESTIMATE, emitted_at=emitted_at, estimate=estimate_message)
 
 # a globals hack to share data between streams:
 total_user_records = 0
