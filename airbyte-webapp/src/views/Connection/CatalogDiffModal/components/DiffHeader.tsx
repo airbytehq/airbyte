@@ -1,4 +1,4 @@
-import { FormattedMessage } from "react-intl";
+import { useIntl } from "react-intl";
 
 import { DiffVerb } from "../types";
 
@@ -11,15 +11,17 @@ interface DiffHeaderProps {
 }
 
 export const DiffHeader: React.FC<DiffHeaderProps> = ({ diffCount, diffVerb, diffType }) => {
-  return (
-    <div>
-      <FormattedMessage
-        id={`connection.updateSchema.${diffVerb}`}
-        values={{
-          value: diffCount,
-          item: <FormattedMessage id={`connection.updateSchema.${diffType}`} values={{ count: diffCount }} />,
-        }}
-      />
-    </div>
+  const { formatMessage } = useIntl();
+
+  const text = formatMessage(
+    {
+      id: `connection.updateSchema.${diffVerb}`,
+    },
+    {
+      value: diffCount,
+      item: formatMessage({ id: `connection.updateSchema.${diffType}` }, { count: diffCount }),
+    }
   );
+
+  return <>{text}</>;
 };

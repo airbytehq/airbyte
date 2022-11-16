@@ -21,6 +21,13 @@
   icon: airtable.svg
   sourceType: api
   releaseStage: alpha
+- name: Aha
+  sourceDefinitionId: 81ca39dc-4534-4dd2-b848-b0cfd2c11fce
+  dockerRepository: airbyte/source-aha
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/aha
+  sourceType: api
+  releaseStage: alpha
 - name: Alpha Vantage
   sourceDefinitionId: db385323-9333-4fec-bec3-9e0ca9326c90
   dockerRepository: airbyte/source-alpha-vantage
@@ -176,6 +183,14 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/breezometer
   sourceType: api
   releaseStage: alpha
+- name: CallRail
+  sourceDefinitionId: dc98a6ad-2dd1-47b6-9529-2ec35820f9c6
+  dockerRepository: airbyte/source-callrail
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/callrail
+  icon: callrail.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Cart.com
   sourceDefinitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
   dockerRepository: airbyte/source-cart
@@ -216,6 +231,13 @@
   icon: cliskhouse.svg
   sourceType: database
   releaseStage: alpha
+- name: ClickUp
+  sourceDefinitionId: 311a7a27-3fb5-4f7e-8265-5e4afe258b66
+  dockerRepository: airbyte/source-clickup-api
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/click-up
+  sourceType: api
+  releaseStage: alpha
 - name: Close.com
   sourceDefinitionId: dfffecb7-9a13-43e9-acdc-b92af7997ca9
   dockerRepository: airbyte/source-close-com
@@ -252,6 +274,13 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/commercetools
   icon: commercetools.svg
+  sourceType: api
+  releaseStage: alpha
+- name: ConfigCat
+  sourceDefinitionId: 4fd7565c-8b99-439b-80d0-2d965e1d958c
+  dockerRepository: airbyte/source-configcat
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/configcat
   sourceType: api
   releaseStage: alpha
 - name: Confluence
@@ -307,6 +336,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/datadog
   sourceType: api
   releaseStage: alpha
+- name: Datascope
+  sourceDefinitionId: 8e1ae2d2-4790-44d3-9d83-75b3fc3940ff
+  dockerRepository: airbyte/source-datascope
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/datascope
+  sourceType: api
+  releaseStage: alpha
 - name: Delighted
   sourceDefinitionId: cc88c43f-6f53-4e8a-8c4d-b284baaf9635
   dockerRepository: airbyte/source-delighted
@@ -344,6 +380,13 @@
   dockerRepository: airbyte/source-dv-360
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/dv-360
+  sourceType: api
+  releaseStage: alpha
+- name: DynamoDB
+  sourceDefinitionId: 50401137-8871-4c5a-abb7-1f5fda35545a
+  dockerRepository: airbyte/source-dynamodb
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dynamodb
   sourceType: api
   releaseStage: alpha
 - name: E2E Testing
@@ -388,7 +431,7 @@
 - name: Faker
   sourceDefinitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
   dockerRepository: airbyte/source-faker
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   sourceType: api
   releaseStage: alpha
@@ -430,7 +473,7 @@
 - name: Freshdesk
   sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
   dockerRepository: airbyte/source-freshdesk
-  dockerImageTag: 0.3.7
+  dockerImageTag: 0.3.8
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshdesk
   icon: freshdesk.svg
   sourceType: api
@@ -451,6 +494,13 @@
   icon: freshservice.svg
   sourceType: api
   releaseStage: alpha
+- name: GetLago
+  sourceDefinitionId: e1a3866b-d3b2-43b6-b6d7-8c1ee4d7f53f
+  dockerRepository: airbyte/source-getlago
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/getlago
+  sourceType: api
+  releaseStage: alpha
 - name: Gridly
   sourceDefinitionId: 6cbea164-3237-433b-9abb-36d384ee4cbf
   dockerRepository: airbyte/source-gridly
@@ -461,7 +511,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.3.7
+  dockerImageTag: 0.3.8
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -546,7 +596,7 @@
 - name: Google Sheets
   sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   dockerRepository: airbyte/source-google-sheets
-  dockerImageTag: 0.2.21
+  dockerImageTag: 0.2.30
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
   icon: google-sheets.svg
   sourceType: file
@@ -620,6 +670,13 @@
   icon: hubspot.svg
   sourceType: api
   releaseStage: generally_available
+- name: IP2Whois
+  sourceDefinitionId: f23b7b7c-d705-49a3-9042-09add3b104a5
+  dockerRepository: airbyte/source-ip2whois
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/ip2whois
+  sourceType: api
+  releaseStage: alpha
 - name: IBM Db2
   sourceDefinitionId: 447e0381-3780-4b46-bb62-00a4e3c8b8e2
   dockerRepository: airbyte/source-db2
@@ -651,11 +708,11 @@
   icon: intercom.svg
   sourceType: api
   releaseStage: generally_available
-- name: IP2Whois
-  sourceDefinitionId: f23b7b7c-d705-49a3-9042-09add3b104a5
-  dockerRepository: airbyte/source-ip2whois
+- name: Intruder
+  sourceDefinitionId: 3d15163b-11d8-412f-b808-795c9b2c3a3a
+  dockerRepository: airbyte/source-intruder
   dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.com/integrations/sources/ip2whois
+  documentationUrl: https://docs.airbyte.com/integrations/sources/intruder
   sourceType: api
   releaseStage: alpha
 - name: Iterable
@@ -677,7 +734,7 @@
 - name: Jira
   sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   dockerRepository: airbyte/source-jira
-  dockerImageTag: 0.2.23
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   icon: jira.svg
   sourceType: api
@@ -717,6 +774,13 @@
   dockerRepository: airbyte/source-kyriba
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/kyriba
+  sourceType: api
+  releaseStage: alpha
+- name: LaunchDarkly
+  sourceDefinitionId: f96bb511-5e3c-48fc-b408-547953cd81a4
+  dockerRepository: airbyte/source-launchdarkly
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/launchdarkly
   sourceType: api
   releaseStage: alpha
 - name: Lemlist
@@ -802,6 +866,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailerlite
   sourceType: api
   releaseStage: alpha
+- name: MailerSend
+  sourceDefinitionId: 2707d529-3c04-46eb-9c7e-40d4038df6f7
+  dockerRepository: airbyte/source-mailersend
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mailersend
+  sourceType: api
+  releaseStage: alpha
 - name: Mailgun
   sourceDefinitionId: 5b9cb09e-1003-4f9c-983d-5779d1b2cd51
   dockerRepository: airbyte/source-mailgun
@@ -842,6 +913,13 @@
   icon: microsoft-teams.svg
   sourceType: api
   releaseStage: alpha
+- name: Microsoft Dataverse
+  sourceDefinitionId: 9220e3de-3b60-4bb2-a46f-046d59ea235a
+  dockerRepository: airbyte/source-microsoft-dataverse
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-dataverse
+  sourceType: api
+  releaseStage: alpha
 - name: Mixpanel
   sourceDefinitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
   dockerRepository: airbyte/source-mixpanel
@@ -877,7 +955,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 1.0.12
+  dockerImageTag: 1.0.13
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -909,6 +987,13 @@
   dockerRepository: airbyte/source-news-api
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/news-api
+  sourceType: api
+  releaseStage: alpha
+- name: Newsdata
+  sourceDefinitionId: 60bd11d8-2632-4daa-a688-b47336d32093
+  dockerRepository: airbyte/source-newsdata
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/newsdata
   sourceType: api
   releaseStage: alpha
 - name: Notion
@@ -1066,6 +1151,14 @@
   icon: plaid.svg
   sourceType: api
   releaseStage: alpha
+- name: Pocket
+  sourceDefinitionId: b0dd65f1-081f-4731-9c51-38e9e6aa0ebf
+  dockerRepository: airbyte/source-pocket
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pocket
+  icon: pocket.svg
+  sourceType: api
+  releaseStage: alpha
 - name: PokeAPI
   sourceDefinitionId: 6371b14b-bc68-4236-bfbd-468e8df8e968
   dockerRepository: airbyte/source-pokeapi
@@ -1085,7 +1178,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 1.0.23
+  dockerImageTag: 1.0.24
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -1097,14 +1190,14 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/postmarkapp
   sourceType: api
   releaseStage: alpha
-- name: Prestashop
+- name: PrestaShop
   sourceDefinitionId: d60a46d4-709f-4092-a6b7-2457f7d455f5
   dockerRepository: airbyte/source-prestashop
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/presta-shop
   icon: prestashop.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Primetric
   sourceDefinitionId: f636c3c6-4077-45ac-b109-19fc62a283c1
   dockerRepository: airbyte/source-primetric
@@ -1118,6 +1211,20 @@
   dockerRepository: airbyte/source-public-apis
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/public-apis
+  sourceType: api
+  releaseStage: alpha
+- name: PyPI
+  sourceDefinitionId: 88ecd3a8-5f5b-11ed-9b6a-0242ac120002
+  dockerRepository: airbyte/source-pypi
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pypi
+  sourceType: api
+  releaseStage: alpha
+- name: Qonto
+  sourceDefinitionId: f7c0b910-5f66-11ed-9b6a-0242ac120002
+  dockerRepository: airbyte/source-qonto
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/public-qonto
   sourceType: api
   releaseStage: alpha
 - name: Qualaroo
@@ -1167,6 +1274,13 @@
   icon: redshift.svg
   sourceType: database
   releaseStage: alpha
+- name: Reply.io
+  sourceDefinitionId: 8cc6537e-f8a6-423c-b960-e927af76116e
+  dockerRepository: airbyte/source-reply-io
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/reply-io
+  sourceType: api
+  releaseStage: alpha
 - name: Retently
   sourceDefinitionId: db04ecd1-42e7-4115-9cec-95812905c626
   dockerRepository: airbyte/source-retently
@@ -1189,6 +1303,20 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/rki-covid
   sourceType: api
   releaseStage: alpha
+- name: RSS
+  sourceDefinitionId: 0efee448-6948-49e2-b786-17db50647908
+  dockerRepository: airbyte/source-rss
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/rss
+  icon: rss.svg
+- name: Rocket.chat
+  sourceDefinitionId: 921d9608-3915-450b-8078-0af18801ea1b
+  dockerRepository: airbyte/source-rocket-chat
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/rocket-chat
+  icon: rocket-chat.svg
+  sourceType: api
+  releaseStage: alpha
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
@@ -1208,11 +1336,18 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 1.0.24
+  dockerImageTag: 1.0.26
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
   releaseStage: generally_available
+- name: SAP Fieldglass
+  sourceDefinitionId: ec5f3102-fb31-4916-99ae-864faf8e7e25
+  dockerRepository: airbyte/source-sap-fieldglass
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sap-fieldglass
+  sourceType: api
+  releaseStage: alpha
 - name: SearchMetrics
   sourceDefinitionId: 8d7ef552-2c0f-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-search-metrics
@@ -1241,6 +1376,13 @@
   dockerRepository: airbyte/source-senseforce
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/senseforce
+  sourceType: api
+  releaseStage: alpha
+- name: Sendinblue
+  sourceDefinitionId: 2e88fa20-a2f6-43cc-bba6-98a0a3f244fb
+  dockerRepository: airbyte/source-sendinblue
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sendinblue
   sourceType: api
   releaseStage: alpha
 - name: Shopify
@@ -1274,6 +1416,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/smaily
   sourceType: api
   releaseStage: alpha
+- name: SmartEngage
+  sourceDefinitionId: 21cc4a17-a011-4485-8a3e-e2341a91ab9f
+  dockerRepository: airbyte/source-smartengage
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/smartengage
+  sourceType: api
+  releaseStage: alpha
 - name: Smartsheets
   sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
   dockerRepository: airbyte/source-smartsheets
@@ -1293,7 +1442,7 @@
 - name: Snowflake
   sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   dockerRepository: airbyte/source-snowflake
-  dockerImageTag: 0.1.24
+  dockerImageTag: 0.1.26
   documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake
   icon: snowflake.svg
   sourceType: database
@@ -1326,6 +1475,13 @@
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/strava
   icon: strava.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Statuspage
+  sourceDefinitionId: 74cbd708-46c3-4512-9c93-abd5c3e9a94d
+  dockerRepository: airbyte/source-statuspage
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/statuspage
   sourceType: api
   releaseStage: alpha
 - name: Stripe
@@ -1362,11 +1518,11 @@
 - name: Tempo
   sourceDefinitionId: d1aa448b-7c54-498e-ad95-263cbebcd2db
   dockerRepository: airbyte/source-tempo
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/tempo
   icon: tempo.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: TiDB
   sourceDefinitionId: 0dad1a35-ccf8-4d03-b73e-6788c00b13ae
   dockerRepository: airbyte/source-tidb
@@ -1389,6 +1545,13 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/timely
   icon: timely.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Toggl
+  sourceDefinitionId: 7e7c844f-2300-4342-b7d3-6dd7992593cd
+  dockerRepository: airbyte/source-toggl
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/toggl
   sourceType: api
   releaseStage: alpha
 - name: The Guardian API
@@ -1422,6 +1585,21 @@
   icon: twilio.svg
   sourceType: api
   releaseStage: generally_available
+- name: Twitter
+  sourceDefinitionId: d7fd4f40-5e5a-4b8b-918f-a73077f8c131
+  dockerRepository: airbyte/source-twitter
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/twitter
+  sourceType: api
+  releaseStage: alpha
+- name: Tyntec SMS
+  sourceDefinitionId: 3c0c3cd1-b3e0-464a-9090-d3ceb5f92346
+  dockerRepository: airbyte/source-tyntec-sms
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/tyntec-sms
+  icon: tyntec.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Typeform
   sourceDefinitionId: e7eff203-90bf-43e5-a240-19ea3056c474
   dockerRepository: airbyte/source-typeform
@@ -1454,6 +1632,13 @@
   icon: youtube.svg
   sourceType: api
   releaseStage: alpha
+- name: Vantage
+  sourceDefinitionId: 28ce1fbd-1e15-453f-aa9f-da6c4d928e92
+  dockerRepository: airbyte/source-vantage
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/vantage
+  sourceType: api
+  releaseStage: alpha
 - name: VictorOps
   sourceDefinitionId: 7e20ce3e-d820-4327-ad7a-88f3927fd97a
   dockerRepository: farosai/airbyte-victorops-source
@@ -1469,11 +1654,32 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/visma-economic
   sourceType: api
   releaseStage: alpha
+- name: Vitally
+  sourceDefinitionId: 6c6d8b0c-db35-4cd1-a7de-0ca8b080f5ac
+  dockerRepository: airbyte/source-vitally
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/vitally
+  sourceType: api
+  releaseStage: alpha
+- name: Xero
+  sourceDefinitionId: 6fd1e833-dd6e-45ec-a727-ab917c5be892
+  dockerRepository: airbyte/source-xero
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/xero
+  sourceType: api
+  releaseStage: alpha
 - name: xkcd
   sourceDefinitionId: 80fddd16-17bd-4c0c-bf4a-80df7863fc9d
   dockerRepository: airbyte/source-xkcd
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/xkcd
+  sourceType: api
+  releaseStage: alpha
+- name: Weatherstack
+  sourceDefinitionId: 5db8292c-5f5a-11ed-9b6a-0242ac120002
+  dockerRepository: airbyte/source-weatherstack
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/weatherstack
   sourceType: api
   releaseStage: alpha
 - name: Webflow
@@ -1646,6 +1852,13 @@
   dockerRepository: airbyte/source-wikipedia-pageviews
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/wikipedia-pageviews
+  sourceType: api
+  releaseStage: alpha
+- name: WorkRamp
+  sourceDefinitionId: 05b0bce2-4ec4-4534-bb1a-5d0127bd91b7
+  dockerRepository: airbyte/source-workramp
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/workramp
   sourceType: api
   releaseStage: alpha
 - name: Yandex Metrica

@@ -363,19 +363,19 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         # Warning: use self.state instead of the stream_state passed as argument!
         stream_slice = stream_slice or {}  # None-check
         self.paginator.reset()
-        records_generator = self._read_pages(
-            lambda req, res, state, _slice: self.parse_records_and_emit_request_and_responses(
-                req, res, stream_slice=_slice, stream_state=state
-            ),
+        records_generator = self._read_pages(self.parse_records_and_emit_request_and_responses,
             stream_slice,
             stream_state,
         )
         for record in records_generator:
-            self.stream_slicer.update_cursor(stream_slice, last_record=record)
+            # Only record messages should be parsed to update the cursor which is indicated by the Mapping type
+            if isinstance(record, Mapping):
+                self.stream_slicer.update_cursor(stream_slice, last_record=record)
             yield record
         else:
             last_record = self._last_records[-1] if self._last_records else None
-            self.stream_slicer.update_cursor(stream_slice, last_record=last_record)
+            if last_record and isinstance(last_record, Mapping):
+                self.stream_slicer.update_cursor(stream_slice, last_record=last_record)
             yield from []
 
     def stream_slices(
@@ -408,9 +408,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
             yield self._create_trace_message_from_response(response)
         # Not great to need to call _read_pages which is a private method
         # A better approach would be to extract the HTTP client from the HttpStream and call it directly from the HttpRequester
-        yield from self._read_pages(
-            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice, stream_state
-        )
+        yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
 
     def _create_trace_message_from_request(self, request: requests.PreparedRequest):
         # FIXME: this should return some sort of trace message
