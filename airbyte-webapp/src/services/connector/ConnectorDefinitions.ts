@@ -1,5 +1,6 @@
 import { DestinationDefinitionRead, SourceDefinitionRead } from "core/request/AirbyteClient";
 import { SCOPE_WORKSPACE } from "services/Scope";
+import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 
 import { useGetDestinationDefinitionService } from "./DestinationDefinitionService";
 import { useGetSourceDefinitionService } from "./SourceDefinitionService";
@@ -24,11 +25,12 @@ export const connectorDefinitionKeys = {
 export const useConnectorSpecifications = (): ConnectorSpecifications => {
   const sourceService = useGetSourceDefinitionService();
   const destinationService = useGetDestinationDefinitionService();
+  const workspaceId = useCurrentWorkspaceId();
 
   return useSuspenseQuery(connectorDefinitionKeys.lists(), async () => {
     const [{ sourceDefinitions }, { destinationDefinitions }] = await Promise.all([
-      sourceService.list(),
-      destinationService.list(),
+      sourceService.list(workspaceId),
+      destinationService.list(workspaceId),
     ]);
 
     return { sourceDefinitions, destinationDefinitions };
