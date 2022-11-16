@@ -142,20 +142,8 @@ class AirbytePythonDockerPlugin implements Plugin<Project> {
         }
 
         project.task('installReqs', type: Exec) {
-            /*
-            module = "pip"
-            command = "install .[main]"
-            inputs.file('setup.py')
-            outputs.file('build/installedreqs.txt')
-             */
             commandLine "docker", "run", "-v", "/Users/alex/code/airbyte/airbyte-connector-builder-server:/tmp", "--entrypoint", "/bin/bash", "python:3.9-slim", "-c", "chmod +x /tmp/run.sh && /tmp/run.sh"
         }
-
-        HelpersDocker.addTestTaskIfTestFilesFound(project, 'integration_tests', 'customIntegrationTests', project.installReqs)
-        if (!project.tasks.findByName('integrationTest')) {
-            project.task('integrationTest')
-        }
-        project.integrationTest.dependsOn(project.customIntegrationTests)
 
         if (extension.moduleDirectory) {
             project.task('mypyCheck', type: PythonTask) {
