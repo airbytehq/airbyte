@@ -62,7 +62,7 @@ export const JobProgress: React.FC<ProgressBarProps> = ({ job }) => {
   }
 
   return (
-    <Text as="div" size="sm">
+    <Text as="div" size="xs">
       {displayProgressBar && <ProgressLine percent={totalPercentRecords} color={color} />}
       {latestAttempt?.status === Status.RUNNING && (
         <>
@@ -120,7 +120,7 @@ export const JobProgress: React.FC<ProgressBarProps> = ({ job }) => {
 
           {latestAttempt.streamStats && showStreams && (
             <div>
-              <Text as="div" size="sm">
+              <Text as="div" size="xs">
                 {formatMessage({
                   id: "estimate.streamStats",
                 })}{" "}
@@ -146,7 +146,7 @@ export const JobProgress: React.FC<ProgressBarProps> = ({ job }) => {
                 const localDenominator = stream.stats.estimatedRecords;
 
                 return (
-                  <Text size="sm" as="div" key={`stream-progress-${idx}`}>
+                  <Text size="xs" as="div" key={`stream-progress-${idx}`}>
                     {" - "}
                     <strong>{stream.streamName}</strong> -{" "}
                     {localNumerator && localDenominator
