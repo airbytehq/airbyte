@@ -10,9 +10,9 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
 
   return (
     <div className={styles.container}>
-      <ConfigMenu />
+      <ConfigMenu className={styles.configButton} />
       <StreamSelector className={styles.streamSelector} />
-      <StreamTester selectedStream={selectedStream} />
+      {selectedStream !== undefined && <StreamTester selectedStream={selectedStream} />}
     </div>
   );
 };

@@ -4,17 +4,19 @@ import { useConfig } from "config";
 import { ConnectorBuilderRequestService } from "core/domain/connectorBuilder/ConnectorBuilderRequestService";
 import {
   StreamReadRequestBody,
-  StreamReadRequestBodyManifest,
   StreamsListRequestBody,
+  StreamsListRequestBodyConfig,
+  StreamsListRequestBodyManifest,
 } from "core/request/ConnectorBuilderClient";
-import { useSuspenseQuery } from "services/connector/useSuspenseQuery";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 
 const connectorBuilderKeys = {
   all: ["connectorBuilder"] as const,
   read: (streamName: string) => [...connectorBuilderKeys.all, "read", { streamName }] as const,
-  list: (manifest: StreamReadRequestBodyManifest) => [...connectorBuilderKeys.all, "list", { manifest }] as const,
+  list: (manifest: StreamsListRequestBodyManifest, config: StreamsListRequestBodyConfig) =>
+    [...connectorBuilderKeys.all, "list", { manifest, config }] as const,
+  template: ["template"] as const,
 };
 
 function useConnectorBuilderService() {
@@ -38,5 +40,9 @@ export const useReadStream = (params: StreamReadRequestBody) => {
 export const useListStreams = (params: StreamsListRequestBody) => {
   const service = useConnectorBuilderService();
 
-  return useSuspenseQuery(connectorBuilderKeys.list(params.manifest), () => service.listStreams(params));
+  return useQuery(connectorBuilderKeys.list(params.manifest, params.config), () => service.listStreams(params), {
+    keepPreviousData: true,
+    cacheTime: 0,
+    retry: false,
+  });
 };

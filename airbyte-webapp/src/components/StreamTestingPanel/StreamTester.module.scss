@@ -5,6 +5,8 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  gap: variables.$spacing-lg;
 }
 
 .resizablePanelsContainer {
@@ -15,8 +17,25 @@
   z-index: 0;
 }
 
+.testButton {
+  width: 100%;
+}
+
+.testButtonTooltipContainer {
+  width: 100%;
+}
+
 .testButtonText {
-  color: white;
+  color: colors.$white;
+}
+
+.url {
+  color: colors.$blue;
+  font-weight: 400;
+}
+
+:export {
+  testIconHeight: 17px;
 }
 
 // .error {

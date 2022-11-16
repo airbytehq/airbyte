@@ -1,16 +1,28 @@
 @use "scss/variables";
 @use "scss/colors";
 
+$buttonHeight: 36px;
+
 .container {
-  padding: variables.$spacing-xl variables.$spacing-md variables.$spacing-md variables.$spacing-md;
+  padding: variables.$spacing-lg;
   display: flex;
   flex-direction: column;
   height: 100%;
   gap: variables.$spacing-lg;
+  position: relative;
+}
+
+.configButton {
+  position: absolute;
+  top: variables.$spacing-lg;
+  left: variables.$spacing-lg;
+  height: $buttonHeight;
+  width: $buttonHeight;
 }
 
 .streamSelector {
   flex: 0 0 auto;
+  height: $buttonHeight;
 }
 
 // .testControls {

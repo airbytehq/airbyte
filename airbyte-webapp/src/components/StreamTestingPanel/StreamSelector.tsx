@@ -1,10 +1,11 @@
-import { faSortDown } from "@fortawesome/free-solid-svg-icons";
+import { faSortDown, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { capitalize } from "lodash";
 
 import { Heading } from "components/ui/Heading";
 import { ListBox, ListBoxControlButtonProps } from "components/ui/ListBox";
+import { Text } from "components/ui/Text";
 
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
@@ -32,13 +33,23 @@ export const StreamSelector: React.FC<StreamSelectorProps> = ({ className }) => 
   });
 
   return (
-    <ListBox
-      className={classNames(className, styles.centered)}
-      options={options}
-      selectedValue={selectedStream.name}
-      onSelect={setSelectedStream}
-      buttonClassName={styles.button}
-      controlButton={ControlButton}
-    />
+    <div className={classNames(className, styles.centered)}>
+      {streams.length > 0 && selectedStream !== undefined ? (
+        <ListBox
+          options={options}
+          selectedValue={selectedStream.name}
+          onSelect={setSelectedStream}
+          buttonClassName={styles.button}
+          controlButton={ControlButton}
+        />
+      ) : (
+        <div className={styles.noStreamsContainer}>
+          <FontAwesomeIcon icon={faWarning} className={styles.noStreamsIcon} size="lg" />
+          <Text className={styles.noStreamsText} size="lg">
+            No streams detected
+          </Text>
+        </div>
+      )}
+    </div>
   );
 };

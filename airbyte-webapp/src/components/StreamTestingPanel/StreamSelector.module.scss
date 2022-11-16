@@ -4,8 +4,10 @@
 .centered {
   margin-left: auto;
   margin-right: auto;
-  width: 90%;
+  width: 75%;
   max-width: 320px;
+
+  // background-color: pink;
 }
 
 .button {
@@ -21,4 +23,20 @@
   margin-left: variables.$spacing-md;
   margin-top: -1px;
   color: colors.$blue;
+}
+
+.noStreamsContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: variables.$spacing-md;
+  height: 100%;
+}
+
+.noStreamsIcon {
+  color: colors.$yellow-800;
+}
+
+.noStreamsText {
+  color: colors.$yellow-800;
 }
