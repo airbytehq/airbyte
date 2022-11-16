@@ -1,0 +1,45 @@
+---
+openapi: 3.0.2
+info:
+  title: Speakeasy
+  version: 1.0.0
+paths:
+  /speakeasy_callback_url:
+    summary: This Endpoint will generate a JWT that can be used to login to the Speakeasy
+      developer portal. The URL that is generated from the GET contains where the
+      user should be redirected to and has the JWT as in the speakeasyAccessToken
+      query parameter.
+    get:
+      tags:
+      - Speakeasy
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RedirectUrlResponse'
+          description: Returns a valid RedirectUrlResponse
+        "403":
+          description: If a valid JWT was not found then return a Forbidden.
+      security:
+      - JWT: []
+      operationId: getSpeakeasyCallbackUrl
+      summary: Get the Speakeasy Callback URL
+      description: Return a JSON datastructure that contains the URL that should be
+        redirected to in the redirectUrl field.
+components:
+  schemas:
+    RedirectUrlResponse:
+      title: Root Type for RedirectUrlResponse
+      description: ""
+      type: object
+      properties:
+        redirectUrl:
+          format: url
+          type: string
+      example:
+        redirectUrl: https://airbyte.portal.speakeasyapi.dev?speakeasyAccessToken=eydas.ad45.1234
+  securitySchemes:
+    JWT:
+      scheme: bearer
+      type: http
