@@ -75,7 +75,6 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
 
   @Override
   public JsonSchemaType getJsonType(final JDBCType jdbcType) {
-    // TODO(akashkulk) : Migrate to well known types here
     return switch (jdbcType) {
       case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
       case REAL, FLOAT, DOUBLE, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
@@ -141,26 +140,25 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
-      throws SQLException {
+  protected void putTimestampWithTimezone(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
     final Timestamp timestamp = resultSet.getTimestamp(index);
     node.put(columnName, DateTimeConverter.convertToTimestampWithTimezone(timestamp));
   }
 
   @Override
-  protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+  protected void putTimestamp(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
     final Timestamp timestamp = resultSet.getTimestamp(index);
     node.put(columnName, DateTimeConverter.convertToTimestamp(timestamp));
   }
 
   @Override
-  protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+  protected void putDate(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
     final Date date = resultSet.getDate(index);
     node.put(columnName, DateTimeConverter.convertToDate(date));
   }
 
   @Override
-  protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+  protected void putTime(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
     // resultSet.getTime() will lose nanoseconds precision
     final LocalTime localTime = resultSet.getTimestamp(index).toLocalDateTime().toLocalTime();
     node.put(columnName, DateTimeConverter.convertToTime(localTime));

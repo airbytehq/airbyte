@@ -208,7 +208,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   }
 
   @Override
-  public boolean isCursorType(final MysqlType type) {
+  public boolean isCursorType(MysqlType type) {
     return ALLOWED_CURSOR_TYPES.contains(type);
   }
 
@@ -229,7 +229,6 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
 
   @Override
   public JsonSchemaType getJsonType(final MysqlType mysqlType) {
-    // TODO(akashkulk) : Migrate to well known types here
     return switch (mysqlType) {
       case
       // TINYINT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link
@@ -261,7 +260,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   }
 
   @Override
-  protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+  protected void setTimestamp(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
     try {
       preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
     } catch (final DateTimeParseException e) {

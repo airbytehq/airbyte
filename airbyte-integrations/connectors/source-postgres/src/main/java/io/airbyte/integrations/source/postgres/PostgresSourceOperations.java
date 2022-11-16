@@ -191,12 +191,13 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
         default -> {
           switch (columnType) {
             case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
-            case TINYINT, SMALLINT -> putShortInt(json, columnName, resultSet, colIndex);
-            case INTEGER -> putInteger(json, columnName, resultSet, colIndex);
-            case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
+            // TODO(akashkulk) : Understand when the cast to string should be done. 
+            case TINYINT, SMALLINT -> putString(json, columnName, resultSet, colIndex);
+            case INTEGER -> putString(json, columnName, resultSet, colIndex);
+            case BIGINT -> putString(json, columnName, resultSet, colIndex);
             case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
-            case REAL -> putFloat(json, columnName, resultSet, colIndex);
-            case NUMERIC, DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
+            case REAL -> putString(json, columnName, resultSet, colIndex);
+            case NUMERIC, DECIMAL -> putString(json, columnName, resultSet, colIndex);
             // BIT is a bit string in Postgres, e.g. '0100'
             case BIT, CHAR, VARCHAR, LONGVARCHAR -> putString(json, columnName, resultSet, colIndex);
             case DATE -> putDate(json, columnName, resultSet, colIndex);
@@ -253,22 +254,6 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
 
   @Override
   public JsonSchemaType getJsonType(final JDBCType jdbcType) {
-    /*return switch (jdbcType) {
-      case BOOLEAN -> JsonSchemaType.BOOLEAN;
-      case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER;
-      case FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
-      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
-      case ARRAY -> JsonSchemaType.ARRAY;
-      case DATE -> JsonSchemaType.STRING_DATE;
-      case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
-      case TIME_WITH_TIMEZONE -> JsonSchemaType.STRING_TIME_WITH_TIMEZONE;
-      case TIMESTAMP -> JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
-      case TIMESTAMP_WITH_TIMEZONE -> JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE;
-
-      default -> JsonSchemaType.STRING;
-    };*/
-
-        // TODO : Is this mapping correct? Double check this.
     return switch (jdbcType) {
       case BOOLEAN -> JsonSchemaType.BOOLEAN_V1;
       case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER_V1;
@@ -317,7 +302,8 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     if (resultSet.getMetaData().getColumnTypeName(index).equals("money")) {
       putMoney(node, columnName, resultSet, index);
     } else {
-      super.putDouble(node, columnName, resultSet, index);
+      super.putString(node, columnName, resultSet, index);
+      //super.putDouble(node, columnName, resultSet, index);
     }
   }
 
