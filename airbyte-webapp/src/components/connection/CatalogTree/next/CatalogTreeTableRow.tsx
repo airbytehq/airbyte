@@ -102,7 +102,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
       return (
         // todo: styles need adjusting, especially color and possibly alignment
         <span className={classNames(styles.icon, styles.changed)}>
-          <ModificationIcon />
+          <ModificationIcon color={styles.modificationIconColor} />
         </span>
       );
     }

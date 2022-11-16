@@ -82,3 +82,7 @@
   width: variables.$width-wide-menu;
   min-width: variables.$width-wide-menu;
 }
+
+:export {
+  modificationIconColor: colors.$blue;
+}
