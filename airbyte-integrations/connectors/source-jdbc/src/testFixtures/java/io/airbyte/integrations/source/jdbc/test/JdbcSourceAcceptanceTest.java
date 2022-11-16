@@ -75,6 +75,7 @@ import org.junit.jupiter.api.Test;
 // 3. From the class that extends this one, implement a @AfterEach that cleans out the database
 // between each test.
 // 4. Then implement the abstract methods documented below.
+// TODO (akashkulk) : Add a protcol version method to acceptance tests
 @SuppressFBWarnings(
                     value = {"MS_SHOULD_BE_FINAL"},
                     justification = "The static variables are updated in sub classes for convenience, and cannot be final.")

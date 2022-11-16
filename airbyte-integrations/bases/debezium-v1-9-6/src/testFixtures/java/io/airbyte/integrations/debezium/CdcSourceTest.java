@@ -53,6 +53,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// TODO (akashkulk) : Add a protcol version method to acceptance tests
 public abstract class CdcSourceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CdcSourceTest.class);
@@ -93,9 +94,9 @@ public abstract class CdcSourceTest {
       CatalogHelpers.createAirbyteStream(
           MODELS_STREAM_NAME,
           MODELS_SCHEMA,
-          Field.of(COL_ID, JsonSchemaType.INTEGER),
-          Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
-          Field.of(COL_MODEL, JsonSchemaType.STRING))
+          Field.of(COL_ID, JsonSchemaType.INTEGER_V1),
+          Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER_V1),
+          Field.of(COL_MODEL, JsonSchemaType.STRING_V1))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID)))));
   protected static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers
@@ -480,9 +481,9 @@ public abstract class CdcSourceTest {
         .withStream(CatalogHelpers.createAirbyteStream(
             MODELS_STREAM_NAME + "_2",
             MODELS_SCHEMA,
-            Field.of(COL_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_MODEL, JsonSchemaType.STRING))
+            Field.of(COL_ID, JsonSchemaType.INTEGER_V1),
+            Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER_V1),
+            Field.of(COL_MODEL, JsonSchemaType.STRING_V1))
             .withSupportedSyncModes(
                 Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))));
@@ -623,9 +624,9 @@ public abstract class CdcSourceTest {
             CatalogHelpers.createAirbyteStream(
                 MODELS_STREAM_NAME + "_random",
                 randomTableSchema(),
-                Field.of(COL_ID + "_random", JsonSchemaType.NUMBER),
-                Field.of(COL_MAKE_ID + "_random", JsonSchemaType.NUMBER),
-                Field.of(COL_MODEL + "_random", JsonSchemaType.STRING))
+                Field.of(COL_ID + "_random", JsonSchemaType.NUMBER_V1),
+                Field.of(COL_MAKE_ID + "_random", JsonSchemaType.NUMBER_V1),
+                Field.of(COL_MODEL + "_random", JsonSchemaType.STRING_V1))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
                 .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID + "_random"))))));
 
