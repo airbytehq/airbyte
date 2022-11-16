@@ -51,8 +51,7 @@ public class Application {
   private final JobOrchestrator<?> jobOrchestrator;
   private final AsyncStateManager asyncStateManager;
 
-  public Application(
-                     @Named("application") final String application,
+  public Application(@Named("application") final String application,
                      final JobOrchestrator<?> jobOrchestrator,
                      final AsyncStateManager asyncStateManager) {
     this.application = application;
