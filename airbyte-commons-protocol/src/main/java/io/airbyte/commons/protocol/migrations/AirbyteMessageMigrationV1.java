@@ -4,45 +4,40 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.Version;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.JsonSchemaReferenceTypes;
-import io.airbyte.protocol.models.v0.AirbyteStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.StreamSupport;
 
-public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<AirbyteMessage, io.airbyte.protocol.models.v0.AirbyteMessage> {
+public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.airbyte.protocol.models.v0.AirbyteMessage, AirbyteMessage> {
 
   @Override
-  public AirbyteMessage downgrade(io.airbyte.protocol.models.v0.AirbyteMessage oldMessage) {
+  public io.airbyte.protocol.models.v0.AirbyteMessage downgrade(AirbyteMessage oldMessage) {
     // TODO implement downgrade
     return null;
   }
 
   @Override
-  public io.airbyte.protocol.models.v0.AirbyteMessage upgrade(AirbyteMessage oldMessage) {
+  public AirbyteMessage upgrade(io.airbyte.protocol.models.v0.AirbyteMessage oldMessage) {
     // We're not introducing any changes to the structure of the record/catalog
     // so just clone a new message object, which we can edit in-place
-    io.airbyte.protocol.models.v0.AirbyteMessage newMessage = Jsons.object(
+    AirbyteMessage newMessage = Jsons.object(
         Jsons.jsonNode(oldMessage),
-        io.airbyte.protocol.models.v0.AirbyteMessage.class);
-    if (oldMessage.getType() == Type.CATALOG) {
+        AirbyteMessage.class);
+    if (oldMessage.getType() == io.airbyte.protocol.models.v0.AirbyteMessage.Type.CATALOG) {
       for (AirbyteStream stream : newMessage.getCatalog().getStreams()) {
         JsonNode schema = stream.getJsonSchema();
         upgradeSchema(schema);
       }
-    } else if (oldMessage.getType() == Type.RECORD) {
+    } else if (oldMessage.getType() == io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD) {
       JsonNode oldData = newMessage.getRecord().getData();
       JsonNode newData = upgradeRecord(oldData);
       newMessage.getRecord().setData(newData);
