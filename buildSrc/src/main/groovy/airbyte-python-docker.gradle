@@ -147,6 +147,7 @@ class AirbytePythonDockerPlugin implements Plugin<Project> {
             throw new GradleException("Unexpected")
         } else if (project.file('setup.py').exists()) {
             project.task("installLocalReqs", type: Exec) {
+                // FIXME: use pwd to get the path
                 commandLine "docker", "run", "-v", "/Users/alex/code/airbyte/airbyte-connector-builder-server:/tmp", "--entrypoint", "pip", "python:3.9-slim", "install", "-e", "/tmp"
             }
         } else {
