@@ -1,6 +1,8 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 import classNames from "classnames";
 
+import { ConnectorCard } from "components/ConnectorCard";
+
 import { ConnectorIcon } from "./ConnectorIcon";
 import styles from "./ConnectorIcon.story.module.scss";
 
@@ -20,10 +22,19 @@ Primary.args = {
 
 export const ValidateIcons = ({ icon }: { icon: string }) => (
   <div className={styles.wrapper}>
+    {/* Show in context of table */}
     <Template icon={icon} className={classNames(styles.container, styles.small)} />
     <Template icon={icon} className={styles.container} />
     <Template icon={icon} className={classNames(styles.container, styles.large)} />
+    <div>The following icon should have a pink background:</div>
     <Template icon={icon} className={classNames(styles.container, styles.huge)} />
+    <div>ConnectorCard:</div>
+    <ConnectorCard
+      connectionName="Connection Name"
+      icon={icon}
+      releaseStage="generally_available"
+      connectorName="ConnectorName"
+    />
   </div>
 );
 ValidateIcons.parameters = {
