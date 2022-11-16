@@ -1,7 +1,7 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# On GCP (Compute Engine)
+# Deploy Airbyte on GCP (Compute Engine)
 
 This page guides you through deploying Airbyte Open Source on a [Google Cloud Platform (GCP) Compute Engine instance](https://cloud.google.com/compute/docs/instances) by setting up the deployment environment, installing and starting Airbyte, and connecting it to the GCP instance.
 
