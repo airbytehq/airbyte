@@ -67,4 +67,6 @@ data:
   CRON_MICRONAUT_ENVIRONMENTS: "control-plane"
   WORKER_LOGS_STORAGE_TYPE: {{ .Values.global.logs.storage.type | quote }}
   WORKER_STATE_STORAGE_TYPE:  {{ .Values.global.state.storage.type | quote }}
+  SHOULD_RUN_NOTIFY_WORKFLOWS: "false"
+  MAX_NOTIFY_WORKERS: "5"
 {{- end }}

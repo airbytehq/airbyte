@@ -41,7 +41,7 @@ setup(
     },
     packages=find_packages(exclude=("unit_tests", "integration_tests", "docs")),
     package_data={},
-    install_requires=["fastapi", "uvicorn"],
+    install_requires=["airbyte-cdk~=0.8", "fastapi", "uvicorn"],
     python_requires=">=3.9.11",
     extras_require={
         "tests": ["MyPy~=0.812", "pytest~=6.2.5", "pytest-cov", "pytest-mock", "pytest-recording", "requests-mock", "pre-commit"],
