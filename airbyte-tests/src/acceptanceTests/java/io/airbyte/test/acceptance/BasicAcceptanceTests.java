@@ -688,9 +688,6 @@ class BasicAcceptanceTests {
     // connectionIds.remove(connectionId); // todo remove
     testHarness.removeConnection(connectionId);
 
-    LOGGER.info("Waiting for connection to be deleted...");
-    Thread.sleep(5000);
-
     ConnectionStatus connectionStatus =
         apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getStatus();
     assertEquals(ConnectionStatus.DEPRECATED, connectionStatus);
@@ -709,9 +706,6 @@ class BasicAcceptanceTests {
 
     // we should still be able to delete the connection when the temporal workflow is in this state
     apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-
-    LOGGER.info("Waiting for connection to be deleted...");
-    Thread.sleep(5000);
 
     connectionStatus = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getStatus();
     assertEquals(ConnectionStatus.DEPRECATED, connectionStatus);
