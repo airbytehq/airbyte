@@ -22,46 +22,46 @@ import org.slf4j.LoggerFactory;
 
 public class RedpandaDestination extends BaseConnector implements Destination {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RedpandaDestination.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RedpandaDestination.class);
 
-    public static void main(String[] args) throws Exception {
-        new IntegrationRunner(new RedpandaDestination()).run(args);
-    }
+  public static void main(String[] args) throws Exception {
+    new IntegrationRunner(new RedpandaDestination()).run(args);
+  }
 
-    @Override
-    public AirbyteConnectionStatus check(JsonNode config) {
-        String topicName = "namespace.stream";
-        RedpandaOperations redpandaOperations = null;
+  @Override
+  public AirbyteConnectionStatus check(JsonNode config) {
+    String topicName = "namespace.stream";
+    RedpandaOperations redpandaOperations = null;
+    try {
+      RedpandaConfig redpandaConfig = RedpandaConfig.createConfig(config);
+      redpandaOperations = new RedpandaOperations(redpandaConfig);
+      redpandaOperations.createTopic(
+          List.of(new RedpandaOperations.TopicInfo(topicName, Optional.empty(), Optional.empty())));
+      redpandaOperations.putRecordBlocking(topicName, UUID.randomUUID().toString(), Jsons.emptyObject());
+      redpandaOperations.flush();
+      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
+    } catch (Exception e) {
+      LOGGER.error("Error while trying to connect to Redpanda: ", e);
+      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED);
+    } finally {
+      if (redpandaOperations != null) {
         try {
-            RedpandaConfig redpandaConfig = RedpandaConfig.createConfig(config);
-            redpandaOperations = new RedpandaOperations(redpandaConfig);
-            redpandaOperations.createTopic(
-                List.of(new RedpandaOperations.TopicInfo(topicName, Optional.empty(), Optional.empty())));
-            redpandaOperations.putRecordBlocking(topicName, UUID.randomUUID().toString(), Jsons.emptyObject());
-            redpandaOperations.flush();
-            return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
+          redpandaOperations.deleteTopic(List.of(topicName));
         } catch (Exception e) {
-            LOGGER.error("Error while trying to connect to Redpanda: ", e);
-            return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED);
-        } finally {
-            if (redpandaOperations != null) {
-                try {
-                    redpandaOperations.deleteTopic(List.of(topicName));
-                } catch (Exception e) {
-                    LOGGER.error("Error while deleting Redpanda topic: ", e);
-                }
-                redpandaOperations.close();
-            }
+          LOGGER.error("Error while deleting Redpanda topic: ", e);
         }
+        redpandaOperations.close();
+      }
     }
+  }
 
-    @Override
-    public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                              ConfiguredAirbyteCatalog configuredCatalog,
-                                              Consumer<AirbyteMessage> outputRecordCollector) {
-        RedpandaConfig redpandaConfig = RedpandaConfig.createConfig(config);
-        return new RedpandaMessageConsumer(configuredCatalog, new RedpandaOperations(redpandaConfig), redpandaConfig,
-            outputRecordCollector);
-    }
+  @Override
+  public AirbyteMessageConsumer getConsumer(JsonNode config,
+                                            ConfiguredAirbyteCatalog configuredCatalog,
+                                            Consumer<AirbyteMessage> outputRecordCollector) {
+    RedpandaConfig redpandaConfig = RedpandaConfig.createConfig(config);
+    return new RedpandaMessageConsumer(configuredCatalog, new RedpandaOperations(redpandaConfig), redpandaConfig,
+        outputRecordCollector);
+  }
 
 }
