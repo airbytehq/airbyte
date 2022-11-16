@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
