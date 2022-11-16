@@ -5,7 +5,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from connector_builder.generated.apis.default_api_interface import initialize_router
+from connector_builder.generated.apis.default_api_interface import \
+    initialize_router
 from connector_builder.impl.default_api import DefaultApiImpl
 
 app = FastAPI(
