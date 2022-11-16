@@ -1213,6 +1213,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/public-apis
   sourceType: api
   releaseStage: alpha
+- name: Punk API
+  sourceDefinitionId: dbe9b7ae-7b46-4e44-a507-02a343cf7230
+  dockerRepository: airbyte/source-punk-api
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/punk-api
+  sourceType: api
+  releaseStage: alpha
 - name: PyPI
   sourceDefinitionId: 88ecd3a8-5f5b-11ed-9b6a-0242ac120002
   dockerRepository: airbyte/source-pypi
