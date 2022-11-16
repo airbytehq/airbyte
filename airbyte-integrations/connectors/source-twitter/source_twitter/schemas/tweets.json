@@ -2,36 +2,36 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-      "data": {
-        "type": ["array","null"],
-        "properties": {
-          "edit_history_tweet_ids":{
-            "type": ["null", "array"]
-          },   
-          "id":{
-            "type": ["null", "string"]
-          },
-          "text": {
-            "type": ["null", "string"]
-          }
-        }
-      },
-      "meta": {
-        "type": ["object","null"],
-        "properties": {
-          "newest_id":{
-            "type": ["null", "string"]
-          },
-          "oldest_id":{
-            "type": ["null", "string"]
-          },
-          "result_count":{
-            "type": ["null", "integer"]
-          },
-          "next_token":{
+    "data": {
+      "type": ["array", "null"],
+      "properties": {
+        "edit_history_tweet_ids": {
+          "type": ["null", "array"]
+        },
+        "id": {
           "type": ["null", "string"]
-          }
+        },
+        "text": {
+          "type": ["null", "string"]
         }
       }
+    },
+    "meta": {
+      "type": ["object", "null"],
+      "properties": {
+        "newest_id": {
+          "type": ["null", "string"]
+        },
+        "oldest_id": {
+          "type": ["null", "string"]
+        },
+        "result_count": {
+          "type": ["null", "integer"]
+        },
+        "next_token": {
+          "type": ["null", "string"]
+        }
+      }
+    }
   }
 }

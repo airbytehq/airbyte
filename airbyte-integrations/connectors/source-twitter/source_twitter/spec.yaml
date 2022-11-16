@@ -15,5 +15,5 @@ connectionSpecification:
       airbyte_secret: true
     query:
       type: string
-      description: Twitter Search query 
+      description: Twitter Search query
       title: Twitter Search Query
