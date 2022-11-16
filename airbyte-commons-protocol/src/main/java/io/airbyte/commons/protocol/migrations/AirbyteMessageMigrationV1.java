@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.commons.protocol.migrations;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -56,10 +60,8 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   }
 
   /**
-   * Detects any schema that looks like a primitive type declaration, e.g.:
-   * { "type": "string" }
-   * or
-   * { "type": ["string", "object"] }
+   * Detects any schema that looks like a primitive type declaration, e.g.: { "type": "string" } or {
+   * "type": ["string", "object"] }
    */
   private boolean isPrimitiveTypeDeclaration(JsonNode schema) {
     if (!schema.isObject() || !schema.hasNonNull("type")) {
@@ -75,19 +77,17 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   }
 
   /**
-   * Modifies the schema in-place to upgrade from the old-style type declaration to the new-style $ref declaration.
-   * Assumes that the schema is an ObjectNode containing a primitive declaration, i.e. either something like:
-   * {"type": "string"}
-   * or:
-   * {"type": ["string", "object"]}
+   * Modifies the schema in-place to upgrade from the old-style type declaration to the new-style $ref
+   * declaration. Assumes that the schema is an ObjectNode containing a primitive declaration, i.e.
+   * either something like: {"type": "string"} or: {"type": ["string", "object"]}
    *
-   * In the latter case, the schema may contain subschemas. This method mutually recurses with {@link #mutateSchemas(Function, Consumer, JsonNode)}
-   * to upgrade those subschemas.
+   * In the latter case, the schema may contain subschemas. This method mutually recurses with
+   * {@link #mutateSchemas(Function, Consumer, JsonNode)} to upgrade those subschemas.
    *
    * @param schema An ObjectNode representing a primitive type declaration
    */
   private void upgradeTypeDeclaration(JsonNode schema) {
-    ObjectNode schemaNode = (ObjectNode)schema;
+    ObjectNode schemaNode = (ObjectNode) schema;
 
     if (schemaNode.hasNonNull("airbyte_type")) {
       // If airbyte_type is defined, always respect it
@@ -119,7 +119,8 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
           schemaNode.put("$ref", referenceType);
         } else {
           // If there are multiple types, we'll need to convert this to a oneOf.
-          // For arrays and objects, we do a mutual recursion back into mutateSchemas to upgrade their subschemas.
+          // For arrays and objects, we do a mutual recursion back into mutateSchemas to upgrade their
+          // subschemas.
           ArrayNode oneOfOptions = Jsons.arrayNode();
           for (String type : types) {
             ObjectNode option = (ObjectNode) Jsons.emptyObject();
@@ -159,8 +160,9 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   }
 
   /**
-   * Given a primitive (string/int/num/bool) type declaration _without_ an airbyte_type, get the appropriate $ref type.
-   * In most cases, this only depends on the "type" key. When type=string, also checks the "format" key.
+   * Given a primitive (string/int/num/bool) type declaration _without_ an airbyte_type, get the
+   * appropriate $ref type. In most cases, this only depends on the "type" key. When type=string, also
+   * checks the "format" key.
    */
   private String getReferenceType(String type, ObjectNode schemaNode) {
     return switch (type) {
@@ -188,10 +190,12 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   }
 
   /**
-   * Generic utility method that recurses through all type declarations in the schema. For each type declaration that are accepted by matcher,
-   * mutate them using transformer. For all other type declarations, recurse into their subschemas (if any).
+   * Generic utility method that recurses through all type declarations in the schema. For each type
+   * declaration that are accepted by matcher, mutate them using transformer. For all other type
+   * declarations, recurse into their subschemas (if any).
    *
-   * Note that this modifies the schema in-place. Callers who need a copy of the old schema should save schema.deepCopy() before calling this method.
+   * Note that this modifies the schema in-place. Callers who need a copy of the old schema should
+   * save schema.deepCopy() before calling this method.
    *
    * @param schema The JsonSchema node to walk down
    * @param matcher A function which returns true on any schema node that needs to be transformed
@@ -209,9 +213,10 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
     } else {
       // Otherwise, we need to find all the subschemas and mutate them.
       // technically, it might be more correct to do something like:
-      //   if schema["type"] == "array": find subschemas for items, additionalItems, contains
-      //   else if schema["type"] == "object": find subschemas for properties, patternProperties, additionalProperties
-      //   else if oneof, allof, etc
+      // if schema["type"] == "array": find subschemas for items, additionalItems, contains
+      // else if schema["type"] == "object": find subschemas for properties, patternProperties,
+      // additionalProperties
+      // else if oneof, allof, etc
       // but that sounds really verbose for no real benefit
       List<JsonNode> subschemas = new ArrayList<>();
 
@@ -222,7 +227,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
 
       // object schemas
       if (schema.hasNonNull("properties")) {
-        ObjectNode propertiesNode = (ObjectNode)schema.get("properties");
+        ObjectNode propertiesNode = (ObjectNode) schema.get("properties");
         Iterator<Entry<String, JsonNode>> propertiesIterator = propertiesNode.fields();
         while (propertiesIterator.hasNext()) {
           Entry<String, JsonNode> property = propertiesIterator.next();
@@ -230,7 +235,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
         }
       }
       if (schema.hasNonNull("patternProperties")) {
-        ObjectNode propertiesNode = (ObjectNode)schema.get("patternProperties");
+        ObjectNode propertiesNode = (ObjectNode) schema.get("patternProperties");
         Iterator<Entry<String, JsonNode>> propertiesIterator = propertiesNode.fields();
         while (propertiesIterator.hasNext()) {
           Entry<String, JsonNode> property = propertiesIterator.next();
@@ -239,7 +244,8 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
       }
       findSubschemas(subschemas, schema, "additionalProperties");
 
-      // combining restrictions - destinations have limited support for these, but we should handle the schemas correctly anyway
+      // combining restrictions - destinations have limited support for these, but we should handle the
+      // schemas correctly anyway
       findSubschemas(subschemas, schema, "allOf");
       findSubschemas(subschemas, schema, "oneOf");
       findSubschemas(subschemas, schema, "anyOf");
@@ -253,20 +259,16 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   }
 
   /**
-   * If schema contains key, then grab the subschema(s) at schema[key] and add them to the subschemas list.
+   * If schema contains key, then grab the subschema(s) at schema[key] and add them to the subschemas
+   * list.
    *
-   * For example:
-   * schema = {"items": [{"type": "string}]}
-   * key = "items"
-   * -> add {"type": "string"} to subschemas
+   * For example: schema = {"items": [{"type": "string}]} key = "items" -> add {"type": "string"} to
+   * subschemas
    *
-   * schema = {"items": {"type": "string"}}
-   * key = "items"
-   * -> add {"type": "string"} to subschemas
+   * schema = {"items": {"type": "string"}} key = "items" -> add {"type": "string"} to subschemas
    *
-   * schema = {"additionalProperties": true}
-   * key = "additionalProperties"
-   * -> add nothing to subschemas (technically `true` is a valid JsonSchema, but we don't want to modify it)
+   * schema = {"additionalProperties": true} key = "additionalProperties" -> add nothing to subschemas
+   * (technically `true` is a valid JsonSchema, but we don't want to modify it)
    */
   private static void findSubschemas(List<JsonNode> subschemas, JsonNode schema, String key) {
     if (schema.hasNonNull(key)) {
@@ -282,8 +284,8 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   }
 
   /**
-   * Returns a copy of oldData, with numeric values converted to strings.
-   * String and boolean values are returned as-is for convenience, i.e. this is not a true deep copy.
+   * Returns a copy of oldData, with numeric values converted to strings. String and boolean values
+   * are returned as-is for convenience, i.e. this is not a true deep copy.
    */
   private static JsonNode upgradeRecord(JsonNode oldData) {
     if (oldData.isNumber()) {
@@ -291,7 +293,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
       return Jsons.convertValue(oldData.asText(), TextNode.class);
     } else if (oldData.isObject()) {
       // Recurse into each field of the object
-      ObjectNode newData = (ObjectNode)Jsons.emptyObject();
+      ObjectNode newData = (ObjectNode) Jsons.emptyObject();
 
       Iterator<Entry<String, JsonNode>> fieldsIterator = oldData.fields();
       while (fieldsIterator.hasNext()) {
