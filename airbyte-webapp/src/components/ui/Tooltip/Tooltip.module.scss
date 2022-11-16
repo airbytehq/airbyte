@@ -1,7 +1,7 @@
 @use "scss/colors";
 @use "scss/variables";
 @use "scss/z-indices";
-@use "scss/utils";
+@use "scss/mixins";
 
 .container {
   display: inline;
@@ -9,7 +9,7 @@
 }
 
 .tooltip {
-  @include utils.shadow;
+  @include mixins.shadow;
 
   font-size: 12px;
   line-height: initial;

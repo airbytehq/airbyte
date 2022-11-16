@@ -1,6 +1,6 @@
 @use "scss/colors";
 @use "scss/variables";
-@use "scss/utils";
+@use "scss/mixins";
 
 .container {
   display: flex;
@@ -53,7 +53,7 @@
 }
 
 .connectorButton {
-  @include utils.shadow;
+  @include mixins.shadow;
 
   width: 100%;
   aspect-ratio: 1 / 1;

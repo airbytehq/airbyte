@@ -1,9 +1,9 @@
 @use "scss/colors";
 @use "scss/variables";
-@use "scss/utils";
+@use "scss/mixins";
 
 .container {
-  @include utils.shadow;
+  @include mixins.shadow;
 
   width: auto;
   background: colors.$white;

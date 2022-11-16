@@ -1,8 +1,8 @@
 @use "scss/colors";
-@use "scss/utils";
+@use "scss/mixins";
 
 .button {
-  @include utils.shadow;
+  @include mixins.shadow;
 
   padding: 20px 28px 20px 20px;
   display: flex;
