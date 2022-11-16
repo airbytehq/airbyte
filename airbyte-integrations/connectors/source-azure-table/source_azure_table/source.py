@@ -17,7 +17,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.utils.schema_helpers import split_config
+from airbyte_cdk.sources.utils.schema_helpers import filter_internal_keywords
 from airbyte_cdk.utils.event_timing import create_timer
 
 from .azure_table import AzureTableReader
@@ -103,7 +103,7 @@ class SourceAzureTable(AbstractSource):
         stream_instances = {s.name: s for s in self.streams(logger=logger, config=config)}
         state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
         logger.info(f"Starting syncing {self.name}")
-        config, internal_config = split_config(config)
+        config, internal_config = filter_internal_keywords(config)
         self._stream_to_instance_map = stream_instances
         with create_timer(self.name) as timer:
             for configured_stream in catalog.streams:

@@ -12,7 +12,7 @@ from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAi
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.utils.schema_helpers import split_config
+from airbyte_cdk.sources.utils.schema_helpers import filter_internal_keywords
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import HTTPError
@@ -154,7 +154,7 @@ class SourceHubspot(AbstractSource):
         This method is overridden to check whether the stream `quotes` exists in the source, if not skip reading that stream.
         """
         logger.info(f"Starting syncing {self.name}")
-        config, internal_config = split_config(config)
+        config, internal_config = filter_internal_keywords(config)
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}

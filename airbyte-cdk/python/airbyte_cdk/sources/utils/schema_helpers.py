@@ -176,7 +176,7 @@ class InternalConfig(BaseModel):
         return super().dict(*args, **kwargs)
 
 
-def split_config(config: MutableMapping[str, Any]) -> Tuple[MutableMapping, InternalConfig]:
+def filter_internal_keywords(config: MutableMapping[str, Any]) -> Tuple[MutableMapping, InternalConfig]:
     """
     Remove internal config keywords from config and build an InternalConfig from it.
 
