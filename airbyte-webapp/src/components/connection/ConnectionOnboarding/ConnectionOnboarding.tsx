@@ -146,7 +146,7 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
                     aria-label={tooltipText}
                     className={styles.connectorButton}
                     onClick={() => onCreate(source?.sourceDefinitionId)}
-                    onMouseEnter={() => setHighlightedSource(index as 0 | 1 | 2)}
+                    onMouseEnter={() => setHighlightedSource(index as HighlightIndex)}
                   >
                     <div className={styles.connectorIcon}>{getIcon(source?.icon)}</div>
                   </button>
