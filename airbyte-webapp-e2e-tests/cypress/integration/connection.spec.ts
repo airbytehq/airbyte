@@ -208,7 +208,7 @@ describe("Connection main actions", () => {
     deleteDestination(destName);
   });
 
-  it.only("Create a connection, update data in source, show diff modal, reset streams", () => {
+  it("Create a connection, update data in source, show diff modal, reset streams", () => {
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
     populateDBSource();
