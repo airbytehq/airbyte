@@ -1,4 +1,4 @@
-# Deploy On Plural
+# Deploy Airbyte on Plural
 
 ## Overview
 

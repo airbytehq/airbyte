@@ -95,10 +95,24 @@ module.exports = {
       },
       items: [
         'deploying-airbyte/local-deployment',
-        'deploying-airbyte/on-aws-ec2',
-        'deploying-airbyte/on-azure-vm-cloud-shell',
-        'deploying-airbyte/on-gcp-compute-engine',
+        {
+          type: 'doc',
+          label: 'Deploy Airbyte on AWS EC2',
+          id: 'deploying-airbyte/on-aws-ec2',
+        },
+        
+        {
+          type: 'doc',
+          label: 'Deploy Airbyte on Azure',
+          id:'deploying-airbyte/on-azure-vm-cloud-shell',
+        },
+        {
+          type: 'doc',
+          label: 'Deploy Airbyte on Google (GCP)',
+          id:'deploying-airbyte/on-gcp-compute-engine',
+        },
         'deploying-airbyte/on-kubernetes',
+        'deploying-airbyte/on-kubernetes-via-helm',
         'deploying-airbyte/on-plural',
         'deploying-airbyte/on-oci-vm',
         'deploying-airbyte/on-digitalocean-droplet',
