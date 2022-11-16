@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "Users",
+        "name": "users",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
@@ -37,7 +37,31 @@
         "source_defined_cursor": true,
         "default_cursor_field": ["created_at"]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "purchases",
+        "json_schema": {
+          "properties": {
+            "id": { "type": "number" },
+            "make": { "type": "string" },
+            "model": { "type": "string" },
+            "year": { "type": "string" },
+            "price": { "type": "number" },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created_at"]
+      },
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     }
   ]
