@@ -10,10 +10,10 @@ connectionSpecification:
     - iban
   properties:
     endpoint:
-      title : Endpoint
+      title: Endpoint
       type: string
       description: Please choose the right endpoint to use in this connection
-      enum: 
+      enum:
         #- Sandbox # not yet supported
         - Production
         - Test Mocked API Server
@@ -38,5 +38,3 @@ connectionSpecification:
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
       examples:
         - YYYY-MM-DD
-
-
