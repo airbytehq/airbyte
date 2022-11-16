@@ -78,4 +78,4 @@ streams:
 
 check:
   stream_names:
-    - "sms"
+    - "phones"

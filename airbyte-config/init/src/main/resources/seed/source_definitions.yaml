@@ -1407,6 +1407,14 @@
   icon: twilio.svg
   sourceType: api
   releaseStage: generally_available
+- name: Tyntec SMS
+  sourceDefinitionId: 3c0c3cd1-b3e0-464a-9090-d3ceb5f92346
+  dockerRepository: airbyte/source-tyntec-sms
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/tyntec-sms
+  icon: tyntec.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Typeform
   sourceDefinitionId: e7eff203-90bf-43e5-a240-19ea3056c474
   dockerRepository: airbyte/source-typeform
