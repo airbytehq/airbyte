@@ -17,22 +17,6 @@ def test():
     assert config["limit"] == 50
 
 
-def test_get_ref():
-    s = """
-    limit_ref: "*ref(limit)"
-    """
-    ref_key = parser._get_ref_key(s)
-    assert ref_key == "limit"
-
-
-def test_get_ref_no_ref():
-    s = """
-    limit: 50
-    """
-    ref_key = parser._get_ref_key(s)
-    assert ref_key is None
-
-
 def test_refer():
     content = """
     limit: 50
