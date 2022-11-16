@@ -1,143 +1,78 @@
 {
-  "type": [
-    "null",
-    "object"
-  ],
+  "type": ["null", "object"],
   "properties": {
     "ItemID": {
-      "type": [
-        "string"
-      ]
+      "type": ["string"]
     },
     "Code": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Name": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "IsSold": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "IsPurchased": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "Description": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "PurchaseDescription": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "PurchaseDetails": {
       "properties": {
         "TaxType": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "COGSAccountCode": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "UnitPrice": {
-          "type": [
-            "null",
-            "number"
-          ],
-          "minimum": -1e+33,
-          "maximum": 1e+33
+          "type": ["null", "number"],
+          "minimum": -1e33,
+          "maximum": 1e33
         },
         "AccountCode": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       },
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "additionalProperties": true
     },
     "SalesDetails": {
       "properties": {
         "TaxType": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "UnitPrice": {
-          "type": [
-            "null",
-            "number"
-          ],
-          "minimum": -1e+33,
-          "maximum": 1e+33
+          "type": ["null", "number"],
+          "minimum": -1e33,
+          "maximum": 1e33
         },
         "AccountCode": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       },
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "additionalProperties": true
     },
     "IsTrackedAsInventory": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "InventoryAssetAccountCode": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "TotalCostPool": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "QuantityOnHand": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "UpdatedDateUTC": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     }
   },

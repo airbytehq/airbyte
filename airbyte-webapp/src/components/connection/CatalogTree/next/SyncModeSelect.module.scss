@@ -1,3 +1,6 @@
+@use "scss/variables";
+
 .pillSelect {
-  width: 100%;
+  width: variables.$width-wide-menu;
+  justify-content: space-between;
 }
