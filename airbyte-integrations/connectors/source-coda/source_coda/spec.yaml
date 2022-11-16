@@ -5,7 +5,6 @@ connectionSpecification:
   type: object
   required:
     - auth_token
-    - doc_id
   additionalProperties: true
   properties:
     auth_token:
@@ -14,7 +13,3 @@ connectionSpecification:
       description: Bearer token
       airbyte_secret: true
       order: 0
-    doc_id:
-      title: Document Id
-      type: string
-      description: Document id

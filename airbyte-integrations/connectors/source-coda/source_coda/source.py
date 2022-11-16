@@ -9,6 +9,7 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 BASE_URL = "https://coda.io/apis/v1/"
@@ -35,37 +36,49 @@ class CodaStream(HttpStream, ABC):
             return {"limit": self.limit}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        print(response.json())
         return response.json()["items"]
 
 
 class Docs(CodaStream):
 
-    primary_key = "DOCS"
+    primary_key = "id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "docs"
 
+class CodaStreamDoc(CodaStream):
 
-class Permissions(CodaStream):
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        self.authenticator (which should be used as the
+        authenticator for Users) is object of NoAuth()
 
-    primary_key = "PERMISSIONS"
+        so self._session.auth is used instead
+        """
+        docs_stream = Docs(**{"authenticator": self._authenticator})
+        for doc in docs_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"doc_id": doc["id"]}
 
-    def __init__(self, doc_id, **kwargs):
+
+class Permissions(CodaStreamDoc):
+
+    primary_key = "id"
+
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._doc_id = doc_id
-
+    
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"docs/{self._doc_id}/acl/permissions"
+        doc_id = stream_slice["doc_id"]
+        return f"docs/{doc_id}/acl/permissions"
 
 
-class Categories(CodaStream):
+class Categories(CodaStreamDoc):
 
-    primary_key = "CATEGORIES"
+    primary_key = "name"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -73,60 +86,60 @@ class Categories(CodaStream):
         return "categories"
 
 
-class Pages(CodaStream):
+class Pages(CodaStreamDoc):
 
-    primary_key = "PAGES"
+    primary_key = "id"
 
-    def __init__(self, doc_id, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._doc_id = doc_id
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"docs/{self._doc_id}/pages"
+        doc_id = stream_slice["doc_id"]
+        return f"docs/{doc_id}/pages"
 
 
-class Tables(CodaStream):
+class Tables(CodaStreamDoc):
 
-    primary_key = "TABLES"
+    primary_key = "id"
 
-    def __init__(self, doc_id, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._doc_id = doc_id
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"docs/{self._doc_id}/tables"
+        doc_id = stream_slice["doc_id"]
+        return f"docs/{doc_id}/tables"
 
 
-class Formulas(CodaStream):
+class Formulas(CodaStreamDoc):
 
-    primary_key = "FORMULAS"
+    primary_key = "id"
 
-    def __init__(self, doc_id, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._doc_id = doc_id
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"docs/{self._doc_id}/formulas"
+        doc_id = stream_slice["doc_id"]
+        return f"docs/{doc_id}/formulas"
 
 
-class Controls(CodaStream):
+class Controls(CodaStreamDoc):
 
-    primary_key = "CONTROLS"
+    primary_key = "id"
 
-    def __init__(self, doc_id, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._doc_id = doc_id
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"docs/{self._doc_id}/controls"
+        doc_id = stream_slice["doc_id"]
+        return f"docs/{doc_id}/controls"
 
 
 # Source
@@ -135,8 +148,9 @@ class SourceCoda(AbstractSource):
         try:
             token = config.get("auth_token")
             headers = {"Authorization": f"Bearer {token}"}
-            requests.get(f"{BASE_URL}whoami", headers=headers)
-            return True, None
+            r = requests.get(f"{BASE_URL}whoami", headers=headers)
+            if r.status_code == 200:
+                return True, None
         except Exception as e:
             return False, e
 
@@ -145,14 +159,12 @@ class SourceCoda(AbstractSource):
             "authenticator": TokenAuthenticator(token=config.get("auth_token")),
         }
 
-        additional_args = {**stream_args, "doc_id": config.get("doc_id")}
-
         return [
             Docs(**stream_args),
-            Permissions(**additional_args),
+            Permissions(**stream_args),
             Categories(**stream_args),
-            Pages(**additional_args),
-            Tables(**additional_args),
-            Formulas(**additional_args),
-            Controls(**additional_args),
+            Pages(**stream_args),
+            Tables(**stream_args),
+            Formulas(**stream_args),
+            Controls(**stream_args),
         ]
