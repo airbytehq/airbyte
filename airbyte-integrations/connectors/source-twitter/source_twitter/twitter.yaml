@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: []
+      field_pointer: ["data"]
   requester:
     url_base: "https://api.twitter.com/2/tweets"
     http_method: "GET"
@@ -55,11 +55,13 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
+  
   tweets_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "tweets"
       path: "/search/recent"
+
 streams:
   - "*ref(definitions.tweets_stream)"
 
