@@ -7,6 +7,7 @@ import pytest
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from source_faker import SourceFaker
 
+
 class MockLogger:
     def debug(a,b, **kwargs):
         return None
