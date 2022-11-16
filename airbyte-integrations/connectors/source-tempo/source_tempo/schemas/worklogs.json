@@ -42,7 +42,7 @@
       "readOnly": true
     },
     "description": {
-      "type": ["null","string"],
+      "type": ["null", "string"],
       "description": "Description of the worklog",
       "readOnly": true
     },
@@ -61,7 +61,7 @@
       "description": "Author of the worklog",
       "properties": {
         "accountId": {
-          "type":  "string"
+          "type": "string"
         },
         "self": {
           "type": ["null", "string"]

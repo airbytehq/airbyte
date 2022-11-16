@@ -13,6 +13,7 @@ import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.STAGING_SCHEMA_
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.STREAM_NAME;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.waitForSuccessfulJob;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.waitWhileJobHasStatus;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.waitWhileJobIsRunning;
 import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -640,6 +641,11 @@ class BasicAcceptanceTests {
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitWhileJobHasStatus(apiClient.getJobsApi(), jobInfoRead.getJob(),
         Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING, JobStatus.INCOMPLETE, JobStatus.FAILED));
+    // This is a band-aid to prevent some race conditions where the job status was updated but we may
+    // still be cleaning up some data in the reset table. This would be an argument for reworking the
+    // source of truth of the replication workflow state to be in DB rather than in Memory and
+    // serialized automagically by temporal
+    waitWhileJobIsRunning(apiClient.getJobsApi(), jobInfoRead.getJob(), Duration.ofMinutes(1));
 
     LOGGER.info("state after reset: {}", apiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
@@ -687,9 +693,6 @@ class BasicAcceptanceTests {
     // connectionIds.remove(connectionId); // todo remove
     testHarness.removeConnection(connectionId);
 
-    LOGGER.info("Waiting for connection to be deleted...");
-    Thread.sleep(5000);
-
     ConnectionStatus connectionStatus =
         apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getStatus();
     assertEquals(ConnectionStatus.DEPRECATED, connectionStatus);
@@ -708,9 +711,6 @@ class BasicAcceptanceTests {
 
     // we should still be able to delete the connection when the temporal workflow is in this state
     apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-
-    LOGGER.info("Waiting for connection to be deleted...");
-    Thread.sleep(5000);
 
     connectionStatus = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getStatus();
     assertEquals(ConnectionStatus.DEPRECATED, connectionStatus);
@@ -938,6 +938,11 @@ class BasicAcceptanceTests {
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitWhileJobHasStatus(apiClient.getJobsApi(), jobInfoRead.getJob(),
         Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING, JobStatus.INCOMPLETE, JobStatus.FAILED));
+    // This is a band-aid to prevent some race conditions where the job status was updated but we may
+    // still be cleaning up some data in the reset table. This would be an argument for reworking the
+    // source of truth of the replication workflow state to be in DB rather than in Memory and
+    // serialized automagically by temporal
+    waitWhileJobIsRunning(apiClient.getJobsApi(), jobInfoRead.getJob(), Duration.ofMinutes(1));
 
     LOGGER.info("state after reset: {}", apiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
@@ -1243,6 +1248,11 @@ class BasicAcceptanceTests {
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitWhileJobHasStatus(apiClient.getJobsApi(), jobInfoRead.getJob(),
         Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING, JobStatus.INCOMPLETE, JobStatus.FAILED));
+    // This is a band-aid to prevent some race conditions where the job status was updated but we may
+    // still be cleaning up some data in the reset table. This would be an argument for reworking the
+    // source of truth of the replication workflow state to be in DB rather than in Memory and
+    // serialized automagically by temporal
+    waitWhileJobIsRunning(apiClient.getJobsApi(), jobInfoRead.getJob(), Duration.ofMinutes(1));
 
     LOGGER.info("state after reset: {}", apiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
