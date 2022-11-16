@@ -95,7 +95,7 @@
               "type": "string"
             },
             "answer": {
-              "type": "integer"
+              "type": ["integer", "string"]
             }
           }
         }
