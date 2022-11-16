@@ -34,6 +34,10 @@ service:
 ##
 podAnnotations: {}
 
+##  temporal.podLabels [object] Add extra labels to the temporal pod
+##
+podLabels: {}
+
 ##  temporal.containerSecurityContext Security context for the container
 ## Examples:
 ## containerSecurityContext:

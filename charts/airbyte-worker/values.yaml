@@ -119,6 +119,10 @@ image:
 ##
 podAnnotations: {}
 
+##  worker.podLabels [object] Add extra labels to the worker pod(s)
+##
+podLabels: {}
+
 ##  worker.containerSecurityContext Security context for the container
 ## Examples:
 ## containerSecurityContext:
