@@ -18,6 +18,7 @@ import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.OperatorDbt;
@@ -28,7 +29,6 @@ import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
-import io.airbyte.integrations.standardtest.destination.argproviders.NamespaceTestCaseProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.BasicTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -72,12 +72,16 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1629,5 +1633,25 @@ public abstract class DestinationAcceptanceTest {
     });
     return airbyteMessages;
   }
+
+  public class NamespaceTestCaseProvider implements ArgumentsProvider {
+
+    public static final String NAMESPACE_TEST_CASES_JSON = "namespace_test_cases.json";
+
+    @Override
+    public Stream<? extends Arguments> provideArguments(final ExtensionContext context)
+        throws Exception {
+      final JsonNode testCases =
+          Jsons.deserialize(MoreResources.readResource(NAMESPACE_TEST_CASES_JSON));
+      return MoreIterators.toList(testCases.elements()).stream()
+          .filter(testCase -> testCase.get("enabled").asBoolean())
+          .map(testCase -> Arguments.of(
+              testCase.get("id").asText(),
+              testCase.get("namespace").asText(),
+              testCase.get("normalized").asText()));
+    }
+
+  }
+
 
 }
