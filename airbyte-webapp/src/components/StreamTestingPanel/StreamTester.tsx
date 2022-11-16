@@ -46,7 +46,6 @@ export const StreamTester: React.FC<StreamTesterProps> = ({ selectedStream }) =>
       ? error.message
       : formatMessage({ id: "connectorBuilder.unknownError" })
     : undefined;
-  console.log(errorMessage);
 
   useEffect(() => {
     if (isError) {

@@ -28,7 +28,6 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   // json manifest
   const [jsonManifest, setJsonManifest] = useState<StreamsListRequestBodyManifest>({});
   const [yamlIsValid, setYamlIsValid] = useState(true);
-  console.log(jsonManifest);
 
   // config
   const [configString, setConfigString] = useState("{\n  \n}");
@@ -60,7 +59,6 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   }, [streams, firstStreamName]);
 
   const selectedStream = streams.find((stream) => stream.name === selectedStreamName);
-  console.log(selectedStream, "selectedStream");
 
   const ctx = {
     jsonManifest,
