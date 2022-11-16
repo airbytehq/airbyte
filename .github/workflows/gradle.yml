@@ -7,6 +7,11 @@ env:
 on:
   #ability to start task manually in Web UI
   workflow_dispatch:
+    inputs:
+      debug_mode:
+        description: "Enable or disable tmate session for debug during helm ac tests"
+        default: "true"
+        required: false
   schedule:
     - cron: "0 */1 * * *"
   push:
@@ -955,13 +960,8 @@ jobs:
         with:
           version: 'v1.21.2' # default is latest stable
 
-      # - uses: AbsaOSS/k3d-action@v2
-      #   name: "Create Single Cluster"
-      #   with:
-      #     cluster-name: "helm-testing"
-      #     args: --agents 1 -p "30080:30080@server:0" -i docker.io/rancher/k3s:v1.21.2-k3s1
-
       - name: Install tmate and it's dependencies
+        if: inputs.debug_mode == 'true'
         shell: bash
         run: |
           sudo rm /var/lib/dpkg/lock
@@ -971,6 +971,7 @@ jobs:
           sudo rm -f /var/lib/dpkg/lock-frontend
       
       - name: Start tmate session in background
+        if: inputs.debug_mode == 'true'
         shell: bash
         run: |  
           tmate -S /tmp/tmate.sock new-session -d               # Launch tmate in a headless mode
@@ -983,22 +984,12 @@ jobs:
       - name: Start a local k8s cluster
         uses: jupyterhub/action-k3s-helm@v3
         with:
-          # See available:
-          # - k3s release channels at https://github.com/k3s-io/k3s/blob/HEAD/channel.yaml
-          # - k3s versions at https://github.com/k3s-io/k3s/tags
-          # - helm versions at https://github.com/helm/helm/tags
-          # k3s-channel: latest
           k3s-version: v1.21.2+k3s1
           helm-version: v3.9.4
           extra-setup-args: --docker --kube-apiserver-arg service-node-port-range=6000-32767
 
       - name: Try the cluster !
         run: kubectl get pods -A
-
-      # - name: Fix EC-2 Runner
-      #   run: |
-      #     mkdir -p /home/runner
-      
 
       - name: Set up CI Gradle Properties
         run: |
@@ -1014,37 +1005,6 @@ jobs:
           org.gradle.parallel=true
           EOF
 
-      # - name: Create cluster config file
-      #   run: |
-      #     cat > /tmp/kind-config.yaml <<EOF
-      #     apiVersion: kind.x-k8s.io/v1alpha4
-      #     kind: Cluster
-      #     kubeadmConfigPatches:
-      #       - |
-      #         kind: ClusterConfiguration
-      #         apiServer:
-      #           extraArgs:
-      #             "service-node-port-range": "8000-32767"
-      #     nodes:
-      #       - role: control-plane
-      #         extraPortMappings:
-      #           - containerPort: 8001
-      #             hostPort: 8001
-      #             protocol: TCP
-      #     EOF
-
-      # - name: KIND Kubernetes Cluster Setup
-      #   uses: helm/kind-action@v1.2.0
-      #   with:
-      #     node_image: kindest/node:v1.21.2
-      #     config: /tmp/kind-config.yaml
-      #     cluster_name: helm-testing
-        # In case of self-hosted EC2 errors, remove this env block.
-        # env:
-          # USER: root
-          # HOME: /home/runner
-          # CHANGE_MINIKUBE_NONE_USER: true
-
       - name: Build Platform Docker Images
         run: pwd && SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan
 
@@ -1059,23 +1019,6 @@ jobs:
         timeout-minutes: 20
         run: |
           CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube_helm.sh
-      - name: Check bootloader logs
-        if: always()
-        shell: bash
-        run: kubectl logs airbyte-airbyte-bootloader
-
-      # - name: Install tmate and it's dependencies
-      #   shell: bash
-      #   run: |
-      #     sudo rm /var/lib/dpkg/lock
-      #     sudo rm /var/lib/dpkg/lock-frontend
-      #     sudo apt-get install tmate
-      
-      # - name: Init tmate session
-      #   if: always()
-      #   uses: mxschmitt/action-tmate@v3
-          
-
 
       - name: Generate Test Report
         uses: dorny/test-reporter@v1

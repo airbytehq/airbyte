@@ -16,24 +16,6 @@ kubectl patch configmap/coredns \
   --type merge \
   -p '{"data":{"NodeHosts": "${DOCKER_HOST_IP} host.docker.internal" }}'
 
-# kubectl patch configmap/coredns \
-#   -n kube-system \
-#   --type merge \
-#   -p '{"data":{"NodeHosts": "${DOCKER_HOST_IP} localhost" }}'
-
-
-# Since KIND does not have access to the local docker agent, manually load the minimum images required for the Kubernetes Acceptance Tests.
-# See https://kind.sigs.k8s.io/docs/user/quick-start/#loading-an-image-into-your-cluster.
-# if [ -n "$CI" ]; then
-#   echo "Loading images into k3d..."
-#   k3d image load airbyte/server:dev airbyte/webapp:dev airbyte/worker:dev airbyte/db:dev airbyte/container-orchestrator:dev airbyte/bootloader:dev airbyte/cron:dev -c helm-testing 
-# fi
-
-# eval $(minikube docker-env)
-
-# echo "Deploying filebeat to collect logs"
-# kubectl apply -f elastic/filebeat-kubernetes.yaml
-
 
 echo "Replacing default Chart.yaml and values.yaml with a test one"
 mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.old
@@ -91,22 +73,22 @@ kubectl expose $(kubectl get po -l app.kubernetes.io/name=server -o name) --name
 echo "Running worker integration tests..."
 KUBE=true SUB_BUILD=PLATFORM LOG_LEVEL=DEBUG  ./gradlew :airbyte-workers:integrationTest --scan
 
-#echo "Printing system disk usage..."
-#df -h
-#
-#echo "Printing docker disk usage..."
-#docker system df
-#
-#if [ -n "$CI" ]; then
-#  echo "Pruning all images..."
-#  docker image prune --all --force
-#
-#  echo "Printing system disk usage after pruning..."
-#  df -h
-#
-#  echo "Printing docker disk usage after pruning..."
-#fi
-#  docker system df
+echo "Printing system disk usage..."
+df -h
+
+echo "Printing docker disk usage..."
+docker system df
+
+if [ -n "$CI" ]; then
+ echo "Pruning all images..."
+ docker image prune --all --force
+
+ echo "Printing system disk usage after pruning..."
+ df -h
+
+ echo "Printing docker disk usage after pruning..."
+fi
+ docker system df
 
 echo "Running e2e tests via gradle..."
 KUBE=true LOG_LEVEL=DEBUG SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan
