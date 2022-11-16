@@ -1,4 +1,4 @@
-# On Kubernetes using Helm (Beta)
+# Deploy Airbyte on Kubernetes using Helm (Beta)
 
 ## Overview
 
