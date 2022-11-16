@@ -11,14 +11,15 @@ import {
   setupDestinationNamespaceCustomFormat,
   selectFullAppendSyncMode,
   checkSuccessResult,
+  refreshSourceSchemaBtnClick,
+  resetModalSaveBtnClick,
+  updateSchemaModalConfirmBtnClick,
 } from "pages/replicationPage";
 import { openSourceDestinationFromGrid, goToSourcePage } from "pages/sourcePage";
 import { goToSettingsPage } from "pages/settingsConnectionPage";
-import { PopulatePostgresDBSource } from "../commands/db";
+import { cleanDBSource, makeChangesInDBSource, populateDBSource } from "../commands/db";
 
 describe("Connection main actions", () => {
-  before(PopulatePostgresDBSource);
-
   beforeEach(() => {
     initialSetupCompleted();
   });
@@ -129,7 +130,7 @@ describe("Connection main actions", () => {
     deleteDestination(destName);
   });
 
-  it("creates a connection, then edits the schedule type", () => {
+  it("Creates a connection, then edits the schedule type", () => {
     const sourceName = appendRandomString("Test connection source cypress PokeAPI");
     const destName = appendRandomString("Test connection destination cypress");
 
@@ -205,6 +206,54 @@ describe("Connection main actions", () => {
 
     deleteSource(sourceName);
     deleteDestination(destName);
+  });
+
+  it.only("Create a connection, update data in source, show diff modal, reset streams", () => {
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+
+    populateDBSource();
+    const sourceName = appendRandomString(
+      "Test refresh source schema with changed data - connection Postgres source cypress"
+    );
+    const destName = appendRandomString(
+      "Test refresh source schema with changed data - connection Local JSON destination cypress"
+    );
+
+    createTestConnection(sourceName, destName);
+    cy.get("div").contains(sourceName).should("exist");
+    cy.get("div").contains(destName).should("exist");
+
+    makeChangesInDBSource();
+    openSourceDestinationFromGrid(sourceName);
+    goToReplicationTab();
+    refreshSourceSchemaBtnClick();
+
+    cy.get("[data-testid='catalog-diff-modal']").should("exist");
+
+    cy.get("table[aria-label='removed streams table']").should("contain", "users");
+
+    cy.get("table[aria-label='new streams table']").should("contain", "cars");
+
+    cy.get("button[aria-label='toggle accordion']").click();
+    cy.get("table[aria-label='removed fields']").should("contain", "city_code");
+    cy.get("table[aria-label='new fields']").children().should("contain", "country").and("contain", "state");
+
+    updateSchemaModalConfirmBtnClick();
+
+    cy.get("[data-testid='cars-stream-sync-checkbox']").check({ force: true });
+
+    submitButtonClick();
+    resetModalSaveBtnClick();
+
+    cy.wait("@updateConnection").then((interception) => {
+      assert.isNotNull(interception.response?.statusCode, "200");
+    });
+
+    checkSuccessResult();
+
+    deleteSource(sourceName);
+    deleteDestination(destName);
+    cleanDBSource();
   });
 
   it("Delete connection", () => {

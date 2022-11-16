@@ -10,6 +10,7 @@ const syncModeDropdown = "div[data-testid='syncSettingsDropdown'] input";
 const successResult = "div[data-id='success-result']";
 const saveStreamChangesButton = "button[data-testid='resetModal-save']";
 const connectionNameInput = "input[data-testid='connectionName']";
+const refreshSourceSchemaButton = "button[data-testid='refresh-source-schema-btn']";
 
 export const goToReplicationTab = () => {
   cy.get(replicationTab).click();
@@ -40,6 +41,18 @@ export const setupDestinationNamespaceCustomFormat = (value: string) => {
 export const setupDestinationNamespaceSourceFormat = () => {
   cy.get(destinationNamespace).click();
   cy.get(destinationNamespaceSource).click();
+};
+
+export const refreshSourceSchemaBtnClick = () => {
+  cy.get(refreshSourceSchemaButton).click();
+};
+
+export const updateSchemaModalConfirmBtnClick = () => {
+  cy.get("[data-testid='update-schema-confirm-btn']").click();
+};
+
+export const resetModalSaveBtnClick = () => {
+  cy.get("[data-testid='resetModal-save']").click();
 };
 
 export const selectFullAppendSyncMode = () => {
