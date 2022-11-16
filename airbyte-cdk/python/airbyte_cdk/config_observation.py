@@ -60,4 +60,4 @@ class ConfigObserver(BaseObserver):
             connectorConfig=AirbyteControlConnectorConfigMessage(config=self.config),
         )
         airbyte_message = AirbyteMessage(type=Type.CONTROL, control=control_message)
-        print(airbyte_message.json())
+        print(airbyte_message.json(exclude_unset=True))
