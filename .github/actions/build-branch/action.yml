@@ -18,15 +18,20 @@ runs:
         # if the *branch_version_tag* input param is not specified, then generate it as 'dev-<commit_hash>`
         #
         [[ "${{ inputs.branch_version_tag }}" != '' ]] && echo "branch_version_tag=${{ inputs.branch_version_tag }}" >> $GITHUB_OUTPUT \
-          || { short_hash=$(git rev-parse --short=7 HEAD); echo "branch_version_tag=dev-$short_hash" >> $GITHUB_OUTPUT ; }
+          || { short_hash=$(git rev-parse --short=10 HEAD); echo "branch_version_tag=dev-$short_hash" >> $GITHUB_OUTPUT ; }
 
-    - uses: actions/setup-java@v1
+    - uses: actions/setup-java@v3
       with:
+        distribution: "zulu"
         java-version: "17"
 
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@v3
       with:
         node-version: "lts/gallium"
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
 
     - name: Set up CI Gradle Properties
       run: |

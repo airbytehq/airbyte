@@ -14,31 +14,31 @@
     "Status": {
       "type": "object",
       "properties": {
-          "Code": {
-            "type": "number"
-          },
-          "Name": {
-            "type": "string"
-          },
-          "Description": {
-            "type": "string"
-          }
+        "Code": {
+          "type": "number"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
         }
+      }
     },
     "Cost": {
       "type": "object",
       "properties": {
-          "Value": {
-            "type": "number"
-          },
-          "Currency": {
-            "type": "string"
-          }
+        "Value": {
+          "type": "number"
+        },
+        "Currency": {
+          "type": "string"
         }
+      }
     },
     "CreationTS": {
       "type": "integer"
-    },      
+    },
     "SmsCount": {
       "type": "integer"
     }

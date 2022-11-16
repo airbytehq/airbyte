@@ -38,7 +38,7 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className }) => {
             <CodeEditor
               value={configString}
               language="json"
-              theme="airbyte"
+              theme="airbyte-light"
               onChange={(val: string | undefined) => {
                 setConfigString(val ?? "");
               }}

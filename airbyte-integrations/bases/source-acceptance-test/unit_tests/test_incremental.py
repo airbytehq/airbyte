@@ -2,8 +2,10 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from contextlib import nullcontext as does_not_raise
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Optional
 from unittest.mock import MagicMock, patch
 
@@ -24,9 +26,14 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from source_acceptance_test.config import IncrementalConfig
+from source_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig
+from source_acceptance_test.tests import test_incremental
 from source_acceptance_test.tests.test_incremental import TestIncremental as _TestIncremental
-from source_acceptance_test.tests.test_incremental import compare_cursor_with_threshold
+from source_acceptance_test.tests.test_incremental import (
+    compare_cursor_with_threshold,
+    future_state_configuration_fixture,
+    future_state_fixture,
+)
 
 
 def build_messages_from_record_data(stream: str, records: list[dict]) -> list[AirbyteMessage]:
@@ -681,3 +688,166 @@ def test_state_with_abnormally_large_values(mocker, read_output, expectation):
             future_state=mocker.MagicMock(),
             docker_runner=docker_runner_mock,
         )
+
+
+@pytest.mark.parametrize(
+    "test_strictness_level, inputs, expect_fail, expect_skip",
+    [
+        pytest.param(
+            Config.TestStrictnessLevel.high,
+            MagicMock(future_state=MagicMock(future_state_path="my_future_state_path", missing_streams=["foo", "bar"])),
+            False,
+            False,
+            id="high test strictness level, future_state_path and missing streams are defined: run the test.",
+        ),
+        pytest.param(
+            Config.TestStrictnessLevel.low,
+            MagicMock(future_state=MagicMock(future_state_path="my_future_state_path", missing_streams=["foo", "bar"])),
+            False,
+            False,
+            id="low test strictness level, future_state_path and missing_streams are defined: run the test.",
+        ),
+        pytest.param(
+            Config.TestStrictnessLevel.high,
+            MagicMock(future_state=MagicMock(future_state_path=None)),
+            True,
+            False,
+            id="high test strictness level, future_state_path and missing streams are defined: fail the test.",
+        ),
+        pytest.param(
+            Config.TestStrictnessLevel.low,
+            MagicMock(future_state=MagicMock(future_state_path=None)),
+            False,
+            True,
+            id="low test strictness level, future_state_path not defined: skip the test.",
+        ),
+    ],
+)
+def test_future_state_configuration_fixture(mocker, test_strictness_level, inputs, expect_fail, expect_skip):
+    mocker.patch.object(test_incremental.pytest, "fail")
+    mocker.patch.object(test_incremental.pytest, "skip")
+    output = future_state_configuration_fixture.__wrapped__(inputs, "base_path", test_strictness_level)
+    if not expect_fail and not expect_skip:
+        assert output == (Path("base_path/my_future_state_path"), ["foo", "bar"])
+    if expect_fail:
+        test_incremental.pytest.fail.assert_called_once()
+        test_incremental.pytest.skip.assert_not_called()
+    if expect_skip:
+        test_incremental.pytest.skip.assert_called_once()
+        test_incremental.pytest.fail.assert_not_called()
+
+
+TEST_AIRBYTE_STREAM_A = AirbyteStream(name="test_stream_a", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh])
+TEST_AIRBYTE_STREAM_B = AirbyteStream(name="test_stream_b", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh])
+
+TEST_CONFIGURED_AIRBYTE_STREAM_A = ConfiguredAirbyteStream(
+    stream=TEST_AIRBYTE_STREAM_A,
+    sync_mode=SyncMode.full_refresh,
+    destination_sync_mode=DestinationSyncMode.overwrite,
+)
+
+TEST_CONFIGURED_AIRBYTE_STREAM_B = ConfiguredAirbyteStream(
+    stream=TEST_AIRBYTE_STREAM_B,
+    sync_mode=SyncMode.full_refresh,
+    destination_sync_mode=DestinationSyncMode.overwrite,
+)
+
+
+TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(streams=[TEST_CONFIGURED_AIRBYTE_STREAM_A, TEST_CONFIGURED_AIRBYTE_STREAM_B])
+
+
+@pytest.mark.parametrize(
+    "test_strictness_level, configured_catalog, states, missing_streams, expect_fail",
+    [
+        pytest.param(
+            Config.TestStrictnessLevel.high,
+            TEST_CONFIGURED_CATALOG,
+            [
+                {
+                    "type": "STREAM",
+                    "stream": {
+                        "stream_state": {"airbytehq/integration-test": {"updated_at": "2121-06-30T10:22:10Z"}},
+                        "stream_descriptor": {"name": "test_stream_a"},
+                    },
+                }
+            ],
+            [EmptyStreamConfiguration(name="test_stream_b", bypass_reason="no good reason")],
+            False,
+            id="High test strictness level, all missing streams are declared with bypass reason: does not fail.",
+        ),
+        pytest.param(
+            Config.TestStrictnessLevel.high,
+            TEST_CONFIGURED_CATALOG,
+            [
+                {
+                    "type": "STREAM",
+                    "stream": {
+                        "stream_state": {"airbytehq/integration-test": {"updated_at": "2121-06-30T10:22:10Z"}},
+                        "stream_descriptor": {"name": "test_stream_a"},
+                    },
+                }
+            ],
+            [EmptyStreamConfiguration(name="test_stream_b")],
+            True,
+            id="High test strictness level, missing streams are declared without bypass reason: fail.",
+        ),
+        pytest.param(
+            Config.TestStrictnessLevel.high,
+            TEST_CONFIGURED_CATALOG,
+            [
+                {
+                    "type": "STREAM",
+                    "stream": {
+                        "stream_state": {"airbytehq/integration-test": {"updated_at": "2121-06-30T10:22:10Z"}},
+                        "stream_descriptor": {"name": "test_stream_a"},
+                    },
+                }
+            ],
+            [EmptyStreamConfiguration(name="test_stream_b")],
+            False,
+            id="Low test strictness level, missing streams are declared without bypass reason: does fail.",
+        ),
+        pytest.param(
+            Config.TestStrictnessLevel.high,
+            TEST_CONFIGURED_CATALOG,
+            [
+                {
+                    "type": "STREAM",
+                    "stream": {
+                        "stream_state": {"airbytehq/integration-test": {"updated_at": "2121-06-30T10:22:10Z"}},
+                        "stream_descriptor": {"name": "test_stream_a"},
+                    },
+                }
+            ],
+            [],
+            True,
+            id="High test strictness level, missing streams are not declared: fail.",
+        ),
+        pytest.param(
+            Config.TestStrictnessLevel.low,
+            TEST_CONFIGURED_CATALOG,
+            [
+                {
+                    "type": "STREAM",
+                    "stream": {
+                        "stream_state": {"airbytehq/integration-test": {"updated_at": "2121-06-30T10:22:10Z"}},
+                        "stream_descriptor": {"name": "test_stream_a"},
+                    },
+                }
+            ],
+            [],
+            False,
+            id="Low test strictness level, missing streams are not declared: does not fail.",
+        ),
+    ],
+)
+def test_future_state_fixture(tmp_path, mocker, test_strictness_level, configured_catalog, states, missing_streams, expect_fail):
+    mocker.patch.object(test_incremental.pytest, "fail")
+    future_state_path = tmp_path / "abnormal_states.json"
+    with open(future_state_path, "w") as f:
+        json.dump(states, f)
+    future_state_configuration = (future_state_path, missing_streams)
+    output = future_state_fixture.__wrapped__(future_state_configuration, test_strictness_level, configured_catalog)
+    assert output == states
+    if expect_fail:
+        test_incremental.pytest.fail.assert_called_once()

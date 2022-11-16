@@ -16,6 +16,7 @@ import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.commons.temporal.scheduling.DiscoverCatalogWorkflow;
 import io.airbyte.commons.temporal.scheduling.SpecWorkflow;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
+import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
@@ -189,6 +190,10 @@ public class TemporalClient {
     final Optional<Long> jobId;
     final Optional<ErrorCode> errorCode;
 
+  }
+
+  public Optional<WorkflowState> getWorkflowState(final UUID connectionId) {
+    return connectionManagerUtils.getWorkflowState(client, connectionId);
   }
 
   public ManualOperationResult startNewManualSync(final UUID connectionId) {
@@ -476,13 +481,13 @@ public class TemporalClient {
     return connectionManagerWorkflow;
   }
 
-  public void deleteConnection(final UUID connectionId) {
-    try {
-      connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId,
-          connectionManagerWorkflow -> connectionManagerWorkflow::deleteConnection);
-    } catch (final DeletedWorkflowException e) {
-      log.info("Connection {} has already been deleted.", connectionId);
-    }
+  /**
+   * This will cancel a workflow even if the connection is deleted already
+   *
+   * @param connectionId - connectionId to cancel
+   */
+  public void forceDeleteWorkflow(final UUID connectionId) {
+    connectionManagerUtils.deleteWorkflowIfItExist(client, connectionId);
   }
 
   public void update(final UUID connectionId) {
