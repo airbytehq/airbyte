@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.bigquery;
 
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.protocol.models.AirbyteMessage;
