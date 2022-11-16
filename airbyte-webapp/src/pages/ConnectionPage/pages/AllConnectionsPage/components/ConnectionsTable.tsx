@@ -30,7 +30,6 @@ const ConnectionsTable: React.FC<IProps> = ({ connections }) => {
 
   const onChangeStatus = useCallback(
     async (connectionId: string) => {
-      console.log(connectionId);
       const connection = connections.find((item) => item.connectionId === connectionId);
 
       if (connection) {

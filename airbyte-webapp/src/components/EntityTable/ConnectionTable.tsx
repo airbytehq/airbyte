@@ -12,7 +12,7 @@ import useRouter from "hooks/useRouter";
 import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
 // import ConnectorCell from "./components/ConnectorCell";
 // import FrequencyCell from "./components/FrequencyCell";
-// import LastSyncCell from "./components/LastSyncCell";
+import LastSyncCell from "./components/LastSyncCell";
 // import NameCell from "./components/NameCell";
 // import SortButton from "./components/SortButton";
 // import StatusCell from "./components/StatusCell";
@@ -79,20 +79,17 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
     () => [
       {
         Header: "",
-        accessor: "lastSync",
+        accessor: "lastSyncStatus",
         customWidth: 1,
-        Cell: ({ cell }: CellProps<ITableDataItem>) => {
-          console.log(cell);
-          return (
-            <SwitchButton
-              id={`${cell.row.values.connectionId}`}
-              checked={cell.row.values.status === "active" ? true : false}
-              onClick={() => {
-                onChangeStatus(cell.row.values.connectionId);
-              }}
-            />
-          );
-        },
+        Cell: ({ cell }: CellProps<ITableDataItem>) => (
+          <SwitchButton
+            id={`${cell.row.values.connectionId}`}
+            checked={cell.row.values.status === "active" ? true : false}
+            onClick={() => {
+              onChangeStatus(cell.row.values.connectionId);
+            }}
+          />
+        ),
         // Cell: () => ( <SwitchButton id="checkbox" /> ),
       },
       {
@@ -131,10 +128,10 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
             {/*/ >*/}
           </>
         ),
-        accessor: "lastSyncStatus",
-        // Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-        //     <LastSyncCell timeInSecond={cell.value} enabled={row.original.enabled} />
-        // ),
+        accessor: "lastSync",
+        Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
+          <LastSyncCell timeInSecond={cell.value} enabled={row.original.enabled} />
+        ),
       },
       {
         Header: (

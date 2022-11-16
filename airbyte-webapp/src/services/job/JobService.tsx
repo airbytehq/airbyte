@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
-import { useConfig } from "config";
+// import { useConfig } from "config";
 import { JobsService } from "core/domain/job/JobsService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
@@ -24,9 +24,12 @@ export const jobsKeys = {
 };
 
 function useGetJobService() {
-  const config = useConfig();
+  // const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
-  return useInitService(() => new JobsService(config.apiUrl, middlewares), [config.apiUrl, middlewares]);
+  return useInitService(
+    () => new JobsService(process.env.REACT_APP_API_URL as string, middlewares),
+    [process.env.REACT_APP_API_URL as string, middlewares]
+  );
 }
 
 export const useListJobs = (listParams: JobListRequestBody) => {
