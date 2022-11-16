@@ -4021,6 +4021,8 @@ components:
           $ref: "#/components/schemas/DestinationDefinitionRead"
     WorkflowStateRead:
       type: object
+      required:
+        - running
       properties:
         running:
           type: boolean
