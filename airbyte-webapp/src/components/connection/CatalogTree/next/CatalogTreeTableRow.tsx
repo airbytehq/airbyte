@@ -92,7 +92,6 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
     [styles.removed]: statusToDisplay === "removed",
     [styles.changed]: isSelected || statusToDisplay === "changed",
     [styles.error]: hasError,
-    [styles.disabled]: statusToDisplay === "disabled",
   });
 
   const statusIcon = useMemo(() => {
@@ -111,11 +110,14 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
     return null;
   }, [statusToDisplay]);
 
+  const checkboxCellCustomStyle = classnames(styles.checkboxCell, styles.streamRowCheckboxCell);
+
+  console.log({ statusToDisplay });
   console.log({ statusToDisplay });
   return (
     <Row onClick={onRowClick} className={streamHeaderContentStyle}>
       {!disabled && (
-        <div className={styles.streamRowCheckboxCell}>
+        <div className={checkboxCellCustomStyle}>
           {statusIcon}
           <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
         </div>
