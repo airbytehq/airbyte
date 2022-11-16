@@ -139,12 +139,49 @@ import org.slf4j.MDC;
 
 @Factory
 public class ServerBeanFactory {
+  /*
+   * @Singleton
+   *
+   * @Requires(env = WorkerMode.CONTROL_PLANE)
+   *
+   * @Named("componentClasses") public Set<Class<?>> componentClasses() { return Set.of(
+   * AttemptApiController.class, ConnectionApiController.class, DbMigrationApiController.class,
+   * DestinationApiController.class, DestinationDefinitionApiController.class,
+   * DestinationDefinitionSpecificationApiController.class, DestinationOauthApiController.class,
+   * HealthApiController.class, JobsApiController.class, LogsApiController.class,
+   * NotificationsApiController.class, OpenapiApiController.class, OperationApiController.class,
+   * SchedulerApiController.class, SourceApiController.class, SourceDefinitionApiController.class,
+   * SourceDefinitionSpecificationApiController.class, SourceOauthApiController.class,
+   * StateApiController.class, WebBackendApiController.class, WorkspaceApiController.class); }
+   *
+   * @Singleton
+   *
+   * @Requires(env = WorkerMode.CONTROL_PLANE)
+   *
+   * @Named("components") public Set<Object> components() { return Set.of( new CorsFilter(), new
+   * AttemptApiBinder(), new ConnectionApiBinder(), new DbMigrationBinder(), new
+   * DestinationApiBinder(), new DestinationDefinitionApiBinder(), new
+   * DestinationDefinitionSpecificationApiBinder(), new DestinationOauthApiBinder(), new
+   * HealthApiBinder(), new JobsApiBinder(), new LogsApiBinder(), new NotificationApiBinder(), new
+   * OpenapiApiBinder(), new OperationApiBinder(), new SchedulerApiBinder(), new SourceApiBinder(),
+   * new SourceDefinitionApiBinder(), new SourceDefinitionSpecificationApiBinder(), new
+   * SourceOauthApiBinder(), new StateApiBinder(), new WebBackendApiBinder(), new
+   * WorkspaceApiBinder()); }
+   */
 
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
-  @Named("componentClasses")
-  public Set<Class<?>> componentClasses() {
-    return Set.of(
+  // @Named("serverRunnable")
+  public ServerRunnable serverRunnable(
+                                       // @Named("componentClasses") final Set<Class<?>> componentClasses,
+                                       // @Named("components") final Set<Object> components,
+                                       final Configs configs,
+                                       @Named("config") final DSLContext configsDslContext,
+                                       @Named("configFlyway") final Flyway configsFlyway,
+                                       @Named("jobs") final DSLContext jobsDslContext,
+                                       @Named("jobsFlyway") final Flyway jobsFlyway)
+      throws DatabaseCheckException, IOException {
+    final Set<Class<?>> componentClasses = Set.of(
         AttemptApiController.class,
         ConnectionApiController.class,
         DbMigrationApiController.class,
@@ -166,13 +203,8 @@ public class ServerBeanFactory {
         StateApiController.class,
         WebBackendApiController.class,
         WorkspaceApiController.class);
-  }
 
-  @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
-  @Named("components")
-  public Set<Object> components() {
-    return Set.of(
+    final Set<Object> components = Set.of(
         new CorsFilter(),
         new AttemptApiBinder(),
         new ConnectionApiBinder(),
@@ -195,20 +227,7 @@ public class ServerBeanFactory {
         new StateApiBinder(),
         new WebBackendApiBinder(),
         new WorkspaceApiBinder());
-  }
 
-  @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
-  @Named("serverRunnable")
-  public ServerRunnable serverRunnable(
-                                       @Named("componentClasses") final Set<Class<?>> componentClasses,
-                                       @Named("components") final Set<Object> components,
-                                       final Configs configs,
-                                       @Named("config") final DSLContext configsDslContext,
-                                       @Named("configFlyway") final Flyway configsFlyway,
-                                       @Named("jobs") final DSLContext jobsDslContext,
-                                       @Named("jobsFlyway") final Flyway jobsFlyway)
-      throws DatabaseCheckException, IOException {
     LogClientSingleton.getInstance().setWorkspaceMdc(
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
