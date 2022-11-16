@@ -37,6 +37,11 @@ definitions:
   activities_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          request_parameters:
+            start-date: "{% if not next_page_token %}{{ config.start_date }}{% endif %}"
       paginator:
         type: DefaultPaginator
         url_base: "*ref(definitions.requester.url_base)"
