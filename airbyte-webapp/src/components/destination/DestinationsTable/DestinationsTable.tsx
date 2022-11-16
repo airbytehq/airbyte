@@ -13,7 +13,7 @@ interface DestinationsTableProps {
   destinations: DestinationRead[];
 }
 
-const DestinationsTable: React.FC<DestinationsTableProps> = ({ destinations }) => {
+export const DestinationsTable: React.FC<DestinationsTableProps> = ({ destinations }) => {
   const navigate = useNavigate();
   const { connections } = useConnectionList();
   const { destinationDefinitions } = useDestinationDefinitionList();
@@ -24,5 +24,3 @@ const DestinationsTable: React.FC<DestinationsTableProps> = ({ destinations }) =
 
   return <ImplementationTable data={data} onClickRow={clickRow} entity="destination" />;
 };
-
-export default DestinationsTable;
