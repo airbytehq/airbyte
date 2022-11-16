@@ -101,9 +101,9 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
     } else if (statusToDisplay === "changed") {
       return (
         // todo: styles need adjusting, especially color and possibly alignment
-        <span className={classNames(styles.icon, styles.changed)}>
+        <div className={classNames(styles.icon, styles.changed)}>
           <ModificationIcon color={styles.modificationIconColor} />
-        </span>
+        </div>
       );
     }
     return null;
