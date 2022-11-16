@@ -28,6 +28,7 @@ export interface DbtCloudJob {
   account: string;
   job: string;
   operationId?: string;
+  jobName?: string;
 }
 export type { DbtCloudJobInfo } from "packages/cloud/lib/domain/dbtCloud/api";
 const dbtCloudDomain = "https://cloud.getdbt.com";
@@ -55,8 +56,8 @@ export const toDbtCloudJob = (operationOrCloudJob: OperationRead | DbtCloudJobIn
       };
     }
   } else {
-    const { accountId, jobId } = operationOrCloudJob;
-    return { account: `${accountId}`, job: `${jobId}` };
+    const { accountId, jobId, jobName } = operationOrCloudJob;
+    return { account: `${accountId}`, job: `${jobId}`, jobName };
   }
 };
 

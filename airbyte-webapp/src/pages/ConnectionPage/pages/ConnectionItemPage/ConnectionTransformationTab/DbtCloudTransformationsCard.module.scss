@@ -63,20 +63,20 @@
   align-items: center;
 }
 
-.jobListItemInputGroup {
+.jobListItemIdFieldGroup {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-grow: 2;
 }
 
-.jobListItemInput {
+.jobListItemIdField {
   height: fit-content;
   margin-left: 1em;
-}
-
-.jobListItemInputLabel {
-  font-size: 11px;
-  font-weight: 500;
+  background-color: colors.$grey-50;
+  flex-grow: 2;
+  padding: variables.$spacing-sm;
+  border-radius: variables.$border-radius-sm;
 }
 
 .jobListItemDelete {

@@ -1,7 +1,7 @@
 import { faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import { Field, Form, Formik, FieldArray, FieldProps, FormikHelpers } from "formik";
+import { Form, Formik, FieldArray, FormikHelpers } from "formik";
 import { ReactNode } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
@@ -11,7 +11,6 @@ import { FormChangeTracker } from "components/common/FormChangeTracker";
 import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
 import { DropdownMenu } from "components/ui/DropdownMenu";
-import { Input } from "components/ui/Input";
 import { Text } from "components/ui/Text";
 
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
@@ -94,11 +93,20 @@ const DbtJobsForm: React.FC<DbtJobsFormProps> = ({ saveJobs, dbtCloudJobs }) => 
   };
 
   const availableDbtJobs = useAvailableDbtJobs();
+  // because we don't store names for saved jobs, just the account and job IDs needed for
+  // webhook operation, we have to find the display names for saved jobs by comparing IDs
+  // with the list of available jobs as provided by dbt Cloud.
+  const jobs = dbtCloudJobs.map((savedJob) => {
+    const { jobName } = availableDbtJobs.find((remoteJob) => isSameJob(remoteJob, savedJob)) || {};
+    const { account, job } = savedJob;
+
+    return { account, job, jobName };
+  });
 
   return (
     <Formik
       onSubmit={onSubmit}
-      initialValues={{ jobs: dbtCloudJobs }}
+      initialValues={{ jobs }}
       validationSchema={dbtCloudJobListSchema}
       render={({ values, isValid, dirty }) => {
         return (
@@ -158,8 +166,8 @@ const DbtJobsList = ({
         <Text className={styles.contextExplanation}>
           <FormattedMessage id="connection.dbtCloudJobs.explanation" />
         </Text>
-        {jobs.map((_, i) => (
-          <JobsListItem key={i} jobIndex={i} removeJob={() => remove(i)} />
+        {jobs.map((job, i) => (
+          <JobsListItem key={i} job={job} removeJob={() => remove(i)} />
         ))}
       </>
     ) : (
@@ -179,39 +187,37 @@ const DbtJobsList = ({
   </div>
 );
 
-// TODO give feedback on validation errors (red outline and validation message)
-const JobsListItem = ({ jobIndex, removeJob }: { jobIndex: number; removeJob: () => void }) => {
+interface JobsListItemProps {
+  job: DbtCloudJob;
+  removeJob: () => void;
+}
+const JobsListItem = ({ job, removeJob }: JobsListItemProps) => {
   const { formatMessage } = useIntl();
+  // TODO if `job.jobName` is undefined, that means we failed to match any of the
+  // dbt-Cloud-supplied jobs with the saved job. This means one of two things has
+  // happened:
+  // 1) the user deleted the job in dbt Cloud, and we should make them delete it from
+  //    their webhook operations. If we have a nonempty list of other dbt Cloud jobs,
+  //    it's definitely this.
+  // 2) the API call to fetch the names failed somehow (possibly with a 200 status, if there's a bug)
+  const title = <Text>{job.jobName || formatMessage({ id: "connection.dbtCloudJobs.job.title" })}</Text>;
+
   return (
     <Card className={styles.jobListItem}>
       <div className={styles.jobListItemIntegrationName}>
         <img src={dbtLogo} alt="" className={styles.dbtLogo} />
-        <FormattedMessage id="connection.dbtCloudJobs.job.title" />
+        {title}
       </div>
-      <div className={styles.jobListItemInputGroup}>
-        <div className={styles.jobListItemInput}>
-          <Field name={`jobs.${jobIndex}.account`}>
-            {({ field }: FieldProps<string>) => (
-              <>
-                <label htmlFor={`jobs.${jobIndex}.account`} className={styles.jobListItemInputLabel}>
-                  <FormattedMessage id="connection.dbtCloudJobs.job.accountId" />
-                </label>
-                <Input {...field} type="text" />
-              </>
-            )}
-          </Field>
+      <div className={styles.jobListItemIdFieldGroup}>
+        <div className={styles.jobListItemIdField}>
+          <Text size="sm">
+            {formatMessage({ id: "connection.dbtCloudJobs.job.accountId" })}: {job.account}
+          </Text>
         </div>
-        <div className={styles.jobListItemInput}>
-          <Field name={`jobs.${jobIndex}.job`}>
-            {({ field }: FieldProps<string>) => (
-              <>
-                <label htmlFor={`jobs.${jobIndex}.job`} className={styles.jobListItemInputLabel}>
-                  <FormattedMessage id="connection.dbtCloudJobs.job.jobId" />
-                </label>
-                <Input {...field} type="text" />
-              </>
-            )}
-          </Field>
+        <div className={styles.jobListItemIdField}>
+          <Text size="sm">
+            {formatMessage({ id: "connection.dbtCloudJobs.job.jobId" })}: {job.job}
+          </Text>
         </div>
         <Button
           variant="clear"
