@@ -11,7 +11,6 @@ import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivity;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
-import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity;
 import io.airbyte.workers.temporal.scheduling.activities.NotifySchemaChangeActivity;
@@ -70,7 +69,6 @@ public class ActivityBeanFactory {
                                                   final GenerateInputActivity generateInputActivity,
                                                   final JobCreationAndStatusUpdateActivity jobCreationAndStatusUpdateActivity,
                                                   final ConfigFetchActivity configFetchActivity,
-                                                  final ConnectionDeletionActivity connectionDeletionActivity,
                                                   final CheckConnectionActivity checkConnectionActivity,
                                                   final AutoDisableConnectionActivity autoDisableConnectionActivity,
                                                   final StreamResetActivity streamResetActivity,
@@ -80,7 +78,6 @@ public class ActivityBeanFactory {
     return List.of(generateInputActivity,
         jobCreationAndStatusUpdateActivity,
         configFetchActivity,
-        connectionDeletionActivity,
         checkConnectionActivity,
         autoDisableConnectionActivity,
         streamResetActivity,
@@ -181,6 +178,7 @@ public class ActivityBeanFactory {
   public RetryOptions containerOrchestratorRetryOptions() {
     return RetryOptions.newBuilder()
         .setDoNotRetry(RuntimeException.class.getName(), WorkerException.class.getName())
+        .setMaximumAttempts(1)
         .build();
   }
 
