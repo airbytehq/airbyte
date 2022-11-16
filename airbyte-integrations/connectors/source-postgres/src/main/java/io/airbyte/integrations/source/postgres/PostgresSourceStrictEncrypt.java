@@ -18,6 +18,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+
 /**
  * This class is copied from source-postgres-strict-encrypt. The original file can be deleted
  * completely once the migration of multi-variant connector is done.
@@ -61,7 +63,7 @@ public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements 
         if (Set.of(SSL_MODE_DISABLE, SSL_MODE_ALLOW, SSL_MODE_PREFER).contains(config.get(SSL_MODE).get(MODE).asText())) {
           // Fail in case SSL mode is disable, allow or prefer
           return new AirbyteConnectionStatus()
-              .withStatus(AirbyteConnectionStatus.Status.FAILED)
+              .withStatus(Status.FAILED)
               .withMessage(
                   "Unsecured connection not allowed. If no SSH Tunnel set up, please use one of the following SSL modes: require, verify-ca, verify-full");
         }
