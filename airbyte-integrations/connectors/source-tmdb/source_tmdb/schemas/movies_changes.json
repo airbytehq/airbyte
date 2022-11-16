@@ -5,16 +5,6 @@
 	"title": "Root", 
 	"type": "object",
 	"properties": {
-		"changes": {
-			"$id": "#root/changes", 
-			"title": "Changes", 
-			"type": "array",
-			"default": [],
-			"items":{
-				"$id": "#root/changes/items", 
-				"title": "Items", 
-				"type": "object",
-				"properties": {
 					"key": {
 						"$id": "#root/changes/items/key", 
 						"title": "Key", 
@@ -97,6 +87,3 @@
 				}
 			}
 
-		}
-	}
-}

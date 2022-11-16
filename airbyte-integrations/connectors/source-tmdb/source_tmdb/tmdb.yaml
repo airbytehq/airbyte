@@ -112,12 +112,6 @@ definitions:
       name: "movies_alternative_titles"
       path: "/movie/{{ config['movie_id'] }}/alternative_titles"
 
-  movies_changes_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
-      name: "movies_changes"
-      path: "/movie/{{ config['movie_id'] }}/changes"
-
   movies_credits_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -276,7 +270,6 @@ streams:
   - "*ref(definitions.changes_person_stream)"
   - "*ref(definitions.movies_details_stream)"
   - "*ref(definitions.movies_alternative_titles_stream)"
-  - "*ref(definitions.movies_changes_stream)"
   - "*ref(definitions.movies_credits_stream)"
   - "*ref(definitions.movies_external_ids_stream)"
   - "*ref(definitions.movies_images_stream)"
@@ -305,36 +298,4 @@ streams:
 
 check:
   stream_names:
-    - "certification_movie"
-    - "certification_tv"
-    - "changes_movie"
-    - "changes_tv"
-    - "changes_person"
-    - "movies_details"
-    - "movies_alternative_titles"
-    - "movies_changes"
-    - "movies_credits"
-    - "movies_external_ids"
-    - "movies_images"
-    - "movies_keywords"
-    - "movies_latest"
-    - "movies_lists"
-    - "movies_now_playing"
-    - "movies_popular"
-    - "movies_recommendations"
-    - "movies_releases_dates"
-    - "movies_reviews"
-    - "movies_similar_movies"
-    - "movies_top_rated"
-    - "movies_translations"
-    - "movies_upcoming"
-    - "movies_videos"
-    - "movies_watch_providers"
     - "trending"
-    - "search_collections"
-    - "search_companies"
-    - "search_keywords"
-    - "search_movies"
-    - "search_multi"
-    - "search_people"
-    - "search_tv_shows"
