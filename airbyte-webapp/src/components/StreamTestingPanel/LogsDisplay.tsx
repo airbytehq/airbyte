@@ -24,7 +24,7 @@ export const LogsDisplay: React.FC<LogsDisplayProps> = ({ logs, error, onTitleCl
         <Text size="sm" bold>
           <FormattedMessage id="connectorBuilder.connectorLogs" />
         </Text>
-        {error !== undefined && <NumberBadge className={styles.errorNum} value={1} color="red" />}
+        {error !== undefined && <NumberBadge value={1} color="red" />}
       </button>
       <div className={styles.logsDisplay}>
         {error !== undefined ? <Text className={styles.error}>{error}</Text> : <pre>{formattedLogs}</pre>}
