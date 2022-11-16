@@ -31,11 +31,12 @@ module.exports = {
     {
       type: 'category',
       label: 'Connector Catalog',
-      link: {
-        type: 'doc',
-        id: 'integrations/README',
-      },
       items: [
+          {
+            type: 'doc',
+            label: 'Search and Stages',
+            id: 'integrations/README',
+          },
           {
             type: 'category',
             label: 'Sources',
@@ -62,11 +63,12 @@ module.exports = {
     {
       type: 'category',
       label: 'Airbyte Cloud',
-      link: {
-        type: 'doc',
-        id: 'cloud/getting-started-with-airbyte-cloud',
-      },
       items: [
+        {
+          type: 'doc',
+          label: 'Getting Started',
+          id: "cloud/getting-started-with-airbyte-cloud",
+        },
         'cloud/core-concepts',
         'cloud/managing-airbyte-cloud',
 
@@ -74,7 +76,7 @@ module.exports = {
     },
     {
       type: 'category',
-      label: 'Airbyte Open Source QuickStart',
+      label: 'Airbyte Open Source Quick Start',
       link: {
         type: 'generated-index',
       },
@@ -145,11 +147,8 @@ module.exports = {
     {
       type: 'category',
       label: 'Troubleshoot Airbyte',
-      link: {
-        type: 'doc',
-        id: 'troubleshooting/README',
-      },
       items: [
+        'troubleshooting/README',
         'troubleshooting/on-deploying',
         'troubleshooting/new-connection',
         'troubleshooting/running-sync',     
@@ -157,20 +156,22 @@ module.exports = {
     },
     {
       type: 'category',
-      label: 'Build a connector',
-      link: {
-        type: 'doc',
-        id: 'connector-development/README',
-      },      
+      label: 'Build a connector',      
       items: [
+        {
+          type: 'doc',
+          label: 'CDK Introduction',
+          id: 'connector-development/README',
+        },
         {
           type: 'category',
           label: 'Low-code connector development',
-          link: {
-            type: 'doc',
-            id: 'connector-development/config-based/low-code-cdk-overview',
-          },
           items: [
+            {
+              label: 'Low-code CDK Intro',
+              type: 'doc',
+              id: 'connector-development/config-based/low-code-cdk-overview',
+            },
             {
               type: 'category',
               label: 'Tutorial',
@@ -262,11 +263,8 @@ module.exports = {
     {
       type: 'category',
       label: 'Contribute to Airbyte',
-      link: {
-        type: 'doc',
-        id: 'contributing-to-airbyte/README',
-      },
       items: [
+        'contributing-to-airbyte/README',
         'contributing-to-airbyte/code-of-conduct',
         'contributing-to-airbyte/maintainer-code-of-conduct',
         'contributing-to-airbyte/developing-locally',
@@ -305,11 +303,12 @@ module.exports = {
         {
           type: 'category',
           label: 'Connections and Sync Modes',
-          link: {
-            type: 'doc',
-            id: 'understanding-airbyte/connections/README',
-          },
           items: [
+            {
+              type: 'doc',
+              label: 'Connections Overview',
+              id: "understanding-airbyte/connections/README",
+            },
             'understanding-airbyte/connections/full-refresh-overwrite',
             'understanding-airbyte/connections/full-refresh-append',
             'understanding-airbyte/connections/incremental-append',

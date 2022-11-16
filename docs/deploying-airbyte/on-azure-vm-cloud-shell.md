@@ -1,4 +1,4 @@
-# Deploy on Azure 
+# Deploy on Azure VM
 
 This page guides you through deploying Airbyte Open Source on a Microsoft Azure VM by setting up the deployment environment, installing and starting Airbyte, and connecting it to the VM.
 

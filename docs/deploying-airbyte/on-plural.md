@@ -1,4 +1,4 @@
-# On Plural
+# Deploy On Plural
 
 ## Overview
 
