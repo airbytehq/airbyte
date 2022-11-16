@@ -2,7 +2,7 @@
 
 
 ## 0.2.19
-Test for exposed secrets: const values can not hold secrets. [#00000](https://github.com/airbytehq/airbyte/pull/00000).
+Test for exposed secrets: const values can not hold secrets. [#19465](https://github.com/airbytehq/airbyte/pull/19465).
 
 ## 0.2.18
 Test connector specification against exposed secret fields. [#19124](https://github.com/airbytehq/airbyte/pull/19124).
