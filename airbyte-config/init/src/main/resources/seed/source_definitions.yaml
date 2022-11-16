@@ -183,6 +183,14 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/breezometer
   sourceType: api
   releaseStage: alpha
+- name: CallRail
+  sourceDefinitionId: dc98a6ad-2dd1-47b6-9529-2ec35820f9c6
+  dockerRepository: airbyte/source-callrail
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/callrail
+  icon: callrail.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Cart.com
   sourceDefinitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
   dockerRepository: airbyte/source-cart
