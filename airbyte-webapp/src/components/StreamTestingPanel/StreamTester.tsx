@@ -41,10 +41,11 @@ export const StreamTester: React.FC<StreamTesterProps> = ({ selectedStream }) =>
     setLogsFlex((prevFlex) => (prevFlex < 0.06 ? 0.5 : 0));
   };
 
+  const unknownErrorMessage = formatMessage({ id: "connectorBuilder.unknownError" });
   const errorMessage = isError
     ? error instanceof Error
-      ? error.message
-      : formatMessage({ id: "connectorBuilder.unknownError" })
+      ? error.message || unknownErrorMessage
+      : unknownErrorMessage
     : undefined;
 
   useEffect(() => {
