@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useMutation } from "react-query";
 
-import { useConfig } from "config";
+// import { useConfig } from "config";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { Connector } from "core/domain/connector";
 import { DestinationService } from "core/domain/connector/DestinationService";
@@ -78,17 +78,23 @@ const useConnector = (): ConnectorService => {
 };
 
 function useGetDestinationService(): DestinationService {
-  const { apiUrl } = useConfig();
+  // const { apiUrl } = useConfig();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(() => new DestinationService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
+  return useInitService(
+    () => new DestinationService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
+    [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
+  );
 }
 
 function useGetSourceService(): SourceService {
-  const { apiUrl } = useConfig();
+  // const { apiUrl } = useConfig();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(() => new SourceService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
+  return useInitService(
+    () => new SourceService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
+    [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
+  );
 }
 
 export type CheckConnectorParams = { signal: AbortSignal } & (

@@ -72,7 +72,6 @@ export const useWorkspaceService = (): Context => {
 function useWorkspaceApiService() {
   // const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
-  // debugger
   return useInitService(
     () => new WorkspaceService(process.env.REACT_APP_API_URL as string, middlewares),
     [process.env.REACT_APP_API_URL as string, middlewares]

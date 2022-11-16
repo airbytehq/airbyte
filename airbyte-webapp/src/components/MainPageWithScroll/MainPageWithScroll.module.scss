@@ -6,6 +6,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  padding: variables.$spacing-lg variables.$spacing-2xl variables.$spacing-page-bottom variables.$spacing-2xl;
 }
 
 .contentContainer {

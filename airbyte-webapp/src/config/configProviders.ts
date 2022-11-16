@@ -21,7 +21,6 @@ const windowConfigProvider: ConfigProvider = async () => {
 
 const envConfigProvider: ConfigProvider = async () => {
   console.log(`${process.env.REACT_APP_API_URL}`);
-  // debugger;
   return {
     // TODO: hard coding this just to check the deployment issue.
     apiUrl: `http://143.198.204.26:8888/daspire`, // process.env.REACT_APP_API_URL,
