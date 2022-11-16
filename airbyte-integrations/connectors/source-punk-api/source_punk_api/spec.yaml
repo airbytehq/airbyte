@@ -4,16 +4,10 @@ connectionSpecification:
   title: Punk Api Spec
   type: object
   required:
-    - api_key
-    - id
     - brewed_before
     - brewed_after
   additionalProperties: true
   properties:
-    api_key:
-      title: Punk Api Dummy Key
-      type: string
-      description: Dummy API Key, Just enter 123 for example
     id:
       title: Beers with specific ID
       type: string
