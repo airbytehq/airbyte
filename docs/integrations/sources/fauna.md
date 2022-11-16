@@ -223,5 +223,5 @@ FQL [`Select`](https://docs.fauna.com/fauna/current/api/fql/functions/select) is
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject          |
-| ------- | ---------- | -------------------------------------------------------- | ---------------- |
-| 0.1.0   | 2022-08-03 | [15274](https://github.com/airbytehq/airbyte/pull/15274) | Add Fauna Source |
+| ------- |------------| -------------------------------------------------------- | ---------------- |
+| 0.1.0   | 2022-11-16 | [15274](https://github.com/airbytehq/airbyte/pull/15274) | Add Fauna Source |
