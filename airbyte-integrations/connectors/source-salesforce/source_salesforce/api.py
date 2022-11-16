@@ -183,6 +183,7 @@ RESOURCE_PRIMARY_KEY_MAP = {
     "FormulaFunction": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.sfFieldRef.meta/sfFieldRef/salesforce_field_reference_FormulaFunction.htm
     "TabDefinition": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_tabdefinition.htm
     "AppDefinition": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_appdefinition.htm
+    "Publisher": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_publisher.htm
 }
 
 
