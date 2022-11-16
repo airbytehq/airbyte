@@ -22,7 +22,6 @@ Primary.args = {
 
 export const ValidateIcons = ({ icon }: { icon: string }) => (
   <div className={styles.wrapper}>
-    {/* Show in context of table */}
     <Template icon={icon} className={classNames(styles.container, styles.small)} />
     <Template icon={icon} className={styles.container} />
     <Template icon={icon} className={classNames(styles.container, styles.large)} />
