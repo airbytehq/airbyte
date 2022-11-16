@@ -30,6 +30,8 @@ class MetricRepository {
 
   // We have to report gauge metric with value 0 if they are not showing up in the DB,
   // otherwise datadog will use previous reported value.
+  // Another option we didn't use here is to build this into SQL query - it will lead SQL much less
+  // readable while not decreasing any complexity.
   private final static List<String> REGISTERED_ATTEMPT_QUEUE = List.of("SYNC", "AWS_PARIS_SYNC", "null");
   private final static List<String> REGISTERED_GEOGRAPHY = List.of("US", "AUTO", "EU");
 
