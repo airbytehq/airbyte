@@ -13,7 +13,6 @@
         "title": "Google Credentials",
         "order": 0,
         "required": [
-          "developer_token",
           "client_id",
           "client_secret",
           "refresh_token"
