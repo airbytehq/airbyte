@@ -152,6 +152,8 @@ class ReportsAmazonSPStream(Stream, ABC):
         - yield the report document (if report processing status is `DONE`)
     """
 
+    replication_start_date_limit_in_days = 90
+
     primary_key = None
     path_prefix = f"reports/{REPORTS_API_VERSION}"
     sleep_seconds = 30
@@ -239,7 +241,9 @@ class ReportsAmazonSPStream(Stream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
-        replication_start_date = max(pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=90))
+        replication_start_date = max(
+            pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=self.replication_start_date_limit_in_days)
+        )
 
         params = {
             "reportType": self.name,
@@ -282,6 +286,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         )
         retrieve_report_response = self._send_request(retrieve_report_request)
         report_payload = retrieve_report_response.json()
+
         return report_payload
 
     def decompress_report_document(self, url, payload):
@@ -412,6 +417,8 @@ class FulfilledShipmentsReports(ReportsAmazonSPStream):
 
     name = "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"
 
+    replication_start_date_limit_in_days = 30
+
 
 class FlatFileOpenListingsReports(ReportsAmazonSPStream):
     name = "GET_FLAT_FILE_OPEN_LISTINGS_DATA"
@@ -461,6 +468,139 @@ class GetXmlBrowseTreeData(ReportsAmazonSPStream):
         return parsed.get("Result", {}).get("Node", [])
 
     name = "GET_XML_BROWSE_TREE_DATA"
+
+
+class FbaEstimatedFbaFeesTxtReport(ReportsAmazonSPStream):
+    name = "GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA"
+
+
+class FbaFulfillmentCurrentInventoryReport(ReportsAmazonSPStream):
+    name = "GET_FBA_FULFILLMENT_CURRENT_INVENTORY_DATA"
+
+
+class FbaFulfillmentCustomerShipmentPromotionReport(ReportsAmazonSPStream):
+    name = "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA"
+
+
+class FbaFulfillmentInventoryAdjustReport(ReportsAmazonSPStream):
+    name = "GET_FBA_FULFILLMENT_INVENTORY_ADJUSTMENTS_DATA"
+
+
+class FbaFulfillmentInventoryReceiptsReport(ReportsAmazonSPStream):
+    name = "GET_FBA_FULFILLMENT_INVENTORY_RECEIPTS_DATA"
+
+
+class FbaFulfillmentInventorySummaryReport(ReportsAmazonSPStream):
+    name = "GET_FBA_FULFILLMENT_INVENTORY_SUMMARY_DATA"
+
+
+class FbaMyiUnsuppressedInventoryReport(ReportsAmazonSPStream):
+    name = "GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA"
+
+
+class MerchantListingsReport(ReportsAmazonSPStream):
+    name = "GET_MERCHANT_LISTINGS_DATA"
+
+
+class MerchantListingsInactiveData(ReportsAmazonSPStream):
+    name = "GET_MERCHANT_LISTINGS_INACTIVE_DATA"
+
+
+class StrandedInventoryUiReport(ReportsAmazonSPStream):
+    name = "GET_STRANDED_INVENTORY_UI_DATA"
+
+
+class XmlAllOrdersDataByOrderDataGeneral(ReportsAmazonSPStream):
+    def parse_document(self, document):
+        parsed = xmltodict.parse(document, attr_prefix="", cdata_key="value", force_list={"Message", "OrderItem"})
+        orders = parsed.get("AmazonEnvelope", {}).get("Message", [])
+        result = []
+        if isinstance(orders, list):
+            for order in orders:
+                result.append(order.get("Order", {}))
+
+        return result
+
+    name = "GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
+
+
+class MerchantListingsReportBackCompat(ReportsAmazonSPStream):
+    def _report_data(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        params = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
+        options = self.report_options()
+        if options is not None:
+            params.update({"reportOptions": options})
+        return params
+
+    name = "GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT"
+
+
+class MerchantCancelledListingsReport(ReportsAmazonSPStream):
+    def _report_data(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        params = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
+        options = self.report_options()
+        if options is not None:
+            params.update({"reportOptions": options})
+        return params
+
+    name = "GET_MERCHANT_CANCELLED_LISTINGS_DATA"
+
+
+class FbaFulfillmentMonthlyInventoryReport(ReportsAmazonSPStream):
+    name = "GET_FBA_FULFILLMENT_MONTHLY_INVENTORY_DATA"
+
+
+class MerchantListingsFypReport(ReportsAmazonSPStream):
+    name = "GET_MERCHANTS_LISTINGS_FYP_REPORT"
+
+
+class FbaSnsForecastReport(ReportsAmazonSPStream):
+    name = "GET_FBA_SNS_FORECAST_DATA"
+
+
+class FbaSnsPerformanceReport(ReportsAmazonSPStream):
+    name = "GET_FBA_SNS_PERFORMANCE_DATA"
+
+
+class FlatFileArchivedOrdersDataByOrderDate(ReportsAmazonSPStream):
+    name = "GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE"
+
+
+class FlatFileReturnsDataByReturnDate(ReportsAmazonSPStream):
+    name = "GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE"
+
+
+class FbaInventoryPlaningReport(ReportsAmazonSPStream):
+    name = "GET_FBA_INVENTORY_PLANNING_DATA"
+
+
+class LedgerSummaryViewReport(ReportsAmazonSPStream):
+    def _report_data(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        params = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
+        options = self.report_options()
+        if options is not None:
+            params.update({"reportOptions": options})
+        return params
+
+    name = "GET_LEDGER_SUMMARY_VIEW_DATA"
 
 
 class AnalyticsStream(ReportsAmazonSPStream):
@@ -735,6 +875,29 @@ class Orders(IncrementalAmazonSPStream):
             return 1 / float(rate_limit)
         else:
             return self.default_backoff_time
+
+
+class LedgerDetailedViewReports(IncrementalReportsAmazonSPStream):
+    """
+    API docs: https://developer-docs.amazon.com/sp-api/docs/report-type-values
+    """
+
+    name = "GET_LEDGER_DETAIL_VIEW_DATA"
+    cursor_field = "Date"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.transformer.registerCustomTransform(self.get_transform_function())
+
+    def get_transform_function(self):
+        def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+            if original_value and field_schema.get("format") == "date":
+                transformed_value = pendulum.from_format(original_value, "MM/DD/YYYY").to_date_string()
+                return transformed_value
+            return original_value
+
+        return transform_function
 
 
 class IncrementalAnalyticsStream(AnalyticsStream):

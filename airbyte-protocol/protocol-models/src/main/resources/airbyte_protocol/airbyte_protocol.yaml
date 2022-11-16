@@ -4,7 +4,7 @@
 title: AirbyteProtocol
 type: object
 description: AirbyteProtocol structs
-version: 0.3.1
+version: 0.3.2
 properties:
   airbyte_message:
     "$ref": "#/definitions/AirbyteMessage"
@@ -174,12 +174,16 @@ definitions:
         type: string
         enum:
           - ERROR
+          - ESTIMATE
       emitted_at:
         description: "the time in ms that the message was emitted"
         type: number
       error:
         description: "error trace message: the error object"
         "$ref": "#/definitions/AirbyteErrorTraceMessage"
+      estimate:
+        description: "Estimate trace message: a guess at how much data will be produced in this sync"
+        "$ref": "#/definitions/AirbyteEstimateTraceMessage"
   AirbyteErrorTraceMessage:
     type: object
     additionalProperties: true
@@ -201,6 +205,32 @@ definitions:
         enum:
           - system_error
           - config_error
+  AirbyteEstimateTraceMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - name
+      - type
+    properties:
+      name:
+        description: The name of the stream
+        type: string
+      type:
+        title: "estimate type" # this title is required to avoid python codegen conflicts with the "type" parameter in AirbyteMessage. See https://github.com/airbytehq/airbyte/pull/12581
+        description: The type of estimate
+        type: string
+        enum:
+          - STREAM
+          - SYNC
+      namespace:
+        description: The namespace of the stream
+        type: string
+      row_estimate:
+        description: The estimated number of rows to be emitted by this sync for this stream
+        type: integer
+      byte_estimate:
+        description: The estimated number of bytes to be emitted by this sync for this stream
+        type: integer
   AirbyteControlMessage:
     type: object
     additionalProperties: true

@@ -1,7 +1,7 @@
 ARG JDK_IMAGE=airbyte/airbyte-base-java-image:1.0
 FROM ${JDK_IMAGE} AS cron
 
-ARG VERSION=0.40.17
+ARG VERSION=0.40.18
 
 ENV APPLICATION airbyte-cron
 ENV VERSION ${VERSION}

@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - airbyte-minio.yaml
   - bootloader.yaml
+  #- connector-builder-server.yaml #FIXME uncomment this when enabling the connector-builder
   - cron.yaml
   - db.yaml
   - pod-sweeper.yaml

@@ -1,20 +1,21 @@
-import { Field, FieldProps, setIn, useFormikContext } from "formik";
+import { Field, FieldProps, setIn } from "formik";
 import React, { useCallback } from "react";
 
 import { SyncSchemaStream } from "core/domain/catalog";
 import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
-import { ConnectionFormValues, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
+import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 import { CatalogSection } from "./CatalogSection";
 import styles from "./CatalogTreeBody.module.scss";
 
 interface CatalogTreeBodyProps {
   streams: SyncSchemaStream[];
+  changedStreams: SyncSchemaStream[];
   onStreamChanged: (stream: SyncSchemaStream) => void;
 }
 
-export const CatalogTreeBody: React.FC<CatalogTreeBodyProps> = ({ streams, onStreamChanged }) => {
+export const CatalogTreeBody: React.FC<CatalogTreeBodyProps> = ({ streams, changedStreams, onStreamChanged }) => {
   const { mode } = useConnectionFormService();
 
   const onUpdateStream = useCallback(
@@ -29,12 +30,6 @@ export const CatalogTreeBody: React.FC<CatalogTreeBodyProps> = ({ streams, onStr
     },
     [streams, onStreamChanged]
   );
-
-  const { initialValues } = useFormikContext<ConnectionFormValues>();
-
-  const changedStreams = streams.filter((stream, idx) => {
-    return stream.config?.selected !== initialValues.syncCatalog.streams[idx].config?.selected;
-  });
 
   return (
     <div className={styles.container}>

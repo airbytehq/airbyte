@@ -1,50 +1,42 @@
 import classNames from "classnames";
 
+import { Paginator } from "components/ui/Paginator";
 import { Text } from "components/ui/Text";
 
-import { StreamRead } from "core/request/ConnectorBuilderClient";
+import { StreamReadSlicesItem } from "core/request/ConnectorBuilderClient";
+import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
+import { PageDisplay } from "./PageDisplay";
 import styles from "./ResultDisplay.module.scss";
+import { SliceSelector } from "./SliceSelector";
 
 interface ResultDisplayProps {
-  streamRead: StreamRead;
+  slices: StreamReadSlicesItem[];
+  className?: string;
 }
 
-export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead }) => {
+export const ResultDisplay: React.FC<ResultDisplayProps> = ({ slices, className }) => {
+  const { selectedSlice, selectedPage, setSelectedSlice, setSelectedPage } = useConnectorBuilderState();
+
+  const slice = slices[selectedSlice];
+  const numPages = slice.pages.length;
+  const page = slice.pages[selectedPage];
+
   return (
-    <div className={styles.container}>
-      {streamRead.slices.map((slice) => (
-        <div className={classNames(styles.displayBox, styles.container, styles.slice)}>
-          <Text>Slice {JSON.stringify(slice.sliceDescriptor)}</Text>
-          {slice.pages.map((page, pageNumber) => (
-            <div className={classNames(styles.displayBox, styles.container, styles.page)}>
-              <Text>Page {pageNumber}</Text>
-              <div className={classNames(styles.displayBox, styles.pageData)}>
-                Request:
-                <pre>{JSON.stringify(page.request, null, 2)}</pre>
-              </div>
-              <div className={classNames(styles.displayBox, styles.pageData)}>
-                Response:
-                <pre>{JSON.stringify(page.response, null, 2)}</pre>
-              </div>
-              <div className={classNames(styles.displayBox, styles.pageData)}>
-                Records:
-                <pre>{JSON.stringify(page.records, null, 2)}</pre>
-              </div>
-            </div>
-          ))}
-          {slice.state && (
-            <div className={classNames(styles.displayBox, styles.state)}>
-              State:
-              <pre>{JSON.stringify(slice.state, null, 2)}</pre>
-            </div>
-          )}
-        </div>
-      ))}
-      {streamRead.logs.length > 0 && (
-        <div className={classNames(styles.displayBox, styles.logs)}>
-          Logs:
-          <pre>{JSON.stringify(streamRead.logs, null, 2)}</pre>
+    <div className={classNames(className, styles.container)}>
+      {slices.length > 1 && (
+        <SliceSelector
+          className={styles.sliceSelector}
+          slices={slices}
+          selectedSliceIndex={selectedSlice}
+          onSelect={setSelectedSlice}
+        />
+      )}
+      <PageDisplay className={styles.pageDisplay} page={page} />
+      {slice.pages.length > 1 && (
+        <div className={styles.paginator}>
+          <Text className={styles.pageLabel}>Page:</Text>
+          <Paginator numPages={numPages} onPageChange={setSelectedPage} selectedPage={selectedPage} />
         </div>
       )}
     </div>

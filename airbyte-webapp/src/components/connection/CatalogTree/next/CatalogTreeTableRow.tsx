@@ -1,7 +1,7 @@
 import { faArrowRight, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Cell, Row } from "components/SimpleTableComponents";
@@ -10,18 +10,19 @@ import { Switch } from "components/ui/Switch";
 
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 
-import { PathPopout } from "../PathPopout";
 import { StreamHeaderProps } from "../StreamHeader";
 import { HeaderCell } from "../styles";
 import styles from "./CatalogTreeTableRow.module.scss";
+import { StreamPathSelect } from "./StreamPathSelect";
+import { SyncModeSelect } from "./SyncModeSelect";
 
 export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   stream,
   destName,
   destNamespace,
-  // onSelectSyncMode,
+  onSelectSyncMode,
   onSelectStream,
-  // availableSyncModes,
+  availableSyncModes,
   pkType,
   onPrimaryKeyChange,
   onCursorChange,
@@ -96,29 +97,26 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             {syncSchema.syncMode}
           </HeaderCell>
         ) : (
-          // TODO: Replace with Dropdown/Popout
-          syncSchema.syncMode
+          <SyncModeSelect options={availableSyncModes} onChange={onSelectSyncMode} value={syncSchema} />
         )}
       </Cell>
       <HeaderCell>
         {cursorType && (
-          <PathPopout
+          <StreamPathSelect
             pathType={cursorType}
             paths={paths}
             path={cursorType === "sourceDefined" ? defaultCursorField : cursorField}
-            placeholder={<FormattedMessage id="connectionForm.cursor.searchPlaceholder" />}
             onPathChange={onCursorChange}
           />
         )}
       </HeaderCell>
       <HeaderCell ellipsis>
         {pkType && (
-          <PathPopout
+          <StreamPathSelect
             pathType={pkType}
             paths={paths}
             path={primaryKey}
             isMulti
-            placeholder={<FormattedMessage id="connectionForm.primaryKey.searchPlaceholder" />}
             onPathChange={onPrimaryKeyChange}
           />
         )}

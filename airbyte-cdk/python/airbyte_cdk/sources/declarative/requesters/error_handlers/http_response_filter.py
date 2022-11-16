@@ -76,16 +76,23 @@ class HttpResponseFilter(JsonSchemaMixin):
         else:
             return None
 
+    @staticmethod
+    def _safe_response_json(response: requests.Response) -> dict:
+        try:
+            return response.json()
+        except requests.exceptions.JSONDecodeError:
+            return {}
+
     def _create_error_message(self, response: requests.Response) -> str:
         """
         Construct an error message based on the specified message template of the filter.
         :param response: The HTTP response which can be used during interpolation
         :return: The evaluated error message string to be emitted
         """
-        return self.error_message.eval(self.config, response=response.json(), headers=response.headers)
+        return self.error_message.eval(self.config, response=self._safe_response_json(response), headers=response.headers)
 
     def _response_matches_predicate(self, response: requests.Response) -> bool:
-        return self.predicate and self.predicate.eval(None, response=response.json(), headers=response.headers)
+        return self.predicate and self.predicate.eval(None, response=self._safe_response_json(response), headers=response.headers)
 
     def _response_contains_error_message(self, response: requests.Response) -> bool:
         if not self.error_message_contains:
