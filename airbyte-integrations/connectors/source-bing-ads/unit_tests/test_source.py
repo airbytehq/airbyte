@@ -6,8 +6,9 @@ import json
 from unittest.mock import patch
 
 import pytest
-#import source_bing_ads
-#from source_bing_ads.source import AccountPerformanceReportMonthly, Accounts, AdGroups, Ads, Campaigns, SourceBingAds
+
+# import source_bing_ads
+# from source_bing_ads.source import AccountPerformanceReportMonthly, Accounts, AdGroups, Ads, Campaigns, SourceBingAds
 
 
 @pytest.fixture(name="config")
@@ -23,26 +24,26 @@ def logger_mock_fixture():
     return patch("source_bing_ads.source.AirbyteLogger")
 
 
-#@patch.object(source_bing_ads.source, "Client")
-#def test_streams_config_based(mocked_client, config):
+# @patch.object(source_bing_ads.source, "Client")
+# def test_streams_config_based(mocked_client, config):
 #    streams = SourceBingAds().streams(config)
 #    assert len(streams) == 25
 #
 #
-#@patch.object(source_bing_ads.source, "Client")
-#def test_source_check_connection_ok(mocked_client, config, logger_mock):
+# @patch.object(source_bing_ads.source, "Client")
+# def test_source_check_connection_ok(mocked_client, config, logger_mock):
 #    with patch.object(Accounts, "read_records", return_value=iter([{"Id": 180519267}, {"Id": 180278106}])):
 #        assert SourceBingAds().check_connection(logger_mock, config=config) == (True, None)
 #
 #
-#@patch.object(source_bing_ads.source, "Client")
-#def test_source_check_connection_failed(mocked_client, config, logger_mock):
+# @patch.object(source_bing_ads.source, "Client")
+# def test_source_check_connection_failed(mocked_client, config, logger_mock):
 #    with patch.object(Accounts, "read_records", return_value=0):
 #        assert SourceBingAds().check_connection(logger_mock, config=config)[0] is False
 #
 #
-#@patch.object(source_bing_ads.source, "Client")
-#def test_campaigns_request_params(mocked_client, config):
+# @patch.object(source_bing_ads.source, "Client")
+# def test_campaigns_request_params(mocked_client, config):
 #
 #    campaigns = Campaigns(mocked_client, config)
 #
@@ -54,8 +55,8 @@ def logger_mock_fixture():
 #    }
 #
 #
-#@patch.object(source_bing_ads.source, "Client")
-#def test_campaigns_stream_slices(mocked_client, config):
+# @patch.object(source_bing_ads.source, "Client")
+# def test_campaigns_stream_slices(mocked_client, config):
 #
 #    campaigns = Campaigns(mocked_client, config)
 #    accounts_read_records = iter([{"Id": 180519267, "ParentCustomerId": 100}, {"Id": 180278106, "ParentCustomerId": 200}])
@@ -67,8 +68,8 @@ def logger_mock_fixture():
 #        ]
 #
 #
-#@patch.object(source_bing_ads.source, "Client")
-#def test_adgroups_stream_slices(mocked_client, config):
+# @patch.object(source_bing_ads.source, "Client")
+# def test_adgroups_stream_slices(mocked_client, config):
 #
 #    adgroups = AdGroups(mocked_client, config)
 #    accounts_read_records = iter([{"Id": 180519267, "ParentCustomerId": 100}, {"Id": 180278106, "ParentCustomerId": 200}])
@@ -84,8 +85,8 @@ def logger_mock_fixture():
 #            ]
 #
 #
-#@patch.object(source_bing_ads.source, "Client")
-#def test_ads_request_params(mocked_client, config):
+# @patch.object(source_bing_ads.source, "Client")
+# def test_ads_request_params(mocked_client, config):
 #
 #    ads = Ads(mocked_client, config)
 #
@@ -99,8 +100,8 @@ def logger_mock_fixture():
 #    }
 #
 #
-#@patch.object(source_bing_ads.source, "Client")
-#def test_ads_stream_slices(mocked_client, config):
+# @patch.object(source_bing_ads.source, "Client")
+# def test_ads_stream_slices(mocked_client, config):
 #
 #    ads = Ads(mocked_client, config)
 #
@@ -119,8 +120,8 @@ def logger_mock_fixture():
 #            ]
 #
 #
-#@patch.object(source_bing_ads.source, "Client")
-#def test_AccountPerformanceReportMonthly_request_params(mocked_client, config):
+# @patch.object(source_bing_ads.source, "Client")
+# def test_AccountPerformanceReportMonthly_request_params(mocked_client, config):
 #
 #    accountperformancereportmonthly = AccountPerformanceReportMonthly(mocked_client, config)
 #    request_params = accountperformancereportmonthly.request_params(account_id=180278106)
