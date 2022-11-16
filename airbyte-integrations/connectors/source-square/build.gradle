@@ -5,5 +5,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_square2'
+    moduleDirectory 'source_square'
 }
