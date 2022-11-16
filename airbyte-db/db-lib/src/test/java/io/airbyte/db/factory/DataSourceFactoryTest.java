@@ -23,6 +23,7 @@ import org.testcontainers.containers.MySQLContainer;
  * Test suite for the {@link DataSourceFactory} class.
  */
 class DataSourceFactoryTest extends CommonFactoryTest {
+  private static final String CONNECT_TIMEOUT = "connectTimeout";
 
   static String database;
   static String driverClassName;
@@ -46,7 +47,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
   @Test
   void testCreatingDataSourceWithConnectionTimeoutSetAboveDefault() {
     final Map<String, String> connectionProperties = Map.of(
-        "connectTimeout", "61");
+            CONNECT_TIMEOUT, "61");
     final DataSource dataSource = DataSourceFactory.create(
         username,
         password,
@@ -61,7 +62,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
   @Test
   void testCreatingPostgresDataSourceWithConnectionTimeoutSetBelowDefault() {
     final Map<String, String> connectionProperties = Map.of(
-        "connectTimeout", "30");
+            CONNECT_TIMEOUT, "30");
     final DataSource dataSource = DataSourceFactory.create(
         username,
         password,
@@ -78,7 +79,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
     try (MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8.0")) {
       mySQLContainer.start();
       final Map<String, String> connectionProperties = Map.of(
-          "connectTimeout", "30");
+              CONNECT_TIMEOUT, "30");
       final DataSource dataSource = DataSourceFactory.create(
           mySQLContainer.getUsername(),
           mySQLContainer.getPassword(),
@@ -94,7 +95,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
   @Test
   void testCreatingDataSourceWithConnectionTimeoutSetWithZero() {
     final Map<String, String> connectionProperties = Map.of(
-        "connectTimeout", "0");
+            CONNECT_TIMEOUT, "0");
     final DataSource dataSource = DataSourceFactory.create(
         username,
         password,
