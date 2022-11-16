@@ -4,6 +4,8 @@
 
 package io.airbyte.workers.controller;
 
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import io.micronaut.http.HttpHeaders;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
@@ -13,6 +15,7 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Options;
 import io.micronaut.http.annotation.Post;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Heartbeat controller
@@ -48,4 +51,17 @@ public class HeartbeatController {
     }
   }
 
+  public static void main(String[] args) {
+//    Set<String> res = new JsonSchemaValidator().validate(
+//        Jsons.deserialize("""
+//            {
+//              "$ref": "foo.json#/definitions/String"
+//            }
+//            """),
+//        Jsons.deserialize("""
+//            "arst"
+//            """)
+//    );
+//    System.out.println("Validation result: " + res);
+  }
 }

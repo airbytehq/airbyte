@@ -24,7 +24,7 @@ ADD bin/${APPLICATION}-${VERSION}.tar /app
 RUN wget https://github.com/mikefarah/yq/releases/download/v4.30.4/yq_linux_${DOCKER_BUILD_ARCH}.tar.gz -O - | tar xz \
         && mv yq_linux_${DOCKER_BUILD_ARCH} /usr/bin/yq
 COPY well_known_types.yaml /app
-RUN yq -o yaml /app/well_known_types.yaml > /app/WellKnownTypes.json
+RUN yq -o json /app/well_known_types.yaml > /app/WellKnownTypes.json
 
 # wait for upstream dependencies to become available before starting server
 ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-${VERSION}/bin/${APPLICATION}"]

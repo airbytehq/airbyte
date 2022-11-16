@@ -6,13 +6,20 @@ package io.airbyte.validation.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
+import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SchemaValidatorsConfig;
 import com.networknt.schema.SpecVersion;
+import com.networknt.schema.SpecVersion.VersionFlag;
+import com.networknt.schema.ValidationContext;
 import com.networknt.schema.ValidationMessage;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,6 +38,7 @@ public class JsonSchemaValidator {
 
   public JsonSchemaValidator() {
     this.schemaValidatorsConfig = new SchemaValidatorsConfig();
+    schemaValidatorsConfig.setUriMappings(ImmutableMap.of("file:foo.json", "file:///Users/edgao/Desktop/t.json"));
     this.jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
   }
 
@@ -59,6 +67,11 @@ public class JsonSchemaValidator {
   private Set<ValidationMessage> validateInternal(final JsonNode schemaJson, final JsonNode objectJson) {
     Preconditions.checkNotNull(schemaJson);
     Preconditions.checkNotNull(objectJson);
+//    JsonSchema schema = jsonSchemaFactory.getSchema(schemaJson, schemaValidatorsConfig);
+//
+//    new JsonSchema(
+//        new ValidationContext(jsonSchemaFactory.getUriFactory(), jsonSchemaFactory.getUriFactory(), jsonMetaSchema, this, config),
+//        mappedUri, schemaNode, true /* retrieved via id, resolving will not change anything */);;
 
     return jsonSchemaFactory.getSchema(schemaJson, schemaValidatorsConfig)
         .validate(objectJson);
@@ -136,4 +149,16 @@ public class JsonSchemaValidator {
     }
   }
 
+
+  public static void main(String[] args) throws URISyntaxException {
+    SchemaValidatorsConfig c = new SchemaValidatorsConfig();
+    c.setUriMappings(ImmutableMap.of("file:foo.json", "file:///Users/edgao/Desktop/t.json"));
+
+    JsonSchemaFactory f = JsonSchemaFactory.getInstance(VersionFlag.V7);
+    JsonSchema schema = f.getSchema(new URI("file:///Users/edgao/Desktop/inp.json"), c);
+    Set<ValidationMessage> res = schema.validate(Jsons.deserialize("""
+        "arst"
+        """));
+    System.out.println("results were " + res);
+  }
 }
