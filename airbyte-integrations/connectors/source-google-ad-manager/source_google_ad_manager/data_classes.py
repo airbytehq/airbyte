@@ -15,7 +15,7 @@ class CustomBaseModel(BaseModel):
             _type_: _description_
         """
         try:
-            value = int(value)
+            value = float(value)
         except (ValueError, TypeError):
             value = 0
         return value
