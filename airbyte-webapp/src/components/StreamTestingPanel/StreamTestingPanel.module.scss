@@ -13,26 +13,26 @@
   flex: 0 0 auto;
 }
 
-.testControls {
-  flex: 0 0 auto;
-}
+// .testControls {
+//   flex: 0 0 auto;
+// }
 
-.resizablePanelsContainer {
-  flex: 1;
-  min-height: 0;
+// .resizablePanelsContainer {
+//   flex: 1;
+//   min-height: 0;
 
-  // required to hide the connector logs splitter underneath the resizable panel overlay
-  z-index: 0;
-}
+//   // required to hide the connector logs splitter underneath the resizable panel overlay
+//   z-index: 0;
+// }
 
-.error {
-  align-self: center;
-  width: 70%;
-  background-color: colors.$red-50;
-  color: colors.$red;
-  margin-top: variables.$spacing-xl;
-  border-radius: variables.$border-radius-sm;
-  padding: variables.$spacing-xl;
-  display: flex;
-  align-items: center;
-}
+// .error {
+//   align-self: center;
+//   width: 70%;
+//   background-color: colors.$red-50;
+//   color: colors.$red;
+//   margin-top: variables.$spacing-xl;
+//   border-radius: variables.$border-radius-sm;
+//   padding: variables.$spacing-xl;
+//   display: flex;
+//   align-items: center;
+// }

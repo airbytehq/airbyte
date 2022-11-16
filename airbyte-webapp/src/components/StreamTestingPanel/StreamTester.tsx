@@ -1,0 +1,100 @@
+import { faWarning } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useState } from "react";
+import { FormattedMessage } from "react-intl";
+
+import { RotateIcon } from "components/icons/RotateIcon";
+import { Button } from "components/ui/Button";
+import { ResizablePanels } from "components/ui/ResizablePanels";
+import { Text } from "components/ui/Text";
+import { Tooltip } from "components/ui/Tooltip";
+
+import { StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
+import { useReadStream } from "services/connectorBuilder/ConnectorBuilderApiService";
+import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+
+import { LogsDisplay } from "./LogsDisplay";
+import { ResultDisplay } from "./ResultDisplay";
+import styles from "./StreamTester.module.scss";
+
+interface StreamTesterProps {
+  selectedStream: StreamsListReadStreamsItem;
+}
+
+export const StreamTester: React.FC<StreamTesterProps> = ({ selectedStream }) => {
+  const { jsonManifest, configJson, yamlIsValid } = useConnectorBuilderState();
+  const {
+    data: streamReadData,
+    refetch: readStream,
+    // isError,
+    // error,
+  } = useReadStream({
+    manifest: jsonManifest,
+    stream: selectedStream.name,
+    config: configJson,
+  });
+
+  const [logsFlex, setLogsFlex] = useState(0);
+  const handleLogsTitleClick = () => {
+    // expand to 50% if it is currently minimized, otherwise minimize it
+    setLogsFlex((prevFlex) => (prevFlex < 0.06 ? 0.5 : 0));
+  };
+
+  const testButton = (
+    <Button
+      className={styles.testButton}
+      size="sm"
+      onClick={() => {
+        readStream();
+      }}
+      disabled={!yamlIsValid}
+      icon={
+        yamlIsValid ? (
+          <div>
+            <RotateIcon width={styles.testIconHeight} height={styles.testIconHeight} />
+          </div>
+        ) : (
+          <FontAwesomeIcon icon={faWarning} />
+        )
+      }
+    >
+      <Text className={styles.testButtonText} size="sm" bold>
+        <FormattedMessage id="connectorBuilder.testButton" />
+      </Text>
+    </Button>
+  );
+
+  return (
+    <div className={styles.container}>
+      {selectedStream.url}
+      {yamlIsValid ? (
+        testButton
+      ) : (
+        <Tooltip control={testButton}>
+          <FormattedMessage id="connectorBuilder.invalidYamlTest" />
+        </Tooltip>
+      )}
+      {streamReadData !== undefined && (
+        <ResizablePanels
+          className={styles.resizablePanelsContainer}
+          orientation="horizontal"
+          firstPanel={{
+            children: <ResultDisplay slices={streamReadData.slices} />,
+            minWidth: 120,
+          }}
+          secondPanel={{
+            className: styles.logsContainer,
+            children: <LogsDisplay logs={streamReadData.logs} onTitleClick={handleLogsTitleClick} />,
+            minWidth: 30,
+            flex: logsFlex,
+            onStopResize: (newFlex) => {
+              if (newFlex) {
+                setLogsFlex(newFlex);
+              }
+            },
+          }}
+        />
+      )}
+    </div>
+  );
+};
