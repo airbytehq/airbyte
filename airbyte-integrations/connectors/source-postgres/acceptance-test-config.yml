@@ -15,3 +15,5 @@ acceptance_tests:
     bypass_reason: "Pending."
   full_refresh:
     bypass_reason: "Pending."
+  incremental:
+    bypass_reason: "Pending."
