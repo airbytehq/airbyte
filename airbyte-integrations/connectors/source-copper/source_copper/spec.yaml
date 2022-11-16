@@ -9,8 +9,10 @@ connectionSpecification:
   properties:
     api_key:
       type: string
+      title: API Key
       description: Copper API key
       airbyte_secret: true
     user_email:
       type: string
+      title: User email
       description: user email used to login in to Copper
