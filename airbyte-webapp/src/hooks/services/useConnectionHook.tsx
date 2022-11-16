@@ -8,7 +8,7 @@ import { WebBackendConnectionService } from "core/domain/connection";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
 import { useInitService } from "services/useInitService";
 
-import { useConfig } from "../../config";
+// import { useConfig } from "../../config";
 import {
   ConnectionScheduleData,
   ConnectionScheduleType,
@@ -59,18 +59,21 @@ export interface ListConnection {
 }
 
 function useWebConnectionService() {
-  const config = useConfig();
+  // const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(
-    () => new WebBackendConnectionService(config.apiUrl, middlewares),
-    [config.apiUrl, middlewares]
+    () => new WebBackendConnectionService(process.env.REACT_APP_API_URL as string, middlewares),
+    [process.env.REACT_APP_API_URL as string, middlewares]
   );
 }
 
 export function useConnectionService() {
-  const config = useConfig();
+  // const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
-  return useInitService(() => new ConnectionService(config.apiUrl, middlewares), [config.apiUrl, middlewares]);
+  return useInitService(
+    () => new ConnectionService(process.env.REACT_APP_API_URL as string, middlewares),
+    [process.env.REACT_APP_API_URL as string, middlewares]
+  );
 }
 
 export const useConnectionLoad = (

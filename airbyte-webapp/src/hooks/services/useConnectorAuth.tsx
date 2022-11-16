@@ -46,18 +46,18 @@ export function useConnectorAuth(): {
   ) => Promise<Record<string, unknown>>;
 } {
   const { workspaceId } = useCurrentWorkspace();
-  const { apiUrl, oauthRedirectUrl } = useConfig();
+  const { oauthRedirectUrl } = useConfig();
 
   // TODO: move to separate initFacade and use refs instead
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   const sourceAuthService = useMemo(
-    () => new SourceAuthService(apiUrl, requestAuthMiddleware),
-    [apiUrl, requestAuthMiddleware]
+    () => new SourceAuthService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
+    [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
   );
   const destinationAuthService = useMemo(
-    () => new DestinationAuthService(apiUrl, requestAuthMiddleware),
-    [apiUrl, requestAuthMiddleware]
+    () => new DestinationAuthService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
+    [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
   );
 
   return {
