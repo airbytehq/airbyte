@@ -154,8 +154,8 @@ public class BigQueryUtils {
         Field.of("id", StandardSQLTypeName.INT64),
         Field.of("name", StandardSQLTypeName.STRING));
 
-    // Create tmp table to verify is user has a create table permission. Also below we will do test
-    // rerods insert in it
+    // Create tmp table to verify if user has a create table permission. Also below we will do test
+    // records insert in it
     final Table test_connection_table_name = createTable(bigquery, tmpTestDatasetId,
         CHECK_TEST_TMP_TABLE_NAME, testTableSchema);
 
