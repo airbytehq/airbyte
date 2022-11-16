@@ -315,7 +315,8 @@ public class ServerApp implements ServerRunnable {
         sourceDefinitionsHandler,
         destinationHandler,
         destinationDefinitionsHandler,
-        configs.getAirbyteVersion());
+        configs.getAirbyteVersion(),
+        temporalClient);
 
     final LogsHandler logsHandler = new LogsHandler(configs);
 

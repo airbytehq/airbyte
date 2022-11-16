@@ -945,6 +945,11 @@ class BasicAcceptanceTests {
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitWhileJobHasStatus(apiClient.getJobsApi(), jobInfoRead.getJob(),
         Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING, JobStatus.INCOMPLETE, JobStatus.FAILED));
+    // This is a band-aid to prevent some race conditions where the job status was updated but we may
+    // still be cleaning up some data in the reset table. This would be an argument for reworking the
+    // source of truth of the replication workflow state to be in DB rather than in Memory and
+    // serialized automagically by temporal
+    waitWhileJobIsRunning(apiClient.getJobsApi(), jobInfoRead.getJob(), Duration.ofMinutes(1));
 
     LOGGER.info("state after reset: {}", apiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
@@ -1250,6 +1255,11 @@ class BasicAcceptanceTests {
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitWhileJobHasStatus(apiClient.getJobsApi(), jobInfoRead.getJob(),
         Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING, JobStatus.INCOMPLETE, JobStatus.FAILED));
+    // This is a band-aid to prevent some race conditions where the job status was updated but we may
+    // still be cleaning up some data in the reset table. This would be an argument for reworking the
+    // source of truth of the replication workflow state to be in DB rather than in Memory and
+    // serialized automagically by temporal
+    waitWhileJobIsRunning(apiClient.getJobsApi(), jobInfoRead.getJob(), Duration.ofMinutes(1));
 
     LOGGER.info("state after reset: {}", apiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
