@@ -1,21 +1,6 @@
 {
   "type": "object",
   "properties": {
-    "ticker": {
-      "type": ["null", "string"]
-    },
-    "queryCount": {
-      "type": ["null", "integer"]
-    },
-    "resultsCount": {
-      "type": ["null", "integer"]
-    },
-    "adjusted": {
-      "type": ["null", "boolean"]
-    },
-    "results":[ {
-      "type": "object",
-      "properties": {
         "v": {
           "type": ["null", "number"]
         },
@@ -44,15 +29,4 @@
           "type": ["null", "number"]
         }
       }
-    }],
-    "status": {
-      "type": ["null", "string"]
-    },
-    "request_id": {
-      "type": ["null", "string"]
-    },
-    "count": {
-      "type": ["null", "number"]
     }
-  }
-}
