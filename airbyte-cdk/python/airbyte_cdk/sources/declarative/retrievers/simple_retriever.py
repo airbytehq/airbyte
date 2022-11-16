@@ -363,7 +363,8 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         # Warning: use self.state instead of the stream_state passed as argument!
         stream_slice = stream_slice or {}  # None-check
         self.paginator.reset()
-        records_generator = self._read_pages(self.parse_records_and_emit_request_and_responses,
+        records_generator = self._read_pages(
+            self.parse_records_and_emit_request_and_responses,
             stream_slice,
             stream_state,
         )
