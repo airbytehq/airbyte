@@ -15,6 +15,7 @@ import { OperatorType, WebBackendConnectionRead, OperationRead, WebhookConfigRea
 import { useWebConnectionService } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import {
+  DbtCloudJobInfo,
   webBackendGetAvailableDbtJobsForWorkspace,
   WorkspaceGetDbtJobsResponse,
 } from "packages/cloud/lib/domain/dbtCloud/api";
@@ -36,25 +37,34 @@ const jobName = (t: DbtCloudJob) => `${t.account}/${t.job}`;
 
 const isDbtWebhookConfig = (webhookConfig: WebhookConfigRead) => !!webhookConfig.name?.includes("dbt");
 
-const toDbtCloudJob = (operation: OperationRead): DbtCloudJob => {
-  const { operationId } = operation;
-  const { executionUrl } = operation.operatorConfiguration.webhook || {};
+export const toDbtCloudJob = (operationOrCloudJob: OperationRead | DbtCloudJobInfo): DbtCloudJob => {
+  if ("operationId" in operationOrCloudJob) {
+    const { operationId } = operationOrCloudJob;
+    const { executionUrl } = operationOrCloudJob.operatorConfiguration.webhook || {};
 
-  const matches = (executionUrl || "").match(/\/accounts\/([^/]+)\/jobs\/([^]+)\/run/);
-  if (!matches) {
-    throw new Error(`Cannot extract dbt cloud job params from executionUrl ${executionUrl}`);
+    const matches = (executionUrl || "").match(/\/accounts\/([^/]+)\/jobs\/([^]+)\/run/);
+    if (!matches) {
+      throw new Error(`Cannot extract dbt cloud job params from executionUrl ${executionUrl}`);
+    } else {
+      const [, account, job] = matches;
+
+      return {
+        account,
+        job,
+        operationId,
+      };
+    }
   } else {
-    const [, account, job] = matches;
-
-    return {
-      account,
-      job,
-      operationId,
-    };
+    const { accountId, jobId } = operationOrCloudJob;
+    return { account: `${accountId}`, job: `${jobId}` };
   }
 };
+
 const isDbtCloudJob = (operation: OperationRead): boolean =>
   operation.operatorConfiguration.operatorType === OperatorType.webhook;
+
+export const isSameJob = (remoteJob: DbtCloudJobInfo, savedJob: DbtCloudJob): boolean =>
+  savedJob.account === `${remoteJob.accountId}` && savedJob.job === `${remoteJob.jobId}`;
 
 export const useSubmitDbtCloudIntegrationConfig = () => {
   const { workspaceId } = useCurrentWorkspace();

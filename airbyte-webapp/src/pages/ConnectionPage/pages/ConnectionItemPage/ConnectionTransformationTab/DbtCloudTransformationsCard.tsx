@@ -16,7 +16,14 @@ import { Text } from "components/ui/Text";
 
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { DbtCloudJob, DbtCloudJobInfo, useDbtIntegration, useAvailableDbtJobs } from "packages/cloud/services/dbtCloud";
+import {
+  DbtCloudJob,
+  DbtCloudJobInfo,
+  isSameJob,
+  toDbtCloudJob,
+  useDbtIntegration,
+  useAvailableDbtJobs,
+} from "packages/cloud/services/dbtCloud";
 import { RoutePaths } from "pages/routePaths";
 
 import dbtLogo from "./dbt-bit_tm.svg";
@@ -106,11 +113,11 @@ const DbtJobsForm: React.FC<DbtJobsFormProps> = ({ saveJobs, dbtCloudJobs }) => 
                       <span className={styles.jobListTitle}>
                         <FormattedMessage id="connection.dbtCloudJobs.cardTitle" />
                         <DropdownMenu
-                          options={availableDbtJobs.map((job) => ({ displayName: job.jobName, value: job }))}
+                          options={availableDbtJobs
+                            .filter((remoteJob) => !values.jobs.some((savedJob) => isSameJob(remoteJob, savedJob)))
+                            .map((job) => ({ displayName: job.jobName, value: job }))}
                           onChange={(selection) => {
-                            const { accountId, jobId } = selection.value as DbtCloudJobInfo;
-                            const selectedJob: DbtCloudJob = { account: `${accountId}`, job: `${jobId}` };
-                            push(selectedJob);
+                            push(toDbtCloudJob(selection.value as DbtCloudJobInfo));
                           }}
                         >
                           {() => (
