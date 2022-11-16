@@ -142,7 +142,7 @@ class AirbytePythonDockerPlugin implements Plugin<Project> {
         }
 
         project.task('installReqs', type: Exec) {
-            commandLine "docker", "run", "-v", "/Users/alex/code/airbyte/airbyte-connector-builder-server:/tmp", "--entrypoint", "/bin/bash", "python:3.9-slim", "-c", "chmod +x /tmp/run.sh && /tmp/run.sh"
+            commandLine "docker", "run", "-v", "${project.rootDir}:/tmp", "--entrypoint", "/bin/bash", "python:3.9-slim", "-c", "chmod +x /tmp/run.sh && /tmp/run.sh"
         }
 
         if (extension.moduleDirectory) {
