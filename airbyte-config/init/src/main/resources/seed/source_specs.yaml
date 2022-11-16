@@ -219,6 +219,29 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-aha:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/aha"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Aha Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "url"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          description: "API Key"
+          title: "API Bearer Token"
+        url:
+          type: "string"
+          description: "URL"
+          title: "Aha Url Instance"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-alpha-vantage:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/alpha-vantage"
@@ -1873,6 +1896,36 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-callrail:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/callrail"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Call Rail Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "account_id"
+      - "start_date"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          description: "API access key"
+          airbyte_secret: true
+        account_id:
+          type: "string"
+          description: "Account ID"
+          airbyte_secret: true
+        start_date:
+          type: "string"
+          description: "Start getting data from that date."
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          examples:
+          - "%Y-%m-%d"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-cart:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/cart"
@@ -3000,6 +3053,75 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-dynamodb:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/dynamodb"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Dynamodb Source Spec"
+      type: "object"
+      required:
+      - "access_key_id"
+      - "secret_access_key"
+      additionalProperties: false
+      properties:
+        endpoint:
+          title: "Dynamodb Endpoint"
+          type: "string"
+          default: ""
+          description: "the URL of the Dynamodb database"
+          examples:
+          - "https://{aws_dynamo_db_url}.com"
+        region:
+          title: "Dynamodb Region"
+          type: "string"
+          default: ""
+          description: "The region of the Dynamodb database"
+          enum:
+          - ""
+          - "us-east-1"
+          - "us-east-2"
+          - "us-west-1"
+          - "us-west-2"
+          - "af-south-1"
+          - "ap-east-1"
+          - "ap-south-1"
+          - "ap-northeast-1"
+          - "ap-northeast-2"
+          - "ap-northeast-3"
+          - "ap-southeast-1"
+          - "ap-southeast-2"
+          - "ca-central-1"
+          - "cn-north-1"
+          - "cn-northwest-1"
+          - "eu-central-1"
+          - "eu-north-1"
+          - "eu-south-1"
+          - "eu-west-1"
+          - "eu-west-2"
+          - "eu-west-3"
+          - "sa-east-1"
+          - "me-south-1"
+          - "us-gov-east-1"
+          - "us-gov-west-1"
+        access_key_id:
+          title: "Dynamodb Key Id"
+          type: "string"
+          description: "The access key id to access Dynamodb. Airbyte requires read\
+            \ permissions to the database"
+          airbyte_secret: true
+          examples:
+          - "A012345678910EXAMPLE"
+        secret_access_key:
+          title: "Dynamodb Access Key"
+          type: "string"
+          description: "The corresponding secret to the access key id."
+          airbyte_secret: true
+          examples:
+          - "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-e2e-test:2.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/e2e-test"
@@ -3563,7 +3685,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-faker:0.2.0"
+- dockerImage: "airbyte/source-faker:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
     connectionSpecification:
@@ -4137,6 +4259,26 @@
           examples:
           - "2020-10-01T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-getlago:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/getlago"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Getlago Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API Key"
+          type: "string"
+          description: "Your API Key. See <a href=\"https://doc.getlago.com/docs/api/intro\"\
+            >here</a>."
+          airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -5324,7 +5466,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-sheets:0.2.21"
+- dockerImage: "airbyte/source-google-sheets:0.2.30"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-sheets"
     connectionSpecification:
@@ -11161,25 +11303,38 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-prestashop:0.2.0"
+- dockerImage: "airbyte/source-prestashop:0.3.0"
   spec:
-    documentationUrl: "https://docsurl.com"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/presta-shop"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "PrestaShop Spec"
       type: "object"
       required:
-      - "url"
       - "access_key"
+      - "url"
+      - "start_date"
       properties:
-        url:
-          type: "string"
-          description: "Shop URL without trailing slash (domain name or IP address)"
         access_key:
           type: "string"
+          title: "Access Key"
           description: "Your PrestaShop access key. See <a href=\"https://devdocs.prestashop.com/1.7/webservice/tutorials/creating-access/#create-an-access-key\"\
             > the docs </a> for info on how to obtain this."
+          order: 0
           airbyte_secret: true
+        url:
+          type: "string"
+          title: "Shop URL"
+          description: "Shop URL without trailing slash."
+          order: 1
+        start_date:
+          type: "string"
+          title: "Start date"
+          description: "The Start date in the format YYYY-MM-DD."
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          examples:
+          - "2022-01-01"
+          order: 2
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -11254,6 +11409,51 @@
             \ release instead of all releases."
           examples:
           - "1.2.0"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-qonto:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Qonto Spec"
+      type: "object"
+      required:
+      - "endpoint"
+      - "organization_slug"
+      - "secret_key"
+      - "iban"
+      properties:
+        endpoint:
+          title: "Endpoint"
+          type: "string"
+          description: "Please choose the right endpoint to use in this connection"
+          enum:
+          - "Production"
+          - "Test Mocked API Server"
+        organization_slug:
+          title: "Organization slug"
+          type: "string"
+          description: "Organization slug used in Qonto"
+        secret_key:
+          title: "Secret Key"
+          type: "string"
+          description: "Secret key of the Qonto account"
+          airbyte_secret: true
+        iban:
+          title: "IBAN"
+          type: "string"
+          description: "International Bank Account Number linked used with your Qonto\
+            \ Account"
+          pattern: "^[A-Z0-9]*$"
+        start_date:
+          title: "Start date"
+          type: "string"
+          description: "Start getting data from that date."
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          examples:
+          - "YYYY-MM-DD"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -11761,6 +11961,39 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-rocket-chat:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/rocket-chat"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Rocket Chat Spec"
+      type: "object"
+      required:
+      - "token"
+      - "user_id"
+      - "endpoint"
+      additionalProperties: true
+      properties:
+        endpoint:
+          title: "Endpoint"
+          type: "string"
+          description: "Your rocket.chat instance URL."
+          examples:
+          - "https://airbyte-connector-poc.rocket.chat"
+          - "https://hey.yoursite.com"
+        token:
+          title: "Token"
+          type: "string"
+          description: "Your API Token. See <a href=\"https://developer.rocket.chat/reference/api/rest-api/endpoints/other-important-endpoints/access-tokens-endpoints\"\
+            >here</a>. The token is case sensitive."
+          airbyte_secret: true
+        user_id:
+          title: "User ID."
+          type: "string"
+          description: "Your User Id."
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-s3:0.1.26"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -12094,7 +12327,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.24"
+- dockerImage: "airbyte/source-salesforce:1.0.26"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:

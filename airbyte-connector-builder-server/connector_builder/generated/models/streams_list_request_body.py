@@ -21,8 +21,10 @@ class StreamsListRequestBody(BaseModel):
     StreamsListRequestBody - a model defined in OpenAPI
 
         manifest: The manifest of this StreamsListRequestBody.
+        config: The config of this StreamsListRequestBody.
     """
 
     manifest: Dict[str, Any]
+    config: Dict[str, Any]
 
 StreamsListRequestBody.update_forward_refs()
