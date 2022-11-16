@@ -64,6 +64,7 @@ assemble.dependsOn(project.tasks.copySeed)
 mainClassName = 'io.airbyte.server.Application'
 
 application {
+    applicationName = project.name
     mainClass = mainClassName
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
@@ -91,6 +92,8 @@ run {
     environment "AIRBYTE_VERSION", env.VERSION
     environment "AIRBYTE_ROLE", System.getenv('AIRBYTE_ROLE')
     environment "TEMPORAL_HOST", "localhost:7233"
+
+    environment 'MICRONAUT_ENVIRONMENTS', 'control-plane'
 }
 
 // produce reproducible archives

@@ -104,6 +104,7 @@ public class ServerApp implements ServerRunnable {
   @Override
   @SuppressWarnings("PMD.InvalidLogMessageFormat")
   public void start() throws Exception {
+    LOGGER.error("HOOOOOOOOOOOOOOOOOO");
     final Server server = new Server(PORT);
 
     final ServletContextHandler handler = new ServletContextHandler();
@@ -133,6 +134,7 @@ public class ServerApp implements ServerRunnable {
 
     server.setHandler(handler);
 
+    LOGGER.error("____________________");
     server.start();
     final String banner = MoreResources.readResource("banner/banner.txt");
     LOGGER.info(banner + String.format("Version: %s\n", airbyteVersion.serialize()));
