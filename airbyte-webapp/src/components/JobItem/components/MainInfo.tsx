@@ -4,7 +4,7 @@ import classNames from "classnames";
 import React, { useMemo } from "react";
 import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 
-import { ProgressBar } from "components/ProgressBar";
+import { JobProgress } from "components/connection/JobProgress";
 import { Cell, Row } from "components/SimpleTableComponents";
 import { StatusIcon } from "components/ui/StatusIcon";
 
@@ -88,7 +88,7 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
         <div className={styles.statusIcon}>{statusIcon}</div>
         <div className={styles.justification}>
           {label}
-          <ProgressBar job={job} jobConfigType={jobConfigType} />
+          {jobConfigType === "sync" && <JobProgress job={job} />}
           {attempts.length > 0 && (
             <>
               {jobConfigType === "reset_connection" ? (

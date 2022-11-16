@@ -1,11 +1,11 @@
-@use "../../scss/colors";
-@use "../../scss/variables";
+@use "../../../scss/colors";
+@use "../../../scss/variables";
 
-.container {
-  font-size: 12px;
-  line-height: 15px;
-  color: colors.$grey;
-}
+// .container {
+//   font-size: 12px;
+//   line-height: 15px;
+//   color: colors.$grey;
+// }
 
 :export {
   pending: colors.$blue-100;
