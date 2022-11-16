@@ -5,14 +5,12 @@
 package io.airbyte.server.converters;
 
 import static io.airbyte.api.model.generated.OperatorWebhook.WebhookTypeEnum.DBTCLOUD;
-import static io.airbyte.api.model.generated.OperatorWebhook.WebhookTypeEnum.GENERIC;
 
 import com.google.common.base.Preconditions;
 import io.airbyte.api.model.generated.OperationRead;
 import io.airbyte.api.model.generated.OperatorConfiguration;
 import io.airbyte.api.model.generated.OperatorNormalization.OptionEnum;
 import io.airbyte.api.model.generated.OperatorWebhookDbtCloud;
-import io.airbyte.api.model.generated.OperatorWebhookGeneric;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.OperatorNormalization;
@@ -98,6 +96,7 @@ public class OperationsConverter {
 
   private static OperatorWebhook webhookOperatorFromConfig(io.airbyte.api.model.generated.OperatorWebhook webhookConfig) {
     final var operatorWebhook = new OperatorWebhook().withWebhookConfigId(webhookConfig.getWebhookConfigId());
+    // TODO(mfsiega-airbyte): remove this once the frontend is sending the new format.
     if (webhookConfig.getWebhookType() == null) {
       return operatorWebhook
           .withExecutionUrl(webhookConfig.getExecutionUrl())
@@ -106,15 +105,10 @@ public class OperationsConverter {
     switch (webhookConfig.getWebhookType()) {
       case DBTCLOUD -> {
         return operatorWebhook
-            .withExecutionUrl(String.format("https://cloud.getdbt.com/api/v2/accounts/%d/jobs/%d/run/", webhookConfig.getDbtCloud().getAccountId(),
-                webhookConfig.getDbtCloud().getJobId()))
-            .withExecutionBody("{\"cause\": \"airbyte\"}");
+            .withExecutionUrl(DbtCloudOperationConverter.getExecutionUrlFrom(webhookConfig.getDbtCloud()))
+            .withExecutionBody(DbtCloudOperationConverter.getDbtCloudExecutionBody());
       }
-      case GENERIC -> {
-        return operatorWebhook
-            .withExecutionUrl(webhookConfig.getGeneric().getExecutionUrl())
-            .withExecutionBody(webhookConfig.getGeneric().getExecutionBody());
-      }
+      // Future webhook operator types added here.
     }
     throw new IllegalArgumentException("Unsupported webhook operation type");
   }
@@ -124,19 +118,20 @@ public class OperationsConverter {
         .webhookConfigId(persistedWebhook.getWebhookConfigId());
     OperatorWebhookDbtCloud dbtCloudOperator = DbtCloudOperationConverter.parseFrom(persistedWebhook);
     if (dbtCloudOperator != null) {
-      webhookOperator.webhookType(DBTCLOUD).dbtCloud(DbtCloudOperationConverter.parseFrom(persistedWebhook));
+      webhookOperator.webhookType(DBTCLOUD).dbtCloud(dbtCloudOperator);
+      // TODO(mfsiega-airbyte): remove once frontend switches to new format.
+      // Dual-write deprecated webhook format.
+      webhookOperator.executionUrl(DbtCloudOperationConverter.getExecutionUrlFrom(dbtCloudOperator));
+      webhookOperator.executionBody(DbtCloudOperationConverter.getDbtCloudExecutionBody());
     } else {
-      webhookOperator.webhookType(GENERIC).generic(new OperatorWebhookGeneric()
-          .executionBody(persistedWebhook.getExecutionBody())
-          .executionUrl(persistedWebhook.getExecutionUrl()));
-      // NOTE: double-write until the frontend starts using the new fields.
-      webhookOperator.executionUrl(persistedWebhook.getExecutionUrl()).executionBody(persistedWebhook.getExecutionBody());
+      throw new IllegalArgumentException("Unexpected webhook operator config");
     }
     return webhookOperator;
   }
 
   private static class DbtCloudOperationConverter {
 
+    // See https://docs.getdbt.com/dbt-cloud/api-v2 for documentation on dbt Cloud API endpoints.
     final static Pattern dbtUrlPattern = Pattern.compile("^https://cloud\\.getdbt\\.com/api/v2/accounts/(\\d+)/jobs/(\\d+)/run/$");
     private static final int ACCOUNT_REGEX_GROUP = 1;
     private static final int JOB_REGEX_GROUP = 2;
@@ -150,6 +145,15 @@ public class OperationsConverter {
         return dbtCloudConfig;
       }
       return null;
+    }
+
+    private static String getExecutionUrlFrom(final OperatorWebhookDbtCloud dbtCloudConfig) {
+      return String.format("https://cloud.getdbt.com/api/v2/accounts/%d/jobs/%d/run/", dbtCloudConfig.getAccountId(),
+          dbtCloudConfig.getJobId());
+    }
+
+    private static String getDbtCloudExecutionBody() {
+      return "{\"cause\": \"airbyte\"}";
     }
 
   }

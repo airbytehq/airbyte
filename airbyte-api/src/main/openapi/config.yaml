@@ -3786,19 +3786,7 @@ components:
         webhookType:
           type: string
           enum:
-            - generic
             - dbtCloud
-        generic:
-          type: object
-          required:
-            - executionUrl
-          properties:
-            executionUrl:
-              type: string
-              description: The URL to call to execute the webhook operation via POST request.
-            executionBody:
-              type: string
-              description: If populated, this will be sent with the POST request.
         dbtCloud:
           type: object
           required:
@@ -3813,11 +3801,11 @@ components:
               description: The job id associated with the job
         executionUrl:
           type: string
-          description: DEPRECATED. Populate generic.executionUrl instead.
+          description: DEPRECATED. Populate dbtCloud instead.
           deprecated: true
         executionBody:
           type: string
-          description: DEPRECATED. Populate generic.executionBody instead.
+          description: DEPRECATED. Populate dbtCloud instead.
           deprecated: true
     CheckOperationRead:
       type: object
