@@ -45,7 +45,7 @@ public abstract class BaseSizeEstimator implements FetchSizeEstimator {
     // the whole method only provides an estimation. Please never convert
     // the string to byte[] to get the exact length. That conversion is known
     // to introduce a lot of memory overhead.
-    return Jsons.serialize(rowData).length() * 4L;
+    return Jsons.serialize(rowData).length() * 3L;
   }
 
   /**
