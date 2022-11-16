@@ -131,8 +131,9 @@ class MarketplaceEvents(EventsStream):
         self.interrupt_execution = True
         return None
       if record["blockeventdata"]["tenant"] != "onefootball":
-        return None
-      yield record
+        pass
+      else:
+        yield record
 
 
 class SaleEvents(MarketplaceEvents):
