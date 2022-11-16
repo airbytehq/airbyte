@@ -41,7 +41,7 @@ export default function MyCombobox() {
       }}
     >
       <Combobox.Label className="block">
-        Quick navigate to Connector docs:
+        Quick navigate to Connector docs (full search + filters <a href="https://docs.airbyte.com/integrations/">here</a>):
       </Combobox.Label>
       <div className="relative mt-1">
         <Combobox.Input
