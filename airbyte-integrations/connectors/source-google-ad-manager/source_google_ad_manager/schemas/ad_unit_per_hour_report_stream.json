@@ -2,12 +2,12 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "cpm_cpc_revenue": { "title": "Cpm Cpc Revenue", "type": "integer" },
-    "impressions": { "title": "Impressions", "type": "integer" },
-    "eCpm": { "title": "Ecpm", "type": "integer" },
+    "cpm_cpc_revenue": { "title": "Cpm Cpc Revenue", "type": "number" },
+    "impressions": { "title": "Impressions", "type": "number" },
+    "eCpm": { "title": "Ecpm", "type": "number" },
     "unfilled_impressions": {
       "title": "Unfilled Impressions",
-      "type": "integer"
+      "type": "number"
     },
     "ad_unit": { "title": "Ad Unit", "type": "string" },
     "hour": { "title": "Hour", "type": "integer" },

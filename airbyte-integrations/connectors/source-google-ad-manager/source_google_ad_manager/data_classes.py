@@ -23,10 +23,10 @@ class CustomBaseModel(BaseModel):
 
 class AdUnitPerHourItem(CustomBaseModel):
     ad_unit_id: int
-    cpm_cpc_revenue: int
-    impressions: int
-    eCpm: int
-    unfilled_impressions: int
+    cpm_cpc_revenue: float
+    impressions: float
+    eCpm: float
+    unfilled_impressions: float
     ad_unit: str
     hour: int
     date: datetime  # need to specify the best date with the format
@@ -60,11 +60,11 @@ class AdUnitPerReferrerItem(CustomBaseModel):
     ad_unit_id: int
     referrer: str  # should be part of the index
     advertiser_name: str
-    impressions: int
-    cpm_cpc_revenue: int
+    impressions: float
+    cpm_cpc_revenue: float
     customer_name: str
-    eCpm: int
-    click: int
+    eCpm: float
+    click: float
     date: datetime  # need to specify the best date with the format # should be part of the index
 
     @staticmethod
