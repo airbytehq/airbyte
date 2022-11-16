@@ -48,10 +48,9 @@ public class IncrementalUtils {
           String.format("Could not find cursor type for field: %s in schema for stream: %s.", cursorField, stream.getStream().getName()));
     }
 
-    // Need to return a different data type here..
     if (stream.getStream().getJsonSchema().get(PROPERTIES).get(cursorField).get("type") == null) {
       return JsonSchemaPrimitiveUtil.PRIMITIVE_TO_REFERENCE_BIMAP.inverse()
-          .get(stream.getStream().getJsonSchema().get(PROPERTIES).get(cursorField).get("$ref"));
+          .get(stream.getStream().getJsonSchema().get(PROPERTIES).get(cursorField).get("$ref").asText());
     } else {
       return JsonSchemaPrimitive.valueOf(stream.getStream().getJsonSchema().get(PROPERTIES).get(cursorField).get("type").asText().toUpperCase());
     }
