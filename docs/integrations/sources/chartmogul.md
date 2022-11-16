@@ -35,12 +35,12 @@ The Chartmogul source connector supports the following [ sync modes](https://doc
 This connector outputs the following full refresh streams:
 
 * [Activities](https://dev.chartmogul.com/reference/list-activities)
-* [CustomerCount] (https://dev.chartmogul.com/reference/retrieve-customer-count)
+* [CustomerCount](https://dev.chartmogul.com/reference/retrieve-customer-count)
 * [Customers](https://dev.chartmogul.com/reference/list-customers)
 
 ### Notes
 
-The **Start date** will only apply to the `Activities` stream. The `Customers`' endpoint does not provide a way to filter by the creation or update dates.
+The **Start date** will only apply to the `Activities` stream. The `Customers` endpoint does not provide a way to filter by the creation or update dates.
 
 ### Performance considerations
 
