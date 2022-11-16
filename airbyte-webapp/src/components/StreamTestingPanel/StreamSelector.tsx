@@ -2,6 +2,7 @@ import { faSortDown, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { capitalize } from "lodash";
+import { FormattedMessage } from "react-intl";
 
 import { Heading } from "components/ui/Heading";
 import { ListBox, ListBoxControlButtonProps } from "components/ui/ListBox";
@@ -46,7 +47,7 @@ export const StreamSelector: React.FC<StreamSelectorProps> = ({ className }) => 
         <div className={styles.noStreamsContainer}>
           <FontAwesomeIcon icon={faWarning} className={styles.noStreamsIcon} size="lg" />
           <Text className={styles.noStreamsText} size="lg">
-            No streams detected
+            <FormattedMessage id="connectorBuilder.noStreamsDetected" />
           </Text>
         </div>
       )}
