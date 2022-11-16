@@ -1,6 +1,5 @@
 import groovy.io.FileType
 import groovy.io.FileVisitResult
-import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Exec
@@ -43,8 +42,10 @@ class HelpersDocker {
                 // generation of coverage report is optional and we should skip it if tests are empty
 
                 project.task(taskName, type: Exec) {
-                    commandLine = ".venv/bin/python"
-                    args "-m", "coverage", coverageFormat, "--data-file=${testFilesDirectory}/.coverage.${taskName}", "--rcfile=${project.rootProject.file('pyproject.toml').absolutePath}", outputArg
+                    //commandLine = ".venv/bin/python"
+                    //args "-m", "coverage", coverageFormat, "--data-file=${testFilesDirectory}/.coverage.${taskName}", "--rcfile=${project.rootProject.file('pyproject.toml').absolutePath}", outputArg
+                    commandLine "docker", "run", "-v", "/Users/alex/code/airbyte/airbyte-connector-builder-server:/tmp", "--entrypoint", "python", "python:3.9-slim", "-m", "coverage", "coverageFormat", "--data-file=${testFilesDirectory}/.coverage.${taskName}", "--data-file=${testFilesDirectory}/.coverage.${taskName}"
+                    "--rcfile=${project.rootProject.file('pyproject.toml').absolutePath}"
                     dependsOn project.tasks.findByName("_${taskName}Coverage")
                     setIgnoreExitValue true
                     doLast {
@@ -140,38 +141,17 @@ class AirbytePythonDockerPlugin implements Plugin<Project> {
             setIgnoreExitValue true
         }
 
-
-        // attempt to install anything in requirements.txt. by convention this should only be dependencies whose source is located in the project.
-
-        if (project.file('requirements.txt').exists()) {
-            //FIXME: Handle this case
-            throw new GradleException("Unexpected")
-        } else if (project.file('setup.py').exists()) {
-            project.task("installLocalReqs", type: Exec) {
-                // FIXME: use pwd to get the path
-                commandLine "docker", "run", "-v", "/Users/alex/code/airbyte/airbyte-connector-builder-server:/tmp", "--entrypoint", "pip", "python:3.9-slim", "install", "-e", "/tmp"
-            }
-        } else {
-            throw new GradleException('Error: Python module lacks requirement.txt and setup.py')
-        }
-
-        project.task('installReqs', type: PythonTask, dependsOn: project.installLocalReqs) {
+        project.task('installReqs', type: Exec) {
+            /*
             module = "pip"
             command = "install .[main]"
             inputs.file('setup.py')
             outputs.file('build/installedreqs.txt')
+             */
+            commandLine "docker", "run", "-v", "/Users/alex/code/airbyte/airbyte-connector-builder-server:/tmp", "--entrypoint", "/bin/bash", "python:3.9-slim", "-c", "chmod +x /tmp/run.sh && /tmp/run.sh"
         }
 
-        project.task('installTestReqs', type: PythonTask, dependsOn: project.installReqs) {
-            module = "pip"
-            command = "install .[tests]"
-            inputs.file('setup.py')
-            outputs.file('build/installedtestreqs.txt')
-        }
-
-        HelpersDocker.addTestTaskIfTestFilesFound(project, 'unit_tests', 'unitTest', project.installTestReqs)
-
-        HelpersDocker.addTestTaskIfTestFilesFound(project, 'integration_tests', 'customIntegrationTests', project.installTestReqs)
+        HelpersDocker.addTestTaskIfTestFilesFound(project, 'integration_tests', 'customIntegrationTests', project.installReqs)
         if (!project.tasks.findByName('integrationTest')) {
             project.task('integrationTest')
         }
@@ -230,8 +210,7 @@ class AirbytePythonDockerPlugin implements Plugin<Project> {
 
         project.task('airbytePythonTest', type: DefaultTask) {
             dependsOn project.airbytePythonApply
-            dependsOn project.installTestReqs
-            dependsOn project.unitTest
+            dependsOn project.installReqs
         }
 
         // Add a task that allows cleaning up venvs to every python project
