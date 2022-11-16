@@ -10,6 +10,12 @@ This page guides you through the process of setting up the SurveyCTO source conn
 - Form ID `Unique Identifier for one of your forms`
 - Start Date `Start Date default`
 
+## How to setup a SurveyCTO Account
+- create the account
+- create your form
+- publish your form
+- give your user an API consumer permission to the existing role or create a user with that role and permission.
+
 ## Set up the SurveyCTO source connection
 1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
@@ -26,9 +32,10 @@ This page guides you through the process of setting up the SurveyCTO source conn
 
 The Commcare source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-- Full Refresh
-- Overwrite
-- Incremental
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* (Recommended)[ Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
 
@@ -39,4 +46,4 @@ The Commcare source connector supports the following streams:
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
-| :------ | :--- | :----------- | :------ |
+| 0.1.0   | 2022-11-16 | [19371](https://github.com/airbytehq/airbyte/pull/19371)   | SurveyCTO Source Connector |
