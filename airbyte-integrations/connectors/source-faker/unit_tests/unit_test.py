@@ -11,13 +11,17 @@ from source_faker import SourceFaker
 class MockLogger:
     def debug(a,b, **kwargs):
         return None
+
     def info(a,b, **kwargs):
         return None
+
     def exception(a,b,**kwargs):
         print(b)
         return None
 
+
 logger = MockLogger()
+
 
 def schemas_are_valid():
     source = SourceFaker()
@@ -28,6 +32,7 @@ def schemas_are_valid():
 
     for schema in schemas:
         jsonschema.Draft7Validator.check_schema(schema)
+
 
 def test_source_streams():
     source = SourceFaker()
@@ -103,7 +108,7 @@ def test_no_read_limit_hit():
             }
         ]
     )
-    state = { "users": { "id": 10 } }
+    state = {"users": {"id": 10}}
     iterator = source.read(logger, config, catalog, state)
 
     record_rows_count = 0
@@ -264,6 +269,3 @@ def test_ensure_no_purchases_without_users():
         state = {}
         iterator = source.read(logger, config, catalog, state)
         iterator.__next__()
-
-
-
