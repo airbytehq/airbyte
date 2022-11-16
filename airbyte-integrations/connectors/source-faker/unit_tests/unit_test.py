@@ -68,17 +68,21 @@ def test_read_small_random_data():
     state = {}
     iterator = source.read(logger, config, catalog, state)
 
+    estimate_row_count = 0
     record_rows_count = 0
     state_rows_count = 0
     latest_state = {}
     for row in iterator:
         print(row)
+        if row.type is Type.TRACE:
+            estimate_row_count = estimate_row_count + 1
         if row.type is Type.RECORD:
             record_rows_count = record_rows_count + 1
         if row.type is Type.STATE:
             state_rows_count = state_rows_count + 1
             latest_state = row
 
+    assert estimate_row_count == 1
     assert record_rows_count == 10
     assert state_rows_count == 1
     assert latest_state.state.data == {"users": {"id": 10, "seed": None}}
