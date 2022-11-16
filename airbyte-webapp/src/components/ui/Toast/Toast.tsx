@@ -30,15 +30,11 @@ const ICON_MAPPING = {
   [ToastType.INFO]: faExclamation,
 };
 
-function getIcon(toastType: ToastType) {
-  return ICON_MAPPING[toastType];
-}
-
 export const Toast: React.FC<ToastProps> = ({ type = ToastType.INFO, onAction, onClose, title, text }) => {
   return (
     <div className={classNames(styles.toastContainer, styles[type])}>
       <div className={classNames(styles.iconContainer)}>
-        <FontAwesomeIcon icon={getIcon(type)} className={styles.toastIcon} />
+        <FontAwesomeIcon icon={ICON_MAPPING[type]} className={styles.toastIcon} />
       </div>
       <div>
         <h5 className={styles.title}>{title}</h5>
