@@ -18,6 +18,11 @@ definitions:
   customers_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          request_parameters:
+            page: "{{ (next_page_token['next_page_token'] or 0) + 1 }}"
       paginator:
         type: DefaultPaginator
         url_base: "*ref(definitions.requester.url_base)"
@@ -27,9 +32,6 @@ definitions:
         page_size_option:
           inject_into: request_parameter
           field_name: per_page
-        page_token_option:
-          inject_into: request_parameter
-          field_name: page
     $options:
       name: "customers"
       primary_key: "id"
