@@ -26,6 +26,7 @@ import { DestinationOverviewPage } from "pages/destination/DestinationOverviewPa
 import { DestinationSettingsPage } from "pages/destination/DestinationSettingsPage";
 import OnboardingPage from "pages/OnboardingPage";
 import SourcesPage from "pages/SourcesPage";
+import { SpeakeasyRedirectPage } from "pages/SpeakeasyRedirectPage";
 import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
 import { setSegmentAnonymousId, useGetSegmentAnonymousId } from "utils/crossDomainUtils";
 import { storeUtmFromQuery } from "utils/utmStorage";
@@ -130,6 +131,7 @@ const MainViewRoutes = () => {
 
   return (
     <Routes>
+      <Route path={RoutePaths.SpeakeasyRedirect} element={<SpeakeasyRedirectPage />} />
       {[CloudRoutes.Login, CloudRoutes.Signup, CloudRoutes.FirebaseAction].map((r) => (
         <Route key={r} path={`${r}/*`} element={query.from ? <Navigate to={query.from} replace /> : <DefaultView />} />
       ))}

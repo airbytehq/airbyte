@@ -610,5 +610,7 @@
   "connectorBuilder.sliceLabel": "Slice",
   "connectorBuilder.connectorLogs": "Connector logs",
   "connectorBuilder.invalidYamlDownload": "Cannot download while YAML content is invalid.",
-  "connectorBuilder.invalidYamlTest": "Cannot test stream while YAML content is invalid."
+  "connectorBuilder.invalidYamlTest": "Cannot test stream while YAML content is invalid.",
+
+  "cloudApi.loginCallbackUrlError": "There was an error connecting to the API key portal. Please try again."
 }
