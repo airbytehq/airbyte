@@ -169,21 +169,21 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
       case "string" -> {
         if (schemaNode.hasNonNull("format")) {
           yield switch (schemaNode.get("format").asText()) {
-            case "date" -> "WellKnownTypes.json#definitions/Date";
+            case "date" -> JsonSchemaReferenceTypes.DATE_REFERENCE;
             // In these two cases, we default to the "with timezone" type, rather than "without timezone".
             // This matches existing behavior in normalization.
-            case "date-time" -> "WellKnownTypes.json#definitions/TimestampWithTimezone";
-            case "time" -> "WellKnownTypes.json#definitions/TimeWithTimezone";
+            case "date-time" -> JsonSchemaReferenceTypes.TIMESTAMP_WITH_TIMEZONE_REFERENCE;
+            case "time" -> JsonSchemaReferenceTypes.TIME_WITH_TIMEZONE_REFERENCE;
             // If we don't recognize the format, just use a plain string
-            default -> "WellKnownTypes.json#definitions/String";
+            default -> JsonSchemaReferenceTypes.STRING_REFERENCE;
           };
         } else {
-          yield "WellKnownTypes.json#definitions/String";
+          yield JsonSchemaReferenceTypes.STRING_REFERENCE;
         }
       }
-      case "integer" -> "WellKnownTypes.json#definitions/Integer";
-      case "number" -> "WellKnownTypes.json#definitions/Number";
-      case "boolean" -> "WellKnownTypes.json#definitions/Boolean";
+      case "integer" -> JsonSchemaReferenceTypes.INTEGER_REFERENCE;
+      case "number" -> JsonSchemaReferenceTypes.NUMBER_REFERENCE;
+      case "boolean" -> JsonSchemaReferenceTypes.BOOLEAN_REFERENCE;
       // This is impossible, because we'll only call this method on string/integer/number/boolean
       default -> throw new IllegalStateException("Somehow got non-primitive type: " + type + " for schema: " + schemaNode);
     };
