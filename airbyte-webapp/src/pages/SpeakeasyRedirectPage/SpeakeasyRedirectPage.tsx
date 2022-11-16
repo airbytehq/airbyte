@@ -35,12 +35,12 @@ const SpeakeasyLoginRedirect = () => {
 
   return (
     <Suspense fallback={<LoadingPage />}>
-      {redirectUrl ? <Navigate to={redirectUrl} /> : <CloudApiErrorview />}
+      {redirectUrl ? <Navigate to={redirectUrl} /> : <CloudApiErrorView />}
     </Suspense>
   );
 };
 
-const CloudApiErrorview = () => {
+const CloudApiErrorView = () => {
   const navigate = useNavigate();
   return (
     <ErrorOccurredView
@@ -70,7 +70,7 @@ export class SpeakeasyErrorBoundary extends React.Component<React.PropsWithChild
 
   render() {
     if (this.state.error) {
-      return <CloudApiErrorview />;
+      return <CloudApiErrorView />;
     }
     return this.props.children;
   }
