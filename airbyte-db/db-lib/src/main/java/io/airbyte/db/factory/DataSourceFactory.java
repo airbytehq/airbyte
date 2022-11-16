@@ -204,7 +204,6 @@ public class DataSourceFactory {
      */
     private static long getConnectionTimeoutMs(final Map<String, String> connectionProperties, String driverClassName) {
       // TODO: the usage of CONNECT_TIMEOUT is Postgres specific, may need to extend for other databases
-
       if (driverClassName.equals(DatabaseDriver.POSTGRESQL.getDriverClassName())) {
         final String pgPropertyConnectTimeout = CONNECT_TIMEOUT.getName();
         // If the PGProperty.CONNECT_TIMEOUT was set by the user, then take its value, if not take the
