@@ -2,10 +2,11 @@
 # for more information about how to configure these tests
 connector_image: airbyte/source-postgres:dev
 test_strictness_level: high
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "src/test-integration/resources/expected_spec.json"
-      config_path: "src/test-integration/resources/dummy_config.json"
+    tests:
+      - spec_path: "src/test-integration/resources/expected_spec.json"
+        config_path: "src/test-integration/resources/dummy_config.json"
   connection:
     bypass_reason: "Pending."
   discovery:
