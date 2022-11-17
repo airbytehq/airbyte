@@ -23,8 +23,8 @@ pip install 'coverage[toml]==6.3.1'
 # FIXME: isort formats python files differently from gradlew format
 #python -m isort --settings-file=pyproject.toml ./
 #python -m isort --settings-file=pyproject.toml --diff --quiet ./
-python -m black --config pyproject.toml ./
-python -m black --config pyproject.toml ./ --diff --quiet
-python -m pflake8 --config pyproject.toml ./
-python -m pflake8 --config pyproject.toml ./ --diff --quiet
-python -m mypy --config pyproject.toml ./
+#python -m black --config pyproject.toml ./
+#python -m black --config pyproject.toml ./ --diff --quiet
+#python -m pflake8 --config pyproject.toml ./
+#python -m pflake8 --config pyproject.toml ./ --diff --quiet
+#python -m mypy --config pyproject.toml ./
