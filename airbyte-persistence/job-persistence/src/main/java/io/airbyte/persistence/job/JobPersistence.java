@@ -5,6 +5,7 @@
 package io.airbyte.persistence.job;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.JobConfig;
@@ -29,14 +30,15 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 /**
- * TODO Introduce a locking mechanism so that no DB operation is allowed when automatic migration is
- * running
+ * General interface methods for persistence to the Jobs database. This database is separate from
+ * the config database as job-related tables has an order of magnitude higher load and scale
+ * differently from the config tables.
  */
 public interface JobPersistence {
 
-  List<SyncStats> getSyncStats(Long attemptId) throws IOException;
+  List<SyncStats> getSyncStats(long jobId, int attemptNumber) throws IOException;
 
-  List<NormalizationSummary> getNormalizationSummary(Long attemptId) throws IOException;
+  List<NormalizationSummary> getNormalizationSummary(long jobId, int attemptNumber) throws IOException;
 
   Job getJob(long jobId) throws IOException;
 
@@ -262,6 +264,11 @@ public interface JobPersistence {
   void setAirbyteProtocolVersionMin(Version version) throws IOException;
 
   /**
+   * Get the current Airbyte Protocol Version range if defined
+   */
+  Optional<AirbyteProtocolVersionRange> getCurrentProtocolVersionRange() throws IOException;
+
+  /**
    * Returns a deployment UUID.
    */
   Optional<UUID> getDeployment() throws IOException;
@@ -278,8 +285,6 @@ public interface JobPersistence {
    * table schemas to the associated streams of records that is being exported.
    */
   Map<JobsDatabaseSchema, Stream<JsonNode>> exportDatabase() throws IOException;
-
-  Map<String, Stream<JsonNode>> dump() throws IOException;
 
   /**
    * Import all SQL tables from streams of JsonNode objects.
@@ -304,22 +309,6 @@ public interface JobPersistence {
    * Set that the secret migration has been performed.
    */
   void setSecretMigrationDone() throws IOException;
-
-  /**
-   * Check if the scheduler has been migrated to temporal.
-   *
-   * TODO (https://github.com/airbytehq/airbyte/issues/12823): remove this method after the next
-   * "major" version bump as it will no longer be needed.
-   */
-  boolean isSchedulerMigrated() throws IOException;
-
-  /**
-   * Set that the scheduler migration has been performed.
-   *
-   * TODO (https://github.com/airbytehq/airbyte/issues/12823): remove this method after the next
-   * "major" version bump as it will no longer be needed.
-   */
-  void setSchedulerMigrationDone() throws IOException;
 
   List<AttemptNormalizationStatus> getAttemptNormalizationStatusesForJob(final Long jobId) throws IOException;
 

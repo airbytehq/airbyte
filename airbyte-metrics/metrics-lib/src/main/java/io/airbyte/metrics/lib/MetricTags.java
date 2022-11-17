@@ -22,17 +22,18 @@ public class MetricTags {
   public static final String WORKFLOW_TYPE = "workflow_type";
   public static final String ATTEMPT_QUEUE = "attempt_queue";
   public static final String GEOGRAPHY = "geography";
+  public static final String UNKNOWN = "unknown";
 
   public static String getReleaseStage(final ReleaseStage stage) {
-    return stage.getLiteral();
+    return stage != null ? stage.getLiteral() : UNKNOWN;
   }
 
   public static String getFailureOrigin(final FailureOrigin origin) {
-    return origin.value();
+    return origin != null ? origin.value() : UNKNOWN;
   }
 
   public static String getJobStatus(final JobStatus status) {
-    return status.getLiteral();
+    return status != null ? status.getLiteral() : UNKNOWN;
   }
 
 }

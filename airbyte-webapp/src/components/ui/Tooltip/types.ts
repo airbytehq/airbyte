@@ -6,6 +6,7 @@ export type TooltipTheme = "dark" | "light";
 export interface TooltipProps {
   control: React.ReactNode;
   className?: string;
+  containerClassName?: string;
   disabled?: boolean;
   cursor?: TooltipCursor;
   theme?: TooltipTheme;

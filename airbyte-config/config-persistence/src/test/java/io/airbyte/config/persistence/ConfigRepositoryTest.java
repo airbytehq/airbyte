@@ -56,14 +56,17 @@ class ConfigRepositoryTest {
   private static final UUID DESTINATION_DEFINITION_ID = UUID.randomUUID();
 
   private ConfigPersistence configPersistence;
+  private StandardSyncPersistence standardSyncPersistence;
   private ConfigRepository configRepository;
   private Database database;
 
   @BeforeEach
   void setup() {
     configPersistence = mock(ConfigPersistence.class);
+    standardSyncPersistence = mock(StandardSyncPersistence.class);
     database = mock(Database.class);
-    configRepository = spy(new ConfigRepository(configPersistence, database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database))));
+    configRepository = spy(new ConfigRepository(configPersistence, database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
+        standardSyncPersistence));
   }
 
   @AfterEach
@@ -287,7 +290,7 @@ class ConfigRepositoryTest {
     final StandardSync syncToStay = new StandardSync().withConnectionId(UUID.randomUUID()).withSourceId(sourceConnectionToStay.getSourceId())
         .withDestinationId(UUID.randomUUID());
 
-    when(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class)).thenReturn(List.of(syncToDelete, syncToStay));
+    when(standardSyncPersistence.listStandardSync()).thenReturn(List.of(syncToDelete, syncToStay));
 
     configRepository.deleteSourceDefinitionAndAssociations(sourceDefToDelete.getSourceDefinitionId());
 
@@ -421,7 +424,7 @@ class ConfigRepositoryTest {
     final StandardSync syncToStay = new StandardSync().withConnectionId(UUID.randomUUID()).withDestinationId(destConnectionToStay.getDestinationId())
         .withSourceId(UUID.randomUUID());
 
-    when(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class)).thenReturn(List.of(syncToDelete, syncToStay));
+    when(standardSyncPersistence.listStandardSync()).thenReturn(List.of(syncToDelete, syncToStay));
 
     configRepository.deleteDestinationDefinitionAndAssociations(destDefToDelete.getDestinationDefinitionId());
 
@@ -445,7 +448,7 @@ class ConfigRepositoryTest {
     final UUID connectionId = UUID.randomUUID();
     configRepository.deleteStandardSyncDefinition(connectionId);
 
-    verify(configPersistence).deleteConfig(ConfigSchema.STANDARD_SYNC, connectionId.toString());
+    verify(standardSyncPersistence).deleteStandardSync(connectionId);
   }
 
   @Test

@@ -1,11 +1,13 @@
-@use "../../../scss/colors";
-@use "../../../scss/variables" as vars;
+@use "scss/colors";
+@use "scss/variables";
+@use "scss/mixins";
 
 .container {
+  @include mixins.shadow;
+
   width: auto;
   background: colors.$white;
   border-radius: 10px;
-  box-shadow: 0 2px 4px colors.$cardShadowColor;
 
   &.fullWidth {
     width: 100%;
@@ -17,9 +19,9 @@
 }
 
 .title {
-  padding: 25px 25px 22px;
+  padding: variables.$spacing-xl;
   color: colors.$dark-blue;
-  border-bottom: colors.$grey-100 vars.$border-thin solid;
+  border-bottom: colors.$grey-100 variables.$border-thin solid;
   font-weight: 600;
   letter-spacing: 0.008em;
   border-top-left-radius: 10px;

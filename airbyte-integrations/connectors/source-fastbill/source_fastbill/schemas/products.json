@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "ARTICLE_ID": {
+      "type": "string"
+    },
+    "ARTICLE_NUMBER": {
+      "type": "string"
+    },
+    "TITLE": {
+      "type": "string"
+    },
+    "DESCRIPTION": {
+      "type": "string",
+      "empty": true
+    },
+    "UNIT": {
+      "type": "string"
+    },
+    "UNIT_PRICE": {
+      "type": "string"
+    },
+    "CURRENCY_CODE": {
+      "type": "string"
+    },
+    "VAT_PERCENT": {
+      "type": "string"
+    },
+    "IS_GROSS": {
+      "type": "number"
+    },
+    "TAGS": {
+      "type": ["string", "null"],
+      "empty": true
+    }
+  }
+}

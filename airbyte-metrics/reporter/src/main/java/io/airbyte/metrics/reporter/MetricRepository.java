@@ -9,9 +9,9 @@ import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.count;
+import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.SQLDataType.VARCHAR;
 
-import io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.AttemptStatus;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
@@ -20,28 +20,48 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.jooq.DSLContext;
+import org.jooq.Field;
+import org.jooq.impl.DSL;
 
 @Singleton
 class MetricRepository {
 
   private final DSLContext ctx;
 
+  // We have to report gauge metric with value 0 if they are not showing up in the DB,
+  // otherwise datadog will use previous reported value.
+  // Another option we didn't use here is to build this into SQL query - it will lead SQL much less
+  // readable while not decreasing any complexity.
+  private final static List<String> REGISTERED_ATTEMPT_QUEUE = List.of("SYNC", "AWS_PARIS_SYNC", "null");
+  private final static List<String> REGISTERED_GEOGRAPHY = List.of("US", "AUTO", "EU");
+
   MetricRepository(final DSLContext ctx) {
     this.ctx = ctx;
   }
 
   Map<String, Integer> numberOfPendingJobsByGeography() {
-    var result = ctx.select(CONNECTION.GEOGRAPHY.cast(String.class), count(asterisk()).as("count"))
+    String geographyResultAlias = "geography";
+    String countResultAlias = "result";
+    var result = ctx.select(CONNECTION.GEOGRAPHY.cast(String.class).as(geographyResultAlias), count(asterisk()).as(countResultAlias))
         .from(JOBS)
         .join(CONNECTION)
         .on(CONNECTION.ID.cast(VARCHAR(255)).eq(JOBS.SCOPE))
         .where(JOBS.STATUS.eq(JobStatus.pending))
         .groupBy(CONNECTION.GEOGRAPHY);
-    return (Map<String, Integer>) result.fetchMap(0, 1);
+    Field<String> geographyResultField = DSL.field(name(geographyResultAlias), String.class);
+    Field<Integer> countResultField = DSL.field(name(countResultAlias), Integer.class);
+    Map<String, Integer> queriedMap = result.fetchMap(geographyResultField, countResultField);
+    for (final String potentialGeography : REGISTERED_GEOGRAPHY) {
+      if (!queriedMap.containsKey(potentialGeography)) {
+        queriedMap.put(potentialGeography, 0);
+      }
+    }
+    return queriedMap;
   }
 
   Map<String, Integer> numberOfRunningJobsByTaskQueue() {
-    var result = ctx.select(ATTEMPTS.PROCESSING_TASK_QUEUE, count(asterisk()).as("count"))
+    String countFieldName = "count";
+    var result = ctx.select(ATTEMPTS.PROCESSING_TASK_QUEUE, count(asterisk()).as(countFieldName))
         .from(JOBS)
         .join(CONNECTION)
         .on(CONNECTION.ID.cast(VARCHAR(255)).eq(JOBS.SCOPE))
@@ -50,8 +70,15 @@ class MetricRepository {
         .where(JOBS.STATUS.eq(JobStatus.running).and(CONNECTION.STATUS.eq(StatusType.active)))
         .and(ATTEMPTS.STATUS.eq(AttemptStatus.running))
         .groupBy(ATTEMPTS.PROCESSING_TASK_QUEUE);
-    return (Map<String, Integer>) result.fetchMap(0, 1);
 
+    Field<Integer> countResultField = DSL.field(name(countFieldName), Integer.class);
+    Map<String, Integer> queriedMap = result.fetchMap(ATTEMPTS.PROCESSING_TASK_QUEUE, countResultField);
+    for (final String potentialAttemptQueue : REGISTERED_ATTEMPT_QUEUE) {
+      if (!queriedMap.containsKey(potentialAttemptQueue)) {
+        queriedMap.put(potentialAttemptQueue, 0);
+      }
+    }
+    return queriedMap;
   }
 
   // This is a rare case and not likely to be related to data planes; So we will monitor them as a
@@ -65,7 +92,7 @@ class MetricRepository {
         .fetchOne(0, int.class);
   }
 
-  Map<GeographyType, Double> oldestPendingJobAgeSecsByGeography() {
+  Map<String, Double> oldestPendingJobAgeSecsByGeography() {
     final var query =
         """
         SELECT cast(connection.geography as varchar) AS geography, MAX(EXTRACT(EPOCH FROM (current_timestamp - jobs.created_at))) AS run_duration_seconds
@@ -76,7 +103,15 @@ class MetricRepository {
         GROUP BY geography;
         """;
     final var result = ctx.fetch(query);
-    return (Map<GeographyType, Double>) result.intoMap(0, 1);
+    Field<String> geographyResultField = DSL.field(name("geography"), String.class);
+    Field<Double> runDurationSecondsField = DSL.field(name("run_duration_seconds"), Double.class);
+    Map<String, Double> queriedMap = result.intoMap(geographyResultField, runDurationSecondsField);
+    for (final String potentialGeography : REGISTERED_GEOGRAPHY) {
+      if (!queriedMap.containsKey(potentialGeography)) {
+        queriedMap.put(potentialGeography, 0.0);
+      }
+    }
+    return queriedMap;
   }
 
   Map<String, Double> oldestRunningJobAgeSecsByTaskQueue() {
@@ -90,7 +125,15 @@ class MetricRepository {
         GROUP BY task_queue;
         """;
     final var result = ctx.fetch(query);
-    return (Map<String, Double>) result.intoMap(0, 1);
+    Field<String> taskQueueResultField = DSL.field(name("task_queue"), String.class);
+    Field<Double> runDurationSecondsField = DSL.field(name("run_duration_seconds"), Double.class);
+    Map<String, Double> queriedMap = result.intoMap(taskQueueResultField, runDurationSecondsField);
+    for (final String potentialAttemptQueue : REGISTERED_ATTEMPT_QUEUE) {
+      if (!queriedMap.containsKey(potentialAttemptQueue)) {
+        queriedMap.put(potentialAttemptQueue, 0.0);
+      }
+    }
+    return queriedMap;
   }
 
   List<Long> numberOfActiveConnPerWorkspace() {

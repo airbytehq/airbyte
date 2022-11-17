@@ -9,8 +9,6 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG_FETCH_EVENT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_OAUTH_PARAMETER;
-import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
-import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OPERATION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.OPERATION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.STATE;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
@@ -42,14 +40,12 @@ import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
-import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
 import io.airbyte.config.WorkspaceServiceAccount;
-import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
@@ -68,6 +64,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.NotImplementedException;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.Record;
@@ -123,7 +120,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     } else if (configType == ConfigSchema.STANDARD_SYNC_OPERATION) {
       return (T) getStandardSyncOperation(configId);
     } else if (configType == ConfigSchema.STANDARD_SYNC) {
-      return (T) getStandardSync(configId);
+      throw buildUseStandardSyncPersistenceException();
     } else if (configType == ConfigSchema.STANDARD_SYNC_STATE) {
       return (T) getStandardSyncState(configId);
     } else if (configType == ConfigSchema.ACTOR_CATALOG) {
@@ -135,6 +132,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     } else {
       throw new IllegalArgumentException(UNKNOWN_CONFIG_TYPE + configType);
     }
+  }
+
+  private NotImplementedException buildUseStandardSyncPersistenceException() {
+    return new NotImplementedException("Use StandardSyncPersistence instead");
   }
 
   private StandardWorkspace getStandardWorkspace(final String configId) throws IOException, ConfigNotFoundException {
@@ -193,12 +194,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     return result.get(0).getConfig();
   }
 
-  private StandardSync getStandardSync(final String configId) throws IOException, ConfigNotFoundException {
-    final List<ConfigWithMetadata<StandardSync>> result = listStandardSyncWithMetadata(Optional.of(UUID.fromString(configId)));
-    validate(configId, result, ConfigSchema.STANDARD_SYNC);
-    return result.get(0).getConfig();
-  }
-
   private StandardSyncState getStandardSyncState(final String configId) throws IOException, ConfigNotFoundException {
     final List<ConfigWithMetadata<StandardSyncState>> result = listStandardSyncStateWithMetadata(Optional.of(UUID.fromString(configId)));
     validate(configId, result, ConfigSchema.STANDARD_SYNC_STATE);
@@ -215,20 +210,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     final List<ConfigWithMetadata<ActorCatalogFetchEvent>> result = listActorCatalogFetchEventWithMetadata(Optional.of(UUID.fromString(configId)));
     validate(configId, result, ConfigSchema.ACTOR_CATALOG_FETCH_EVENT);
     return result.get(0).getConfig();
-  }
-
-  private List<UUID> connectionOperationIds(final UUID connectionId) throws IOException {
-    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
-        .from(CONNECTION_OPERATION)
-        .where(CONNECTION_OPERATION.CONNECTION_ID.eq(connectionId))
-        .fetch());
-
-    final List<UUID> ids = new ArrayList<>();
-    for (final Record record : result) {
-      ids.add(record.get(CONNECTION_OPERATION.OPERATION_ID));
-    }
-
-    return ids;
   }
 
   private <T> void validate(final String configId, final List<ConfigWithMetadata<T>> result, final AirbyteConfig airbyteConfig)
@@ -276,7 +257,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     } else if (configType == ConfigSchema.STANDARD_SYNC_OPERATION) {
       return (ConfigWithMetadata<T>) validateAndReturn(configId, listStandardSyncOperationWithMetadata(configIdOpt), configType);
     } else if (configType == ConfigSchema.STANDARD_SYNC) {
-      return (ConfigWithMetadata<T>) validateAndReturn(configId, listStandardSyncWithMetadata(configIdOpt), configType);
+      throw buildUseStandardSyncPersistenceException();
     } else if (configType == ConfigSchema.STANDARD_SYNC_STATE) {
       return (ConfigWithMetadata<T>) validateAndReturn(configId, listStandardSyncStateWithMetadata(configIdOpt), configType);
     } else if (configType == ConfigSchema.ACTOR_CATALOG) {
@@ -310,7 +291,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     } else if (configType == ConfigSchema.STANDARD_SYNC_OPERATION) {
       listStandardSyncOperationWithMetadata().forEach(c -> configWithMetadata.add((ConfigWithMetadata<T>) c));
     } else if (configType == ConfigSchema.STANDARD_SYNC) {
-      listStandardSyncWithMetadata().forEach(c -> configWithMetadata.add((ConfigWithMetadata<T>) c));
+      throw buildUseStandardSyncPersistenceException();
     } else if (configType == ConfigSchema.STANDARD_SYNC_STATE) {
       listStandardSyncStateWithMetadata().forEach(c -> configWithMetadata.add((ConfigWithMetadata<T>) c));
     } else if (configType == ConfigSchema.ACTOR_CATALOG) {
@@ -579,35 +560,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .withTombstone(record.get(OPERATION.TOMBSTONE));
   }
 
-  private List<ConfigWithMetadata<StandardSync>> listStandardSyncWithMetadata() throws IOException {
-    return listStandardSyncWithMetadata(Optional.empty());
-  }
-
-  private List<ConfigWithMetadata<StandardSync>> listStandardSyncWithMetadata(final Optional<UUID> configId) throws IOException {
-    final Result<Record> result = database.query(ctx -> {
-      final SelectJoinStep<Record> query = ctx.select(asterisk()).from(CONNECTION);
-      if (configId.isPresent()) {
-        return query.where(CONNECTION.ID.eq(configId.get())).fetch();
-      }
-      return query.fetch();
-    });
-
-    final List<ConfigWithMetadata<StandardSync>> standardSyncs = new ArrayList<>();
-    for (final Record record : result) {
-      final StandardSync standardSync = DbConverter.buildStandardSync(record, connectionOperationIds(record.get(CONNECTION.ID)));
-      if (ScheduleHelpers.isScheduleTypeMismatch(standardSync)) {
-        throw new RuntimeException("unexpected schedule type mismatch");
-      }
-      standardSyncs.add(new ConfigWithMetadata<>(
-          record.get(CONNECTION.ID).toString(),
-          ConfigSchema.STANDARD_SYNC.name(),
-          record.get(CONNECTION.CREATED_AT).toInstant(),
-          record.get(CONNECTION.UPDATED_AT).toInstant(),
-          standardSync));
-    }
-    return standardSyncs;
-  }
-
   private List<ConfigWithMetadata<StandardSyncState>> listStandardSyncStateWithMetadata() throws IOException {
     return listStandardSyncStateWithMetadata(Optional.empty());
   }
@@ -717,7 +669,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     } else if (configType == ConfigSchema.STANDARD_SYNC_OPERATION) {
       writeStandardSyncOperation(Collections.singletonList((StandardSyncOperation) config));
     } else if (configType == ConfigSchema.STANDARD_SYNC) {
-      writeStandardSync(Collections.singletonList((StandardSync) config));
+      throw buildUseStandardSyncPersistenceException();
     } else if (configType == ConfigSchema.STANDARD_SYNC_STATE) {
       writeStandardSyncState(Collections.singletonList((StandardSyncState) config));
     } else if (configType == ConfigSchema.ACTOR_CATALOG) {
@@ -1059,112 +1011,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     });
   }
 
-  private void writeStandardSync(final List<StandardSync> configs) throws IOException {
-    database.transaction(ctx -> {
-      writeStandardSync(configs, ctx);
-      return null;
-    });
-  }
-
-  private void writeStandardSync(final List<StandardSync> configs, final DSLContext ctx) {
-    final OffsetDateTime timestamp = OffsetDateTime.now();
-    configs.forEach((standardSync) -> {
-      final boolean isExistingConfig = ctx.fetchExists(select()
-          .from(CONNECTION)
-          .where(CONNECTION.ID.eq(standardSync.getConnectionId())));
-
-      if (ScheduleHelpers.isScheduleTypeMismatch(standardSync)) {
-        throw new RuntimeException("unexpected schedule type mismatch");
-      }
-
-      if (isExistingConfig) {
-        ctx.update(CONNECTION)
-            .set(CONNECTION.ID, standardSync.getConnectionId())
-            .set(CONNECTION.NAMESPACE_DEFINITION, Enums.toEnum(standardSync.getNamespaceDefinition().value(),
-                io.airbyte.db.instance.configs.jooq.generated.enums.NamespaceDefinitionType.class).orElseThrow())
-            .set(CONNECTION.NAMESPACE_FORMAT, standardSync.getNamespaceFormat())
-            .set(CONNECTION.PREFIX, standardSync.getPrefix())
-            .set(CONNECTION.SOURCE_ID, standardSync.getSourceId())
-            .set(CONNECTION.DESTINATION_ID, standardSync.getDestinationId())
-            .set(CONNECTION.NAME, standardSync.getName())
-            .set(CONNECTION.CATALOG, JSONB.valueOf(Jsons.serialize(standardSync.getCatalog())))
-            .set(CONNECTION.STATUS, standardSync.getStatus() == null ? null
-                : Enums.toEnum(standardSync.getStatus().value(),
-                    io.airbyte.db.instance.configs.jooq.generated.enums.StatusType.class).orElseThrow())
-            .set(CONNECTION.SCHEDULE, JSONB.valueOf(Jsons.serialize(standardSync.getSchedule())))
-            .set(CONNECTION.MANUAL, standardSync.getManual())
-            .set(CONNECTION.SCHEDULE_TYPE,
-                standardSync.getScheduleType() == null ? null
-                    : Enums.toEnum(standardSync.getScheduleType().value(),
-                        io.airbyte.db.instance.configs.jooq.generated.enums.ScheduleType.class)
-                        .orElseThrow())
-            .set(CONNECTION.SCHEDULE_DATA, JSONB.valueOf(Jsons.serialize(standardSync.getScheduleData())))
-            .set(CONNECTION.RESOURCE_REQUIREMENTS,
-                JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
-            .set(CONNECTION.UPDATED_AT, timestamp)
-            .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
-            .set(CONNECTION.BREAKING_CHANGE, standardSync.getBreakingChange())
-            .set(CONNECTION.GEOGRAPHY, Enums.toEnum(standardSync.getGeography().value(),
-                io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType.class).orElseThrow())
-            .where(CONNECTION.ID.eq(standardSync.getConnectionId()))
-            .execute();
-
-        ctx.deleteFrom(CONNECTION_OPERATION)
-            .where(CONNECTION_OPERATION.CONNECTION_ID.eq(standardSync.getConnectionId()))
-            .execute();
-        for (final UUID operationIdFromStandardSync : standardSync.getOperationIds()) {
-          ctx.insertInto(CONNECTION_OPERATION)
-              .set(CONNECTION_OPERATION.ID, UUID.randomUUID())
-              .set(CONNECTION_OPERATION.CONNECTION_ID, standardSync.getConnectionId())
-              .set(CONNECTION_OPERATION.OPERATION_ID, operationIdFromStandardSync)
-              .set(CONNECTION_OPERATION.CREATED_AT, timestamp)
-              .set(CONNECTION_OPERATION.UPDATED_AT, timestamp)
-              .execute();
-        }
-      } else {
-        ctx.insertInto(CONNECTION)
-            .set(CONNECTION.ID, standardSync.getConnectionId())
-            .set(CONNECTION.NAMESPACE_DEFINITION, Enums.toEnum(standardSync.getNamespaceDefinition().value(),
-                io.airbyte.db.instance.configs.jooq.generated.enums.NamespaceDefinitionType.class).orElseThrow())
-            .set(CONNECTION.NAMESPACE_FORMAT, standardSync.getNamespaceFormat())
-            .set(CONNECTION.PREFIX, standardSync.getPrefix())
-            .set(CONNECTION.SOURCE_ID, standardSync.getSourceId())
-            .set(CONNECTION.DESTINATION_ID, standardSync.getDestinationId())
-            .set(CONNECTION.NAME, standardSync.getName())
-            .set(CONNECTION.CATALOG, JSONB.valueOf(Jsons.serialize(standardSync.getCatalog())))
-            .set(CONNECTION.STATUS, standardSync.getStatus() == null ? null
-                : Enums.toEnum(standardSync.getStatus().value(),
-                    io.airbyte.db.instance.configs.jooq.generated.enums.StatusType.class).orElseThrow())
-            .set(CONNECTION.SCHEDULE, JSONB.valueOf(Jsons.serialize(standardSync.getSchedule())))
-            .set(CONNECTION.MANUAL, standardSync.getManual())
-            .set(CONNECTION.SCHEDULE_TYPE,
-                standardSync.getScheduleType() == null ? null
-                    : Enums.toEnum(standardSync.getScheduleType().value(),
-                        io.airbyte.db.instance.configs.jooq.generated.enums.ScheduleType.class)
-                        .orElseThrow())
-            .set(CONNECTION.SCHEDULE_DATA, JSONB.valueOf(Jsons.serialize(standardSync.getScheduleData())))
-            .set(CONNECTION.RESOURCE_REQUIREMENTS,
-                JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
-            .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
-            .set(CONNECTION.GEOGRAPHY, Enums.toEnum(standardSync.getGeography().value(),
-                io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType.class).orElseThrow())
-            .set(CONNECTION.BREAKING_CHANGE, standardSync.getBreakingChange())
-            .set(CONNECTION.CREATED_AT, timestamp)
-            .set(CONNECTION.UPDATED_AT, timestamp)
-            .execute();
-        for (final UUID operationIdFromStandardSync : standardSync.getOperationIds()) {
-          ctx.insertInto(CONNECTION_OPERATION)
-              .set(CONNECTION_OPERATION.ID, UUID.randomUUID())
-              .set(CONNECTION_OPERATION.CONNECTION_ID, standardSync.getConnectionId())
-              .set(CONNECTION_OPERATION.OPERATION_ID, operationIdFromStandardSync)
-              .set(CONNECTION_OPERATION.CREATED_AT, timestamp)
-              .set(CONNECTION_OPERATION.UPDATED_AT, timestamp)
-              .execute();
-        }
-      }
-    });
-  }
-
   private void writeStandardSyncState(final List<StandardSyncState> configs) throws IOException {
     database.transaction(ctx -> {
       writeStandardSyncState(configs, ctx);
@@ -1287,7 +1133,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     } else if (configType == ConfigSchema.STANDARD_SYNC_OPERATION) {
       writeStandardSyncOperation(configs.values().stream().map(c -> (StandardSyncOperation) c).collect(Collectors.toList()));
     } else if (configType == ConfigSchema.STANDARD_SYNC) {
-      writeStandardSync(configs.values().stream().map(c -> (StandardSync) c).collect(Collectors.toList()));
+      throw buildUseStandardSyncPersistenceException();
     } else if (configType == ConfigSchema.STANDARD_SYNC_STATE) {
       writeStandardSyncState(configs.values().stream().map(c -> (StandardSyncState) c).collect(Collectors.toList()));
     } else if (configType == ConfigSchema.ACTOR_CATALOG) {
@@ -1320,7 +1166,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     } else if (configType == ConfigSchema.STANDARD_SYNC_OPERATION) {
       deleteConfig(OPERATION, OPERATION.ID, UUID.fromString(configId));
     } else if (configType == ConfigSchema.STANDARD_SYNC) {
-      deleteStandardSync(configId);
+      throw buildUseStandardSyncPersistenceException();
     } else if (configType == ConfigSchema.STANDARD_SYNC_STATE) {
       deleteConfig(STATE, STATE.CONNECTION_ID, UUID.fromString(configId));
     } else if (configType == ConfigSchema.ACTOR_CATALOG) {
@@ -1337,32 +1183,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   private <T extends Record> void deleteConfig(final TableImpl<T> table, final TableField<T, UUID> keyColumn, final UUID configId)
       throws IOException {
     database.transaction(ctx -> {
-      deleteConfig(table, keyColumn, configId, ctx);
-      return null;
-    });
-  }
-
-  private <T extends Record> void deleteConfig(final TableImpl<T> table,
-                                               final TableField<T, UUID> keyColumn,
-                                               final UUID configId,
-                                               final DSLContext ctx) {
-    final boolean isExistingConfig = ctx.fetchExists(select()
-        .from(table)
-        .where(keyColumn.eq(configId)));
-
-    if (isExistingConfig) {
-      ctx.deleteFrom(table)
-          .where(keyColumn.eq(configId))
-          .execute();
-    }
-  }
-
-  private void deleteStandardSync(final String configId) throws IOException {
-    database.transaction(ctx -> {
-      final UUID connectionId = UUID.fromString(configId);
-      deleteConfig(CONNECTION_OPERATION, CONNECTION_OPERATION.CONNECTION_ID, connectionId, ctx);
-      deleteConfig(STATE, STATE.CONNECTION_ID, connectionId, ctx);
-      deleteConfig(CONNECTION, CONNECTION.ID, connectionId, ctx);
+      PersistenceHelpers.deleteConfig(table, keyColumn, configId, ctx);
       return null;
     });
   }

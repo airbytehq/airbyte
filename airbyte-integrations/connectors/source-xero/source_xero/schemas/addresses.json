@@ -1,0 +1,36 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "Region": {
+      "type": ["null", "string"]
+    },
+    "AddressLine1": {
+      "type": ["null", "string"]
+    },
+    "AddressLine2": {
+      "type": ["null", "string"]
+    },
+    "AddressLine3": {
+      "type": ["null", "string"]
+    },
+    "AddressLine4": {
+      "type": ["null", "string"]
+    },
+    "AttentionTo": {
+      "type": ["null", "string"]
+    },
+    "City": {
+      "type": ["null", "string"]
+    },
+    "PostalCode": {
+      "type": ["null", "string"]
+    },
+    "Country": {
+      "type": ["null", "string"]
+    },
+    "AddressType": {
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true
+}

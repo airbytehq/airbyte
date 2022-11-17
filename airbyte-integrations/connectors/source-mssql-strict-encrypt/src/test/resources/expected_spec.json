@@ -147,6 +147,15 @@
                 "enum": ["Snapshot", "Read Committed"],
                 "description": "Existing data in the database are synced through an initial snapshot. This parameter controls the isolation level that will be used during the initial snapshotting. If you choose the \"Snapshot\" level, you must enable the <a href=\"https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server\">snapshot isolation mode</a> on the database.",
                 "order": 2
+              },
+              "initial_waiting_seconds": {
+                "type": "integer",
+                "title": "Initial Waiting Time in Seconds (Advanced)",
+                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\">initial waiting time</a>.",
+                "default": 300,
+                "min": 120,
+                "max": 1200,
+                "order": 3
               }
             }
           }
