@@ -4,17 +4,17 @@
 
 To deploy Airbyte with Restack:
 
-  - [Sign up for a Restack account](#sign-up-for-a-restack-account)
-  - [Add AWS credentials with AdministratorAccess](#add-aws-credentials-with-administratoraccess)
-  - [One-click cluster creation with Restack](#one-click-cluster-creation-with-restack)
-  - [Deploy Airbyte on Restack](#deploy-airbyte-on-restack)
-  - [Start using Airbyte](#start-using-airbyte)
-  - [Deploy multiple instances of Airbyte](#deploy-multiple-instances-of-airbyte)
+  - [Sign up for a Restack account](#sign-up-for-a-restack-account).
+  - [Add AWS credentials with AdministratorAccess](#add-aws-credentials-with-administratoraccess).
+  - [One-click cluster creation with Restack](#one-click-cluster-creation-with-restack).
+  - [Deploy Airbyte on Restack](#deploy-airbyte-on-restack).
+  - [Start using Airbyte](#start-using-airbyte).
+  - [Deploy multiple instances of Airbyte](#deploy-multiple-instances-of-airbyte).
 
 ## Sign up for a Restack account
 
 To Sign up for a Restack account, visit [www.restack.io/signup](https://www.restack.io/signup). You can sign up with your corporate email address or your GitHub profile. You do not need a credit card to sign up.
-If you already have an account, go ahead and login to Restack at [www.restack.io/login](https://www.restack.io/login)
+If you already have an account, go ahead and login to Restack at [www.restack.io/login](https://www.restack.io/login).
 
 ## Add AWS credentials with AdministratorAccess
 
@@ -51,9 +51,9 @@ Any application you deploy in your cluster will be accessible via a free **resta
 
 ## Deploy Airbyte on Restack
 1. Click *Add application* from the Cluster description or go to the Applications tab in the left hand side navigation.
-2. Click *Airbyte*
+2. Click *Airbyte*.
 3. Select the cluster you have already provisioned.
-4. Click *add application*
+4. Click *Add application*.
 
 ## Start using Airbyte
 Airbyte will be deployed on your cluster and you can access it using the link under the *URL* tab. 
