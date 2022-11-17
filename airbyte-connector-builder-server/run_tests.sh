@@ -9,7 +9,7 @@ pip install -e '.[tests]'
 python -m coverage run -m pytest unit_tests -c pytest.ini
 python -m coverage run -m pytest integration_tests -c pytest.ini
 
-# Pasted from
+# Pasted from https://github.com/airbytehq/airbyte/blob/master/buildSrc/src/main/groovy/airbyte-python.gradle#L85-L96
 pip install 'mccabe==0.6.1'
 pip install 'flake8==4.0.1'
 pip install 'pyproject-flake8==0.0.1a2'
