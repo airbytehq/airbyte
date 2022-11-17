@@ -20,6 +20,7 @@ pip install 'pytest==6.1.2'
 pip install 'coverage[toml]==6.3.1'
 
 # Format and static analysis
+# FIXME: isort formats python files differently from gradlew format
 #python -m isort --settings-file=pyproject.toml ./
 #python -m isort --settings-file=pyproject.toml --diff --quiet ./
 python -m black --config pyproject.toml ./
