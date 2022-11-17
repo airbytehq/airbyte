@@ -1,10 +1,12 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-import responses
+
 from unittest.mock import MagicMock
 
+import responses
 from source_copper.source import SourceCopper
+
 
 @responses.activate
 def test_check_connection(mocker):

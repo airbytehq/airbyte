@@ -6,8 +6,6 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-import responses
-
 from source_copper.source import CopperStream
 
 
@@ -34,10 +32,10 @@ def test_request_headers(patch_base_class):
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
     # TODO: replace this with your expected request headers
     expected_headers = {
-        'Content-type': 'application/json',
-        'X-PW-AccessToken': None,
-        'X-PW-Application': 'developer_api',
-        'X-PW-UserEmail': None
+        "Content-type": "application/json",
+        "X-PW-AccessToken": None,
+        "X-PW-Application": "developer_api",
+        "X-PW-UserEmail": None,
     }
     assert stream.request_headers(**inputs) == expected_headers
 
