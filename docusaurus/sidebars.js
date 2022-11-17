@@ -113,6 +113,7 @@ module.exports = {
         },
         'deploying-airbyte/on-kubernetes',
         'deploying-airbyte/on-kubernetes-via-helm',
+        'deploying-airbyte/on-restack',
         'deploying-airbyte/on-plural',
         'deploying-airbyte/on-oci-vm',
         'deploying-airbyte/on-digitalocean-droplet',
