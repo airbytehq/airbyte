@@ -455,7 +455,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         syncStats.setRecordsCommitted(null);
       }
       return new StreamSyncStats()
-          .withStreamName(stream)
+          .withStreamName(stream.getName())
+          .withStreamNamespace(stream.getNamespace())
           .withStats(syncStats);
     }).collect(Collectors.toList());
   }
