@@ -102,6 +102,7 @@ definitions:
       datetime: "{{ config['end_date'] or today_utc() }}"
       datetime_format: "%Y-%m-%d"
     step: "1d"
+    lookback_window: "30d"
     datetime_format: "%Y-%m-%d"
     cursor_field: "{{ options['stream_cursor_field'] }}"
 
