@@ -120,6 +120,6 @@ export class ConnectorBuilderRequestService extends AirbyteRequestService {
 
   public getManifestTemplate(): Promise<string> {
     // return getManifestTemplate(this.requestOptions);
-    return new Promise(() => template);
+    return Promise.resolve(template);
   }
 }
