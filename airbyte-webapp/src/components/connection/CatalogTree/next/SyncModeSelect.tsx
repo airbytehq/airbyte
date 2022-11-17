@@ -14,7 +14,7 @@ interface SyncModeValue {
   destinationSyncMode: DestinationSyncMode;
 }
 
-interface SyncModeOption {
+export interface SyncModeOption {
   value: SyncModeValue;
 }
 

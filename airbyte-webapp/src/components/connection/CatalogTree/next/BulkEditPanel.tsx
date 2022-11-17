@@ -20,7 +20,7 @@ import { HeaderCell } from "../styles";
 import { flatten, getPathType } from "../utils";
 import styles from "./BulkEditPanel.module.scss";
 import { StreamPathSelect } from "./StreamPathSelect";
-import { SyncModeSelect } from "./SyncModeSelect";
+import { SyncModeOption, SyncModeSelect } from "./SyncModeSelect";
 
 interface SchemaHeaderProps {
   isActive: boolean;
@@ -39,7 +39,7 @@ const SchemaHeader = styled(Header)<SchemaHeaderProps>`
   transition: 0.3s ease-in;
 `;
 
-function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
+export function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
   const primitiveFieldsByStream = selectedBatchNodes.map(({ stream }) => {
     const traversedFields = traverseSchemaToField(stream?.jsonSchema, stream?.name);
     const flattenedFields = flatten(traversedFields);
@@ -62,20 +62,24 @@ function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
   return Array.from(pathMap.values());
 }
 
+export const getAvailableSyncModesOptions = (
+  nodes: SyncSchemaStream[],
+  syncModes?: DestinationSyncMode[]
+): SyncModeOption[] =>
+  SUPPORTED_MODES.filter(([syncMode, destinationSyncMode]) => {
+    const supportableModes = intersection(nodes.flatMap((n) => n.stream?.supportedSyncModes));
+    return supportableModes.includes(syncMode) && syncModes?.includes(destinationSyncMode);
+  }).map(([syncMode, destinationSyncMode]) => ({
+    value: { syncMode, destinationSyncMode },
+  }));
+
 export const BulkEditPanel: React.FC = () => {
   const {
     destDefinition: { supportedDestinationSyncModes },
   } = useConnectionFormService();
   const { selectedBatchNodes, options, onChangeOption, onApply, isActive, onCancel } = useBulkEditService();
-
-  const availableSyncModes = useMemo(
-    () =>
-      SUPPORTED_MODES.filter(([syncMode, destinationSyncMode]) => {
-        const supportableModes = intersection(selectedBatchNodes.flatMap((n) => n.stream?.supportedSyncModes));
-        return supportableModes.includes(syncMode) && supportedDestinationSyncModes?.includes(destinationSyncMode);
-      }).map(([syncMode, destinationSyncMode]) => ({
-        value: { syncMode, destinationSyncMode },
-      })),
+  const availableSyncModesOptions = useMemo(
+    () => getAvailableSyncModesOptions(selectedBatchNodes, supportedDestinationSyncModes),
     [selectedBatchNodes, supportedDestinationSyncModes]
   );
 
@@ -123,7 +127,7 @@ export const BulkEditPanel: React.FC = () => {
               syncMode: options.syncMode,
               destinationSyncMode: options.destinationSyncMode,
             }}
-            options={availableSyncModes}
+            options={availableSyncModesOptions}
             onChange={({ value }) => onChangeOption({ ...value })}
           />
         </div>
