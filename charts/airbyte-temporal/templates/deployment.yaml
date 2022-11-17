@@ -76,19 +76,19 @@ spec:
         # Values from secret
         {{- if .Values.secrets }}
         {{- range $k, $v := .Values.secrets }}
-        - name: {{ $k }}
-          valueFrom:
-            secretKeyRef:
-              name: temporal-secrets
-              key: {{ $k }}
+          - name: {{ $k }}
+            valueFrom:
+              secretKeyRef:
+                name: temporal-secrets
+                key: {{ $k }}
         {{- end }}
         {{- end }}
 
         # Values from env
         {{- if .Values.env_vars }}
         {{- range $k, $v := mergeOverwrite .Values.env_vars .Values.global.env_vars }}
-        - name: {{ $k }}
-          value: {{ $v | quote }}
+          - name: {{ $k }}
+            value: {{ $v | quote }}
         {{- end }}
         {{- end }}
         ports:
