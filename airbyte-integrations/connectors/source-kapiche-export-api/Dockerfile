@@ -7,7 +7,7 @@ WORKDIR /airbyte/integration_code
 # upgrade pip to the latest version
 RUN apt-get upgrade \
     && pip install --upgrade pip --no-cache\
-    && apt-get install tzdata #build-base
+    && apt-get install tzdata
 
 COPY setup.py ./
 # install necessary packages to a temporary folder

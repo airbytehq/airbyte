@@ -1,8 +1,3 @@
-#
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
-#
-
-
 import pytest
 
 pytest_plugins = ("source_acceptance_test.plugin",)

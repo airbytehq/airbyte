@@ -1,9 +1,4 @@
-#
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
-#
-
 from unittest import mock
-
 from source_kapiche_export_api.source import SourceKapicheExportApi
 
 

@@ -1,7 +1,3 @@
-#
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
-#
-
 from http import HTTPStatus
 from unittest.mock import MagicMock
 import pandas as pd

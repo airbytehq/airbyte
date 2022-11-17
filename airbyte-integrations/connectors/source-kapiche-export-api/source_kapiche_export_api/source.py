@@ -1,10 +1,6 @@
-#
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
-#
-
-
 from abc import ABC, abstractmethod
 from pathlib import Path
+import json
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
@@ -37,24 +33,17 @@ class KapicheExportApiStream(HttpStream, ABC):
     def url_base(self, value:str):
         self._url_base =  value
 
-    
-
 
 class ExportDataGet(KapicheExportApiStream, ABC):
     """
-    TODO: Change class name to match the table/data source this stream corresponds to.
+    Export Stream to get the actual data from analysis. This is the base class for all then
+    enabled exports for a connection. The schema and name for each Stream instance is defined
+    dynamically, according to the analysis name and project name.
     """
 
     primary_key = None
     cursor_field = 'document_id__'
     
-    # needed to instantiate the class
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if x := response.headers.get('Kapiche-next-document-id'):
-            return { self.cursor_field: x}
-        else:
-            return None
-
     def __init__(
         self,
         export_uuid: str,
@@ -69,7 +58,14 @@ class ExportDataGet(KapicheExportApiStream, ABC):
         self._cursor_value = 1
         self._url_base = url
         self._name = name
-    
+
+    # needed to instantiate the class
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, str]]:
+        if x := response.headers.get('Kapiche-next-document-id'):
+            return { self.cursor_field: x}
+        else:
+            return None
+
     @property
     def name(self) -> str:
         """
@@ -100,9 +96,13 @@ class ExportDataGet(KapicheExportApiStream, ABC):
         :return str: The name of the cursor field.
         """
         return 'document_id__'
-   
+
     @property
-    def state(self) -> Mapping[str, Any]:
+    def schemaPath(self) -> Path:
+        return Path(f'./{self.name}-schema.json') 
+
+    @property
+    def state(self) -> Mapping[str, int]:
         return {self.cursor_field: self._cursor_value}
 
     @state.setter
@@ -118,15 +118,15 @@ class ExportDataGet(KapicheExportApiStream, ABC):
         return pd.read_parquet(fname)
 
     def request_headers(self, *args, **kwargs) -> Mapping[str, Any]:
-        """ We donot require additional request headers at the moment. """
+        """ We do not require additional request headers at the moment. """
         return {}
 
     def request_params(
         self,
         start_document_id: int = 1,
-        docs_count: int = 100,
+        docs_count: int = 50000,
         export_format: str = 'parquet',
-        ) -> MutableMapping[str, Any]:
+    ) -> MutableMapping[str, Any]:
 
         params = {}
         params['start_document_id'] = start_document_id
@@ -141,16 +141,16 @@ class ExportDataGet(KapicheExportApiStream, ABC):
         *args,
         **kwargs,
     ) -> dict[str, Any]:
-        """
-        Override to return a mapping of keyword arguments to be used when creating the HTTP request.
-        Any option listed in https://docs.python-requests.org/en/latest/api/#requests.adapters.BaseAdapter.send for can be returned from
-        this method. Note that these options do not conflict with request-level options such as headers, request params, etc..
-        """
         options = dict(super().request_kwargs(stream_state=self.state, *args, **kwargs))
         options['stream'] = stream
         return options
 
     def get_json_schema(self) -> Mapping[str, Any]:
+        """Dynamically create the schema for this stream usinf the list endpoint."""
+        if self.schemaPath.exists():
+            with open(self.schemaPath, 'r') as fp:
+                schema = json.load(fp)
+            return schema
 
         schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
@@ -163,10 +163,10 @@ class ExportDataGet(KapicheExportApiStream, ABC):
             }
         }
         request = self._create_prepared_request(
-                path=self.path(),
-                headers=dict(**self.authenticator.get_auth_header()),
-                params=self.request_params(start_document_id=1, docs_count=2),
-            )
+            path=self.path(),
+            headers=dict(**self.authenticator.get_auth_header()),
+            params=self.request_params(start_document_id=1, docs_count=2),
+        )
         request_kwargs = self.request_kwargs(stream=True)
         response = self._send_request(request, request_kwargs)
         df = self._get_df_from_response(response)
@@ -179,12 +179,14 @@ class ExportDataGet(KapicheExportApiStream, ABC):
                 schema['properties'][col] = {"type": ["null", "number"]}
             if pd.api.types.is_datetime64_any_dtype(df[col].dtype):
                 # According to airbyte docs, we need to choose formats with either with or without timezone
-                #  information. Since currently we donot get any timezone info from the product,
+                # information. Since currently we donot get any timezone info from the product,
                 # we choose to use 'timezone_withouttimestamp' format.
                 # https://docs.airbyte.com/understanding-airbyte/supported-data-types/
                 schema['properties'][col] = {"type": ["null", "string"], "format":"timestamp_without_timezone"}
             else:
                 schema['properties'][col] = {"type": ["null", "string"]}
+        with open(self.schemaPath, 'w+') as schema_file:
+            json.dump(schema, schema_file)
         return schema
 
     def parse_response(
@@ -193,7 +195,10 @@ class ExportDataGet(KapicheExportApiStream, ABC):
         fname: Path,
         **kwargs
     ) -> Iterable[Mapping]:
-        
+        """
+        Consume the response streaming content to create a parquet file, and return Mapping data from this
+        generated file.
+        """
         with open(fname, 'wb') as file:
             for content in response.iter_content(chunk_size=None):
                 file.write(content)
@@ -239,6 +244,7 @@ class ExportDataGet(KapicheExportApiStream, ABC):
                 pagination_complete = True
 
         fname.unlink(missing_ok=True)
+        self.schemaPath.unlink(missing_ok=True)
         # Always return an empty generator just in case no records were ever yielded
         yield from []    
 
