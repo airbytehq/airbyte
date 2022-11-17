@@ -14,10 +14,10 @@ http {
 
       proxy_pass "${PROXY_PASS_WEB}";
 
-      proxy_connect_timeout       300;
-      proxy_send_timeout          300;
-      proxy_read_timeout          300;
-      send_timeout                300;
+      proxy_connect_timeout       ${BASIC_AUTH_PROXY_TIMEOUT};
+      proxy_send_timeout          ${BASIC_AUTH_PROXY_TIMEOUT};
+      proxy_read_timeout          ${BASIC_AUTH_PROXY_TIMEOUT};
+      send_timeout                ${BASIC_AUTH_PROXY_TIMEOUT};
 
       error_page 401 /etc/nginx/401.html;
       location ~ (401.html)$ {
@@ -40,10 +40,10 @@ http {
 
       proxy_pass "${PROXY_PASS_API}";
 
-      proxy_connect_timeout       300;
-      proxy_send_timeout          300;
-      proxy_read_timeout          300;
-      send_timeout                300;
+      proxy_connect_timeout       ${BASIC_AUTH_PROXY_TIMEOUT};
+      proxy_send_timeout          ${BASIC_AUTH_PROXY_TIMEOUT};
+      proxy_read_timeout          ${BASIC_AUTH_PROXY_TIMEOUT};
+      send_timeout                ${BASIC_AUTH_PROXY_TIMEOUT};
 
       error_page 401 /etc/nginx/401.html;
       location ~ (401.html)$ {
