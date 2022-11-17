@@ -44,7 +44,6 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 from dateutil.relativedelta import relativedelta
 from jsonschema import ValidationError
 
-
 factory = DeclarativeComponentFactory()
 
 resolver = ManifestReferenceResolver()
