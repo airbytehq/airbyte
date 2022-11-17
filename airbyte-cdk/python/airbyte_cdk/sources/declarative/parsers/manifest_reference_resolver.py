@@ -5,17 +5,12 @@
 from copy import deepcopy
 from typing import Any, Mapping, Tuple, Union
 
-import yaml
-from airbyte_cdk.sources.declarative.parsers.config_parser import ConnectionDefinitionParser
 from airbyte_cdk.sources.declarative.parsers.undefined_reference_exception import UndefinedReferenceException
-from airbyte_cdk.sources.declarative.types import ConnectionDefinition
 
 
-class YamlParser(ConnectionDefinitionParser):
+class ManifestReferenceResolver:
     """
-    Parses a Yaml string to a ConnectionDefinition
-
-    In addition to standard Yaml parsing, the input_string can contain references to values previously defined.
+    An incoming manifest can contain references to values previously defined.
     This parser will dereference these values to produce a complete ConnectionDefinition.
 
     References can be defined using a *ref(<arg>) string.
@@ -101,31 +96,20 @@ class YamlParser(ConnectionDefinitionParser):
 
     ref_tag = "$ref"
 
-    def parse(self, connection_definition_str: str) -> ConnectionDefinition:
-        """
-        Parses a yaml file and dereferences string in the form "*ref({reference)"
-        to {reference}
-        :param connection_definition_str: yaml string to parse
-        :return: The ConnectionDefinition parsed from connection_definition_str
-        """
-        input_mapping = yaml.safe_load(connection_definition_str)
-        evaluated_definition = {}
-        return self._preprocess_dict(input_mapping, evaluated_definition, "")
-
-    def _preprocess_dict(self, input_mapping: Mapping[str, Any], evaluated_mapping: Mapping[str, Any], path: Union[str, Tuple[str]]):
+    def preprocess_manifest(self, manifest: Mapping[str, Any], evaluated_mapping: Mapping[str, Any], path: Union[str, Tuple[str]]):
 
         """
-        :param input_mapping: mapping produced by parsing yaml
+        :param manifest: incoming manifest that could have references to previously defined components
         :param evaluated_mapping: mapping produced by dereferencing the content of input_mapping
         :param path: curent path in configuration traversal
         :return:
         """
         d = {}
-        if self.ref_tag in input_mapping:
-            partial_ref_string = input_mapping[self.ref_tag]
+        if self.ref_tag in manifest:
+            partial_ref_string = manifest[self.ref_tag]
             d = deepcopy(self._preprocess(partial_ref_string, evaluated_mapping, path))
 
-        for key, value in input_mapping.items():
+        for key, value in manifest.items():
             if key == self.ref_tag:
                 continue
             full_path = self._resolve_value(key, path)
@@ -180,7 +164,7 @@ class YamlParser(ConnectionDefinitionParser):
                         key = *key[:-1], split[0], ".".join(split[1:])
                 raise UndefinedReferenceException(path, ref_key)
         elif isinstance(value, dict):
-            return self._preprocess_dict(value, evaluated_config, path)
+            return self.preprocess_manifest(value, evaluated_config, path)
         elif type(value) == list:
             evaluated_list = [
                 # pass in elem's path instead of the list's path
