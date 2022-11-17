@@ -223,7 +223,7 @@ For example, given the following two json objects from a source:
 
 depending on whether you want to flatten your data or not (**_available as a configuration option_**)
 
-The json objecst can have the following formats:
+The json objects can have the following formats:
 
 ```text
 { "_airbyte_ab_id": "26d73cde-7eb1-4e1e-b7db-a4c03b4cf206", "_airbyte_emitted_at": "1622135805000", "_airbyte_data": { "user_id": 123, "name": { "first": "John", "last": "Doe" } } }
