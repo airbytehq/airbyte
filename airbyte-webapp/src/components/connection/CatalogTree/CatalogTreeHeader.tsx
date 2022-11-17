@@ -31,7 +31,7 @@ export const CatalogTreeHeader: React.FC = () => {
           />
         </Cell>
       )}
-      {mode !== "readonly" && <Cell flex={0.2} />}
+      {mode !== "readonly" && <Cell flex={0.1} />}
       <Cell lighter flex={0.4}>
         <FormattedMessage id="sources.sync" />
       </Cell>

@@ -43,7 +43,6 @@ task generateOpenApiPythonServer(type: GenerateTask) {
 
 project.build.dependsOn(generateOpenApiPythonServer)
 
-
 // java modules such as airbyte-server can use copyGeneratedTar to copy the files to the docker image
 // We cannot do this here because we don't generate a tar file
 // Instead, we copy the files into the build directory so they can be copied to the docker container
@@ -55,6 +54,7 @@ task prepareBuild(type: Copy) {
 
     into layout.buildDirectory.dir("docker")
 }
+
 tasks.named("buildDockerImage") {
     dependsOn prepareBuild
     dependsOn copyDocker
