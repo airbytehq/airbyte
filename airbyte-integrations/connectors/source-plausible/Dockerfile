@@ -29,10 +29,10 @@ RUN apk --no-cache add bash
 
 # copy payload code only
 COPY main.py ./
-COPY source_fauna ./source_fauna
+COPY source_plausible ./source_plausible
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 LABEL io.airbyte.version=0.1.0
-LABEL io.airbyte.name=airbyte/source-fauna
+LABEL io.airbyte.name=airbyte/source-plausible
