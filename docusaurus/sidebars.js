@@ -388,6 +388,9 @@ module.exports = {
     {
       type: 'category',
       label: 'Release Notes',
+      link: {
+        type: 'index',
+      },
       items: [
          'release_notes/july_2022',
          'release_notes/august_2022',
