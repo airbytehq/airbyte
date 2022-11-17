@@ -13,7 +13,11 @@ definitions:
       api_token: "{{ config['apikey'] }}"
     request_options_provider:
       request_parameters:
-        query: "{{ options['query'] }}"
+        # Added a hidden parameter in config to be able to run tests
+        # Maybe this can be add in the future to the config to people
+        # query more granular data.
+        # Example is `query_campsites: "BIKING"`
+        query: "{{ config['query_' + options.name] }}"
 
   retriever:
     record_selector:
@@ -33,93 +37,94 @@ definitions:
         inject_into: "request_parameter"
     requester:
       $ref: "*ref(definitions.requester)"
+
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
+
   activity_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "activities"
       primary_key: "ActivityID"
       path: "/activities"
-      query: "BIKING"
+      
   campsites_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "campsites"
       primary_key: "CampsiteID"
       path: "/campsites"
-      query: "Overflow"
-
+  
   events_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "events"
       primary_key: "EventID"
       path: "/events"
+
   facilities_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "facilities"
       primary_key: "FacilityID"
       path: "/facilities"
-      query: "Cattail Slough Recreation Area - Boat Ramp"
+
   facilityaddresses_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "facilityaddresses"
       primary_key: "FacilityAddressID"
       path: "/facilityaddresses"
-      query: "VA"
+
   links_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "links"
       primary_key: "EntityLinkID"
       path: "/links"
-      query: "Forest Service Web Site"
+
   media_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "media"
       primary_key: "EntityMediaID"
       path: "/media"
-      query: "Silver Cove Site #24"
+
   organizations_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "organizations"
       primary_key: "OrgID"
       path: "/organizations"
-      query: "Bureau of Land Management"
+
   permits_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "permits"
       primary_key: "PermitEntranceID"
       path: "/permits"
-      query: "Duncan Lake (op)"
+
   recreationareas_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "recreationareas"
       primary_key: "RecAreaID"
       path: "/recareas"
-      query: "Vallecito Reservoir"
+
   recreationareaaddresses_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "recreationareaaddresses"
       primary_key: "RecAreaAddressID"
       path: "/recareaaddresses"
-      query: "Durango"
+
   tours_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "tours"
       primary_key: "TourID"
       path: "/tours"
-      query: "Summer Solstice"
 
 streams:
   - "*ref(definitions.organizations_stream)"
@@ -134,10 +139,6 @@ streams:
   - "*ref(definitions.recreationareaaddresses_stream)"
   - "*ref(definitions.recreationareas_stream)"
   - "*ref(definitions.tours_stream)"
-
-
-
-
 
 check:
   stream_names:

@@ -12,3 +12,6 @@ connectionSpecification:
       type: string
       description: API Key
       airbyte_secret: true
+    query_campsites:
+      title: Query Campsite
+      type: string
