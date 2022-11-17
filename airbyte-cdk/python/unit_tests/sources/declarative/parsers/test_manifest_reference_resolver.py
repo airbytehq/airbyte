@@ -1,8 +1,8 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-import pytest
 
+import pytest
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.undefined_reference_exception import UndefinedReferenceException
 

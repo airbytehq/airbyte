@@ -5,7 +5,6 @@
 import pkgutil
 
 import yaml
-
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.types import ConnectionDefinition
 
