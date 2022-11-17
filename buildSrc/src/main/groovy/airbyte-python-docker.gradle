@@ -44,7 +44,7 @@ class HelpersDocker {
                 project.task(taskName, type: Exec) {
                     //commandLine = ".venv/bin/python"
                     //args "-m", "coverage", coverageFormat, "--data-file=${testFilesDirectory}/.coverage.${taskName}", "--rcfile=${project.rootProject.file('pyproject.toml').absolutePath}", outputArg
-                    commandLine "docker", "run", "-v", "/Users/alex/code/airbyte/airbyte-connector-builder-server:/tmp", "--entrypoint", "python", "python:3.9-slim", "-m", "coverage", "coverageFormat", "--data-file=${testFilesDirectory}/.coverage.${taskName}", "--data-file=${testFilesDirectory}/.coverage.${taskName}"
+                    commandLine "docker", "run", "-v", "${project.rootProject.absoluteProjectPath(".")}:/tmp", "--entrypoint", "python", "python:3.9-slim", "-m", "coverage", "coverageFormat", "--data-file=${testFilesDirectory}/.coverage.${taskName}", "--data-file=${testFilesDirectory}/.coverage.${taskName}"
                     "--rcfile=${project.rootProject.file('pyproject.toml').absolutePath}"
                     dependsOn project.tasks.findByName("_${taskName}Coverage")
                     setIgnoreExitValue true
@@ -141,8 +141,10 @@ class AirbytePythonDockerPlugin implements Plugin<Project> {
             setIgnoreExitValue true
         }
 
+        //throw new GradleException("${project.projectDir.getAbsolutePath()}")
+
         project.task('installReqs', type: Exec) {
-            commandLine "docker", "run", "-v", "${project.rootDir}:/tmp", "--entrypoint", "/bin/bash", "python:3.9-slim", "-c", "chmod +x /tmp/run.sh && /tmp/run.sh"
+            commandLine "docker", "run", "-v", "${project.projectDir.getAbsolutePath()}:/tmp", "--entrypoint", "/bin/bash", "python:3.9-slim", "-c", "chmod +x /tmp/run.sh && /tmp/run.sh"
         }
 
         if (extension.moduleDirectory) {
