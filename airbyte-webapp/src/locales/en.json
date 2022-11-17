@@ -585,5 +585,9 @@
   "connectorBuilder.sliceLabel": "Slice",
   "connectorBuilder.connectorLogs": "Connector logs",
   "connectorBuilder.invalidYamlDownload": "Cannot download while YAML content is invalid.",
-  "connectorBuilder.invalidYamlTest": "Cannot test stream while YAML content is invalid."
+  "connectorBuilder.invalidYamlTest": "Cannot test stream while YAML content is invalid.",
+  "connectorBuilder.unknownError": "An unknown error has occurred",
+  "connectorBuilder.testConnector": "TEST YOUR CONNECTOR",
+  "connectorBuilder.couldNotDetectStreams": "Could not detect streams in the YAML editor:",
+  "connectorBuilder.ensureProperYaml": "In order to test a stream, ensure that the YAML is structured as described in <a>the docs</a>."
 }
