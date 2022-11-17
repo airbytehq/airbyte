@@ -43,9 +43,13 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
   //   2.2) AND the connection has saved dbt jobs
   //        THEN show the jobs list and the "+ Add transformation" button
 
-  const { hasDbtIntegration, saveJobs, dbtCloudJobs } = useDbtIntegration(connection);
+  const { hasDbtIntegration, isSaving, saveJobs, dbtCloudJobs } = useDbtIntegration(connection);
 
-  return hasDbtIntegration ? <DbtJobsForm saveJobs={saveJobs} dbtCloudJobs={dbtCloudJobs} /> : <NoDbtIntegration />;
+  return hasDbtIntegration ? (
+    <DbtJobsForm saveJobs={saveJobs} isSaving={isSaving} dbtCloudJobs={dbtCloudJobs} />
+  ) : (
+    <NoDbtIntegration />
+  );
 };
 
 const NoDbtIntegration = () => {
@@ -75,9 +79,10 @@ const NoDbtIntegration = () => {
 
 interface DbtJobsFormProps {
   saveJobs: (jobs: DbtCloudJob[]) => Promise<unknown>;
+  isSaving: boolean;
   dbtCloudJobs: DbtCloudJob[];
 }
-const DbtJobsForm: React.FC<DbtJobsFormProps> = ({ saveJobs, dbtCloudJobs }) => {
+const DbtJobsForm: React.FC<DbtJobsFormProps> = ({ saveJobs, isSaving, dbtCloudJobs }) => {
   const onSubmit = (values: DbtJobListValues, { resetForm }: FormikHelpers<DbtJobListValues>) => {
     saveJobs(values.jobs).then(() => resetForm({ values }));
   };
@@ -126,7 +131,7 @@ const DbtJobsForm: React.FC<DbtJobsFormProps> = ({ saveJobs, dbtCloudJobs }) => 
                       </span>
                     }
                   >
-                    <DbtJobsList jobs={values.jobs} remove={remove} dirty={dirty} />
+                    <DbtJobsList jobs={values.jobs} remove={remove} dirty={dirty} isLoading={isSaving} />
                   </Card>
                 );
               }}
@@ -138,7 +143,14 @@ const DbtJobsForm: React.FC<DbtJobsFormProps> = ({ saveJobs, dbtCloudJobs }) => 
   );
 };
 
-const DbtJobsList = ({ jobs, remove, dirty }: { jobs: DbtCloudJob[]; remove: (i: number) => void; dirty: boolean }) => (
+interface DbtJobsListProps {
+  jobs: DbtCloudJob[];
+  remove: (i: number) => void;
+  dirty: boolean;
+  isLoading: boolean;
+}
+
+const DbtJobsList = ({ jobs, remove, dirty, isLoading }: DbtJobsListProps) => (
   <div className={classNames(styles.jobListContainer)}>
     {jobs.length ? (
       <>
@@ -159,7 +171,7 @@ const DbtJobsList = ({ jobs, remove, dirty }: { jobs: DbtCloudJob[]; remove: (i:
       <Button className={styles.jobListButton} type="reset" variant="secondary">
         Cancel
       </Button>
-      <Button className={styles.jobListButton} type="submit" variant="primary" disabled={!dirty}>
+      <Button className={styles.jobListButton} type="submit" variant="primary" disabled={!dirty} isLoading={isLoading}>
         Save changes
       </Button>
     </div>

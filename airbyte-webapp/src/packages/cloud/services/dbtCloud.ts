@@ -97,36 +97,39 @@ export const useDbtIntegration = (connection: WebBackendConnectionRead) => {
   );
   const otherOperations = [...(connection.operations?.filter((operation) => !isDbtCloudJob(operation)) || [])];
 
-  const saveJobs = (jobs: DbtCloudJob[]) => {
-    // TODO dynamically use the workspace's configured dbt cloud domain when it gets returned by backend
-    const urlForJob = (job: DbtCloudJob) => `${dbtCloudDomain}/api/v2/accounts/${job.account}/jobs/${job.job}/run/`;
+  const { mutateAsync, isLoading } = useMutation({
+    mutationFn: (jobs: DbtCloudJob[]) => {
+      // TODO dynamically use the workspace's configured dbt cloud domain when it gets returned by backend
+      const urlForJob = (job: DbtCloudJob) => `${dbtCloudDomain}/api/v2/accounts/${job.account}/jobs/${job.job}/run/`;
 
-    return connectionService.update({
-      connectionId: connection.connectionId,
-      operations: [
-        ...otherOperations,
-        ...jobs.map((job) => ({
-          workspaceId,
-          ...(job.operationId ? { operationId: job.operationId } : {}),
-          name: jobName(job),
-          operatorConfiguration: {
-            operatorType: OperatorType.webhook,
-            webhook: {
-              executionUrl: urlForJob(job),
-              // if `hasDbtIntegration` is true, webhookConfigId is guaranteed to exist
-              ...(webhookConfigId ? { webhookConfigId } : {}),
-              executionBody,
+      return connectionService.update({
+        connectionId: connection.connectionId,
+        operations: [
+          ...otherOperations,
+          ...jobs.map((job) => ({
+            workspaceId,
+            ...(job.operationId ? { operationId: job.operationId } : {}),
+            name: jobName(job),
+            operatorConfiguration: {
+              operatorType: OperatorType.webhook,
+              webhook: {
+                executionUrl: urlForJob(job),
+                // if `hasDbtIntegration` is true, webhookConfigId is guaranteed to exist
+                ...(webhookConfigId ? { webhookConfigId } : {}),
+                executionBody,
+              },
             },
-          },
-        })),
-      ],
-    });
-  };
+          })),
+        ],
+      });
+    },
+  });
 
   return {
     hasDbtIntegration,
     dbtCloudJobs,
-    saveJobs,
+    saveJobs: mutateAsync,
+    isSaving: isLoading,
   };
 };
 
