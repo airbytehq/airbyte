@@ -4,7 +4,7 @@ import { Paginator } from "components/ui/Paginator";
 import { Text } from "components/ui/Text";
 
 import { StreamReadSlicesItem } from "core/request/ConnectorBuilderClient";
-import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { useSelectedPageAndSlice } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { PageDisplay } from "./PageDisplay";
 import styles from "./ResultDisplay.module.scss";
@@ -16,7 +16,7 @@ interface ResultDisplayProps {
 }
 
 export const ResultDisplay: React.FC<ResultDisplayProps> = ({ slices, className }) => {
-  const { selectedSlice, selectedPage, setSelectedSlice, setSelectedPage } = useConnectorBuilderState();
+  const { selectedSlice, selectedPage, setSelectedSlice, setSelectedPage } = useSelectedPageAndSlice();
 
   const slice = slices[selectedSlice];
   const numPages = slice.pages.length;
