@@ -389,7 +389,8 @@ module.exports = {
       type: 'category',
       label: 'Release Notes',
       link: {
-        type: 'index',
+        type: 'doc',
+        id: 'release_notes/release_notes_lading_page',
       },
       items: [
          'release_notes/july_2022',
