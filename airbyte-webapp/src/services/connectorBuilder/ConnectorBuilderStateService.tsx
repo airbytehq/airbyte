@@ -12,6 +12,7 @@ import { useListStreams } from "./ConnectorBuilderApiService";
 
 interface Context {
   jsonManifest: StreamsListRequestBodyManifest;
+  yamlEditorIsMounted: boolean;
   yamlIsValid: boolean;
   streams: StreamsListReadStreamsItem[];
   streamListErrorMessage: string | undefined;
@@ -19,6 +20,7 @@ interface Context {
   configString: string;
   configJson: StreamReadRequestBodyConfig;
   setJsonManifest: (jsonValue: StreamsListRequestBodyManifest) => void;
+  setYamlEditorIsMounted: (value: boolean) => void;
   setYamlIsValid: (value: boolean) => void;
   setSelectedStream: (streamName: string) => void;
   setConfigString: (configString: string) => void;
@@ -32,6 +34,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   // json manifest
   const [jsonManifest, setJsonManifest] = useState<StreamsListRequestBodyManifest>({});
   const [yamlIsValid, setYamlIsValid] = useState(true);
+  const [yamlEditorIsMounted, setYamlEditorIsMounted] = useState(false);
 
   // config
   const [configString, setConfigString] = useState("{\n  \n}");
@@ -76,6 +79,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
 
   const ctx = {
     jsonManifest,
+    yamlEditorIsMounted,
     yamlIsValid,
     streams,
     streamListErrorMessage,
@@ -84,6 +88,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     configJson,
     setJsonManifest,
     setYamlIsValid,
+    setYamlEditorIsMounted,
     setSelectedStream,
     setConfigString,
   };
