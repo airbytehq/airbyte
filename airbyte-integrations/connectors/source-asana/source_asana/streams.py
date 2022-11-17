@@ -10,7 +10,6 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
-
 ASANA_ERRORS_MAPPING = {
     402: "Stream is available to premium organizations and workspaces",
     403: "Not enough permissions",
@@ -28,7 +27,9 @@ class AsanaStream(HttpStream, ABC):
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code in ASANA_ERRORS_MAPPING.keys():
-            self.logger.error(f"Skipping stream {self.name}. {ASANA_ERRORS_MAPPING.get(response.status_code)}. Errors: {response.json().get('errors')}")
+            self.logger.error(
+                f"Skipping stream {self.name}. {ASANA_ERRORS_MAPPING.get(response.status_code)}. Errors: {response.json().get('errors')}"
+            )
             setattr(self, "raise_on_http_errors", False)
             return False
         return super().should_retry(response)

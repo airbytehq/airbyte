@@ -6,7 +6,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import requests_mock as req_mock
-from http import HTTPStatus
 from airbyte_cdk.models import SyncMode
 from source_asana.streams import AsanaStream, Sections, Stories, Tags, Tasks, TeamMemberships, Users
 
@@ -31,7 +30,8 @@ def test_next_page_token():
     inputs = {"response": MagicMock()}
     expected = "offset"
     assert expected in stream.next_page_token(**inputs)
-    
+
+
 @pytest.mark.parametrize(
     ("http_status_code", "errors", "should_retry"),
     [
