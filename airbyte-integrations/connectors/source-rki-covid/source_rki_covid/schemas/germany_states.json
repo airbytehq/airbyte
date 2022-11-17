@@ -3,67 +3,70 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "population": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "cases": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "deaths": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "casesPerWeek": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "deathsPerWeek": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "recovered": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "abbreviation": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "weekIncidence": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "casesPer100k": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "delta": {
       "type": "object",
       "properties": {
         "cases": {
-          "type": "integer"
+          "type": ["integer", "null"]
         },
         "deaths": {
-          "type": "integer"
+          "type": ["integer", "null"]
         },
         "recovered": {
-          "type": "integer"
+          "type": ["integer", "null"]
+        },
+        "weekIncidence": {
+          "type": ["number", "null"]
         }
       },
-      "required": ["cases", "deaths", "recovered"]
+      "required": ["cases", "deaths", "recovered", "weekIncidence"]
     },
     "hospitalization": {
       "type": "object",
       "properties": {
         "cases7Days": {
-          "type": "integer"
+          "type": ["integer", "null"]
         },
         "incidence7Days": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "date": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "lastUpdate": {
-          "type": "string"
+          "type": ["string", "null"]
         }
       },
       "required": ["cases7Days", "date", "incidence7Days", "lastUpdate"]

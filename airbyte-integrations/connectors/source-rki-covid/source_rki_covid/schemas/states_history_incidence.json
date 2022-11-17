@@ -2,21 +2,18 @@
   "$schema": "http://json-schema.org/schema#",
   "type": "object",
   "properties": {
-    "name": {
-      "type": "string"
-    },
-    "abbreviation": {
-      "type": "string"
-    },
-    "id": {
-      "type": "integer"
-    },
     "weekIncidence": {
-      "type": ["number", "integer"]
+      "type": ["number", "null"]
     },
     "date": {
-      "type": "string"
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "abbreviation": {
+      "type": ["string", "null"]
     }
   },
-  "required": ["date", "name", "abbreviation", "weekIncidence", "id"]
+  "required": ["abbreviation", "date", "name", "weekIncidence"]
 }

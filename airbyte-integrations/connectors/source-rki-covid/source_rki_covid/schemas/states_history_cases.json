@@ -2,21 +2,18 @@
   "$schema": "http://json-schema.org/schema#",
   "type": "object",
   "properties": {
-    "name": {
-      "type": "string"
-    },
-    "abbreviation": {
-      "type": "string"
-    },
-    "id": {
-      "type": "integer"
-    },
     "cases": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "date": {
-      "type": "string"
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "abbreviation": {
+      "type": ["string", "null"]
     }
   },
-  "required": ["cases", "date", "name", "abbreviation", "id"]
+  "required": ["abbreviation", "cases", "date", "name"]
 }

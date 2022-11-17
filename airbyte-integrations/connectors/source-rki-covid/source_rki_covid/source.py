@@ -92,7 +92,9 @@ class GermanyStatesAgeGroups(RkiCovidStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.json():
             for key, value in response.json().get("data").items():
-                record = {"state": key, "data": value}
+                record = {"abbreviation": key}
+                for grp, data in value.items():
+                    record.update({grp: data})
                 yield record
         return [{}]
 
@@ -435,12 +437,11 @@ class GermanHistoryHospitalization(IncrementalRkiCovidStream):
 # STATES FULL-REFRESH
 # source: states/history/cases/:days | FULL-REFRESH
 class ByStateRkiCovidStream(RkiCovidStream, ABC):
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.json().get("data"):
             for key, value in response.json().get("data").items():
                 for record in value.get("history"):
-                    record.update({"name": value.get("name"), "state": key})
+                    record.update({"name": value.get("name"), "abbreviation": key})
                     yield record
         return [{}]
 
