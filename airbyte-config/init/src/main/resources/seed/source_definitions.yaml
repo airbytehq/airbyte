@@ -1513,6 +1513,13 @@
   icon: stripe.svg
   sourceType: api
   releaseStage: generally_available
+- name: SurveyCTO
+  sourceDefinitionId: dd4632f4-15e0-4649-9b71-41719fb1fdee
+  dockerRepository: airbyte/source-surveycto
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/surveycto
+  sourceType: api
+  releaseStage: alpha
 - name: SurveyMonkey
   sourceDefinitionId: badc5925-0485-42be-8caa-b34096cb71b5
   dockerRepository: airbyte/source-surveymonkey
