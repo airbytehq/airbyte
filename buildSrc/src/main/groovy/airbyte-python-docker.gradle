@@ -76,97 +76,12 @@ class AirbytePythonDockerPlugin implements Plugin<Project> {
     void apply(Project project) {
         def extension = project.extensions.create('airbytePythonDocker', AirbytePythonDockerConfiguration)
 
-        def venvDirectoryName = '.venv'
-        project.plugins.apply 'ru.vyarus.use-python'
-
-        project.python {
-            envPath = venvDirectoryName
-            minPythonVersion = '3.9'
-            scope = 'VIRTUALENV'
-            installVirtualenv = true
-            pip 'pip:21.3.1'
-            pip 'mccabe:0.6.1'
-            // https://github.com/csachs/pyproject-flake8/issues/13
-            pip 'flake8:4.0.1'
-            // flake8 doesn't support pyproject.toml files
-            // and thus there is the wrapper "pyproject-flake8" for this
-            pip 'pyproject-flake8:0.0.1a2'
-            pip 'black:22.3.0'
-            pip 'mypy:0.930'
-            pip 'isort:5.6.4'
-            pip 'pytest:6.1.2'
-            pip 'coverage[toml]:6.3.1'
-        }
-
-
-        project.task('isortFormat', type: PythonTask) {
-            module = "isort"
-            command = "--settings-file=${project.rootProject.file('pyproject.toml').absolutePath} ./"
-        }
-
-        project.task('isortReport', type: PythonTask) {
-            module = "isort"
-            command = "--settings-file=${project.rootProject.file('pyproject.toml').absolutePath} --diff --quiet ./"
-            outputPrefix = ''
-        }
-
-        project.task('blackFormat', type: PythonTask) {
-            module = "black"
-            // the line length should match .isort.cfg
-            command = "--config ${project.rootProject.file('pyproject.toml').absolutePath} ./"
-            dependsOn project.rootProject.licenseFormat
-            dependsOn project.isortFormat
-        }
-
-        project.task('blackReport', type: PythonTask) {
-            module = "black"
-            command = "--config ${project.rootProject.file('pyproject.toml').absolutePath} --diff --quiet ./"
-            outputPrefix = ''
-        }
-
-        project.task('flakeCheck', type: PythonTask, dependsOn: project.blackFormat) {
-            module = "pflake8"
-            command = "--config ${project.rootProject.file('pyproject.toml').absolutePath} ./"
-        }
-
-        project.task('flakeReport', type: PythonTask) {
-            module = "pflake8"
-            command = "--exit-zero --config ${project.rootProject.file('pyproject.toml').absolutePath} ./"
-            outputPrefix = ''
-        }
-
-        project.task("mypyReport", type: Exec) {
-            commandLine = ".venv/bin/python"
-            args "-m", "mypy", "--config-file", "${project.rootProject.file('pyproject.toml').absolutePath}", "./"
-            setIgnoreExitValue true
-        }
-
-        //throw new GradleException("${project.projectDir.getAbsolutePath()}")
-
         project.task('installReqs', type: Exec) {
             commandLine "docker", "run", "-v", "${project.projectDir.getAbsolutePath()}:/tmp", "--entrypoint", "/bin/bash", "python:3.9-slim", "-c", "chmod +x /tmp/run.sh && /tmp/run.sh"
         }
 
-        if (extension.moduleDirectory) {
-            project.task('mypyCheck', type: PythonTask) {
-                module = "mypy"
-                command = "-m ${extension.moduleDirectory} --config-file ${project.rootProject.file('pyproject.toml').absolutePath}"
-            }
-
-            project.check.dependsOn mypyCheck
-        }
-
-        project.task('airbytePythonFormat', type: DefaultTask) {
-            dependsOn project.blackFormat
-            dependsOn project.isortFormat
-            dependsOn project.flakeCheck
-        }
-
         project.task('airbytePythonReport', type: DefaultTask) {
-            dependsOn project.blackReport
-            dependsOn project.isortReport
-            dependsOn project.flakeReport
-            dependsOn project.mypyReport
+            dependsOn project.installReqs
             doLast {
                 if (project.hasProperty('reports_folder')) {
                     // Gradles adds some log messages to files and we must remote them
@@ -194,7 +109,6 @@ class AirbytePythonDockerPlugin implements Plugin<Project> {
 
         project.task('airbytePythonApply', type: DefaultTask) {
             dependsOn project.installReqs
-            dependsOn project.airbytePythonFormat
         }
 
 
@@ -203,67 +117,10 @@ class AirbytePythonDockerPlugin implements Plugin<Project> {
             dependsOn project.installReqs
         }
 
-        // Add a task that allows cleaning up venvs to every python project
-        project.task('cleanPythonVenv', type: Exec) {
-            commandLine 'rm'
-            args '-rf', "$project.projectDir.absolutePath/$venvDirectoryName"
-        }
-
-        // Add a task which can be run at the root project level to delete all python venvs
-        if (!project.rootProject.hasProperty('cleanPythonVenvs')) {
-            project.rootProject.task('cleanPythonVenvs')
-        }
-        project.rootProject.cleanPythonVenvs.dependsOn(project.cleanPythonVenv)
 
         project.assemble.dependsOn project.airbytePythonApply
         project.assemble.dependsOn project.airbytePythonTest
         project.test.dependsOn project.airbytePythonTest
-
-        // saves tools reports to a custom folder
-        def reportsFolder = project.hasProperty('reports_folder') ? project.reports_folder : ''
-        if (reportsFolder != '') {
-
-            // clean reports folders
-            project.file(reportsFolder).deleteDir()
-            project.file(reportsFolder).mkdirs()
-
-
-            project.tasks.blackReport.configure {
-                it.logging.addStandardOutputListener(new StandardOutputListener() {
-                    @Override
-                    void onOutput(CharSequence charSequence) {
-                        project.file("$reportsFolder/black.diff") << charSequence
-                    }
-                })
-            }
-            project.tasks.isortReport.configure {
-                it.logging.addStandardOutputListener(new StandardOutputListener() {
-                    @Override
-                    void onOutput(CharSequence charSequence) {
-                        project.file("$reportsFolder/isort.diff") << charSequence
-                    }
-                })
-            }
-
-            project.tasks.flakeReport.configure {
-                it.logging.addStandardOutputListener(new StandardOutputListener() {
-                    @Override
-                    void onOutput(CharSequence charSequence) {
-                        project.file("$reportsFolder/flake.txt") << charSequence
-                    }
-                })
-            }
-
-            project.tasks.mypyReport.configure {
-                it.logging.addStandardOutputListener(new StandardOutputListener() {
-                    @Override
-                    void onOutput(CharSequence charSequence) {
-                        project.file("$reportsFolder/mypy.log") << charSequence
-                    }
-                })
-            }
-
-        }
     }
 }
 
