@@ -25,67 +25,67 @@ import org.slf4j.LoggerFactory;
 
 public class S3GlueDestination extends BaseS3Destination {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(S3GlueDestination.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(S3GlueDestination.class);
 
-    public S3GlueDestination() {
-        super();
+  public S3GlueDestination() {
+    super();
+  }
+
+  public static void main(String[] args) throws Exception {
+    new IntegrationRunner(new S3GlueDestination()).run(args);
+  }
+
+  @Override
+  public AirbyteConnectionStatus check(JsonNode config) {
+    var status = super.check(config);
+    if (status.getStatus() == AirbyteConnectionStatus.Status.FAILED) {
+      return status;
     }
+    final GlueDestinationConfig glueConfig = GlueDestinationConfig.getInstance(config);
+    MetastoreOperations metastoreOperations = null;
+    String tableName = "test_table";
+    try {
+      metastoreOperations = new GlueOperations(glueConfig.getAWSGlueInstance());
+      metastoreOperations.upsertTable(glueConfig.getDatabase(), tableName, "s3://", Jsons.emptyObject(), glueConfig.getSerializationLibrary());
 
-    public static void main(String[] args) throws Exception {
-        new IntegrationRunner(new S3GlueDestination()).run(args);
-    }
-
-    @Override
-    public AirbyteConnectionStatus check(JsonNode config) {
-        var status = super.check(config);
-        if (status.getStatus() == AirbyteConnectionStatus.Status.FAILED) {
-            return status;
-        }
-        final GlueDestinationConfig glueConfig = GlueDestinationConfig.getInstance(config);
-        MetastoreOperations metastoreOperations = null;
-        String tableName = "test_table";
+      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
+    } catch (Exception e) {
+      LOGGER.error("Error while trying to perform check with Glue: ", e);
+      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED);
+    } finally {
+      if (metastoreOperations != null) {
         try {
-            metastoreOperations = new GlueOperations(glueConfig.getAWSGlueInstance());
-            metastoreOperations.upsertTable(glueConfig.getDatabase(), tableName, "s3://", Jsons.emptyObject(), glueConfig.getSerializationLibrary());
-
-            return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
+          metastoreOperations.deleteTable(glueConfig.getDatabase(), tableName);
         } catch (Exception e) {
-            LOGGER.error("Error while trying to perform check with Glue: ", e);
-            return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED);
-        } finally {
-            if (metastoreOperations != null) {
-                try {
-                    metastoreOperations.deleteTable(glueConfig.getDatabase(), tableName);
-                } catch (Exception e) {
-                    LOGGER.error("Error while deleting Glue table");
-                }
-                metastoreOperations.close();
-            }
+          LOGGER.error("Error while deleting Glue table");
         }
+        metastoreOperations.close();
+      }
     }
+  }
 
-    @Override
-    public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                              ConfiguredAirbyteCatalog configuredCatalog,
-                                              Consumer<AirbyteMessage> outputRecordCollector) {
-        final S3DestinationConfig s3Config = configFactory.getS3DestinationConfig(config, storageProvider());
-        final GlueDestinationConfig glueConfig = GlueDestinationConfig.getInstance(config);
-        final NamingConventionTransformer nameTransformer = new S3NameTransformer();
-        return new S3GlueConsumerFactory().create(
-            outputRecordCollector,
-            new S3StorageOperations(nameTransformer, s3Config.getS3Client(), s3Config),
-            //TODO (itaseski) add Glue name transformer
-            new GlueOperations(glueConfig.getAWSGlueInstance()),
-            nameTransformer,
-            SerializedBufferFactory.getCreateFunction(s3Config, FileBuffer::new),
-            s3Config,
-            glueConfig,
-            configuredCatalog);
-    }
+  @Override
+  public AirbyteMessageConsumer getConsumer(JsonNode config,
+                                            ConfiguredAirbyteCatalog configuredCatalog,
+                                            Consumer<AirbyteMessage> outputRecordCollector) {
+    final S3DestinationConfig s3Config = configFactory.getS3DestinationConfig(config, storageProvider());
+    final GlueDestinationConfig glueConfig = GlueDestinationConfig.getInstance(config);
+    final NamingConventionTransformer nameTransformer = new S3NameTransformer();
+    return new S3GlueConsumerFactory().create(
+        outputRecordCollector,
+        new S3StorageOperations(nameTransformer, s3Config.getS3Client(), s3Config),
+        // TODO (itaseski) add Glue name transformer
+        new GlueOperations(glueConfig.getAWSGlueInstance()),
+        nameTransformer,
+        SerializedBufferFactory.getCreateFunction(s3Config, FileBuffer::new),
+        s3Config,
+        glueConfig,
+        configuredCatalog);
+  }
 
-    @Override
-    public StorageProvider storageProvider() {
-        return StorageProvider.AWS_S3;
-    }
+  @Override
+  public StorageProvider storageProvider() {
+    return StorageProvider.AWS_S3;
+  }
 
 }
