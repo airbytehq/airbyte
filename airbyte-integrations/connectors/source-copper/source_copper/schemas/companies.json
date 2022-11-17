@@ -42,18 +42,17 @@
     },
     "socials": {
       "type": "array",
-      "items":
-        {
-          "type": "object",
-          "properties": {
-            "url": {
-              "type": "string"
-            },
-            "category": {
-              "type": "string"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
           }
         }
+      }
     },
     "tags": {
       "type": "array",
@@ -62,16 +61,16 @@
     "websites": {
       "type": "array",
       "items": {
-          "type": ["object", "null"],
-          "properties": {
-            "url": {
-              "type": "string"
-            },
-            "category": {
-              "type": "string"
-            }
+        "type": ["object", "null"],
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
           }
         }
+      }
     },
     "interaction_count": {
       "type": "integer"

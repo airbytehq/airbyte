@@ -9,7 +9,7 @@
       "type": "string"
     },
     "related_resource": {
-      "type": ["string","null"]
+      "type": ["string", "null"]
     },
     "assignee_id": {
       "type": "integer"

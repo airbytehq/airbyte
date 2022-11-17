@@ -30,16 +30,16 @@
           "type": "string"
         },
         "city": {
-          "type": ["string","null"]
+          "type": ["string", "null"]
         },
         "state": {
-          "type": ["string","null"]
+          "type": ["string", "null"]
         },
         "postal_code": {
-          "type": ["string","null"]
+          "type": ["string", "null"]
         },
         "country": {
-          "type":  ["string","null"]
+          "type": ["string", "null"]
         }
       }
     },
@@ -60,66 +60,63 @@
     },
     "emails": {
       "type": "array",
-      "items":
-        {
-          "type": "object",
-          "properties": {
-            "category": {
-              "type": "string"
-            },
-            "email": {
-              "type": "string"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
           }
         }
+      }
     },
     "phone_numbers": {
       "type": "array",
-      "items":
-        {
-          "type": "object",
-          "properties": {
-            "number": {
-              "type": "string"
-            },
-            "category": {
-              "type": "string"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
           }
         }
+      }
     },
     "title": {
       "type": "null"
     },
     "websites": {
       "type": "array",
-      "items":
-        {
-          "type": "object",
-          "properties": {
-            "url": {
-              "type": "string"
-            },
-            "category": {
-              "type": "string"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
           }
         }
+      }
     },
     "date_created": {
       "type": "integer"
     },
     "date_modified": {
-      "type":  ["integer","null"]
+      "type": ["integer", "null"]
     },
     "date_last_contacted": {
-      "type": ["integer","null"]
+      "type": ["integer", "null"]
     },
     "interaction_count": {
       "type": "integer"
     },
     "date_lead_created": {
-      "type": ["integer","null"]
+      "type": ["integer", "null"]
     }
   },
   "required": ["id"]
