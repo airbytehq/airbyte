@@ -547,7 +547,7 @@ def test_generate_schema():
     assert default_error_handler["properties"]["backoff_strategies"]["type"] == "array"
 
     default_paginator = schema["definitions"]["DefaultPaginator"]["allOf"][1]
-    assert {"page_token_option", "pagination_strategy", "config", "url_base"}.issubset(default_paginator["required"])
+    assert {"pagination_strategy", "config", "url_base"}.issubset(default_paginator["required"])
     assert default_paginator["properties"]["page_size_option"]["$ref"] == "#/definitions/RequestOption"
     assert default_paginator["properties"]["page_token_option"]["$ref"] == "#/definitions/RequestOption"
     assert {"$ref": "#/definitions/CursorPaginationStrategy"} in default_paginator["properties"]["pagination_strategy"]["anyOf"]
