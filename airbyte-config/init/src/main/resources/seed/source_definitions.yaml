@@ -311,7 +311,7 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/copper
   sourceType: api
-  releaseStage: alpha  
+  releaseStage: alpha
 - name: Convex
   sourceDefinitionId: c332628c-f55c-4017-8222-378cfafda9b2
   dockerRepository: airbyte/source-convex
