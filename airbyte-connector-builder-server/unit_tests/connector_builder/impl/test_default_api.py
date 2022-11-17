@@ -353,7 +353,7 @@ def test_invalid_manifest():
         )
 
     assert actual_exception.value.status_code == expected_status_code
-    assert actual_exception.value.detail == expected_detail
+    assert expected_detail in actual_exception.value.detail
 
 
 def test_read_stream_invalid_group_format():
@@ -381,7 +381,7 @@ def test_read_stream_invalid_group_format():
 
 def test_read_stream_returns_error_if_stream_does_not_exist():
     expected_status_code = 400
-    expected_detail = "Could not perform read with with error: The requested stream not_in_manifest was not found in the source. Available streams: dict_keys(['hashiras', 'breathing-techniques'])"
+    expected_detail = "Could not perform read with with error: \"The requested stream not_in_manifest was not found in the source. Available streams: dict_keys(['hashiras', 'breathing-techniques'])\""
 
     api = DefaultApiImpl()
     loop = asyncio.get_event_loop()
@@ -391,7 +391,7 @@ def test_read_stream_returns_error_if_stream_does_not_exist():
         )
 
     assert actual_exception.value.status_code == expected_status_code
-    assert actual_exception.value.detail == expected_detail
+    assert expected_detail in actual_exception.value.detail
 
 
 @pytest.mark.parametrize(
