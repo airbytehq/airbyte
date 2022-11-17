@@ -275,6 +275,16 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: USE_STREAM_CAPABLE_STATE
+            - name: SHOULD_RUN_NOTIFY_WORKFLOWS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: SHOULD_RUN_NOTIFY_WORKFLOWS
+            - name: MAX_NOTIFY_WORKERS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: MAX_NOTIFY_WORKERS
             - name: MICRONAUT_ENVIRONMENTS
               valueFrom:
                 configMapKeyRef:

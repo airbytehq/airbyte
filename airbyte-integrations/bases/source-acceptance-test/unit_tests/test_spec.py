@@ -723,6 +723,13 @@ def test_additional_properties_is_true(connector_spec, expectation):
             },
             False,
             False
+        ),
+        (
+            {
+                 "connectionSpecification": {"type": "object", "properties": {"credentials": {"oneOf": [{"type": "string", "const": "OAuth2.0"}]}}}
+            },
+            False,
+            False
         )
     ),
 )
@@ -773,7 +780,8 @@ def test_is_spec_property_name_secret(path, expected_name, expected_result):
         ({"type": "object", "properties": {"api_key": {}}}, False),
         ({"type": "array"}, True),
         # same as object
-        ({"type": "array", "items": {"type": "string"}}, False)
+        ({"type": "array", "items": {"type": "string"}}, False),
+        ({"type": "string", "const": "OAuth2.0"}, False)
     )
 )
 def test_property_can_store_secret(property_def, can_store_secret):

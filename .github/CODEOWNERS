@@ -5,6 +5,9 @@
 /airbyte-webapp/package.json
 /airbyte-webapp/package-lock.json
 
+# Design
+/airbyte-config/init/src/main/resources/icons/*.svg @airbytehq/design
+
 # CDK and SAT
 /airbyte-cdk/ @airbytehq/api-connectors-dx
 /airbyte-integrations/bases/source-acceptance-tests/ @airbytehq/api-connectors-dx
