@@ -8,7 +8,7 @@ import {
   StreamsListRequestBodyConfig,
   StreamsListRequestBodyManifest,
 } from "core/request/ConnectorBuilderClient";
-import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
+import { useSuspenseQuery } from "services/connector/useSuspenseQuery";
 import { useInitService } from "services/useInitService";
 
 const connectorBuilderKeys = {
@@ -21,10 +21,9 @@ const connectorBuilderKeys = {
 
 function useConnectorBuilderService() {
   const config = useConfig();
-  const middlewares = useDefaultRequestMiddlewares();
   return useInitService(
-    () => new ConnectorBuilderRequestService(config.connectorBuilderApiUrl, middlewares),
-    [config.connectorBuilderApiUrl, middlewares]
+    () => new ConnectorBuilderRequestService(config.connectorBuilderApiUrl),
+    [config.connectorBuilderApiUrl]
   );
 }
 
@@ -45,4 +44,10 @@ export const useListStreams = (params: StreamsListRequestBody) => {
     cacheTime: 0,
     retry: false,
   });
+};
+
+export const useManifestTemplate = () => {
+  const service = useConnectorBuilderService();
+
+  return useSuspenseQuery(connectorBuilderKeys.template, () => service.getManifestTemplate());
 };

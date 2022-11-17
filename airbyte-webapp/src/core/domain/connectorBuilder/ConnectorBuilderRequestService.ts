@@ -7,6 +7,7 @@ import {
 } from "core/request/ConnectorBuilderClient";
 
 import { AirbyteRequestService } from "../../request/AirbyteRequestService";
+import { template } from "./YamlTemplate";
 
 function mockRecord(streamName: string, recordNum: number, pageNum: number, sliceDay: number) {
   return {
@@ -115,5 +116,10 @@ export class ConnectorBuilderRequestService extends AirbyteRequestService {
         ],
       };
     });
+  }
+
+  public getManifestTemplate(): Promise<string> {
+    // return getManifestTemplate(this.requestOptions);
+    return new Promise(() => template);
   }
 }
