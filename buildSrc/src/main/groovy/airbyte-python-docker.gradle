@@ -11,24 +11,15 @@ class AirbytePythonDockerPlugin implements Plugin<Project> {
     void apply(Project project) {
         def extension = project.extensions.create('airbytePythonDocker', AirbytePythonDockerConfiguration)
 
-        project.task('runTests', type: Exec) {
+        project.task('airbytePythonDockerApply', type: Exec) {
+            /*
+            Install the dependencies, run the tests, and run static analysis from a docker container
+             */
             commandLine "docker", "run", "-v", "${project.projectDir.getAbsolutePath()}:/tmp", "--entrypoint", "/bin/bash", "python:3.9-slim", "-c", "chmod +x /tmp/run.sh && /tmp/run.sh /tmp"
         }
 
-        project.task('airbytePythonApply', type: DefaultTask) {
-            dependsOn project.runTests
-        }
-
-
-        project.task('airbytePythonTest', type: DefaultTask) {
-            dependsOn project.airbytePythonApply
-            dependsOn project.runTests
-        }
-
-
-        project.assemble.dependsOn project.airbytePythonApply
-        project.assemble.dependsOn project.airbytePythonTest
-        project.test.dependsOn project.airbytePythonTest
+        project.assemble.dependsOn project.airbytePythonDockerApply
+        project.test.dependsOn project.airbytePythonDockerApply
     }
 }
 
