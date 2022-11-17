@@ -1,12 +1,8 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-from http import HTTPStatus
-from unittest.mock import MagicMock, patch
-
+from unittest.mock import MagicMock
 import pytest
-import types
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from source_surveycto.helpers import Helpers
 
 

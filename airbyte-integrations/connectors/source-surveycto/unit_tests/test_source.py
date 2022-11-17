@@ -2,8 +2,8 @@
 # # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 # #
 import pytest
-from unittest.mock import Mock, MagicMock, patch
-from airbyte_cdk.models import AirbyteCatalog, ConnectorSpecification
+from unittest.mock import MagicMock, patch
+from airbyte_cdk.models import ConnectorSpecification
 from source_surveycto.source import SourceSurveycto
 from source_surveycto.helpers import Helpers
 
