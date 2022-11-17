@@ -1,6 +1,6 @@
 {
   "streams": [
-     {
+    {
       "stream": {
         "name": "tours",
         "json_schema": {},
@@ -9,7 +9,7 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
-     {
+    {
       "stream": {
         "name": "recreationareaaddresses",
         "json_schema": {},
@@ -18,7 +18,7 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
-{
+    {
       "stream": {
         "name": "recreationareas",
         "json_schema": {},
@@ -27,7 +27,7 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
-     {
+    {
       "stream": {
         "name": "organizations",
         "json_schema": {},

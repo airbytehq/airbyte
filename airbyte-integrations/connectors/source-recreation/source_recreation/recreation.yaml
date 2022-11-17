@@ -48,14 +48,14 @@ definitions:
       name: "activities"
       primary_key: "ActivityID"
       path: "/activities"
-      
+
   campsites_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "campsites"
       primary_key: "CampsiteID"
       path: "/campsites"
-  
+
   events_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:

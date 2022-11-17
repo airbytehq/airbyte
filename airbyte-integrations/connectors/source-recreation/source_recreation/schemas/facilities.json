@@ -54,11 +54,10 @@
           "type": "string"
         },
         "COORDINATES": {
-          "type": ["array","null"],
-          "items": 
-            {
-              "type": ["string","number","null"]
-            }
+          "type": ["array", "null"],
+          "items": {
+            "type": ["string", "number", "null"]
+          }
         }
       }
     },
@@ -85,291 +84,272 @@
     },
     "CAMPSITE": {
       "type": "array",
-      "items": 
-        {
-          "type": "object",
-          "properties": {
-            "CampsiteID": {
-              "type": "string"
-            },
-            "CampsiteName": {
-              "type": "string"
-            },
-            "ResourceLink": {
-              "type": "string"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "CampsiteID": {
+            "type": "string"
+          },
+          "CampsiteName": {
+            "type": "string"
+          },
+          "ResourceLink": {
+            "type": "string"
           }
         }
-      
+      }
     },
     "PERMITENTRANCE": {
       "type": "array",
-      "items": 
-        {
-          "type": "object",
-          "properties": {
-            "PermitEntranceID": {
-              "type": "string"
-            },
-            "PermitEntranceName": {
-              "type": "string"
-            },
-            "ResourceLink": {
-              "type": "string"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "PermitEntranceID": {
+            "type": "string"
+          },
+          "PermitEntranceName": {
+            "type": "string"
+          },
+          "ResourceLink": {
+            "type": "string"
           }
         }
-      
+      }
     },
     "TOUR": {
       "type": "array",
-      "items": 
-        {
-          "type": "object",
-          "properties": {
-            "TourID": {
-              "type": "string"
-            },
-            "TourName": {
-              "type": "string"
-            },
-            "ResourceLink": {
-              "type": "string"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "TourID": {
+            "type": "string"
+          },
+          "TourName": {
+            "type": "string"
+          },
+          "ResourceLink": {
+            "type": "string"
           }
         }
-      
+      }
     },
     "ORGANIZATION": {
       "type": "array",
-      "items": 
-        {
-          "type": "object",
-          "properties": {
-            "OrgID": {
-              "type": "string"
-            },
-            "OrgName": {
-              "type": "string"
-            },
-            "OrgImageURL": {
-              "type": "string"
-            },
-            "OrgURLText": {
-              "type": "string"
-            },
-            "OrgURLAddress": {
-              "type": "string"
-            },
-            "OrgType": {
-              "type": "string"
-            },
-            "OrgAbbrevName": {
-              "type": "string"
-            },
-            "OrgJurisdictionType": {
-              "type": "string"
-            },
-            "OrgParentID": {
-              "type": "string"
-            },
-            "LastUpdatedDate": {
-              "type": "string"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "OrgID": {
+            "type": "string"
+          },
+          "OrgName": {
+            "type": "string"
+          },
+          "OrgImageURL": {
+            "type": "string"
+          },
+          "OrgURLText": {
+            "type": "string"
+          },
+          "OrgURLAddress": {
+            "type": "string"
+          },
+          "OrgType": {
+            "type": "string"
+          },
+          "OrgAbbrevName": {
+            "type": "string"
+          },
+          "OrgJurisdictionType": {
+            "type": "string"
+          },
+          "OrgParentID": {
+            "type": "string"
+          },
+          "LastUpdatedDate": {
+            "type": "string"
           }
         }
-      
+      }
     },
     "RECAREA": {
       "type": "array",
-      "items": 
-        {
-          "type": "object",
-          "properties": {
-            "RecAreaID": {
-              "type": "string"
-            },
-            "RecAreaName": {
-              "type": "string"
-            },
-            "ResourceLink": {
-              "type": "string"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "RecAreaID": {
+            "type": "string"
+          },
+          "RecAreaName": {
+            "type": "string"
+          },
+          "ResourceLink": {
+            "type": "string"
           }
         }
-      
+      }
     },
     "FACILITYADDRESS": {
       "type": "array",
-      "items": 
-        {
-          "type": "object",
-          "properties": {
-            "FacilityAddressID": {
-              "type": "string"
-            },
-            "FacilityID": {
-              "type": "string"
-            },
-            "FacilityAddressType": {
-              "type": "string"
-            },
-            "FacilityStreetAddress1": {
-              "type": "string"
-            },
-            "FacilityStreetAddress2": {
-              "type": "string"
-            },
-            "FacilityStreetAddress3": {
-              "type": "string"
-            },
-            "City": {
-              "type": "string"
-            },
-            "PostalCode": {
-              "type": "string"
-            },
-            "AddressStateCode": {
-              "type": "string"
-            },
-            "AddressCountryCode": {
-              "type": "string"
-            },
-            "LastUpdatedDate": {
-              "type": "string"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "FacilityAddressID": {
+            "type": "string"
+          },
+          "FacilityID": {
+            "type": "string"
+          },
+          "FacilityAddressType": {
+            "type": "string"
+          },
+          "FacilityStreetAddress1": {
+            "type": "string"
+          },
+          "FacilityStreetAddress2": {
+            "type": "string"
+          },
+          "FacilityStreetAddress3": {
+            "type": "string"
+          },
+          "City": {
+            "type": "string"
+          },
+          "PostalCode": {
+            "type": "string"
+          },
+          "AddressStateCode": {
+            "type": "string"
+          },
+          "AddressCountryCode": {
+            "type": "string"
+          },
+          "LastUpdatedDate": {
+            "type": "string"
           }
         }
-      
+      }
     },
     "ACTIVITY": {
       "type": "array",
-      "items": 
-        {
-          "type": "object",
-          "properties": {
-            "ActivityID": {
-              "type": "string"
-            },
-            "FacilityID": {
-              "type": "string"
-            },
-            "ActivityName": {
-              "type": "string"
-            },
-            "FacilityActivityDescription": {
-              "type": "string"
-            },
-            "FacilityActivityFeeDescription": {
-              "type": "string"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "ActivityID": {
+            "type": "string"
+          },
+          "FacilityID": {
+            "type": "string"
+          },
+          "ActivityName": {
+            "type": "string"
+          },
+          "FacilityActivityDescription": {
+            "type": "string"
+          },
+          "FacilityActivityFeeDescription": {
+            "type": "string"
           }
         }
-      
+      }
     },
     "EVENT": {
       "type": "array",
-      "items": 
-        {
-          "type": "object",
-          "properties": {
-            "EventID": {
-              "type": "string"
-            },
-            "EventName": {
-              "type": "string"
-            },
-            "ResourceLink": {
-              "type": "string"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "EventID": {
+            "type": "string"
+          },
+          "EventName": {
+            "type": "string"
+          },
+          "ResourceLink": {
+            "type": "string"
           }
         }
-      
+      }
     },
     "LINK": {
       "type": "array",
-      "items": 
-        {
-          "type": "object",
-          "properties": {
-            "EntityLinkID": {
-              "type": "string"
-            },
-            "LinkType": {
-              "type": "string"
-            },
-            "EntityID": {
-              "type": "string"
-            },
-            "EntityType": {
-              "type": "string"
-            },
-            "Title": {
-              "type": "string"
-            },
-            "Description": {
-              "type": "string"
-            },
-            "URL": {
-              "type": "string"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "EntityLinkID": {
+            "type": "string"
+          },
+          "LinkType": {
+            "type": "string"
+          },
+          "EntityID": {
+            "type": "string"
+          },
+          "EntityType": {
+            "type": "string"
+          },
+          "Title": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "URL": {
+            "type": "string"
           }
         }
-      
+      }
     },
     "MEDIA": {
       "type": "array",
-      "items": 
-        {
-          "type": "object",
-          "properties": {
-            "EntityMediaID": {
-              "type": "string"
-            },
-            "MediaType": {
-              "type": "string"
-            },
-            "EntityID": {
-              "type": "string"
-            },
-            "EntityType": {
-              "type": "string"
-            },
-            "Title": {
-              "type": "string"
-            },
-            "Subtitle": {
-              "type": "string"
-            },
-            "Description": {
-              "type": "string"
-            },
-            "EmbedCode": {
-              "type": "string"
-            },
-            "Height": {
-              "type": "integer"
-            },
-            "Width": {
-              "type": "integer"
-            },
-            "IsPrimary": {
-              "type": "boolean"
-            },
-            "IsPreview": {
-              "type": "boolean"
-            },
-            "IsGallery": {
-              "type": "boolean"
-            },
-            "URL": {
-              "type": "string"
-            },
-            "Credits": {
-              "type": "string"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "EntityMediaID": {
+            "type": "string"
+          },
+          "MediaType": {
+            "type": "string"
+          },
+          "EntityID": {
+            "type": "string"
+          },
+          "EntityType": {
+            "type": "string"
+          },
+          "Title": {
+            "type": "string"
+          },
+          "Subtitle": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "EmbedCode": {
+            "type": "string"
+          },
+          "Height": {
+            "type": "integer"
+          },
+          "Width": {
+            "type": "integer"
+          },
+          "IsPrimary": {
+            "type": "boolean"
+          },
+          "IsPreview": {
+            "type": "boolean"
+          },
+          "IsGallery": {
+            "type": "boolean"
+          },
+          "URL": {
+            "type": "string"
+          },
+          "Credits": {
+            "type": "string"
           }
         }
+      }
     }
   }
 }
