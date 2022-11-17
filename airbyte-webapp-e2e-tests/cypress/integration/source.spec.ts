@@ -46,7 +46,7 @@ describe("Unsaved changes modal", () => {
 
     openHomepage();
 
-    cy.url().should("include", "/onboarding");
+    cy.url().should("include", "/connections");
     cy.get("[data-testid='confirmationModal']").should("not.exist");
   });
 
@@ -57,7 +57,7 @@ describe("Unsaved changes modal", () => {
 
     openHomepage();
 
-    cy.url().should("include", "/onboarding");
+    cy.url().should("include", "/connections");
     cy.get("[data-testid='confirmationModal']").should("not.exist");
   });
 
