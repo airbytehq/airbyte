@@ -22,4 +22,9 @@
 .logsDisplay {
   overflow-y: auto;
   height: 100%;
+  padding: variables.$spacing-md;
+}
+
+.error {
+  color: colors.$red;
 }
