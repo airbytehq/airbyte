@@ -12,7 +12,7 @@ connectionSpecification:
       title: Beers with specific ID
       type: string
       description: To extract specific data with Unique ID
-      examples: 
+      examples:
         - 1
         - 22
     brewed_before:

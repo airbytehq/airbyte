@@ -83,4 +83,5 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition {
         + fileName + " , target position : " + position);
     return true;
   }
+
 }
