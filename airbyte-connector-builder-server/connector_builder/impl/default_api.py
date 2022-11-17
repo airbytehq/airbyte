@@ -21,7 +21,6 @@ from connector_builder.generated.models.streams_list_read_streams import Streams
 from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
 from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapter
 from fastapi import Body, HTTPException
-from jsonschema import ValidationError
 
 
 class DefaultApiImpl(DefaultApi):
@@ -97,7 +96,7 @@ spec:
                     )
                 )
         except Exception as error:
-            raise HTTPException(status_code=400, detail=f"Could not list streams with with error: {error.args[0]}")
+            raise HTTPException(status_code=400, detail=f"Could not list streams with with error: {str(error)}")
         return StreamsListRead(streams=stream_list_read)
 
     async def read_stream(self, stream_read_request_body: StreamReadRequestBody = Body(None, description="")) -> StreamRead:
@@ -121,7 +120,7 @@ spec:
                     single_slice.pages.append(message_group)
         except Exception as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
-            raise HTTPException(status_code=400, detail=f"Could not perform read with with error: {error.args[0]}")
+            raise HTTPException(status_code=400, detail=f"Could not perform read with with error: {str(error)}")
 
         return StreamRead(logs=log_messages, slices=[single_slice])
 
@@ -199,6 +198,6 @@ spec:
     def _create_low_code_adapter(manifest: Dict[str, Any]) -> LowCodeSourceAdapter:
         try:
             return LowCodeSourceAdapter(manifest=manifest)
-        except ValidationError as error:
+        except Exception as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
-            raise HTTPException(status_code=400, detail=f"Invalid connector manifest with error: {error.message}")
+            raise HTTPException(status_code=400, detail=f"Invalid connector manifest with error: {str(error)}")
