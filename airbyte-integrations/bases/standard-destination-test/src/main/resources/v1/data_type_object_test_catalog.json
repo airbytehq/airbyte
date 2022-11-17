@@ -6,34 +6,28 @@
         "type": ["object"],
         "properties": {
           "property_string": {
-            "type": "string"
+            "$ref": "WellKnownTypes.json#definitions/String"
           },
           "property_date": {
-            "type": "string",
-            "format": "date"
+            "$ref": "WellKnownTypes.json#definitions/Date"
           },
           "property_timestamp_with_timezone": {
-            "type": "string",
-            "format": "date-time",
-            "airbyte_type": "timestamp_with_timezone"
+            "$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"
           },
           "property_timestamp_without_timezone": {
-            "type": "string",
-            "format": "date-time",
-            "airbyte_type": "timestamp_without_timezone"
+            "$ref": "WellKnownTypes.json#definitions/TimestampWithoutTimezone"
           },
           "property_number": {
-            "type": "number"
+            "$ref": "WellKnownTypes.json#definitions/Number"
           },
           "property_big_number": {
-            "type": "string",
-            "airbyte_type": "big_number"
+            "$ref": "WellKnownTypes.json#definitions/String"
           },
           "property_integer": {
-            "type": "integer"
+            "$ref": "WellKnownTypes.json#definitions/Integer"
           },
           "property_boolean": {
-            "type": "boolean"
+            "$ref": "WellKnownTypes.json#definitions/Boolean"
           }
         }
       }

@@ -26,7 +26,7 @@ public class ArgumentProviderUtil {
    * @return filename with protocol version prefix
    */
   public static String prefixFileNameByVersion(final String fileName, ProtocolVersion protocolVersion) {
-    return String.format("%s%s", protocolVersion.getPrefix(), fileName);
+    return String.format("%s/%s", protocolVersion.getPrefix(), fileName);
   }
 
   /**

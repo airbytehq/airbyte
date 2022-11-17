@@ -5,8 +5,7 @@
       "json_schema": {
         "properties": {
           "data": {
-            "type": "number",
-            "airbyte_type": "integer"
+            "$ref": "WellKnownTypes.json#definitions/Integer"
           }
         }
       }
@@ -16,8 +15,7 @@
       "json_schema": {
         "properties": {
           "data": {
-            "type": "number",
-            "airbyte_type": "float"
+            "$ref": "WellKnownTypes.json#definitions/Number"
           }
         }
       }
@@ -27,7 +25,7 @@
       "json_schema": {
         "properties": {
           "data": {
-            "type": "number"
+            "$ref": "WellKnownTypes.json#definitions/Number"
           }
         }
       }

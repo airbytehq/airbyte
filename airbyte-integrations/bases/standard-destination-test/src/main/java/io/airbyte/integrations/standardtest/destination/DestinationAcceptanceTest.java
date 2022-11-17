@@ -1548,14 +1548,14 @@ public abstract class DestinationAcceptanceTest {
 
   /**
    * The method should be overridden if destination connector support newer protocol version otherwise
-   * {@link io.airbyte.integrations.standardtest.destination.ProtocolVersion#DEFAULT} is used
+   * {@link io.airbyte.integrations.standardtest.destination.ProtocolVersion#V0} is used
    * <p>
    * NOTE: Method should be public in a sake of java reflection
    *
    * @return
    */
   public ProtocolVersion getProtocolVersion() {
-    return ProtocolVersion.DEFAULT;
+    return ProtocolVersion.V0;
   }
 
   private boolean checkTestCompatibility(
@@ -1634,7 +1634,7 @@ public abstract class DestinationAcceptanceTest {
     return airbyteMessages;
   }
 
-  public class NamespaceTestCaseProvider implements ArgumentsProvider {
+  public static class NamespaceTestCaseProvider implements ArgumentsProvider {
 
     public static final String NAMESPACE_TEST_CASES_JSON = "namespace_test_cases.json";
 

@@ -7,19 +7,21 @@
           "array_number": {
             "type": ["array"],
             "items": {
-              "$ref": "WellKnownTypes.json#definitions/Number"
+              "type": "number"
             }
           },
           "array_float": {
             "type": ["array"],
             "items": {
-              "$ref": "WellKnownTypes.json#definitions/Number"
+              "type": "number",
+              "airbyte_type": "float"
             }
           },
           "array_integer": {
             "type": ["array"],
             "items": {
-              "$ref": "WellKnownTypes.json#definitions/Integer"
+              "type": "number",
+              "airbyte_type": "integer"
             }
           }
         }

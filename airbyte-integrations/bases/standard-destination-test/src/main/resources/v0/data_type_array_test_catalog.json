@@ -6,50 +6,56 @@
         "properties": {
           "string_array": {
             "type": ["array"],
-            "items": [{
-              "$ref": "WellKnownTypes.json#definitions/String"
-            }]
+            "items": {
+              "type": ["string"]
+            }
           },
           "array_date": {
             "type": ["array"],
             "items": {
-              "$ref": "WellKnownTypes.json#definitions/Date"
+              "type": "string",
+              "format": "date"
             }
           },
           "array_timestamp_with_timezone": {
             "type": ["array"],
             "items": {
-              "$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
             }
           },
           "array_timestamp_without_timezone": {
             "type": ["array"],
             "items": {
-              "$ref": "WellKnownTypes.json#definitions/TimestampWithoutTimezone"
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_without_timezone"
             }
           },
           "array_number": {
             "type": ["array"],
             "items": {
-              "$ref": "WellKnownTypes.json#definitions/Number"
+              "type": "number"
             }
           },
           "array_big_number": {
             "type": ["array"],
             "items": {
-              "$ref": "WellKnownTypes.json#definitions/Number"
+              "type": "string",
+              "airbyte_type": "big_number"
             }
           },
           "array_integer": {
             "type": ["array"],
             "items": {
-              "$ref": "WellKnownTypes.json#definitions/Integer"
+              "type": "integer"
             }
           },
           "array_boolean": {
             "type": ["array"],
             "items": {
-              "$ref": "WellKnownTypes.json#definitions/Boolean"
+              "type": "boolean"
             }
           }
         }
