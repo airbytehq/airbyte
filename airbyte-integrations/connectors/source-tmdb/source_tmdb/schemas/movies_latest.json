@@ -14,13 +14,13 @@
     "backdrop_path": {
       "$id": "#root/backdrop_path",
       "title": "Backdrop_path",
-      "type": ["string","null"],
+      "type": ["string", "null"],
       "default": null
     },
     "belongs_to_collection": {
       "$id": "#root/belongs_to_collection",
       "title": "Belongs_to_collection",
-      "type": ["string","null"],
+      "type": ["string", "null"],
       "default": null
     },
     "budget": {
