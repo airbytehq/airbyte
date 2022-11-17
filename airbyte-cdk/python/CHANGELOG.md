@@ -1,4 +1,6 @@
 # Changelog
+## 0.9.5
+Allow repeated cache removals & clean up unit test cache files
 
 ## 0.9.3
 Low-code: Avoid duplicate HTTP query in `simple_retriever`
