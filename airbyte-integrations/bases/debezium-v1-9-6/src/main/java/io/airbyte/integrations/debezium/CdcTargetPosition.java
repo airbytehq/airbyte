@@ -5,6 +5,7 @@
 package io.airbyte.integrations.debezium;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.debezium.engine.ChangeEvent;
 
 /**
  * This interface is used to define the target position at the beginning of the sync so that once we
@@ -15,6 +16,41 @@ import com.fasterxml.jackson.databind.JsonNode;
  */
 public interface CdcTargetPosition {
 
+  /**
+   * Reads a position value (lsn) from a change event and compares it to target lsn
+   *
+   * @param valueAsJson json representation of a change event
+   * @return true if event lsn is equal or greater than targer lsn, or if last snapshot event
+   */
   boolean reachedTargetPosition(JsonNode valueAsJson);
+
+  /**
+   * Returns a position value (lsn) from a heartbeat event.
+   *
+   * @param heartbeatEvent a heartbeat change event
+   * @return the lsn value in a heartbeat change event or null
+   */
+  default Long getHeartbeatPosition(final ChangeEvent<String, String> heartbeatEvent) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Checks if a specified lsn has reached the target lsn.
+   *
+   * @param lsn an lsn value
+   * @return true if lsn is equal or greater than target lsn
+   */
+  default boolean reachedTargetPosition(final Long lsn) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Indicates whether the implementation supports heartbeat position.
+   *
+   * @return true if heartbeats are supported
+   */
+  default boolean isHeartbeatSupported() {
+    return false;
+  }
 
 }
