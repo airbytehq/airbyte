@@ -417,11 +417,14 @@ module.exports = {
     {
       type: 'category',
       label: 'Release Notes',
+      link: {
+        type: 'generated-index',
+      },
       items: [
-         'release_notes/july_2022',
-         'release_notes/august_2022',
-         'release_notes/september_2022',
-         'release_notes/october_2022',
+        'release_notes/october_2022',
+        'release_notes/september_2022',
+        'release_notes/august_2022',
+        'release_notes/july_2022',
       ],
     },
   ],
