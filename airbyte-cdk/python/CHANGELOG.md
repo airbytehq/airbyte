@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.9.4
-Low-code: Add jinja macro `strptime`
+Low-code: Add jinja macro `datetime_to_format`
 
 ## 0.9.3
 Low-code: Avoid duplicate HTTP query in `simple_retriever`
