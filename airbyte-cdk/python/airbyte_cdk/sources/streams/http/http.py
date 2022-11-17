@@ -68,11 +68,9 @@ class HttpStream(Stream, ABC):
         """
         remove cache file only once
         """
-        STREAM_CACHE_FILES = globals().setdefault("STREAM_CACHE_FILES", set())
-        if self.cache_filename not in STREAM_CACHE_FILES:
-            with suppress(FileNotFoundError):
-                os.remove(self.cache_filename)
-            STREAM_CACHE_FILES.add(self.cache_filename)
+        with suppress(FileNotFoundError):
+            os.remove(self.cache_filename)
+            print(f"Removed {self.cache_filename}")
 
     @property
     @abstractmethod

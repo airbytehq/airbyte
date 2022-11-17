@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, patch
 import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import pytest
 import requests
+import tempfile
 from airbyte_cdk.models import AirbyteLogMessage, Level, SyncMode
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
@@ -29,7 +30,7 @@ config = {}
 
 @patch.object(HttpStream, "_read_pages", return_value=[])
 def test_simple_retriever_full(mock_http_stream):
-    requester = MagicMock()
+    requester = MagicMock(use_cache=False)
     request_params = {"param": "value"}
     requester.get_request_params.return_value = request_params
 
@@ -69,7 +70,7 @@ def test_simple_retriever_full(mock_http_stream):
     requester.get_request_body_json.return_value = request_body_json
     request_kwargs = {"kwarg": "value"}
     requester.request_kwargs.return_value = request_kwargs
-    cache_filename = "cache"
+    cache_filename = tempfile.NamedTemporaryFile().name
     requester.cache_filename = cache_filename
     use_cache = True
     requester.use_cache = use_cache
@@ -114,7 +115,7 @@ def test_simple_retriever_full(mock_http_stream):
 
 @patch.object(HttpStream, "_read_pages", return_value=[*request_response_logs, *records])
 def test_simple_retriever_with_request_response_logs(mock_http_stream):
-    requester = MagicMock()
+    requester = MagicMock(use_cache=False)
     paginator = MagicMock()
     record_selector = MagicMock()
     iterator = DatetimeStreamSlicer(
@@ -143,7 +144,7 @@ def test_simple_retriever_with_request_response_logs(mock_http_stream):
 
 @patch.object(HttpStream, "_read_pages", return_value=[])
 def test_simple_retriever_with_request_response_log_last_records(mock_http_stream):
-    requester = MagicMock()
+    requester = MagicMock(use_cache=False)
     paginator = MagicMock()
     record_selector = MagicMock()
     record_selector.select_records.return_value = request_response_logs

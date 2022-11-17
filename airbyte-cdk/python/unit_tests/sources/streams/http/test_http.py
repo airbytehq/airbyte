@@ -5,6 +5,7 @@
 
 import json
 from http import HTTPStatus
+import tempfile
 from typing import Any, Iterable, Mapping, Optional
 from unittest.mock import ANY, MagicMock, patch
 
@@ -352,7 +353,12 @@ class TestRequestBody:
 
 class CacheHttpStream(StubBasicReadHttpStream):
     use_cache = True
+    
+    def __enter__(self):
+        return self
 
+    def __exit__(self, *args):
+        self.clear_cache()
 
 class CacheHttpSubStream(HttpSubStream):
     url_base = "https://example.com"
@@ -372,32 +378,28 @@ class CacheHttpSubStream(HttpSubStream):
 
 
 def test_caching_filename():
-    stream = CacheHttpStream()
-    assert stream.cache_filename == f"{stream.name}.sqlite"
+    with CacheHttpStream() as stream:
+        assert stream.cache_filename == f"{stream.name}.sqlite"
 
 
 def test_caching_sessions_are_different():
-    stream_1 = CacheHttpStream()
-    stream_2 = CacheHttpStream()
-
-    assert stream_1._session != stream_2._session
-    assert stream_1.cache_filename == stream_2.cache_filename
+    with CacheHttpStream() as stream_1, CacheHttpStream() as stream_2:
+        assert stream_1._session != stream_2._session
+        assert stream_1.cache_filename == stream_2.cache_filename
 
 
 def test_parent_attribute_exist():
-    parent_stream = CacheHttpStream()
-    child_stream = CacheHttpSubStream(parent=parent_stream)
-
-    assert child_stream.parent == parent_stream
+    with CacheHttpStream() as parent_stream:
+        child_stream = CacheHttpSubStream(parent=parent_stream)
+        assert child_stream.parent == parent_stream
 
 
 def test_cache_response(mocker):
-    stream = CacheHttpStream()
-    mocker.patch.object(stream, "url_base", "https://google.com/")
-    list(stream.read_records(sync_mode=SyncMode.full_refresh))
-
-    with open(stream.cache_filename, "rb") as f:
-        assert f.read()
+    with CacheHttpStream() as stream:
+        mocker.patch.object(stream, "url_base", "https://google.com/")
+        list(stream.read_records(sync_mode=SyncMode.full_refresh))
+        with open(stream.cache_filename, "rb") as f:
+            assert f.read()
 
 
 class CacheHttpStreamWithSlices(CacheHttpStream):
@@ -419,27 +421,27 @@ def test_using_cache(mocker, requests_mock):
     requests_mock.register_uri("GET", "https://google.com/", text="text")
     requests_mock.register_uri("GET", "https://google.com/search", text="text")
 
-    parent_stream = CacheHttpStreamWithSlices()
-    mocker.patch.object(parent_stream, "url_base", "https://google.com/")
+    with CacheHttpStreamWithSlices() as parent_stream:
+        mocker.patch.object(parent_stream, "url_base", "https://google.com/")
 
-    assert requests_mock.call_count == 0
-    assert parent_stream._session.cache.response_count() == 0
+        assert requests_mock.call_count == 0
+        assert parent_stream._session.cache.response_count() == 0
 
-    for _slice in parent_stream.stream_slices():
-        list(parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice))
+        for _slice in parent_stream.stream_slices():
+            list(parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice))
 
-    assert requests_mock.call_count == 2
-    assert parent_stream._session.cache.response_count() == 2
+        assert requests_mock.call_count == 2
+        assert parent_stream._session.cache.response_count() == 2
 
-    child_stream = CacheHttpSubStream(parent=parent_stream)
+        child_stream = CacheHttpSubStream(parent=parent_stream)
 
-    for _slice in child_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-        pass
+        for _slice in child_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            pass
 
-    assert requests_mock.call_count == 2
-    assert parent_stream._session.cache.response_count() == 2
-    assert parent_stream._session.cache.has_url("https://google.com/")
-    assert parent_stream._session.cache.has_url("https://google.com/search")
+        assert requests_mock.call_count == 2
+        assert parent_stream._session.cache.response_count() == 2
+        assert parent_stream._session.cache.has_url("https://google.com/")
+        assert parent_stream._session.cache.has_url("https://google.com/search")
 
 
 class AutoFailTrueHttpStream(StubBasicReadHttpStream):
