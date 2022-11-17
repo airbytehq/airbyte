@@ -96,7 +96,6 @@ spec:
                     )
                 )
         except Exception as error:
-            print(str(error))
             raise HTTPException(status_code=400, detail=f"Could not list streams with with error: {str(error)}")
         return StreamsListRead(streams=stream_list_read)
 
@@ -121,8 +120,6 @@ spec:
                     single_slice.pages.append(message_group)
         except Exception as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
-            print(str(error))
-
             raise HTTPException(status_code=400, detail=f"Could not perform read with with error: {str(error)}")
 
         return StreamRead(logs=log_messages, slices=[single_slice])
