@@ -402,18 +402,33 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     final CdcTargetPosition ctp = cdcLatestTargetPosition();
     final PostgresCdcTargetPosition pctp = (PostgresCdcTargetPosition) ctp;
     final Long lsn = pctp.getHeartbeatPosition(new ChangeEvent<String, String>() {
-      private final SourceRecord sourceRecord = new SourceRecord(null, Collections.singletonMap("lsn", 358824993496L), null, null, null );
+
+      private final SourceRecord sourceRecord = new SourceRecord(null, Collections.singletonMap("lsn", 358824993496L), null, null, null);
+
       @Override
-      public String key() { return null; }
+      public String key() {
+        return null;
+      }
+
       @Override
-      public String value() { return "{\"ts_ms\":1667616934701}"; }
+      public String value() {
+        return "{\"ts_ms\":1667616934701}";
+      }
+
       @Override
-      public String destination() { return null; }
-      public SourceRecord sourceRecord() { return sourceRecord; }
+      public String destination() {
+        return null;
+      }
+
+      public SourceRecord sourceRecord() {
+        return sourceRecord;
+      }
+
     });
 
     assertEquals(lsn, 358824993496L);
 
     assertNull(pctp.getHeartbeatPosition(null));
   }
+
 }
