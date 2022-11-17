@@ -1,6 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
+import { Spinner } from "components/ui/Spinner";
 import { Text } from "components/ui/Text";
 
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
@@ -12,7 +13,15 @@ import { StreamTester } from "./StreamTester";
 import styles from "./StreamTestingPanel.module.scss";
 
 export const StreamTestingPanel: React.FC<unknown> = () => {
-  const { selectedStream, streams, streamListErrorMessage } = useConnectorBuilderState();
+  const { selectedStream, streams, streamListErrorMessage, yamlEditorIsMounted } = useConnectorBuilderState();
+
+  if (!yamlEditorIsMounted) {
+    return (
+      <div className={styles.loadingSpinner}>
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>

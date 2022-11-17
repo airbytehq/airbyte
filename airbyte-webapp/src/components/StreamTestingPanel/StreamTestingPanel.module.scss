@@ -40,3 +40,11 @@ $buttonHeight: 36px;
   background-color: colors.$blue-50;
   border-radius: variables.$border-radius-sm;
 }
+
+.loadingSpinner {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

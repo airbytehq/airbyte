@@ -6,6 +6,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { RotateIcon } from "components/icons/RotateIcon";
 import { Button } from "components/ui/Button";
 import { ResizablePanels } from "components/ui/ResizablePanels";
+import { Spinner } from "components/ui/Spinner";
 import { Text } from "components/ui/Text";
 import { Tooltip } from "components/ui/Tooltip";
 
@@ -29,6 +30,7 @@ export const StreamTester: React.FC<StreamTesterProps> = ({ selectedStream }) =>
     refetch: readStream,
     isError,
     error,
+    isFetching,
   } = useReadStream({
     manifest: jsonManifest,
     stream: selectedStream.name,
@@ -92,7 +94,12 @@ export const StreamTester: React.FC<StreamTesterProps> = ({ selectedStream }) =>
           <FormattedMessage id="connectorBuilder.invalidYamlTest" />
         </Tooltip>
       )}
-      {(streamReadData !== undefined || errorMessage !== undefined) && (
+      {isFetching && (
+        <div className={styles.fetchingSpinner}>
+          <Spinner />
+        </div>
+      )}
+      {!isFetching && (streamReadData !== undefined || errorMessage !== undefined) && (
         <ResizablePanels
           className={styles.resizablePanelsContainer}
           orientation="horizontal"
