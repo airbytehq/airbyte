@@ -15,7 +15,7 @@ class AirbytePythonDockerPlugin implements Plugin<Project> {
             /*
             Install the dependencies, run the tests, and run static analysis from a docker container
              */
-            commandLine "docker", "run", "-v", "${project.projectDir.getAbsolutePath()}:/tmp", "--entrypoint", "/bin/bash", "python:3.9-slim", "-c", "chmod +x /tmp/run.sh && /tmp/run.sh /tmp"
+            commandLine "docker", "run", "-v", "${project.projectDir.getAbsolutePath()}:/tmp", "--entrypoint", "/bin/bash", "python:3.9-slim", "-c", "chmod +x /tmp/run_tests.sh && /tmp/run_tests.sh /tmp"
         }
 
         project.assemble.dependsOn project.airbytePythonDockerApply
