@@ -184,6 +184,7 @@ RESOURCE_PRIMARY_KEY_MAP = {
     "TabDefinition": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_tabdefinition.htm
     "AppDefinition": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_appdefinition.htm
     "Publisher": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_publisher.htm
+    "ApexPageInfo": "DurableId" # https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_apexpageinfo.htm
 }
 
 
