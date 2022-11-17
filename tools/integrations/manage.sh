@@ -211,7 +211,7 @@ cmd_publish() {
   local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
   local versioned_image=$image_name:$image_version
   local latest_image="$image_name" # don't include ":latest", that's assumed here
-  local build_arch="linux/amd64,linux/arm64"
+  local build_arch="linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7,linux/arm/64"
 
   # learn about this version of Docker
   echo "--- docker info ---"

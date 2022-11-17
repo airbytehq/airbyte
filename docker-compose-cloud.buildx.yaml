@@ -20,6 +20,9 @@ services:
         platforms:
           - linux/amd64
           - linux/arm64
+          - linux/arm/v6
+          - linux/arm/v7
+          - linux/arm64
   webapp:
     image: airbyte/webapp:${VERSION}
     build:
@@ -35,6 +38,9 @@ services:
           - airbyte/webapp:${ALT_TAG:-${VERSION}}
         platforms:
           - linux/amd64
+          - linux/arm64
+          - linux/arm/v6
+          - linux/arm/v7
           - linux/arm64
   metric-reporter:
     image: airbyte/metrics-reporter:${VERSION}
@@ -52,6 +58,9 @@ services:
         platforms:
           - linux/amd64
           - linux/arm64
+          - linux/arm/v6
+          - linux/arm/v7
+          - linux/arm64
   container-orchestrator:
     image: airbyte/container-orchestrator:${VERSION}
     build:
@@ -67,6 +76,9 @@ services:
           - airbyte/container-orchestrator:${ALT_TAG:-${VERSION}}
         platforms:
           - linux/amd64
+          - linux/arm64
+          - linux/arm/v6
+          - linux/arm/v7
           - linux/arm64
   db:
     image: airbyte/db:${VERSION}
@@ -84,6 +96,9 @@ services:
         platforms:
           - linux/amd64
           - linux/arm64
+          - linux/arm/v6
+          - linux/arm/v7
+          - linux/arm64
   cron:
     image: airbyte/cron:${VERSION}
     build:
@@ -99,4 +114,7 @@ services:
           - airbyte/cron:${ALT_TAG:-${VERSION}}
         platforms:
           - linux/amd64
+          - linux/arm64
+          - linux/arm/v6
+          - linux/arm/v7
           - linux/arm64
