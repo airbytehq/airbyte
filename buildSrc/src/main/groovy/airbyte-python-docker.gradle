@@ -13,14 +13,14 @@ class AirbytePythonDockerPlugin implements Plugin<Project> {
 
         project.task('airbytePythonDockerApply', type: Exec) {
             /*
-            Install the dependencies, run the tests, and run static analysis from a docker container
+            Install the dependencies and run the tests from a docker container
              */
             commandLine "docker", "run", "-v", "${project.projectDir.getAbsolutePath()}:/home", "--entrypoint", "/bin/bash", "python:3.9-slim", "-c", "chmod +x /home/run_tests.sh && /home/run_tests.sh /home"
         }
 
         project.task('blackFormat', type: Exec) {
             /*
-            Install the dependencies, run the tests, and run static analysis from a docker container
+            Run formatter and static analysis from a docker container
              */
             commandLine "docker", "run", "-v", "${project.projectDir.getAbsolutePath()}:/home", "--entrypoint", "/bin/bash", "python:3.9-slim", "-c", "chmod +x /home/run_tests.sh && /home/run_format.sh /home"
         }
