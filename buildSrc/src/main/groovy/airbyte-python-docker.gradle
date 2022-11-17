@@ -9,6 +9,8 @@ class AirbytePythonDockerConfiguration {
 class AirbytePythonDockerPlugin implements Plugin<Project> {
 
     void apply(Project project) {
+        def extension = project.extensions.create('airbytePythonDocker', AirbytePythonDockerConfiguration)
+
         project.task('airbytePythonDockerApply', type: Exec) {
             /*
             Install the dependencies, run the tests, and run static analysis from a docker container
