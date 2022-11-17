@@ -281,6 +281,10 @@ public class Jsons {
         Entry::getValue)));
   }
 
+  public static Map<String, String> deserializeToStringMap(JsonNode json) {
+    return OBJECT_MAPPER.convertValue(json, new TypeReference<>() {});
+  }
+
   /**
    * By the Jackson DefaultPrettyPrinter prints objects with an extra space as follows: {"name" :
    * "airbyte"}. We prefer {"name": "airbyte"}.
