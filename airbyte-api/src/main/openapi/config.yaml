@@ -4019,6 +4019,13 @@ components:
           $ref: "#/components/schemas/SourceDefinitionRead"
         destinationDefinition:
           $ref: "#/components/schemas/DestinationDefinitionRead"
+    WorkflowStateRead:
+      type: object
+      required:
+        - running
+      properties:
+        running:
+          type: boolean
     JobWithAttemptsRead:
       type: object
       properties:
@@ -4210,6 +4217,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttemptInfoRead"
+        workflowState:
+          $ref: "#/components/schemas/WorkflowStateRead"
     AttemptInfoRead:
       type: object
       required:
