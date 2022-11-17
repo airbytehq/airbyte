@@ -4,13 +4,15 @@ This page guides you through the process of setting up the Teradata destination 
 
 ## Prerequisites
 
-To use the Teradata destination, you'll need:
+To use the Teradata destination connector, you'll need:
 
-* A Teradata database version 17.00 or above
+* Access to a Teradata Vantage instance
+
+    **Note:** If you need a new instance of Vantage, you can install a free version called Vantage Express in the cloud on [Google Cloud](https://quickstarts.teradata.com/vantage.express.gcp.html), [Azure](https://quickstarts.teradata.com/run-vantage-express-on-microsoft-azure.html), and [AWS](https://quickstarts.teradata.com/run-vantage-express-on-aws.html). You can also run Vantage Express on your local machine using [VMware](https://quickstarts.teradata.com/getting.started.vmware.html), [VirtualBox](https://quickstarts.teradata.com/getting.started.vbox.html), or [UTM](https://quickstarts.teradata.com/getting.started.utm.html).
 
 You'll need the following information to configure the Teradata destination:
 
-* **Host** - The host name of the Teradata database server.
+* **Host** - The host name of the Teradata Vantage instance.
 * **Username**
 * **Password**
 * **Default Schema Name** - Specify the schema (or several schemas separated by commas) to be set in the search-path. These schemas will be used to resolve unqualified object names used in statements executed over this connection.
@@ -38,8 +40,8 @@ following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-s
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
-| Incremental - Deduped History | Yes |  |
+| Incremental - Append Sync | No |  |
+| Incremental - Deduped History | No |  |
 | Namespaces | Yes |  |
 
 ### Performance considerations
@@ -50,7 +52,7 @@ following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-s
 
 You need a Teradata user with the following permissions:
 
-* can create tables and write rows.
+* can create tables and write permission.
 * can create schemas e.g:
 
 You can create such a user by running:
