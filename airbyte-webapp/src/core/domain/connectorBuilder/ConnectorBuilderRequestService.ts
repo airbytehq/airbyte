@@ -9,7 +9,6 @@ import {
 } from "core/request/ConnectorBuilderClient";
 
 import { AirbyteRequestService } from "../../request/AirbyteRequestService";
-
 export class ConnectorBuilderRequestService extends AirbyteRequestService {
   public readStream(readParams: StreamReadRequestBody): Promise<StreamRead> {
     return readStream(readParams, this.requestOptions);

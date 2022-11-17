@@ -6,11 +6,11 @@ package io.airbyte.integrations.source.relationaldb;
 
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.db.IncrementalUtils;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.util.Iterator;
 import java.util.Objects;
