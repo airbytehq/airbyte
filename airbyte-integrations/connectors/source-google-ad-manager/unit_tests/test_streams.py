@@ -101,3 +101,13 @@ def test_return_null_record_when_incorects_values(ad_unit_per_referrer_stream):
     test if a empty value is None value is returned when 
     """
     assert not ad_unit_per_referrer_stream.generate_item({"fake_key": "fake_value"})
+
+
+def test_stream_date_state(ad_unit_per_referrer_stream):
+    """this test if the current state have is equal to the start date
+
+    Args:
+        ad_unit_per_referrer_stream (_type_): _description_
+        test_date (_type_): _description_
+    """
+    assert ad_unit_per_referrer_stream.state == {"date": ad_unit_per_referrer_stream.start_date.strftime('%Y-%m-%d')}
