@@ -17,7 +17,7 @@ logger = logging.getLogger("airbyte")
 ValidFields = Enum("ValidEnums", AdsInsights.Field.__dict__)
 ValidBreakdowns = Enum("ValidBreakdowns", AdsInsights.Breakdowns.__dict__)
 ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
-ValidLevel = Enum("ValidLevel", AdsInsights.Level.__dict__)
+LEVEL_PATTERN = "^(ad|adset|campaign|account)$"
 DATE_TIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
 EMPTY_PATTERN = "^$"
 
@@ -34,12 +34,11 @@ class InsightConfig(BaseModel):
     )
 
     # TODO: Future Reference: Define type="string" with a list of acceptable values (Enum ValidLevel)
-    level: Optional[List[ValidLevel]] = Field(
+    level: str = Field(
         title="Level",
         description="Chosen level for API",
-        default=["ad"],
-        min_items=1,
-        max_items=1
+        default="ad",
+        pattern=LEVEL_PATTERN
     )
 
     fields: Optional[List[ValidFields]] = Field(

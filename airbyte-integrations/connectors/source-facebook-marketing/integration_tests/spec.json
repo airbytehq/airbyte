@@ -68,20 +68,9 @@
             "level": {
               "title": "Level",
               "description": "Chosen level for API",
-              "default": ["ad"],
-              "type": "array",
-              "minItems": 1,
-              "maxItems": 1,
-              "items": {
-                "title": "ValidLevel",
-                "description": "Generic enumeration.\n\nDerive from this class to define new enumerations.",
-                "enum": [
-                  "account",
-                  "ad",
-                  "adset",
-                  "campaign"
-                ]
-              }
+              "default": "ad",
+              "pattern": "^(ad|adset|campaign|account)$",
+              "type": "string"
             },
             "fields": {
               "title": "Fields",
