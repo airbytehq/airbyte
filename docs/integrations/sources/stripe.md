@@ -1,3 +1,7 @@
+:::warning
+Stripe API Restriction: Access to events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events). Using the full-refresh-overwrite sync from Airbyte will delete data older than 30 days from your target destination.
+:::
+
 # Stripe
 
 This page guides you through the process of setting up the Stripe source connector.
