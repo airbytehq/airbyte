@@ -20,7 +20,7 @@ export const YamlEditor: React.FC = () => {
   const [yamlValue, setYamlValue] = useState(locallyStoredYaml ?? template);
   useDebounce(() => setLocallyStoredYaml(yamlValue), 500, [yamlValue]);
 
-  const { yamlIsValid, setYamlIsValid, setJsonManifest } = useConnectorBuilderState();
+  const { yamlIsValid, setYamlEditorIsMounted, setYamlIsValid, setJsonManifest } = useConnectorBuilderState();
 
   const monaco = useMonaco();
 
@@ -73,7 +73,10 @@ export const YamlEditor: React.FC = () => {
           theme="airbyte-light"
           onChange={(value) => setYamlValue(value ?? "")}
           lineNumberCharacterWidth={6}
-          onMount={(editor) => (yamlEditorRef.current = editor)}
+          onMount={(editor) => {
+            setYamlEditorIsMounted(true);
+            yamlEditorRef.current = editor;
+          }}
         />
       </div>
     </div>

@@ -17,7 +17,7 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.base_retriever)"
-      requester: 
+      requester:
         $ref: "*ref(definitions.base_requester)"
   cursor_paginator:
     type: "DefaultPaginator"
@@ -29,7 +29,7 @@ definitions:
     page_token_option:
       field_name: "page"
       inject_into: "request_parameter"
-    page_size_option: # This is useless, only there because it is required, but page sizes are managed automatically by API subscription type 
+    page_size_option: # This is useless, only there because it is required, but page sizes are managed automatically by API subscription type
       field_name: "X-Pagination-Page-Size"
       inject_into: "header"
     url_base: "*ref(definitions.base_requester.url_base)"
@@ -68,7 +68,6 @@ definitions:
             country: "{{ config['country'][0] }}"
             language: "{{ config['language'][0] }}"
             category: "{{ config['category'][0] }}"
-  
 
 streams:
   - "*ref(definitions.latest_stream)"
