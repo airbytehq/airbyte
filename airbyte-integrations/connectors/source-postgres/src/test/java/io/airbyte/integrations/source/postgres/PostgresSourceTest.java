@@ -199,18 +199,6 @@ class PostgresSourceTest {
         .build());
   }
 
-  private JsonNode getConfigWithSsl(final PostgreSQLContainer<?> psqlDb, final String dbName) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", psqlDb.getHost())
-        .put("port", psqlDb.getFirstMappedPort())
-        .put("database", dbName)
-        .put("schemas", List.of(SCHEMA_NAME))
-        .put("username", psqlDb.getUsername())
-        .put("password", psqlDb.getPassword())
-        .put("ssl", true)
-        .build());
-  }
-
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName, final String user, final String password) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
@@ -480,22 +468,6 @@ class PostgresSourceTest {
         "publication", "ab_pub")));
     assertTrue(PostgresUtils.isCdc(config));
   }
-
-  @Test
-  void testGetDefaultConnectionPropertiesWithoutSsl() {
-    final JsonNode config = getConfig(PSQL_DB, dbName);
-    final Map<String, String> defaultConnectionProperties = new PostgresSource().getDefaultConnectionProperties(config);
-    assertEquals(defaultConnectionProperties, Collections.emptyMap());
-  };
-
-  @Test
-  void testGetDefaultConnectionPropertiesWithSsl() {
-    final JsonNode config = getConfigWithSsl(PSQL_DB, dbName);
-    final Map<String, String> defaultConnectionProperties = new PostgresSource().getDefaultConnectionProperties(config);
-    assertEquals(defaultConnectionProperties, ImmutableMap.of(
-        "ssl", "true",
-        "sslmode", "require"));
-  };
 
   @Test
   void testGetUsername() {
