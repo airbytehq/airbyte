@@ -49,8 +49,8 @@ class ManifestDeclarativeSource(DeclarativeSource):
         """
         self.logger = logging.getLogger(f"airbyte.{self.name}")
 
-        evaluated_definition = {}
-        resolved_source_config = ManifestReferenceResolver().preprocess_manifest(source_config, evaluated_definition, "")
+        evaluated_manifest = {}
+        resolved_source_config = ManifestReferenceResolver().preprocess_manifest(source_config, evaluated_manifest, "")
         self._source_config = resolved_source_config
         self._debug = debug
         self._factory = DeclarativeComponentFactory()
@@ -139,8 +139,8 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
     @staticmethod
     def generate_schema() -> str:
-        expanded_source_definition = ManifestDeclarativeSource.expand_schema_interfaces(ConcreteDeclarativeSource, {})
-        expanded_schema = expanded_source_definition.json_schema()
+        expanded_source_manifest = ManifestDeclarativeSource.expand_schema_interfaces(ConcreteDeclarativeSource, {})
+        expanded_schema = expanded_source_manifest.json_schema()
         return json.dumps(expanded_schema, cls=SchemaEncoder)
 
     @staticmethod
