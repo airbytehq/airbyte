@@ -13,7 +13,7 @@ This page contains the setup guide and reference information for the Apple Searc
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Apple Search Ads** from the **Source type** dropdown.
 4. Enter a name for your source.
-5. For **Org Id**, enter the Id of your organization (found in the Apple Search Ads UI). 
+5. For **Org Id**, enter the Id of your organization (found in the Apple Search Ads UI).
 6. Enter the **Client ID** and the **Client Secret** from [Step 1](#step-1-set-up-apple-search-ads).
 7. For **Start Date** and **End Date**, enter the date in YYYY-MM-DD format. For DAILY reports, the Start Date can't be earlier than 90 days from today. If the End Date field is left blank, Airbyte will replicate data to today.
 8. Click **Set up source**.
@@ -39,12 +39,12 @@ The Apple Ads source connector supports the following streams. For more informat
 - [keywords_report_daily](https://developer.apple.com/documentation/apple_search_ads/get_keyword-level_reports)
 
 ### Report aggregation
-The Apple Search Ads currently offers [aggregation](https://developer.apple.com/documentation/apple_search_ads/reportingrequest) at hourly, daily, weekly, or monthly level. 
+The Apple Search Ads currently offers [aggregation](https://developer.apple.com/documentation/apple_search_ads/reportingrequest) at hourly, daily, weekly, or monthly level.
 
 However, at this moment and as indicated in the stream names, the connector only offers data with daily aggregation.
 
 
 ## Changelog
-| Version | Date       | Pull Request                                            | Subject                                                                                                                   |
-| :------ |:-----------|:--------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
-| 0.1.0   | 2022-11-20 | [000001](https://github.com/airbytehq/airbyte/pull/xxx) | Initial release                                                                                                           |
+| Version | Date       | Pull Request                                            | Subject                                                                              |
+| :------ |:-----------|:--------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| 0.1.0   | 2022-11-17 | [19557](https://github.com/airbytehq/airbyte/pull/19557) | Initial release with campaigns, adgroups & keywords streams (base and daily reports) |
