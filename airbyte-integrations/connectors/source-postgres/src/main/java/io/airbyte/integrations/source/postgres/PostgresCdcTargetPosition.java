@@ -68,7 +68,7 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
   }
 
   private boolean isHeartbeatEvent(final ChangeEvent<String, String> event) {
-    return  Objects.nonNull(event) && !event.value().contains("source");
+    return Objects.nonNull(event) && !event.value().contains("source");
   }
 
   @Override
@@ -105,4 +105,5 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
   public boolean isHeartbeatSupported() {
     return true;
   }
+
 }
