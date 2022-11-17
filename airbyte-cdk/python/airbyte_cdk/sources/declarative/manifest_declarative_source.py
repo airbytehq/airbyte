@@ -23,6 +23,7 @@ from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.exceptions import InvalidConnectorDefinitionException
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
+from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.types import ConnectionDefinition
 from airbyte_cdk.sources.streams.core import Stream
 from dataclasses_jsonschema import JsonSchemaMixin
@@ -47,7 +48,10 @@ class ManifestDeclarativeSource(DeclarativeSource):
         :param debug(bool): True if debug mode is enabled
         """
         self.logger = logging.getLogger(f"airbyte.{self.name}")
-        self._source_config = source_config
+
+        evaluated_definition = {}
+        resolved_source_config = ManifestReferenceResolver().preprocess_manifest(source_config, evaluated_definition, "")
+        self._source_config = resolved_source_config
         self._debug = debug
         self._factory = DeclarativeComponentFactory()
 
