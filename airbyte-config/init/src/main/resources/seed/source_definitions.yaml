@@ -254,6 +254,13 @@
   icon: cockroachdb.svg
   sourceType: database
   releaseStage: alpha
+- name: Coda
+  sourceDefinitionId: 27f910fd-f832-4b2e-bcfd-6ab342e434d8
+  dockerRepository: airbyte/source-coda
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/coda
+  sourceType: api
+  releaseStage: alpha
 - name: Coin API
   sourceDefinitionId: 919984ef-53a2-479b-8ffe-9c1ddb9fc3f3
   dockerRepository: airbyte/source-coin-api
@@ -445,7 +452,7 @@
 - name: Fauna
   sourceDefinitionId: 3825db3e-c94b-42ac-bd53-b5a9507ace2b
   dockerRepository: airbyte/source-fauna
-  dockerImageTag: dev
+  dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/fauna
   icon: fauna.svg
   sourceType: database
@@ -1151,6 +1158,14 @@
   icon: plaid.svg
   sourceType: api
   releaseStage: alpha
+- name: Plausible
+  sourceDefinitionId: 603ba446-3d75-41d7-92f3-aba901f8b897
+  dockerRepository: airbyte/source-plausible
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/plausible
+  icon: plausible.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Pocket
   sourceDefinitionId: b0dd65f1-081f-4731-9c51-38e9e6aa0ebf
   dockerRepository: airbyte/source-pocket
@@ -1265,6 +1280,14 @@
   icon: recharge.svg
   sourceType: api
   releaseStage: generally_available
+- name: Recreation
+  sourceDefinitionId: 25d7535d-91e0-466a-aa7f-af81578be277
+  dockerRepository: airbyte/source-recreation
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/recreation
+  icon: recreation.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Recruitee
   sourceDefinitionId: 3b046ac7-d8d3-4eb3-b122-f96b2a16d8a8
   dockerRepository: airbyte/source-recruitee

@@ -4,7 +4,6 @@ export enum RoutePaths {
 
   Workspaces = "workspaces",
   Preferences = "preferences",
-  Onboarding = "onboarding",
   Connections = "connections",
   Destination = "destination",
   Source = "source",
