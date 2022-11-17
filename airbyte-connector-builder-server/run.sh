@@ -1,5 +1,5 @@
-# /tmp should be a parameter
-cd /tmp
+cd $1
+
 pip install -e .
 pip install -e '.[main]'
 pip install -e '.[tests]'
