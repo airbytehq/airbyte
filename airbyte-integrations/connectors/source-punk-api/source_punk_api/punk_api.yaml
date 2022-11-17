@@ -15,7 +15,7 @@ definitions:
             if options['name'] == 'beers_with_id'
             else ''
           }}
-          
+
   stream_slicer:
     type: DatetimeStreamSlicer
     start_datetime:
@@ -33,7 +33,7 @@ definitions:
     # start_time_option:
     #   field_name: "date"
     #   inject_into: "request_parameter"
-      
+
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -84,7 +84,6 @@ definitions:
     $options:
       name: "beers_with_id"
       path: "/beers?{{ config['brewed_after'] }}"
-
 
 streams:
   - "*ref(definitions.beers_stream)"
