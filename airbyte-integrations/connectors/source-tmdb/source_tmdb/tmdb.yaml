@@ -40,14 +40,13 @@ definitions:
     requester:
       $ref: "*ref(definitions.requester)"
 
-
   base_stream:
     schema_loader:
       type: JsonSchema
       file_path: "./source_tmdb/schemas/{{ options['name'] }}.json"
     retriever:
       $ref: "*ref(definitions.retriever)"
-  
+
   page_stream:
     schema_loader:
       type: JsonSchema
@@ -135,13 +134,13 @@ definitions:
     $options:
       name: "movies_keywords"
       path: "/movie/{{ config['movie_id'] }}/keywords"
-  
+
   movies_lists_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "movies_lists"
       path: "/movie/{{ config['movie_id'] }}/lists"
-      
+
   movies_recommendations_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
