@@ -22,7 +22,7 @@ import io.airbyte.db.mongodb.MongoUtils;
 import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -124,7 +124,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
         }
       }
 
-      writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
+      writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream),
           new MongodbWriteConfig(collectionName, tmpCollectionName, configStream.getDestinationSyncMode(), collection, documentsHash));
     }
     return new MongodbRecordConsumer(writeConfigs, database, catalog, outputRecordCollector);

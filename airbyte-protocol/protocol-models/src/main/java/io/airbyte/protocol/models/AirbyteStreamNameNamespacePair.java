@@ -2,12 +2,8 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.protocol.models;
 
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -35,12 +31,12 @@ public class AirbyteStreamNameNamespacePair implements Comparable<AirbyteStreamN
     return namespace;
   }
 
+  /**
+   * As this is used as a metrics tag, enforce snake case.
+   */
   @Override
   public String toString() {
-    return "AirbyteStreamNameNamespacePair{" +
-        "name='" + name + '\'' +
-        ", namespace='" + namespace + '\'' +
-        '}';
+    return (namespace != null ? namespace : "") + "_" + name;
   }
 
   @Override
@@ -85,27 +81,23 @@ public class AirbyteStreamNameNamespacePair implements Comparable<AirbyteStreamN
     return namespace.compareTo(o.getNamespace());
   }
 
-  public static void main(final String[] args) {
-    System.out.println("test".compareTo(null));
-  }
-
   public static AirbyteStreamNameNamespacePair fromRecordMessage(final AirbyteRecordMessage msg) {
     return new AirbyteStreamNameNamespacePair(msg.getStream(), msg.getNamespace());
   }
 
-  public static AirbyteStreamNameNamespacePair fromAirbyteSteam(final AirbyteStream stream) {
+  public static AirbyteStreamNameNamespacePair fromAirbyteStream(final AirbyteStream stream) {
     return new AirbyteStreamNameNamespacePair(stream.getName(), stream.getNamespace());
   }
 
   public static AirbyteStreamNameNamespacePair fromConfiguredAirbyteSteam(final ConfiguredAirbyteStream stream) {
-    return fromAirbyteSteam(stream.getStream());
+    return fromAirbyteStream(stream.getStream());
   }
 
   public static Set<AirbyteStreamNameNamespacePair> fromConfiguredCatalog(final ConfiguredAirbyteCatalog catalog) {
     final var pairs = new HashSet<AirbyteStreamNameNamespacePair>();
 
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final var pair = fromAirbyteSteam(stream.getStream());
+      final var pair = fromAirbyteStream(stream.getStream());
       pairs.add(pair);
     }
 

@@ -7,6 +7,7 @@ package io.airbyte.workers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.exception.RecordSchemaValidationException;
@@ -22,9 +23,9 @@ import java.util.Set;
 
 public class RecordSchemaValidator {
 
-  private final Map<String, JsonNode> streams;
+  private final Map<AirbyteStreamNameNamespacePair, JsonNode> streams;
 
-  public RecordSchemaValidator(final Map<String, JsonNode> streamNamesToSchemas) {
+  public RecordSchemaValidator(final Map<AirbyteStreamNameNamespacePair, JsonNode> streamNamesToSchemas) {
     // streams is Map of a stream source namespace + name mapped to the stream schema
     // for easy access when we check each record's schema
     this.streams = streamNamesToSchemas;
@@ -37,7 +38,8 @@ public class RecordSchemaValidator {
    * @param message
    * @throws RecordSchemaValidationException
    */
-  public void validateSchema(final AirbyteRecordMessage message, final String messageStream) throws RecordSchemaValidationException {
+  public void validateSchema(final AirbyteRecordMessage message, final AirbyteStreamNameNamespacePair messageStream)
+      throws RecordSchemaValidationException {
     final JsonNode messageData = message.getData();
     final JsonNode matchingSchema = streams.get(messageStream);
 
