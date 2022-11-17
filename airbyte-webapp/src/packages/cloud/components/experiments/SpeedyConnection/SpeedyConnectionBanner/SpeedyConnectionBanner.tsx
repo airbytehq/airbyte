@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 import { Text } from "components/ui/Text";
 
 import { CountDownTimer } from "packages/cloud/components/experiments/SpeedyConnection/CountDownTimer";
-import { StepType } from "pages/OnboardingPage/types";
 import { RoutePaths } from "pages/routePaths";
 
 import { useExperimentSpeedyConnection } from "../hooks/useExperimentSpeedyConnection";
@@ -22,13 +21,7 @@ export const SpeedyConnectionBanner = () => {
           defaultMessage="<link>Set up your first connection</link> in the next <timer></timer> and get <b>100 additonal credits</b> for your trial"
           values={{
             link: (link: React.ReactNode[]) => (
-              <Link
-                className={styles.linkCta}
-                to={`${RoutePaths.Connections}/${RoutePaths.ConnectionNew}`}
-                state={{
-                  step: StepType.CREATE_SOURCE,
-                }}
-              >
+              <Link className={styles.linkCta} to={`${RoutePaths.Connections}/${RoutePaths.ConnectionNew}`}>
                 <Text bold>{link}</Text>
               </Link>
             ),
