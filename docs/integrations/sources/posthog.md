@@ -1,55 +1,52 @@
 # PostHog
 
-## Sync overview
+This page contains the setup guide and reference information for the PostHog source connector.
 
-This source can sync data for the [PostHog API](https://posthog.com/docs/api/overview). It supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+## Prerequisites
 
-### Output schema
+* api_key - obtain Private API Key for your account following these [steps](https://posthog.com/docs/api/overview#how-to-obtain-a-personal-api-key)
+* base_url - 'https://app.posthog.com' by default, but it can be different if self-hosted posthog instances is used 
 
-This Source is capable of syncing the following core Streams:
+## Setup guide
+### Step 1: Set up PostHog
 
-* [Annotations](https://posthog.com/docs/api/annotations) \(Incremental\)
+* PostHog Account
+
+## Step 2: Set up the PostHog connector in Airbyte
+
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. On the Set up the source page, enter the name for the PostHog connector and select **PostHog** from the Source type dropdown.
+4. Enter your `apikey`.
+5. Enter your `start_date`. 
+6. Change default `base_url` if self-hosted posthog instances is used
+7. Click **Set up source**.
+
+### For Airbyte OSS:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Set the name for your source. 
+3. Enter your `api_key`.
+4. Enter your `start_date`. 
+5. Change default `base_url` if self-hosted posthog instances is used
+6. Click **Set up source**.
+
+## Supported streams and sync modes
+
+* [Projects](https://posthog.com/docs/api/projects)
+* [Annotations](https://posthog.com/docs/api/annotations)
 * [Cohorts](https://posthog.com/docs/api/cohorts)
 * [Events](https://posthog.com/docs/api/events) \(Incremental\)
 * [FeatureFlags](https://posthog.com/docs/api/feature-flags)
 * [Insights](https://posthog.com/docs/api/insights)
-* [InsightsPath](https://posthog.com/docs/api/insights)
-* [InsightsSessions](https://posthog.com/docs/api/insights)
 * [Persons](https://posthog.com/docs/api/people)
-* [Trends](https://posthog.com/docs/api/insights)
-
-### Data type mapping
-
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `number` | `number` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
-
-### Features
-
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes |  |
-| Namespaces | No |  |
 
 ### Performance considerations
 
 The PostHog API doesn't have any known request limitation.
-
 Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
-
-## Getting started
-
-### Requirements
-
-* PostHog Personal API Key
-
-### Setup guide
-
-Please follow these [steps](https://posthog.com/docs/api/overview#how-to-obtain-a-personal-api-key) to obtain Private API Key for your account.
 
 ## Changelog
 
