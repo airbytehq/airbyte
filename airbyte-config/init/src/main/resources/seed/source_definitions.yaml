@@ -445,7 +445,7 @@
 - name: Fauna
   sourceDefinitionId: 3825db3e-c94b-42ac-bd53-b5a9507ace2b
   dockerRepository: airbyte/source-fauna
-  dockerImageTag: 0.1.0
+  dockerImageTag: dev
   documentationUrl: https://docs.airbyte.com/integrations/sources/fauna
   icon: fauna.svg
   sourceType: database
@@ -1165,6 +1165,13 @@
   dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.com/integrations/sources/pokeapi
   icon: pokeapi.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Polygon Stock API
+  sourceDefinitionId: 5807d72f-0abc-49f9-8fa5-ae820007032b
+  dockerRepository: airbyte/source-polygon-stock-api
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/polygon-stock-api
   sourceType: api
   releaseStage: alpha
 - name: PostHog
