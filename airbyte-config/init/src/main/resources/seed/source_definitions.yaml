@@ -1158,6 +1158,14 @@
   icon: plaid.svg
   sourceType: api
   releaseStage: alpha
+- name: Plausible
+  sourceDefinitionId: 603ba446-3d75-41d7-92f3-aba901f8b897
+  dockerRepository: airbyte/source-plausible
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/plausible
+  icon: plausible.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Pocket
   sourceDefinitionId: b0dd65f1-081f-4731-9c51-38e9e6aa0ebf
   dockerRepository: airbyte/source-pocket
