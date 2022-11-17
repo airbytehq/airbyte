@@ -221,7 +221,7 @@ public class OAuthHandler {
           completeDestinationOAuthRequest.getDestinationDefinitionId(),
           completeDestinationOAuthRequest.getQueryParams(),
           completeDestinationOAuthRequest.getRedirectUrl(),
-          completeDestinationOAuthRequest.getoAuthInputConfiguration(),
+          oAuthInputConfigurationForConsent,
           spec.getAdvancedAuth().getOauthConfigSpecification());
     } else {
       // deprecated but this path is kept for connectors that don't define OAuth Spec yet
