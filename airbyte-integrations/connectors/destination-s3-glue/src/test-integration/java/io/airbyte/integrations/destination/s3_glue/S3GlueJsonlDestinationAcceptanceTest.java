@@ -8,20 +8,21 @@ import io.airbyte.integrations.destination.s3.S3BaseJsonlDestinationAcceptanceTe
 
 public class S3GlueJsonlDestinationAcceptanceTest extends S3BaseJsonlDestinationAcceptanceTest {
 
-    @Override
-    protected void tearDown(TestDestinationEnv testEnv) {
-        super.tearDown(testEnv);
+  @Override
+  protected void tearDown(TestDestinationEnv testEnv) {
+    super.tearDown(testEnv);
 
-        GlueDestinationConfig glueDestinationConfig = GlueDestinationConfig.getInstance(configJson);
-        try (var glueTestClient = new GlueTestClient(glueDestinationConfig.getAWSGlueInstance())) {
+    GlueDestinationConfig glueDestinationConfig = GlueDestinationConfig.getInstance(configJson);
+    try (var glueTestClient = new GlueTestClient(glueDestinationConfig.getAWSGlueInstance())) {
 
-            glueTestClient.purgeDatabase(glueDestinationConfig.getDatabase());
+      glueTestClient.purgeDatabase(glueDestinationConfig.getDatabase());
 
-        }
     }
+  }
 
-    @Override
-    protected String getImageName() {
-        return "airbyte/destination-s3-glue:dev";
-    }
+  @Override
+  protected String getImageName() {
+    return "airbyte/destination-s3-glue:dev";
+  }
+
 }
