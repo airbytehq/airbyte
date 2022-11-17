@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
+import { useIntl } from "react-intl";
 
 import {
   StreamReadRequestBodyConfig,
@@ -13,6 +14,7 @@ interface Context {
   jsonManifest: StreamsListRequestBodyManifest;
   yamlIsValid: boolean;
   streams: StreamsListReadStreamsItem[];
+  streamListErrorMessage: string | undefined;
   selectedStream?: StreamsListReadStreamsItem;
   configString: string;
   configJson: StreamReadRequestBodyConfig;
@@ -25,6 +27,8 @@ interface Context {
 export const ConnectorBuilderStateContext = React.createContext<Context | null>(null);
 
 export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+  const { formatMessage } = useIntl();
+
   // json manifest
   const [jsonManifest, setJsonManifest] = useState<StreamsListRequestBodyManifest>({});
   const [yamlIsValid, setYamlIsValid] = useState(true);
@@ -43,7 +47,17 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   }, [configString]);
 
   // streams
-  const streamListRead = useListStreams({ manifest: jsonManifest, config: configJson }).data;
+  const {
+    data: streamListRead,
+    isError: isStreamListError,
+    error: streamListError,
+  } = useListStreams({ manifest: jsonManifest, config: configJson });
+  const unknownErrorMessage = formatMessage({ id: "connectorBuilder.unknownError" });
+  const streamListErrorMessage = isStreamListError
+    ? streamListError instanceof Error
+      ? streamListError.message || unknownErrorMessage
+      : unknownErrorMessage
+    : undefined;
   const streams = useMemo(() => {
     return streamListRead?.streams ?? [];
   }, [streamListRead]);
@@ -64,6 +78,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     jsonManifest,
     yamlIsValid,
     streams,
+    streamListErrorMessage,
     selectedStream,
     configString,
     configJson,

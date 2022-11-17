@@ -5,11 +5,10 @@ $buttonHeight: 36px;
 
 .container {
   padding: variables.$spacing-lg;
+  height: 100%;
+  position: relative;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  gap: variables.$spacing-lg;
-  position: relative;
 }
 
 .configButton {
@@ -23,4 +22,21 @@ $buttonHeight: 36px;
 .streamSelector {
   flex: 0 0 auto;
   height: $buttonHeight;
+}
+
+.selectAndTestContainer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-lg;
+}
+
+.listErrorDisplay {
+  margin: calc(variables.$spacing-lg + $buttonHeight) auto auto;
+  padding: variables.$spacing-lg;
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-md;
+  background-color: colors.$blue-50;
+  border-radius: variables.$border-radius-sm;
 }

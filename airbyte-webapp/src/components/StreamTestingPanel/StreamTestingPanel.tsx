@@ -1,4 +1,10 @@
+import React from "react";
+import { FormattedMessage } from "react-intl";
+
+import { Text } from "components/ui/Text";
+
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { links } from "utils/links";
 
 import { ConfigMenu } from "./ConfigMenu";
 import { StreamSelector } from "./StreamSelector";
@@ -6,13 +12,37 @@ import { StreamTester } from "./StreamTester";
 import styles from "./StreamTestingPanel.module.scss";
 
 export const StreamTestingPanel: React.FC<unknown> = () => {
-  const { selectedStream } = useConnectorBuilderState();
+  const { selectedStream, streams, streamListErrorMessage } = useConnectorBuilderState();
 
   return (
     <div className={styles.container}>
       <ConfigMenu className={styles.configButton} />
-      <StreamSelector className={styles.streamSelector} />
-      {selectedStream !== undefined && <StreamTester selectedStream={selectedStream} />}
+      {streamListErrorMessage !== undefined && (
+        <div className={styles.listErrorDisplay}>
+          <Text>
+            <FormattedMessage id="connectorBuilder.couldNotDetectStreams" />
+          </Text>
+          <Text bold>{streamListErrorMessage}</Text>
+          <Text>
+            <FormattedMessage
+              id="connectorBuilder.ensureProperYaml"
+              values={{
+                a: (node: React.ReactNode) => (
+                  <a href={links.lowCodeYamlDescription} target="_blank" rel="noreferrer">
+                    {node}
+                  </a>
+                ),
+              }}
+            />
+          </Text>
+        </div>
+      )}
+      {streamListErrorMessage === undefined && selectedStream !== undefined && (
+        <div className={styles.selectAndTestContainer}>
+          <StreamSelector className={styles.streamSelector} streams={streams} selectedStream={selectedStream} />
+          <StreamTester selectedStream={selectedStream} />
+        </div>
+      )}
     </div>
   );
 };
