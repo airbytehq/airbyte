@@ -1,4 +1,4 @@
-# Developing on docker
+# Developing on Docker
 
 ## Incrementality 
 
