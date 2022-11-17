@@ -28,12 +28,13 @@
   justify-content: center;
   align-items: center;
   margin: auto;
+  color: colors.$white;
 }
 
 .linkCta {
-  color: colors.$dark-blue;
-}
+  color: colors.$white;
 
-.textDecorationNone {
-  text-decoration: none;
+  p {
+    color: inherit;
+  }
 }

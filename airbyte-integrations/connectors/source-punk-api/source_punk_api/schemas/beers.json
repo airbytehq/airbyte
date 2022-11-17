@@ -19,35 +19,35 @@
       "name": {
         "$id": "#root/items/name",
         "title": "Name",
-        "type":  ["null","array","object", "string"],
+        "type": ["null", "array", "object", "string"],
         "default": "",
         "pattern": "^.*$"
       },
       "tagline": {
         "$id": "#root/items/tagline",
         "title": "Tagline",
-        "type":  ["null","array","object", "string"],
+        "type": ["null", "array", "object", "string"],
         "default": "",
         "pattern": "^.*$"
       },
       "first_brewed": {
         "$id": "#root/items/first_brewed",
         "title": "First_brewed",
-        "type":  ["null","array","object", "string"],
+        "type": ["null", "array", "object", "string"],
         "default": "",
         "pattern": "^.*$"
       },
       "description": {
         "$id": "#root/items/description",
         "title": "Description",
-        "type":  ["null","array","object", "string"],
+        "type": ["null", "array", "object", "string"],
         "default": "",
         "pattern": "^.*$"
       },
       "image_url": {
         "$id": "#root/items/image_url",
         "title": "Image_url",
-        "type":  ["null","array","object", "string"],
+        "type": ["null", "array", "object", "string"],
         "default": "",
         "pattern": "^.*$"
       },
@@ -113,7 +113,7 @@
           "unit": {
             "$id": "#root/items/volume/unit",
             "title": "Unit",
-            "type":  ["null","array","object", "string"],
+            "type": ["null", "array", "object", "string"],
             "default": "",
             "pattern": "^.*$"
           }
@@ -133,7 +133,7 @@
           "unit": {
             "$id": "#root/items/boil_volume/unit",
             "title": "Unit",
-            "type":  ["null","array","object", "string"],
+            "type": ["null", "array", "object", "string"],
             "default": "",
             "pattern": "^.*$"
           }
@@ -168,7 +168,7 @@
                     "unit": {
                       "$id": "#root/items/method/mash_temp/items/temp/unit",
                       "title": "Unit",
-                      "type":  ["null","array","object", "string"],
+                      "type": ["null", "array", "object", "string"],
                       "default": "",
                       "pattern": "^.*$"
                     }
@@ -202,7 +202,7 @@
                   "unit": {
                     "$id": "#root/items/method/fermentation/temp/unit",
                     "title": "Unit",
-                    "type":  ["null","array","object", "string"],
+                    "type": ["null", "array", "object", "string"],
                     "default": "",
                     "pattern": "^.*$"
                   }
@@ -236,7 +236,7 @@
                 "name": {
                   "$id": "#root/items/ingredients/malt/items/name",
                   "title": "Name",
-                  "type":  ["null","array","object", "string"],
+                  "type": ["null", "array", "object", "string"],
                   "default": "",
                   "pattern": "^.*$"
                 },
@@ -254,7 +254,7 @@
                     "unit": {
                       "$id": "#root/items/ingredients/malt/items/amount/unit",
                       "title": "Unit",
-                      "type":  ["null","array","object", "string"],
+                      "type": ["null", "array", "object", "string"],
                       "default": "",
                       "pattern": "^.*$"
                     }
@@ -276,7 +276,7 @@
                 "name": {
                   "$id": "#root/items/ingredients/hops/items/name",
                   "title": "Name",
-                  "type":  ["null","array","object", "string"],
+                  "type": ["null", "array", "object", "string"],
                   "default": "",
                   "pattern": "^.*$"
                 },
@@ -294,7 +294,7 @@
                     "unit": {
                       "$id": "#root/items/ingredients/hops/items/amount/unit",
                       "title": "Unit",
-                      "type":  ["null","array","object", "string"],
+                      "type": ["null", "array", "object", "string"],
                       "default": "",
                       "pattern": "^.*$"
                     }
@@ -303,14 +303,14 @@
                 "add": {
                   "$id": "#root/items/ingredients/hops/items/add",
                   "title": "Add",
-                  "type":  ["null","array","object", "string"],
+                  "type": ["null", "array", "object", "string"],
                   "default": "",
                   "pattern": "^.*$"
                 },
                 "attribute": {
                   "$id": "#root/items/ingredients/hops/items/attribute",
                   "title": "Attribute",
-                  "type":  ["null","array","object", "string"],
+                  "type": ["null", "array", "object", "string"],
                   "default": "",
                   "pattern": "^.*$"
                 }
@@ -320,7 +320,7 @@
           "yeast": {
             "$id": "#root/items/ingredients/yeast",
             "title": "Yeast",
-            "type":  ["null","array","object", "string"],
+            "type": ["null", "array", "object", "string"],
             "default": "",
             "pattern": "^.*$"
           }
@@ -334,7 +334,7 @@
         "items": {
           "$id": "#root/items/food_pairing/items",
           "title": "Items",
-          "type":  ["null","array","object", "string"],
+          "type": ["null", "array", "object", "string"],
           "default": "",
           "pattern": "^.*$"
         }
@@ -342,14 +342,14 @@
       "brewers_tips": {
         "$id": "#root/items/brewers_tips",
         "title": "Brewers_tips",
-        "type":  ["null","array","object", "string"],
+        "type": ["null", "array", "object", "string"],
         "default": "",
         "pattern": "^.*$"
       },
       "contributed_by": {
         "$id": "#root/items/contributed_by",
         "title": "Contributed_by",
-        "type":  ["null","array","object", "string"],
+        "type": ["null", "array", "object", "string"],
         "default": "",
         "pattern": "^.*$"
       }
