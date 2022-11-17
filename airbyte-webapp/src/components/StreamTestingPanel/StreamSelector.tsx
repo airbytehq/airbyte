@@ -6,12 +6,15 @@ import { capitalize } from "lodash";
 import { Heading } from "components/ui/Heading";
 import { ListBox, ListBoxControlButtonProps } from "components/ui/ListBox";
 
+import { StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import styles from "./StreamSelector.module.scss";
 
 interface StreamSelectorProps {
   className?: string;
+  streams: StreamsListReadStreamsItem[];
+  selectedStream: StreamsListReadStreamsItem;
 }
 
 const ControlButton: React.FC<ListBoxControlButtonProps<string>> = ({ selectedOption }) => {
@@ -25,8 +28,8 @@ const ControlButton: React.FC<ListBoxControlButtonProps<string>> = ({ selectedOp
   );
 };
 
-export const StreamSelector: React.FC<StreamSelectorProps> = ({ className }) => {
-  const { streams, selectedStream, setSelectedStream } = useConnectorBuilderState();
+export const StreamSelector: React.FC<StreamSelectorProps> = ({ className, streams, selectedStream }) => {
+  const { setSelectedStream } = useConnectorBuilderState();
   const options = streams.map((stream) => {
     return { label: capitalize(stream.name), value: stream.name };
   });
