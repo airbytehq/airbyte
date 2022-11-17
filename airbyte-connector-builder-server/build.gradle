@@ -48,10 +48,10 @@ project.build.dependsOn(generateOpenApiPythonServer)
 // We cannot do this here because we don't generate a tar file
 // Instead, we copy the files into the build directory so they can be copied to the docker container
 task prepareBuild(type: Copy) {
-    from layout.projectDirectory.file("connector_builder")
-    from layout.projectDirectory.file("setup.py")
-    from layout.projectDirectory.file("openapi")
-    from layout.projectDirectory.file("src")
+    from layout.projectDirectory.file(".")
+    exclude '.*'
+    exclude 'build'
+
 
     into layout.buildDirectory.dir("docker")
 }
