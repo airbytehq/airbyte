@@ -41,7 +41,7 @@ def main():
     build_gradle_files.update(get_gradle_file_for_path(NORMALIZATION_PATH))
 
     # Try to find dependency in build.gradle file
-    dependent_modules = list(set(get_depended_connectors(changed_modules, build_gradle_files)))
+    dependent_modules = list(set(get_dependent_modules(changed_modules, build_gradle_files)))
 
     # Create comment body to post on pull request
     if dependent_modules:
@@ -85,16 +85,16 @@ def find_file(name, path):
             return os.path.join(root, name)
 
 
-def get_depended_connectors(changed_modules, all_build_gradle_files):
-    depended_connectors = []
+def get_dependent_modules(changed_modules, all_build_gradle_files):
+    dependent_modules = []
     for changed_module in changed_modules:
-        for connector, gradle_file in all_build_gradle_files.items():
+        for module, gradle_file in all_build_gradle_files.items():
             if gradle_file is None:
                 continue
             with open(gradle_file) as file:
                 if changed_module in file.read():
-                    depended_connectors.append(connector)
-    return depended_connectors
+                    dependent_modules.append(module)
+    return dependent_modules
 
 
 def get_connector_version(connector):
