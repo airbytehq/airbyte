@@ -10,11 +10,11 @@ connectionSpecification:
     - start_date
   additionalProperties: true
   properties:
-    orgId:
+    org_id:
       type: integer
       title: Org Id
       description: >-
-        The identifier of the organization that owns the campaign. Your orgId is the same as your account in the Apple Search Ads UI.
+        The identifier of the organization that owns the campaign. Your Org Id is the same as your account in the Apple Search Ads UI.
     client_id:
       type: string
       title: Client Id
