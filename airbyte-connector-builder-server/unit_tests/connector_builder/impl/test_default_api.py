@@ -8,6 +8,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, Level, Type
+from fastapi import HTTPException
+
 from connector_builder.generated.models.http_request import HttpRequest
 from connector_builder.generated.models.http_response import HttpResponse
 from connector_builder.generated.models.stream_read import StreamRead
@@ -17,7 +19,6 @@ from connector_builder.generated.models.streams_list_read import StreamsListRead
 from connector_builder.generated.models.streams_list_read_streams import StreamsListReadStreams
 from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
 from connector_builder.impl.default_api import DefaultApiImpl
-from fastapi import HTTPException
 
 MANIFEST = {
     "version": "0.1.0",
