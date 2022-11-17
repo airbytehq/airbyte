@@ -13,9 +13,11 @@ pip install 'mypy==0.930'
 pip install 'isort==5.6.4'
 pip install 'pytest==6.1.2'
 pip install 'coverage[toml]==6.3.1'
+apt update
+apt install -y git
 python -m isort --settings-file=pyproject.toml ./
 python -m isort --settings-file=pyproject.toml --diff --quiet ./
 python -m black --config pyproject.toml ./
 python -m black --config pyproject.toml ./ --diff --quiet
-#python -m pflake8 ./
-#python -m pflake8 ./ --diff --quiet
+python -m pflake8 --config pyproject.toml ./
+python -m pflake8 --config pyproject.toml ./ --diff --quiet
