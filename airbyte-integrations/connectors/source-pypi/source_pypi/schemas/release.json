@@ -2,11 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Warehouse JSON API version 1.0",
   "type": "object",
-  "required": [
-    "info",
-    "last_serial",
-    "urls"
-  ],
+  "required": ["info", "last_serial", "urls"],
   "properties": {
     "info": {
       "type": "object",
@@ -32,10 +28,7 @@
         },
         "bugtrack_url": {
           "description": "URL to find issues and bugs for the project",
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "classifiers": {
           "description": "Trove Classifier. Corresponds to https://packaging.python.org/specifications/core-metadata/#classifier-multiple-use",
@@ -50,24 +43,15 @@
         },
         "description_content_type": {
           "description": "Corresponds to https://packaging.python.org/specifications/core-metadata/#description-content-type",
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "docs_url": {
           "description": "URL to the project's documentation",
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "download_url": {
           "description": "[DEPRECATED]",
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "downloads": {
           "description": "[DEPRECATED]",
@@ -83,24 +67,15 @@
         },
         "license": {
           "description": "Project's open source license",
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "maintainer": {
           "description": "Project maintainer name",
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "maintainer_email": {
           "description": "Project maintainer email address",
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "name": {
           "description": "Project's raw (non-normailzed name)",
@@ -132,27 +107,18 @@
         },
         "requires_dist": {
           "description": "Calculated project dependencies. Corresponds to https://packaging.python.org/specifications/core-metadata/#requires-dist-multiple-use",
-          "type": [
-            "array",
-            "null"
-          ],
+          "type": ["array", "null"],
           "items": {
             "type": "string"
           }
         },
         "requires_python": {
           "description": "Python runtime version required for project. Corresponds to https://packaging.python.org/specifications/core-metadata/#requires-python",
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "summary": {
           "description": "A one-line summary of what the distribution does.. Corresponds to https://packaging.python.org/specifications/core-metadata/#summary",
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "version": {
           "description": "A string containing the distributions version number in the format specified in PEP 440. Corresponds to https://packaging.python.org/specifications/core-metadata/#version",
@@ -164,10 +130,7 @@
         },
         "yanked_reason": {
           "description": "Reason for applying PEP 592 version yank",
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         }
       }
     },
@@ -237,10 +200,7 @@
             },
             "requires_python": {
               "description": "Python runtime version required for project. Corresponds to https://packaging.python.org/specifications/core-metadata/#requires-python",
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "size": {
               "description": "File size in bytes",
@@ -264,10 +224,7 @@
             },
             "yanked_reason": {
               "description": "PEP 592 reason for yanking release file",
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             }
           }
         }
@@ -280,49 +237,31 @@
         "type": "object",
         "properties": {
           "aliases": {
-            "type": [
-              "array",
-              "null"
-            ],
+            "type": ["array", "null"],
             "description": "A list of CVE vulns",
             "items": {
               "type": "string"
             }
           },
           "details": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "description": "A description of the vulnerability"
           },
           "fixed_in": {
-            "type": [
-              "array",
-              "null"
-            ],
+            "type": ["array", "null"],
             "description": "A list of versions that are fixed",
             "items": {
               "type": "string"
             }
           },
           "id": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "link": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "source": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           }
         }
       }

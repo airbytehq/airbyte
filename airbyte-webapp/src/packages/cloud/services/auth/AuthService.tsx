@@ -16,6 +16,7 @@ import { useAuth } from "packages/firebaseReact";
 import { useInitService } from "services/useInitService";
 import { getUtmFromStorage } from "utils/utmStorage";
 
+import { FREE_EMAIL_SERVICE_PROVIDERS } from "./freeEmailProviders";
 import { actions, AuthServiceState, authStateReducer, initialState } from "./reducer";
 import { EmailLinkErrorCodes } from "./types";
 
@@ -51,6 +52,7 @@ interface AuthContextApi {
   loggedOut: boolean;
   providers: string[] | null;
   hasPasswordLogin: () => boolean;
+  hasCorporateEmail: () => boolean;
   login: AuthLogin;
   loginWithOAuth: (provider: OAuthProviders) => Observable<OAuthLoginState>;
   signUpWithEmailLink: (form: { name: string; email: string; password: string; news: boolean }) => Promise<void>;
@@ -169,6 +171,9 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
       providers: state.providers,
       hasPasswordLogin(): boolean {
         return !!state.providers?.includes("password");
+      },
+      hasCorporateEmail(): boolean {
+        return !FREE_EMAIL_SERVICE_PROVIDERS.some((provider) => state.currentUser?.email.endsWith(`@${provider}`));
       },
       async login(values: { email: string; password: string }): Promise<void> {
         await authService.login(values.email, values.password);
