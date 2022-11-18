@@ -16,4 +16,4 @@ read:
 	@docker run --rm -v $(PWD)/secrets:/secrets -v $(PWD)/integration_tests:/integration_tests $(docker_image) read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json | jq
 
 unittest-local:
-	@python -m pytest unit_tests -n auto
+	@python -m pytest unit_tests -n auto --dist loadgroup

@@ -968,7 +968,7 @@ assert all([not transition.should_fail for transition in VALID_SPEC_TRANSITIONS]
 
 ALL_SPEC_TRANSITIONS_PARAMS = [transition.as_pytest_param() for transition in FAILING_SPEC_TRANSITIONS + VALID_SPEC_TRANSITIONS]
 
-
+@pytest.mark.xdist_group(name="backward_compatibility")
 @pytest.mark.parametrize("previous_connector_spec, actual_connector_spec, should_fail", ALL_SPEC_TRANSITIONS_PARAMS)
 def test_spec_backward_compatibility(previous_connector_spec, actual_connector_spec, should_fail):
     t = _TestSpec()
@@ -983,6 +983,7 @@ VALID_JSON_SCHEMA_TRANSITIONS_PARAMS = [
 
 
 @pytest.mark.slow
+@pytest.mark.xdist_group(name="backward_compatibility")
 @pytest.mark.parametrize("previous_connector_spec, actual_connector_spec, should_fail", VALID_JSON_SCHEMA_TRANSITIONS_PARAMS)
 def test_validate_previous_configs(previous_connector_spec, actual_connector_spec, should_fail):
     expectation = pytest.raises(NonBackwardCompatibleError) if should_fail else does_not_raise()
@@ -1328,7 +1329,7 @@ assert all([not transition.should_fail for transition in VALID_CATALOG_TRANSITIO
 
 ALL_CATALOG_TRANSITIONS_PARAMS = [transition.as_pytest_param() for transition in FAILING_CATALOG_TRANSITIONS + VALID_CATALOG_TRANSITIONS]
 
-
+@pytest.mark.xdist_group(name="backward_compatibility")
 @pytest.mark.parametrize("previous_discovered_catalog, discovered_catalog, should_fail", ALL_CATALOG_TRANSITIONS_PARAMS)
 def test_catalog_backward_compatibility(previous_discovered_catalog, discovered_catalog, should_fail):
     t = _TestDiscovery()
