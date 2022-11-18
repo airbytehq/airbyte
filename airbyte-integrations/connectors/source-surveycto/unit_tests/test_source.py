@@ -1,11 +1,14 @@
-# #
-# # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
-# #
-import pytest
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 from unittest.mock import MagicMock, patch
+
+import pytest
 from airbyte_cdk.models import ConnectorSpecification
-from source_surveycto.source import SourceSurveycto
 from source_surveycto.helpers import Helpers
+from source_surveycto.source import SourceSurveycto
+
 
 @pytest.fixture(name='config')
 def config_fixture():

@@ -1,10 +1,11 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from unittest.mock import MagicMock
+
 import pytest
 from source_surveycto.helpers import Helpers
-
 
 
 @pytest.fixture(name='config')
