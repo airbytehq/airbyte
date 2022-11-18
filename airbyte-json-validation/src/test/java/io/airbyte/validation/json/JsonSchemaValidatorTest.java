@@ -17,7 +17,6 @@ import io.airbyte.commons.json.Jsons;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Collections;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
@@ -108,32 +107,32 @@ class JsonSchemaValidatorTest {
   @Test
   public void testResolveReferences() throws IOException {
     String referencableSchemas = """
-        {
-          "definitions": {
-            "ref1": {"type": "string"},
-            "ref2": {"type": "boolean"}
-          }
-        }
-        """;
+                                 {
+                                   "definitions": {
+                                     "ref1": {"type": "string"},
+                                     "ref2": {"type": "boolean"}
+                                   }
+                                 }
+                                 """;
     final File schemaFile = IOs.writeFile(Files.createTempDirectory("test"), "WellKnownTypes.json", referencableSchemas).toFile();
     JsonSchemaValidator jsonSchemaValidator = new JsonSchemaValidator("file://" + schemaFile.getParentFile().getAbsolutePath() + "/foo.json");
 
     Set<String> validationResult = jsonSchemaValidator.validate(
         Jsons.deserialize("""
-            {
-              "type": "object",
-              "properties": {
-                "prop1": {"$ref": "WellKnownTypes.json#/definitions/ref1"},
-                "prop2": {"$ref": "WellKnownTypes.json#/definitions/ref2"}
-              }
-            }
-            """),
+                          {
+                            "type": "object",
+                            "properties": {
+                              "prop1": {"$ref": "WellKnownTypes.json#/definitions/ref1"},
+                              "prop2": {"$ref": "WellKnownTypes.json#/definitions/ref2"}
+                            }
+                          }
+                          """),
         Jsons.deserialize("""
-            {
-              "prop1": "foo",
-              "prop2": "false"
-            }
-            """));
+                          {
+                            "prop1": "foo",
+                            "prop2": "false"
+                          }
+                          """));
 
     assertEquals(Set.of("$.prop2: string found, boolean expected"), validationResult);
   }
