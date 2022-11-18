@@ -14,14 +14,7 @@ import { Text } from "components/ui/Text";
 
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import {
-  DbtCloudJob,
-  DbtCloudJobInfo,
-  isSameJob,
-  toDbtCloudJob,
-  useDbtIntegration,
-  useAvailableDbtJobs,
-} from "packages/cloud/services/dbtCloud";
+import { DbtCloudJob, isSameJob, useDbtIntegration, useAvailableDbtJobs } from "packages/cloud/services/dbtCloud";
 import { RoutePaths } from "pages/routePaths";
 
 import dbtLogo from "./dbt-bit_tm.svg";
@@ -93,9 +86,9 @@ const DbtJobsForm: React.FC<DbtJobsFormProps> = ({ saveJobs, isSaving, dbtCloudJ
   // with the list of available jobs as provided by dbt Cloud.
   const jobs = dbtCloudJobs.map((savedJob) => {
     const { jobName } = availableDbtJobs.find((remoteJob) => isSameJob(remoteJob, savedJob)) || {};
-    const { account, job } = savedJob;
+    const { accountId, jobId } = savedJob;
 
-    return { account, job, jobName };
+    return { accountId, jobId, jobName };
   });
 
   return (
@@ -119,7 +112,7 @@ const DbtJobsForm: React.FC<DbtJobsFormProps> = ({ saveJobs, isSaving, dbtCloudJ
                             .filter((remoteJob) => !values.jobs.some((savedJob) => isSameJob(remoteJob, savedJob)))
                             .map((job) => ({ displayName: job.jobName, value: job }))}
                           onChange={(selection) => {
-                            push(toDbtCloudJob(selection.value as DbtCloudJobInfo));
+                            push(selection.value);
                           }}
                         >
                           {() => (
@@ -202,12 +195,12 @@ const JobsListItem = ({ job, removeJob }: JobsListItemProps) => {
       <div className={styles.jobListItemIdFieldGroup}>
         <div className={styles.jobListItemIdField}>
           <Text size="sm">
-            {formatMessage({ id: "connection.dbtCloudJobs.job.accountId" })}: {job.account}
+            {formatMessage({ id: "connection.dbtCloudJobs.job.accountId" })}: {job.accountId}
           </Text>
         </div>
         <div className={styles.jobListItemIdField}>
           <Text size="sm">
-            {formatMessage({ id: "connection.dbtCloudJobs.job.jobId" })}: {job.job}
+            {formatMessage({ id: "connection.dbtCloudJobs.job.jobId" })}: {job.jobId}
           </Text>
         </div>
         <Button
