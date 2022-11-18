@@ -171,6 +171,7 @@ module.exports = {
             id: 'connector-development/config-based/low-code-cdk-overview',
           },
           items: [
+            'connector-development/config-based/connector-builder-ui',
             {
               type: 'category',
               label: 'Tutorial',
