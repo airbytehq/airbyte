@@ -21,7 +21,7 @@ export interface IProps {
     documentationUrl: string;
     dockerImageTag: string;
     dockerRepository: string;
-  }) => Promise<void>;
+  }) => void;
 }
 
 const Content = styled.div`
@@ -118,8 +118,8 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
           validateOnBlur
           validateOnChange
           validationSchema={validationSchema}
-          onSubmit={async (values, { setSubmitting }) => {
-            await onSubmit(values);
+          onSubmit={(values, { setSubmitting }) => {
+            onSubmit(values);
             setSubmitting(false);
           }}
         >
@@ -210,16 +210,10 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
                   <div />
                 )}
                 <div>
-                  <Button
-                    className={styles.buttonWithMargin}
-                    onClick={onClose}
-                    type="button"
-                    variant="secondary"
-                    disabled={isSubmitting}
-                  >
+                  <Button className={styles.buttonWithMargin} onClick={onClose} type="button" variant="secondary">
                     <FormattedMessage id="form.cancel" />
                   </Button>
-                  <Button type="submit" disabled={isSubmitting || !dirty || !isValid} isLoading={isSubmitting}>
+                  <Button type="submit" disabled={isSubmitting || !dirty || !isValid}>
                     <FormattedMessage id="form.add" />
                   </Button>
                 </div>

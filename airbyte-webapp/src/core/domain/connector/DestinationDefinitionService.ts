@@ -1,34 +1,33 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 
 import {
-  createCustomDestinationDefinition,
-  CustomDestinationDefinitionCreate,
-  CustomDestinationDefinitionUpdate,
-  DestinationDefinitionIdWithWorkspaceId,
-  getDestinationDefinitionForWorkspace,
-  listDestinationDefinitionsForWorkspace,
+  createDestinationDefinition,
+  DestinationDefinitionCreate,
+  DestinationDefinitionUpdate,
+  getDestinationDefinition,
+  listDestinationDefinitions,
   listLatestDestinationDefinitions,
-  updateCustomDestinationDefinition,
+  updateDestinationDefinition,
 } from "../../request/AirbyteClient";
 
 export class DestinationDefinitionService extends AirbyteRequestService {
-  public get(body: DestinationDefinitionIdWithWorkspaceId) {
-    return getDestinationDefinitionForWorkspace(body, this.requestOptions);
+  public get(destinationDefinitionId: string) {
+    return getDestinationDefinition({ destinationDefinitionId }, this.requestOptions);
   }
 
-  public list(workspaceId: string) {
-    return listDestinationDefinitionsForWorkspace({ workspaceId }, this.requestOptions);
+  public list() {
+    return listDestinationDefinitions(this.requestOptions);
   }
 
   public listLatest() {
     return listLatestDestinationDefinitions(this.requestOptions);
   }
 
-  public update(body: CustomDestinationDefinitionUpdate) {
-    return updateCustomDestinationDefinition(body, this.requestOptions);
+  public update(body: DestinationDefinitionUpdate) {
+    return updateDestinationDefinition(body, this.requestOptions);
   }
 
-  public create(body: CustomDestinationDefinitionCreate) {
-    return createCustomDestinationDefinition(body, this.requestOptions);
+  public create(body: DestinationDefinitionCreate) {
+    return createDestinationDefinition(body, this.requestOptions);
   }
 }
