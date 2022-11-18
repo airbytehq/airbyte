@@ -34,8 +34,10 @@ public class SnowflakeDataSourceUtils {
   public static final String OAUTH_METHOD = "OAuth";
   public static final String USERNAME_PASSWORD_METHOD = "username/password";
   public static final String UNRECOGNIZED = "Unrecognized";
+  public static final String AIRBYTE_OSS = "airbyte_oss";
+  public static final String AIRBYTE_CLOUD = "airbyte_cloud";
   private static final String JDBC_CONNECTION_STRING =
-      "role=%s&warehouse=%s&database=%s&schema=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s&application=Airbyte_Connector";
+      "role=%s&warehouse=%s&database=%s&schema=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s&application=%s";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDataSourceUtils.class);
   private static final int PAUSE_BETWEEN_TOKEN_REFRESH_MIN = 7; // snowflake access token's TTL is 10min and can't be modified
@@ -53,9 +55,9 @@ public class SnowflakeDataSourceUtils {
    * @param config source config JSON
    * @return datasource
    */
-  public static HikariDataSource createDataSource(final JsonNode config) {
+  public static HikariDataSource createDataSource(final JsonNode config, final String airbyteEnvironment) {
     final HikariDataSource dataSource = new HikariDataSource();
-    dataSource.setJdbcUrl(buildJDBCUrl(config));
+    dataSource.setJdbcUrl(buildJDBCUrl(config, airbyteEnvironment));
 
     if (config.has("credentials")) {
       final JsonNode credentials = config.get("credentials");
@@ -130,7 +132,7 @@ public class SnowflakeDataSourceUtils {
     }
   }
 
-  public static String buildJDBCUrl(final JsonNode config) {
+  public static String buildJDBCUrl(final JsonNode config, final String airbyteEnvironment) {
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?",
         config.get(JdbcUtils.HOST_KEY).asText()));
 
@@ -143,7 +145,8 @@ public class SnowflakeDataSourceUtils {
         // Needed for JDK17 - see
         // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
         "JSON",
-        true));
+        true,
+        airbyteEnvironment));
 
     // https://docs.snowflake.com/en/user-guide/jdbc-configure.html#jdbc-driver-connection-string
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {

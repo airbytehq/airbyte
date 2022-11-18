@@ -16,11 +16,12 @@ interface ConnectorFormContext {
   addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void;
   removeUnfinishedFlow: (key: string) => void;
   resetConnectorForm: () => void;
-  selectedService?: ConnectorDefinition;
-  selectedConnector?: ConnectorDefinitionSpecification;
+  selectedConnectorDefinition?: ConnectorDefinition;
+  selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
   validationSchema: AnySchema;
+  connectorId?: string;
 }
 
 const connectorFormContext = React.createContext<ConnectorFormContext | null>(null);
@@ -44,6 +45,7 @@ interface ConnectorFormContextProviderProps {
   getValues: <T = unknown>(values: ConnectorFormValues<T>) => ConnectorFormValues<T>;
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
   validationSchema: AnySchema;
+  connectorId?: string;
 }
 
 export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<ConnectorFormContextProviderProps>> = ({
@@ -58,12 +60,13 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
   isLoadingSchema,
   validationSchema,
   isEditMode,
+  connectorId,
 }) => {
   const { resetForm } = useFormikContext<ConnectorFormValues>();
 
   const ctx = useMemo<ConnectorFormContext>(() => {
     const unfinishedFlows = widgetsInfo["_common.unfinishedFlows"] ?? {};
-    return {
+    const context: ConnectorFormContext = {
       widgetsInfo,
       getValues,
       setUiWidgetsInfo,
@@ -73,6 +76,7 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
       isLoadingSchema,
       validationSchema,
       isEditMode,
+      connectorId,
       unfinishedFlows,
       addUnfinishedFlow: (path, info) =>
         setUiWidgetsInfo("_common.unfinishedFlows", {
@@ -89,6 +93,7 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
         resetUiWidgetsInfo();
       },
     };
+    return context;
   }, [
     widgetsInfo,
     getValues,
@@ -99,6 +104,7 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
     isLoadingSchema,
     validationSchema,
     isEditMode,
+    connectorId,
     resetForm,
     resetUiWidgetsInfo,
   ]);

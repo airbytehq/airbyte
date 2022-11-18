@@ -11,11 +11,9 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
-import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.server.apis.AttemptApiController;
-import io.airbyte.server.apis.ConfigurationApi;
 import io.airbyte.server.apis.ConnectionApiController;
 import io.airbyte.server.apis.DbMigrationApiController;
 import io.airbyte.server.apis.DestinationApiController;
@@ -31,6 +29,7 @@ import io.airbyte.server.apis.OperationApiController;
 import io.airbyte.server.apis.SchedulerApiController;
 import io.airbyte.server.apis.SourceApiController;
 import io.airbyte.server.apis.SourceDefinitionApiController;
+import io.airbyte.server.apis.SourceDefinitionSpecificationApiController;
 import io.airbyte.server.apis.SourceOauthApiController;
 import io.airbyte.server.apis.StateApiController;
 import io.airbyte.server.apis.WebBackendApiController;
@@ -51,6 +50,7 @@ import io.airbyte.server.apis.binders.OperationApiBinder;
 import io.airbyte.server.apis.binders.SchedulerApiBinder;
 import io.airbyte.server.apis.binders.SourceApiBinder;
 import io.airbyte.server.apis.binders.SourceDefinitionApiBinder;
+import io.airbyte.server.apis.binders.SourceDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.SourceOauthApiBinder;
 import io.airbyte.server.apis.binders.StateApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
@@ -71,6 +71,7 @@ import io.airbyte.server.apis.factories.OperationApiFactory;
 import io.airbyte.server.apis.factories.SchedulerApiFactory;
 import io.airbyte.server.apis.factories.SourceApiFactory;
 import io.airbyte.server.apis.factories.SourceDefinitionApiFactory;
+import io.airbyte.server.apis.factories.SourceDefinitionSpecificationApiFactory;
 import io.airbyte.server.apis.factories.SourceOauthApiFactory;
 import io.airbyte.server.apis.factories.StateApiFactory;
 import io.airbyte.server.apis.factories.WebBackendApiFactory;
@@ -178,27 +179,6 @@ public interface ServerFactory {
                                  final WebBackendGeographiesHandler webBackendGeographiesHandler) {
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
-      // set static values for factory
-      ConfigurationApiFactory.setValues(
-          configRepository,
-          secretsRepositoryReader,
-          secretsRepositoryWriter,
-          jobPersistence,
-          synchronousSchedulerClient,
-          new StatePersistence(configsDatabase),
-          mdc,
-          configsDatabase,
-          jobsDatabase,
-          trackingClient,
-          workerEnvironment,
-          logConfigs,
-          airbyteVersion,
-          workspaceRoot,
-          httpClient,
-          eventRunner,
-          configsFlyway,
-          jobsFlyway);
-
       AttemptApiFactory.setValues(attemptHandler, mdc);
 
       ConnectionApiFactory.setValues(
@@ -237,6 +217,8 @@ public interface ServerFactory {
 
       SourceDefinitionApiFactory.setValues(sourceDefinitionsHandler);
 
+      SourceDefinitionSpecificationApiFactory.setValues(schedulerHandler);
+
       StateApiFactory.setValues(stateHandler);
 
       WebBackendApiFactory.setValues(webBackendConnectionsHandler, webBackendGeographiesHandler);
@@ -245,7 +227,6 @@ public interface ServerFactory {
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(
-          ConfigurationApi.class,
           AttemptApiController.class,
           ConnectionApiController.class,
           DbMigrationApiController.class,
@@ -262,6 +243,7 @@ public interface ServerFactory {
           SchedulerApiController.class,
           SourceApiController.class,
           SourceDefinitionApiController.class,
+          SourceDefinitionSpecificationApiController.class,
           SourceOauthApiController.class,
           StateApiController.class,
           WebBackendApiController.class,
@@ -269,7 +251,6 @@ public interface ServerFactory {
 
       final Set<Object> components = Set.of(
           new CorsFilter(),
-          new ConfigurationApiBinder(),
           new AttemptApiBinder(),
           new ConnectionApiBinder(),
           new DbMigrationBinder(),
@@ -286,6 +267,7 @@ public interface ServerFactory {
           new SchedulerApiBinder(),
           new SourceApiBinder(),
           new SourceDefinitionApiBinder(),
+          new SourceDefinitionSpecificationApiBinder(),
           new SourceOauthApiBinder(),
           new StateApiBinder(),
           new WebBackendApiBinder(),

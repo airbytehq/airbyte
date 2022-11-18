@@ -67,7 +67,7 @@ import org.slf4j.MDC;
  * parent process starting a Kube Pod Process needs to exist within the Kube networking space. This
  * is so the parent process can forward data into the child's stdin and read the child's stdout and
  * stderr streams and copy configuration files over.
- *
+ * <p>
  * This is made possible by:
  * <ul>
  * <li>1) An init container that creates 3 named pipes corresponding to stdin, stdout and std err on
@@ -91,7 +91,7 @@ import org.slf4j.MDC;
  * </ul>
  * The docker image used for this pod process must expose a AIRBYTE_ENTRYPOINT which contains the
  * entrypoint we will wrap when creating the main container in the pod.
- *
+ * <p>
  * See the constructor for more information.
  */
 
@@ -104,7 +104,7 @@ public class KubePodProcess extends Process implements KubePod {
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
 
   public static final String MAIN_CONTAINER_NAME = "main";
-  private static final String INIT_CONTAINER_NAME = "init";
+  public static final String INIT_CONTAINER_NAME = "init";
   private static final String DEFAULT_MEMORY_REQUEST = "25Mi";
   private static final String DEFAULT_MEMORY_LIMIT = "50Mi";
   private static final String DEFAULT_CPU_REQUEST = "0.1";
@@ -701,7 +701,7 @@ public class KubePodProcess extends Process implements KubePod {
 
   /**
    * Close all open resource in the opposite order of resource creation.
-   *
+   * <p>
    * Null checks exist because certain local Kube clusters (e.g. Docker for Desktop) back this
    * implementation with OS processes and resources, which are automatically reaped by the OS.
    */

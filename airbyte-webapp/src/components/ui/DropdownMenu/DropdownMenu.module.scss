@@ -1,0 +1,70 @@
+@use "scss/colors";
+@use "scss/variables";
+@use "scss/z-indices";
+
+.dropdownMenu {
+  position: relative;
+}
+
+.items {
+  z-index: z-indices.$dropdownMenu;
+  overflow: auto;
+  width: 260px;
+  max-height: 300px;
+  padding: variables.$spacing-sm 0;
+  outline: none;
+  border-radius: variables.$border-radius-xs;
+  background-color: colors.$white;
+  box-shadow: 0 8px 10px 0 rgb(11 10 26 / 4%), 0 3px 14px 0 rgb(11 10 26 / 8%), 0 5px 5px 0 rgb(11 10 26 / 12%);
+
+  &:focus-within {
+    outline: none;
+  }
+}
+
+.item {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  height: 42px;
+  width: 100%;
+  padding: 0 variables.$spacing-lg;
+  border: 0;
+  background-color: transparent;
+  text-decoration: none;
+
+  .icon {
+    display: flex;
+    align-items: center;
+    font-size: 22px;
+    color: colors.$dark-blue;
+  }
+
+  .text {
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+  }
+
+  &.active {
+    background-color: colors.$grey-100;
+  }
+
+  &.iconPositionRight {
+    flex-direction: row-reverse;
+
+    .icon {
+      margin-left: variables.$spacing-md;
+    }
+  }
+
+  &.iconPositionLeft {
+    flex-direction: row;
+
+    .icon {
+      margin-right: variables.$spacing-md;
+    }
+  }
+}

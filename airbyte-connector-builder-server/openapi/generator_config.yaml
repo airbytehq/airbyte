@@ -1,0 +1,4 @@
+files:
+  api_interfaces.mustache:
+    templateType: API
+    destinationFilename: _interface.py
