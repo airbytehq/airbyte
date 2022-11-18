@@ -25,10 +25,11 @@ import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
 
 /**
  * Extends DefaultAirbyteStreamFactory to handle version specific conversions.
- *
+ * <p>
  * A VersionedAirbyteStreamFactory handles parsing and validation from a specific version of the
  * Airbyte Protocol as well as upgrading messages to the current version.
  */
@@ -71,9 +72,32 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
     this.initializeForProtocolVersion(protocolVersion);
   }
 
+  @Override
+  @SneakyThrows
+  public Flux<AirbyteMessage> createFlux(final BufferedReader bufferedReader) {
+    if (shouldDetectVersion) {
+      final Optional<Version> versionMaybe = detectVersion(bufferedReader);
+      if (versionMaybe.isPresent()) {
+        logger.info("Detected Protocol Version {}", versionMaybe.get().serialize());
+        initializeForProtocolVersion(versionMaybe.get());
+      } else {
+        // No version found, use the default as a fallback
+        logger.info("Unable to detect Protocol Version, assuming protocol version {}", fallbackVersion.serialize());
+        initializeForProtocolVersion(fallbackVersion);
+      }
+    }
+
+    final boolean needMigration = !protocolVersion.getMajorVersion().equals(migratorFactory.getMostRecentVersion().getMajorVersion());
+    logger.info(
+        "Reading messages from protocol version {}{}",
+        protocolVersion.serialize(),
+        needMigration ? ", messages will be upgraded to protocol version " + migratorFactory.getMostRecentVersion().serialize() : "");
+    return super.createFlux(bufferedReader);
+  }
+
   /**
    * Create the AirbyteMessage stream.
-   *
+   * <p>
    * If detectVersion is set to true, it will decide which protocol version to use from the content of
    * the stream rather than the one passed from the constructor.
    */
@@ -103,7 +127,7 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
 
   /**
    * Attempt to detect the version by scanning the stream
-   *
+   * <p>
    * Using the BufferedReader reset/mark feature to get a look-ahead. We will attempt to find the
    * first SPEC message and decide on a protocol version from this message.
    *

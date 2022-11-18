@@ -115,7 +115,7 @@ class DefaultAirbyteSourceTest {
     when(process.getInputStream()).thenReturn(inputStream);
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("qwer".getBytes(StandardCharsets.UTF_8)));
 
-    streamFactory = noop -> MESSAGES.stream();
+    // streamFactory = noop -> MESSAGES.stream();
 
     LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER, LogConfigs.EMPTY, logJobRoot);
   }

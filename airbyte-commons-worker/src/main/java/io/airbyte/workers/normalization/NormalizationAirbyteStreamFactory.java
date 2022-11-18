@@ -16,8 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
 
 /**
  * Creates a stream from an input stream. The produced stream attempts to parse each line of the
@@ -45,6 +47,11 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
   NormalizationAirbyteStreamFactory(final Logger logger, final MdcScope.Builder containerLogMdcBuilder) {
     this.logger = logger;
     this.containerLogMdcBuilder = containerLogMdcBuilder;
+  }
+
+  @Override
+  public Flux<AirbyteMessage> createFlux(final BufferedReader bufferedReader) {
+    throw new NotImplementedException("not implemented");
   }
 
   @Override

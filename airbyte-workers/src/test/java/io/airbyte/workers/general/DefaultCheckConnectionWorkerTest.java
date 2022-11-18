@@ -15,7 +15,6 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConnectorJobOutput;
@@ -40,7 +39,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+@SuppressWarnings({"PMD.JUnitTestsShouldIncludeAssert", "PMD.UnusedLocalVariable"})
 class DefaultCheckConnectionWorkerTest {
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
@@ -70,15 +69,15 @@ class DefaultCheckConnectionWorkerTest {
     final AirbyteMessage successMessage = new AirbyteMessage()
         .withType(Type.CONNECTION_STATUS)
         .withConnectionStatus(new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED));
-    successStreamFactory = noop -> Lists.newArrayList(successMessage).stream();
+    // successStreamFactory = noop -> Lists.newArrayList(successMessage).stream();
 
     final AirbyteMessage failureMessage = new AirbyteMessage()
         .withType(Type.CONNECTION_STATUS)
         .withConnectionStatus(new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("failed to connect"));
-    failureStreamFactory = noop -> Lists.newArrayList(failureMessage).stream();
+    // failureStreamFactory = noop -> Lists.newArrayList(failureMessage).stream();
 
     final AirbyteMessage traceMessage = AirbyteMessageUtils.createTraceMessage("some error from the connector", 123.0);
-    traceMessageStreamFactory = noop -> Lists.newArrayList(traceMessage).stream();
+    // traceMessageStreamFactory = noop -> Lists.newArrayList(traceMessage).stream();
   }
 
   @Test

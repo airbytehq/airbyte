@@ -105,7 +105,7 @@ class DefaultAirbyteDestinationTest {
     when(process.isAlive()).thenReturn(true);
     when(process.getInputStream()).thenReturn(inputStream);
 
-    streamFactory = noop -> MESSAGES.stream();
+    // streamFactory = noop -> MESSAGES.stream();
     messageWriterFactory = new DefaultAirbyteMessageBufferedWriterFactory();
   }
 

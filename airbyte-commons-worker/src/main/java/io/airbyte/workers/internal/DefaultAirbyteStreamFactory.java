@@ -19,6 +19,8 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * Creates a stream from an input stream. The produced stream attempts to parse each line of the
@@ -53,6 +55,19 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     protocolValidator = protocolPredicate;
     this.logger = logger;
     this.containerLogMdcBuilder = containerLogMdcBuilder;
+  }
+
+  @Override
+  public Flux<AirbyteMessage> createFlux(final BufferedReader bufferedReader) {
+    return Flux.fromStream(bufferedReader.lines())
+        .parallel()
+        .runOn(Schedulers.parallel())
+        .flatMap(line -> Flux.fromStream(Jsons.tryDeserialize(line).stream()))
+        .filter(this::validate)
+        .flatMap(json -> Flux.fromStream(Jsons.tryObject(json, AirbyteMessage.class).stream()))
+        .filter(this::filterLog)
+        .sequential()
+        .publishOn(Schedulers.single());
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)

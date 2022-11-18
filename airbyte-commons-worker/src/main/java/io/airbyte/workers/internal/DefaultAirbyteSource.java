@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
 
 public class DefaultAirbyteSource implements AirbyteSource {
 
@@ -49,6 +50,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private Process sourceProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
+  private Flux<AirbyteMessage> messageFlux = null;
   private Integer exitValue = null;
   private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
 
@@ -90,6 +92,10 @@ public class DefaultAirbyteSource implements AirbyteSource {
         .peek(message -> heartbeatMonitor.beat())
         .filter(message -> message.getType() == Type.RECORD || message.getType() == Type.STATE || message.getType() == Type.TRACE)
         .iterator();
+
+    messageFlux = streamFactory.createFlux(IOs.newBufferedReader(sourceProcess.getInputStream()))
+        .doOnNext(message -> heartbeatMonitor.beat())
+        .filter(message -> message.getType() == Type.RECORD || message.getType() == Type.STATE || message.getType() == Type.TRACE);
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
@@ -123,6 +129,11 @@ public class DefaultAirbyteSource implements AirbyteSource {
     Preconditions.checkState(sourceProcess != null);
 
     return Optional.ofNullable(messageIterator.hasNext() ? messageIterator.next() : null);
+  }
+
+  @Override
+  public Flux<AirbyteMessage> read() {
+    return messageFlux;
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)

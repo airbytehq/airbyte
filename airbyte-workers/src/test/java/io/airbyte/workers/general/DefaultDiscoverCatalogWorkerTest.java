@@ -31,8 +31,6 @@ import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -40,7 +38,6 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
-import io.airbyte.workers.test_utils.AirbyteMessageUtils;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -97,7 +94,8 @@ class DefaultDiscoverCatalogWorkerTest {
 
     IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CATALOG_JSON_FILENAME, MoreResources.readResource("airbyte_postgres_catalog.json"));
 
-    streamFactory = noop -> Lists.newArrayList(new AirbyteMessage().withType(Type.CATALOG).withCatalog(CATALOG)).stream();
+    // streamFactory = noop -> Lists.newArrayList(new
+    // AirbyteMessage().withType(Type.CATALOG).withCatalog(CATALOG)).stream();
   }
 
   @SuppressWarnings("BusyWait")
@@ -140,12 +138,12 @@ class DefaultDiscoverCatalogWorkerTest {
   @SuppressWarnings("BusyWait")
   @Test
   void testDiscoverSchemaProcessFailWithTraceMessage() throws Exception {
-    final AirbyteStreamFactory traceStreamFactory = noop -> Lists.newArrayList(
-        AirbyteMessageUtils.createTraceMessage("some error from the connector", 123.0)).stream();
+    // final AirbyteStreamFactory traceStreamFactory = noop -> Lists.newArrayList(
+    // AirbyteMessageUtils.createTraceMessage("some error from the connector", 123.0)).stream();
 
     when(process.exitValue()).thenReturn(1);
 
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, traceStreamFactory);
+    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, null);
     final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
     // assertEquals(OutputType.DISCOVER_CATALOG, output.getOutputType());
     // assertNull(output.getDiscoverCatalog());

@@ -51,6 +51,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -59,6 +60,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * This worker is the "data shovel" of ETL. It is responsible for moving data from the Source
@@ -165,12 +167,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   }
 
-  private void replicate(Path jobRoot,
-                         WorkerDestinationConfig destinationConfig,
-                         ThreadedTimeTracker timeTracker,
-                         AtomicReference<FailureReason> replicationRunnableFailureRef,
-                         AtomicReference<FailureReason> destinationRunnableFailureRef,
-                         WorkerSourceConfig sourceConfig) {
+  private void replicate(final Path jobRoot,
+                         final WorkerDestinationConfig destinationConfig,
+                         final ThreadedTimeTracker timeTracker,
+                         final AtomicReference<FailureReason> replicationRunnableFailureRef,
+                         final AtomicReference<FailureReason> destinationRunnableFailureRef,
+                         final WorkerSourceConfig sourceConfig) {
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
     // note: resources are closed in the opposite order in which they are declared. thus source will be
@@ -274,7 +276,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
-  @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
+  @SuppressWarnings({"PMD.AvoidInstanceofChecksInCatchClause", "PMD.UnusedFormalParameter"})
   private static Runnable readFromSrcAndWriteToDstRunnable(final AirbyteSource source,
                                                            final AirbyteDestination destination,
                                                            final AtomicBoolean cancelled,
@@ -287,46 +289,74 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
-      Long recordsRead = 0L;
+      final var recordsRead = new AtomicLong(0);
       final Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors = new HashMap<>();
       try {
-        while (!cancelled.get() && !source.isFinished()) {
-          final Optional<AirbyteMessage> messageOptional;
-          try {
-            messageOptional = source.attemptRead();
-          } catch (final Exception e) {
-            throw new SourceException("Source process read attempt failed", e);
-          }
-
-          if (messageOptional.isPresent()) {
-            final AirbyteMessage airbyteMessage = messageOptional.get();
-            validateSchema(recordSchemaValidator, validationErrors, airbyteMessage);
-            final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
-
-            messageTracker.acceptFromSource(message);
-
-            try {
-              if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
-                destination.accept(message);
+        LOGGER.info("flux ftw!!!");
+        source.read()
+            .parallel()
+            .runOn(Schedulers.parallel())
+            .doOnNext(msg -> validateSchema(recordSchemaValidator, validationErrors, msg))
+            .doOnNext(messageTracker::acceptFromSource)
+            .doOnNext(msg -> {
+              try {
+                if (msg.getType() == Type.RECORD || msg.getType() == Type.STATE) {
+                  destination.accept(msg);
+                }
+              } catch (final Exception e) {
+                throw new DestinationException("Destination process message delivery failed", e);
               }
-            } catch (final Exception e) {
-              throw new DestinationException("Destination process message delivery failed", e);
-            }
+            })
+            .doOnNext(msg -> {
+              if (recordsRead.incrementAndGet() % 1000 == 0) {
+                LOGGER.info("Records parallel fluxed: {} ({})", recordsRead,
+                    FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+              }
+            })
+            .sequential()
+            .publishOn(Schedulers.single())
+            .blockLast();
 
-            recordsRead += 1;
+        source.close();
 
-            if (recordsRead % 1000 == 0) {
-              LOGGER.info("Records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
-            }
-          } else {
-            LOGGER.info("Source has no more messages, closing connection.");
-            try {
-              source.close();
-            } catch (final Exception e) {
-              throw new SourceException("Source cannot be stopped!", e);
-            }
-          }
-        }
+        // while (!cancelled.get() && !source.isFinished()) {
+        // final Optional<AirbyteMessage> messageOptional;
+        // try {
+        // messageOptional = source.attemptRead();
+        // } catch (final Exception e) {
+        // throw new SourceException("Source process read attempt failed", e);
+        // }
+        //
+        // if (messageOptional.isPresent()) {
+        // final AirbyteMessage airbyteMessage = messageOptional.get();
+        // validateSchema(recordSchemaValidator, validationErrors, airbyteMessage);
+        // final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
+        //
+        // messageTracker.acceptFromSource(message);
+        //
+        // try {
+        // if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
+        // destination.accept(message);
+        // }
+        // } catch (final Exception e) {
+        // throw new DestinationException("Destination process message delivery failed", e);
+        // }
+        //
+        // recordsRead += 1;
+        //
+        // if (recordsRead % 1000 == 0) {
+        // LOGGER.info("Records read: {} ({})", recordsRead,
+        // FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+        // }
+        // } else {
+        // LOGGER.info("Source has no more messages, closing connection.");
+        // try {
+        // source.close();
+        // } catch (final Exception e) {
+        // throw new SourceException("Source cannot be stopped!", e);
+        // }
+        // }
+        // }
         timeHolder.trackSourceReadEndTime();
         LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
         if (!validationErrors.isEmpty()) {
@@ -351,23 +381,23 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           // This read will fail and throw an exception. Because of this, throw exceptions only if the worker
           // was not cancelled.
 
-          if (e instanceof SourceException || e instanceof DestinationException) {
-            // Surface Source and Destination exceptions directly so that they can be classified properly by the
-            // worker
-            throw e;
-          } else {
-            throw new RuntimeException(e);
-          }
+          // if (e instanceof SourceException || e instanceof DestinationException) {
+          // Surface Source and Destination exceptions directly so that they can be classified properly by the
+          // worker
+          // throw e;
+          // } else {
+          throw new RuntimeException(e);
+          // }
         }
       }
     };
   }
 
-  private ReplicationOutput getReplicationOutput(StandardSyncInput syncInput,
-                                                 WorkerDestinationConfig destinationConfig,
-                                                 AtomicReference<FailureReason> replicationRunnableFailureRef,
-                                                 AtomicReference<FailureReason> destinationRunnableFailureRef,
-                                                 ThreadedTimeTracker timeTracker)
+  private ReplicationOutput getReplicationOutput(final StandardSyncInput syncInput,
+                                                 final WorkerDestinationConfig destinationConfig,
+                                                 final AtomicReference<FailureReason> replicationRunnableFailureRef,
+                                                 final AtomicReference<FailureReason> destinationRunnableFailureRef,
+                                                 final ThreadedTimeTracker timeTracker)
       throws JsonProcessingException {
     final ReplicationStatus outputStatus;
     // First check if the process was cancelled. Cancellation takes precedence over failures.
@@ -410,7 +440,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return output;
   }
 
-  private SyncStats getTotalStats(ThreadedTimeTracker timeTracker, ReplicationStatus outputStatus) {
+  private SyncStats getTotalStats(final ThreadedTimeTracker timeTracker, final ReplicationStatus outputStatus) {
     final SyncStats totalSyncStats = new SyncStats()
         .withRecordsEmitted(messageTracker.getTotalRecordsEmitted())
         .withBytesEmitted(messageTracker.getTotalBytesEmitted())
@@ -438,7 +468,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return totalSyncStats;
   }
 
-  private List<StreamSyncStats> getPerStreamStats(ReplicationStatus outputStatus) {
+  private List<StreamSyncStats> getPerStreamStats(final ReplicationStatus outputStatus) {
     // assume every stream with stats is in streamToEmittedRecords map
     return messageTracker.getStreamToEmittedRecords().keySet().stream().map(stream -> {
       final SyncStats syncStats = new SyncStats()
@@ -467,7 +497,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
    * @param syncInput
    * @param output
    */
-  private void prepStateForLaterSaving(StandardSyncInput syncInput, ReplicationOutput output) {
+  private void prepStateForLaterSaving(final StandardSyncInput syncInput, final ReplicationOutput output) {
     if (messageTracker.getSourceOutputState().isPresent()) {
       LOGGER.info("Source output at least one state message");
     } else {
@@ -490,9 +520,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     }
   }
 
-  private List<FailureReason> getFailureReasons(AtomicReference<FailureReason> replicationRunnableFailureRef,
-                                                AtomicReference<FailureReason> destinationRunnableFailureRef,
-                                                ReplicationOutput output) {
+  private List<FailureReason> getFailureReasons(final AtomicReference<FailureReason> replicationRunnableFailureRef,
+                                                final AtomicReference<FailureReason> destinationRunnableFailureRef,
+                                                final ReplicationOutput output) {
     // only .setFailures() if a failure occurred or if there is an AirbyteErrorTraceMessage
     final FailureReason sourceFailure = replicationRunnableFailureRef.get();
     final FailureReason destinationFailure = destinationRunnableFailureRef.get();

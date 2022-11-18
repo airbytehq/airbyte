@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation 'io.projectreactor:reactor-core:3.5.0'
     annotationProcessor platform(libs.micronaut.bom)
     annotationProcessor libs.bundles.micronaut.annotation.processor
 
@@ -11,7 +12,7 @@ dependencies {
 
     implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation libs.guava
-    implementation (libs.temporal.sdk) {
+    implementation(libs.temporal.sdk) {
         exclude module: 'guava'
     }
     implementation 'org.apache.ant:ant:1.10.10'
