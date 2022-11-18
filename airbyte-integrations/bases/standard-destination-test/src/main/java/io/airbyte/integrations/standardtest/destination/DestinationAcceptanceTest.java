@@ -634,6 +634,45 @@ public abstract class DestinationAcceptanceTest {
     assertSameMessages(messages, actualMessages, true);
   }
 
+  @ParameterizedTest
+  @ArgumentsSource(DataArgumentsProvider.class)
+  public void testIncrementalSyncWithNormalizationDropOneColumn(final String messagesFilename, final String catalogFilename)
+      throws Exception {
+    if (!normalizationFromSpec()) {
+      return;
+    }
+
+    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename),
+        AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
+        catalog);
+    configuredCatalog.getStreams().forEach(s -> {
+      s.withSyncMode(SyncMode.INCREMENTAL);
+      s.withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP);
+      s.withCursorField(Collections.emptyList());
+      // use composite primary key of various types (string, float)
+      s.withPrimaryKey(
+          List.of(List.of("id"), List.of("currency"), List.of("date"), List.of("NZD")));
+    });
+
+    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
+        .collect(Collectors.toList());
+
+    final JsonNode config = getConfig();
+    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
+
+    final String defaultSchema = getDefaultSchema(config);
+    final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog,
+        defaultSchema);
+    assertSameMessages(messages, actualMessages, true);
+
+    // remove one field
+    // insert more messages?
+//    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
+    // assert the removed field is missing on the new messages
+  }
+
   /**
    * Verify that the integration successfully writes records successfully both raw and normalized and
    * run dedupe transformations.
