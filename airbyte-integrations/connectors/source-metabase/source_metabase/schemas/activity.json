@@ -5,7 +5,25 @@
       "type": ["null", "integer"]
     },
     "table": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "active": {"type": "boolean"},
+        "caveats": {"type": ["null", "string"]},
+        "created_at": {"type": ["null", "string"]},
+        "db_id": {"type": "integer"},
+        "description": {"type": ["null", "string"]},
+        "display_name": {"type": ["null", "string"]},
+        "entity_type": {"type": ["null", "string"]},
+        "field_order": {"type": ["null", "string"]},
+        "id": {"type": "integer"},
+        "initial_sync_status": {"type": ["null", "string"]},
+        "name": {"type": ["null", "string"]},
+        "points_of_interest": {"type": ["null", "array"]},
+        "schema": {"type": ["null", "string"]},
+        "show_in_getting_started": {"type":  "boolean"},
+        "updated_at": {"type": ["null", "string"]},
+        "visibility_type": {"type":  ["null", "string"]}
+      }
     },
     "database_id": {
       "type": ["null", "integer"]

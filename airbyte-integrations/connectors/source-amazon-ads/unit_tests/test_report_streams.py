@@ -19,9 +19,12 @@ from requests.exceptions import ConnectionError
 from source_amazon_ads.schemas.profile import AccountInfo, Profile
 from source_amazon_ads.source import CONFIG_DATE_FORMAT
 from source_amazon_ads.streams import (
+    SponsoredBrandsCampaigns,
     SponsoredBrandsReportStream,
     SponsoredBrandsVideoReportStream,
+    SponsoredDisplayCampaigns,
     SponsoredDisplayReportStream,
+    SponsoredProductCampaigns,
     SponsoredProductsReportStream,
 )
 from source_amazon_ads.streams.report_streams.report_streams import ReportGenerationFailure, ReportGenerationInProgress, TooManyRequests
@@ -556,3 +559,56 @@ def test_read_incremental_with_records_start_date(config):
         records = list(read_incremental(stream, state))
         assert state == {"1": {"reportDate": "20210104"}}
         assert {r["reportDate"] for r in records} == {"20210103", "20210104", "20210105", "20210106"}
+
+
+@pytest.mark.parametrize(
+    "state_filter, stream_class",
+    [
+        (
+            ["enabled", "archived", "paused"],
+            SponsoredBrandsCampaigns,
+        ),
+        (
+            ["enabled"],
+            SponsoredBrandsCampaigns,
+        ),
+        (
+            None,
+            SponsoredBrandsCampaigns,
+        ),
+        (
+            ["enabled", "archived", "paused"],
+            SponsoredProductCampaigns,
+        ),
+        (
+            ["enabled"],
+            SponsoredProductCampaigns,
+        ),
+        (
+            None,
+            SponsoredProductCampaigns,
+        ),
+        (
+            ["enabled", "archived", "paused"],
+            SponsoredDisplayCampaigns,
+        ),
+        (
+            ["enabled"],
+            SponsoredDisplayCampaigns,
+        ),
+        (
+            None,
+            SponsoredDisplayCampaigns,
+        ),
+    ],
+)
+def test_streams_state_filter(mocker, config, state_filter, stream_class):
+    profiles = make_profiles()
+    mocker.patch.object(stream_class, "state_filter", new_callable=mocker.PropertyMock, return_value=state_filter)
+
+    stream = stream_class(config, profiles)
+    params = stream.request_params(stream_state=None, stream_slice=None, next_page_token=None)
+    if "stateFilter" in params:
+        assert params["stateFilter"] == ",".join(state_filter)
+    else:
+        assert state_filter is None

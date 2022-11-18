@@ -130,6 +130,9 @@ public class ConfigWriter {
                 standardDestinationDefinition.getResourceRequirements() == null ? null
                     : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getResourceRequirements())))
             .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_REPOSITORY, standardDestinationDefinition.getNormalizationRepository())
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_TAG, standardDestinationDefinition.getNormalizationTag())
+            .set(Tables.ACTOR_DEFINITION.SUPPORTS_DBT, standardDestinationDefinition.getSupportsDbt())
             .where(Tables.ACTOR_DEFINITION.ID.eq(standardDestinationDefinition.getDestinationDefinitionId()))
             .execute();
 
@@ -159,6 +162,9 @@ public class ConfigWriter {
                     : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getResourceRequirements())))
             .set(Tables.ACTOR_DEFINITION.CREATED_AT, timestamp)
             .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_REPOSITORY, standardDestinationDefinition.getNormalizationRepository())
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_TAG, standardDestinationDefinition.getNormalizationTag())
+            .set(Tables.ACTOR_DEFINITION.SUPPORTS_DBT, standardDestinationDefinition.getSupportsDbt())
             .execute();
       }
     });

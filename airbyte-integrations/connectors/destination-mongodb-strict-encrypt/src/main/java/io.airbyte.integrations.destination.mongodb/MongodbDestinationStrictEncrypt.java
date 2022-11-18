@@ -18,11 +18,11 @@ public class MongodbDestinationStrictEncrypt extends SpecModifyingDestination im
   private static final Logger LOGGER = LoggerFactory.getLogger(MongodbDestinationStrictEncrypt.class);
 
   public MongodbDestinationStrictEncrypt() {
-    super(new MongodbDestination());
+    super(MongodbDestination.sshWrappedDestination());
   }
 
   @Override
-  public ConnectorSpecification modifySpec(ConnectorSpecification originalSpec) throws Exception {
+  public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) throws Exception {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     // removing tls property for a standalone instance to disable possibility to switch off a tls
     // connection
@@ -30,7 +30,7 @@ public class MongodbDestinationStrictEncrypt extends SpecModifyingDestination im
     return spec;
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new MongodbDestinationStrictEncrypt();
     LOGGER.info("starting destination: {}", MongodbDestinationStrictEncrypt.class);
     new IntegrationRunner(destination).run(args);

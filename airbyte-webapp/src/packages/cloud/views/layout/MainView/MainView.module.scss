@@ -25,5 +25,13 @@ $banner-height: 30px;
         height: calc(100% - #{$banner-height});
       }
     }
+
+    &.speedyConnectionBanner {
+      margin-top: 50px;
+
+      .dataBlock {
+        height: calc(100% - 50px);
+      }
+    }
   }
 }

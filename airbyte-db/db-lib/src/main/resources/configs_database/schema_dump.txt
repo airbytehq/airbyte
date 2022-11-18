@@ -54,6 +54,9 @@ create table "public"."actor_definition"(
   "public" bool not null default false,
   "custom" bool not null default false,
   "protocol_version" varchar(255) null,
+  "normalization_repository" varchar(255) null,
+  "normalization_tag" varchar(255) null,
+  "supports_dbt" bool null,
   constraint "actor_definition_pkey"
     primary key ("id")
 );
@@ -108,6 +111,7 @@ create table "public"."connection"(
   "notify_schema_changes" bool not null default true,
   "non_breaking_change_preference" varchar(7) not null default '''ignore''::character varying',
   "breaking_change" bool not null default false,
+  "unsupported_protocol_version" bool not null default false,
   constraint "connection_pkey"
     primary key ("id")
 );

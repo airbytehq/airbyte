@@ -1,4 +1,4 @@
-import { useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 
 import { Button } from "components/ui/Button";
 
@@ -10,8 +10,6 @@ interface DownloadYamlButtonProps {
 }
 
 export const DownloadYamlButton: React.FC<DownloadYamlButtonProps> = ({ yaml, className }) => {
-  const { formatMessage } = useIntl();
-
   const downloadYaml = () => {
     const file = new Blob([yaml], { type: "text/plain;charset=utf-8" });
     // TODO: pull name from connector name input or generate from yaml contents
@@ -20,7 +18,7 @@ export const DownloadYamlButton: React.FC<DownloadYamlButtonProps> = ({ yaml, cl
 
   return (
     <Button className={className} onClick={downloadYaml}>
-      {formatMessage({ id: "builder.downloadYaml" })}
+      <FormattedMessage id="connectorBuilder.downloadYaml" />
     </Button>
   );
 };

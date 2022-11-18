@@ -7,6 +7,8 @@ import { LoadingPage } from "components";
 import { AlertBanner } from "components/ui/Banner/AlertBanner";
 
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { useExperimentSpeedyConnection } from "packages/cloud/components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
+import { SpeedyConnectionBanner } from "packages/cloud/components/experiments/SpeedyConnection/SpeedyConnectionBanner";
 import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import SideBar from "packages/cloud/views/layout/SideBar";
@@ -21,7 +23,6 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
   const { formatMessage } = useIntl();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
-
   const showCreditsBanner =
     cloudWorkspace.creditStatus &&
     [
@@ -32,6 +33,10 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
     !cloudWorkspace.trialExpiryTimestamp;
 
   const alertToShow = showCreditsBanner ? "credits" : cloudWorkspace.trialExpiryTimestamp ? "trial" : undefined;
+  // exp-speedy-connection
+  const { isExperimentVariant } = useExperimentSpeedyConnection();
+  const isTrial = Boolean(cloudWorkspace.trialExpiryTimestamp);
+  const showExperimentBanner = isExperimentVariant && isTrial;
 
   const alertMessage = useMemo(() => {
     if (alertToShow === "credits") {
@@ -62,8 +67,13 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
     <div className={styles.mainContainer}>
       <InsufficientPermissionsErrorBoundary errorComponent={<StartOverErrorView />}>
         <SideBar />
-        <div className={classNames(styles.content, { [styles.alertBanner]: !!alertToShow })}>
-          {alertToShow && <AlertBanner message={alertMessage} />}
+        <div
+          className={classNames(styles.content, {
+            [styles.alertBanner]: !!alertToShow && !showExperimentBanner,
+            [styles.speedyConnectionBanner]: showExperimentBanner,
+          })}
+        >
+          {showExperimentBanner ? <SpeedyConnectionBanner /> : alertToShow && <AlertBanner message={alertMessage} />}
           <div className={styles.dataBlock}>
             <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
               <React.Suspense fallback={<LoadingPage />}>{props.children ?? <Outlet />}</React.Suspense>

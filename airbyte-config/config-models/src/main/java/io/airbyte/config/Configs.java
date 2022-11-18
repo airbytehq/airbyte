@@ -579,16 +579,6 @@ public interface Configs {
    */
   boolean shouldRunConnectionManagerWorkflows();
 
-  // Worker - Control Plane configs
-
-  /**
-   * TEMPORARY: Define a set of connection IDs that should run in Airbyte's MVP Data Plane. - This
-   * should only be set on Control-plane workers, since those workers decide which Data Plane task
-   * queue to use based on connectionId. - Will be removed in favor of the Routing Service in the
-   * future. Internal-use only.
-   */
-  Set<String> connectionIdsForMvpDataPlane();
-
   // Worker - Data Plane configs
 
   /**

@@ -8,6 +8,7 @@ import static io.airbyte.db.instance.jobs.jooq.generated.Tables.AIRBYTE_METADATA
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.SYNC_STATS;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -257,7 +258,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   @DisplayName("Should be able to read what is written")
-  void testWriteOutput() throws IOException, SQLException {
+  void testWriteOutput() throws IOException {
     final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
     final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
     final Job created = jobPersistence.getJob(jobId);
@@ -278,21 +279,14 @@ class DefaultJobPersistenceTest {
     final JobOutput jobOutput = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_CATALOG).withSync(standardSyncOutput);
 
     when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
-    jobPersistence.writeOutput(jobId, attemptNumber, jobOutput,
-        jobOutput.getSync().getStandardSyncSummary().getTotalStats(), jobOutput.getSync().getNormalizationSummary());
+    jobPersistence.writeOutput(jobId, attemptNumber, jobOutput);
 
     final Job updated = jobPersistence.getJob(jobId);
 
     assertEquals(Optional.of(jobOutput), updated.getAttempts().get(0).getOutput());
     assertNotEquals(created.getAttempts().get(0).getUpdatedAtInSecond(), updated.getAttempts().get(0).getUpdatedAtInSecond());
 
-    final Optional<Record> record =
-        jobDatabase.query(ctx -> ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
-            attemptNumber).stream().findFirst());
-
-    final Long attemptId = record.get().get("id", Long.class);
-
-    final SyncStats storedSyncStats = jobPersistence.getSyncStats(attemptId).stream().findFirst().get();
+    final SyncStats storedSyncStats = jobPersistence.getSyncStats(jobId, attemptNumber).stream().findFirst().get();
     assertEquals(100L, storedSyncStats.getBytesEmitted());
     assertEquals(9L, storedSyncStats.getRecordsEmitted());
     assertEquals(10L, storedSyncStats.getRecordsCommitted());
@@ -303,7 +297,7 @@ class DefaultJobPersistenceTest {
     assertEquals(10L, storedSyncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted());
     assertEquals(3L, storedSyncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted());
 
-    final NormalizationSummary storedNormalizationSummary = jobPersistence.getNormalizationSummary(attemptId).stream().findFirst().get();
+    final NormalizationSummary storedNormalizationSummary = jobPersistence.getNormalizationSummary(jobId, attemptNumber).stream().findFirst().get();
     assertEquals(10L, storedNormalizationSummary.getStartTime());
     assertEquals(500L, storedNormalizationSummary.getEndTime());
     assertEquals(List.of(failureReason1, failureReason2), storedNormalizationSummary.getFailures());
@@ -573,15 +567,6 @@ class DefaultJobPersistenceTest {
   }
 
   @Test
-  void testSchedulerMigrationMetadata() throws IOException {
-    boolean isMigrated = jobPersistence.isSchedulerMigrated();
-    assertFalse(isMigrated);
-    jobPersistence.setSchedulerMigrationDone();
-    isMigrated = jobPersistence.isSchedulerMigrated();
-    assertTrue(isMigrated);
-  }
-
-  @Test
   void testAirbyteProtocolVersionMaxMetadata() throws IOException {
     assertTrue(jobPersistence.getAirbyteProtocolVersionMax().isEmpty());
 
@@ -617,7 +602,7 @@ class DefaultJobPersistenceTest {
   }
 
   @Nested
-  class TemporalWorkflowId {
+  class TemporalWorkflowInfo {
 
     @Test
     void testSuccessfulGet() throws IOException, SQLException {
@@ -640,15 +625,21 @@ class DefaultJobPersistenceTest {
     }
 
     @Test
-    void testSuccessfulSet() throws IOException {
+    void testSuccessfulSet() throws IOException, SQLException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final var attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
       final var temporalWorkflowId = "test-id-usually-uuid";
+      final var syncQueue = "SYNC";
 
-      jobPersistence.setAttemptTemporalWorkflowId(jobId, attemptNumber, temporalWorkflowId);
+      jobPersistence.setAttemptTemporalWorkflowInfo(jobId, attemptNumber, temporalWorkflowId, syncQueue);
 
       final var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber).get();
       assertEquals(workflowId, temporalWorkflowId);
+
+      final var taskQueue = jobDatabase.query(ctx -> ctx.fetch(
+          "SELECT processing_task_queue FROM attempts WHERE job_id = ? AND attempt_number =?", jobId,
+          attemptNumber)).stream().findFirst().get().get("processing_task_queue", String.class);
+      assertEquals(syncQueue, taskQueue);
     }
 
   }
@@ -714,13 +705,13 @@ class DefaultJobPersistenceTest {
     }
 
     @Test
-    @DisplayName("Should raise an exception if job is already succeeded")
+    @DisplayName("Should not raise an exception if job is already succeeded")
     void testCancelJobAlreadySuccessful() throws IOException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
       jobPersistence.succeedAttempt(jobId, attemptNumber);
 
-      assertThrows(IllegalStateException.class, () -> jobPersistence.cancelJob(jobId));
+      assertDoesNotThrow(() -> jobPersistence.cancelJob(jobId));
 
       final Job updated = jobPersistence.getJob(jobId);
       assertEquals(JobStatus.SUCCEEDED, updated.getStatus());
@@ -868,13 +859,13 @@ class DefaultJobPersistenceTest {
     }
 
     @Test
-    @DisplayName("Should raise an exception if job is already succeeded")
+    @DisplayName("Should not raise an exception if job is already succeeded")
     void testFailJobAlreadySucceeded() throws IOException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
       jobPersistence.succeedAttempt(jobId, attemptNumber);
 
-      assertThrows(IllegalStateException.class, () -> jobPersistence.failJob(jobId));
+      assertDoesNotThrow(() -> jobPersistence.failJob(jobId));
 
       final Job updated = jobPersistence.getJob(jobId);
       assertEquals(JobStatus.SUCCEEDED, updated.getStatus());
@@ -1654,7 +1645,7 @@ class DefaultJobPersistenceTest {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
 
       jobPersistence.cancelJob(jobId);
-      assertThrows(IllegalStateException.class, () -> jobPersistence.resetJob(jobId));
+      assertDoesNotThrow(() -> jobPersistence.resetJob(jobId));
 
       final Job updated = jobPersistence.getJob(jobId);
       assertEquals(JobStatus.CANCELLED, updated.getStatus());

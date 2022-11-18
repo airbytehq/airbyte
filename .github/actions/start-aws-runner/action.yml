@@ -9,7 +9,7 @@ inputs:
     required: true
   ec2-image-id:
     # github-self-hosted-runner-ubuntu-20-100g-disk-with-cypress-deps
-    default: "ami-0f23be2f917510c26"
+    default: "ami-005924fb76f7477ce"
     required: true
   ec2-instance-type:
     default: "c5.2xlarge"

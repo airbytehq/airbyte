@@ -103,7 +103,7 @@ touch source.py
 
 #### Implement the spec operation
 
-At this stage in the tutorial, we just want to implement the `spec` operation as described in the [Airbyte Protocol](https://docs.airbyte.io/architecture/airbyte-protocol#spec). This involves a couple of steps:
+At this stage in the tutorial, we just want to implement the `spec` operation as described in the [Airbyte Protocol](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#spec). This involves a couple of steps:
 
 1. Decide which inputs we need from the user in order to connect to the stock ticker API \(i.e: the connector's specification\) and encode it as a JSON file.
 2. Identify when the connector has been invoked with the `spec` operation and return the specification as an `AirbyteMessage`
@@ -225,7 +225,7 @@ if __name__ == "__main__":
 
 Some notes on the above code:
 
-1. As described in the [specification](https://docs.airbyte.io/architecture/airbyte-protocol#key-takeaways), Airbyte connectors are CLIs which communicate via stdout, so the output of the command is simply a JSON string formatted according to the Airbyte Specification. So to "return" a value we use `print` to output the return value to stdout
+1. As described in the [specification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#key-takeaways), Airbyte connectors are CLIs which communicate via stdout, so the output of the command is simply a JSON string formatted according to the Airbyte Specification. So to "return" a value we use `print` to output the return value to stdout
 2. All Airbyte commands can output log messages that take the form `{"type":"LOG", "log":"message"}`, so we create a helper method `log(message)` to allow logging
 
 Now if we run `python source.py spec` we should see the specification printed out:
@@ -239,7 +239,7 @@ We've implemented the first command! Three more and we'll have a working connect
 
 #### Implementing check connection
 
-The second command to implement is the [check operation](https://docs.airbyte.io/architecture/airbyte-protocol#key-takeaways) `check --config <config_name>`, which tells the user whether a config file they gave us is correct. In our case, "correct" means they input a valid stock ticker and a correct API key like we declare via the `spec` operation.
+The second command to implement is the [check operation](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#check) `check --config <config_name>`, which tells the user whether a config file they gave us is correct. In our case, "correct" means they input a valid stock ticker and a correct API key like we declare via the `spec` operation.
 
 To achieve this, we'll:
 
@@ -471,7 +471,7 @@ With that, we're done implementing the `discover` command.
 
 #### Implementing the read operation
 
-We've done a lot so far, but a connector ultimately exists to read data! This is where the [`read` command](https://docs.airbyte.io/architecture/airbyte-protocol#read) comes in. The format of the command is:
+We've done a lot so far, but a connector ultimately exists to read data! This is where the [`read` command](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#read) comes in. The format of the command is:
 
 ```bash
 python source.py read --config <config_file_path> --catalog <configured_catalog.json> [--state <state_file_path>]

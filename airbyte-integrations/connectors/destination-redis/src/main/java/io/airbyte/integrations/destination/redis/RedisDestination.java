@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.redis;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
@@ -22,6 +23,7 @@ class RedisDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedisDestination.class);
 
+
   public static void main(String[] args) throws Exception {
     LOGGER.info("starting destination: {}", RedisDestination.class);
     final Destination destination = RedisDestination.sshWrappedDestination();
@@ -35,21 +37,16 @@ class RedisDestination extends BaseConnector implements Destination {
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
-    var redisConfig = new RedisConfig(config);
-
-    RedisCache redisCache = null;
-    try {
-      redisCache = RedisCacheFactory.newInstance(redisConfig);
+    try (RedisCache redisCache = RedisCacheFactory.newInstance(config)) {
       // check connection and write permissions
       redisCache.ping("Connection check");
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (Exception e) {
-      LOGGER.error("Can't establish Redis connection with reason: ", e);
-      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED);
-    } finally {
-      if (redisCache != null) {
-        redisCache.close();
-      }
+      final String errorMessage = "Could not connect with provided configuration. Error: " + e.getMessage();
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, errorMessage);
+      return new AirbyteConnectionStatus()
+          .withMessage(errorMessage)
+          .withStatus(AirbyteConnectionStatus.Status.FAILED);
     }
 
   }
@@ -58,7 +55,7 @@ class RedisDestination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getConsumer(JsonNode config,
                                             ConfiguredAirbyteCatalog configuredCatalog,
                                             Consumer<AirbyteMessage> outputRecordCollector) {
-    return new RedisMessageConsumer(new RedisConfig(config), configuredCatalog, outputRecordCollector);
+    return new RedisMessageConsumer(config, configuredCatalog, outputRecordCollector);
   }
 
 }

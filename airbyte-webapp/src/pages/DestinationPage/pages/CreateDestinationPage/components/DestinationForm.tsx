@@ -8,7 +8,7 @@ import { LogsRequestError } from "core/request/LogsRequestError";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { FrequentlyUsedDestinations, StartWithDestination } from "views/Connector/ServiceForm";
+import { ConnectorCardValues, FrequentlyUsedDestinations, StartWithDestination } from "views/Connector/ConnectorForm";
 
 import styles from "./DestinationForm.module.scss";
 
@@ -54,7 +54,7 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
     setDestinationDefinitionId(destinationDefinitionId);
   };
 
-  const onSubmitForm = async (values: { name: string; serviceType: string }) => {
+  const onSubmitForm = async (values: ConnectorCardValues) => {
     onSubmit({
       ...values,
       destinationDefinitionId: destinationDefinitionSpecification?.destinationDefinitionId,
@@ -75,19 +75,18 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
   return (
     <>
       <ConnectorCard
-        onServiceSelect={onDropDownSelect}
-        fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
-        onSubmit={onSubmitForm}
         formType="destination"
-        additionalSelectorComponent={frequentlyUsedDestinationsComponent}
-        availableServices={destinationDefinitions}
-        selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
+        title={<FormattedMessage id="onboarding.destinationSetUp" />}
+        isLoading={isLoading}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
-        isLoading={isLoading}
-        formValues={destinationDefinitionId ? { serviceType: destinationDefinitionId } : undefined}
-        title={<FormattedMessage id="onboarding.destinationSetUp" />}
+        fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
+        availableConnectorDefinitions={destinationDefinitions}
+        onConnectorDefinitionSelect={onDropDownSelect}
+        selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
+        onSubmit={onSubmitForm}
         jobInfo={LogsRequestError.extractJobInfo(error)}
+        additionalSelectorComponent={frequentlyUsedDestinationsComponent}
       />
       {startWithDestinationComponent}
     </>

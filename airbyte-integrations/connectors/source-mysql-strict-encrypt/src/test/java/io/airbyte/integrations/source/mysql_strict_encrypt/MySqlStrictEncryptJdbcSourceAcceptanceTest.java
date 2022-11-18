@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.mysql_strict_encrypt;
 import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -303,7 +302,9 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
     ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));
 
-    final Exception exception = assertThrows(NullPointerException.class, () -> source.check(config));
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(Status.FAILED, actual.getStatus());
+    assertTrue(actual.getMessage().contains("Could not connect with provided SSH configuration."));
   }
 
   @Test
@@ -322,7 +323,9 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
     ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));
 
-    final Exception exception = assertThrows(NullPointerException.class, () -> source.check(config));
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(Status.FAILED, actual.getStatus());
+    assertTrue(actual.getMessage().contains("Could not connect with provided SSH configuration."));
   }
 
   @Override

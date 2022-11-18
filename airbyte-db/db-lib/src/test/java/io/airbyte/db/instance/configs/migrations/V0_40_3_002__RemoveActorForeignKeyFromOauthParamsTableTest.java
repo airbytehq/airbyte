@@ -14,6 +14,7 @@ import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import java.io.IOException;
 import java.sql.SQLException;
 import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +29,7 @@ class V0_40_3_002__RemoveActorForeignKeyFromOauthParamsTableTest extends Abstrac
             ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
     final ConfigsDatabaseMigrator configsDbMigrator = new ConfigsDatabaseMigrator(database, flyway);
 
-    final V0_40_3_001__AddProtocolVersionToActorDefinition previousMigration = new V0_40_3_001__AddProtocolVersionToActorDefinition();
+    final BaseJavaMigration previousMigration = new V0_40_3_001__AddProtocolVersionToActorDefinition();
     final DevDatabaseMigrator devConfigsDbMigrator = new DevDatabaseMigrator(configsDbMigrator, previousMigration.getVersion());
     devConfigsDbMigrator.createBaseline();
   }

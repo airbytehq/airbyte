@@ -67,14 +67,14 @@ class AbstractSource(Source, ABC):
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
         """Implements the Discover operation from the Airbyte Specification.
-        See https://docs.airbyte.io/architecture/airbyte-protocol.
+        See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#discover.
         """
         streams = [stream.as_airbyte_stream() for stream in self.streams(config=config)]
         return AirbyteCatalog(streams=streams)
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """Implements the Check Connection operation from the Airbyte Specification.
-        See https://docs.airbyte.io/architecture/airbyte-protocol.
+        See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#check.
         """
         try:
             check_succeeded, error = self.check_connection(logger, config)
@@ -92,7 +92,7 @@ class AbstractSource(Source, ABC):
         catalog: ConfiguredAirbyteCatalog,
         state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
     ) -> Iterator[AirbyteMessage]:
-        """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-protocol."""
+        """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/."""
         logger.info(f"Starting syncing {self.name}")
         config, internal_config = split_config(config)
         # TODO assert all streams exist in the connector

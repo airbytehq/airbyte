@@ -5,7 +5,6 @@
     "title": "PrestaShop Spec",
     "type": "object",
     "required": ["url", "access_key"],
-    "additionalProperties": false,
     "properties": {
       "url": {
         "type": "string",

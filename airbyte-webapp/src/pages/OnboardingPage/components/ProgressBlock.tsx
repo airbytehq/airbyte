@@ -4,9 +4,9 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled, { keyframes } from "styled-components";
 
-import Link from "components/Link";
+import { Link } from "components/common/Link";
 import { Button } from "components/ui/Button";
-import { Text } from "components/ui/Text";
+import { Heading } from "components/ui/Heading";
 
 import { JobStatus, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
@@ -27,7 +27,7 @@ const run = keyframes`
 const Bar = styled.div`
   width: 100%;
   height: 49px;
-  background: ${({ theme }) => theme.darkBeigeColor} url("/rectangle.svg");
+  background: #ffebd7 url("/rectangle.svg");
   color: ${({ theme }) => theme.redColor};
   border-radius: 15px;
   font-weight: 500;
@@ -83,9 +83,9 @@ const ProgressBlock: React.FC<ProgressBlockProps> = ({ connection, onSync }) => 
   if (connection.latestSyncJobStatus !== Status.RUNNING && connection.latestSyncJobStatus !== Status.INCOMPLETE) {
     return (
       <ControlBlock>
-        <Text as="h1" size="xl">
+        <Heading as="h1" size="xl">
           {showMessage(connection.latestSyncJobStatus)}
-        </Text>
+        </Heading>
         <Button className={styles.paddedButton} onClick={onSync}>
           <FormattedMessage id="sources.syncNow" />
         </Button>

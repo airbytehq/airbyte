@@ -112,7 +112,10 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   }
 
   @Override
-  public SynchronousResponse<UUID> createDiscoverSchemaJob(final SourceConnection source, final String dockerImage, final String connectorVersion)
+  public SynchronousResponse<UUID> createDiscoverSchemaJob(final SourceConnection source,
+                                                           final String dockerImage,
+                                                           final String connectorVersion,
+                                                           final Version protocolVersion)
       throws IOException {
     final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
         source.getSourceDefinitionId(),
@@ -121,6 +124,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
     final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
         .withConnectionConfiguration(sourceConfiguration)
         .withDockerImage(dockerImage)
+        .withProtocolVersion(protocolVersion)
         .withSourceId(source.getSourceId().toString())
         .withConfigHash(HASH_FUNCTION.hashBytes(Jsons.serialize(source.getConfiguration()).getBytes(
             Charsets.UTF_8)).toString())

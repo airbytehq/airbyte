@@ -27,7 +27,7 @@ public class AirbyteMessageMigrator {
 
   private final List<AirbyteMessageMigration<?, ?>> migrationsToRegister;
   private final SortedMap<String, AirbyteMessageMigration<?, ?>> migrations = new TreeMap<>();
-  private String mostRecentVersion = "";
+  private String mostRecentMajorVersion = "";
 
   public AirbyteMessageMigrator(List<AirbyteMessageMigration<?, ?>> migrations) {
     migrationsToRegister = migrations;
@@ -47,7 +47,7 @@ public class AirbyteMessageMigrator {
    * required migrations
    */
   public <PreviousVersion, CurrentVersion> PreviousVersion downgrade(final CurrentVersion message, final Version target) {
-    if (target.getMajorVersion().equals(mostRecentVersion)) {
+    if (target.getMajorVersion().equals(mostRecentMajorVersion)) {
       return (PreviousVersion) message;
     }
 
@@ -64,7 +64,7 @@ public class AirbyteMessageMigrator {
    * migrations
    */
   public <PreviousVersion, CurrentVersion> CurrentVersion upgrade(final PreviousVersion message, final Version source) {
-    if (source.getMajorVersion().equals(mostRecentVersion)) {
+    if (source.getMajorVersion().equals(mostRecentMajorVersion)) {
       return (CurrentVersion) message;
     }
 
@@ -73,6 +73,10 @@ public class AirbyteMessageMigrator {
       result = applyUpgrade(migration, result);
     }
     return (CurrentVersion) result;
+  }
+
+  public Version getMostRecentVersion() {
+    return new Version(mostRecentMajorVersion, "0", "0");
   }
 
   private Collection<AirbyteMessageMigration<?, ?>> selectMigrations(final Version version) {
@@ -107,8 +111,8 @@ public class AirbyteMessageMigrator {
     final String key = migration.getPreviousVersion().getMajorVersion();
     if (!migrations.containsKey(key)) {
       migrations.put(key, migration);
-      if (migration.getCurrentVersion().getMajorVersion().compareTo(mostRecentVersion) > 0) {
-        mostRecentVersion = migration.getCurrentVersion().getMajorVersion();
+      if (migration.getCurrentVersion().getMajorVersion().compareTo(mostRecentMajorVersion) > 0) {
+        mostRecentMajorVersion = migration.getCurrentVersion().getMajorVersion();
       }
     } else {
       throw new RuntimeException("Trying to register a duplicated migration " + migration.getClass().getName());

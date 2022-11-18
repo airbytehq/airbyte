@@ -7,6 +7,7 @@ import { useGetDestinationDefinitionSpecificationAsync } from "services/connecto
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
+import { ConnectorCardValues } from "views/Connector/ConnectorForm";
 
 interface Props {
   onNextStep: () => void;
@@ -67,7 +68,7 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
     setError(null);
     setDestinationDefinitionId(destinationDefinitionId);
   };
-  const onSubmitForm = async (values: { name: string; serviceType: string }) => {
+  const onSubmitForm = async (values: ConnectorCardValues) => {
     await onSubmitDestinationStep({
       ...values,
       destinationDefinitionId: destinationDefinitionSpecification?.destinationDefinitionId,
@@ -80,14 +81,13 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
     <ConnectorCard
       full
       formType="destination"
-      onServiceSelect={onDropDownSelect}
-      onSubmit={onSubmitForm}
-      hasSuccess={successRequest}
-      availableServices={destinationDefinitions}
-      errorMessage={errorMessage}
-      selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
       isLoading={isLoading}
-      formValues={destinationDefinitionId ? { serviceType: destinationDefinitionId } : undefined}
+      hasSuccess={successRequest}
+      errorMessage={errorMessage}
+      availableConnectorDefinitions={destinationDefinitions}
+      onConnectorDefinitionSelect={onDropDownSelect}
+      selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
+      onSubmit={onSubmitForm}
     />
   );
 };

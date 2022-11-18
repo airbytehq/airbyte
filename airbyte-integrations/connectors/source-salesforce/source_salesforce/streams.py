@@ -130,6 +130,11 @@ class SalesforceStream(HttpStream, ABC):
                     return
             raise error
 
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        if isinstance(exception, exceptions.ConnectionError):
+            return f"After {self.max_retries} retries the connector has failed with a network error. It looks like Salesforce API experienced temporary instability, please try again later."
+        return super().get_error_display_message(exception)
+
 
 class BulkSalesforceStream(SalesforceStream):
     page_size = 15000

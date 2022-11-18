@@ -7,6 +7,7 @@ package io.airbyte.workers.process;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.sync.OrchestratorConstants;
 import io.airbyte.config.EnvConfigs;
@@ -113,7 +114,7 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         null,
         null,
         null,
-        true,
+        Map.of(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true"),
         serverPort);
 
     final Map<Integer, Integer> portMap = Map.of(

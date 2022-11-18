@@ -66,6 +66,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onNextStep }) => {
           link={links.demoLink}
         />
       </Videos>
+
       <Button size="lg" onClick={onNextStep}>
         <FormattedMessage id="onboarding.firstConnection" />
       </Button>

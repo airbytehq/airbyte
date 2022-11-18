@@ -175,7 +175,7 @@ jobs:
           stripped_connector="$(echo "${{ github.event.inputs.connector }}" | tr -d ' ')"
           middle=${stripped_connector//,/$replace}
           full="$start$middle$end"
-          echo "::set-output name=connectorjson::$full"
+          echo "connectorjson=$full" >> $GITHUB_OUTPUT
   write-initial-output-to-comment:
     name: Set up git comment
     if: github.event.inputs.comment-id

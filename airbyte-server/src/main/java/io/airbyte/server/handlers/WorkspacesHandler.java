@@ -9,6 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.Geography;
@@ -30,6 +31,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.notification.NotificationClient;
+import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.NotificationConverter;
 import io.airbyte.server.converters.WorkspaceWebhookConfigsConverter;
 import io.airbyte.server.errors.IdNotFoundKnownException;
@@ -159,6 +161,11 @@ public class WorkspacesHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // for now we assume there is one workspace and it has a default uuid.
     final StandardWorkspace workspace = configRepository.getWorkspaceBySlug(slugRequestBody.getSlug(), false);
+    return buildWorkspaceRead(workspace);
+  }
+
+  public WorkspaceRead getWorkspaceByConnectionId(final ConnectionIdRequestBody connectionIdRequestBody) {
+    final StandardWorkspace workspace = configRepository.getStandardWorkspaceFromConnection(connectionIdRequestBody.getConnectionId(), false);
     return buildWorkspaceRead(workspace);
   }
 
@@ -301,8 +308,7 @@ public class WorkspacesHandler {
       workspace.setNotifications(NotificationConverter.toConfigList(workspacePatch.getNotifications()));
     }
     if (workspacePatch.getDefaultGeography() != null) {
-      workspace.setDefaultGeography(
-          Enums.convertTo(workspacePatch.getDefaultGeography(), io.airbyte.config.Geography.class));
+      workspace.setDefaultGeography(ApiPojoConverters.toPersistenceGeography(workspacePatch.getDefaultGeography()));
     }
     if (workspacePatch.getWebhookConfigs() != null) {
       workspace.setWebhookOperationConfigs(WorkspaceWebhookConfigsConverter.toPersistenceWrite(workspacePatch.getWebhookConfigs(), uuidSupplier));

@@ -103,6 +103,7 @@ The above connector image is tagged with `dev`. You can change this to use anoth
 :::
 
 - In your browser, visit [http://localhost:8000/](http://localhost:8000/)
+- Log in with the default user `airbyte` and default password `password`
 - Go to `Settings` (gear icon in lower left corner) 
 - Go to `Sources` or `Destinations` (depending on which connector you are testing)
 - Update the version number to use your docker image tag (default is `dev`)
@@ -166,11 +167,12 @@ Note: If you are contributing a Python file without imports or function definiti
 ### Develop on `airbyte-webapp`
 
 - Spin up Airbyte locally so the UI can make requests against the local API.
-- Stop the `webapp`.
 
 ```bash
-docker-compose stop webapp
+BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" docker-compose up
 ```
+
+Note: [basic auth](https://docs.airbyte.com/operator-guides/security#network-security) must be disabled by setting `BASIC_AUTH_USERNAME` and `BASIC_AUTH_PASSWORD` to empty values, otherwise requests from the development server will fail against the local API.
 
 - Start up the react app.
 

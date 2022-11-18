@@ -57,3 +57,14 @@ These iterations are more conveniently achieved by remaining in the current dire
 13. Run the unit test on the CI by running `/test connector=bases/source-acceptance-test` in a GitHub comment
 14. Publish the new SAT version if your PR is approved by running `/publish connector=bases/source-acceptance-test auto-bump-version=false` in a GitHub comment
 15. Merge your PR
+
+## Migrating `acceptance-test-config.yml` to latest configuration format
+We introduced changes in the structure of `acceptance-test-config.yml` files in version 0.2.12.
+The *legacy* configuration format is still supported but should be deprecated soon.
+To migrate a legacy configuration to the latest configuration format please run:
+
+```bash
+python -m venv .venv # If you don't have a virtualenv already
+source ./.venv/bin/activate # If you're not in your virtualenv already
+python source_acceptance_test/utils/config_migration.py ../../connectors/source-to-migrate/acceptance-test-config.yml
+```

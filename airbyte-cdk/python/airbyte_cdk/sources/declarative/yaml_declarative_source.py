@@ -11,6 +11,7 @@ from dataclasses import dataclass, fields
 from enum import Enum, EnumMeta
 from typing import Any, List, Mapping, Union
 
+from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
@@ -33,7 +34,7 @@ class ConcreteDeclarativeSource(JsonSchemaMixin):
 class YamlDeclarativeSource(DeclarativeSource):
     """Declarative source defined by a yaml file"""
 
-    VALID_TOP_LEVEL_FIELDS = {"definitions", "streams", "check", "version"}
+    VALID_TOP_LEVEL_FIELDS = {"check", "definitions", "spec", "streams", "version"}
 
     def __init__(self, path_to_yaml):
         """
@@ -68,6 +69,28 @@ class YamlDeclarativeSource(DeclarativeSource):
             # make sure the log level is always appied to the stream's logger
             self._apply_log_level_to_stream_logger(self.logger, stream)
         return source_streams
+
+    def spec(self, logger: logging.Logger) -> ConnectorSpecification:
+        """
+        Returns the connector specification (spec) as defined in the Airbyte Protocol. The spec is an object describing the possible
+        configurations (e.g: username and password) which can be configured when running this connector. For low-code connectors, this
+        will first attempt to load the spec from the manifest's spec block, otherwise it will load it from "spec.yaml" or "spec.json"
+        in the project root.
+        """
+
+        self.logger.debug(
+            "parsed YAML into declarative source",
+            extra={"path_to_yaml_file": self._path_to_yaml, "source_name": self.name, "parsed_config": json.dumps(self._source_config)},
+        )
+
+        spec = self._source_config.get("spec")
+        if spec:
+            if "class_name" not in spec:
+                spec["class_name"] = "airbyte_cdk.sources.declarative.spec.Spec"
+            spec_component = self._factory.create_component(spec, dict())()
+            return spec_component.generate_spec()
+        else:
+            return super().spec(logger)
 
     def _read_and_parse_yaml_file(self, path_to_yaml_file):
         package = self.__class__.__module__.split(".")[0]

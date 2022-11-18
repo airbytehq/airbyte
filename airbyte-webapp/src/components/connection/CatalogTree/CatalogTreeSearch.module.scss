@@ -1,0 +1,12 @@
+.searchInput {
+  padding: 10px 8px 9px;
+}
+
+.searchContent {
+  position: relative;
+  width: 100%;
+
+  &::before {
+    content: attr(data-content);
+  }
+}

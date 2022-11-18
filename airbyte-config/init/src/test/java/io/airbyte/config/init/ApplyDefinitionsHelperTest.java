@@ -4,7 +4,6 @@
 
 package io.airbyte.config.init;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -12,7 +11,6 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -125,13 +123,11 @@ class ApplyDefinitionsHelperTest {
     when(definitionsProvider.getSourceDefinitions()).thenReturn(List.of(SOURCE_DEF1));
     when(definitionsProvider.getDestinationDefinitions()).thenReturn(List.of(DEST_DEF1));
 
-    final ConfigPersistence mConfigPersistence = mock(ConfigPersistence.class);
-    when(configRepository.getConfigPersistence()).thenReturn(mConfigPersistence);
-
     applyDefinitionsHelper.apply();
 
-    verify(mConfigPersistence).loadData(any());
-    verify(configRepository).getConfigPersistence();
+    verify(configRepository).seedActorDefinitions(List.of(SOURCE_DEF1), List.of(DEST_DEF1));
+    verify(definitionsProvider).getDestinationDefinitions();
+    verify(definitionsProvider).getSourceDefinitions();
     verifyNoMoreInteractions(configRepository);
     verifyNoMoreInteractions(definitionsProvider);
   }

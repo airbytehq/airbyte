@@ -4,7 +4,10 @@
 
 package io.airbyte.workers.internal;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.metrics.lib.MetricClientFactory;
@@ -52,6 +55,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     this.containerLogMdcBuilder = containerLogMdcBuilder;
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Stream<AirbyteMessage> create(final BufferedReader bufferedReader) {
     final var metricClient = MetricClientFactory.getMetricClient();
@@ -59,7 +63,6 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
         .lines()
         .peek(str -> metricClient.distribution(OssMetricsRegistry.JSON_STRING_LENGTH, str.length()))
         .flatMap(this::parseJson)
-        .peek(json -> metricClient.distribution(OssMetricsRegistry.JSON_SIZE, json.size()))
         .filter(this::validate)
         .flatMap(this::toAirbyteMessage)
         .filter(this::filterLog);

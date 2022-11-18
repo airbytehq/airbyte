@@ -27,6 +27,7 @@ export const enum Action {
   SELECTION_OPENED = "SelectionOpened",
   CHECKOUT_START = "CheckoutStart",
   LOAD_MORE_JOBS = "LoadMoreJobs",
+  INVITE = "Invite",
 }
 
 export type EventParams = Record<string, unknown>;

@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "attributes": {
+      "type": ["object", "null"],
+      "description": "The incident team's attributes from a response.",
+      "properties": {
+        "created": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Timestamp of when the incident team was created."
+        },
+        "modified": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Timestamp of when the incident team was modified."
+        },
+        "name": {
+          "type": ["string", "null"],
+          "description": "Name of the incident team."
+        }
+      },
+      "additionalProperties": true
+    },
+    "id": {
+      "type": ["string", "null"],
+      "description": "The incident team's ID.",
+      "readOnly": true
+    },
+    "relationships": {
+      "type": ["object", "null"],
+      "description": "The incident team's relationships.",
+      "properties": {
+        "created_by": {
+          "type": ["object", "null"],
+          "description": "Relationship to user.",
+          "properties": {
+            "data": {
+              "type": ["object"],
+              "description": "Relationship to user object.",
+              "properties": {
+                "id": {
+                  "type": ["string"],
+                  "description": "A unique identifier that represents the user."
+                },
+                "type": {
+                  "type": ["string"],
+                  "enum": ["users"],
+                  "description": "Users resource type. Allowed enum values: users"
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        },
+        "last_modified_by": {
+          "type": ["object", "null"],
+          "description": "Relationship to user.",
+          "properties": {
+            "data": {
+              "type": ["object"],
+              "description": "Relationship to user object.",
+              "properties": {
+                "id": {
+                  "type": ["string"],
+                  "description": "A unique identifier that represents the user."
+                },
+                "type": {
+                  "type": ["string"],
+                  "enum": ["users"],
+                  "description": "Users resource type. Allowed enum values: users"
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "type": {
+      "type": ["string", "null"],
+      "enum": ["teams"],
+      "description": "Incident Team resource type. Allowed enum values: teams",
+      "readOnly": true
+    }
+  },
+  "additionalProperties": true
+}
