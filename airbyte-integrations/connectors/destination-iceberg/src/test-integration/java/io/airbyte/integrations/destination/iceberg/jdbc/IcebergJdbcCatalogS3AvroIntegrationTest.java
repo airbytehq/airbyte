@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.iceberg.jdbc;
 
 import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
@@ -7,8 +11,9 @@ import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
  */
 public class IcebergJdbcCatalogS3AvroIntegrationTest extends BaseIcebergJdbcCatalogS3IntegrationTest {
 
-    @Override
-    DataFileFormat fileFormat() {
-        return DataFileFormat.AVRO;
-    }
+  @Override
+  DataFileFormat fileFormat() {
+    return DataFileFormat.AVRO;
+  }
+
 }

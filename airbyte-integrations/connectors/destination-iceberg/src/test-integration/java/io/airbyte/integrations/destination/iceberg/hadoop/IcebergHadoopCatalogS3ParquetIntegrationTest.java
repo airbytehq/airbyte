@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.iceberg.hadoop;
 
 import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
@@ -7,8 +11,9 @@ import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
  */
 public class IcebergHadoopCatalogS3ParquetIntegrationTest extends BaseIcebergHadoopCatalogS3IntegrationTest {
 
-    @Override
-    DataFileFormat fileFormat() {
-        return DataFileFormat.PARQUET;
-    }
+  @Override
+  DataFileFormat fileFormat() {
+    return DataFileFormat.PARQUET;
+  }
+
 }

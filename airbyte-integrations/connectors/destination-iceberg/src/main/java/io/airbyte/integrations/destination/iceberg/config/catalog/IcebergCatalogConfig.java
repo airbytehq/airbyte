@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.iceberg.config.catalog;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -29,46 +33,45 @@ import org.apache.iceberg.types.Types.NestedField;
 @Slf4j
 public abstract class IcebergCatalogConfig {
 
-    protected StorageConfig storageConfig;
-    protected FormatConfig formatConfig;
+  protected StorageConfig storageConfig;
+  protected FormatConfig formatConfig;
 
-    private String defaultOutputDatabase;
+  private String defaultOutputDatabase;
 
-    public void check() throws Exception {
-        // Catalog check, only checks catalog metadata
-        Catalog catalog = genCatalog();
-        String tempTableName = "temp_" + System.currentTimeMillis();
-        TableIdentifier tempTableId = TableIdentifier.of(defaultOutputDatabase(), tempTableName);
-        Schema schema = new Schema(
-            NestedField.required(0, JavaBaseConstants.COLUMN_NAME_AB_ID, Types.StringType.get()),
-            NestedField.optional(1, JavaBaseConstants.COLUMN_NAME_EMITTED_AT, Types.TimestampType.withZone()),
-            NestedField.required(2, JavaBaseConstants.COLUMN_NAME_DATA, Types.StringType.get())
-        );
-        Table tempTable = catalog.createTable(tempTableId, schema);
-        TableScan tableScan = tempTable.newScan();
-        log.info("Created temp table: {}", tempTableName);
-        log.info("Temp table's schema: {}", tableScan.schema());
+  public void check() throws Exception {
+    // Catalog check, only checks catalog metadata
+    Catalog catalog = genCatalog();
+    String tempTableName = "temp_" + System.currentTimeMillis();
+    TableIdentifier tempTableId = TableIdentifier.of(defaultOutputDatabase(), tempTableName);
+    Schema schema = new Schema(
+        NestedField.required(0, JavaBaseConstants.COLUMN_NAME_AB_ID, Types.StringType.get()),
+        NestedField.optional(1, JavaBaseConstants.COLUMN_NAME_EMITTED_AT, Types.TimestampType.withZone()),
+        NestedField.required(2, JavaBaseConstants.COLUMN_NAME_DATA, Types.StringType.get()));
+    Table tempTable = catalog.createTable(tempTableId, schema);
+    TableScan tableScan = tempTable.newScan();
+    log.info("Created temp table: {}", tempTableName);
+    log.info("Temp table's schema: {}", tableScan.schema());
 
-        try (CloseableIterable<Record> records = IcebergGenerics.read(tempTable).build()) {
-            for (Record record : records) {
-                // never reach
-                log.info("Record in temp table: {}", record);
-            }
-        }
-
-        boolean dropSuccess = catalog.dropTable(tempTableId);
-        log.info("Dropped temp table: {}, success: {}", tempTableName, dropSuccess);
-
-        // storage check
-        this.storageConfig.check();
+    try (CloseableIterable<Record> records = IcebergGenerics.read(tempTable).build()) {
+      for (Record record : records) {
+        // never reach
+        log.info("Record in temp table: {}", record);
+      }
     }
 
-    public abstract Map<String, String> sparkConfigMap();
+    boolean dropSuccess = catalog.dropTable(tempTableId);
+    log.info("Dropped temp table: {}, success: {}", tempTableName, dropSuccess);
 
-    public abstract Catalog genCatalog();
+    // storage check
+    this.storageConfig.check();
+  }
 
-    public String defaultOutputDatabase() {
-        return isBlank(defaultOutputDatabase) ? IcebergConstants.DEFAULT_DATABASE : defaultOutputDatabase;
-    }
+  public abstract Map<String, String> sparkConfigMap();
+
+  public abstract Catalog genCatalog();
+
+  public String defaultOutputDatabase() {
+    return isBlank(defaultOutputDatabase) ? IcebergConstants.DEFAULT_DATABASE : defaultOutputDatabase;
+  }
 
 }

@@ -26,65 +26,65 @@ import org.apache.spark.sql.SparkSession.Builder;
 @Slf4j
 public class IcebergDestination extends BaseConnector implements Destination {
 
-    private final IcebergCatalogConfigFactory icebergCatalogConfigFactory;
+  private final IcebergCatalogConfigFactory icebergCatalogConfigFactory;
 
-    public IcebergDestination() {
-        this.icebergCatalogConfigFactory = new IcebergCatalogConfigFactory();
+  public IcebergDestination() {
+    this.icebergCatalogConfigFactory = new IcebergCatalogConfigFactory();
+  }
+
+  @VisibleForTesting
+  public IcebergDestination(IcebergCatalogConfigFactory icebergCatalogConfigFactory) {
+    this.icebergCatalogConfigFactory = Objects.requireNonNullElseGet(icebergCatalogConfigFactory,
+        IcebergCatalogConfigFactory::new);
+  }
+
+  public static void main(String[] args) throws Exception {
+    new IntegrationRunner(new IcebergDestination()).run(args);
+  }
+
+  @Override
+  public AirbyteConnectionStatus check(JsonNode config) {
+    try {
+      IcebergCatalogConfig icebergCatalogConfig = icebergCatalogConfigFactory.fromJsonNodeConfig(config);
+      icebergCatalogConfig.check();
+
+      // getting here means Iceberg catalog check success
+      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+    } catch (final Exception e) {
+      log.error("Exception attempting to access the Iceberg catalog: ", e);
+      Throwable rootCause = getRootCause(e);
+      String errMessage =
+          "Could not connect to the Iceberg catalog with the provided configuration. \n" + e.getMessage()
+              + ", root cause: " + rootCause.getClass().getSimpleName() + "(" + rootCause.getMessage() + ")";
+      return new AirbyteConnectionStatus()
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage(errMessage);
     }
+  }
 
-    @VisibleForTesting
-    public IcebergDestination(IcebergCatalogConfigFactory icebergCatalogConfigFactory) {
-        this.icebergCatalogConfigFactory = Objects.requireNonNullElseGet(icebergCatalogConfigFactory,
-            IcebergCatalogConfigFactory::new);
+  private Throwable getRootCause(Throwable exp) {
+    Throwable curCause = exp.getCause();
+    if (curCause == null) {
+      return exp;
+    } else {
+      return getRootCause(curCause);
     }
+  }
 
-    public static void main(String[] args) throws Exception {
-        new IntegrationRunner(new IcebergDestination()).run(args);
-    }
+  @Override
+  public AirbyteMessageConsumer getConsumer(JsonNode config,
+                                            ConfiguredAirbyteCatalog catalog,
+                                            Consumer<AirbyteMessage> outputRecordCollector) {
+    final IcebergCatalogConfig icebergCatalogConfig = this.icebergCatalogConfigFactory.fromJsonNodeConfig(config);
+    Map<String, String> sparkConfMap = icebergCatalogConfig.sparkConfigMap();
 
-    @Override
-    public AirbyteConnectionStatus check(JsonNode config) {
-        try {
-            IcebergCatalogConfig icebergCatalogConfig = icebergCatalogConfigFactory.fromJsonNodeConfig(config);
-            icebergCatalogConfig.check();
+    Builder sparkBuilder = SparkSession.builder()
+        .master("local")
+        .appName("Airbyte->Iceberg-" + System.currentTimeMillis());
+    sparkConfMap.forEach(sparkBuilder::config);
+    SparkSession spark = sparkBuilder.getOrCreate();
 
-            //getting here means Iceberg catalog check success
-            return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-        } catch (final Exception e) {
-            log.error("Exception attempting to access the Iceberg catalog: ", e);
-            Throwable rootCause = getRootCause(e);
-            String errMessage =
-                "Could not connect to the Iceberg catalog with the provided configuration. \n" + e.getMessage()
-                + ", root cause: " + rootCause.getClass().getSimpleName() + "(" + rootCause.getMessage() + ")";
-            return new AirbyteConnectionStatus()
-                .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                .withMessage(errMessage);
-        }
-    }
-
-    private Throwable getRootCause(Throwable exp) {
-        Throwable curCause = exp.getCause();
-        if (curCause == null) {
-            return exp;
-        } else {
-            return getRootCause(curCause);
-        }
-    }
-
-    @Override
-    public AirbyteMessageConsumer getConsumer(JsonNode config,
-        ConfiguredAirbyteCatalog catalog,
-        Consumer<AirbyteMessage> outputRecordCollector) {
-        final IcebergCatalogConfig icebergCatalogConfig = this.icebergCatalogConfigFactory.fromJsonNodeConfig(config);
-        Map<String, String> sparkConfMap = icebergCatalogConfig.sparkConfigMap();
-
-        Builder sparkBuilder = SparkSession.builder()
-            .master("local")
-            .appName("Airbyte->Iceberg-" + System.currentTimeMillis());
-        sparkConfMap.forEach(sparkBuilder::config);
-        SparkSession spark = sparkBuilder.getOrCreate();
-
-        return new IcebergConsumer(spark, outputRecordCollector, catalog, icebergCatalogConfig);
-    }
+    return new IcebergConsumer(spark, outputRecordCollector, catalog, icebergCatalogConfig);
+  }
 
 }

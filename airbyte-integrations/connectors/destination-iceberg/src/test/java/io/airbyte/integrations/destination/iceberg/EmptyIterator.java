@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.iceberg;
 
 import java.io.IOException;
@@ -10,27 +14,29 @@ import org.apache.iceberg.io.CloseableIterator;
  */
 class EmptyIterator implements CloseableIterable<Record> {
 
-    @Override
-    public CloseableIterator<Record> iterator() {
-        return new CloseableIterator<Record>() {
-            @Override
-            public void close() throws IOException {
-            }
+  @Override
+  public CloseableIterator<Record> iterator() {
+    return new CloseableIterator<Record>() {
 
-            @Override
-            public boolean hasNext() {
-                return false;
-            }
+      @Override
+      public void close() throws IOException {}
 
-            @Override
-            public Record next() {
-                return null;
-            }
-        };
-    }
+      @Override
+      public boolean hasNext() {
+        return false;
+      }
 
-    @Override
-    public void close() throws IOException {
+      @Override
+      public Record next() {
+        return null;
+      }
 
-    }
+    };
+  }
+
+  @Override
+  public void close() throws IOException {
+
+  }
+
 }

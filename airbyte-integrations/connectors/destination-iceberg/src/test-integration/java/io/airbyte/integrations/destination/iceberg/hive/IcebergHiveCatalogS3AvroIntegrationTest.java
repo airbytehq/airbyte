@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.iceberg.hive;
 
 import static io.airbyte.integrations.destination.iceberg.IcebergIntegrationTestUtil.ICEBERG_IMAGE_NAME;
@@ -18,59 +22,59 @@ import org.slf4j.LoggerFactory;
  */
 public class IcebergHiveCatalogS3AvroIntegrationTest extends DestinationAcceptanceTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(IcebergHiveCatalogS3AvroIntegrationTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(IcebergHiveCatalogS3AvroIntegrationTest.class);
 
-    /**
-     * start-up of hive metastore server takes minutes (including pg table initializing) so put the docker-compose
-     * environment here as a static member, only start once
-     */
-    private static HiveMetastoreS3PostgresCompose metastoreCompose;
+  /**
+   * start-up of hive metastore server takes minutes (including pg table initializing) so put the
+   * docker-compose environment here as a static member, only start once
+   */
+  private static HiveMetastoreS3PostgresCompose metastoreCompose;
 
-    private static JsonNode config;
+  private static JsonNode config;
 
-    @BeforeAll
-    public static void startCompose() {
-        metastoreCompose = new HiveMetastoreS3PostgresCompose();
-        metastoreCompose.start();
-        config = metastoreCompose.getComposeConfig(DataFileFormat.AVRO);
-        IcebergIntegrationTestUtil.createS3WarehouseBucket(config);
-        LOGGER.info("==> Started Hive Metastore docker compose containers...");
+  @BeforeAll
+  public static void startCompose() {
+    metastoreCompose = new HiveMetastoreS3PostgresCompose();
+    metastoreCompose.start();
+    config = metastoreCompose.getComposeConfig(DataFileFormat.AVRO);
+    IcebergIntegrationTestUtil.createS3WarehouseBucket(config);
+    LOGGER.info("==> Started Hive Metastore docker compose containers...");
 
-    }
+  }
 
-    @AfterAll
-    public static void stopCompose() {
-        IcebergIntegrationTestUtil.stopAndCloseContainer(metastoreCompose, "Hive Metastore");
-    }
+  @AfterAll
+  public static void stopCompose() {
+    IcebergIntegrationTestUtil.stopAndCloseContainer(metastoreCompose, "Hive Metastore");
+  }
 
-    @Override
-    protected void setup(final TestDestinationEnv testEnv) {
-    }
+  @Override
+  protected void setup(final TestDestinationEnv testEnv) {}
 
-    @Override
-    protected void tearDown(final TestDestinationEnv testEnv) {
-    }
+  @Override
+  protected void tearDown(final TestDestinationEnv testEnv) {}
 
-    @Override
-    protected String getImageName() {
-        return ICEBERG_IMAGE_NAME;
-    }
+  @Override
+  protected String getImageName() {
+    return ICEBERG_IMAGE_NAME;
+  }
 
-    @Override
-    protected JsonNode getConfig() {
-        return config;
-    }
+  @Override
+  protected JsonNode getConfig() {
+    return config;
+  }
 
-    @Override
-    protected JsonNode getFailCheckConfig() {
-        return metastoreCompose.getWrongConfig();
-    }
+  @Override
+  protected JsonNode getFailCheckConfig() {
+    return metastoreCompose.getWrongConfig();
+  }
 
-    @Override
-    protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-        String streamName,
-        String namespace,
-        JsonNode streamSchema) throws Exception {
-        return IcebergIntegrationTestUtil.retrieveRecords(getConfig(), namespace, streamName);
-    }
+  @Override
+  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
+                                           String streamName,
+                                           String namespace,
+                                           JsonNode streamSchema)
+      throws Exception {
+    return IcebergIntegrationTestUtil.retrieveRecords(getConfig(), namespace, streamName);
+  }
+
 }

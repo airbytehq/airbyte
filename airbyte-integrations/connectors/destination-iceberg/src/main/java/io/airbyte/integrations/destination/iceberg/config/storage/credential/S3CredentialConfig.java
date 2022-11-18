@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.iceberg.config.storage.credential;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
@@ -7,7 +11,8 @@ import com.amazonaws.auth.AWSCredentialsProvider;
  */
 public interface S3CredentialConfig {
 
-    S3CredentialType getCredentialType();
+  S3CredentialType getCredentialType();
 
-    AWSCredentialsProvider getS3CredentialsProvider();
+  AWSCredentialsProvider getS3CredentialsProvider();
+
 }

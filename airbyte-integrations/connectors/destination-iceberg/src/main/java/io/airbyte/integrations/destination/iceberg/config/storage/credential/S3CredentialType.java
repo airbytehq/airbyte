@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.iceberg.config.storage.credential;
 
 /**
@@ -5,6 +9,6 @@ package io.airbyte.integrations.destination.iceberg.config.storage.credential;
  */
 public enum S3CredentialType {
 
-    ACCESS_KEY,
-    DEFAULT_PROFILE
+  ACCESS_KEY,
+  DEFAULT_PROFILE
 }
