@@ -143,33 +143,43 @@ interface DbtJobsListProps {
   isLoading: boolean;
 }
 
-const DbtJobsList = ({ jobs, remove, dirty, isLoading }: DbtJobsListProps) => (
-  <div className={classNames(styles.jobListContainer)}>
-    {jobs.length ? (
-      <>
-        <Text className={styles.contextExplanation}>
-          <FormattedMessage id="connection.dbtCloudJobs.explanation" />
-        </Text>
-        {jobs.map((job, i) => (
-          <JobsListItem key={i} job={job} removeJob={() => remove(i)} />
-        ))}
-      </>
-    ) : (
-      <>
-        <img src={octaviaWorker} alt="" className={styles.emptyListImage} />
-        <FormattedMessage id="connection.dbtCloudJobs.noJobs" />
-      </>
-    )}
-    <div className={styles.jobListButtonGroup}>
-      <Button className={styles.jobListButton} type="reset" variant="secondary">
-        Cancel
-      </Button>
-      <Button className={styles.jobListButton} type="submit" variant="primary" disabled={!dirty} isLoading={isLoading}>
-        Save changes
-      </Button>
+const DbtJobsList = ({ jobs, remove, dirty, isLoading }: DbtJobsListProps) => {
+  const { formatMessage } = useIntl();
+
+  return (
+    <div className={classNames(styles.jobListContainer)}>
+      {jobs.length ? (
+        <>
+          <Text className={styles.contextExplanation}>
+            <FormattedMessage id="connection.dbtCloudJobs.explanation" />
+          </Text>
+          {jobs.map((job, i) => (
+            <JobsListItem key={i} job={job} removeJob={() => remove(i)} />
+          ))}
+        </>
+      ) : (
+        <>
+          <img src={octaviaWorker} alt="" className={styles.emptyListImage} />
+          <FormattedMessage id="connection.dbtCloudJobs.noJobs" />
+        </>
+      )}
+      <div className={styles.jobListButtonGroup}>
+        <Button className={styles.jobListButton} type="reset" variant="secondary">
+          {formatMessage({ id: "form.cancel" })}
+        </Button>
+        <Button
+          className={styles.jobListButton}
+          type="submit"
+          variant="primary"
+          disabled={!dirty}
+          isLoading={isLoading}
+        >
+          {formatMessage({ id: "form.saveChanges" })}
+        </Button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface JobsListItemProps {
   job: DbtCloudJob;
@@ -210,7 +220,7 @@ const JobsListItem = ({ job, removeJob }: JobsListItemProps) => {
           onClick={removeJob}
           aria-label={formatMessage({ id: "connection.dbtCloudJobs.job.deleteButton" })}
         >
-          <FontAwesomeIcon icon={faXmark} />
+          <FontAwesomeIcon icon={faXmark} height="21" width="21" />
         </Button>
       </div>
     </Card>
