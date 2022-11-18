@@ -53,7 +53,7 @@ Please register on Zenloop and retrieve your API token [here](https://app.zenloo
 
 | Version | Date       | Pull Request                                             | Subject                       |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
-| 0.1.4   | 2022-11-18 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Migrate to low code           |
+| 0.1.4   | 2022-11-18 | [19624](https://github.com/airbytehq/airbyte/pull/19624) | Migrate to low code           |
 | 0.1.3   | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream states |
 | 0.1.2   | 2022-08-22 | [15843](https://github.com/airbytehq/airbyte/pull/15843) | Adds Properties stream        |
 | 0.1.1   | 2021-10-26 | [8299](https://github.com/airbytehq/airbyte/pull/8299)   | Fix missing seed files        |
