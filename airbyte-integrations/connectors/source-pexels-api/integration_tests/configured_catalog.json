@@ -20,15 +20,6 @@
     },
     {
       "stream": {
-        "name": "photos_get_by_id",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
         "name": "videos_search",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
@@ -47,25 +38,7 @@
     },
     {
       "stream": {
-        "name": "videos_get_by_id",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
         "name": "collection_featured",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "collection_get_by_id",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
