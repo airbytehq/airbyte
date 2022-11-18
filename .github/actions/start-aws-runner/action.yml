@@ -12,7 +12,7 @@ inputs:
     default: "ami-005924fb76f7477ce"
     required: true
   ec2-instance-type:
-    default: "c6a.4xlarge"
+    default: "c5.2xlarge"
     required: true
   subnet-id:
     default: "subnet-0469a9e68a379c1d3"
