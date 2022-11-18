@@ -6,6 +6,7 @@ interface StreamProgressProps {
   stream: AttemptStreamStats;
 }
 
+// TODO: progress for stream
 export const StreamProgress: React.FC<StreamProgressProps> = ({ stream }) => {
   return <span className={styles.stream}>{stream.streamName}</span>;
 };

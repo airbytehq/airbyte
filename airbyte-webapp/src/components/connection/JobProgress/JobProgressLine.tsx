@@ -15,10 +15,10 @@ export const ProgressLine: React.FC<ProgressLineProps> = ({ type = "default", pe
   return (
     <div
       className={classNames(styles.lineOuter)}
-      aria-label={formatMessage({ id: "connection.progress.percentage" }, { percent })}
+      aria-label={formatMessage({ id: "connection.progress.percentage" }, { percent: Math.floor(percent * 100) })}
     >
       <div
-        style={{ width: `${percent}%` }}
+        style={{ width: `${percent * 100}%` }}
         className={classNames(styles.lineInner, {
           [styles.default]: type === "default",
           [styles.warning]: type === "warning",

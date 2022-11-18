@@ -46,7 +46,6 @@ export const JobProgress: React.FC<ProgressBarProps> = ({ job, expanded }) => {
     numeratorRecords,
     denominatorRecords,
     denominatorBytes,
-    unEstimatedStreams,
     elapsedTimeMS,
   } = progressBarCalculations(latestAttempt);
 
@@ -62,19 +61,17 @@ export const JobProgress: React.FC<ProgressBarProps> = ({ job, expanded }) => {
   }
 
   return (
-    <Text as="div" size="xs">
+    <Text as="div" size="sm">
       {displayProgressBar && (
         <ProgressLine percent={totalPercentRecords} type={jobStatus === "incomplete" ? "warning" : "default"} />
       )}
       {latestAttempt?.status === AttemptStatus.running && (
         <>
           {displayProgressBar && (
-            <div>
-              {totalPercentRecords}% {timeRemaining < Infinity && timeRemaining > 0 ? `| ${timeRemainingString}` : ""}
+            <div className={styles.estimationStats}>
+              <span>{timeRemaining < Infinity && timeRemaining > 0 && timeRemainingString}</span>
+              <span>{formatNumber(totalPercentRecords, { style: "percent", maximumFractionDigits: 0 })}</span>
             </div>
-          )}
-          {!displayProgressBar && unEstimatedStreams.length > 0 && (
-            <div>{formatMessage({ id: "estimate.unEstimatedStreams" }, { count: unEstimatedStreams.length })}</div>
           )}
           {denominatorRecords > 0 && (
             <>

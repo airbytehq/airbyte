@@ -5,24 +5,21 @@ import { progressBarCalculations } from "./utils";
 describe("#progressBarCalculations", () => {
   it("for an attempt with no throughput information", () => {
     const attempt = makeAttempt();
-    const { displayProgressBar, totalPercentRecords, unEstimatedStreams } = progressBarCalculations(attempt);
+    const { displayProgressBar, totalPercentRecords } = progressBarCalculations(attempt);
 
     expect(displayProgressBar).toEqual(false);
     expect(totalPercentRecords).toEqual(0);
-    expect(unEstimatedStreams).toEqual([]);
   });
 
   it("for an attempt with total stats", () => {
     const totalStats: AttemptStats = { recordsEmitted: 1, estimatedRecords: 100, bytesEmitted: 1, estimatedBytes: 50 };
     const attempt = makeAttempt(totalStats);
-    const { displayProgressBar, totalPercentRecords, unEstimatedStreams, elapsedTimeMS, timeRemaining } =
-      progressBarCalculations(attempt);
+    const { displayProgressBar, totalPercentRecords, elapsedTimeMS, timeRemaining } = progressBarCalculations(attempt);
 
     expect(displayProgressBar).toEqual(true);
-    expect(totalPercentRecords).toEqual(1);
+    expect(totalPercentRecords).toEqual(0.01);
     expect(elapsedTimeMS).toEqual(10 * 1000);
     expect(timeRemaining).toEqual(990 * 1000);
-    expect(unEstimatedStreams).toEqual([]);
   });
 
   it("for an attempt with per-stream stats", () => {
@@ -41,14 +38,12 @@ describe("#progressBarCalculations", () => {
     };
 
     const attempt = makeAttempt(totalStats, [streamStatsA, streamStatsB, streamStatsC]);
-    const { displayProgressBar, totalPercentRecords, unEstimatedStreams, elapsedTimeMS, timeRemaining } =
-      progressBarCalculations(attempt);
+    const { displayProgressBar, totalPercentRecords, elapsedTimeMS, timeRemaining } = progressBarCalculations(attempt);
 
     expect(displayProgressBar).toEqual(true);
-    expect(totalPercentRecords).toEqual(1);
+    expect(totalPercentRecords).toEqual(0.01);
     expect(elapsedTimeMS).toEqual(10 * 1000);
     expect(timeRemaining).toEqual(990 * 1000);
-    expect(unEstimatedStreams).toEqual(["C"]);
   });
 });
 

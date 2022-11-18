@@ -8,7 +8,6 @@ export const progressBarCalculations = (latestAttempt: AttemptRead) => {
   let denominatorBytes = -1;
   let elapsedTimeMS = -1;
   let timeRemaining = -1;
-  const unEstimatedStreams: string[] = [];
   let displayProgressBar = true;
 
   let countTotalsFromStreams = true;
@@ -34,20 +33,12 @@ export const progressBarCalculations = (latestAttempt: AttemptRead) => {
     }
   }
 
-  if (latestAttempt.streamStats) {
-    for (const stream of latestAttempt.streamStats) {
-      if (!stream.stats.recordsEmitted) {
-        unEstimatedStreams.push(`${stream.streamName}`);
-      }
-    }
-  }
-
-  totalPercentRecords = denominatorRecords > 0 ? Math.floor((numeratorRecords * 100) / denominatorRecords) : 0;
+  totalPercentRecords = denominatorRecords > 0 ? numeratorRecords / denominatorRecords : 0;
 
   // chose to estimate time remaining based on records rather than bytes
   if (latestAttempt.status === AttemptStatus.running && denominatorRecords > 0) {
     elapsedTimeMS = Date.now() - latestAttempt.createdAt * 1000;
-    timeRemaining = Math.floor(elapsedTimeMS / totalPercentRecords) * (100 - totalPercentRecords); // in ms
+    timeRemaining = Math.floor(elapsedTimeMS / totalPercentRecords) * (1 - totalPercentRecords); // in ms
   } else {
     displayProgressBar = false;
   }
@@ -60,7 +51,6 @@ export const progressBarCalculations = (latestAttempt: AttemptRead) => {
     numeratorRecords,
     denominatorRecords,
     denominatorBytes,
-    unEstimatedStreams,
     elapsedTimeMS,
   };
 };

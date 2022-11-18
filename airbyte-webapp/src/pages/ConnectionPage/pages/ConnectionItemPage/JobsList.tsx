@@ -30,10 +30,17 @@ const JobsList: React.FC<JobsListProps> = ({ jobs }) => {
             estimatedBytes: 10232100,
             recordsEmitted: 1123,
             recordsCommitted: 110,
-            estimatedRecords: 12312,
+            estimatedRecords: 5500,
             stateMessagesEmitted: 5,
           };
+
           value.attempts[0].status = "running";
+          value.attempts[0].streamStats = [
+            {
+              streamName: "pokemon",
+              stats: {},
+            },
+          ];
           value.attempts[0].streamStats = [
             {
               streamName: "pokemon",
