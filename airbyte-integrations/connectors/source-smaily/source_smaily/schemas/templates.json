@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "type": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "created_at": {
+      "type": ["string", "null"]
+    },
+    "modified_at": {
+      "type": ["string", "null"]
+    },
+    "preview_url": {
+      "type": ["string", "null"]
+    }
+  },
+  "required": ["id"]
+}

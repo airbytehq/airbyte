@@ -5,8 +5,10 @@ import { HeadTitle } from "components/common/HeadTitle";
 import { Heading } from "components/ui/Heading";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
+import { useExperiment } from "hooks/services/Experiment";
 
 import { OAuthLogin } from "../OAuthLogin";
+import { Separator } from "./components/Separator";
 import { Disclaimer, SignupForm } from "./components/SignupForm";
 import SpecialBlock from "./components/SpecialBlock";
 import styles from "./SignupPage.module.scss";
@@ -17,8 +19,10 @@ interface SignupPageProps {
 
 const SignupPage: React.FC<SignupPageProps> = ({ highlightStyle }) => {
   useTrackPage(PageTrackingCodes.SIGNUP);
+  const oAuthPosition = useExperiment("authPage.oauth.position", "bottom");
+
   return (
-    <div>
+    <div className={styles.container}>
       <HeadTitle titles={[{ id: "login.signup" }]} />
       <Heading as="h1" size="xl" className={styles.title}>
         <FormattedMessage
@@ -33,8 +37,19 @@ const SignupPage: React.FC<SignupPageProps> = ({ highlightStyle }) => {
         />
       </Heading>
       <SpecialBlock />
+      {oAuthPosition === "top" && (
+        <>
+          <OAuthLogin isSignUpPage />
+          <Separator />
+        </>
+      )}
       <SignupForm />
-      <OAuthLogin isSignUpPage />
+      {oAuthPosition === "bottom" && (
+        <>
+          <Separator />
+          <OAuthLogin isSignUpPage />
+        </>
+      )}
       <Disclaimer />
     </div>
   );

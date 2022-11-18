@@ -2,7 +2,7 @@
 # This exists _only_ for testing datadog integrations!
 #
 # Usage:
-# 1. create an API Key in datadog
+# 1. Create an organization API Key in DataDog (Organization Settings > API Keys)
 # 2. wget -O dd-java-agent.jar 'https://dtdg.co/latest-java-tracer'
 # 3. DD_API_KEY=[datadog api key] VERSION=dev docker-compose -f docker-compose.yaml -f docker-compose.datadog.yaml up -d
 version: "3.7"

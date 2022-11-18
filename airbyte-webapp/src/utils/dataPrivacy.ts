@@ -61,8 +61,9 @@ export const loadOsano = (): void => {
   style.appendChild(
     document.createTextNode(`
     .osano-cm-widget { display: none; }
+    .osano-cm-dialog__close { display: none; }
     .osano-cm-button--type_denyAll { display: none; }
-    .osano-cm-button--type_manage { background-color: inherit; border: 1px inherit; font-weight: 200; }`)
+    .osano-cm-button--type_manage { background-color: inherit;  border: 1px #1a194d solid; color: #1a194d; font-weight: 200; }`)
   );
   document.head.appendChild(style);
 
