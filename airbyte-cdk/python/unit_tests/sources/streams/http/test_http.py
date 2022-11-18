@@ -21,7 +21,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 class StubBasicReadHttpStream(HttpStream):
     url_base = "https://test_base_url.com"
     primary_key = ""
-    
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.resp_counter = 1
