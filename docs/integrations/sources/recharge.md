@@ -3,16 +3,19 @@
 This source can sync data for the [Recharge API](https://developer.rechargepayments.com/).
 This page guides you through the process of setting up the Recharge source connector.
 
-## Prerequisites (Airbyte Cloud & Airbyte Open Source)
+## Prerequisites
 * A Recharge account with permission to access data from accounts you want to sync.
 * Recharge API Token
 
-## Step 1: Set up Recharge
+## Setup guide
+
+### Step 1: Set up Recharge
 
 Please read [How to generate your API token](https://support.rechargepayments.com/hc/en-us/articles/360008829993-ReCharge-API).
 
-## Step 2: Set up the source connector in Airbyte
+### Step 2: Set up the source connector in Airbyte
 
+<!-- env:cloud -->
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
@@ -21,7 +24,9 @@ Please read [How to generate your API token](https://support.rechargepayments.co
 4. Choose required `Start date`
 5. Enter your `Access Token`.
 6. click `Set up source`.
+<!-- /env:cloud -->
 
+<!-- env:oss -->
 **For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
@@ -30,6 +35,7 @@ Please read [How to generate your API token](https://support.rechargepayments.co
 4. Choose required `Start date`
 5. Enter your `Access Token` generated from `Step 1`.
 6. click `Set up source`.
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -80,4 +86,3 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 | 0.1.3   | 2021-09-17 | [6149](https://github.com/airbytehq/airbyte/pull/6149)   | Update `discount` and `order` schema                                                      |
 | 0.1.2   | 2021-09-17 | [6149](https://github.com/airbytehq/airbyte/pull/6149)   | Change `cursor_field` for Incremental streams                                             |
 |         |            |                                                          |                                                                                           |
-

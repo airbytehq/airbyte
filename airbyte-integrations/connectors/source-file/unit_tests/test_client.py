@@ -3,6 +3,8 @@
 #
 
 
+from unittest.mock import patch
+
 import pytest
 from pandas import read_csv, read_excel
 from source_file.client import Client, ConfigurationError, URLFile
@@ -134,3 +136,14 @@ def test_open_gcs_url():
     provider.update({"service_account_json": '{service_account_json": "service_account_json"}'})
     with pytest.raises(ConfigurationError):
         assert URLFile(url="", provider=provider)._open_gcs_url()
+
+
+def test_read(test_read_config):
+    client = Client(**test_read_config)
+    client.sleep_on_retry_sec = 0  # just for test
+    with patch.object(client, "load_dataframes", side_effect=ConnectionResetError) as mock_method:
+        try:
+            return client.read(["date", "key"])
+        except ConnectionResetError:
+            print("Exception has been raised correctly!")
+        mock_method.assert_called()

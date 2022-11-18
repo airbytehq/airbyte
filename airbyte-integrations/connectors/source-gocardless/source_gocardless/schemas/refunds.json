@@ -19,7 +19,7 @@
     },
     "metadata": {
       "type": ["null", "object"],
-      "properties":{
+      "properties": {
         "reason": {
           "type": ["null", "string"]
         }
@@ -31,10 +31,10 @@
         "fx_currency": {
           "type": ["null", "string"]
         },
-        "fx_amount":  {
+        "fx_amount": {
           "type": ["null", "integer"]
         },
-        "exchange_rate":  {
+        "exchange_rate": {
           "type": ["null", "string"]
         },
         "estimated_exchange_rate": {
@@ -45,7 +45,7 @@
     "links": {
       "type": ["null", "object"],
       "properties": {
-        "payment":  {
+        "payment": {
           "type": ["null", "string"]
         }
       }

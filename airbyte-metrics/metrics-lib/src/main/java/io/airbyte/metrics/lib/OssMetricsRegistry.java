@@ -71,10 +71,6 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       MetricEmittingApps.WORKER,
       "json_string_length",
       "string length of a raw json string"),
-  JSON_SIZE(
-      MetricEmittingApps.WORKER,
-      "json_size",
-      "size of the json object"),
   KUBE_POD_PROCESS_CREATE_TIME_MILLISECS(
       MetricEmittingApps.WORKER,
       "kube_pod_process_create_time_millisecs",
@@ -132,7 +128,13 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       "count of the number of successful workflow syncs."),
   TEMPORAL_WORKFLOW_FAILURE(MetricEmittingApps.WORKER,
       "temporal_workflow_failure",
-      "count of the number of workflow failures");
+      "count of the number of workflow failures"),
+  REPLICATION_BYTES_SYNCED(MetricEmittingApps.WORKER,
+      "replication_bytes_synced",
+      "number of bytes synced during replication"),
+  REPLICATION_RECORDS_SYNCED(MetricEmittingApps.WORKER,
+      "replication_records_synced",
+      "number of records synced during replication");
 
   private final MetricEmittingApp application;
   private final String metricName;

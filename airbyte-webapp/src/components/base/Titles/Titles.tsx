@@ -19,13 +19,13 @@ const H1 = styled.h1<IProps>`
   margin: 0;
 `;
 
-/** @deprecated Use `<Text as="h1 | h2 | h3 | h4 | h5" size="md" />` */
+/** @deprecated Use `<Heading as="h1 | h2 | h3 | h4 | h5" size="md" />` */
 export const H3 = styled(H1).attrs({ as: "h3" })`
   font-size: 20px;
   line-height: 24px;
 `;
 
-/** @deprecated Use `<Text as="h1 | h2 | h3 | h4 | h5" size="sm" />` */
+/** @deprecated Use `<Heading as="h1 | h2 | h3 | h4 | h5" size="sm" />` */
 export const H5 = styled(H1).attrs({ as: "h5" })`
   font-size: ${({ theme }) => theme.h5?.fontSize || "16px"};
   line-height: ${({ theme }) => theme.h5?.lineHeight || "28px"};

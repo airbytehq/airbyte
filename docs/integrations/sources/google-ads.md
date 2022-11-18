@@ -5,7 +5,9 @@ This page contains the setup guide and reference information for the Google Ads 
 ## Prerequisites
 
 - A [Google Ads Account](https://support.google.com/google-ads/answer/6366720) [linked](https://support.google.com/google-ads/answer/7459601) to a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/)
+<!-- env:oss -->
 - (For Airbyte Open Source) [A developer token](#step-1-for-airbyte-oss-apply-for-a-developer-token)
+<!-- /env:oss -->
 
 ## Setup guide
 
@@ -28,7 +30,8 @@ When you apply for a token, make sure to mention:
 
 ### Step 2: Set up the Google Ads connector in Airbyte
 
-#### For Airbyte Cloud
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
 To set up Google Ads as a source in Airbyte Cloud:
 
@@ -44,8 +47,10 @@ To set up Google Ads as a source in Airbyte Cloud:
 10. (Optional) Enter a [**Conversion Window**](https://support.google.com/google-ads/answer/3123169?hl=en).
 11. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated.
 12. Click **Set up source**.
+<!-- /env:cloud -->
 
-#### For Airbyte Open Source
+<!-- env:oss -->
+**For Airbyte Open Source:**
 
 To set up Google Ads as a source in Airbyte Open Source:
 
@@ -62,6 +67,7 @@ To set up Google Ads as a source in Airbyte Open Source:
 11. (Optional) Enter a [**Conversion Window**](https://support.google.com/google-ads/answer/3123169?hl=en).
 12. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated.
 13. Click **Set up source**.
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -78,33 +84,33 @@ The Google Ads source connector can sync the following tables. It can also sync 
 
 ### Main Tables
 
-- [accounts](https://developers.google.com/google-ads/api/fields/v9/customer)
-- [ad_group_ads](https://developers.google.com/google-ads/api/fields/v9/ad_group_ad)
-- [ad_group_ad_labels](https://developers.google.com/google-ads/api/fields/v9/ad_group_ad_label)
-- [ad_groups](https://developers.google.com/google-ads/api/fields/v9/ad_group)
-- [ad_group_labels](https://developers.google.com/google-ads/api/fields/v9/ad_group_label)
-- [campaign_labels](https://developers.google.com/google-ads/api/fields/v9/campaign_label)
-- [click_view](https://developers.google.com/google-ads/api/reference/rpc/v9/ClickView)
-- [keyword](https://developers.google.com/google-ads/api/fields/v9/keyword_view)
-- [geographic](https://developers.google.com/google-ads/api/fields/v9/geographic_view)
+- [accounts](https://developers.google.com/google-ads/api/fields/v11/customer)
+- [ad_group_ads](https://developers.google.com/google-ads/api/fields/v11/ad_group_ad)
+- [ad_group_ad_labels](https://developers.google.com/google-ads/api/fields/v11/ad_group_ad_label)
+- [ad_groups](https://developers.google.com/google-ads/api/fields/v11/ad_group)
+- [ad_group_labels](https://developers.google.com/google-ads/api/fields/v11/ad_group_label)
+- [campaign_labels](https://developers.google.com/google-ads/api/fields/v11/campaign_label)
+- [click_view](https://developers.google.com/google-ads/api/reference/rpc/v11/ClickView)
+- [keyword](https://developers.google.com/google-ads/api/fields/v11/keyword_view)
+- [geographic](https://developers.google.com/google-ads/api/fields/v11/geographic_view)
 
 Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field, which should be joined against their respective `*_labels` streams if you want to view the actual labels. For example, the `ad_groups` stream contains an `ad_group.labels` field, which you would join against the `ad_group_labels` stream's `label.resource_name` field.
 
 ### Report Tables
 
-- [campaigns](https://developers.google.com/google-ads/api/fields/v9/campaign)
+- [campaigns](https://developers.google.com/google-ads/api/fields/v11/campaign)
 - [account_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
 - [ad_group_ad_report](https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance)
 - [display_keyword_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance)
 - [display_topics_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance)
 - [shopping_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
-- [user_location_report](https://developers.google.com/google-ads/api/fields/v9/user_location_view)
+- [user_location_report](https://developers.google.com/google-ads/api/fields/v11/user_location_view)
 
 :::note
-Due to Google Ads API constraints, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago. Also, [metrics](https://developers.google.com/google-ads/api/fields/v9/metrics) cannot be requested for a Google Ads Manager account. Report streams are only available when pulling data from a non-manager account.
+Due to Google Ads API constraints, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago. Also, [metrics](https://developers.google.com/google-ads/api/fields/v11/metrics) cannot be requested for a Google Ads Manager account. Report streams are only available when pulling data from a non-manager account.
 :::
 
-For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v9/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
+For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v11/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
 
 ## Custom Query: Understanding Google Ads Query Language
 
@@ -124,6 +130,8 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| `0.2.4`  | 2022-11-09 | [19208](https://github.com/airbytehq/airbyte/pull/19208) | Add TypeTransofrmer to Campaings stream to force proper type casting       |
+| `0.2.3`  | 2022-10-17 | [18069](https://github.com/airbytehq/airbyte/pull/18069) | Add `segments.hour`, `metrics.ctr`, `metrics.conversions` and `metrics.conversions_values` fields to `campaigns` report stream       |
 | `0.2.2`  | 2022-10-21 | [17412](https://github.com/airbytehq/airbyte/pull/17412) | Release with CDK >= 0.2.2                                                                                                            |
 | `0.2.1`  | 2022-09-29 | [17412](https://github.com/airbytehq/airbyte/pull/17412) | Always use latest CDK version                                                                                                        |
 | `0.2.0`  | 2022-08-23 | [15858](https://github.com/airbytehq/airbyte/pull/15858) | Mark the `query` and `table_name` fields in `custom_queries` as required                                                             |

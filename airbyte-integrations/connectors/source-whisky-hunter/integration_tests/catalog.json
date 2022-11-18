@@ -37,9 +37,7 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       {
         "name": "auctions_info",
@@ -73,9 +71,7 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       {
         "name": "distilleries_info",
@@ -103,9 +99,7 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       }
     ]
   }

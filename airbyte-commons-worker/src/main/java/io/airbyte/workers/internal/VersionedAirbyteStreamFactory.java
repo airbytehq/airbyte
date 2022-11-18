@@ -4,8 +4,11 @@
 
 package io.airbyte.workers.internal;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
@@ -74,6 +77,7 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
    * If detectVersion is set to true, it will decide which protocol version to use from the content of
    * the stream rather than the one passed from the constructor.
    */
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @SneakyThrows
   @Override
   public Stream<AirbyteMessage> create(final BufferedReader bufferedReader) {
@@ -88,6 +92,12 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
         initializeForProtocolVersion(fallbackVersion);
       }
     }
+
+    final boolean needMigration = !protocolVersion.getMajorVersion().equals(migratorFactory.getMostRecentVersion().getMajorVersion());
+    logger.info(
+        "Reading messages from protocol version {}{}",
+        protocolVersion.serialize(),
+        needMigration ? ", messages will be upgraded to protocol version " + migratorFactory.getMostRecentVersion().serialize() : "");
     return super.create(bufferedReader);
   }
 
@@ -123,7 +133,7 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
       }
       bufferedReader.reset();
       return Optional.empty();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       logger.warn(
           "Protocol version detection failed, it is likely than the connector sent more than {}B without an complete SPEC message." +
               " A SPEC message that is too long could be the root cause here.",
@@ -156,7 +166,7 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
     try {
       final io.airbyte.protocol.models.v0.AirbyteMessage message = migrator.upgrade(deserializer.deserialize(json));
       return Stream.of(convert(message));
-    } catch (RuntimeException e) {
+    } catch (final RuntimeException e) {
       logger.warn("Failed to upgrade a message from version {}: {}", protocolVersion, Jsons.serialize(json), e);
       return Stream.empty();
     }

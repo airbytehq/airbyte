@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
-import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.CONNECTION_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 
 import datadog.trace.api.Trace;
 import io.airbyte.commons.temporal.config.WorkerMode;
@@ -60,6 +60,12 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
     this.jobPersistence = jobPersistence;
     this.syncJobMaxAttempts = syncJobMaxAttempts;
     this.currentSecondsSupplier = currentSecondsSupplier;
+  }
+
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
+  @Override
+  public StandardSync getStandardSync(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    return configRepository.getStandardSync(connectionId);
   }
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)

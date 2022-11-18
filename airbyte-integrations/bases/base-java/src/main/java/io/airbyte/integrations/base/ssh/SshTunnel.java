@@ -6,7 +6,7 @@ package io.airbyte.integrations.base.ssh;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.exceptions.ConnectionErrorException;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
@@ -303,7 +303,7 @@ public class SshTunnel implements AutoCloseable {
    * @see <a href=
    *      "https://javadoc.io/static/org.apache.sshd/sshd-common/2.8.0/org/apache/sshd/common/config/keys/loader/KeyPairResourceLoader.html#loadKeyPairs-org.apache.sshd.common.session.SessionContext-org.apache.sshd.common.util.io.resource.IoResource-org.apache.sshd.common.config.keys.FilePasswordProvider-">loadKeyPairs()</a>
    */
-  KeyPair getPrivateKeyPair() throws IOException, GeneralSecurityException, ConnectionErrorException {
+  KeyPair getPrivateKeyPair() throws IOException, GeneralSecurityException {
     final String validatedKey = validateKey();
     final var keyPairs = SecurityUtils
         .getKeyPairResourceParser()
@@ -312,7 +312,7 @@ public class SshTunnel implements AutoCloseable {
     if (keyPairs != null && keyPairs.iterator().hasNext()) {
       return keyPairs.iterator().next();
     }
-    throw new ConnectionErrorException("Unable to load private key pairs, verify key pairs are properly inputted");
+    throw new ConfigErrorException("Unable to load private key pairs, verify key pairs are properly inputted");
   }
 
   private String validateKey() {

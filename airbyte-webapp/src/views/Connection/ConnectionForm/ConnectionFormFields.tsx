@@ -7,10 +7,10 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useUnmount } from "react-use";
 
 import { ControlLabels } from "components";
-import { FormChangeTracker } from "components/FormChangeTracker";
+import { FormChangeTracker } from "components/common/FormChangeTracker";
 import { Button } from "components/ui/Button";
+import { Heading } from "components/ui/Heading";
 import { Input } from "components/ui/Input";
-import { Text } from "components/ui/Text";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
@@ -46,6 +46,8 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
     clearFormChange(formId);
   });
 
+  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
+
   return (
     <>
       {/* FormChangeTracker is here as it has access to everything it needs without being repeated */}
@@ -55,9 +57,9 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
           <ScheduleField />
         </Section>
         <Section>
-          <Text as="h2" size="sm">
+          <Heading as="h2" size="sm">
             <FormattedMessage id="connection.streams" />
-          </Text>
+          </Heading>
           <span className={readonlyClass}>
             <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
           </span>
@@ -116,7 +118,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
             )}
           </Field>
         </Section>
-        <Section>
+        <Section className={isNewStreamsTableEnabled ? styles.flush : undefined}>
           <Field
             name="syncCatalog.streams"
             component={SyncCatalogField}

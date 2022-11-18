@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "average_breath": {
+      "type": ["number", "null"]
+    },
+    "average_heart_rate": {
+      "type": ["number", "null"]
+    },
+    "average_hrv": {
+      "type": ["number", "null"]
+    },
+    "awake_time": {
+      "type": ["number", "null"]
+    },
+    "bedtime_end": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "bedtime_start": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "day": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "deep_sleep_duration": {
+      "type": ["number", "null"]
+    },
+    "efficiency": {
+      "type": ["number", "null"]
+    },
+    "heart_rate": {
+      "type": "object",
+      "properties": {
+        "interval": {
+          "type": ["number", "null"]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": ["number", "null"]
+          }
+        },
+        "timestamp": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "hrv": {
+      "type": "object",
+      "properties": {
+        "interval": {
+          "type": ["number", "null"]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": ["number", "null"]
+          }
+        },
+        "timestamp": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "latency": {
+      "type": ["number", "null"]
+    },
+    "light_sleep_duration": {
+      "type": ["number", "null"]
+    },
+    "low_battery_alert": {
+      "type": "boolean"
+    },
+    "lowest_heart_rate": {
+      "type": ["number", "null"]
+    },
+    "movement_30_sec": {
+      "type": ["string", "null"]
+    },
+    "period": {
+      "type": ["number", "null"]
+    },
+    "readiness_score_delta": {
+      "type": ["number", "null"]
+    },
+    "rem_sleep_duration": {
+      "type": ["number", "null"]
+    },
+    "restless_periods": {
+      "type": ["number", "null"]
+    },
+    "sleep_phase_5_min": {
+      "type": ["string", "null"]
+    },
+    "sleep_score_delta": {
+      "type": ["number", "null"]
+    },
+    "time_in_bed": {
+      "type": ["number", "null"]
+    },
+    "total_sleep_duration": {},
+    "type": {
+      "type": ["string", "null"]
+    }
+  }
+}

@@ -2,7 +2,7 @@ version: "0.1.0"
 
 definitions:
   schema_loader:
-    type: JsonSchema
+    type: JsonFileSchemaLoader
     file_path: "./source_gocardless/schemas/{{ options['name'] }}.json"
   selector:
     type: RecordSelector
@@ -45,7 +45,6 @@ definitions:
       page_size_option:
         field_name: "limit"
         inject_into: "request_parameter"
-
 
 streams:
   - type: DeclarativeStream

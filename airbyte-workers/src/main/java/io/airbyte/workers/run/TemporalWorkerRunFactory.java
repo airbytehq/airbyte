@@ -58,6 +58,7 @@ public class TemporalWorkerRunFactory {
             .withPrefix(resetConnection.getPrefix())
             .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
             .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
+            .withDestinationProtocolVersion(resetConnection.getDestinationProtocolVersion())
             .withSourceConfiguration(Jsons.emptyObject())
             .withDestinationConfiguration(resetConnection.getDestinationConfiguration())
             .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog())
