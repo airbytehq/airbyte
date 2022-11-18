@@ -13,8 +13,11 @@ definitions:
     url_base: "{{ config['instance_api_url'] }}"
     http_method: "GET"
     authenticator:
-      class_name: source_metabase.components.MetabaseAuth
-      config: "{{ config }}"
+      class_name: source_metabase.components.MetabaseSessionTokenAuthenticator
+      username: "{{ config['username'] }}"
+      password: "{{ config['password'] }}"
+      api_url: "{{ config['instance_api_url'] }}"
+      session_token: "{{ config['session_token'] }}"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -67,4 +70,5 @@ streams:
   - "*ref(definitions.users_stream)"
 
 check:
-  stream_names: [ ]
+  stream_names:
+    - "activity"
