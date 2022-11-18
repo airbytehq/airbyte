@@ -288,7 +288,7 @@ public class ServerApp implements ServerRunnable {
 
     final HealthCheckHandler healthCheckHandler = new HealthCheckHandler(configRepository);
 
-    final OAuthHandler oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient);
+    final OAuthHandler oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient, secretsRepositoryReader);
 
     final SourceHandler sourceHandler = new SourceHandler(
         configRepository,
@@ -308,7 +308,8 @@ public class ServerApp implements ServerRunnable {
         sourceDefinitionsHandler,
         destinationHandler,
         destinationDefinitionsHandler,
-        configs.getAirbyteVersion());
+        configs.getAirbyteVersion(),
+        temporalClient);
 
     final LogsHandler logsHandler = new LogsHandler(configs);
 
