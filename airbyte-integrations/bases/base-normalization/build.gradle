@@ -94,7 +94,7 @@ airbyteDocker.dependsOn(airbyteDockerTiDB)
 
 task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs) {
     module = "pytest"
-    command = "-s integration_tests"
+    command = "-s integration_tests -n auto"
 
     dependsOn ':airbyte-integrations:bases:base-normalization:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-bigquery:airbyteDocker'

@@ -36,4 +36,4 @@ RUN pip install .
 LABEL io.airbyte.version=0.2.19
 LABEL io.airbyte.name=airbyte/source-acceptance-test
 
-ENTRYPOINT ["python", "-m", "pytest", "-p", "source_acceptance_test.plugin", "-r", "fEsx"]
+ENTRYPOINT ["python", "-m", "pytest", "-n", "auto", "-p", "source_acceptance_test.plugin", "-r", "fEsx"]

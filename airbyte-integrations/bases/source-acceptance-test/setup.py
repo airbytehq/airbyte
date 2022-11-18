@@ -14,6 +14,7 @@ MAIN_REQUIREMENTS = [
     "pdbpp~=0.10",
     "pydantic~=1.6",
     "pytest~=6.1",
+    "pytest-xdist~=3.0.2",
     "pytest-sugar~=0.9",
     "pytest-timeout~=1.4",
     "pprintpp~=0.4",
