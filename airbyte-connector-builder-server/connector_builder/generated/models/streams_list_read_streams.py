@@ -25,6 +25,6 @@ class StreamsListReadStreams(BaseModel):
     """
 
     name: str
-    url: AnyUrl
+    url: str
 
 StreamsListReadStreams.update_forward_refs()
