@@ -10,7 +10,7 @@ on:
     inputs:
       debug_mode:
         description: "Enable or disable tmate session for debug during helm ac tests"
-        default: "true"
+        default: 'true'
         required: false
   schedule:
     - cron: "0 */1 * * *"
@@ -738,7 +738,6 @@ jobs:
             --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
           org.gradle.workers.max=8
           org.gradle.vfs.watch=false
-          org.gradle.parallel=true
           EOF
 
       - name: Create cluster config file
@@ -867,8 +866,6 @@ jobs:
   # ## Kube Acceptance Tests
   # # Docker acceptance tests run as part of the build job.
   # # In case of self-hosted EC2 errors, remove this block.
-  # # TODO:
-  # # Kyryl to fix issue
   start-helm-acceptance-test-runner:
     name: "Platform: Start Helm Acceptance Test Runner"
     needs:
@@ -894,7 +891,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
 
-  # Todo: Kyrylo turn this on.
   helm-acceptance-test:
     name: "Platform: Acceptance Tests (Helm)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
@@ -1000,9 +996,8 @@ jobs:
             --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
             --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
             --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
-          org.gradle.workers.max=512
+          org.gradle.workers.max=8
           org.gradle.vfs.watch=false
-          org.gradle.parallel=true
           EOF
 
       - name: Build Platform Docker Images
@@ -1036,7 +1031,6 @@ jobs:
     
 
   # # In case of self-hosted EC2 errors, remove this block.
-  # # Todo: Kyryl turn this on.
   stop-helm-acceptance-test-runner:
     name: "Platform: Stop Helm Acceptance Test EC2 Runner"
     timeout-minutes: 10

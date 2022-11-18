@@ -67,11 +67,9 @@ if [ -n "$CI" ]; then
 fi
 
 kubectl expose $(kubectl get po -l app.kubernetes.io/name=server -o name) --name exposed-server-svc --type NodePort --overrides '{ "apiVersion": "v1","spec":{"ports": [{"port":8001,"protocol":"TCP","targetPort":8001,"nodePort":8001}]}}'
-# kubectl port-forward svc/airbyte-server-svc 8001:8001 &
-# ./tools/bin/health_check.sh &
 
 echo "Running worker integration tests..."
-KUBE=true SUB_BUILD=PLATFORM LOG_LEVEL=DEBUG  ./gradlew :airbyte-workers:integrationTest --scan
+KUBE=true SUB_BUILD=PLATFORM ./gradlew :airbyte-workers:integrationTest --scan
 
 echo "Printing system disk usage..."
 df -h
@@ -91,7 +89,7 @@ fi
  docker system df
 
 echo "Running e2e tests via gradle..."
-KUBE=true LOG_LEVEL=DEBUG SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan
+KUBE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan
 
 echo "Reverting changes back"
 mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.test
