@@ -80,7 +80,7 @@ public class JsonSchemaValidator {
     // Default to draft-07, but have handling for the other metaschemas that networknt supports
     JsonMetaSchema metaschema;
     JsonNode metaschemaNode = schemaJson.get("$schema");
-    if (metaschemaNode == null || "".equals(metaschemaNode.asText())) {
+    if (metaschemaNode == null || metaschemaNode.asText() == null || metaschemaNode.asText().isEmpty()) {
       metaschema = JsonMetaSchema.getV7();
     } else {
       String metaschemaString = metaschemaNode.asText();
