@@ -2,6 +2,12 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Exec
 
+/*
+This plugin exists to build & test a python module via Gradle without requiring the developer to install Python on their machine. It achieves this by mounting the module into a Python Docker image and running the tests. 
+
+Modules consuming this plugin must define two scripts `run_tests.sh` and `run_format.sh`. 
+*/
+
 class AirbytePythonDockerConfiguration {
     String moduleDirectory
 }
@@ -13,9 +19,16 @@ class AirbytePythonDockerPlugin implements Plugin<Project> {
 
         project.task('airbytePythonDockerApply', type: Exec) {
             /*
-            Install the dependencies, run the tests, and run static analysis from a docker container
+            Install the dependencies and run the tests from a docker container
              */
-            commandLine "docker", "run", "-v", "${project.projectDir.getAbsolutePath()}:/tmp", "--entrypoint", "/bin/bash", "python:3.9-slim", "-c", "chmod +x /tmp/run_tests.sh && /tmp/run_tests.sh /tmp"
+            commandLine "docker", "run", "-v", "${project.projectDir.getAbsolutePath()}:/home", "--entrypoint", "/bin/bash", "python:3.9-slim", "-c", "chmod +x /home/run_tests.sh && /home/run_tests.sh /home"
+        }
+
+        project.task('blackFormat', type: Exec) {
+            /*
+            Run formatter and static analysis from a docker container
+             */
+            commandLine "docker", "run", "-v", "${project.projectDir.getAbsolutePath()}:/home", "--entrypoint", "/bin/bash", "python:3.9-slim", "-c", "chmod +x /home/run_tests.sh && /home/run_format.sh /home"
         }
 
         project.assemble.dependsOn project.airbytePythonDockerApply

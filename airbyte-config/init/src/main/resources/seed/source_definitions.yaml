@@ -246,6 +246,14 @@
   icon: close.svg
   sourceType: api
   releaseStage: alpha
+- name: CoinGecko Coins
+  sourceDefinitionId: 9cdd4183-d0ba-40c3-aad3-6f46d4103974
+  dockerRepository: airbyte/source-coingecko-coins
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/coingecko-coins
+  icon: coingeckocoins.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Cockroachdb
   sourceDefinitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
   dockerRepository: airbyte/source-cockroachdb
@@ -303,6 +311,13 @@
   dockerRepository: airbyte/source-convertkit
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/convertkit
+  sourceType: api
+  releaseStage: alpha
+- name: Copper
+  sourceDefinitionId: 44f3002f-2df9-4f6d-b21c-02cd3b47d0dc
+  dockerRepository: airbyte/source-copper
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/copper
   sourceType: api
   releaseStage: alpha
 - name: Convex
@@ -452,7 +467,7 @@
 - name: Fauna
   sourceDefinitionId: 3825db3e-c94b-42ac-bd53-b5a9507ace2b
   dockerRepository: airbyte/source-fauna
-  dockerImageTag: dev
+  dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/fauna
   icon: fauna.svg
   sourceType: database
@@ -460,7 +475,7 @@
 - name: File
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.2.30
+  dockerImageTag: 0.2.31
   documentationUrl: https://docs.airbyte.com/integrations/sources/file
   icon: file.svg
   sourceType: file
@@ -501,6 +516,12 @@
   icon: freshservice.svg
   sourceType: api
   releaseStage: alpha
+- name: Genesys
+  sourceDefinitionId: 5ea4459a-8f1a-452a-830f-a65c38cc438d
+  dockerRepository: airbyte/source-genesys
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/genesys
+  icon: genesys.svg
 - name: GetLago
   sourceDefinitionId: e1a3866b-d3b2-43b6-b6d7-8c1ee4d7f53f
   dockerRepository: airbyte/source-getlago
@@ -603,7 +624,7 @@
 - name: Google Sheets
   sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   dockerRepository: airbyte/source-google-sheets
-  dockerImageTag: 0.2.30
+  dockerImageTag: 0.2.31
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
   icon: google-sheets.svg
   sourceType: file
@@ -1158,6 +1179,14 @@
   icon: plaid.svg
   sourceType: api
   releaseStage: alpha
+- name: Plausible
+  sourceDefinitionId: 603ba446-3d75-41d7-92f3-aba901f8b897
+  dockerRepository: airbyte/source-plausible
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/plausible
+  icon: plausible.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Pocket
   sourceDefinitionId: b0dd65f1-081f-4731-9c51-38e9e6aa0ebf
   dockerRepository: airbyte/source-pocket
@@ -1272,6 +1301,14 @@
   icon: recharge.svg
   sourceType: api
   releaseStage: generally_available
+- name: Recreation
+  sourceDefinitionId: 25d7535d-91e0-466a-aa7f-af81578be277
+  dockerRepository: airbyte/source-recreation
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/recreation
+  icon: recreation.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Recruitee
   sourceDefinitionId: 3b046ac7-d8d3-4eb3-b122-f96b2a16d8a8
   dockerRepository: airbyte/source-recruitee
@@ -1516,7 +1553,7 @@
 - name: SurveyMonkey
   sourceDefinitionId: badc5925-0485-42be-8caa-b34096cb71b5
   dockerRepository: airbyte/source-surveymonkey
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.com/integrations/sources/surveymonkey
   icon: surveymonkey.svg
   sourceType: api

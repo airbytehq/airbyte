@@ -64,6 +64,11 @@ public final class ApmTraceConstants {
     public static final String DOCKER_IMAGE_KEY = "docker_image";
 
     /**
+     * Name of the APM trace tag that holds the failure origin(s) associated with the trace.
+     */
+    public static final String FAILURE_ORIGINS_KEY = "failure_origins";
+
+    /**
      * Name of the APM trace tag that holds the job ID value associated with the trace.
      */
     public static final String JOB_ID_KEY = "job_id";
