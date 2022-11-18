@@ -1,0 +1,7 @@
+{
+  "properties": {
+    "segments.date": {
+      "format": "date"
+    }
+  }
+}
