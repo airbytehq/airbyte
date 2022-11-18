@@ -1,65 +1,42 @@
-import { load, YAMLException } from "js-yaml";
-import React, { useContext, useEffect, useState } from "react";
-import { useDebounce, useLocalStorage } from "react-use";
+import React, { useContext, useEffect, useMemo, useState } from "react";
+import { useIntl } from "react-intl";
 
 import {
   StreamReadRequestBodyConfig,
   StreamsListReadStreamsItem,
   StreamsListRequestBodyManifest,
 } from "core/request/ConnectorBuilderClient";
+import { useAppMonitoringService } from "hooks/services/AppMonitoringService";
 
 import { useListStreams } from "./ConnectorBuilderApiService";
-import { template } from "./YamlTemplate";
 
 interface Context {
-  yamlManifest: string;
   jsonManifest: StreamsListRequestBodyManifest;
+  yamlEditorIsMounted: boolean;
+  yamlIsValid: boolean;
   streams: StreamsListReadStreamsItem[];
-  selectedStream: StreamsListReadStreamsItem;
+  streamListErrorMessage: string | undefined;
+  selectedStream?: StreamsListReadStreamsItem;
   configString: string;
   configJson: StreamReadRequestBodyConfig;
-  setYamlManifest: (yamlValue: string) => void;
+  setJsonManifest: (jsonValue: StreamsListRequestBodyManifest) => void;
+  setYamlEditorIsMounted: (value: boolean) => void;
+  setYamlIsValid: (value: boolean) => void;
   setSelectedStream: (streamName: string) => void;
   setConfigString: (configString: string) => void;
 }
 
 export const ConnectorBuilderStateContext = React.createContext<Context | null>(null);
 
-const useYamlManifest = () => {
-  const [locallyStoredYaml, setLocallyStoredYaml] = useLocalStorage<string>("connectorBuilderYaml", template);
-  const [yamlManifest, setYamlManifest] = useState(locallyStoredYaml ?? "");
-  useDebounce(() => setLocallyStoredYaml(yamlManifest), 500, [yamlManifest]);
+export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+  const { formatMessage } = useIntl();
 
+  // json manifest
   const [jsonManifest, setJsonManifest] = useState<StreamsListRequestBodyManifest>({});
-  useEffect(() => {
-    try {
-      const json = load(yamlManifest) as StreamsListRequestBodyManifest;
-      setJsonManifest(json);
-    } catch (err) {
-      if (err instanceof YAMLException) {
-        console.error(`Connector manifest yaml is not valid! Error: ${err}`);
-      }
-    }
-  }, [yamlManifest]);
+  const [yamlIsValid, setYamlIsValid] = useState(true);
+  const [yamlEditorIsMounted, setYamlEditorIsMounted] = useState(false);
 
-  return { yamlManifest, jsonManifest, setYamlManifest };
-};
-
-const useStreams = () => {
-  const { jsonManifest } = useYamlManifest();
-  const streamListRead = useListStreams({ manifest: jsonManifest });
-  const streams = streamListRead.streams;
-
-  const [selectedStreamName, setSelectedStream] = useState(streamListRead.streams[0].name);
-  const selectedStream = streams.find((stream) => stream.name === selectedStreamName) ?? {
-    name: selectedStreamName,
-    url: "",
-  };
-
-  return { streams, selectedStream, setSelectedStream };
-};
-
-const useConfig = () => {
+  // config
   const [configString, setConfigString] = useState("{\n  \n}");
   const [configJson, setConfigJson] = useState<StreamReadRequestBodyConfig>({});
 
@@ -72,22 +49,46 @@ const useConfig = () => {
     }
   }, [configString]);
 
-  return { configString, configJson, setConfigString };
-};
+  // streams
+  const {
+    data: streamListRead,
+    isError: isStreamListError,
+    error: streamListError,
+  } = useListStreams({ manifest: jsonManifest, config: configJson });
+  const unknownErrorMessage = formatMessage({ id: "connectorBuilder.unknownError" });
+  const streamListErrorMessage = isStreamListError
+    ? streamListError instanceof Error
+      ? streamListError.message || unknownErrorMessage
+      : unknownErrorMessage
+    : undefined;
+  const streams = useMemo(() => {
+    return streamListRead?.streams ?? [];
+  }, [streamListRead]);
+  const firstStreamName = streams.length > 0 ? streams[0].name : undefined;
 
-export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
-  const { yamlManifest, jsonManifest, setYamlManifest } = useYamlManifest();
-  const { streams, selectedStream, setSelectedStream } = useStreams();
-  const { configString, configJson, setConfigString } = useConfig();
+  const [selectedStreamName, setSelectedStream] = useState(firstStreamName);
+  useEffect(() => {
+    setSelectedStream((prevSelected) =>
+      prevSelected !== undefined && streams.map((stream) => stream.name).includes(prevSelected)
+        ? prevSelected
+        : firstStreamName
+    );
+  }, [streams, firstStreamName]);
+
+  const selectedStream = streams.find((stream) => stream.name === selectedStreamName);
 
   const ctx = {
-    yamlManifest,
     jsonManifest,
+    yamlEditorIsMounted,
+    yamlIsValid,
     streams,
+    streamListErrorMessage,
     selectedStream,
     configString,
     configJson,
-    setYamlManifest,
+    setJsonManifest,
+    setYamlIsValid,
+    setYamlEditorIsMounted,
     setSelectedStream,
     setConfigString,
   };
@@ -102,4 +103,36 @@ export const useConnectorBuilderState = (): Context => {
   }
 
   return connectorBuilderState;
+};
+
+export const useSelectedPageAndSlice = () => {
+  const { trackError } = useAppMonitoringService();
+  const { selectedStream } = useConnectorBuilderState();
+
+  // this case should never be reached, as this hook should only be called in components that are only rendered when a stream is selected
+  if (selectedStream === undefined) {
+    const err = new Error("useSelectedPageAndSlice called when no stream is selected");
+    trackError(err, { id: "useSelectedPageAndSlice.noSelectedStream" });
+    throw err;
+  }
+
+  const selectedStreamName = selectedStream.name;
+
+  const [streamToSelectedSlice, setStreamToSelectedSlice] = useState({ [selectedStreamName]: 0 });
+  const setSelectedSlice = (sliceIndex: number) => {
+    setStreamToSelectedSlice((prev) => {
+      return { ...prev, [selectedStreamName]: sliceIndex };
+    });
+  };
+  const selectedSlice = streamToSelectedSlice[selectedStreamName] ?? 0;
+
+  const [streamToSelectedPage, setStreamToSelectedPage] = useState({ [selectedStreamName]: 0 });
+  const setSelectedPage = (pageIndex: number) => {
+    setStreamToSelectedPage((prev) => {
+      return { ...prev, [selectedStreamName]: pageIndex };
+    });
+  };
+  const selectedPage = streamToSelectedPage[selectedStreamName] ?? 0;
+
+  return { selectedSlice, selectedPage, setSelectedSlice, setSelectedPage };
 };

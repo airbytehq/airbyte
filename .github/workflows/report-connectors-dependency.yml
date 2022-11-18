@@ -25,7 +25,8 @@ jobs:
             echo "comment=true" >> $GITHUB_OUTPUT
           fi
       - name: Find existing comment for connector dependencies
-        if: steps.dependency_report.outputs.comment == 'true'
+        # Always run this step because the action may need to
+        # remove a comment created from a previous commit.
         uses: peter-evans/find-comment@v2
         id: find_comment
         with:
@@ -40,3 +41,14 @@ jobs:
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
           edit-mode: "replace"
           body-file: "comment_body.md"
+      - name: Remove deprecated report in PR
+        if: steps.dependency_report.outputs.comment != 'true' && steps.find_comment.outputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.find_comment.outputs.comment-id }}
+          edit-mode: "replace"
+          body: |
+            <!--- this comment is for `report-connectors-dependency.yml` identification, do not remove -->
+            ## Affected Connector Report
+            The latest commit has removed all connector-related changes. There are no more dependent connectors for this PR.

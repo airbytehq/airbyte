@@ -7,6 +7,7 @@ package io.airbyte.config.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
+import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -46,6 +47,24 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
     final List<T> configs = decoratedPersistence.listConfigs(configType, clazz);
     for (final T config : configs) {
       validateJson(config, configType);
+    }
+    return configs;
+  }
+
+  @Override
+  public <T> ConfigWithMetadata<T> getConfigWithMetadata(final AirbyteConfig configType, final String configId, final Class<T> clazz)
+      throws ConfigNotFoundException, JsonValidationException, IOException {
+    final ConfigWithMetadata<T> config = decoratedPersistence.getConfigWithMetadata(configType, configId, clazz);
+    validateJson(config.getConfig(), configType);
+    return config;
+  }
+
+  @Override
+  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig configType, final Class<T> clazz)
+      throws JsonValidationException, IOException {
+    final List<ConfigWithMetadata<T>> configs = decoratedPersistence.listConfigsWithMetadata(configType, clazz);
+    for (final ConfigWithMetadata<T> config : configs) {
+      validateJson(config.getConfig(), configType);
     }
     return configs;
   }

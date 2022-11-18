@@ -1,6 +1,9 @@
-@use "../../../../../../scss/colors";
+@use "scss/colors";
+@use "scss/mixins";
 
 .button {
+  @include mixins.shadow;
+
   padding: 20px 28px 20px 20px;
   display: flex;
   justify-content: space-between;
@@ -10,7 +13,6 @@
   width: 100%;
   background: colors.$white;
   border-radius: 10px;
-  box-shadow: 0 2px 4px colors.$shadowColor;
   border: none;
 }
 

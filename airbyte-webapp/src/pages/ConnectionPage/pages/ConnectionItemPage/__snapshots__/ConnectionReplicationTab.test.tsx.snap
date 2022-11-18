@@ -532,6 +532,9 @@ exports[`ConnectionReplicationTab should render 1`] = `
                 >
                   <div
                     class="<removed-for-snapshot-test>"
+                  />
+                  <div
+                    class="<removed-for-snapshot-test>"
                   >
                     Namespace
                   </div>

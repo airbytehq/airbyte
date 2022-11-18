@@ -1,28 +1,57 @@
-import { useReadStream } from "services/connectorBuilder/ConnectorBuilderApiService";
-import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import React from "react";
+import { FormattedMessage } from "react-intl";
 
-import { ResultDisplay } from "./ResultDisplay";
+import { Spinner } from "components/ui/Spinner";
+import { Text } from "components/ui/Text";
+
+import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { links } from "utils/links";
+
+import { ConfigMenu } from "./ConfigMenu";
 import { StreamSelector } from "./StreamSelector";
+import { StreamTester } from "./StreamTester";
 import styles from "./StreamTestingPanel.module.scss";
-import { TestControls } from "./TestControls";
 
 export const StreamTestingPanel: React.FC<unknown> = () => {
-  const { jsonManifest, selectedStream, configJson } = useConnectorBuilderState();
-  const { data: streamReadData, refetch: readStream } = useReadStream({
-    manifest: jsonManifest,
-    stream: selectedStream.name,
-    config: configJson,
-  });
+  const { selectedStream, streams, streamListErrorMessage, yamlEditorIsMounted } = useConnectorBuilderState();
+
+  if (!yamlEditorIsMounted) {
+    return (
+      <div className={styles.loadingSpinner}>
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
-      <StreamSelector />
-      <TestControls
-        onClickTest={() => {
-          readStream();
-        }}
-      />
-      {streamReadData && <ResultDisplay streamRead={streamReadData} />}
+      <ConfigMenu className={styles.configButton} />
+      {streamListErrorMessage !== undefined && (
+        <div className={styles.listErrorDisplay}>
+          <Text>
+            <FormattedMessage id="connectorBuilder.couldNotDetectStreams" />
+          </Text>
+          <Text bold>{streamListErrorMessage}</Text>
+          <Text>
+            <FormattedMessage
+              id="connectorBuilder.ensureProperYaml"
+              values={{
+                a: (node: React.ReactNode) => (
+                  <a href={links.lowCodeYamlDescription} target="_blank" rel="noreferrer">
+                    {node}
+                  </a>
+                ),
+              }}
+            />
+          </Text>
+        </div>
+      )}
+      {streamListErrorMessage === undefined && selectedStream !== undefined && (
+        <div className={styles.selectAndTestContainer}>
+          <StreamSelector className={styles.streamSelector} streams={streams} selectedStream={selectedStream} />
+          <StreamTester selectedStream={selectedStream} />
+        </div>
+      )}
     </div>
   );
 };
