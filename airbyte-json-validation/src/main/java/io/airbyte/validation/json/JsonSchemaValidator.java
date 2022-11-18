@@ -44,8 +44,6 @@ public class JsonSchemaValidator {
   protected JsonSchemaValidator(String baseUri) {
     this.jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
 
-    // This URI just needs to point at any path in the same directory as /app/WellKnownTypes.json
-    // It's required for the JsonSchema#validate method to resolve $ref correctly.
     try {
       this.BASE_URI = new URI(baseUri);
     } catch (URISyntaxException e) {
