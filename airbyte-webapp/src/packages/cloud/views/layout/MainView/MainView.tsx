@@ -10,6 +10,7 @@ import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useExperimentSpeedyConnection } from "packages/cloud/components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
 import { SpeedyConnectionBanner } from "packages/cloud/components/experiments/SpeedyConnection/SpeedyConnectionBanner";
 import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import SideBar from "packages/cloud/views/layout/SideBar";
@@ -37,8 +38,9 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
   const alertToShow = showCreditsBanner ? "credits" : cloudWorkspace.trialExpiryTimestamp ? "trial" : undefined;
   // exp-speedy-connection
   const { isExperimentVariant } = useExperimentSpeedyConnection();
+  const { hasCorporateEmail } = useAuthService();
   const isTrial = Boolean(cloudWorkspace.trialExpiryTimestamp);
-  const showExperimentBanner = isExperimentVariant && isTrial;
+  const showExperimentBanner = isExperimentVariant && isTrial && hasCorporateEmail();
 
   const alertMessage = useMemo(() => {
     if (alertToShow === "credits") {

@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.bigquery;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.functional.CheckedBiFunction;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.record_buffer.BufferStorage;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
@@ -14,6 +13,7 @@ import io.airbyte.integrations.destination.s3.avro.AvroSerializedBuffer;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.util.concurrent.Callable;
