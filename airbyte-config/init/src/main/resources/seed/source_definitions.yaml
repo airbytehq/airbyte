@@ -305,6 +305,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/convertkit
   sourceType: api
   releaseStage: alpha
+- name: Copper
+  sourceDefinitionId: 44f3002f-2df9-4f6d-b21c-02cd3b47d0dc
+  dockerRepository: airbyte/source-copper
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/copper
+  sourceType: api
+  releaseStage: alpha
 - name: Convex
   sourceDefinitionId: c332628c-f55c-4017-8222-378cfafda9b2
   dockerRepository: airbyte/source-convex
@@ -460,7 +467,7 @@
 - name: File
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.2.30
+  dockerImageTag: 0.2.31
   documentationUrl: https://docs.airbyte.com/integrations/sources/file
   icon: file.svg
   sourceType: file
@@ -603,7 +610,7 @@
 - name: Google Sheets
   sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   dockerRepository: airbyte/source-google-sheets
-  dockerImageTag: 0.2.30
+  dockerImageTag: 0.2.31
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
   icon: google-sheets.svg
   sourceType: file
@@ -1280,6 +1287,14 @@
   icon: recharge.svg
   sourceType: api
   releaseStage: generally_available
+- name: Recreation
+  sourceDefinitionId: 25d7535d-91e0-466a-aa7f-af81578be277
+  dockerRepository: airbyte/source-recreation
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/recreation
+  icon: recreation.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Recruitee
   sourceDefinitionId: 3b046ac7-d8d3-4eb3-b122-f96b2a16d8a8
   dockerRepository: airbyte/source-recruitee
