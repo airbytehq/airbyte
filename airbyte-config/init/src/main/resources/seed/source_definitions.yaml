@@ -246,6 +246,14 @@
   icon: close.svg
   sourceType: api
   releaseStage: alpha
+- name: CoinGecko Coins
+  sourceDefinitionId: 9cdd4183-d0ba-40c3-aad3-6f46d4103974
+  dockerRepository: airbyte/source-coingecko-coins
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/coingecko-coins
+  icon: coingeckocoins.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Cockroachdb
   sourceDefinitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
   dockerRepository: airbyte/source-cockroachdb
@@ -303,6 +311,13 @@
   dockerRepository: airbyte/source-convertkit
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/convertkit
+  sourceType: api
+  releaseStage: alpha
+- name: Copper
+  sourceDefinitionId: 44f3002f-2df9-4f6d-b21c-02cd3b47d0dc
+  dockerRepository: airbyte/source-copper
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/copper
   sourceType: api
   releaseStage: alpha
 - name: Convex
@@ -603,7 +618,7 @@
 - name: Google Sheets
   sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   dockerRepository: airbyte/source-google-sheets
-  dockerImageTag: 0.2.30
+  dockerImageTag: 0.2.31
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
   icon: google-sheets.svg
   sourceType: file
@@ -1532,7 +1547,7 @@
 - name: SurveyMonkey
   sourceDefinitionId: badc5925-0485-42be-8caa-b34096cb71b5
   dockerRepository: airbyte/source-surveymonkey
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.com/integrations/sources/surveymonkey
   icon: surveymonkey.svg
   sourceType: api
