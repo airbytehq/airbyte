@@ -12,8 +12,8 @@ import styles from "./DbtCloudSettingsView.module.scss";
 
 export const DbtCloudSettingsView: React.FC = () => {
   const { mutate: submitDbtCloudIntegrationConfig, isLoading } = useSubmitDbtCloudIntegrationConfig();
-  const [hasValidationError, setHasValidationError] = useState<boolean>(false);
-  const [validationErrorMessage, setValidationErrorMessage] = useState<string | null>(null);
+  const [hasValidationError, setHasValidationError] = useState(false);
+  const [validationMessage, setValidationMessage] = useState("");
   return (
     <SettingsCard title={<FormattedMessage id="settings.integrationSettings.dbtCloudSettings" />}>
       <Content>
@@ -27,13 +27,9 @@ export const DbtCloudSettingsView: React.FC = () => {
               onError: (e) => {
                 setHasValidationError(true);
 
-                // I honestly don't know why I had to do this; for some reason, when I
-                // gave a `TError` type argument to the upstream `useMutation`, I start
-                // getting spurious "no matching overloads" errors.
-                // eslint-disable-next-line
-                setValidationErrorMessage((e as any)?.message?.replace("Internal Server Error: ", ""));
+                setValidationMessage(e.message.replace("Internal Server Error: ", ""));
               },
-              onSuccess: () => setValidationErrorMessage(null),
+              onSuccess: () => setValidationMessage(""),
             });
           }}
         >
@@ -44,7 +40,7 @@ export const DbtCloudSettingsView: React.FC = () => {
                   {...field}
                   label={<FormattedMessage id="settings.integrationSettings.dbtCloudSettings.form.serviceToken" />}
                   error={hasValidationError}
-                  message={validationErrorMessage}
+                  message={validationMessage}
                   type="text"
                 />
               )}
