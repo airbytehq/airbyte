@@ -24,13 +24,7 @@ The connector builder UI is bundled as part of the Airbyte webapp. To run it, fo
 
 
 ### Visit the connector builder
-Once your Airbyte instance has started, visit `http://localhost:8000/`. You will be redirected to a URL of the form `localhost:8000/workspaces/<UUID>/connections` where `<UUID>` is the ID automatically generated for your workspace by Airbyte. 
-
-
-![The Airbyte webapp home page](./assets/lowcode_app_landing_screen.png)
-
-
-Visit `localhost:8000/workspaces/<UUID>/connector-builder` to find the connector builder UI. It should look like this: 
+Once your Airbyte instance has started and you've moved past the initial setup screen, visit `http://localhost:8000/connector-builder`. You will be redirected to a URL of the form `localhost:8000/workspaces/<UUID>/connector-builder` where `<UUID>` is the ID automatically generated for your workspace by Airbyte. On this page you will find the connector builder UI. It should look like this: 
 
 ![The Connector Builder home page](./assets/lowcode_landing_screen.png)
 

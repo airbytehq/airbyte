@@ -18,7 +18,7 @@ We'll also be creating the following files:
 
 Let's populate the specification (`spec`) and the configuration (`secrets/config.json`) so the connector can access the access key and base currency.
 
-1. We'll add these properties to the `spec` block in the `source-exchange-rates-tutorial/source_exchange_rates_tutorial/exchange_reates_tutorial.yaml`
+1. We'll add these properties to the `spec` block in the `source-exchange-rates-tutorial/source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`
 
 ```yaml
 spec: 
