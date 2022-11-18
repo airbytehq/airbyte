@@ -1,5 +1,6 @@
 import { JSONSchema7Type } from "json-schema";
 import React from "react";
+import { FormattedMessage } from "react-intl";
 
 import { TextWithHTML } from "components/ui/TextWithHTML";
 
@@ -35,10 +36,12 @@ const Examples: React.FC<Pick<LabelInfoProps, "examples">> = ({ examples }) => {
   return (
     <div>
       {/* don't use <Text as=h4> here, because we want the default parent styling for this header */}
-      <h4 className={styles.exampleHeader}>{`Example value${examplesArray.length > 1 ? "s" : ""}`}</h4>
+      <h4 className={styles.exampleHeader}>
+        <FormattedMessage id="connector.exampleValues" values={{ count: examplesArray.length }} />
+      </h4>
       <div className={styles.exampleContainer}>
         {examplesArray.map((example) => (
-          <span className={styles.exampleItem}>{example}</span>
+          <span className={styles.exampleItem}>{String(example)}</span>
         ))}
       </div>
     </div>
