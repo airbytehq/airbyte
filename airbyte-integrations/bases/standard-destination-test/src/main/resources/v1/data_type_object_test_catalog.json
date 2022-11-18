@@ -28,6 +28,9 @@
           },
           "property_boolean": {
             "$ref": "WellKnownTypes.json#definitions/Boolean"
+          },
+          "property_binary_data": {
+            "$ref": "WellKnownTypes.json#definitions/BinaryData"
           }
         }
       }

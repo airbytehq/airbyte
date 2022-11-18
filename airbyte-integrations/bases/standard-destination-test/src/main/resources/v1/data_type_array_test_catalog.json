@@ -53,6 +53,12 @@
             "items": {
               "$ref": "WellKnownTypes.json#definitions/Boolean"
             }
+          },
+          "array_binary_data": {
+            "type": ["array"],
+            "items": {
+              "$ref": "WellKnownTypes.json#definitions/BinaryData"
+            }
           }
         }
       }
