@@ -266,3 +266,6 @@ Configure two additional env vars to the Datadog endpoint:
 ## Metrics
 Visit [OssMetricsRegistry.java](https://github.com/airbytehq/airbyte/blob/master/airbyte-metrics/metrics-lib/src/main/java/io/airbyte/metrics/lib/OssMetricsRegistry.java) to get a complete list of metrics Airbyte is sending.
 
+## Additional information
+
+A different approach to collection metrics shows the tutorial [Airbyte Monitoring with dbt and Metabase](https://airbyte.com/blog/airbyte-monitoring-with-dbt-and-metabase) by accessing Airbyte's Postgres DB. The code is open on [airbytehq/open-data-stack](https://github.com/airbytehq/open-data-stack).
