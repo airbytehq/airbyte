@@ -9,26 +9,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 
-import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -36,7 +36,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final Path RELATIVE_PATH = Path.of("integration_test/test");
-  private static final String SAMPLE_CSV_FILE = "./sample.csv";
 
   @Override
   protected String getImageName() {
@@ -44,36 +43,14 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected JsonNode getConfig() {
-    return Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString()));
+  protected JsonNode getConfig(String delimiter) throws Exception {
+    return Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString(), "delimiter", delimiter));
   }
 
   @ParameterizedTest
   @ValueSource(chars = {',',';','.',' ','\t'})
   void detectDelimiter(char input) throws IOException {
-    final Path path = Paths.get(SAMPLE_CSV_FILE);
-    // Create CSV file
-    try (
-            BufferedWriter writer = Files.newBufferedWriter(path);
 
-            CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT
-                    .withDelimiter(input)
-                    .withHeader("ID", "Instrument", "Type", "Melodic"));
-    ) {
-      csvPrinter.printRecord("1", "Violin", "String", "True");
-      csvPrinter.flush();
-      // CSV file to string
-      String content = Files.readString(path);
-
-      try {
-        assertTrue(content.contains(String.valueOf(input)));
-        System.out.println(content + "✅ Passed with '" + input + "' delimiter!");
-        Files.delete(path);
-      } catch (AssertionError e) {
-        System.out.println(content + "❌ Failed with '" + input + "' delimiter!");
-      }
-
-    }
   }
 
   // todo (cgardens) - it would be great if we could find a configuration here that failed. the
@@ -92,6 +69,25 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
   // override test that this integration cannot pass.
   @Override
   public void testCheckConnectionInvalidCredentials() {}
+
+
+  @ParameterizedTest
+  @ValueSource(strings = {",",";","."," ","\t"})
+  public void testSyncWithDelimiter(final String messagesFilename, final String catalogFilename, String delimiter)
+      throws Exception {
+    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename),
+        AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
+        catalog);
+    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
+        .collect(Collectors.toList());
+
+    final JsonNode config = getConfig(delimiter);
+    final String defaultSchema = getDefaultSchema(config);
+    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
+    retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
+  }
 
   @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,

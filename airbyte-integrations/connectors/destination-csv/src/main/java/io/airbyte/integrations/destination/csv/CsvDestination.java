@@ -134,23 +134,23 @@ public class CsvDestination extends BaseConnector implements Destination {
    * @return delimiter.
    */
   protected Character getDelimiter(final JsonNode config) {
-    try {
-      String tempDelimiter = config.get(DELIMITER_FIELD).asText();
       Character delimiter;
-      if(tempDelimiter.contains("\\t")) {
+      JsonNode tempDelimiter = config.get(DELIMITER_FIELD);
+      if (tempDelimiter == null) {
+        delimiter = ',';
+        return delimiter;
+      }
+      String stringDelimiter = tempDelimiter.asText();
+      if(stringDelimiter.contains("\\t")) {
         delimiter = '\t';
-      } else if(tempDelimiter.contains("' '")) {
+      } else if(stringDelimiter.contains("' '")) {
         delimiter = ' ';
       } else {
-        delimiter = tempDelimiter.charAt(tempDelimiter.length() - 1);
+        delimiter = stringDelimiter.charAt(stringDelimiter.length() - 1);
       }
       Preconditions.checkNotNull(delimiter);
 
       return delimiter;
-    }
-    catch(NullPointerException e) {
-      return null;
-		}
   }
 
   /**
