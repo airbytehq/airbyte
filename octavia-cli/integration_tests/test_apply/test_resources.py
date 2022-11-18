@@ -8,6 +8,7 @@ import pytest
 pytestmark = pytest.mark.integration
 
 
+@pytest.mark.xdist_group(name="test_connection_lifecycle")
 def test_source_lifecycle(source, workspace_id):
     assert not source.was_created
     source.create()
@@ -22,6 +23,7 @@ def test_source_lifecycle(source, workspace_id):
     assert source.catalog["streams"][0]["config"]["alias_name"] == "pokemon"
 
 
+@pytest.mark.xdist_group(name="test_connection_lifecycle")
 def test_destination_lifecycle(destination, workspace_id):
     assert not destination.was_created
     destination.create()
@@ -35,6 +37,7 @@ def test_destination_lifecycle(destination, workspace_id):
     assert not destination.get_diff_with_remote_resource()
 
 
+@pytest.mark.xdist_group(name="test_connection_lifecycle")
 def test_connection_lifecycle(source, destination, connection, workspace_id):
     assert source.was_created
     assert destination.was_created
@@ -48,6 +51,7 @@ def test_connection_lifecycle(source, destination, connection, workspace_id):
     connection.update()
 
 
+@pytest.mark.xdist_group(name="test_connection_lifecycle")
 def test_connection_lifecycle_with_normalization(source, destination, connection_with_normalization, workspace_id):
     assert source.was_created
     assert destination.was_created

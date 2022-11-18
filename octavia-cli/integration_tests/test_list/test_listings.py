@@ -9,6 +9,7 @@ from octavia_cli.list.listings import Connections, DestinationConnectorsDefiniti
 pytestmark = pytest.mark.integration
 
 
+@pytest.mark.xdist_group(name="test_list_workspace_resource")
 @pytest.mark.parametrize("ConnectorsDefinitionListing", [SourceConnectorsDefinitions, DestinationConnectorsDefinitions])
 def test_list_connectors(api_client, ConnectorsDefinitionListing):
     connector_definitions = ConnectorsDefinitionListing(api_client)
@@ -18,6 +19,7 @@ def test_list_connectors(api_client, ConnectorsDefinitionListing):
     assert str(listing)
 
 
+@pytest.mark.xdist_group(name="test_list_workspace_resource")
 @pytest.mark.parametrize("WorkspaceListing", [Sources, Destinations, Connections])
 def test_list_workspace_resource(api_client, source, destination, connection, workspace_id, WorkspaceListing):
     assert source.was_created
