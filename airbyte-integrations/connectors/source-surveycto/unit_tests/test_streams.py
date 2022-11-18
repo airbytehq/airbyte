@@ -11,17 +11,21 @@ from source_surveycto.helpers import Helpers
 def config_fixture():
     return {'server_name': 'server_name', 'form_id': 'form_id', 'start_date': 'Jan 09, 2022 00:00:00 AM', 'password': 'password', 'username': 'username'}
 
+
 @pytest.fixture
 def form_id():
     return "baseline_ig"
+
 
 @pytest.fixture
 def auth():
     return MagicMock()
 
+
 @pytest.fixture
 def json_response():
     return {"records": [{"id": "abc", "fields": {"name": "test"}}]}
+
 
 @pytest.fixture
 def expected_json_schema():

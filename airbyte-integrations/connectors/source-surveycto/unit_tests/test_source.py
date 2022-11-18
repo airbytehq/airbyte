@@ -11,12 +11,14 @@ from source_surveycto.helpers import Helpers
 def config_fixture():
     return {'server_name': 'server_name', 'form_id': 'form_id', 'start_date': 'Jan 09, 2022 00:00:00 AM', 'password': 'password', 'username': 'username'}
 
+
 def test_spec():
     source = SourceSurveycto()
     logger_mock = MagicMock()
     spec = source.spec(logger_mock)
   
     assert source.check_connection(spec, ConnectorSpecification)
+
 
 @patch("requests.get")
 def test_check_connection(config):
