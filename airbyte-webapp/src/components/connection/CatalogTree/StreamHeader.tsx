@@ -122,7 +122,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             checked={stream.config?.selected}
             onChange={onSelectStream}
             disabled={disabled}
-            data-testid={`${stream.stream?.name}-stream-sync-checkbox`}
+            data-testid={`${stream.stream?.name}-stream-sync-switch`}
           />
         </HeaderCell>
         <HeaderCell ellipsis title={stream.stream?.namespace || ""}>
