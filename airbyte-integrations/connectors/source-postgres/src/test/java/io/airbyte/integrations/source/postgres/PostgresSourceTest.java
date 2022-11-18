@@ -540,7 +540,8 @@ class PostgresSourceTest {
         JdbcUtils.HOST_KEY, "localhost",
         JdbcUtils.PORT_KEY, 1111,
         JdbcUtils.USERNAME_KEY, "user",
-        JdbcUtils.DATABASE_KEY, "db/foo"));
+        JdbcUtils.DATABASE_KEY, "db/foo",
+        JdbcUtils.SSL_KEY, "false"));
   }
 
 }
