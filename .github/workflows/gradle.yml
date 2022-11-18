@@ -905,8 +905,6 @@ jobs:
     env:
       HOME: /actions-runner/_work/airbyte/airbyte
       GITHUB_WORKSPACE: /actions-runner/_work/airbyte/airbyte
-    # github:
-    #   workspace: /home/runner
 
     steps:
       - name: Fix EC-2 Runner
