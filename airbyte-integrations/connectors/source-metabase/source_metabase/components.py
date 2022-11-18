@@ -52,16 +52,15 @@ class MetabaseSessionTokenAuthenticator(AbstractHeaderAuthenticator, Declarative
 
     @property
     def token(self) -> str:
-        if not self._session_token.eval(self.config):
-            if self._password.eval(self.config) and self._username.eval(self.config):
-                username = self._username.eval(self.config)
-                password = self._password.eval(self.config)
-                api_url = f"{self._api_url.eval(self.config)}session"
+        if self._session_token.eval(self.config):
+            if self.is_valid_session_token():
+                return self._session_token.eval(self.config)
+        if self._password.eval(self.config) and self._username.eval(self.config):
+            username = self._username.eval(self.config)
+            password = self._password.eval(self.config)
+            api_url = f"{self._api_url.eval(self.config)}session"
 
-                return get_new_session_token(api_url, username, password)
-
-        if self.is_valid_session_token():
-            return self._session_token.eval(self.config)
+            return get_new_session_token(api_url, username, password)
 
         raise ConnectionError("Invalid credentials: session token is not valid or provide username and password")
 
