@@ -24,10 +24,8 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Optional;
-import java.util.Scanner;
-import java.util.Set;
+import java.sql.SQLException;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -201,7 +199,13 @@ public class IntegrationRunner {
   }
 
   private boolean isConfigError(final Throwable e) {
-    return e instanceof ConfigErrorException || e instanceof ConnectionErrorException;
+    return e instanceof ConfigErrorException || e instanceof ConnectionErrorException || isRecoveryConnectionException(e);
+  }
+
+  private boolean isRecoveryConnectionException(Throwable e) {
+    return e instanceof SQLException && e.getMessage()
+            .toLowerCase(Locale.ROOT)
+            .contains("terminating connection due to conflict with recovery");
   }
 
   private String getDisplayMessage(final Throwable e) {
