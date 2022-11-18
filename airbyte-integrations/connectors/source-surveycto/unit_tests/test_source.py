@@ -16,7 +16,6 @@ def test_spec():
     source = SourceSurveycto()
     logger_mock = MagicMock()
     spec = source.spec(logger_mock)
-  
     assert source.check_connection(spec, ConnectorSpecification)
 
 
