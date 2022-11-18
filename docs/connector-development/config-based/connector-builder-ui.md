@@ -1,6 +1,6 @@
 # Connector Builder UI
 
-The connector builder UI provides an ergonomic iteration interface on top of the [low-code YAML format](../understanding-the-yaml-file/yaml-overview). We recommend using it to iterate on your YAML connectors. 
+The connector builder UI provides an ergonomic iteration interface on top of the [low-code YAML format](understanding-the-yaml-file/yaml-overview). We recommend using it to iterate on your YAML connectors. 
 
 ## Getting started
 The high level flow for using the connector builder is as follows: 
@@ -33,7 +33,7 @@ You can now iterate on your connector's YAML manifest. See the [components](#com
 ### Exporting the YAML
 Once you're done iterating on your YAML in the UI, you'll need to export it to your local filesystem into a connector module. 
 
-If you haven't already, create a low-code connector module using the connector generator (see [this YAML tutorial for an example](./tutorial/1-create-source.)) using the name you'd like to use for your connector. For this section, let's assume our connector is called `exchange-rates`. After creating the connector, overwrite the contents of `airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/exchange_rates.yaml` with the YAML you created in the UI. 
+If you haven't already, create a low-code connector module using the connector generator (see [this YAML tutorial for an example](tutorial/1-create-source.md)) using the name you'd like to use for your connector. For this section, let's assume our connector is called `exchange-rates`. After creating the connector, overwrite the contents of `airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/exchange_rates.yaml` with the YAML you created in the UI. 
 
 
 <!-- TODO remove this when we bundle schema specification into the YAML -->
@@ -50,7 +50,7 @@ Once you've built the connector image, [follow these instructions](../../integra
 
 ## Connector Builder Components
 
-The UI contains two main components: the text editor where you can edit your YAML (left) according to the [YAML lowcode specification](../understanding-the-yaml-file/yaml-overview), and the testing panel (right) where you can get feedback on how your connector works as a result of your YAML manifest.
+The UI contains two main components: the text editor where you can edit your YAML (left) according to the [YAML lowcode specification](./understanding-the-yaml-file/yaml-overview), and the testing panel (right) where you can get feedback on how your connector works as a result of your YAML manifest.
 
 ![Annotated Test Pane](./assets/lowcode_annotated_test_pane.png)
 
