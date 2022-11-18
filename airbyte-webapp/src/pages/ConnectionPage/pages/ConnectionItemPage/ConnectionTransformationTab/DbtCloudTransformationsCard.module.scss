@@ -46,7 +46,7 @@
 
 .jobListItem {
   margin-top: variables.$spacing-md;
-  padding: 18px;
+  padding: variables.$spacing-md variables.$spacing-xl;
   width: 100%;
   display: flex;
   justify-content: space-between;
@@ -70,7 +70,7 @@
   justify-content: space-between;
   margin-left: auto;
   align-items: center;
-  flex: 1 1 66%;
+  flex: 0 1 auto;
 }
 
 .jobListItemIdField {
@@ -91,5 +91,13 @@
     height: 21px;
     width: 21px;
     color: colors.$dark-blue-50;
+    transition: color variables.$transition;
+  }
+
+  &:hover,
+  &:focus-visible {
+    svg {
+      color: colors.$dark-blue-100;
+    }
   }
 }
