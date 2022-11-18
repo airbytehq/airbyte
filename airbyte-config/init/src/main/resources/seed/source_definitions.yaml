@@ -516,6 +516,12 @@
   icon: freshservice.svg
   sourceType: api
   releaseStage: alpha
+- name: Genesys
+  sourceDefinitionId: 5ea4459a-8f1a-452a-830f-a65c38cc438d
+  dockerRepository: airbyte/source-genesys
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/genesys
+  icon: genesys.svg
 - name: GetLago
   sourceDefinitionId: e1a3866b-d3b2-43b6-b6d7-8c1ee4d7f53f
   dockerRepository: airbyte/source-getlago
