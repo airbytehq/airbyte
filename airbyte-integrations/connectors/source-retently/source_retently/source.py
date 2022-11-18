@@ -105,7 +105,8 @@ class RetentlyStream(HttpStream):
     ) -> MutableMapping[str, Any]:
         next_page = next_page_token or {}
         return {
-            "limit": 1000,
+            # The companies endpoint only supports limit 100
+            "limit": 1000 if self.json_path != "companies" else 100,
             **next_page,
         }
 
