@@ -5,6 +5,7 @@
 package io.airbyte.validation.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.networknt.schema.JsonMetaSchema;
 import com.networknt.schema.JsonSchema;
@@ -34,12 +35,19 @@ public class JsonSchemaValidator {
   private final URI BASE_URI;
 
   public JsonSchemaValidator() {
+    // This URI just needs to point at any path in the same directory as /app/WellKnownTypes.json
+    // It's required for the JsonSchema#validate method to resolve $ref correctly.
+    this("file:///app/nonexistent_file.json");
+  }
+
+  @VisibleForTesting
+  protected JsonSchemaValidator(String baseUri) {
     this.jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
 
     // This URI just needs to point at any path in the same directory as /app/WellKnownTypes.json
     // It's required for the JsonSchema#validate method to resolve $ref correctly.
     try {
-      this.BASE_URI = new URI("file:///app/nonexistent_file.json");
+      this.BASE_URI = new URI(baseUri);
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
     }
