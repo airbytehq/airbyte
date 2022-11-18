@@ -105,7 +105,7 @@ class JsonSchemaValidatorTest {
   }
 
   @Test
-  public void testResolveReferences() throws IOException {
+  void testResolveReferences() throws IOException {
     String referencableSchemas = """
                                  {
                                    "definitions": {
