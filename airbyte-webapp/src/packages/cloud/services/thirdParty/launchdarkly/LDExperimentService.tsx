@@ -8,7 +8,8 @@ import { LoadingPage } from "components";
 
 import { useConfig } from "config";
 import { useI18nContext } from "core/i18n";
-import { useAnalytics } from "hooks/services/Analytics";
+import { useAnalyticsService } from "hooks/services/Analytics";
+import { useAppMonitoringService, AppActionCodes } from "hooks/services/AppMonitoringService";
 import { ExperimentProvider, ExperimentService } from "hooks/services/Experiment";
 import type { Experiments } from "hooks/services/Experiment/experiments";
 import { FeatureSet, useFeatureService } from "hooks/services/Feature";
@@ -20,7 +21,7 @@ import { rejectAfter } from "utils/promises";
  * The maximum time in milliseconds we'll wait for LaunchDarkly to finish initialization,
  * before running disabling it.
  */
-const INITIALIZATION_TIMEOUT = 1500;
+const INITIALIZATION_TIMEOUT = 5000;
 
 const FEATURE_FLAG_EXPERIMENT = "featureService.overwrites";
 
@@ -46,9 +47,10 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
   const ldClient = useRef<LDClient.LDClient>();
   const [state, setState] = useState<LDInitState>("initializing");
   const { user } = useAuthService();
-  const { addContextProps: addAnalyticsContext } = useAnalytics();
+  const analyticsService = useAnalyticsService();
   const { locale } = useIntl();
   const { setMessageOverwrite } = useI18nContext();
+  const { trackAction } = useAppMonitoringService();
 
   /**
    * This function checks for all experiments to find the ones beginning with "i18n_{locale}_"
@@ -87,13 +89,13 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
     // Wait for either LaunchDarkly to initialize or a specific timeout to pass first
     Promise.race([
       ldClient.current.waitForInitialization(),
-      rejectAfter(INITIALIZATION_TIMEOUT, "Timed out waiting for LaunchDarkly to initialize"),
+      rejectAfter(INITIALIZATION_TIMEOUT, AppActionCodes.LD_LOAD_TIMEOUT),
     ])
       .then(() => {
         // The LaunchDarkly promise resolved before the timeout, so we're good to use LD.
         setState("initialized");
         // Make sure enabled experiments are added to each analytics event
-        addAnalyticsContext({ experiments: JSON.stringify(ldClient.current?.allFlags()) });
+        analyticsService.setContext({ experiments: JSON.stringify(ldClient.current?.allFlags()) });
         // Check for overwritten i18n messages
         updateI18nMessages();
         updateFeatureOverwrites(ldClient.current?.variation(FEATURE_FLAG_EXPERIMENT, ""));
@@ -103,6 +105,9 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
         // our timeout promise resolves first, we're going to show an error and assume the service
         // failed to initialize, i.e. we'll run without it.
         console.warn(`Failed to initialize LaunchDarkly service with reason: ${String(reason)}`);
+        if (reason === AppActionCodes.LD_LOAD_TIMEOUT) {
+          trackAction(AppActionCodes.LD_LOAD_TIMEOUT);
+        }
         setState("failed");
       });
   }
@@ -118,7 +123,7 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
   useEffectOnce(() => {
     const onFeatureFlagsChanged = () => {
       // Update analytics context whenever a flag changes
-      addAnalyticsContext({ experiments: JSON.stringify(ldClient.current?.allFlags()) });
+      analyticsService.setContext({ experiments: JSON.stringify(ldClient.current?.allFlags()) });
       // Check for overwritten i18n messages
       updateI18nMessages();
     };

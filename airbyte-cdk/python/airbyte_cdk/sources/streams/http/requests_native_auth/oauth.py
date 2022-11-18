@@ -25,6 +25,7 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         access_token_name: str = "access_token",
         expires_in_name: str = "expires_in",
         refresh_request_body: Mapping[str, Any] = None,
+        grant_type: str = "refresh_token",
     ):
         self._token_refresh_endpoint = token_refresh_endpoint
         self._client_secret = client_secret
@@ -34,6 +35,7 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         self._access_token_name = access_token_name
         self._expires_in_name = expires_in_name
         self._refresh_request_body = refresh_request_body
+        self._grant_type = grant_type
 
         self._token_expiry_date = token_expiry_date or pendulum.now().subtract(days=1)
         self._access_token = None
@@ -61,6 +63,9 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
 
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         return self._refresh_request_body
+
+    def get_grant_type(self) -> str:
+        return self._grant_type
 
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return self._token_expiry_date
