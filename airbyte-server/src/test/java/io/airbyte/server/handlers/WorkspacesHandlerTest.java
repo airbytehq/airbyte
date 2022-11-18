@@ -58,13 +58,16 @@ import org.mockito.ArgumentCaptor;
 
 class WorkspacesHandlerTest {
 
-  public static final String FAILURE_NOTIFICATION_WEBHOOK = "http://airbyte.notifications/failure";
-  public static final String NEW_WORKSPACE = "new workspace";
-  public static final String TEST_NAME = "test-name";
+  private static final String FAILURE_NOTIFICATION_WEBHOOK = "http://airbyte.notifications/failure";
+  private static final String NEW_WORKSPACE = "new workspace";
+  private static final String TEST_NAME = "test-name";
+
+  private static final String TEST_AUTH_TOKEN = "test-auth-token";
   private static final UUID WEBHOOK_CONFIG_ID = UUID.randomUUID();
   private static final JsonNode PERSISTED_WEBHOOK_CONFIGS = Jsons.deserialize(
       String.format("{\"webhookConfigs\": [{\"id\": \"%s\", \"name\": \"%s\", \"authToken\": {\"_secret\": \"a-secret_v1\"}}]}",
           WEBHOOK_CONFIG_ID, TEST_NAME));
+  public static final String UPDATED = "updated";
   private ConfigRepository configRepository;
   private SecretsRepositoryWriter secretsRepositoryWriter;
   private ConnectionsHandler connectionsHandler;
@@ -149,7 +152,7 @@ class WorkspacesHandlerTest {
         .securityUpdates(false)
         .notifications(List.of(generateApiNotification()))
         .defaultGeography(GEOGRAPHY_US)
-        .webhookConfigs(List.of(new WebhookConfigWrite().name(TEST_NAME).authToken("test-auth-token")));
+        .webhookConfigs(List.of(new WebhookConfigWrite().name(TEST_NAME).authToken(TEST_AUTH_TOKEN)));
 
     final WorkspaceRead actualRead = workspacesHandler.createWorkspace(workspaceCreate);
     final WorkspaceRead expectedRead = new WorkspaceRead()
@@ -359,7 +362,7 @@ class WorkspacesHandlerTest {
   @Test
   void testUpdateWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
     final io.airbyte.api.model.generated.Notification apiNotification = generateApiNotification();
-    apiNotification.getSlackConfiguration().webhook("updated");
+    apiNotification.getSlackConfiguration().webhook(UPDATED);
     final WorkspaceUpdate workspaceUpdate = new WorkspaceUpdate()
         .workspaceId(workspace.getWorkspaceId())
         .anonymousDataCollection(true)
@@ -372,7 +375,7 @@ class WorkspacesHandlerTest {
         .webhookConfigs(List.of(new WebhookConfigWrite().name(TEST_NAME).authToken("test-auth-token")));
 
     final Notification expectedNotification = generateNotification();
-    expectedNotification.getSlackConfiguration().withWebhook("updated");
+    expectedNotification.getSlackConfiguration().withWebhook(UPDATED);
     final StandardWorkspace expectedWorkspace = new StandardWorkspace()
         .withWorkspaceId(workspace.getWorkspaceId())
         .withCustomerId(workspace.getCustomerId())
@@ -398,7 +401,7 @@ class WorkspacesHandlerTest {
     final WorkspaceRead actualWorkspaceRead = workspacesHandler.updateWorkspace(workspaceUpdate);
 
     final io.airbyte.api.model.generated.Notification expectedNotificationRead = generateApiNotification();
-    expectedNotificationRead.getSlackConfiguration().webhook("updated");
+    expectedNotificationRead.getSlackConfiguration().webhook(UPDATED);
     final WorkspaceRead expectedWorkspaceRead = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
@@ -417,6 +420,43 @@ class WorkspacesHandlerTest {
     verify(configRepository).writeStandardWorkspaceNoSecrets(expectedWorkspace);
 
     assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
+  }
+
+  @Test
+  void testUpdateWorkspaceWithoutWebhookConfigs() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final io.airbyte.api.model.generated.Notification apiNotification = generateApiNotification();
+    apiNotification.getSlackConfiguration().webhook(UPDATED);
+    final WorkspaceUpdate workspaceUpdate = new WorkspaceUpdate()
+        .workspaceId(workspace.getWorkspaceId())
+        .anonymousDataCollection(false);
+
+    final Notification expectedNotification = generateNotification();
+    expectedNotification.getSlackConfiguration().withWebhook(UPDATED);
+    final StandardWorkspace expectedWorkspace = new StandardWorkspace()
+        .withWorkspaceId(workspace.getWorkspaceId())
+        .withCustomerId(workspace.getCustomerId())
+        .withEmail(TEST_EMAIL)
+        .withName(TEST_WORKSPACE_NAME)
+        .withSlug(TEST_WORKSPACE_SLUG)
+        .withAnonymousDataCollection(true)
+        .withSecurityUpdates(false)
+        .withNews(false)
+        .withInitialSetupComplete(true)
+        .withDisplaySetupWizard(false)
+        .withTombstone(false)
+        .withNotifications(List.of(expectedNotification))
+        .withDefaultGeography(Geography.US)
+        .withWebhookOperationConfigs(PERSISTED_WEBHOOK_CONFIGS);
+
+    when(uuidSupplier.get()).thenReturn(WEBHOOK_CONFIG_ID);
+
+    when(configRepository.getStandardWorkspaceNoSecrets(workspace.getWorkspaceId(), false))
+        .thenReturn(expectedWorkspace)
+        .thenReturn(expectedWorkspace.withAnonymousDataCollection(false));
+
+    workspacesHandler.updateWorkspace(workspaceUpdate);
+
+    verify(configRepository).writeStandardWorkspaceNoSecrets(expectedWorkspace);
   }
 
   @Test
