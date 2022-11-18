@@ -22,7 +22,6 @@ import io.airbyte.db.mongodb.MongoUtils;
 import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -31,6 +30,7 @@ import io.airbyte.integrations.destination.mongodb.exception.MongodbDatabaseExce
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;

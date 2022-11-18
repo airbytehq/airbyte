@@ -9,7 +9,6 @@ import static io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeC
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.CheckAndRemoveRecordWriter;
@@ -20,6 +19,7 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.ArrayList;
 import java.util.HashMap;
