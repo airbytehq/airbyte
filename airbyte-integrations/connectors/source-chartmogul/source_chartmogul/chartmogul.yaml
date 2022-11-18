@@ -69,8 +69,8 @@ definitions:
         $ref: "*ref(definitions.requester)"
         request_options_provider:
           request_body_data:
-            start-date: "{{ config['start_date'] }}"
-            end-date: "{{ now_utc() }}"
+            start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+            end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
             interval: "{{ config['interval'] }}"
       paginator:
         type: NoPagination
