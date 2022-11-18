@@ -1,6 +1,6 @@
 import { Field, FieldProps, Form, Formik } from "formik";
 import React, { useState } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
 import { LabeledInput } from "components/LabeledInput";
 import { Button } from "components/ui/Button";
@@ -11,6 +11,7 @@ import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponen
 import styles from "./DbtCloudSettingsView.module.scss";
 
 export const DbtCloudSettingsView: React.FC = () => {
+  const { formatMessage } = useIntl();
   const { mutate: submitDbtCloudIntegrationConfig, isLoading } = useSubmitDbtCloudIntegrationConfig();
   const [hasValidationError, setHasValidationError] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
@@ -21,7 +22,7 @@ export const DbtCloudSettingsView: React.FC = () => {
           initialValues={{
             serviceToken: "",
           }}
-          onSubmit={({ serviceToken }) => {
+          onSubmit={({ serviceToken }, { resetForm }) => {
             setHasValidationError(false);
             return submitDbtCloudIntegrationConfig(serviceToken, {
               onError: (e) => {
@@ -29,7 +30,12 @@ export const DbtCloudSettingsView: React.FC = () => {
 
                 setValidationMessage(e.message.replace("Internal Server Error: ", ""));
               },
-              onSuccess: () => setValidationMessage(""),
+              onSuccess: () => {
+                setValidationMessage(
+                  formatMessage({ id: "settings.integrationSettings.dbtCloudSettings.form.success" })
+                );
+                resetForm();
+              },
             });
           }}
         >
