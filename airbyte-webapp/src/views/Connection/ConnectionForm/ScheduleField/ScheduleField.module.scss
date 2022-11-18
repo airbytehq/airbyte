@@ -1,3 +1,6 @@
+@use "scss/colors";
+@use "scss/variables";
+
 .flexRow {
   display: flex;
   flex-direction: row;
@@ -26,4 +29,9 @@
 .cronZonesDropdown {
   margin-left: 10px;
   min-width: 150px;
+}
+
+.errorMessage {
+  color: colors.$red;
+  margin-top: variables.$spacing-sm;
 }

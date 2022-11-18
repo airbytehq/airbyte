@@ -78,29 +78,34 @@ public class ConnectionsHandler {
   private final WorkspaceHelper workspaceHelper;
   private final TrackingClient trackingClient;
   private final EventRunner eventRunner;
+  private final ConnectionHelper connectionHelper;
 
   @VisibleForTesting
   ConnectionsHandler(final ConfigRepository configRepository,
                      final Supplier<UUID> uuidGenerator,
                      final WorkspaceHelper workspaceHelper,
                      final TrackingClient trackingClient,
-                     final EventRunner eventRunner) {
+                     final EventRunner eventRunner,
+                     final ConnectionHelper connectionHelper) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
     this.workspaceHelper = workspaceHelper;
     this.trackingClient = trackingClient;
     this.eventRunner = eventRunner;
+    this.connectionHelper = connectionHelper;
   }
 
   public ConnectionsHandler(final ConfigRepository configRepository,
                             final WorkspaceHelper workspaceHelper,
                             final TrackingClient trackingClient,
-                            final EventRunner eventRunner) {
+                            final EventRunner eventRunner,
+                            final ConnectionHelper connectionHelper) {
     this(configRepository,
         UUID::randomUUID,
         workspaceHelper,
         trackingClient,
-        eventRunner);
+        eventRunner,
+        connectionHelper);
 
   }
 
@@ -339,6 +344,14 @@ public class ConnectionsHandler {
     if (patch.getResourceRequirements() != null) {
       sync.setResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(patch.getResourceRequirements()));
     }
+
+    if (patch.getGeography() != null) {
+      sync.setGeography(ApiPojoConverters.toPersistenceGeography(patch.getGeography()));
+    }
+
+    if (patch.getBreakingChange() != null) {
+      sync.setBreakingChange(patch.getBreakingChange());
+    }
   }
 
   private void validateConnectionPatch(final WorkspaceHelper workspaceHelper, final StandardSync persistedSync, final ConnectionUpdate patch) {
@@ -537,8 +550,9 @@ public class ConnectionsHandler {
     return (destinationReadFromSearch == null || destinationReadFromSearch.equals(destinationRead));
   }
 
-  public void deleteConnection(final UUID connectionId) {
-    eventRunner.deleteConnection(connectionId);
+  public void deleteConnection(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    connectionHelper.deleteConnection(connectionId);
+    eventRunner.forceDeleteConnection(connectionId);
   }
 
   private ConnectionRead buildConnectionRead(final UUID connectionId)

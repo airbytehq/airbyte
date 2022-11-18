@@ -9,44 +9,63 @@
 // - custom domains aren't yet supported
 
 import isEmpty from "lodash/isEmpty";
-import { useMutation } from "react-query";
+import { useMutation, useQuery } from "react-query";
 
-import { OperatorType, WebBackendConnectionRead, OperationRead } from "core/request/AirbyteClient";
+import { OperatorType, WebBackendConnectionRead, OperationRead, WebhookConfigRead } from "core/request/AirbyteClient";
 import { useWebConnectionService } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import {
+  DbtCloudJobInfo,
+  webBackendGetAvailableDbtJobsForWorkspace,
+  WorkspaceGetDbtJobsResponse,
+} from "packages/cloud/lib/domain/dbtCloud/api";
+import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useUpdateWorkspace } from "services/workspaces/WorkspacesService";
+
+import { useConfig } from "./config";
 
 export interface DbtCloudJob {
   account: string;
   job: string;
   operationId?: string;
+  jobName?: string;
 }
+export type { DbtCloudJobInfo } from "packages/cloud/lib/domain/dbtCloud/api";
 const dbtCloudDomain = "https://cloud.getdbt.com";
 const webhookConfigName = "dbt cloud";
 const executionBody = `{"cause": "airbyte"}`;
 const jobName = (t: DbtCloudJob) => `${t.account}/${t.job}`;
 
-const toDbtCloudJob = (operation: OperationRead): DbtCloudJob => {
-  const { operationId } = operation;
-  const { executionUrl } = operation.operatorConfiguration.webhook || {};
+const isDbtWebhookConfig = (webhookConfig: WebhookConfigRead) => !!webhookConfig.name?.includes("dbt");
 
-  const matches = (executionUrl || "").match(/\/accounts\/([^/]+)\/jobs\/([^]+)\/run\//);
+export const toDbtCloudJob = (operationOrCloudJob: OperationRead | DbtCloudJobInfo): DbtCloudJob => {
+  if ("operationId" in operationOrCloudJob) {
+    const { operationId } = operationOrCloudJob;
+    const { executionUrl } = operationOrCloudJob.operatorConfiguration.webhook || {};
 
-  if (!matches) {
-    throw new Error(`Cannot extract dbt cloud job params from executionUrl ${executionUrl}`);
+    const matches = (executionUrl || "").match(/\/accounts\/([^/]+)\/jobs\/([^]+)\/run/);
+    if (!matches) {
+      throw new Error(`Cannot extract dbt cloud job params from executionUrl ${executionUrl}`);
+    } else {
+      const [, account, job] = matches;
+
+      return {
+        account,
+        job,
+        operationId,
+      };
+    }
   } else {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_fullUrl, account, job] = matches;
-
-    return {
-      account,
-      job,
-      operationId,
-    };
+    const { accountId, jobId, jobName } = operationOrCloudJob;
+    return { account: `${accountId}`, job: `${jobId}`, jobName };
   }
 };
+
 const isDbtCloudJob = (operation: OperationRead): boolean =>
   operation.operatorConfiguration.operatorType === OperatorType.webhook;
+
+export const isSameJob = (remoteJob: DbtCloudJobInfo, savedJob: DbtCloudJob): boolean =>
+  savedJob.account === `${remoteJob.accountId}` && savedJob.job === `${remoteJob.jobId}`;
 
 export const useSubmitDbtCloudIntegrationConfig = () => {
   const { workspaceId } = useCurrentWorkspace();
@@ -70,44 +89,72 @@ export const useDbtIntegration = (connection: WebBackendConnectionRead) => {
   const { workspaceId } = workspace;
   const connectionService = useWebConnectionService();
 
-  // TODO extract shared isDbtWebhookConfig predicate
-  const hasDbtIntegration = !isEmpty(workspace.webhookConfigs?.filter((config) => /dbt/.test(config.name || "")));
-  const webhookConfigId = workspace.webhookConfigs?.find((config) => /dbt/.test(config.name || ""))?.id;
+  const hasDbtIntegration = !isEmpty(workspace.webhookConfigs?.filter(isDbtWebhookConfig));
+  const webhookConfigId = workspace.webhookConfigs?.find((config) => isDbtWebhookConfig(config))?.id;
 
   const dbtCloudJobs = [...(connection.operations?.filter((operation) => isDbtCloudJob(operation)) || [])].map(
     toDbtCloudJob
   );
   const otherOperations = [...(connection.operations?.filter((operation) => !isDbtCloudJob(operation)) || [])];
 
-  const saveJobs = (jobs: DbtCloudJob[]) => {
-    // TODO dynamically use the workspace's configured dbt cloud domain when it gets returned by backend
-    const urlForJob = (job: DbtCloudJob) => `${dbtCloudDomain}/api/v2/accounts/${job.account}/jobs/${job.job}/run/`;
+  const { mutateAsync, isLoading } = useMutation({
+    mutationFn: (jobs: DbtCloudJob[]) => {
+      // TODO dynamically use the workspace's configured dbt cloud domain when it gets returned by backend
+      const urlForJob = (job: DbtCloudJob) => `${dbtCloudDomain}/api/v2/accounts/${job.account}/jobs/${job.job}/run/`;
 
-    return connectionService.update({
-      connectionId: connection.connectionId,
-      operations: [
-        ...otherOperations,
-        ...jobs.map((job) => ({
-          workspaceId,
-          ...(job.operationId ? { operationId: job.operationId } : {}),
-          name: jobName(job),
-          operatorConfiguration: {
-            operatorType: OperatorType.webhook,
-            webhook: {
-              executionUrl: urlForJob(job),
-              // if `hasDbtIntegration` is true, webhookConfigId is guaranteed to exist
-              ...(webhookConfigId ? { webhookConfigId } : {}),
-              executionBody,
+      return connectionService.update({
+        connectionId: connection.connectionId,
+        operations: [
+          ...otherOperations,
+          ...jobs.map((job) => ({
+            workspaceId,
+            ...(job.operationId ? { operationId: job.operationId } : {}),
+            name: jobName(job),
+            operatorConfiguration: {
+              operatorType: OperatorType.webhook,
+              webhook: {
+                executionUrl: urlForJob(job),
+                // if `hasDbtIntegration` is true, webhookConfigId is guaranteed to exist
+                ...(webhookConfigId ? { webhookConfigId } : {}),
+                executionBody,
+              },
             },
-          },
-        })),
-      ],
-    });
-  };
+          })),
+        ],
+      });
+    },
+  });
 
   return {
     hasDbtIntegration,
     dbtCloudJobs,
-    saveJobs,
+    saveJobs: mutateAsync,
+    isSaving: isLoading,
   };
+};
+
+export const useAvailableDbtJobs = () => {
+  const { cloudApiUrl } = useConfig();
+  const config = { apiUrl: cloudApiUrl };
+  const middlewares = useDefaultRequestMiddlewares();
+  const requestOptions = { config, middlewares };
+  const workspace = useCurrentWorkspace();
+  const { workspaceId } = workspace;
+  const dbtConfigId = workspace.webhookConfigs?.find((config) => config.name?.includes("dbt"))?.id;
+
+  if (!dbtConfigId) {
+    throw new Error("cannot request available dbt jobs for a workspace with no dbt cloud integration configured");
+  }
+
+  const results = useQuery(
+    ["dbtCloud", dbtConfigId, "list"],
+    () => webBackendGetAvailableDbtJobsForWorkspace({ workspaceId, dbtConfigId }, requestOptions),
+    {
+      suspense: true,
+    }
+  );
+
+  // casting type to remove `| undefined`, since `suspense: true` will ensure the value
+  // is, in fact, available
+  return (results.data as WorkspaceGetDbtJobsResponse).availableDbtJobs;
 };

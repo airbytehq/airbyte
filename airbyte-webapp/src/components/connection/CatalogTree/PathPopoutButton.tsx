@@ -1,4 +1,4 @@
-import { faSortDown } from "@fortawesome/free-solid-svg-icons";
+import { faCaretDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 
@@ -23,7 +23,7 @@ export const PathPopoutButton: React.FC<React.PropsWithChildren<PathPopoutButton
         <Text size="sm" className={styles.text}>
           {children}
         </Text>
-        <FontAwesomeIcon className={styles.arrow} icon={faSortDown} />
+        <FontAwesomeIcon className={styles.arrow} icon={faCaretDown} />
       </button>
     }
     placement="bottom-start"

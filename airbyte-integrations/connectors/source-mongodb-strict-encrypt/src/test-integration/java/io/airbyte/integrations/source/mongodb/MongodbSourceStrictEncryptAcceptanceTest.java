@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mongodb;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,6 +13,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mongodb.client.MongoCollection;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -18,8 +21,6 @@ import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -160,13 +161,11 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
 
     ((ObjectNode) invalidStandaloneConfig).put(INSTANCE_TYPE, instanceConfig);
 
-    final AirbyteConnectionStatus actual = new MongodbSourceStrictEncrypt().check(invalidStandaloneConfig);
-    final AirbyteConnectionStatus expected =
-        new AirbyteConnectionStatus()
-            .withStatus(Status.FAILED)
-            .withMessage("TLS connection must be used to read from MongoDB.");
-
-    assertEquals(expected, actual);
+    final Throwable throwable = catchThrowable(() -> new MongodbSourceStrictEncrypt().check(invalidStandaloneConfig));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    assertThat(((ConfigErrorException) throwable)
+        .getDisplayMessage()
+        .contains("TLS connection must be used to read from MongoDB."));
   }
 
 }

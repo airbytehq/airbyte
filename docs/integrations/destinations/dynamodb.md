@@ -61,6 +61,8 @@ This connector by default uses 10 capacity units for both Read and Write in Dyna
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.7 | 2022-11-03 | [\#18672](https://github.com/airbytehq/airbyte/pull/18672) | Added strict-encrypt cloud runner |
+| 0.1.6 | 2022-11-01 | [\#18672](https://github.com/airbytehq/airbyte/pull/18672) | Enforce to use ssl connection |
 | 0.1.5 | 2022-08-05 | [\#15350](https://github.com/airbytehq/airbyte/pull/15350) | Added per-stream handling |
 | 0.1.4 | 2022-06-16 | [\#13852](https://github.com/airbytehq/airbyte/pull/13852) | Updated stacktrace format for any trace message errors |
 | 0.1.3 | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |

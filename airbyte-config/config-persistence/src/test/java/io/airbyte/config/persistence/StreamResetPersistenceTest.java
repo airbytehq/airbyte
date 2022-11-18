@@ -36,7 +36,7 @@ class StreamResetPersistenceTest extends BaseDatabaseConfigPersistenceTest {
   public void setup() throws Exception {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
+    flyway = FlywayFactory.create(dataSource, StreamResetPersistenceTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
         ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
     database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(false);
     streamResetPersistence = spy(new StreamResetPersistence(database));
