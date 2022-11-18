@@ -8,12 +8,12 @@ import inspect
 from abc import ABC, abstractmethod
 from typing import Callable, Dict, List  # noqa: F401
 
-from fastapi import Form  # noqa: F401
-from fastapi import (
+from fastapi import (  # noqa: F401
     APIRouter,
     Body,
     Cookie,
     Depends,
+    Form,
     Header,
     Path,
     Query,
@@ -23,18 +23,14 @@ from fastapi import (
 )
 
 from connector_builder.generated.models.extra_models import TokenModel  # noqa: F401
-from connector_builder.generated.models.invalid_input_exception_info import (
-    InvalidInputExceptionInfo,
-)
+
+
+from connector_builder.generated.models.invalid_input_exception_info import InvalidInputExceptionInfo
 from connector_builder.generated.models.known_exception_info import KnownExceptionInfo
 from connector_builder.generated.models.stream_read import StreamRead
-from connector_builder.generated.models.stream_read_request_body import (
-    StreamReadRequestBody,
-)
+from connector_builder.generated.models.stream_read_request_body import StreamReadRequestBody
 from connector_builder.generated.models.streams_list_read import StreamsListRead
-from connector_builder.generated.models.streams_list_request_body import (
-    StreamsListRequestBody,
-)
+from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
 
 
 class DefaultApi(ABC):
@@ -45,7 +41,7 @@ class DefaultApi(ABC):
 
     @abstractmethod
     async def get_manifest_template(
-        self,
+        self, 
     ) -> str:
         """
         Return a connector manifest template to use as the default value for the yaml editor
@@ -53,7 +49,7 @@ class DefaultApi(ABC):
 
     @abstractmethod
     async def list_streams(
-        self,
+        self, 
         streams_list_request_body: StreamsListRequestBody = Body(None, description=""),
     ) -> StreamsListRead:
         """
@@ -62,7 +58,7 @@ class DefaultApi(ABC):
 
     @abstractmethod
     async def read_stream(
-        self,
+        self, 
         stream_read_request_body: StreamReadRequestBody = Body(None, description=""),
     ) -> StreamRead:
         """
@@ -73,9 +69,9 @@ class DefaultApi(ABC):
 def _assert_signature_is_set(method: Callable) -> None:
     """
     APIRouter().add_api_route expects the input method to have a signature. It gets signatures
-    by running inspect.signature(method) under the hood.
+    by running inspect.signature(method) under the hood. 
 
-    In the case that an instance method does not declare "self" as an input parameter (due to developer error
+    In the case that an instance method does not declare "self" as an input parameter (due to developer error 
     for example), then the call to inspect.signature() raises a ValueError and fails.
 
     Ideally, we'd automatically detect & correct this problem. To do that, we'd need to do
@@ -96,9 +92,7 @@ def _assert_signature_is_set(method: Callable) -> None:
         if e.args and len(e.args) == 1 and e.args[0] == "invalid method signature":
             # I couldn't figure out how to setattr on a "method" object to populate the signature. For now just kick
             # it back to the developer and tell them to set the "self" variable
-            raise Exception(
-                f"Method {method.__name__} in class {type(method.__self__).__name__} must declare the variable 'self'. "
-            )
+            raise Exception(f"Method {method.__name__} in class {type(method.__self__).__name__} must declare the variable 'self'. ")
         else:
             raise
 
@@ -126,14 +120,8 @@ def initialize_router(api: DefaultApi) -> APIRouter:
         methods=["POST"],
         responses={
             200: {"model": StreamsListRead, "description": "Successful operation"},
-            400: {
-                "model": KnownExceptionInfo,
-                "description": "Exception occurred; see message for details.",
-            },
-            422: {
-                "model": InvalidInputExceptionInfo,
-                "description": "Input failed validation",
-            },
+            400: {"model": KnownExceptionInfo, "description": "Exception occurred; see message for details."},
+            422: {"model": InvalidInputExceptionInfo, "description": "Input failed validation"},
         },
         tags=["default"],
         summary="List all streams present in the connector manifest, along with their specific request URLs",
@@ -147,18 +135,13 @@ def initialize_router(api: DefaultApi) -> APIRouter:
         methods=["POST"],
         responses={
             200: {"model": StreamRead, "description": "Successful operation"},
-            400: {
-                "model": KnownExceptionInfo,
-                "description": "Exception occurred; see message for details.",
-            },
-            422: {
-                "model": InvalidInputExceptionInfo,
-                "description": "Input failed validation",
-            },
+            400: {"model": KnownExceptionInfo, "description": "Exception occurred; see message for details."},
+            422: {"model": InvalidInputExceptionInfo, "description": "Input failed validation"},
         },
         tags=["default"],
         summary="Reads a specific stream in the source. TODO in a later phase - only read a single slice of data.",
         response_model_by_alias=True,
     )
 
+    
     return router
