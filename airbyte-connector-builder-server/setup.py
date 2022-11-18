@@ -47,6 +47,7 @@ setup(
         "tests": [
             "MyPy~=0.812",
             "pytest~=6.2.5",
+            "pytest-xdist",
             "pytest-cov",
             "pytest-mock",
             "pytest-recording",

@@ -43,7 +43,7 @@ pytest-cov==3.0.0
 pytest-mock==3.6.1
 pytest-sugar==0.9.6
 pytest-timeout==1.4.2
-pytest-xdist===3.0.2
+pytest-xdist==3.0.2
 python-dateutil==2.8.2
 pytzdata==2020.1
 PyYAML==5.4.1
