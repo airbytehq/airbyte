@@ -114,6 +114,43 @@ METRICS_MAP = {
         "attributedUnitsOrdered14dSameSKU",
         "attributedUnitsOrdered30dSameSKU",
     ],
+    "keywords_searchTerms": [
+        "campaignName",
+        "campaignId",
+        "adGroupName",
+        "adGroupId",
+        "keywordId",
+        "keywordText",
+        "matchType",
+        "impressions",
+        "clicks",
+        "cost",
+        "attributedConversions1d",
+        "attributedConversions7d",
+        "attributedConversions14d",
+        "attributedConversions30d",
+        "attributedConversions1dSameSKU",
+        "attributedConversions7dSameSKU",
+        "attributedConversions14dSameSKU",
+        "attributedConversions30dSameSKU",
+        "attributedUnitsOrdered1d",
+        "attributedUnitsOrdered7d",
+        "attributedUnitsOrdered14d",
+        "attributedUnitsOrdered30d",
+        "attributedSales1d",
+        "attributedSales7d",
+        "attributedSales14d",
+        "attributedSales30d",
+        "attributedSales1dSameSKU",
+        "attributedSales7dSameSKU",
+        "attributedSales14dSameSKU",
+        "attributedSales30dSameSKU",
+        "attributedUnitsOrdered1dSameSKU",
+        "attributedUnitsOrdered7dSameSKU",
+        "attributedUnitsOrdered14dSameSKU",
+        "attributedUnitsOrdered30dSameSKU",
+        "query",
+    ],
     "productAds": [
         "campaignName",
         "campaignId",
@@ -251,8 +288,6 @@ class SponsoredProductsReportStream(ReportStream):
     def report_init_endpoint(self, record_type: str) -> str:
         return f"/v2/sp/{record_type}/report"
 
-    metrics_map = METRICS_MAP
-
     def _get_init_report_body(self, report_date: str, record_type: str, profile):
         metrics_list = self.metrics_map[record_type]
         body = {
@@ -263,9 +298,14 @@ class SponsoredProductsReportStream(ReportStream):
             if profile.accountInfo.type == "vendor":
                 metrics_list = copy(metrics_list)
                 metrics_list.remove("sku")
+        if record_type == "keywords_searchTerms":
+            body["segment"] = "query"
 
         # adId is automatically added to the report by amazon and requesting adId causes an amazon error
         if "adId" in metrics_list:
             metrics_list.remove("adId")
+        # query is automatically added to the report by amazon and requesting query causes an amazon error
+        if "query" in metrics_list:
+            metrics_list.remove("query")
 
         return {**body, "metrics": ",".join(metrics_list)}
