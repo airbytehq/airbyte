@@ -6,15 +6,12 @@ package io.airbyte.validation.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
+import com.networknt.schema.JsonMetaSchema;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SchemaValidatorsConfig;
 import com.networknt.schema.SpecVersion;
-import com.networknt.schema.SpecVersion.VersionFlag;
 import com.networknt.schema.ValidationContext;
 import com.networknt.schema.ValidationMessage;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import java.io.File;
 import java.io.IOException;
@@ -33,13 +30,19 @@ public class JsonSchemaValidator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonSchemaValidator.class);
 
-  private final SchemaValidatorsConfig schemaValidatorsConfig;
   private final JsonSchemaFactory jsonSchemaFactory;
+  private final URI BASE_URI;
 
   public JsonSchemaValidator() {
-    this.schemaValidatorsConfig = new SchemaValidatorsConfig();
-    schemaValidatorsConfig.setUriMappings(ImmutableMap.of("file:foo.json", "file:///Users/edgao/Desktop/t.json"));
     this.jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
+
+    // This URI just needs to point at any path in the same directory as /app/WellKnownTypes.json
+    // It's required for the JsonSchema#validate method to resolve $ref correctly.
+    try {
+      this.BASE_URI = new URI("file:///app/nonexistent_file.json");
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public Set<String> validate(final JsonNode schemaJson, final JsonNode objectJson) {
@@ -67,14 +70,39 @@ public class JsonSchemaValidator {
   private Set<ValidationMessage> validateInternal(final JsonNode schemaJson, final JsonNode objectJson) {
     Preconditions.checkNotNull(schemaJson);
     Preconditions.checkNotNull(objectJson);
-//    JsonSchema schema = jsonSchemaFactory.getSchema(schemaJson, schemaValidatorsConfig);
-//
-//    new JsonSchema(
-//        new ValidationContext(jsonSchemaFactory.getUriFactory(), jsonSchemaFactory.getUriFactory(), jsonMetaSchema, this, config),
-//        mappedUri, schemaNode, true /* retrieved via id, resolving will not change anything */);;
 
-    return jsonSchemaFactory.getSchema(schemaJson, schemaValidatorsConfig)
-        .validate(objectJson);
+    // Default to draft-07, but have handling for the other metaschemas that networknt supports
+    JsonMetaSchema metaschema;
+    JsonNode metaschemaNode = schemaJson.get("$schema");
+    if (metaschemaNode == null || "".equals(metaschemaNode.asText())) {
+      metaschema = JsonMetaSchema.getV7();
+    } else {
+      String metaschemaString = metaschemaNode.asText();
+      // We're not using "http://....".equals(), because we want to avoid weirdness with https, etc.
+      if (metaschemaString.contains("json-schema.org/draft-04")) {
+        metaschema = JsonMetaSchema.getV4();
+      } else if (metaschemaString.contains("json-schema.org/draft-06")) {
+        metaschema = JsonMetaSchema.getV6();
+      } else if (metaschemaString.contains("json-schema.org/draft/2019-09")) {
+        metaschema = JsonMetaSchema.getV201909();
+      } else if (metaschemaString.contains("json-schema.org/draft/2020-12")) {
+        metaschema = JsonMetaSchema.getV202012();
+      } else {
+        metaschema = JsonMetaSchema.getV7();
+      }
+    }
+
+    ValidationContext context = new ValidationContext(
+        jsonSchemaFactory.getUriFactory(),
+        null,
+        metaschema,
+        jsonSchemaFactory,
+        null);
+    JsonSchema schema = new JsonSchema(
+        context,
+        BASE_URI,
+        schemaJson);
+    return schema.validate(objectJson);
   }
 
   public boolean test(final JsonNode schemaJson, final JsonNode objectJson) {
@@ -149,16 +177,4 @@ public class JsonSchemaValidator {
     }
   }
 
-
-  public static void main(String[] args) throws URISyntaxException {
-    SchemaValidatorsConfig c = new SchemaValidatorsConfig();
-    c.setUriMappings(ImmutableMap.of("file:foo.json", "file:///Users/edgao/Desktop/t.json"));
-
-    JsonSchemaFactory f = JsonSchemaFactory.getInstance(VersionFlag.V7);
-    JsonSchema schema = f.getSchema(new URI("file:///Users/edgao/Desktop/inp.json"), c);
-    Set<ValidationMessage> res = schema.validate(Jsons.deserialize("""
-        "arst"
-        """));
-    System.out.println("results were " + res);
-  }
 }

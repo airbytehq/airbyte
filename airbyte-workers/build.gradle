@@ -116,19 +116,14 @@ task cloudStorageIntegrationTest(type: Test) {
     }
 }
 
-task copyWellKnownTypesResource(type: Copy) {
-    from project(':airbyte-protocol').file('protocol-models/src/main/resources/airbyte_protocol/well_known_types.yaml')
-    into file('build/docker')
-}
-
-task copyWellKnownTypesDocker(type: Copy) {
+task copyWellKnownTypes(type: Copy) {
     from project(':airbyte-protocol').file('protocol-models/src/main/resources/airbyte_protocol/well_known_types.yaml')
     into file('build/docker')
 }
 
 tasks.named("buildDockerImage") {
     dependsOn copyGeneratedTar
-    dependsOn copyWellKnownTypesResource
+    dependsOn copyWellKnownTypes
 }
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
