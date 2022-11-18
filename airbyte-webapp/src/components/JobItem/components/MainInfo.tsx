@@ -88,7 +88,7 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
         <div className={styles.statusIcon}>{statusIcon}</div>
         <div className={styles.justification}>
           {label}
-          {jobConfigType === "sync" && <JobProgress job={job} />}
+          {jobConfigType === "sync" && <JobProgress job={job} expanded={isOpen} />}
           {attempts.length > 0 && (
             <>
               {jobConfigType === "reset_connection" ? (

@@ -536,8 +536,8 @@
   "credits.totalUsage": "Total usage",
 
   "connection.progress.percentage": "{percent} percent progress",
-  "estimate.minutesRemaining": "{value, plural, one {# minute remaining} other {# minutes remaining}}",
-  "estimate.hoursRemaining": "{value, plural, one {# hour remaining} other {# hours remaining}}",
+  "connection.progress.minutesRemaining": "~{value, plural, one {# minute remaining} other {# minutes remaining}}",
+  "connection.progress.hoursRemaining": "~{value, plural, one {# hour remaining} other {# hours remaining}}",
   "estimate.recordsSynced": "{value, plural, one {record synced} other {records synced}}",
   "estimate.recordsPerSecond": "records/sec",
   "estimate.bytesSynced": "synced",

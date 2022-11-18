@@ -1,15 +1,16 @@
-import { useState } from "react";
+import classNames from "classnames";
 import { useIntl } from "react-intl";
 
 import { getJobStatus } from "components/JobItem/JobItem";
-import { Button } from "components/ui/Button";
 import { Text } from "components/ui/Text";
 
 import { AttemptRead, AttemptStatus, SynchronousJobRead } from "core/request/AirbyteClient";
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 import { formatBytes } from "utils/numberHelper";
 
+import styles from "./JobProgress.module.scss";
 import { ProgressLine } from "./JobProgressLine";
+import { StreamProgress } from "./StreamProgress";
 import { progressBarCalculations } from "./utils";
 
 function isJobsWithJobs(job: JobsWithJobs | SynchronousJobRead): job is JobsWithJobs {
@@ -18,11 +19,11 @@ function isJobsWithJobs(job: JobsWithJobs | SynchronousJobRead): job is JobsWith
 
 interface ProgressBarProps {
   job: JobsWithJobs | SynchronousJobRead;
+  expanded?: boolean;
 }
 
-export const JobProgress: React.FC<ProgressBarProps> = ({ job }) => {
+export const JobProgress: React.FC<ProgressBarProps> = ({ job, expanded }) => {
   const { formatMessage, formatNumber } = useIntl();
-  const [showStreams, setShowStreams] = useState(false);
 
   let latestAttempt: AttemptRead | undefined;
   if (isJobsWithJobs(job) && job.attempts) {
@@ -54,9 +55,9 @@ export const JobProgress: React.FC<ProgressBarProps> = ({ job }) => {
     const minutesRemaining = Math.ceil(timeRemaining / 1000 / 60);
     const hoursRemaining = Math.ceil(minutesRemaining / 60);
     if (minutesRemaining <= 60) {
-      timeRemainingString = formatMessage({ id: "estimate.minutesRemaining" }, { value: minutesRemaining });
+      timeRemainingString = formatMessage({ id: "connection.progress.minutesRemaining" }, { value: minutesRemaining });
     } else {
-      timeRemainingString = formatMessage({ id: "estimate.hoursRemaining" }, { value: hoursRemaining });
+      timeRemainingString = formatMessage({ id: "connection.progress.hoursRemaining" }, { value: hoursRemaining });
     }
   }
 
@@ -69,7 +70,7 @@ export const JobProgress: React.FC<ProgressBarProps> = ({ job }) => {
         <>
           {displayProgressBar && (
             <div>
-              {totalPercentRecords}% {timeRemaining < Infinity && timeRemaining > 0 ? `| ~${timeRemainingString}` : ""}
+              {totalPercentRecords}% {timeRemaining < Infinity && timeRemaining > 0 ? `| ${timeRemainingString}` : ""}
             </div>
           )}
           {!displayProgressBar && unEstimatedStreams.length > 0 && (
@@ -97,72 +98,30 @@ export const JobProgress: React.FC<ProgressBarProps> = ({ job }) => {
             </>
           )}
 
-          {latestAttempt.streamStats && !showStreams && (
-            <div>
-              <Button
-                variant="clear"
-                style={{ padding: 0 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowStreams(true);
-                }}
-              >
-                <p>
-                  {formatMessage({
-                    id: "estimate.viewStreamStats",
-                  })}
-                </p>
-              </Button>
-              <br />
-            </div>
-          )}
-
-          {latestAttempt.streamStats && showStreams && (
-            <div>
-              <Text as="div" size="xs">
-                {formatMessage({
-                  id: "estimate.streamStats",
-                })}{" "}
-                (
-                <Button
-                  variant="clear"
-                  style={{ padding: 0 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowStreams(false);
-                  }}
-                >
-                  <p>
-                    {formatMessage({
-                      id: "estimate.hide",
-                    })}
-                  </p>
-                </Button>
-                ):
-              </Text>
-              {latestAttempt.streamStats?.map((stream, idx) => {
-                const localNumerator = stream.stats.recordsEmitted;
-                const localDenominator = stream.stats.estimatedRecords;
-
-                return (
-                  <Text size="xs" as="div" key={`stream-progress-${idx}`}>
-                    {" - "}
-                    <strong>{stream.streamName}</strong> -{" "}
-                    {localNumerator && localDenominator
-                      ? `${Math.round((localNumerator * 100) / localDenominator)}${formatMessage({
-                          id: "estimate.percentComplete",
-                        })} (${formatNumber(localNumerator)} / ${formatNumber(localDenominator)} ${formatMessage(
-                          { id: "estimate.recordsSynced" },
-                          { value: localNumerator }
-                        )})`
-                      : `${localNumerator} ${formatMessage(
-                          { id: "estimate.recordsSynced" },
-                          { value: localNumerator }
-                        )} (${formatMessage({
-                          id: "estimate.noEstimate",
-                        })})`}
-                  </Text>
-                );
+          {latestAttempt.streamStats && (
+            <div className={classNames(styles.streams, { [styles.open]: expanded })}>
+              {latestAttempt.streamStats?.map((stream) => {
+                return <StreamProgress stream={stream} key={stream.streamName} />;
+                // const localNumerator = stream.stats.recordsEmitted;
+                // const localDenominator = stream.stats.estimatedRecords;
+                // return (
+                //   <Text size="xs" as="div" key={`stream-progress-${idx}`}>
+                //     <strong>{stream.streamName}</strong> -{" "}
+                //     {localNumerator && localDenominator
+                //       ? `${Math.round((localNumerator * 100) / localDenominator)}${formatMessage({
+                //           id: "estimate.percentComplete",
+                //         })} (${formatNumber(localNumerator)} / ${formatNumber(localDenominator)} ${formatMessage(
+                //           { id: "estimate.recordsSynced" },
+                //           { value: localNumerator }
+                //         )})`
+                //       : `${localNumerator} ${formatMessage(
+                //           { id: "estimate.recordsSynced" },
+                //           { value: localNumerator }
+                //         )} (${formatMessage({
+                //           id: "estimate.noEstimate",
+                //         })})`}
+                //   </Text>
+                // );
               })}
             </div>
           )}

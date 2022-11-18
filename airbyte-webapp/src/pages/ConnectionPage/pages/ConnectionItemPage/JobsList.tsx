@@ -21,7 +21,7 @@ const JobsList: React.FC<JobsListProps> = ({ jobs }) => {
             return value;
           }
 
-          value.job.status = "failed";
+          value.job.status = "running";
 
           value.attempts[0].bytesSynced = 500000000;
           value.attempts[0].recordsSynced = 12178;
@@ -53,6 +53,144 @@ const JobsList: React.FC<JobsListProps> = ({ jobs }) => {
                 recordsEmitted: 120,
                 recordsCommitted: 100,
                 estimatedRecords: 1238,
+              },
+            },
+            {
+              streamName: "pokemon2",
+              stats: {
+                bytesEmitted: 1000200,
+                estimatedBytes: 13000000,
+                recordsEmitted: 120,
+                recordsCommitted: 100,
+                estimatedRecords: 1238,
+              },
+            },
+            {
+              streamName: "pokemon2",
+              stats: {
+                bytesEmitted: 1000200,
+                estimatedBytes: 13000000,
+                recordsEmitted: 120,
+                recordsCommitted: 100,
+                estimatedRecords: 1238,
+              },
+            },
+            {
+              streamName: "pokemon2",
+              stats: {
+                bytesEmitted: 1000200,
+                estimatedBytes: 13000000,
+                recordsEmitted: 120,
+                recordsCommitted: 100,
+                estimatedRecords: 1238,
+              },
+            },
+            {
+              streamName: "pokemon2",
+              stats: {
+                bytesEmitted: 1000200,
+                estimatedBytes: 13000000,
+                recordsEmitted: 120,
+                recordsCommitted: 100,
+                estimatedRecords: 1238,
+              },
+            },
+            {
+              streamName: "pokemon2",
+              stats: {
+                bytesEmitted: 1000200,
+                estimatedBytes: 13000000,
+                recordsEmitted: 120,
+                recordsCommitted: 100,
+                estimatedRecords: 1238,
+              },
+            },
+            {
+              streamName: "pokemon2",
+              stats: {
+                bytesEmitted: 1000200,
+                estimatedBytes: 13000000,
+                recordsEmitted: 120,
+                recordsCommitted: 100,
+                estimatedRecords: 1238,
+              },
+            },
+            {
+              streamName: "pokemon2",
+              stats: {
+                bytesEmitted: 1000200,
+                estimatedBytes: 13000000,
+                recordsEmitted: 120,
+                recordsCommitted: 100,
+                estimatedRecords: 1238,
+              },
+            },
+            {
+              streamName: "pokemon2",
+              stats: {
+                bytesEmitted: 1000200,
+                estimatedBytes: 13000000,
+                recordsEmitted: 120,
+                recordsCommitted: 100,
+                estimatedRecords: 1238,
+              },
+            },
+            {
+              streamName: "pokemon2",
+              stats: {
+                bytesEmitted: 1000200,
+                estimatedBytes: 13000000,
+                recordsEmitted: 120,
+                recordsCommitted: 100,
+                estimatedRecords: 1238,
+              },
+            },
+            {
+              streamName: "pokemon2",
+              stats: {
+                bytesEmitted: 1000200,
+                estimatedBytes: 13000000,
+                recordsEmitted: 120,
+                recordsCommitted: 100,
+                estimatedRecords: 1238,
+              },
+            },
+            {
+              streamName: "pokemon2",
+              stats: {
+                bytesEmitted: 1000200,
+                estimatedBytes: 13000000,
+                recordsEmitted: 120,
+                recordsCommitted: 100,
+                estimatedRecords: 1238,
+              },
+            },
+            {
+              streamName: "pokemon2",
+              stats: {
+                bytesEmitted: 1000200,
+                estimatedBytes: 13000000,
+                recordsEmitted: 120,
+                recordsCommitted: 100,
+                estimatedRecords: 1238,
+              },
+            },
+            {
+              streamName: "pokemon2",
+              stats: {
+                bytesEmitted: 1000200,
+                estimatedBytes: 13000000,
+                recordsEmitted: 120,
+                recordsCommitted: 100,
+                estimatedRecords: 1238,
+              },
+            },
+            {
+              streamName: "some_longer_stream_name",
+              stats: {
+                bytesEmitted: 1000200,
+                recordsEmitted: 120,
+                recordsCommitted: 100,
               },
             },
           ];
