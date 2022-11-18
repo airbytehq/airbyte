@@ -32,7 +32,6 @@ class TestBaseResource:
             ("my_resource_id", "my_resource_name", ValueError, "resource_id and resource_name keyword arguments can't be both set."),
         ],
     )
-
     @pytest.mark.xdist_group(name="test_resources")
     def test_init(self, patch_base_class, mock_api_client, resource_id, resource_name, expected_error, expected_error_message):
         if expected_error:
@@ -82,7 +81,7 @@ class TestBaseResource:
         if expected_error:
             with pytest.raises(expected_error, match=expected_error_message):
                 base_resource._find_by_resource_name()
-    
+
     @pytest.mark.xdist_group(name="test_resources")
     def test__find_by_id(self, mocker, patch_base_class, mock_api_client):
         mocker.patch.object(BaseResource, "_get_fn")
