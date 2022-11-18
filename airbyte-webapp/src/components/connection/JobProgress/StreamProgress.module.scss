@@ -3,12 +3,31 @@
 
 .stream {
   display: inline-block;
-  padding: 0 variables.$spacing-sm;
-  background: colors.$grey-50;
-  border: variables.$border-thin solid colors.$grey-100;
-  border-radius: variables.$border-radius-xs;
+  padding: variables.$spacing-xs variables.$spacing-md;
+  background: colors.$blue-50;
+  border-radius: 16px;
   margin-right: variables.$spacing-md;
   margin-bottom: variables.$spacing-sm;
   white-space: nowrap;
-  color: colors.$grey-400;
+  color: colors.$grey-700;
+  line-height: 16px;
+}
+
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: variables.$spacing-sm;
+}
+
+.progress {
+  background-color: colors.$white;
+  border-radius: 100%;
+  justify-content: center;
+  align-items: center;
+  min-width: 16px;
+  margin: variables.$spacing-xs;
+
+  // padding: variables.$spacing-sm;
+  aspect-ratio: 1 / 1;
+  display: flex;
 }

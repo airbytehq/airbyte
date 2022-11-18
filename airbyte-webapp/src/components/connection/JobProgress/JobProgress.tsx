@@ -1,3 +1,5 @@
+import { faDatabase, faDiagramNext } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { useIntl } from "react-intl";
 
@@ -61,7 +63,7 @@ export const JobProgress: React.FC<ProgressBarProps> = ({ job, expanded }) => {
   }
 
   return (
-    <Text as="div" size="sm">
+    <Text as="div" size="md">
       {displayProgressBar && (
         <ProgressLine percent={totalPercentRecords} type={jobStatus === "incomplete" ? "warning" : "default"} />
       )}
@@ -73,15 +75,17 @@ export const JobProgress: React.FC<ProgressBarProps> = ({ job, expanded }) => {
               <span>{formatNumber(totalPercentRecords, { style: "percent", maximumFractionDigits: 0 })}</span>
             </div>
           )}
-          {denominatorRecords > 0 && (
-            <>
-              <div>
+          {denominatorRecords > 0 && expanded && (
+            <div className={styles.estimationDetails}>
+              <span>
+                <FontAwesomeIcon icon={faDiagramNext} className={styles.icon} />
                 {formatNumber(numeratorRecords)} {displayProgressBar ? "" : `/ ${formatNumber(denominatorRecords)}`}{" "}
-                {formatMessage({ id: "estimate.recordsSynced" }, { value: numeratorRecords })} @{" "}
+                {formatMessage({ id: "estimate.recordsSynced" }, { value: numeratorRecords })} (
                 {Math.round((numeratorRecords / elapsedTimeMS) * 1000)}{" "}
-                {formatMessage({ id: "estimate.recordsPerSecond" })}
-              </div>
-              <div>
+                {formatMessage({ id: "estimate.recordsPerSecond" })})
+              </span>
+              <span>
+                <FontAwesomeIcon icon={faDatabase} className={styles.icon} />
                 {formatBytes(numeratorBytes)}{" "}
                 {displayProgressBar && (
                   <>
@@ -89,10 +93,10 @@ export const JobProgress: React.FC<ProgressBarProps> = ({ job, expanded }) => {
                     {formatBytes(denominatorBytes)}
                   </>
                 )}{" "}
-                {formatMessage({ id: "estimate.bytesSynced" })} @ {formatBytes((numeratorBytes * 1000) / elapsedTimeMS)}
-                {formatMessage({ id: "estimate.perSecond" })}
-              </div>
-            </>
+                {formatMessage({ id: "estimate.bytesSynced" })} ({formatBytes((numeratorBytes * 1000) / elapsedTimeMS)}
+                {formatMessage({ id: "estimate.perSecond" })})
+              </span>
+            </div>
           )}
 
           {latestAttempt.streamStats && (

@@ -57,13 +57,43 @@ const JobsList: React.FC<JobsListProps> = ({ jobs }) => {
               stats: {
                 bytesEmitted: 1000200,
                 estimatedBytes: 13000000,
-                recordsEmitted: 120,
+                recordsEmitted: 12,
                 recordsCommitted: 100,
                 estimatedRecords: 1238,
               },
             },
             {
-              streamName: "pokemon2",
+              streamName: "pokemon3",
+              stats: {
+                bytesEmitted: 1000200,
+                estimatedBytes: 13000000,
+                recordsEmitted: 1238,
+                recordsCommitted: 1238,
+                estimatedRecords: 1238,
+              },
+            },
+            {
+              streamName: "pokemon4",
+              stats: {
+                bytesEmitted: 1000200,
+                estimatedBytes: 13000000,
+                recordsEmitted: 560,
+                recordsCommitted: 100,
+                estimatedRecords: 1238,
+              },
+            },
+            {
+              streamName: "pokemon5",
+              stats: {
+                bytesEmitted: 1000200,
+                estimatedBytes: 13000000,
+                recordsEmitted: 1200,
+                recordsCommitted: 100,
+                estimatedRecords: 1238,
+              },
+            },
+            {
+              streamName: "pokemon200",
               stats: {
                 bytesEmitted: 1000200,
                 estimatedBytes: 13000000,
@@ -73,7 +103,7 @@ const JobsList: React.FC<JobsListProps> = ({ jobs }) => {
               },
             },
             {
-              streamName: "pokemon2",
+              streamName: "pokemon200",
               stats: {
                 bytesEmitted: 1000200,
                 estimatedBytes: 13000000,
@@ -83,7 +113,7 @@ const JobsList: React.FC<JobsListProps> = ({ jobs }) => {
               },
             },
             {
-              streamName: "pokemon2",
+              streamName: "pokemon200",
               stats: {
                 bytesEmitted: 1000200,
                 estimatedBytes: 13000000,
@@ -93,7 +123,7 @@ const JobsList: React.FC<JobsListProps> = ({ jobs }) => {
               },
             },
             {
-              streamName: "pokemon2",
+              streamName: "pokemon200",
               stats: {
                 bytesEmitted: 1000200,
                 estimatedBytes: 13000000,
@@ -103,7 +133,7 @@ const JobsList: React.FC<JobsListProps> = ({ jobs }) => {
               },
             },
             {
-              streamName: "pokemon2",
+              streamName: "pokemon200",
               stats: {
                 bytesEmitted: 1000200,
                 estimatedBytes: 13000000,
@@ -113,7 +143,7 @@ const JobsList: React.FC<JobsListProps> = ({ jobs }) => {
               },
             },
             {
-              streamName: "pokemon2",
+              streamName: "pokemon200",
               stats: {
                 bytesEmitted: 1000200,
                 estimatedBytes: 13000000,
@@ -123,7 +153,7 @@ const JobsList: React.FC<JobsListProps> = ({ jobs }) => {
               },
             },
             {
-              streamName: "pokemon2",
+              streamName: "pokemon200",
               stats: {
                 bytesEmitted: 1000200,
                 estimatedBytes: 13000000,
@@ -133,7 +163,7 @@ const JobsList: React.FC<JobsListProps> = ({ jobs }) => {
               },
             },
             {
-              streamName: "pokemon2",
+              streamName: "pokemon200",
               stats: {
                 bytesEmitted: 1000200,
                 estimatedBytes: 13000000,
@@ -143,7 +173,7 @@ const JobsList: React.FC<JobsListProps> = ({ jobs }) => {
               },
             },
             {
-              streamName: "pokemon2",
+              streamName: "pokemon200",
               stats: {
                 bytesEmitted: 1000200,
                 estimatedBytes: 13000000,
@@ -153,37 +183,7 @@ const JobsList: React.FC<JobsListProps> = ({ jobs }) => {
               },
             },
             {
-              streamName: "pokemon2",
-              stats: {
-                bytesEmitted: 1000200,
-                estimatedBytes: 13000000,
-                recordsEmitted: 120,
-                recordsCommitted: 100,
-                estimatedRecords: 1238,
-              },
-            },
-            {
-              streamName: "pokemon2",
-              stats: {
-                bytesEmitted: 1000200,
-                estimatedBytes: 13000000,
-                recordsEmitted: 120,
-                recordsCommitted: 100,
-                estimatedRecords: 1238,
-              },
-            },
-            {
-              streamName: "pokemon2",
-              stats: {
-                bytesEmitted: 1000200,
-                estimatedBytes: 13000000,
-                recordsEmitted: 120,
-                recordsCommitted: 100,
-                estimatedRecords: 1238,
-              },
-            },
-            {
-              streamName: "pokemon2",
+              streamName: "pokemon200",
               stats: {
                 bytesEmitted: 1000200,
                 estimatedBytes: 13000000,
