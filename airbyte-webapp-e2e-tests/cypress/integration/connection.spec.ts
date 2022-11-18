@@ -13,11 +13,20 @@ import {
   checkSuccessResult,
   refreshSourceSchemaBtnClick,
   resetModalSaveBtnClick,
-  updateSchemaModalConfirmBtnClick,
+  toggleStreamEnabledState,
 } from "pages/replicationPage";
 import { openSourceDestinationFromGrid, goToSourcePage } from "pages/sourcePage";
 import { goToSettingsPage } from "pages/settingsConnectionPage";
 import { cleanDBSource, makeChangesInDBSource, populateDBSource } from "../commands/db";
+import {
+  catalogDiffModal,
+  newFieldsTable,
+  newStreamsTable,
+  removedFieldsTable,
+  removedStreamsTable,
+  toggleStreamWithChangesAccordion,
+} from "../pages/modals/catalogDiffModal";
+import { updateSchemaModalConfirmBtnClick } from "../pages/modals/updateSchemaModal";
 
 describe("Connection main actions", () => {
   beforeEach(() => {
@@ -228,19 +237,19 @@ describe("Connection main actions", () => {
     goToReplicationTab();
     refreshSourceSchemaBtnClick();
 
-    cy.get("[data-testid='catalog-diff-modal']").should("exist");
+    cy.get(catalogDiffModal).should("exist");
 
-    cy.get("table[aria-label='removed streams table']").should("contain", "users");
+    cy.get(removedStreamsTable).should("contain", "users");
 
-    cy.get("table[aria-label='new streams table']").should("contain", "cars");
+    cy.get(newStreamsTable).should("contain", "cars");
 
-    cy.get("button[aria-label='toggle accordion']").click();
-    cy.get("table[aria-label='removed fields']").should("contain", "city_code");
-    cy.get("table[aria-label='new fields']").children().should("contain", "country").and("contain", "state");
+    toggleStreamWithChangesAccordion("cities");
+    cy.get(removedFieldsTable).should("contain", "city_code");
+    cy.get(newFieldsTable).children().should("contain", "country").and("contain", "state");
 
     updateSchemaModalConfirmBtnClick();
 
-    cy.get("[data-testid='cars-stream-sync-checkbox']").check({ force: true });
+    toggleStreamEnabledState("cars");
 
     submitButtonClick();
     resetModalSaveBtnClick();
