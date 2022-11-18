@@ -12,6 +12,7 @@ from octavia_cli.get.resources import BaseResource, Connection, Destination, Dup
 
 class TestBaseResource:
     @pytest.fixture
+    @pytest.mark.xdist_group(name="test_resources")
     def patch_base_class(self, mocker):
         # Mock abstract methods to enable instantiating abstract class
         mocker.patch.object(BaseResource, "__abstractmethods__", set())
@@ -21,6 +22,7 @@ class TestBaseResource:
         mocker.patch.object(BaseResource, "list_for_workspace_function_name", "list_for_workspace_function_name")
         mocker.patch.object(BaseResource, "name", "fake_resource")
 
+    @pytest.mark.xdist_group(name="test_resources")
     @pytest.mark.parametrize(
         "resource_id, resource_name, expected_error, expected_error_message",
         [
@@ -30,6 +32,8 @@ class TestBaseResource:
             ("my_resource_id", "my_resource_name", ValueError, "resource_id and resource_name keyword arguments can't be both set."),
         ],
     )
+
+    @pytest.mark.xdist_group(name="test_resources")
     def test_init(self, patch_base_class, mock_api_client, resource_id, resource_name, expected_error, expected_error_message):
         if expected_error:
             with pytest.raises(expected_error, match=expected_error_message):
@@ -44,6 +48,7 @@ class TestBaseResource:
             assert base_resource.resource_id == resource_id
             assert base_resource.resource_name == resource_name
 
+    @pytest.mark.xdist_group(name="test_resources")
     @pytest.mark.parametrize(
         "resource_name, api_response_resources_names, expected_error, expected_error_message",
         [
@@ -57,6 +62,7 @@ class TestBaseResource:
             ),
         ],
     )
+    @pytest.mark.xdist_group(name="test_resources")
     def test__find_by_resource_name(
         self, mocker, patch_base_class, mock_api_client, resource_name, api_response_resources_names, expected_error, expected_error_message
     ):
@@ -76,13 +82,15 @@ class TestBaseResource:
         if expected_error:
             with pytest.raises(expected_error, match=expected_error_message):
                 base_resource._find_by_resource_name()
-
+    
+    @pytest.mark.xdist_group(name="test_resources")
     def test__find_by_id(self, mocker, patch_base_class, mock_api_client):
         mocker.patch.object(BaseResource, "_get_fn")
         base_resource = BaseResource(mock_api_client, "workspace_id", resource_id="my_resource_id")
         base_resource._find_by_resource_id()
         base_resource._get_fn.assert_called_with(base_resource.api_instance, base_resource.get_payload)
 
+    @pytest.mark.xdist_group(name="test_resources")
     @pytest.mark.parametrize("resource_id, resource_name", [("my_resource_id", None), (None, "my_resource_name")])
     def test_get_remote_resource(self, mocker, patch_base_class, mock_api_client, resource_id, resource_name):
         mocker.patch.object(BaseResource, "_find_by_resource_id")
@@ -98,6 +106,7 @@ class TestBaseResource:
             base_resource._find_by_resource_name.assert_called_once()
             assert remote_resource == base_resource._find_by_resource_name.return_value
 
+    @pytest.mark.xdist_group(name="test_resources")
     def test_to_json(self, mocker, patch_base_class, mock_api_client):
         mocker.patch.object(
             BaseResource, "get_remote_resource", mocker.Mock(return_value=mocker.Mock(to_dict=mocker.Mock(return_value={"foo": "bar"})))
@@ -108,6 +117,7 @@ class TestBaseResource:
 
 
 class TestSource:
+    @pytest.mark.xdist_group(name="test_resources")
     def test_init(self, mock_api_client):
         assert Source.__base__ == BaseResource
         source = Source(mock_api_client, "workspace_id", "resource_id")
@@ -118,6 +128,7 @@ class TestSource:
 
 
 class TestDestination:
+    @pytest.mark.xdist_group(name="test_resources")
     def test_init(self, mock_api_client):
         assert Destination.__base__ == BaseResource
         destination = Destination(mock_api_client, "workspace_id", "resource_id")
@@ -128,6 +139,7 @@ class TestDestination:
 
 
 class TestConnection:
+    @pytest.mark.xdist_group(name="test_resources")
     def test_init(self, mock_api_client):
         assert Connection.__base__ == BaseResource
         connection = Connection(mock_api_client, "workspace_id", "resource_id")

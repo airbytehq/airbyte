@@ -21,7 +21,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 class StubBasicReadHttpStream(HttpStream):
     url_base = "https://test_base_url.com"
     primary_key = ""
-
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.resp_counter = 1
@@ -38,24 +38,28 @@ class StubBasicReadHttpStream(HttpStream):
         yield stubResp
 
 
+@pytest.mark.xdist_group(name="test_http")
 def test_default_authenticator():
     stream = StubBasicReadHttpStream()
     assert isinstance(stream.authenticator, NoAuth)
     assert stream._session.auth is None
 
 
+@pytest.mark.xdist_group(name="test_http")
 def test_requests_native_token_authenticator():
     stream = StubBasicReadHttpStream(authenticator=TokenAuthenticator("test-token"))
     assert isinstance(stream.authenticator, NoAuth)
     assert isinstance(stream._session.auth, TokenAuthenticator)
 
 
+@pytest.mark.xdist_group(name="test_http")
 def test_http_token_authenticator():
     stream = StubBasicReadHttpStream(authenticator=HttpTokenAuthenticator("test-token"))
     assert isinstance(stream.authenticator, HttpTokenAuthenticator)
     assert stream._session.auth is None
 
 
+@pytest.mark.xdist_group(name="test_http")
 def test_request_kwargs_used(mocker, requests_mock):
     stream = StubBasicReadHttpStream()
     request_kwargs = {"cert": None, "proxies": "google.com"}
@@ -69,6 +73,7 @@ def test_request_kwargs_used(mocker, requests_mock):
     assert send_mock.call_count == 1
 
 
+@pytest.mark.xdist_group(name="test_http")
 def test_stub_basic_read_http_stream_read_records(mocker):
     stream = StubBasicReadHttpStream()
     blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
@@ -94,6 +99,7 @@ class StubNextPageTokenHttpStream(StubBasicReadHttpStream):
         return None
 
 
+@pytest.mark.xdist_group(name="test_http")
 def test_next_page_token_is_input_to_other_methods(mocker):
     """Validates that the return value from next_page_token is passed into other methods that need it like request_params, headers, body, etc.."""
     pages = 5
@@ -126,6 +132,7 @@ class StubBadUrlHttpStream(StubBasicReadHttpStream):
     url_base = "bad_url"
 
 
+@pytest.mark.xdist_group(name="test_http")
 def test_stub_bad_url_http_stream_read_records(mocker):
     stream = StubBadUrlHttpStream()
 
@@ -138,6 +145,7 @@ class StubCustomBackoffHttpStream(StubBasicReadHttpStream):
         return 0.5
 
 
+@pytest.mark.xdist_group(name="test_http")
 def test_stub_custom_backoff_http_stream(mocker):
     mocker.patch("time.sleep", lambda x: None)
     stream = StubCustomBackoffHttpStream()
@@ -153,6 +161,7 @@ def test_stub_custom_backoff_http_stream(mocker):
     # TODO(davin): Figure out how to assert calls.
 
 
+@pytest.mark.xdist_group(name="test_http")
 @pytest.mark.parametrize("retries", [-20, -1, 0, 1, 2, 10])
 def test_stub_custom_backoff_http_stream_retries(mocker, retries):
     mocker.patch("time.sleep", lambda x: None)
@@ -177,6 +186,7 @@ def test_stub_custom_backoff_http_stream_retries(mocker, retries):
         assert send_mock.call_count == stream.max_retries + 1
 
 
+@pytest.mark.xdist_group(name="test_http")
 def test_stub_custom_backoff_http_stream_endless_retries(mocker):
     mocker.patch("time.sleep", lambda x: None)
 
@@ -198,6 +208,7 @@ def test_stub_custom_backoff_http_stream_endless_retries(mocker):
     assert send_mock.call_count == infinite_number + 1
 
 
+@pytest.mark.xdist_group(name="test_http")
 @pytest.mark.parametrize("http_code", [400, 401, 403])
 def test_4xx_error_codes_http_stream(mocker, http_code):
     stream = StubCustomBackoffHttpStream()
@@ -215,6 +226,7 @@ class AutoFailFalseHttpStream(StubBasicReadHttpStream):
     retry_factor = 0.01
 
 
+@pytest.mark.xdist_group(name="test_http")
 def test_raise_on_http_errors_off_429(mocker):
     stream = AutoFailFalseHttpStream()
     req = requests.Response()
@@ -225,6 +237,7 @@ def test_raise_on_http_errors_off_429(mocker):
         list(stream.read_records(SyncMode.full_refresh))
 
 
+@pytest.mark.xdist_group(name="test_http")
 @pytest.mark.parametrize("status_code", [500, 501, 503, 504])
 def test_raise_on_http_errors_off_5xx(mocker, status_code):
     stream = AutoFailFalseHttpStream()
@@ -237,6 +250,7 @@ def test_raise_on_http_errors_off_5xx(mocker, status_code):
     assert send_mock.call_count == stream.max_retries + 1
 
 
+@pytest.mark.xdist_group(name="test_http")
 @pytest.mark.parametrize("status_code", [400, 401, 402, 403, 416])
 def test_raise_on_http_errors_off_non_retryable_4xx(mocker, status_code):
     stream = AutoFailFalseHttpStream()
@@ -249,6 +263,7 @@ def test_raise_on_http_errors_off_non_retryable_4xx(mocker, status_code):
     assert response.status_code == status_code
 
 
+@pytest.mark.xdist_group(name="test_http")
 @pytest.mark.parametrize(
     "error",
     (
@@ -258,6 +273,7 @@ def test_raise_on_http_errors_off_non_retryable_4xx(mocker, status_code):
         requests.exceptions.ReadTimeout,
     ),
 )
+@pytest.mark.xdist_group(name="test_http")
 def test_raise_on_http_errors(mocker, error):
     stream = AutoFailFalseHttpStream()
     send_mock = mocker.patch.object(requests.Session, "send", side_effect=error())
@@ -283,9 +299,11 @@ class TestRequestBody:
     form_body = {"key1": "value1", "key2": 1234}
     urlencoded_form_body = "key1=value1&key2=1234"
 
+    @pytest.mark.xdist_group(name="test_http")
     def request2response(self, request, context):
         return json.dumps({"body": request.text, "content_type": request.headers.get("Content-Type")})
 
+    @pytest.mark.xdist_group(name="test_http")
     def test_json_body(self, mocker, requests_mock):
 
         stream = PostHttpStream()
@@ -297,6 +315,7 @@ class TestRequestBody:
         assert response["content_type"] == "application/json"
         assert json.loads(response["body"]) == self.json_body
 
+    @pytest.mark.xdist_group(name="test_http")
     def test_text_body(self, mocker, requests_mock):
 
         stream = PostHttpStream()
@@ -308,6 +327,7 @@ class TestRequestBody:
         assert response["content_type"] is None
         assert response["body"] == self.data_body
 
+    @pytest.mark.xdist_group(name="test_http")
     def test_form_body(self, mocker, requests_mock):
 
         stream = PostHttpStream()
@@ -319,6 +339,7 @@ class TestRequestBody:
         assert response["content_type"] == "application/x-www-form-urlencoded"
         assert response["body"] == self.urlencoded_form_body
 
+    @pytest.mark.xdist_group(name="test_http")
     def test_text_json_body(self, mocker, requests_mock):
         """checks a exception if both functions were overridden"""
         stream = PostHttpStream()
@@ -328,6 +349,7 @@ class TestRequestBody:
         with pytest.raises(RequestBodyException):
             list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
+    @pytest.mark.xdist_group(name="test_http")
     def test_body_for_all_methods(self, mocker, requests_mock):
         """Stream must send a body for GET/POST/PATCH/PUT methods only"""
         stream = PostHttpStream()
@@ -371,11 +393,13 @@ class CacheHttpSubStream(HttpSubStream):
         return ""
 
 
+@pytest.mark.xdist_group(name="test_http")
 def test_caching_filename():
     stream = CacheHttpStream()
     assert stream.cache_filename == f"{stream.name}.sqlite"
 
 
+@pytest.mark.xdist_group(name="test_http")
 def test_caching_sessions_are_different():
     stream_1 = CacheHttpStream()
     stream_2 = CacheHttpStream()
@@ -384,6 +408,7 @@ def test_caching_sessions_are_different():
     assert stream_1.cache_filename == stream_2.cache_filename
 
 
+@pytest.mark.xdist_group(name="test_http")
 def test_parent_attribute_exist():
     parent_stream = CacheHttpStream()
     child_stream = CacheHttpSubStream(parent=parent_stream)
@@ -391,6 +416,7 @@ def test_parent_attribute_exist():
     assert child_stream.parent == parent_stream
 
 
+@pytest.mark.xdist_group(name="test_http")
 def test_cache_response(mocker):
     stream = CacheHttpStream()
     mocker.patch.object(stream, "url_base", "https://google.com/")
@@ -414,6 +440,7 @@ class CacheHttpStreamWithSlices(CacheHttpStream):
         yield {"value": len(response.text)}
 
 
+@pytest.mark.xdist_group(name="test_http")
 @patch("airbyte_cdk.sources.streams.core.logging", MagicMock())
 def test_using_cache(mocker, requests_mock):
     requests_mock.register_uri("GET", "https://google.com/", text="text")
@@ -446,6 +473,7 @@ class AutoFailTrueHttpStream(StubBasicReadHttpStream):
     raise_on_http_errors = True
 
 
+@pytest.mark.xdist_group(name="test_http")
 @pytest.mark.parametrize("status_code", range(400, 600))
 def test_send_raise_on_http_errors_logs(mocker, status_code):
     mocker.patch.object(AutoFailTrueHttpStream, "logger")
@@ -461,6 +489,7 @@ def test_send_raise_on_http_errors_logs(mocker, status_code):
         assert response.status_code == status_code
 
 
+@pytest.mark.xdist_group(name="test_http")
 @pytest.mark.parametrize(
     "api_response, expected_message",
     [
@@ -482,6 +511,7 @@ def test_send_raise_on_http_errors_logs(mocker, status_code):
         ({}, None),
     ],
 )
+@pytest.mark.xdist_group(name="test_http")
 def test_default_parse_response_error_message(api_response: dict, expected_message: Optional[str]):
     stream = StubBasicReadHttpStream()
     response = MagicMock()
@@ -491,6 +521,7 @@ def test_default_parse_response_error_message(api_response: dict, expected_messa
     assert message == expected_message
 
 
+@pytest.mark.xdist_group(name="test_http")
 def test_default_parse_response_error_message_not_json(requests_mock):
     stream = StubBasicReadHttpStream()
     requests_mock.register_uri("GET", "mock://test.com/not_json", text="this is not json")
@@ -500,6 +531,7 @@ def test_default_parse_response_error_message_not_json(requests_mock):
     assert message is None
 
 
+@pytest.mark.xdist_group(name="test_http")
 def test_default_get_error_display_message_handles_http_error(mocker):
     stream = StubBasicReadHttpStream()
     mocker.patch.object(stream, "parse_response_error_message", return_value="my custom message")

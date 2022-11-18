@@ -12,6 +12,7 @@ from collections.abc import Mapping
 from pathlib import Path
 
 import jsonref
+import pytest
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification, FailureType
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader, check_config_against_spec_or_exit
@@ -28,6 +29,7 @@ SCHEMAS_ROOT = "/".join(os.path.abspath(MODULE.__file__).split("/")[:-1]) / Path
 
 
 @fixture(autouse=True, scope="session")
+@pytest.mark.xdist_group(name="test_schema_helpers")
 def create_and_teardown_schemas_dir():
     os.mkdir(SCHEMAS_ROOT)
     os.mkdir(SCHEMAS_ROOT / "shared")
@@ -35,12 +37,14 @@ def create_and_teardown_schemas_dir():
     shutil.rmtree(SCHEMAS_ROOT)
 
 
+@pytest.mark.xdist_group(name="test_schema_helpers")
 def create_schema(name: str, content: Mapping):
     with open(SCHEMAS_ROOT / f"{name}.json", "w") as f:
         f.write(json.dumps(content))
 
 
 @fixture
+@pytest.mark.xdist_group(name="test_schema_helpers")
 def spec_object():
     spec = {
         "connectionSpecification": {
@@ -56,6 +60,7 @@ def spec_object():
     yield ConnectorSpecification.parse_obj(spec)
 
 
+@pytest.mark.xdist_group(name="test_schema_helpers")
 def test_check_config_against_spec_or_exit_does_not_print_schema(capsys, spec_object):
     config = {"super_secret_token": "really_a_secret"}
 
@@ -69,6 +74,7 @@ def test_check_config_against_spec_or_exit_does_not_print_schema(capsys, spec_ob
     assert exc.failure_type == FailureType.config_error, "failure_type should be config_error"
 
 
+@pytest.mark.xdist_group(name="test_schema_helpers")
 def test_should_not_fail_validation_for_valid_config(spec_object):
     config = {"api_token": "something"}
     check_config_against_spec_or_exit(config, spec_object)
@@ -97,6 +103,7 @@ class TestResourceSchemaLoader:
         assert actual_schema == expected_schema
 
     @staticmethod
+    @pytest.mark.xdist_group(name="test_schema_helpers")
     def test_shared_schemas_resolves():
         expected_schema = {
             "type": ["null", "object"],
@@ -133,6 +140,7 @@ class TestResourceSchemaLoader:
         assert actual_schema == expected_schema
 
     @staticmethod
+    @pytest.mark.xdist_group(name="test_schema_helpers")
     def test_shared_schemas_resolves_nested():
         expected_schema = {
             "type": ["null", "object"],
