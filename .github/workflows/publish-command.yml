@@ -288,14 +288,14 @@ jobs:
           echo "IMAGE_VERSION=$(_get_docker_image_version ${DOCKERFILE})" >> $GITHUB_ENV
       - name: Prepare Sentry
         if: startsWith(matrix.connector, 'connectors')
-        uses: nick-fields/retry@v2
+        uses: Wandalen/wretry.action@master
         with:
-          timeout_seconds: 15
-          max_attempts: 3
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
           command: curl -sL https://sentry.io/get-cli/ | bash || echo "sentry cli already installed"
       - name: Publish ${{ matrix.connector }}
         id: publish
-        env:
+        env:q
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
