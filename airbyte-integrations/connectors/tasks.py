@@ -63,7 +63,7 @@ TASK_COMMANDS: Dict[str, List[str]] = {
         "pip install .",
         "pip install .[tests]",
         "pip install pytest-cov",
-        "pytest -v --cov={source_path} --cov-report xml unit_tests",
+        "pytest -n auto -v --cov={source_path} --cov-report xml unit_tests",
     ],
 }
 
