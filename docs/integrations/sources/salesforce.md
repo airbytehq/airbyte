@@ -8,9 +8,13 @@ This page guides you through the process of setting up the Salesforce source con
 
 * [Salesforce Account](https://login.salesforce.com/) with Enterprise access or API quota purchased
 * Dedicated Salesforce [user](https://help.salesforce.com/s/articleView?id=adding_new_users.htm&type=5&language=en_US) (optional)
+<!-- env:oss -->
 * (For Airbyte Open Source) Salesforce [OAuth](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_tokens_scopes.htm&type=5) credentials
+<!-- /env:oss -->
 
-## Step 1: (Optional, Recommended) Create a read-only Salesforce user
+## Setup guide
+
+### Step 1: (Optional, Recommended) Create a read-only Salesforce user
 
 While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated read-only user for Airbyte. This allows you to granularly control the data Airbyte can read.
 
@@ -32,9 +36,10 @@ To create a dedicated read only Salesforce user:
 11. Copy the Username and keep it accessible.
 12. Log into the email you used above and verify your new Salesforce account user. You'll need to set a password as part of this process. Keep this password accessible.
 
-## Step 2: Set up Salesforce as a Source in Airbyte
+### Step 2: Set up Salesforce as a Source in Airbyte
 
-### For Airbyte Cloud
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
 To set up Salesforce as a source in Airbyte Cloud:
 
@@ -47,8 +52,10 @@ To set up Salesforce as a source in Airbyte Cloud:
 7. (Optional) In the Salesforce Object filtering criteria section, click **Add**. From the Search criteria dropdown, select the criteria relevant to you. For Search value, add the search terms relevant to you. If this field is blank, Airbyte will replicate all data.
 8. Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to. Make sure you are logged into the right account.
 9. Click **Set up source**.
+<!-- /env:cloud -->
 
-### For Airbyte Open Source
+<!-- env:oss -->
+**For Airbyte Open Source:**
 
 To set up Salesforce as a source in Airbyte Open Source:
 
@@ -59,6 +66,7 @@ To set up Salesforce as a source in Airbyte Open Source:
     3. If you [created a read-only user](https://docs.google.com/document/d/1wZR8pz4MRdc2zUculc9IqoF8JxN87U40IqVnTtcqdrI/edit#heading=h.w5v6h7b2a9y4), use the user credentials when logging in to generate OAuth tokens.
 
 2. Navigate to the Airbute Open Source dashboard and follow the same steps as [setting up Salesforce as a source in Airbyte Cloud](#for-airbyte-cloud).
+<!-- /env:oss -->
 
 ## Supported sync modes
 

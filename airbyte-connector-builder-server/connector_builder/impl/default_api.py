@@ -9,6 +9,9 @@ from typing import Any, Dict, Iterable, Optional, Union
 from urllib.parse import parse_qs, urljoin, urlparse
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
+from fastapi import Body, HTTPException
+from jsonschema import ValidationError
+
 from connector_builder.generated.apis.default_api_interface import DefaultApi
 from connector_builder.generated.models.http_request import HttpRequest
 from connector_builder.generated.models.http_response import HttpResponse
@@ -20,8 +23,6 @@ from connector_builder.generated.models.streams_list_read import StreamsListRead
 from connector_builder.generated.models.streams_list_read_streams import StreamsListReadStreams
 from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
 from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapter
-from fastapi import Body, HTTPException
-from jsonschema import ValidationError
 
 
 class DefaultApiImpl(DefaultApi):
@@ -29,54 +30,53 @@ class DefaultApiImpl(DefaultApi):
 
     async def get_manifest_template(self) -> str:
         return """version: "0.1.0"
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://example.com"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  customers_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "customers"
+      primary_key: "id"
+      path: "/example"
 
-        definitions:
-          selector:
-            extractor:
-              field_pointer: []
-          requester:
-            url_base: "https://example.com"
-            http_method: "GET"
-            authenticator:
-              type: BearerAuthenticator
-              api_token: "{{ config['api_key'] }}"
-          retriever:
-            record_selector:
-              $ref: "*ref(definitions.selector)"
-            paginator:
-              type: NoPagination
-            requester:
-              $ref: "*ref(definitions.requester)"
-          base_stream:
-            retriever:
-              $ref: "*ref(definitions.retriever)"
-          customers_stream:
-            $ref: "*ref(definitions.base_stream)"
-            $options:
-              name: "customers"
-              primary_key: "id"
-              path: "/example"
+streams:
+  - "*ref(definitions.customers_stream)"
 
-        streams:
-          - "*ref(definitions.customers_stream)"
+check:
+  stream_names:
+    - "customers"
 
-        check:
-          stream_names:
-            - "customers"
-
-        spec:
-          documentation_url: https://docsurl.com
-          connection_specification:
-            title: Source Name Spec # 'TODO: Replace this with the name of your source.'
-            type: object
-            required:
-              - api_key
-            additionalProperties: true
-            properties:
-              # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-              api_key:
-                type: string
-                description: API Key
+spec:
+  documentation_url: https://docsurl.com
+  connection_specification:
+    title: Source Name Spec # 'TODO: Replace this with the name of your source.'
+    type: object
+    required:
+      - api_key
+    additionalProperties: true
+    properties:
+      # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
+      api_key:
+        type: string
+        description: API Key
 """
 
     async def list_streams(self, streams_list_request_body: StreamsListRequestBody = Body(None, description="")) -> StreamsListRead:
@@ -97,7 +97,7 @@ class DefaultApiImpl(DefaultApi):
                     )
                 )
         except Exception as error:
-            raise HTTPException(status_code=400, detail=f"Could not list streams with with error: {error.args[0]}")
+            raise HTTPException(status_code=400, detail=f"Could not list streams with with error: {str(error)}")
         return StreamsListRead(streams=stream_list_read)
 
     async def read_stream(self, stream_read_request_body: StreamReadRequestBody = Body(None, description="")) -> StreamRead:
@@ -113,7 +113,7 @@ class DefaultApiImpl(DefaultApi):
         log_messages = []
         try:
             for message_group in self._get_message_groups(
-                adapter.read_stream(stream_read_request_body.stream, stream_read_request_body.config)
+                    adapter.read_stream(stream_read_request_body.stream, stream_read_request_body.config)
             ):
                 if isinstance(message_group, AirbyteLogMessage):
                     log_messages.append({"message": message_group.message})
@@ -121,7 +121,7 @@ class DefaultApiImpl(DefaultApi):
                     single_slice.pages.append(message_group)
         except Exception as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
-            raise HTTPException(status_code=400, detail=f"Could not perform read with with error: {error.args[0]}")
+            raise HTTPException(status_code=400, detail=f"Could not perform read with with error: {str(error)}")
 
         return StreamRead(logs=log_messages, slices=[single_slice])
 
@@ -199,6 +199,6 @@ class DefaultApiImpl(DefaultApi):
     def _create_low_code_adapter(manifest: Dict[str, Any]) -> LowCodeSourceAdapter:
         try:
             return LowCodeSourceAdapter(manifest=manifest)
-        except ValidationError as error:
+        except Exception as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
-            raise HTTPException(status_code=400, detail=f"Invalid connector manifest with error: {error.message}")
+            raise HTTPException(status_code=400, detail=f"Invalid connector manifest with error: {str(error)}")

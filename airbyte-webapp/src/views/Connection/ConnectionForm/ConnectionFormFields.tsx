@@ -46,6 +46,8 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
     clearFormChange(formId);
   });
 
+  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
+
   return (
     <>
       {/* FormChangeTracker is here as it has access to everything it needs without being repeated */}
@@ -116,7 +118,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
             )}
           </Field>
         </Section>
-        <Section>
+        <Section className={isNewStreamsTableEnabled ? styles.flush : undefined}>
           <Field
             name="syncCatalog.streams"
             component={SyncCatalogField}

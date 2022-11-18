@@ -8,7 +8,6 @@ import tempfile
 
 import pytest
 from airbyte_cdk.sources.declarative.parsers.undefined_reference_exception import UndefinedReferenceException
-from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from yaml.parser import ParserError
 
@@ -39,7 +38,7 @@ class MockYamlDeclarativeSource(YamlDeclarativeSource):
         """
         with open(path_to_yaml_file, "r") as f:
             config_content = f.read()
-            parsed_config = YamlParser().parse(config_content)
+            parsed_config = YamlDeclarativeSource._parse(config_content)
             return parsed_config
 
 

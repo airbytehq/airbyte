@@ -41,7 +41,7 @@ const Examples: React.FC<Pick<LabelInfoProps, "examples">> = ({ examples }) => {
       </h4>
       <div className={styles.exampleContainer}>
         {examplesArray.map((example) => (
-          <span className={styles.exampleItem}>{example}</span>
+          <span className={styles.exampleItem}>{String(example)}</span>
         ))}
       </div>
     </div>
