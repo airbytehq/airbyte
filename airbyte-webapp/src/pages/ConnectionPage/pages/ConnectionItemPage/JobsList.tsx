@@ -13,7 +13,52 @@ export type JobsWithJobs = JobWithAttemptsRead & { job: Exclude<JobWithAttemptsR
 const JobsList: React.FC<JobsListProps> = ({ jobs }) => {
   const sortJobs: JobsWithJobs[] = useMemo(
     () =>
-      jobs.filter((job): job is JobsWithJobs => !!job.job).sort((a, b) => (a.job.createdAt > b.job.createdAt ? -1 : 1)),
+      jobs
+        .filter((job): job is JobsWithJobs => !!job.job)
+        .sort((a, b) => (a.job.createdAt > b.job.createdAt ? -1 : 1))
+        .map((value, index) => {
+          if (index !== 0 || !value.attempts) {
+            return value;
+          }
+
+          value.job.status = "failed";
+
+          value.attempts[0].bytesSynced = 500000000;
+          value.attempts[0].recordsSynced = 12178;
+          value.attempts[0].totalStats = {
+            bytesEmitted: 40000000,
+            estimatedBytes: 10232100,
+            recordsEmitted: 1123,
+            recordsCommitted: 110,
+            estimatedRecords: 12312,
+            stateMessagesEmitted: 5,
+          };
+          value.attempts[0].status = "running";
+          value.attempts[0].streamStats = [
+            {
+              streamName: "pokemon",
+              stats: {
+                bytesEmitted: 1000200,
+                estimatedBytes: 13000000,
+                recordsEmitted: 120,
+                recordsCommitted: 100,
+                estimatedRecords: 1238,
+              },
+            },
+            {
+              streamName: "pokemon2",
+              stats: {
+                bytesEmitted: 1000200,
+                estimatedBytes: 13000000,
+                recordsEmitted: 120,
+                recordsCommitted: 100,
+                estimatedRecords: 1238,
+              },
+            },
+          ];
+
+          return value;
+        }),
     [jobs]
   );
 

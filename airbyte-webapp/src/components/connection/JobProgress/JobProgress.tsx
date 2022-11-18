@@ -5,13 +5,12 @@ import { getJobStatus } from "components/JobItem/JobItem";
 import { Button } from "components/ui/Button";
 import { Text } from "components/ui/Text";
 
-import { AttemptRead, SynchronousJobRead } from "core/request/AirbyteClient";
-import Status from "core/statuses";
+import { AttemptRead, AttemptStatus, SynchronousJobRead } from "core/request/AirbyteClient";
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 import { formatBytes } from "utils/numberHelper";
 
-import styles from "./JobProgress.module.scss";
 import { ProgressLine } from "./JobProgressLine";
+import { progressBarCalculations } from "./utils";
 
 function isJobsWithJobs(job: JobsWithJobs | SynchronousJobRead): job is JobsWithJobs {
   return "attempts" in job;
@@ -37,7 +36,7 @@ export const JobProgress: React.FC<ProgressBarProps> = ({ job }) => {
   if (["failed", "succeeded", "cancelled"].includes(jobStatus)) {
     return null;
   }
-  const color = styles[jobStatus] ?? "white";
+
   const {
     displayProgressBar,
     totalPercentRecords,
@@ -63,8 +62,10 @@ export const JobProgress: React.FC<ProgressBarProps> = ({ job }) => {
 
   return (
     <Text as="div" size="xs">
-      {displayProgressBar && <ProgressLine percent={totalPercentRecords} color={color} />}
-      {latestAttempt?.status === Status.RUNNING && (
+      {displayProgressBar && (
+        <ProgressLine percent={totalPercentRecords} type={jobStatus === "incomplete" ? "warning" : "default"} />
+      )}
+      {latestAttempt?.status === AttemptStatus.running && (
         <>
           {displayProgressBar && (
             <div>
@@ -72,9 +73,7 @@ export const JobProgress: React.FC<ProgressBarProps> = ({ job }) => {
             </div>
           )}
           {!displayProgressBar && unEstimatedStreams.length > 0 && (
-            <div>
-              {unEstimatedStreams.length} {formatMessage({ id: "estimate.unEstimatedStreams" })}
-            </div>
+            <div>{formatMessage({ id: "estimate.unEstimatedStreams" }, { count: unEstimatedStreams.length })}</div>
           )}
           {denominatorRecords > 0 && (
             <>
@@ -171,69 +170,4 @@ export const JobProgress: React.FC<ProgressBarProps> = ({ job }) => {
       )}
     </Text>
   );
-};
-
-export const progressBarCalculations = (latestAttempt: AttemptRead) => {
-  let numeratorRecords = -1;
-  let denominatorRecords = -1;
-  let totalPercentRecords = -1;
-  let numeratorBytes = -1;
-  let denominatorBytes = -1;
-  let elapsedTimeMS = -1;
-  let timeRemaining = -1;
-  const unEstimatedStreams: string[] = [];
-  let displayProgressBar = true;
-
-  let countTotalsFromStreams = true;
-  if (
-    latestAttempt.totalStats?.recordsEmitted &&
-    latestAttempt.totalStats?.estimatedRecords &&
-    latestAttempt.totalStats?.bytesEmitted &&
-    latestAttempt.totalStats?.estimatedBytes
-  ) {
-    countTotalsFromStreams = false;
-    numeratorRecords = latestAttempt.totalStats.recordsEmitted;
-    denominatorRecords = latestAttempt.totalStats.estimatedRecords;
-    numeratorBytes = latestAttempt.totalStats.bytesEmitted;
-    denominatorBytes = latestAttempt.totalStats.estimatedBytes;
-  } else if (!latestAttempt.totalStats && latestAttempt.streamStats) {
-    for (const stream of latestAttempt.streamStats) {
-      if (countTotalsFromStreams) {
-        numeratorRecords += stream.stats.recordsEmitted ?? 0;
-        denominatorRecords += stream.stats.estimatedRecords ?? 0;
-        numeratorBytes += stream.stats.bytesEmitted ?? 0;
-        denominatorBytes += stream.stats.estimatedBytes ?? 0;
-      }
-    }
-  }
-
-  if (latestAttempt.streamStats) {
-    for (const stream of latestAttempt.streamStats) {
-      if (!stream.stats.recordsEmitted) {
-        unEstimatedStreams.push(`${stream.streamName}`);
-      }
-    }
-  }
-
-  totalPercentRecords = denominatorRecords > 0 ? Math.floor((numeratorRecords * 100) / denominatorRecords) : 0;
-
-  // chose to estimate time remaining based on records rather than bytes
-  if (latestAttempt.status === Status.RUNNING && denominatorRecords > 0) {
-    elapsedTimeMS = Date.now() - latestAttempt.createdAt * 1000;
-    timeRemaining = Math.floor(elapsedTimeMS / totalPercentRecords) * (100 - totalPercentRecords); // in ms
-  } else {
-    displayProgressBar = false;
-  }
-
-  return {
-    displayProgressBar,
-    totalPercentRecords,
-    timeRemaining,
-    numeratorBytes,
-    numeratorRecords,
-    denominatorRecords,
-    denominatorBytes,
-    unEstimatedStreams,
-    elapsedTimeMS,
-  };
 };

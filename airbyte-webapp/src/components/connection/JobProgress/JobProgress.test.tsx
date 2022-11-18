@@ -1,6 +1,6 @@
 import { AttemptRead, AttemptStats, AttemptStatus, AttemptStreamStats } from "core/request/AirbyteClient";
 
-import { progressBarCalculations } from ".";
+import { progressBarCalculations } from "./utils";
 
 describe("#progressBarCalculations", () => {
   it("for an attempt with no throughput information", () => {

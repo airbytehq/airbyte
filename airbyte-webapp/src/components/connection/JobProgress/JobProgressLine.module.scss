@@ -1,9 +1,9 @@
-@use "../../../scss/colors";
+@use "scss/colors";
 
 .lineOuter {
   height: 5px;
   width: 100%;
-  background-color: colors.$cardShadowColor;
+  background-color: colors.$grey-100;
   border-radius: 10px;
   margin-top: 5px;
   margin-bottom: 5px;
@@ -12,5 +12,13 @@
 .lineInner {
   height: 100%;
   border-radius: 10px;
-  transition: "width 5s ease-in-out";
+  transition: width 3s ease-in-out;
+
+  &.warning {
+    background-color: colors.$yellow-400;
+  }
+
+  &.default {
+    background-color: colors.$blue-100;
+  }
 }
