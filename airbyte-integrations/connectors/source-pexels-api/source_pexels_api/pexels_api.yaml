@@ -98,12 +98,6 @@ definitions:
       name: "photos_curated"
       path: "/v1/curated"
 
-  photos_get_by_id_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
-      name: "photos_get_by_id"
-      path: "/v1/photos/{{ config['photo_id'] }}"
-
   videos_search_stream:
     $ref: "*ref(definitions.page_stream)"
     $options:
@@ -116,41 +110,23 @@ definitions:
       name: "videos_popular"
       path: "/videos/popular"
 
-  videos_get_by_id_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
-      name: "videos_get_by_id"
-      path: "/videos/videos/{{ config['video_id'] }}"
-
   collection_featured_stream:
     $ref: "*ref(definitions.page_stream)"
     $options:
       name: "collection_featured"
       path: "/v1/collections/featured"
-  
-  collection_get_by_id_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
-      name: "collection_get_by_id"
-      path: "/v1/collections/{{ config['collection_id'] }}"
 
 streams:
   - "*ref(definitions.photos_search_stream)"
   - "*ref(definitions.photos_curated_stream)"
-  - "*ref(definitions.photos_get_by_id_stream)"
-  - "*ref(definitions.collection_get_by_id_stream)"
   - "*ref(definitions.collection_featured_stream)"
   - "*ref(definitions.videos_search_stream)"
   - "*ref(definitions.videos_popular_stream)"
-  - "*ref(definitions.videos_get_by_id_stream)"
 
 check:
   stream_names:
     - "photos_search"
     - "photos_curated"
-    - "photos_get_by_id"
     - "collection_featured"
-    - "collection_get_by_id"
     - "videos_search"
     - "videos_popular"
-    - "videos_get_by_id"

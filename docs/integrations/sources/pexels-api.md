@@ -19,9 +19,6 @@ Just pass the generated API key and optional parameters for establishing the con
     - size: large, medium, small. Default is large
     - color: red, orange, yellow, green, turquoise, blue, violet, pink, brown, black, gray, white or any hexidecimal color code.
     - locale: en-US, pt-BR, es-ES, ca-ES, de-DE, it-IT, fr-FR, sv-SE, id-ID, pl-PL, ja-JP, zh-TW, zh-CN, ko-KR, th-TH, nl-NL, hu-HU, vi-VN,<br> cs-CZ, da-DK, fi-FI, uk-UA, el-GR, ro-RO, nb-NO, sk-SK, tr-TR, ru-RU. Default is en-US
-    - collection_id: Specific collection target ID
-    - photo_id: Specific photo target ID
-    - video_id: Specific video target ID
 
 ## Step 2: Set up the Pexels-APIs connector in Airbyte
 
@@ -59,13 +56,10 @@ The Pexels-API source connector supports the following [sync modes](https://docs
 ## Supported Streams
 
 - photos_search
-- photos_get_by_id
 - photos_curated
 - videos_search
 - videos_popular
-- videos_get_by_id
 - collection_featured
-- collection_get_by_id
 
 ## API method example
 

@@ -22,8 +22,6 @@ Just pass the generated API key and optional parameters for establishing the con
     - size: large, medium, small. Default is large
     - color: red, orange, yellow, green, turquoise, blue, violet, pink, brown, black, gray, white or any hexidecimal color code.
     - locale: en-US, pt-BR, es-ES, ca-ES, de-DE, it-IT, fr-FR, sv-SE, id-ID, pl-PL, ja-JP, zh-TW, zh-CN, ko-KR, th-TH, nl-NL, hu-HU, vi-VN,<br> cs-CZ, da-DK, fi-FI, uk-UA, el-GR, ro-RO, nb-NO, sk-SK, tr-TR, ru-RU. Default is en-US
-    - page: Default is 1
-    - per_page: Default is 15, Max is 80
 
 ## Step 2: Generate schema for the endpoint
 
