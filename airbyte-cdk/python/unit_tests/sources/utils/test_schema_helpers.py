@@ -84,6 +84,7 @@ def test_should_not_fail_validation_for_valid_config(spec_object):
 class TestResourceSchemaLoader:
     # Test that a simple schema is loaded correctly
     @staticmethod
+    @pytest.mark.xdist_group(name="test_schema_helpers")
     def test_inline_schema_resolves():
         expected_schema = {
             "type": ["null", "object"],
