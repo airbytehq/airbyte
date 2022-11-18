@@ -54,10 +54,10 @@ const MenuItem = styled.li`
 `;
 
 const Text = styled.div`
-  margin-top: 1px;
-  padding-left: 10px;
+  // margin-top: 2px;
+  margin-left: 10px;
   font-weight: 500;
-  font-size: 18px;
+  font-size: 15px;
 `;
 
 // const TextSetting = styled.div`
@@ -66,15 +66,7 @@ const Text = styled.div`
 //   font-weight: bold;
 // `;
 
-const TextLogo = styled.div`
-  margin-top: 7px;
-  color: black;
-  padding-left: 15px;
-  font-size: 20px;
-  font-weight: bold;
-`;
-
-const Logo = styled.div`
+const LogoContainer = styled.div`
   margin-top: 30px;
   margin-bottom: 50px;
   display: flex;
@@ -82,6 +74,13 @@ const Logo = styled.div`
   justify-content: center;
   align-items: center;
   font-weight: normal;
+  width: 100%;
+  height: 60px;
+`;
+
+const Logo = styled.img`
+  max-width: 130px;
+  height: auto;
 `;
 
 // const ButtonCenter = styled.div`
@@ -104,8 +103,8 @@ const Logo = styled.div`
 // `;
 
 const MenuItemIcon = styled(FontAwesomeIcon)`
-  font-size: 18px;
-  line-height: 18px;
+  font-size: 16px;
+  line-height: 16px;
 `;
 
 // const SettingIcon = styled(FontAwesomeIcon)`
@@ -148,17 +147,16 @@ const SideBar: React.FC = () => {
     <Bar>
       <div>
         <Link to="" $clear>
-          <Logo>
-            <img src="/daspireLogo1.svg" alt="logo" height={40} width={40} />
-            <TextLogo>
-              <FormattedMessage id="sidebar.DaspireLogo" />
-            </TextLogo>
-          </Logo>
+          <LogoContainer>
+            <Logo src="/daspireLogo1.svg" alt="logo" />
+          </LogoContainer>
         </Link>
         <Menu>
           <MenuItem>
             <NavLink className={useCalculateSidebarItemStyles(RoutePaths.Connections)} to={RoutePaths.Connections}>
-              <MenuItemIcon icon={faHome} />
+              <div>
+                <MenuItemIcon icon={faHome} />
+              </div>
               <Text>
                 <FormattedMessage id="sidebar.DaspireDashboard" />
               </Text>
@@ -235,7 +233,9 @@ const SideBar: React.FC = () => {
         {/* </li>*/}
         <MenuItem>
           <NavLink className={useCalculateSidebarItemStyles(RoutePaths.Settings)} to={RoutePaths.Settings}>
-            <MenuItemIcon icon={faGear} />
+            <div>
+              <MenuItemIcon icon={faGear} />
+            </div>
             <Text>
               <FormattedMessage id="sidebar.DaspireSetting" />
             </Text>

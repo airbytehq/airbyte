@@ -14,6 +14,8 @@ const getBorderColor = (props: IStyleProps) => {
     return props.theme.greyColor30;
   } else if (props.danger) {
     return props.theme.dangerColor;
+  } else if (props.black) {
+    return props.theme.black300;
   }
 
   return props.theme.primaryColor;
@@ -29,6 +31,8 @@ const getBackgroundColor = (props: IStyleProps) => {
     return "transparent";
   } else if (props.danger) {
     return props.theme.dangerColor;
+  } else if (props.black) {
+    return props.theme.black300;
   }
 
   return props.theme.primaryColor;

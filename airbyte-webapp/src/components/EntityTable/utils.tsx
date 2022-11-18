@@ -93,16 +93,16 @@ export const getConnectionTableData = (
       name: connection.name,
       entityName:
         type === "connection"
-          ? `${connection.source?.sourceName} - ${connection.source?.name}`
+          ? `${connection.source?.sourceName}` // `${connection.source?.sourceName} - ${connection.source?.name}`
           : connection[connectType]?.name || "",
       connectorName:
         type === "connection"
-          ? `${connection.destination?.destinationName} - ${connection.destination?.name}`
+          ? `${connection.destination?.destinationName}` // `${connection.destination?.destinationName} - ${connection.destination?.name}`
           : connection[connectType]?.name || "",
       lastSync: connection.latestSyncJobCreatedAt,
       enabled: connection.status === ConnectionStatus.active,
       schedule: connection.scheduleData?.basicSchedule,
-      status: connection.status,
+      status: `${connection.status[0].toUpperCase()}${connection.status.slice(1)}`,
       isSyncing: connection.isSyncing,
       lastSyncStatus: getConnectionSyncStatus(connection.status, connection.latestSyncJobStatus),
       connectorIcon: type === "destination" ? sourceIcon : destinationIcon,

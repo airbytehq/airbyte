@@ -343,7 +343,7 @@
   "connection.updateSchema.namespace": "Namespace",
   "connection.updateSchema.dataType": "Data type",
 
-  "connection.newConnection": "+ New connection",
+  "connection.newConnection": "New connection",
   "connection.newConnectionTitle": "New connection",
   "connection.noConnections": "Connection list is empty",
   "connection.disabledConnection": "Disabled connection",
@@ -597,5 +597,11 @@
   "login.here": " here.",
   "sidebar.DaspireLogo": "Daspire",
   "sidebar.DaspireDashboard": "Dashboard",
-  "sidebar.DaspireSetting": "Settings"
+  "sidebar.DaspireSetting": "Settings",
+
+  "upgrade.plan.countdown": "You’re using the trial version of Daspire. Your trial ends in 14 days.",
+  "upgrade.plan.btn": "Upgrade Now",
+  "unauthorized.modal.text1": "You’re not authorized to make the change.",
+  "unauthorized.modal.text2": "Please contact an admin of your account to upgrade.",
+  "unauthorized.modal.btn": "OK"
 }
