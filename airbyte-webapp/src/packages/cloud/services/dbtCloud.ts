@@ -64,8 +64,6 @@ export const isSameJob = (remoteJob: DbtCloudJobInfo, savedJob: DbtCloudJob): bo
 
 type ServiceToken = string;
 
-type ServiceToken = string;
-
 export const useSubmitDbtCloudIntegrationConfig = () => {
   const { workspaceId } = useCurrentWorkspace();
   const { mutateAsync: updateWorkspace } = useUpdateWorkspace();

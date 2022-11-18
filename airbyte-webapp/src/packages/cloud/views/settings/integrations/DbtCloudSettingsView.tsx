@@ -24,6 +24,7 @@ export const DbtCloudSettingsView: React.FC = () => {
           }}
           onSubmit={({ serviceToken }, { resetForm }) => {
             setHasValidationError(false);
+            setValidationMessage("");
             return submitDbtCloudIntegrationConfig(serviceToken, {
               onError: (e) => {
                 setHasValidationError(true);
