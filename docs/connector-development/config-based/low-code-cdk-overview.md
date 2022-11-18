@@ -11,7 +11,7 @@ The low-code framework is in [alpha](https://docs.airbyte.com/project-overview/p
 ### API Connectors are common and formulaic
 In building and maintaining hundreds of connectors at Airbyte, we've observed that whereas API source connectors constitute the overwhelming majority of connectors, they are also the most formulaic. API connector code almost always solves small variations of these problems: 
 
-1. Making requests to various endpoints under the same API URL e.g: `https://api.stripe.com/customers`, `https://api.stripe.com/transactions`, etc..` 
+1. Making requests to various endpoints under the same API URL e.g: `https://api.stripe.com/customers`, `https://api.stripe.com/transactions`, etc.. 
 2. Authenticating using a common auth strategy such as Oauth or API keys
 3. Pagination using one of the 4 ubiquitous pagination strategies: limit-offset, page-number, cursor pagination, and header link pagination
 4. Gracefully handling rate limiting by implementing exponential backoff, fixed-time backoff, or variable-time backoff
