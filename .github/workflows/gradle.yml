@@ -10,7 +10,7 @@ on:
     inputs:
       debug_mode:
         description: "Enable or disable tmate session for debug during helm ac tests"
-        default: 'true'
+        default: 'false'
         required: false
   schedule:
     - cron: "0 */1 * * *"
