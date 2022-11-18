@@ -11,7 +11,7 @@
     "board": {
       "type": ["null", "object"],
       "properties": {
-        "id": { "type": ["null", "integer"] }
+        "id": { "type": ["null", "string"] }
       }
     },
     "column_values": {
@@ -26,19 +26,19 @@
       }
     },
     "created_at": { "type": ["null", "string"], "format": "date-time" },
-    "creator_id": { "type": ["null", "integer"] },
+    "creator_id": { "type": ["null", "string"] },
     "group": {
       "type": ["null", "object"],
       "properties": {
         "id": { "type": ["null", "string"] }
       }
     },
-    "id": { "type": ["null", "integer"] },
+    "id": { "type": ["null", "string"] },
     "name": { "type": ["null", "string"] },
     "parent_item": {
       "type": ["null", "object"],
       "properties": {
-        "id": { "type": ["null", "integer"] }
+        "id": { "type": ["null", "string"] }
       }
     },
     "state": { "type": ["null", "string"] },
