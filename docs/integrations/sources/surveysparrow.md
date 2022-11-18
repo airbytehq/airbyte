@@ -23,12 +23,13 @@ In order to get access token, follow these steps:
 
 **For Airbyte Open Source:**
 
-1. Go to local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
-3. On the source setup page, select **SurveySparrow** from the Source type dropdown and enter a name for this connector.
+1. Go to local Airbyte page
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**
+3. On the source setup page, select **SurveySparrow** from the Source type dropdown and enter a name for this connector
 4. Add **Access Token**
-5. Add Survey ID (optional)
-6. Click `Set up source`.
+5. Select whether SurveySparrow account location is EU-based
+6. Add Survey ID (optional)
+7. Click `Set up source`
 
 ## Supported streams and sync modes
 
