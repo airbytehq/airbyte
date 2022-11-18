@@ -128,7 +128,7 @@ const MainViewRoutes = () => {
 };
 
 export const Routing: React.FC = () => {
-  const { user, inited, providers } = useAuthService();
+  const { user, inited, providers, hasCorporateEmail } = useAuthService();
 
   const { search } = useLocation();
 
@@ -146,9 +146,15 @@ export const Routing: React.FC = () => {
         : null,
     [user]
   );
+
+  const userTraits = useMemo(
+    () => (user ? { providers, email: user.email, isCorporate: hasCorporateEmail() } : {}),
+    [hasCorporateEmail, providers, user]
+  );
+
   useGetSegmentAnonymousId();
   useAnalyticsRegisterValues(analyticsContext);
-  useAnalyticsIdentifyUser(user?.userId, { providers, email: user?.email });
+  useAnalyticsIdentifyUser(user?.userId, userTraits);
 
   if (!inited) {
     return <LoadingPage />;
