@@ -7,6 +7,7 @@ package io.airbyte.workers.internal;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import java.util.Map;
 import java.util.Optional;
@@ -55,7 +56,7 @@ public interface MessageTracker {
    * @return returns a map of committed record count by stream name. If committed record counts cannot
    *         be computed, empty.
    */
-  Optional<Map<String, Long>> getStreamToCommittedRecords();
+  Optional<Map<AirbyteStreamNameNamespacePair, Long>> getStreamToCommittedRecords();
 
   /**
    * Get the per-stream emitted record count. This includes messages that were emitted by the source,
@@ -63,7 +64,7 @@ public interface MessageTracker {
    *
    * @return returns a map of emitted record count by stream name.
    */
-  Map<String, Long> getStreamToEmittedRecords();
+  Map<AirbyteStreamNameNamespacePair, Long> getStreamToEmittedRecords();
 
   /**
    * Get the per-stream emitted byte count. This includes messages that were emitted by the source,
@@ -71,7 +72,7 @@ public interface MessageTracker {
    *
    * @return returns a map of emitted record count by stream name.
    */
-  Map<String, Long> getStreamToEmittedBytes();
+  Map<AirbyteStreamNameNamespacePair, Long> getStreamToEmittedBytes();
 
   /**
    * Get the overall emitted record count. This includes messages that were emitted by the source, but
