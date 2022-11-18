@@ -66,6 +66,7 @@ setup(
             "pytest",
             "pytest-cov",
             "pytest-mock",
+            "pytest-xdist",
             "requests-mock",
             "pytest-httpserver",
         ],
