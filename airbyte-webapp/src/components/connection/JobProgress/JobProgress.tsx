@@ -1,34 +1,29 @@
-import classNames from "classnames";
 import { useState } from "react";
 import { useIntl } from "react-intl";
 
 import { getJobStatus } from "components/JobItem/JobItem";
 import { Button } from "components/ui/Button";
+import { Text } from "components/ui/Text";
 
-import { AttemptRead, JobConfigType, SynchronousJobRead } from "core/request/AirbyteClient";
+import { AttemptRead, SynchronousJobRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 import { formatBytes } from "utils/numberHelper";
 
-import styles from "./ProgressBar.module.scss";
-import { ProgressLine } from "./ProgressLine";
+import styles from "./JobProgress.module.scss";
+import { ProgressLine } from "./JobProgressLine";
 
 function isJobsWithJobs(job: JobsWithJobs | SynchronousJobRead): job is JobsWithJobs {
-  return (job as JobsWithJobs).attempts !== undefined;
+  return "attempts" in job;
 }
 
 interface ProgressBarProps {
   job: JobsWithJobs | SynchronousJobRead;
-  jobConfigType: JobConfigType;
 }
 
-export const ProgressBar: React.FC<ProgressBarProps> = ({ job, jobConfigType }) => {
+export const JobProgress: React.FC<ProgressBarProps> = ({ job }) => {
   const { formatMessage, formatNumber } = useIntl();
   const [showStreams, setShowStreams] = useState(false);
-
-  if (jobConfigType !== "sync") {
-    return null;
-  }
 
   let latestAttempt: AttemptRead | undefined;
   if (isJobsWithJobs(job) && job.attempts) {
@@ -67,7 +62,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ job, jobConfigType }) 
   }
 
   return (
-    <div className={classNames(styles.container)}>
+    <Text as="div" size="xs">
       {displayProgressBar && <ProgressLine percent={totalPercentRecords} color={color} />}
       {latestAttempt?.status === Status.RUNNING && (
         <>
@@ -125,7 +120,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ job, jobConfigType }) 
 
           {latestAttempt.streamStats && showStreams && (
             <div>
-              <div className={classNames(styles.container)}>
+              <Text as="div" size="xs">
                 {formatMessage({
                   id: "estimate.streamStats",
                 })}{" "}
@@ -145,13 +140,13 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ job, jobConfigType }) 
                   </p>
                 </Button>
                 ):
-              </div>
+              </Text>
               {latestAttempt.streamStats?.map((stream, idx) => {
                 const localNumerator = stream.stats.recordsEmitted;
                 const localDenominator = stream.stats.estimatedRecords;
 
                 return (
-                  <div className={classNames(styles.container)} key={`stream-progress-${idx}`}>
+                  <Text size="xs" as="div" key={`stream-progress-${idx}`}>
                     {" - "}
                     <strong>{stream.streamName}</strong> -{" "}
                     {localNumerator && localDenominator
@@ -167,14 +162,14 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ job, jobConfigType }) 
                         )} (${formatMessage({
                           id: "estimate.noEstimate",
                         })})`}
-                  </div>
+                  </Text>
                 );
               })}
             </div>
           )}
         </>
       )}
-    </div>
+    </Text>
   );
 };
 

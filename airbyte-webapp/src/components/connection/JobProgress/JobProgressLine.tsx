@@ -2,7 +2,7 @@
 
 import classNames from "classnames";
 
-import styles from "./ProgressLine.module.scss";
+import styles from "./JobProgressLine.module.scss";
 
 interface ProgressLineProps {
   color: string;
