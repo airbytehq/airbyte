@@ -240,9 +240,27 @@ subprojects { subproj ->
             }
             into 'build/docker/bin'
         }
+                task createBuildxNode(type:Exec) {
+            group 'docker'
+            executable 'docker'
+            workingDir 'build/docker'
+            ignoreExitValue true
 
-        tasks.register("buildDockerImage", DockerBuildImage) {
-            // This is currently only used for connectors.
+            args = ['buildx', 'create', '--name', 'airbyte-ci', '--use', '--driver', 'docker-container']
+        }
+
+        task useBuildxNode(type:Exec) {
+            dependsOn(createBuildxNode)
+            group 'docker'
+            executable 'docker'
+            workingDir 'build/docker'
+
+            args = ['buildx', 'use', 'airbyte-ci']
+        }
+
+        task buildDockerImage(type:Exec) {
+            dependsOn(useBuildxNode)
+
             def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.4'
 
             def arch = System.getenv('BUILD_ARCH') ?: System.getProperty("os.arch").toLowerCase()
@@ -255,15 +273,34 @@ subprojects { subproj ->
             // Used by the platform -- Must be an Amazon Corretto-based image for build to work without modification to Dockerfile instructions
             def openjdkImage = System.getenv('JDK_IMAGE') ?: "airbyte/airbyte-base-java-image:1.0"
 
-            platform = buildPlatform
-            images.add("airbyte/$subproj.dockerImageName:$rootProject.ext.image_tag")
-            buildArgs.put('JDK_VERSION', jdkVersion)
-            buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
-            buildArgs.put('ALPINE_IMAGE', alpineImage)
-            buildArgs.put('NGINX_IMAGE', nginxImage)
-            buildArgs.put('JDK_IMAGE', openjdkImage)
-            buildArgs.put('VERSION', rootProject.ext.version)
 
+            group 'docker'
+            executable 'docker'
+            workingDir 'build/docker'
+
+            args = [
+                'buildx', 
+                'build', 
+                '--push', 
+                '--platform', buildPlatform,
+                '-t', "airbyte/$subproj.dockerImageName:$rootProject.ext.image_tag",
+                '--build-arg', 'JDK_VERSION',
+                '--build-arg', 'DOCKER_BUILD_ARCH',
+                '--build-arg', 'ALPINE_IMAGE',
+                '--build-arg', 'NGINX_IMAGE',
+                '--build-arg', 'JDK_IMAGE',
+                '--build-arg', 'VERSION',
+                '--cache-from', "type=registry,ref=airbyte/$subproj.dockerImageName:cache",
+            ]
+
+            if (true /*System.getenv('GITHUB_REF_NAME') == "master" && System.getenv('CI')*/) {
+                args += [
+                    '--cache-to', "type=registry,ref=airbyte/$subproj.dockerImageName:cache",
+                    '.'
+                ]
+            } else {
+                args += ['.']
+            }
         }
 
         tasks.named("assemble") {
