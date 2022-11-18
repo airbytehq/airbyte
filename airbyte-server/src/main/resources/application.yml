@@ -1,0 +1,15 @@
+micronaut:
+  application:
+    name: airbyte-server
+  server:
+    port: 8042
+airbyte:
+  deployment-mode: ${DEPLOYMENT_MODE:OSS}
+  flyway:
+    configs:
+      initialization-timeout-ms: ${CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
+      minimum-migration-version: ${CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
+    jobs:
+      initialization-timeout-ms: ${JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
+      minimum-migration-version: ${JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
+  version: ${AIRBYTE_VERSION}
