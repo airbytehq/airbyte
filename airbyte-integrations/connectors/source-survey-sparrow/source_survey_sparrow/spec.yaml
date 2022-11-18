@@ -15,9 +15,11 @@ connectionSpecification:
         href="https://developers.surveysparrow.com/rest-apis#authentication">here</a>. The key is
         case sensitive.
       airbyte_secret: true
+      order: 0
     survey_id:
       type: array
       description: A List of your survey ids for survey-specific stream
+      order: 2
     is_eu_based:
       title: Base URL 
       type: object
@@ -42,3 +44,4 @@ connectionSpecification:
           url_base:
             type: string
             const: "https://api.surveysparrow.com/v3"
+      order: 1
