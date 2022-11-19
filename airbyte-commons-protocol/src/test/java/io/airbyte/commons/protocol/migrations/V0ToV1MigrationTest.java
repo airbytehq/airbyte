@@ -8,7 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteStream;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -526,6 +528,22 @@ public class V0ToV1MigrationTest {
       assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
     }
 
+    private io.airbyte.protocol.models.v0.AirbyteMessage createCatalogMessage(JsonNode schema) {
+      return new io.airbyte.protocol.models.v0.AirbyteMessage().withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.CATALOG)
+          .withCatalog(
+              new io.airbyte.protocol.models.v0.AirbyteCatalog().withStreams(List.of(new io.airbyte.protocol.models.v0.AirbyteStream().withJsonSchema(
+                  schema))));
+    }
+
+    private void assertUpgradeIsNoop(String schemaString) {
+      JsonNode oldSchema = Jsons.deserialize(schemaString);
+
+      AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
+
+      JsonNode expectedSchema = Jsons.deserialize(schemaString);
+      assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
+    }
+
   }
 
   @Nested
@@ -621,20 +639,46 @@ public class V0ToV1MigrationTest {
 
   }
 
-  private io.airbyte.protocol.models.v0.AirbyteMessage createCatalogMessage(JsonNode schema) {
-    return new io.airbyte.protocol.models.v0.AirbyteMessage().withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.CATALOG)
-        .withCatalog(
-            new io.airbyte.protocol.models.v0.AirbyteCatalog().withStreams(List.of(new io.airbyte.protocol.models.v0.AirbyteStream().withJsonSchema(
-                schema))));
-  }
+  @Nested
+  public class CatalogDowngradeTest {
 
-  private void assertUpgradeIsNoop(String schemaString) {
-    JsonNode oldSchema = Jsons.deserialize(schemaString);
+    @Test
+    public void testBasicDowngrade() {
+      // This isn't actually a valid stream schema (since it's not an object)
+      // but this test case is mostly about preserving the message structure, so it's not super relevant
+      JsonNode newSchema = Jsons.deserialize("""
+                                             {
+                                               "type": "string"
+                                             }
+                                             """);
 
-    AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(newSchema));
 
-    JsonNode expectedSchema = Jsons.deserialize(schemaString);
-    assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
+      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize("""
+                                                         {
+                                                           "type": "CATALOG",
+                                                           "catalog": {
+                                                             "streams": [
+                                                               {
+                                                                 "json_schema": {
+                                                                   "$ref": "WellKnownTypes.json#/definitions/String"
+                                                                 }
+                                                               }
+                                                             ]
+                                                           }
+                                                         }
+                                                         """,
+          io.airbyte.protocol.models.v0.AirbyteMessage.class);
+      assertEquals(expectedMessage, downgradedMessage);
+    }
+
+    private AirbyteMessage createCatalogMessage(JsonNode schema) {
+      return new AirbyteMessage().withType(AirbyteMessage.Type.CATALOG)
+          .withCatalog(
+              new AirbyteCatalog().withStreams(List.of(new AirbyteStream().withJsonSchema(
+                  schema))));
+    }
+
   }
 
   private io.airbyte.protocol.models.v0.AirbyteMessage createRecordMessage(JsonNode data) {
