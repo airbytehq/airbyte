@@ -20,7 +20,8 @@ public class V0ToV1MigrationTest {
 
   @BeforeEach
   public void setup() {
-    migration = new AirbyteMessageMigrationV1();
+    // TODO write catalog
+    migration = new AirbyteMessageMigrationV1(null);
   }
 
   @Test
