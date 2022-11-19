@@ -20,7 +20,7 @@ You need at least Airbyte v0.40.19 to run the connector builder.
 We recommend using a dedicated Airbyte instance for the connector builder UI. This will allow you to pick up connector builder UI upgrades without impacting your production data pipelines. 
 :::
 
-The connector builder UI is bundled as part of the Airbyte webapp. To run it, follow [the instructions for deploying Airbyte locally](deploying-airbyte/local-deployment) to run Airbyte on your machine. Once you do, Airbyte should be reachable at `http://localhost:8000`.
+The connector builder UI is bundled as part of the Airbyte webapp. To run it, follow [the instructions for deploying Airbyte locally](../../deploying-airbyte/local-deployment) to run Airbyte on your machine. Once you do, Airbyte should be reachable at `http://localhost:8000`.
 
 
 ### Visit the connector builder
@@ -28,7 +28,7 @@ Once your Airbyte instance has started and you've moved past the initial setup s
 
 ![The Connector Builder home page](./assets/lowcode_landing_screen.png)
 
-You can now iterate on your connector's YAML manifest. See the [components](#components) section for more information on how to use the UI to iterate on the YAML manifest. 
+You can now iterate on your connector's YAML manifest. See the [components](#connector-builder-components) section for more information on how to use the UI to iterate on the YAML manifest. 
 
 ### Exporting the YAML
 Once you're done iterating on your YAML in the UI, you'll need to export it to your local filesystem into a connector module. 
