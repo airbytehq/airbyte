@@ -51,7 +51,7 @@ public class V0ToV1MigrationTest {
                                                              "streams": [
                                                                {
                                                                  "json_schema": {
-                                                                   "$ref": "WellKnownTypes.json#definitions/String"
+                                                                   "$ref": "WellKnownTypes.json#/definitions/String"
                                                                  }
                                                                }
                                                              ]
@@ -127,40 +127,40 @@ public class V0ToV1MigrationTest {
                                                     "type": "object",
                                                     "properties": {
                                                       "example_string": {
-                                                        "$ref": "WellKnownTypes.json#definitions/String"
+                                                        "$ref": "WellKnownTypes.json#/definitions/String"
                                                       },
                                                       "example_number": {
-                                                        "$ref": "WellKnownTypes.json#definitions/Number"
+                                                        "$ref": "WellKnownTypes.json#/definitions/Number"
                                                       },
                                                       "example_integer": {
-                                                        "$ref": "WellKnownTypes.json#definitions/Integer"
+                                                        "$ref": "WellKnownTypes.json#/definitions/Integer"
                                                       },
                                                       "example_airbyte_integer": {
-                                                        "$ref": "WellKnownTypes.json#definitions/Integer"
+                                                        "$ref": "WellKnownTypes.json#/definitions/Integer"
                                                       },
                                                       "example_boolean": {
-                                                        "$ref": "WellKnownTypes.json#definitions/Boolean"
+                                                        "$ref": "WellKnownTypes.json#/definitions/Boolean"
                                                       },
                                                       "example_timestamptz": {
-                                                        "$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"
+                                                        "$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"
                                                       },
                                                       "example_timestamptz_implicit": {
-                                                        "$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"
+                                                        "$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"
                                                       },
                                                       "example_timestamp_without_tz": {
-                                                        "$ref": "WellKnownTypes.json#definitions/TimestampWithoutTimezone"
+                                                        "$ref": "WellKnownTypes.json#/definitions/TimestampWithoutTimezone"
                                                       },
                                                       "example_timez": {
-                                                        "$ref": "WellKnownTypes.json#definitions/TimeWithTimezone"
+                                                        "$ref": "WellKnownTypes.json#/definitions/TimeWithTimezone"
                                                       },
                                                       "example_timetz_implicit": {
-                                                        "$ref": "WellKnownTypes.json#definitions/TimeWithTimezone"
+                                                        "$ref": "WellKnownTypes.json#/definitions/TimeWithTimezone"
                                                       },
                                                       "example_time_without_tz": {
-                                                        "$ref": "WellKnownTypes.json#definitions/TimeWithoutTimezone"
+                                                        "$ref": "WellKnownTypes.json#/definitions/TimeWithoutTimezone"
                                                       },
                                                       "example_date": {
-                                                        "$ref": "WellKnownTypes.json#definitions/Date"
+                                                        "$ref": "WellKnownTypes.json#/definitions/Date"
                                                       }
                                                     }
                                                   }
@@ -229,48 +229,48 @@ public class V0ToV1MigrationTest {
                                                     "type": "object",
                                                     "properties": {
                                                       "basic_array": {
-                                                        "items": {"$ref": "WellKnownTypes.json#definitions/String"}
+                                                        "items": {"$ref": "WellKnownTypes.json#/definitions/String"}
                                                       },
                                                       "tuple_array": {
                                                         "items": [
-                                                          {"$ref": "WellKnownTypes.json#definitions/String"},
-                                                          {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                                                          {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                          {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                                                         ],
-                                                        "additionalItems": {"$ref": "WellKnownTypes.json#definitions/String"},
-                                                        "contains": {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                                                        "additionalItems": {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                        "contains": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                                                       },
                                                       "nested_object": {
                                                         "properties": {
-                                                          "id": {"$ref": "WellKnownTypes.json#definitions/Integer"},
+                                                          "id": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
                                                           "nested_oneof": {
                                                             "oneOf": [
-                                                              {"$ref": "WellKnownTypes.json#definitions/String"},
-                                                              {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                                                              {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                              {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                                                             ]
                                                           },
                                                           "nested_anyof": {
                                                             "anyOf": [
-                                                              {"$ref": "WellKnownTypes.json#definitions/String"},
-                                                              {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                                                              {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                              {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                                                             ]
                                                           },
                                                           "nested_allof": {
                                                             "allOf": [
-                                                              {"$ref": "WellKnownTypes.json#definitions/String"},
-                                                              {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                                                              {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                              {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                                                             ]
                                                           },
                                                           "nested_not": {
                                                             "not": [
-                                                              {"$ref": "WellKnownTypes.json#definitions/String"},
-                                                              {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                                                              {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                              {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                                                             ]
                                                           }
                                                         },
                                                         "patternProperties": {
-                                                          "integer_.*": {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                                                          "integer_.*": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                                                         },
-                                                        "additionalProperties": {"$ref": "WellKnownTypes.json#definitions/String"}
+                                                        "additionalProperties": {"$ref": "WellKnownTypes.json#/definitions/String"}
                                                       }
                                                     }
                                                   }
@@ -414,8 +414,8 @@ public class V0ToV1MigrationTest {
                                                   {
                                                     "type": "object",
                                                     "properties": {
-                                                      "bad_timestamptz": {"$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"},
-                                                      "bad_integer": {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                                                      "bad_timestamptz": {"$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"},
+                                                      "bad_integer": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                                                     }
                                                   }
                                                   """);
@@ -468,50 +468,50 @@ public class V0ToV1MigrationTest {
                                                     "properties": {
                                                       "multityped_field": {
                                                         "oneOf": [
-                                                          {"$ref": "WellKnownTypes.json#definitions/String"},
+                                                          {"$ref": "WellKnownTypes.json#/definitions/String"},
                                                           {
                                                             "type": "object",
                                                             "properties": {
-                                                              "id": {"$ref": "WellKnownTypes.json#definitions/String"}
+                                                              "id": {"$ref": "WellKnownTypes.json#/definitions/String"}
                                                             },
                                                             "patternProperties": {
-                                                              "integer_.*": {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                                                              "integer_.*": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                                                             },
-                                                            "additionalProperties": {"$ref": "WellKnownTypes.json#definitions/String"}
+                                                            "additionalProperties": {"$ref": "WellKnownTypes.json#/definitions/String"}
                                                           },
                                                           {
                                                             "type": "array",
-                                                            "items": {"$ref": "WellKnownTypes.json#definitions/String"},
-                                                            "additionalItems": {"$ref": "WellKnownTypes.json#definitions/String"},
-                                                            "contains": {"$ref": "WellKnownTypes.json#definitions/String"}
+                                                            "items": {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                            "additionalItems": {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                            "contains": {"$ref": "WellKnownTypes.json#/definitions/String"}
                                                           }
                                                         ]
                                                       },
                                                       "nullable_multityped_field": {
                                                         "oneOf": [
-                                                          {"$ref": "WellKnownTypes.json#definitions/String"},
+                                                          {"$ref": "WellKnownTypes.json#/definitions/String"},
                                                           {
                                                             "type": "array",
                                                             "items": [
-                                                              {"$ref": "WellKnownTypes.json#definitions/String"},
-                                                              {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                                                              {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                              {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                                                             ]
                                                           },
                                                           {
                                                             "type": "object",
                                                             "properties": {
-                                                              "id": {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                                                              "id": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                                                             }
                                                           }
                                                         ]
                                                       },
                                                       "multityped_date_field": {
                                                         "oneOf": [
-                                                          {"$ref": "WellKnownTypes.json#definitions/Date"},
-                                                          {"$ref": "WellKnownTypes.json#definitions/Integer"}
+                                                          {"$ref": "WellKnownTypes.json#/definitions/Date"},
+                                                          {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                                                         ]
                                                       },
-                                                      "sneaky_singletype_field": {"$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"}
+                                                      "sneaky_singletype_field": {"$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"}
                                                     }
                                                   }
                                                   """);
