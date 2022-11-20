@@ -43,6 +43,7 @@ class DestinationSftpCsv(Destination):
         """
         writer = self._get_connection(config)
         writer._connect()
+        
         for configured_stream in configured_catalog.streams:
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 writer.delete(configured_stream.stream.name)
@@ -59,6 +60,8 @@ class DestinationSftpCsv(Destination):
             else:
                 # ignore other message types for now
                 continue
+        
+        writer.close()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
