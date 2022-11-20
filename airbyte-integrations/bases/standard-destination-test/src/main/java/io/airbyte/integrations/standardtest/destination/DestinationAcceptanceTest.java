@@ -5,9 +5,9 @@
 package io.airbyte.integrations.standardtest.destination;
 
 import static io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider.INFINITY_TYPE_MESSAGE;
-import static io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider.NUMBER_TYPE_CATALOG;
-import static io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider.NAN_TYPE_MESSAGE;
 import static io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider.INTEGER_TYPE_CATALOG;
+import static io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider.NAN_TYPE_MESSAGE;
+import static io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider.NUMBER_TYPE_CATALOG;
 import static io.airbyte.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil.prefixFileNameByVersion;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -1554,15 +1554,19 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
-   * NaN and Infinity test are not supported by default.
-   * Please override this method to specify NaN/Infinity types support
-   * example:
-   *   <pre>protected SpecialNumericTypes getSpecialNumericTypesSupportTest() {
-   *     return SpecialNumericTypes.builder()
-   *         .supportNumberNan(true)
-   *         .supportIntegerNan(true)
-   *         .build();
-   *   }</pre>
+   * NaN and Infinity test are not supported by default. Please override this method to specify
+   * NaN/Infinity types support example:
+   *
+   * <pre>
+   *
+   * protected SpecialNumericTypes getSpecialNumericTypesSupportTest() {
+   *   return SpecialNumericTypes.builder()
+   *       .supportNumberNan(true)
+   *       .supportIntegerNan(true)
+   *       .build();
+   * }
+   * </pre>
+   *
    * @return SpecialNumericTypes with support flags
    */
   protected SpecialNumericTypes getSpecialNumericTypesSupportTest() {
@@ -1726,16 +1730,19 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
-   * Can be used in overridden {@link #getSpecialNumericTypesSupportTest() getSpecialNumericTypesSupportTest()} method
-   * to specify if connector supports Integer/Number NaN or Integer/Number Infinity types
+   * Can be used in overridden {@link #getSpecialNumericTypesSupportTest()
+   * getSpecialNumericTypesSupportTest()} method to specify if connector supports Integer/Number NaN
+   * or Integer/Number Infinity types
    */
   @Builder
   @Getter
   public static class SpecialNumericTypes {
+
     boolean supportIntegerNan = false;
     boolean supportNumberNan = false;
     boolean supportIntegerInfinity = false;
     boolean supportNumberInfinity = false;
+
   }
 
   public static class NamespaceTestCaseProvider implements ArgumentsProvider {
