@@ -3,20 +3,31 @@
 #
 
 import uuid
-from typing import Any, Iterable, Mapping, Tuple
+from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, DestinationSyncMode, Status, Type
 from .client import SFTPClient
 
+
 class DestinationSftpCsv(Destination):
+
+    def _get_connection(self, config: Mapping[str, Any]) -> SFTPClient:
+        return SFTPClient(
+            host=config["host"],
+            username=config["username"],
+            destination_path=config.get("destination_path", "/"),
+            password=config.get("password", None),
+            private_key=config.get("private_key", None),
+            port=config["port"],
+        )
+
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
 
         """
-        TODO
         Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
@@ -30,17 +41,24 @@ class DestinationSftpCsv(Destination):
         :param input_messages: The stream of input messages received from the source
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
+        writer = self._get_connection(config)
+        writer._connect()
+        for configured_stream in configured_catalog.streams:
+            if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
+                writer.delete(configured_stream.stream.name)
 
-        pass
-
-    def _get_connection(self, config: Mapping[str, Any]) -> SFTPClient:
-        return SFTPClient(
-            host=config["host"],
-            username=config["username"],
-            password=config.get("password", None),
-            private_key=config.get("private_key", None),
-            port=config["port"],
-        )
+        for message in input_messages:
+            if message.type == Type.STATE:
+                # Emitting a state message indicates that all records which came
+                # before it have been written to the destination. We don't need to
+                # do anything specific to save the data so we just re-emit these
+                yield message
+            elif message.type == Type.RECORD:
+                record = message.record
+                writer.write(record.stream, record.data)
+            else:
+                # ignore other message types for now
+                continue
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
@@ -54,19 +72,21 @@ class DestinationSftpCsv(Destination):
 
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
+        
         try:
 
             # Verify write access by attempting to write then delete
             stream = str(uuid.uuid4())
-            # Can't override destination_path because we cannot assume we have write
-            # access anywhere else
+            data   = ["col1", "col2", "col3"]
 
-            conn = self._get_connection(config)
-            conn._connect()
-            conn.write_csv(stream, ["test", "test2"])
-
+            writer = self._get_connection(config)
+            writer._connect()
+            
+            writer.write(stream, data)
+            writer.delete(stream)
+            writer.close()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
+            writer.close()
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
-        finally:
-            conn.close()
+            

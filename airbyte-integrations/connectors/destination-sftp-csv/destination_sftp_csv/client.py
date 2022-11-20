@@ -4,15 +4,9 @@
 
 import io
 import logging
-import os
-import re
-import socket
-import stat
-from datetime import datetime
-from typing import Any, Dict, List, Mapping, Tuple
+from typing import Dict
 
 import backoff
-import numpy as np
 import pandas as pd
 import paramiko
 from paramiko.ssh_exception import AuthenticationException
@@ -21,8 +15,6 @@ from paramiko.ssh_exception import AuthenticationException
 REQUEST_TIMEOUT = 300
 
 logger = logging.getLogger("airbyte")
-
-File = Dict[str, Any]
 
 
 class SFTPClient:
@@ -77,7 +69,7 @@ class SFTPClient:
         self.close()
 
     def _get_path(self, stream: str) -> str:
-        return f"{self.destination_path}/airbyte_csv_{stream}.csv"
+        return f"{self.destination_path}/airbyte_{stream}.csv"
 
     def close(self):
         if self._connection is not None:
@@ -91,24 +83,43 @@ class SFTPClient:
                     raise
 
     # write csv file to SFTP server
-    def write_csv(self, stream: str, record: Dict):
+    def write(self, stream: str, record: Dict):
         if self._connection is not None:
             try:
+                logger.info("Writing CSV file...")
                 path = self._get_path(stream)
                 csv = pd.DataFrame(record)
                 csv = csv.to_csv(index=False, header=True)
+                
+                logger.info("Sending file to the SFTP server...")
                 self._connection.putfo(io.StringIO(csv), path)
             except Exception as ex:
                 raise Exception("SFTP write failed: %s" % ex)
 
     # delete file from SFTP server
-    def delete_file(self, file_name):
+    def delete(self, stream: str):
         if self._connection is not None:
             try:
-                self._connection.remove(file_name)
+                path = self._get_path(stream)
+                self._connection.remove(path)
+                logger.info("File '%s' deleted from SFTP server" % path)
             except Exception as ex:
                 raise Exception("SFTP delete failed: %s" % ex)
 
+    # check if file exists on SFTP server
+    def exists(self, stream: str) -> bool:
+        if self._connection is not None:
+            try:
+                path = self._get_path(stream)
+                return self._connection.exists(path)
+            except Exception as ex:
+                raise Exception("SFTP exists failed: %s" % ex)
 
-
-
+    # get file from SFTP server
+    def get(self, stream: str) -> str:
+        if self._connection is not None:
+            try:
+                path = self._get_path(stream)
+                return self._connection.get(path)
+            except Exception as ex:
+                raise Exception("SFTP get failed: %s" % ex) 
