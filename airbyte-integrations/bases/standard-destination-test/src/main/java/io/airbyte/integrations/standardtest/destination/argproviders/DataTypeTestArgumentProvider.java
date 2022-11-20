@@ -18,6 +18,10 @@ public class DataTypeTestArgumentProvider implements ArgumentsProvider {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DataTypeTestArgumentProvider.class);
 
+  public static final String INTEGER_TYPE_CATALOG = "data_type_integer_type_test_catalog.json";
+  public static final String NUMBER_TYPE_CATALOG = "data_type_number_type_test_catalog.json";
+  public static final String NAN_TYPE_MESSAGE = "nan_type_test_message.txt";
+  public static final String INFINITY_TYPE_MESSAGE = "nan_type_test_message.txt";
   public static final CatalogMessageTestConfigWithCompatibility BASIC_TEST =
       new CatalogMessageTestConfigWithCompatibility("data_type_basic_test_catalog.json", "data_type_basic_test_messages.txt",
           new TestCompatibility(true, false, false));

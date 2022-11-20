@@ -4,6 +4,11 @@
 
 package io.airbyte.integrations.standardtest.destination;
 
+import static io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider.INFINITY_TYPE_MESSAGE;
+import static io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider.NUMBER_TYPE_CATALOG;
+import static io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider.NAN_TYPE_MESSAGE;
+import static io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider.INTEGER_TYPE_CATALOG;
+import static io.airbyte.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil.prefixFileNameByVersion;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -73,6 +78,8 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.Builder;
+import lombok.Getter;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -1547,6 +1554,22 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
+   * NaN and Infinity test are not supported by default.
+   * Please override this method to specify NaN/Infinity types support
+   * example:
+   *   <pre>protected SpecialNumericTypes getSpecialNumericTypesSupportTest() {
+   *     return SpecialNumericTypes.builder()
+   *         .supportNumberNan(true)
+   *         .supportIntegerNan(true)
+   *         .build();
+   *   }</pre>
+   * @return SpecialNumericTypes with support flags
+   */
+  protected SpecialNumericTypes getSpecialNumericTypesSupportTest() {
+    return SpecialNumericTypes.builder().build();
+  }
+
+  /**
    * The method should be overridden if destination connector support newer protocol version otherwise
    * {@link io.airbyte.integrations.standardtest.destination.ProtocolVersion#V0} is used
    * <p>
@@ -1579,6 +1602,74 @@ public abstract class DestinationAcceptanceTest {
         catalog);
     final List<AirbyteMessage> messages = readMessagesFromFile(messagesFilename);
 
+    runAndCheck(catalog, configuredCatalog, messages);
+  }
+
+  @Test
+  public void testSyncNumberNanDataType() throws Exception {
+    // NaN/Infinity protocol supports started from V1 version or higher
+    SpecialNumericTypes numericTypesSupport = getSpecialNumericTypesSupportTest();
+    if (getProtocolVersion().equals(ProtocolVersion.V0) || !numericTypesSupport.isSupportNumberNan()) {
+      return;
+    }
+    final AirbyteCatalog catalog = readCatalogFromFile(prefixFileNameByVersion(NUMBER_TYPE_CATALOG, getProtocolVersion()));
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = readMessagesFromFile(prefixFileNameByVersion(NAN_TYPE_MESSAGE, getProtocolVersion()));
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+
+    runAndCheck(catalog, configuredCatalog, messages);
+  }
+
+  @Test
+  public void testSyncIntegerNanDataType() throws Exception {
+    // NaN/Infinity protocol supports started from V1 version or higher
+    SpecialNumericTypes numericTypesSupport = getSpecialNumericTypesSupportTest();
+    if (getProtocolVersion().equals(ProtocolVersion.V0) || !numericTypesSupport.isSupportIntegerNan()) {
+      return;
+    }
+    final AirbyteCatalog catalog = readCatalogFromFile(prefixFileNameByVersion(INTEGER_TYPE_CATALOG, getProtocolVersion()));
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = readMessagesFromFile(prefixFileNameByVersion(NAN_TYPE_MESSAGE, getProtocolVersion()));
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+
+    runAndCheck(catalog, configuredCatalog, messages);
+  }
+
+  @Test
+  public void testSyncNumberInfinityDataType() throws Exception {
+    // NaN/Infinity protocol supports started from V1 version or higher
+    SpecialNumericTypes numericTypesSupport = getSpecialNumericTypesSupportTest();
+    if (getProtocolVersion().equals(ProtocolVersion.V0) || !numericTypesSupport.isSupportNumberInfinity()) {
+      return;
+    }
+    final AirbyteCatalog catalog = readCatalogFromFile(prefixFileNameByVersion(NUMBER_TYPE_CATALOG, getProtocolVersion()));
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = readMessagesFromFile(prefixFileNameByVersion(INFINITY_TYPE_MESSAGE, getProtocolVersion()));
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+
+    runAndCheck(catalog, configuredCatalog, messages);
+  }
+
+  @Test
+  public void testSyncIntegerInfinityDataType() throws Exception {
+    // NaN/Infinity protocol supports started from V1 version or higher
+    SpecialNumericTypes numericTypesSupport = getSpecialNumericTypesSupportTest();
+    if (getProtocolVersion().equals(ProtocolVersion.V0) || !numericTypesSupport.isSupportIntegerInfinity()) {
+      return;
+    }
+    final AirbyteCatalog catalog = readCatalogFromFile(prefixFileNameByVersion(INTEGER_TYPE_CATALOG, getProtocolVersion()));
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = readMessagesFromFile(prefixFileNameByVersion(INFINITY_TYPE_MESSAGE, getProtocolVersion()));
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+
+    runAndCheck(catalog, configuredCatalog, messages);
+  }
+
+  private void runAndCheck(AirbyteCatalog catalog, ConfiguredAirbyteCatalog configuredCatalog, List<AirbyteMessage> messages) throws Exception {
     if (supportsNormalization()) {
       LOGGER.info("Normalization is supported! Run test with normalization.");
       runAndCheckWithNormalization(messages, configuredCatalog, catalog);
@@ -1632,6 +1723,19 @@ public abstract class DestinationAcceptanceTest {
       }
     });
     return airbyteMessages;
+  }
+
+  /**
+   * Can be used in overridden {@link #getSpecialNumericTypesSupportTest() getSpecialNumericTypesSupportTest()} method
+   * to specify if connector supports Integer/Number NaN or Integer/Number Infinity types
+   */
+  @Builder
+  @Getter
+  public static class SpecialNumericTypes {
+    boolean supportIntegerNan = false;
+    boolean supportNumberNan = false;
+    boolean supportIntegerInfinity = false;
+    boolean supportNumberInfinity = false;
   }
 
   public static class NamespaceTestCaseProvider implements ArgumentsProvider {
