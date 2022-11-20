@@ -6,10 +6,13 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
+    "airbyte-cdk~=0.2",
+    "paramiko==2.11.0",
+    "backoff==1.8.0",
+    "pandas==1.5.0",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1"]
+TEST_REQUIREMENTS = ["pytest~=6.1", "source-acceptance-test", "docker==5.0.3"]
 
 setup(
     name="destination_sftp_csv",

@@ -2,13 +2,13 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
-from typing import Any, Iterable, Mapping
+import uuid
+from typing import Any, Iterable, Mapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
-
+from .client import SFTPClient
 
 class DestinationSftpCsv(Destination):
     def write(
@@ -33,6 +33,15 @@ class DestinationSftpCsv(Destination):
 
         pass
 
+    def _get_connection(self, config: Mapping[str, Any]) -> SFTPClient:
+        return SFTPClient(
+            host=config["host"],
+            username=config["username"],
+            password=config.get("password", None),
+            private_key=config.get("private_key", None),
+            port=config["port"],
+        )
+
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
@@ -46,8 +55,18 @@ class DestinationSftpCsv(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            # TODO
+
+            # Verify write access by attempting to write then delete
+            stream = str(uuid.uuid4())
+            # Can't override destination_path because we cannot assume we have write
+            # access anywhere else
+
+            conn = self._get_connection(config)
+            conn._connect()
+            conn.write_csv(stream, ["test", "test2"])
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+        finally:
+            conn.close()
