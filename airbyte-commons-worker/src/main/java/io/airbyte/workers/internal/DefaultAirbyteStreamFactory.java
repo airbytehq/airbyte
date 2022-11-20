@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.ParallelFlux;
 import reactor.core.scheduler.Schedulers;
 
 /**
@@ -58,16 +59,14 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
   }
 
   @Override
-  public Flux<AirbyteMessage> createFlux(final BufferedReader bufferedReader) {
+  public ParallelFlux<AirbyteMessage> createFlux(final BufferedReader bufferedReader) {
     return Flux.fromStream(bufferedReader.lines())
-        .parallel()
-        .runOn(Schedulers.parallel())
+        .parallel(8)
+        .runOn(Schedulers.newParallel("par", 8))
         .flatMap(line -> Flux.fromStream(Jsons.tryDeserialize(line).stream()))
         .filter(this::validate)
         .flatMap(json -> Flux.fromStream(Jsons.tryObject(json, AirbyteMessage.class).stream()))
-        .filter(this::filterLog)
-        .sequential()
-        .publishOn(Schedulers.single());
+        .filter(this::filterLog);
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)

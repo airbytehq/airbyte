@@ -53,7 +53,7 @@ airbyte:
   container:
     orchestrator:
       enabled: ${CONTAINER_ORCHESTRATOR_ENABLED:false}
-      image: ${CONTAINER_ORCHESTRATOR_IMAGE:}
+      image: "airbyte/container-orchestrator:dev" #${CONTAINER_ORCHESTRATOR_IMAGE:}
       java-opts: ${CONTAINER_ORCHESTRATOR_JAVA_OPTS:}
       secret-mount-path: ${CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH:}
       secret-name: ${CONTAINER_ORCHESTRATOR_SECRET_NAME:}

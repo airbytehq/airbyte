@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.ParallelFlux;
 
 /**
  * This source will never emit any messages. It can be used in cases where that is helpful (hint:
@@ -143,8 +144,8 @@ public class EmptyAirbyteSource implements AirbyteSource {
   }
 
   @Override
-  public Flux<AirbyteMessage> read() {
-    return Flux.empty();
+  public ParallelFlux<AirbyteMessage> read() {
+    return Flux.<AirbyteMessage>empty().parallel();
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)

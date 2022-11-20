@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
+import reactor.core.publisher.ParallelFlux;
 
 /**
  * Extends DefaultAirbyteStreamFactory to handle version specific conversions.
@@ -74,7 +74,7 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
 
   @Override
   @SneakyThrows
-  public Flux<AirbyteMessage> createFlux(final BufferedReader bufferedReader) {
+  public ParallelFlux<AirbyteMessage> createFlux(final BufferedReader bufferedReader) {
     if (shouldDetectVersion) {
       final Optional<Version> versionMaybe = detectVersion(bufferedReader);
       if (versionMaybe.isPresent()) {

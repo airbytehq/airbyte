@@ -8,7 +8,7 @@ import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.nio.file.Path;
 import java.util.Optional;
-import reactor.core.publisher.Flux;
+import reactor.core.publisher.ParallelFlux;
 
 /**
  * This interface provides a java interface over all interactions with a Source from the POV of the
@@ -51,7 +51,7 @@ public interface AirbyteSource extends AutoCloseable {
    */
   Optional<AirbyteMessage> attemptRead();
 
-  Flux<AirbyteMessage> read();
+  ParallelFlux<AirbyteMessage> read();
 
   /**
    * Attempts to shut down the Source's container. Waits for a graceful shutdown, capped by a timeout.

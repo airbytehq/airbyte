@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
+import reactor.core.publisher.ParallelFlux;
 
 /**
  * Creates a stream from an input stream. The produced stream attempts to parse each line of the
@@ -50,7 +50,7 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
   }
 
   @Override
-  public Flux<AirbyteMessage> createFlux(final BufferedReader bufferedReader) {
+  public ParallelFlux<AirbyteMessage> createFlux(final BufferedReader bufferedReader) {
     throw new NotImplementedException("not implemented");
   }
 

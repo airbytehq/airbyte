@@ -60,7 +60,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import reactor.core.scheduler.Schedulers;
 
 /**
  * This worker is the "data shovel" of ETL. It is responsible for moving data from the Source
@@ -294,8 +293,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       try {
         LOGGER.info("flux ftw!!!");
         source.read()
-            .parallel()
-            .runOn(Schedulers.parallel())
             .doOnNext(msg -> validateSchema(recordSchemaValidator, validationErrors, msg))
             .doOnNext(messageTracker::acceptFromSource)
             .doOnNext(msg -> {
@@ -306,15 +303,16 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               } catch (final Exception e) {
                 throw new DestinationException("Destination process message delivery failed", e);
               }
+              recordsRead.incrementAndGet();
             })
-            .doOnNext(msg -> {
-              if (recordsRead.incrementAndGet() % 1000 == 0) {
-                LOGGER.info("Records parallel fluxed: {} ({})", recordsRead,
-                    FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
-              }
-            })
+            // .doOnNext(msg -> {
+            // if (recordsRead.incrementAndGet() % 10000 == 0) {
+            // LOGGER.info("Records 2p fluxed: {} ({})", recordsRead,
+            // FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+            // }
+            // })
             .sequential()
-            .publishOn(Schedulers.single())
+            // .publishOn(Schedulers.single())
             .blockLast();
 
         source.close();

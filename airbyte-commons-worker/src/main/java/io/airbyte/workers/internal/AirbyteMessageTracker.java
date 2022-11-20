@@ -364,9 +364,11 @@ public class AirbyteMessageTracker implements MessageTracker {
    */
   @Override
   public Map<String, Long> getStreamToEmittedRecords() {
-    return streamToTotalRecordsEmitted.entrySet().stream().collect(Collectors.toMap(
-        entry -> streamNameToIndex.inverse().get(entry.getKey()),
-        Map.Entry::getValue));
+    return streamToTotalRecordsEmitted.entrySet().stream()
+        .collect(Collectors.toMap(
+            entry -> streamNameToIndex.inverse().get(entry.getKey()),
+            Map.Entry::getValue,
+            (v1, v2) -> v2)); // due to a concurrency issue, could have dupe keys, this is a temp hack
   }
 
   /**

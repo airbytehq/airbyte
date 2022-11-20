@@ -31,7 +31,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
+import reactor.core.publisher.ParallelFlux;
 
 public class DefaultAirbyteSource implements AirbyteSource {
 
@@ -50,7 +50,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private Process sourceProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
-  private Flux<AirbyteMessage> messageFlux = null;
+  private ParallelFlux<AirbyteMessage> messageFlux = null;
   private Integer exitValue = null;
   private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
 
@@ -132,7 +132,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   }
 
   @Override
-  public Flux<AirbyteMessage> read() {
+  public ParallelFlux<AirbyteMessage> read() {
     return messageFlux;
   }
 

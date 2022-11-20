@@ -7,11 +7,11 @@ package io.airbyte.workers.internal;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
 import java.util.stream.Stream;
-import reactor.core.publisher.Flux;
+import reactor.core.publisher.ParallelFlux;
 
 public interface AirbyteStreamFactory {
 
-  Flux<AirbyteMessage> createFlux(BufferedReader bufferedReader);
+  ParallelFlux<AirbyteMessage> createFlux(BufferedReader bufferedReader);
 
   Stream<AirbyteMessage> create(BufferedReader bufferedReader);
 

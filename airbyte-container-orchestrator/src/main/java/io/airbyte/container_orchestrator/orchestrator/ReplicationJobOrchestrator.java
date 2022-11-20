@@ -19,6 +19,7 @@ import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.Configs;
 import io.airbyte.config.ReplicationOutput;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.metrics.lib.MetricClientFactory;
@@ -90,35 +91,39 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     final var syncInput = readInput();
 
     final var sourceLauncherConfig = JobOrchestrator.readAndDeserializeFile(
-        Path.of(KubePodProcess.CONFIG_DIR,
-            ReplicationLauncherWorker.INIT_FILE_SOURCE_LAUNCHER_CONFIG),
+        Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_SOURCE_LAUNCHER_CONFIG),
         IntegrationLauncherConfig.class);
 
     final var destinationLauncherConfig = JobOrchestrator.readAndDeserializeFile(
-        Path.of(KubePodProcess.CONFIG_DIR,
-            ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
+        Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
         IntegrationLauncherConfig.class);
 
     ApmTraceUtils.addTagsToTrace(
         Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
-            destinationLauncherConfig.getDockerImage(),
-            SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage()));
+            destinationLauncherConfig.getDockerImage(), SOURCE_DOCKER_IMAGE_KEY,
+            sourceLauncherConfig.getDockerImage()));
 
     log.info("Setting up source launcher...");
+    final var srcRes = new ResourceRequirements();
+    srcRes.setCpuLimit("1024m");
+    srcRes.setMemoryLimit("512Mi");
     final var sourceLauncher = new AirbyteIntegrationLauncher(
         sourceLauncherConfig.getJobId(),
         Math.toIntExact(sourceLauncherConfig.getAttemptId()),
         sourceLauncherConfig.getDockerImage(),
         processFactory,
-        syncInput.getSourceResourceRequirements());
+        srcRes);
 
     log.info("Setting up destination launcher...");
+    final var dstRes = new ResourceRequirements();
+    dstRes.setCpuLimit("1024m");
+    dstRes.setMemoryLimit("512Mi");
     final var destinationLauncher = new AirbyteIntegrationLauncher(
         destinationLauncherConfig.getJobId(),
         Math.toIntExact(destinationLauncherConfig.getAttemptId()),
         destinationLauncherConfig.getDockerImage(),
         processFactory,
-        syncInput.getDestinationResourceRequirements());
+        dstRes);
 
     log.info("Setting up source...");
     // reset jobs use an empty source to induce resetting all data in destination.
