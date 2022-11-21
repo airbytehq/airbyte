@@ -32,7 +32,6 @@ class SFTPClient:
         if not self.password and not self.key:
             raise Exception("Either password or private key must be provided")
 
-        self._connect()
 
     def handle_backoff(details):
         logger.warning("SSH Connection closed unexpectedly. Waiting {wait} seconds and retrying...".format(**details))

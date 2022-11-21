@@ -12,7 +12,7 @@ MAIN_REQUIREMENTS = [
     "pandas==1.5.0",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "source-acceptance-test", "docker==5.0.3"]
+TEST_REQUIREMENTS = ["pytest~=6.1", "docker==5.0.3"]
 
 setup(
     name="destination_sftp_csv",
