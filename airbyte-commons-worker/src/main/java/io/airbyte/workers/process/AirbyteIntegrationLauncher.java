@@ -70,6 +70,10 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     this.featureFlags = new EnvVariableFeatureFlags();
   }
 
+  public boolean doesProcessNeedToBeIsolated() {
+    return false;
+  }
+
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Process spec(final Path jobRoot) throws WorkerException {
@@ -80,6 +84,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         attempt,
         jobRoot,
         imageName,
+        false,
         false,
         Collections.emptyMap(),
         null,
@@ -101,6 +106,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         jobRoot,
         imageName,
         false,
+        false,
         ImmutableMap.of(configFilename, configContents),
         null,
         resourceRequirement,
@@ -121,6 +127,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         attempt,
         jobRoot,
         imageName,
+        false,
         false,
         ImmutableMap.of(configFilename, configContents),
         null,
@@ -167,6 +174,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         jobRoot,
         imageName,
         false,
+        false,
         files,
         null,
         resourceRequirement,
@@ -195,6 +203,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         attempt,
         jobRoot,
         imageName,
+        false,
         true,
         files,
         null,

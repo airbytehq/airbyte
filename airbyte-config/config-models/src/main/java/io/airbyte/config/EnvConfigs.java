@@ -72,6 +72,7 @@ public class EnvConfigs implements Configs {
   public static final String JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY = "JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY";
   public static final String JOB_KUBE_TOLERATIONS = "JOB_KUBE_TOLERATIONS";
   public static final String JOB_KUBE_NODE_SELECTORS = "JOB_KUBE_NODE_SELECTORS";
+  public static final String JOB_ISOLATED_KUBE_NODE_SELECTORS = "JOB_ISOLATED_KUBE_NODE_SELECTORS";
   public static final String JOB_KUBE_ANNOTATIONS = "JOB_KUBE_ANNOTATIONS";
   public static final String JOB_KUBE_SOCAT_IMAGE = "JOB_KUBE_SOCAT_IMAGE";
   public static final String JOB_KUBE_BUSYBOX_IMAGE = "JOB_KUBE_BUSYBOX_IMAGE";
@@ -604,6 +605,11 @@ public class EnvConfigs implements Configs {
   @Override
   public Map<String, String> getJobKubeNodeSelectors() {
     return splitKVPairsFromEnvString(getEnvOrDefault(JOB_KUBE_NODE_SELECTORS, ""));
+  }
+
+  @Override
+  public Map<String, String> getIsolatedJobKubeNodeSelectors() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(JOB_ISOLATED_KUBE_NODE_SELECTORS, ""));
   }
 
   /**

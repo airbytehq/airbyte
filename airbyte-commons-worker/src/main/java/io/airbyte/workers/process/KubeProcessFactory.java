@@ -37,6 +37,8 @@ public class KubeProcessFactory implements ProcessFactory {
   private final String processRunnerHost;
   private final boolean isOrchestrator;
 
+  private boolean useIsolatedNodePool;
+
   /**
    * Sets up a process factory with the default processRunnerHost.
    */
@@ -85,6 +87,7 @@ public class KubeProcessFactory implements ProcessFactory {
                         final int attempt,
                         final Path jobRoot,
                         final String imageName,
+                        final boolean usesIsolatedPool,
                         final boolean usesStdin,
                         final Map<String, String> files,
                         final String entrypoint,
@@ -107,6 +110,8 @@ public class KubeProcessFactory implements ProcessFactory {
 
       final var allLabels = getLabels(jobId, attempt, customLabels);
 
+      final var nodeSelectors = usesIsolatedPool ? workerConfigs.getWorkerIsolatedKubeNodeSelectors() : workerConfigs.getworkerKubeNodeSelectors();
+
       return new KubePodProcess(
           isOrchestrator,
           processRunnerHost,
@@ -125,7 +130,7 @@ public class KubeProcessFactory implements ProcessFactory {
           resourceRequirements,
           workerConfigs.getJobImagePullSecret(),
           workerConfigs.getWorkerKubeTolerations(),
-          workerConfigs.getworkerKubeNodeSelectors(),
+          nodeSelectors,
           allLabels,
           workerConfigs.getWorkerKubeAnnotations(),
           workerConfigs.getJobSocatImage(),

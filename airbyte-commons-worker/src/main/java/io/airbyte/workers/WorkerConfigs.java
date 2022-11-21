@@ -18,6 +18,7 @@ public class WorkerConfigs {
   private final ResourceRequirements resourceRequirements;
   private final List<TolerationPOJO> workerKubeTolerations;
   private final Map<String, String> workerKubeNodeSelectors;
+  private final Map<String, String> workerIsolatedKubeNodeSelectors;
   private final Map<String, String> workerKubeAnnotations;
   private final String jobImagePullSecret;
   private final String jobImagePullPolicy;
@@ -41,6 +42,7 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getJobMainContainerMemoryLimit()),
         configs.getJobKubeTolerations(),
         configs.getJobKubeNodeSelectors(),
+        configs.getIsolatedJobKubeNodeSelectors(),
         configs.getJobKubeAnnotations(),
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
@@ -72,6 +74,7 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getJobMainContainerMemoryLimit()),
         configs.getJobKubeTolerations(),
         nodeSelectors,
+        configs.getIsolatedJobKubeNodeSelectors(),
         annotations,
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
@@ -103,6 +106,7 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getCheckJobMainContainerMemoryLimit()),
         configs.getJobKubeTolerations(),
         nodeSelectors,
+        configs.getIsolatedJobKubeNodeSelectors(),
         annotations,
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
@@ -134,6 +138,7 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getJobMainContainerMemoryLimit()),
         configs.getJobKubeTolerations(),
         nodeSelectors,
+        configs.getIsolatedJobKubeNodeSelectors(),
         annotations,
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
@@ -154,6 +159,7 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getReplicationOrchestratorMemoryLimit()),
         configs.getJobKubeTolerations(),
         configs.getJobKubeNodeSelectors(),
+        configs.getIsolatedJobKubeNodeSelectors(),
         configs.getJobKubeAnnotations(),
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
@@ -179,6 +185,8 @@ public class WorkerConfigs {
   public Map<String, String> getworkerKubeNodeSelectors() {
     return workerKubeNodeSelectors;
   }
+
+  public Map<String, String> getWorkerIsolatedKubeNodeSelectors() {return workerIsolatedKubeNodeSelectors;}
 
   public Map<String, String> getWorkerKubeAnnotations() {
     return workerKubeAnnotations;
