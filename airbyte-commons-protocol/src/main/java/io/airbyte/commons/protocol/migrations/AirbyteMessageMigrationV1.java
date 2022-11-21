@@ -203,7 +203,13 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   }
 
   private void downgradeTypeDeclaration(JsonNode schema) {
-    // TODO
+    if (schema.hasNonNull("$ref")) {
+      String referenceType = schema.get("$ref").asText();
+      ((ObjectNode) schema).removeAll();
+      ((ObjectNode) schema).setAll(JsonSchemaReferenceTypes.REFERENCE_TYPE_TO_OLD_TYPE.get(referenceType));
+    } else {
+      // TODO handle oneOf
+    }
   }
 
   private static void copyKey(ObjectNode source, ObjectNode target, String key) {
