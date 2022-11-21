@@ -37,11 +37,21 @@
   }
 
   &.removed {
-    background-color: colors.$red-40;
+    background-color: colors.$red-30;
+
+    &:hover {
+      background: colors.$red-40;
+      cursor: pointer;
+    }
   }
 
   &.added {
     background-color: colors.$green-30;
+
+    &:hover {
+      background: colors.$green-40;
+      cursor: pointer;
+    }
   }
 
   &.error {
@@ -50,6 +60,11 @@
 
   &.changed {
     background-color: colors.$blue-30;
+
+    &:hover {
+      background: colors.$blue-40;
+      cursor: pointer;
+    }
   }
 
   &.disabled {
