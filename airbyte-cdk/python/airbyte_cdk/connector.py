@@ -11,7 +11,6 @@ from abc import ABC, abstractmethod
 from typing import Any, Generic, Mapping, Optional, Protocol, TypeVar
 
 import yaml
-from airbyte_cdk.config_observation import ConfigObserver, ObservedDict
 from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification
 
 
@@ -97,12 +96,10 @@ class _WriteConfigProtocol(Protocol):
 
 class DefaultConnectorMixin:
     # can be overridden to change an input config
-    def configure(self: _WriteConfigProtocol, config: Mapping[str, Any], temp_dir: str) -> ObservedDict[str, Any]:
+    def configure(self: _WriteConfigProtocol, config: Mapping[str, Any], temp_dir: str) -> Mapping[str, Any]:
         config_path = os.path.join(temp_dir, "config.json")
-        config_observer = ConfigObserver(config_path, self.write_config)
-        observed_config = ObservedDict(config, config_observer)
-        config_observer.set_config(observed_config)
-        return observed_config
+        self.write_config(config, config_path)
+        return config
 
 
 class Connector(DefaultConnectorMixin, BaseConnector[Mapping[str, Any]], ABC):
