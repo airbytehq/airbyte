@@ -1393,3 +1393,6 @@ cron:
   ##   DATABASE_HOST: airbyte-db
   ##   DATABASE_PORT: 5432
   env_vars: {}
+
+connector-builder-server:
+  enabled: true

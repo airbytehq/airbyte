@@ -17,7 +17,6 @@ type: application
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
 version: 0.40.46
 
-
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
@@ -59,7 +58,10 @@ dependencies:
     repository: "https://airbytehq.github.io/helm-charts/"
     version: 0.40.46
   - condition: cron.enabled
-    name: cron 
+    name: cron
     repository: "https://airbytehq.github.io/helm-charts/"
     version: 0.40.46
-
+  - condition: connector-builder-server.enabled
+    name: connector-builder-server
+    repository: "https://airbytehq.github.io/helm-charts/"
+    version: 0.40.46
