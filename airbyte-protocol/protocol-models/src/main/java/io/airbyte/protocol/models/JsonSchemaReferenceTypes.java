@@ -17,16 +17,17 @@ public class JsonSchemaReferenceTypes {
       "integer",
       "boolean");
 
-  public static final String STRING_REFERENCE = "WellKnownTypes.json#/definitions/String";
-  public static final String BINARY_DATA_REFERENCE = "WellKnownTypes.json#/definitions/BinaryData";
-  public static final String NUMBER_REFERENCE = "WellKnownTypes.json#/definitions/Number";
-  public static final String INTEGER_REFERENCE = "WellKnownTypes.json#/definitions/Integer";
-  public static final String BOOLEAN_REFERENCE = "WellKnownTypes.json#/definitions/Boolean";
-  public static final String DATE_REFERENCE = "WellKnownTypes.json#/definitions/Date";
-  public static final String TIMESTAMP_WITH_TIMEZONE_REFERENCE = "WellKnownTypes.json#/definitions/TimestampWithTimezone";
-  public static final String TIMESTAMP_WITHOUT_TIMEZONE_REFERENCE = "WellKnownTypes.json#/definitions/TimestampWithoutTimezone";
-  public static final String TIME_WITH_TIMEZONE_REFERENCE = "WellKnownTypes.json#/definitions/TimeWithTimezone";
-  public static final String TIME_WITHOUT_TIMEZONE_REFERENCE = "WellKnownTypes.json#/definitions/TimeWithoutTimezone";
+  public static final String WELL_KNOWN_TYPES_FILENAME = "WellKnownTypes.json";
+  public static final String STRING_REFERENCE = WELL_KNOWN_TYPES_FILENAME + "#/definitions/String";
+  public static final String BINARY_DATA_REFERENCE = WELL_KNOWN_TYPES_FILENAME + "#/definitions/BinaryData";
+  public static final String NUMBER_REFERENCE = WELL_KNOWN_TYPES_FILENAME + "#/definitions/Number";
+  public static final String INTEGER_REFERENCE = WELL_KNOWN_TYPES_FILENAME + "#/definitions/Integer";
+  public static final String BOOLEAN_REFERENCE = WELL_KNOWN_TYPES_FILENAME + "#/definitions/Boolean";
+  public static final String DATE_REFERENCE = WELL_KNOWN_TYPES_FILENAME + "#/definitions/Date";
+  public static final String TIMESTAMP_WITH_TIMEZONE_REFERENCE = WELL_KNOWN_TYPES_FILENAME + "#/definitions/TimestampWithTimezone";
+  public static final String TIMESTAMP_WITHOUT_TIMEZONE_REFERENCE = WELL_KNOWN_TYPES_FILENAME + "#/definitions/TimestampWithoutTimezone";
+  public static final String TIME_WITH_TIMEZONE_REFERENCE = WELL_KNOWN_TYPES_FILENAME + "#/definitions/TimeWithTimezone";
+  public static final String TIME_WITHOUT_TIMEZONE_REFERENCE = WELL_KNOWN_TYPES_FILENAME + "#/definitions/TimeWithoutTimezone";
 
   /**
    * This is primarily useful for migrating from protocol v0 to v1. It provides a mapping from the old

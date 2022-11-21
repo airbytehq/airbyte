@@ -14,6 +14,7 @@ import io.airbyte.commons.version.Version;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.JsonSchemaReferenceTypes;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,7 +35,18 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   @Override
   public io.airbyte.protocol.models.v0.AirbyteMessage downgrade(AirbyteMessage oldMessage) {
     // TODO implement downgrade
-    return null;
+    io.airbyte.protocol.models.v0.AirbyteMessage newMessage = Jsons.object(
+        Jsons.jsonNode(oldMessage),
+        io.airbyte.protocol.models.v0.AirbyteMessage.class);
+    if (oldMessage.getType() == Type.CATALOG) {
+      for (io.airbyte.protocol.models.v0.AirbyteStream stream : newMessage.getCatalog().getStreams()) {
+        JsonNode schema = stream.getJsonSchema();
+        downgradeSchema(schema);
+      }
+    } else if (oldMessage.getType() == Type.RECORD) {
+      // TODO downgrade records
+    }
+    return newMessage;
   }
 
   @Override
@@ -68,6 +80,16 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   }
 
   /**
+   * Perform the {$ref: foo} -> {type: foo} downgrade. Modifies the schema in-place.
+   */
+  private void downgradeSchema(JsonNode schema) {
+    mutateSchemas(
+        this::isPrimitiveReferenceTypeDeclaration,
+        this::downgradeTypeDeclaration,
+        schema);
+  }
+
+  /**
    * Detects any schema that looks like a primitive type declaration, e.g.: { "type": "string" } or {
    * "type": ["string", "object"] }
    */
@@ -81,6 +103,25 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
           .anyMatch(n -> JsonSchemaReferenceTypes.PRIMITIVE_JSON_TYPES.contains(n.asText()));
     } else {
       return JsonSchemaReferenceTypes.PRIMITIVE_JSON_TYPES.contains(typeNode.asText());
+    }
+  }
+
+  /**
+   * Detects any schema that looks like a reference type declaration, e.g.: { "$ref": "WellKnownTypes.json...." } or
+   * { "oneOf": [{"$ref": "..."}, {"type": "object"}] }
+   */
+  private boolean isPrimitiveReferenceTypeDeclaration(JsonNode schema) {
+    if (!schema.isObject()) {
+      return false;
+    } else if (schema.hasNonNull("$ref") && schema.get("$ref").asText().startsWith("WellKnownTypes.json")) {
+      return true;
+    } else if (schema.hasNonNull("oneOf")) {
+      List<JsonNode> subschemas = getSubschemas(schema, "oneof");
+      return subschemas.stream().anyMatch(
+          subschema -> subschema.hasNonNull("$ref")
+              && subschema.get("$ref").asText().startsWith("WellKnownTypes.json"));
+    } else {
+      return false;
     }
   }
 
@@ -159,6 +200,10 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
         }
       }
     }
+  }
+
+  private void downgradeTypeDeclaration(JsonNode schema) {
+    // TODO
   }
 
   private static void copyKey(ObjectNode source, ObjectNode target, String key) {
@@ -295,6 +340,12 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
         subschemas.add(subschemaNode);
       }
     }
+  }
+
+  private static List<JsonNode> getSubschemas(JsonNode schema, String key) {
+    List<JsonNode> subschemas = new ArrayList<>();
+    findSubschemas(subschemas, schema, key);
+    return subschemas;
   }
 
   /**
