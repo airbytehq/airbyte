@@ -88,7 +88,8 @@ import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"PMD.AvoidThrowingRawExceptionTypes", "PMD.CyclomaticComplexity", "PMD.AvoidLiteralsInIfCondition"})
+@SuppressWarnings({"PMD.AvoidThrowingRawExceptionTypes", "PMD.CyclomaticComplexity", "PMD.AvoidLiteralsInIfCondition",
+  "OptionalUsedAsFieldOrParameterType"})
 public class ConfigRepository {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigRepository.class);
@@ -283,7 +284,6 @@ public class ConfigRepository {
     return sourceDefQuery(Optional.empty(), includeTombstone).toList();
   }
 
-  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private Stream<StandardSourceDefinition> sourceDefQuery(final Optional<UUID> sourceDefId, final boolean includeTombstone) throws IOException {
     return database.query(ctx -> ctx.select(ACTOR_DEFINITION.asterisk())
         .from(ACTOR_DEFINITION)
@@ -348,7 +348,6 @@ public class ConfigRepository {
     });
   }
 
-  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private Stream<StandardDestinationDefinition> destDefQuery(final Optional<UUID> destDefId, final boolean includeTombstone) throws IOException {
     return database.query(ctx -> ctx.select(ACTOR_DEFINITION.asterisk())
         .from(ACTOR_DEFINITION)
@@ -541,7 +540,6 @@ public class ConfigRepository {
         .fetch());
   }
 
-  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private Stream<SourceConnection> listSourceQuery(final Optional<UUID> configId) throws IOException {
     final Result<Record> result = database.query(ctx -> {
       final SelectJoinStep<Record> query = ctx.select(asterisk()).from(ACTOR);
@@ -653,7 +651,6 @@ public class ConfigRepository {
     return result.stream().map(DbConverter::buildSourceConnection).collect(Collectors.toList());
   }
 
-  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private Stream<DestinationConnection> listDestinationQuery(final Optional<UUID> configId) throws IOException {
     final Result<Record> result = database.query(ctx -> {
       final SelectJoinStep<Record> query = ctx.select(asterisk()).from(ACTOR);
@@ -890,7 +887,6 @@ public class ConfigRepository {
     return standardSyncs;
   }
 
-  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private Stream<StandardSyncOperation> listStandardSyncOperationQuery(final Optional<UUID> configId) throws IOException {
     final Result<Record> result = database.query(ctx -> {
       final SelectJoinStep<Record> query = ctx.select(asterisk()).from(OPERATION);
@@ -1022,7 +1018,6 @@ public class ConfigRepository {
     });
   }
 
-  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private Stream<SourceOAuthParameter> listSourceOauthParamQuery(final Optional<UUID> configId) throws IOException {
     final Result<Record> result = database.query(ctx -> {
       final SelectJoinStep<Record> query = ctx.select(asterisk()).from(ACTOR_OAUTH_PARAMETER);
@@ -1089,7 +1084,6 @@ public class ConfigRepository {
     return listSourceOauthParamQuery(Optional.empty()).toList();
   }
 
-  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private Stream<DestinationOAuthParameter> listDestinationOauthParamQuery(final Optional<UUID> configId)
       throws IOException {
     final Result<Record> result = database.query(ctx -> {
@@ -1419,7 +1413,6 @@ public class ConfigRepository {
         .orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.WORKSPACE_SERVICE_ACCOUNT, workspaceId));
   }
 
-  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private Stream<WorkspaceServiceAccount> listWorkspaceServiceAccountQuery(final Optional<UUID> workspaceId)
       throws IOException {
     final Result<Record> result = database.query(ctx -> {

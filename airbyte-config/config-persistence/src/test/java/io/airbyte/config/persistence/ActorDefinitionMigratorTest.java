@@ -28,8 +28,9 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class ActorDefinitionMigratorTest extends BaseConfigDatabaseTest {
+class ActorDefinitionMigratorTest extends BaseConfigDatabaseTest {
 
+  public static final String DEFAULT_PROTOCOL_VERSION = "0.2.0";
   protected static final StandardSourceDefinition SOURCE_POSTGRES = new StandardSourceDefinition()
       .withName("Postgres")
       .withSourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750"))
@@ -56,7 +57,7 @@ public class ActorDefinitionMigratorTest extends BaseConfigDatabaseTest {
       .withDockerRepository("airbyte/destination-s3")
       .withDockerImageTag("0.1.12")
       .withDocumentationUrl("https://docs.airbyte.io/integrations/destinations/s3")
-      .withProtocolVersion("0.2.0")
+      .withProtocolVersion(DEFAULT_PROTOCOL_VERSION)
       .withTombstone(false);
   protected static final StandardDestinationDefinition DESTINATION_CUSTOM = new StandardDestinationDefinition()
       .withName("Custom")
@@ -88,7 +89,7 @@ public class ActorDefinitionMigratorTest extends BaseConfigDatabaseTest {
   void testGetConnectorRepositoryToInfoMap() throws Exception {
     final String connectorRepository = "airbyte/duplicated-connector";
     final String oldVersion = "0.1.10";
-    final String newVersion = "0.2.0";
+    final String newVersion = DEFAULT_PROTOCOL_VERSION;
     final StandardSourceDefinition source1 = new StandardSourceDefinition()
         .withSourceDefinitionId(UUID.randomUUID())
         .withName("source-1")
@@ -109,13 +110,13 @@ public class ActorDefinitionMigratorTest extends BaseConfigDatabaseTest {
 
   @Test
   void testHasNewVersion() {
-    assertTrue(ActorDefinitionMigrator.hasNewVersion("0.1.99", "0.2.0"));
+    assertTrue(ActorDefinitionMigrator.hasNewVersion("0.1.99", DEFAULT_PROTOCOL_VERSION));
     assertFalse(ActorDefinitionMigrator.hasNewVersion("invalid_version", "0.1.2"));
   }
 
   @Test
   void testHasNewPatchVersion() {
-    assertFalse(ActorDefinitionMigrator.hasNewPatchVersion("0.1.99", "0.2.0"));
+    assertFalse(ActorDefinitionMigrator.hasNewPatchVersion("0.1.99", DEFAULT_PROTOCOL_VERSION));
     assertFalse(ActorDefinitionMigrator.hasNewPatchVersion("invalid_version", "0.3.1"));
     assertTrue(ActorDefinitionMigrator.hasNewPatchVersion("0.1.0", "0.1.3"));
   }
@@ -147,14 +148,15 @@ public class ActorDefinitionMigratorTest extends BaseConfigDatabaseTest {
     final String connectorRepository = "airbyte/test-connector";
 
     // when the record does not exist, it is inserted
-    final StandardSourceDefinition source1 = new StandardSourceDefinition()
+    final StandardSourceDefinition sourceDef = new StandardSourceDefinition()
         .withSourceDefinitionId(definitionId)
         .withDockerRepository(connectorRepository)
         .withDockerImageTag("0.1.2")
         .withName("random-name")
-        .withProtocolVersion("0.2.0")
+        .withProtocolVersion(DEFAULT_PROTOCOL_VERSION)
         .withTombstone(false);
-    writeSource(source1);
+    writeSource(sourceDef);
+    assertEquals(sourceDef, configRepository.getStandardSourceDefinition(sourceDef.getSourceDefinitionId()));
   }
 
   @Test
