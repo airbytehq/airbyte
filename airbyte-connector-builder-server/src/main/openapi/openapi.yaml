@@ -189,11 +189,15 @@ components:
       type: object
       required:
         - manifest
+        - config
       properties:
         manifest:
           type: object
           description: The config-based connector manifest contents
           # $ref: "#/components/schemas/ConnectorManifest"
+        config:
+          type: object
+          description: The config blob containing the user inputs for testing
     StreamsListRead:
       type: object
       required:
@@ -213,7 +217,6 @@ components:
                 description: The name of the stream
               url:
                 type: string
-                format: uri
                 description: The URL to which read requests will be made for this stream
               # --- Potential addition for a later phase ---
               # slices:

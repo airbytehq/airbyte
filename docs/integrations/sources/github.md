@@ -9,14 +9,18 @@ This page contains the setup guide and reference information for the GitHub sour
 - Branch (Optional)
 - Page size for large streams (Optional)
 
+<!-- env:cloud -->
 **For Airbyte Cloud:**
 
 - Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
 - OAuth
+<!-- /env:cloud -->
 
+<!-- env:oss -->
 **For Airbyte Open Source:**
 
 - Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
+<!-- /env:oss -->
 
 ## Setup guide
 
@@ -24,10 +28,13 @@ This page contains the setup guide and reference information for the GitHub sour
 
 Create a [GitHub Account](https://github.com).
 
-### Airbyte Open Source additional setup steps
+<!-- env:oss -->
+**Airbyte Open Source additional setup steps**
 
 Log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
+<!-- /env:oss -->
 
+<!-- env:cloud -->
 ### Step 2: Set up the GitHub connector in Airbyte
 
 **For Airbyte Cloud:**
@@ -41,10 +48,13 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 7. **GitHub Repositories** - Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
 8. **Branch (Optional)** - Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
 9. **Page size for large streams (Optional)** - The GitHub connector contains several streams with a large load. The page size of such streams depends on the size of your repository. Recommended to specify values between 10 and 30.
+<!-- /env:cloud -->
 
+<!-- env:oss -->
 **For Airbyte Open Source:**
 
 1. Authenticate with **Personal Access Token**.
+<!-- /env:oss -->
 
 ## Supported sync modes
 
