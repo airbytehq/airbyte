@@ -1,35 +1,31 @@
 import { AttemptRead, AttemptStatus } from "core/request/AirbyteClient";
 
 export const progressBarCalculations = (latestAttempt: AttemptRead) => {
-  let numeratorRecords = -1;
-  let denominatorRecords = -1;
-  let totalPercentRecords = -1;
-  let numeratorBytes = -1;
-  let denominatorBytes = -1;
-  let elapsedTimeMS = -1;
-  let timeRemaining = -1;
+  let numeratorRecords = 0;
+  let denominatorRecords = 0;
+  let totalPercentRecords = 0;
+  let numeratorBytes = 0;
+  let denominatorBytes = 0;
+  let elapsedTimeMS = 0;
+  let timeRemaining = 0;
   let displayProgressBar = true;
 
-  let countTotalsFromStreams = true;
   if (
-    latestAttempt.totalStats?.recordsEmitted &&
-    latestAttempt.totalStats?.estimatedRecords &&
-    latestAttempt.totalStats?.bytesEmitted &&
-    latestAttempt.totalStats?.estimatedBytes
+    latestAttempt.totalStats?.recordsEmitted !== undefined &&
+    latestAttempt.totalStats?.estimatedRecords !== undefined &&
+    latestAttempt.totalStats?.bytesEmitted !== undefined &&
+    latestAttempt.totalStats?.estimatedBytes !== undefined
   ) {
-    countTotalsFromStreams = false;
     numeratorRecords = latestAttempt.totalStats.recordsEmitted;
     denominatorRecords = latestAttempt.totalStats.estimatedRecords;
     numeratorBytes = latestAttempt.totalStats.bytesEmitted;
     denominatorBytes = latestAttempt.totalStats.estimatedBytes;
-  } else if (!latestAttempt.totalStats && latestAttempt.streamStats) {
+  } else if (latestAttempt.streamStats) {
     for (const stream of latestAttempt.streamStats) {
-      if (countTotalsFromStreams) {
-        numeratorRecords += stream.stats.recordsEmitted ?? 0;
-        denominatorRecords += stream.stats.estimatedRecords ?? 0;
-        numeratorBytes += stream.stats.bytesEmitted ?? 0;
-        denominatorBytes += stream.stats.estimatedBytes ?? 0;
-      }
+      numeratorRecords += stream.stats.recordsEmitted ?? 0;
+      denominatorRecords += stream.stats.estimatedRecords ?? 0;
+      numeratorBytes += stream.stats.bytesEmitted ?? 0;
+      denominatorBytes += stream.stats.estimatedBytes ?? 0;
     }
   }
 
