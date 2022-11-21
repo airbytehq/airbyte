@@ -1,0 +1,5 @@
+@use "./colors";
+
+@mixin shadow {
+  box-shadow: 0 2px 4px rgba(colors.$dark-blue-900, 12%);
+}

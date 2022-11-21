@@ -5,8 +5,8 @@
 package io.airbyte.integrations.source.relationaldb.state;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.util.Collection;
@@ -93,7 +93,7 @@ public class CursorManager<S> {
     final Set<AirbyteStreamNameNamespacePair> allStreamNames = catalog.getStreams()
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
-        .map(AirbyteStreamNameNamespacePair::fromAirbyteSteam)
+        .map(AirbyteStreamNameNamespacePair::fromAirbyteStream)
         .collect(Collectors.toSet());
     allStreamNames.addAll(streamSupplier.get().stream().map(namespacePairFunction).filter(Objects::nonNull).collect(Collectors.toSet()));
 
