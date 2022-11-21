@@ -17,6 +17,7 @@ import io.airbyte.commons.lang.Exceptions.Procedure;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.base.errors.messages.ErrorMessage;
+import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -156,10 +157,10 @@ public class IntegrationRunner {
       // find the root exception that corresponds to a configuration error. If that does not exist, we
       // just return the original exception.
       final Throwable rootThrowable = getRootConfigError(e);
-      final String displayMessage = getDisplayMessage(rootThrowable);
+      final String displayMessage = ConnectorExceptionUtil.getDisplayMessage(rootThrowable);
       // If the source connector throws a config error, a trace message with the relevant message should
       // be surfaced.
-      if (isConfigError(rootThrowable)) {
+      if (ConnectorExceptionUtil.isConfigError(rootThrowable)) {
         AirbyteTraceMessageUtility.emitConfigErrorTrace(e, displayMessage);
       }
       if (parsed.getCommand().equals(Command.CHECK)) {
@@ -189,34 +190,13 @@ public class IntegrationRunner {
   private Throwable getRootConfigError(final Exception e) {
     Throwable current = e;
     while (current != null) {
-      if (isConfigError(current)) {
+      if (ConnectorExceptionUtil.isConfigError(current)) {
         return current;
       } else {
         current = current.getCause();
       }
     }
     return e;
-  }
-
-  private boolean isConfigError(final Throwable e) {
-    return e instanceof ConfigErrorException || e instanceof ConnectionErrorException || isRecoveryConnectionException(e);
-  }
-
-  private boolean isRecoveryConnectionException(Throwable e) {
-    return e instanceof SQLException && e.getMessage()
-            .toLowerCase(Locale.ROOT)
-            .contains("terminating connection due to conflict with recovery");
-  }
-
-  private String getDisplayMessage(final Throwable e) {
-    if (e instanceof ConfigErrorException) {
-      return ((ConfigErrorException) e).getDisplayMessage();
-    } else if (e instanceof ConnectionErrorException) {
-      final ConnectionErrorException connEx = (ConnectionErrorException) e;
-      return ErrorMessage.getErrorMessage(connEx.getStateCode(), connEx.getErrorCode(), connEx.getExceptionMessage(), connEx);
-    } else {
-      return "Could not connect with provided configuration. Error: " + e.getMessage() != null ? e.getMessage() : "";
-    }
   }
 
   private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator) throws Exception {
