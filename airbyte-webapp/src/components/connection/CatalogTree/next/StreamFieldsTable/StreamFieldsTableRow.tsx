@@ -25,7 +25,6 @@ export interface StreamFieldsTableRowProps {
   config: AirbyteStreamConfiguration | undefined;
 }
 
-// Obsolete streams' table row component
 const StreamFieldsTableRowComponent: React.FC<StreamFieldsTableRowProps> = ({
   onPrimaryKeyChange,
   onCursorChange,

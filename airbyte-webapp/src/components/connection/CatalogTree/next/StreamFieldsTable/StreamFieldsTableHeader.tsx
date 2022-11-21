@@ -3,7 +3,6 @@ import { FormattedMessage } from "react-intl";
 
 import { HeaderCell, NameContainer } from "../../styles";
 
-// Obsolete streams' table header component
 export const StreamFieldsTableHeader: React.FC = React.memo(() => (
   <>
     <HeaderCell lighter flex={1.5}>
