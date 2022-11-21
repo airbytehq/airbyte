@@ -104,7 +104,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("NUMBER")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .jsonSchemaType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "99999999999999999999999999999999999999", "-99999999999999999999999999999999999999", "9223372036854775807",
                 "-9223372036854775808")
             .addExpectedValues(null, "99999999999999999999999999999999999999", "-99999999999999999999999999999999999999", "9223372036854775807",
@@ -113,14 +113,14 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("DECIMAL")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .jsonSchemaType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "9223372036854775807", "-9223372036854775808")
             .addExpectedValues(null, "9223372036854775807", "-9223372036854775808")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("NUMERIC")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .jsonSchemaType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "99999999999999999999999999999999999999", "-99999999999999999999999999999999999999", "9223372036854775807",
                 "-9223372036854775808")
             .addExpectedValues(null, "99999999999999999999999999999999999999", "-99999999999999999999999999999999999999", "9223372036854775807",
@@ -129,49 +129,49 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("BIGINT")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .jsonSchemaType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "99999999999999999999999999999999999999", "-99999999999999999999999999999999999999")
             .addExpectedValues(null, "99999999999999999999999999999999999999", "-99999999999999999999999999999999999999")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("INT")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .jsonSchemaType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "9223372036854775807", "-9223372036854775808")
             .addExpectedValues(null, "9223372036854775807", "-9223372036854775808")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("BIGINT")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .jsonSchemaType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "9223372036854775807", "-9223372036854775808")
             .addExpectedValues(null, "9223372036854775807", "-9223372036854775808")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("SMALLINT")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .jsonSchemaType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "9223372036854775807", "-9223372036854775808")
             .addExpectedValues(null, "9223372036854775807", "-9223372036854775808")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("TINYINT")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .jsonSchemaType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "9223372036854775807", "-9223372036854775808")
             .addExpectedValues(null, "9223372036854775807", "-9223372036854775808")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("BYTEINT")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .jsonSchemaType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "9223372036854775807", "-9223372036854775808")
             .addExpectedValues(null, "9223372036854775807", "-9223372036854775808")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("NUMBER")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .jsonSchemaType(JsonSchemaType.NUMBER)
             .fullSourceDataType("NUMBER(10,5)")
             .addInsertValues("10.12345")
             .addExpectedValues("10.12345")
@@ -179,21 +179,21 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("DOUBLE")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .jsonSchemaType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "-9007199254740991", "9007199254740991")
             .addExpectedValues(null, "-9.00719925474099E15", "9.00719925474099E15")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("FLOAT")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .jsonSchemaType(JsonSchemaType.NUMBER)
             .addInsertValues("10e-308", "10e+307")
             .addExpectedValues("1.0E-307", "1.0E308")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("FLOAT")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .jsonSchemaType(JsonSchemaType.NUMBER)
             .addInsertValues("'NaN'", "'inf'", "'-inf'")
             .addExpectedValues("NaN", "Infinity", "-Infinity")
             .build());
@@ -202,7 +202,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("VARCHAR")
-            .airbyteType(JsonSchemaType.STRING)
+            .jsonSchemaType(JsonSchemaType.STRING)
             .addInsertValues("null", "'тест'", "'⚡ test ��'",
                 "'!\"#$%&\\'()*+,-./:;<=>?\\@[\\]^_\\`{|}~'")
             .addExpectedValues(null, "тест", "⚡ test ��", "!\"#$%&'()*+,-./:;<=>?@[]^_`|~")
@@ -210,21 +210,21 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("STRING")
-            .airbyteType(JsonSchemaType.STRING)
+            .jsonSchemaType(JsonSchemaType.STRING)
             .addInsertValues("null", "'テスト'")
             .addExpectedValues(null, "テスト")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("TEXT")
-            .airbyteType(JsonSchemaType.STRING)
+            .jsonSchemaType(JsonSchemaType.STRING)
             .addInsertValues("null", "'-\041-'", "'-\\x25-'")
             .addExpectedValues(null, "-!-", "-%-")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("CHAR")
-            .airbyteType(JsonSchemaType.STRING)
+            .jsonSchemaType(JsonSchemaType.STRING)
             .addInsertValues("null", "'a'", "'ス'", "'\041'", "'ї'")
             .addExpectedValues(null, "a", "ス", "!", "ї")
             .build());
@@ -233,7 +233,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("BINARY")
-            .airbyteType(JsonSchemaType.STRING)
+            .jsonSchemaType(JsonSchemaType.STRING)
             .addInsertValues("null", "to_binary('HELP', 'UTF-8')")
             .addExpectedValues(null, "SEVMUA==")
             .build());
@@ -242,7 +242,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("BOOLEAN")
-            .airbyteType(JsonSchemaType.BOOLEAN)
+            .jsonSchemaType(JsonSchemaType.BOOLEAN)
             .addInsertValues("null", "'true'", "5", "'false'", "0", "TO_BOOLEAN('y')",
                 "TO_BOOLEAN('n')")
             .addExpectedValues(null, "true", "true", "false", "false", "true", "false")
@@ -252,21 +252,21 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("DATE")
-            .airbyteType(JsonSchemaType.STRING_DATE)
+            .jsonSchemaType(JsonSchemaType.STRING_DATE)
             .addInsertValues("null", "'0001-01-01'", "'9999-12-31'")
             .addExpectedValues(null, "0001-01-01", "9999-12-31")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("DATETIME")
-            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+            .jsonSchemaType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
             .addInsertValues("null", "'0001-01-01 00:00:00'", "'9999-12-31 23:59:59'", "'9999-12-31 23:59:59.123456'")
             .addExpectedValues(null, "0001-01-01T00:00:00.000000", "9999-12-31T23:59:59.000000", "9999-12-31T23:59:59.123456")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("TIME")
-            .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
+            .jsonSchemaType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
             .addInsertValues("null", "'00:00:00'", "'1:59 PM'", "'23:59:59.123456'")
             .addExpectedValues(null, "00:00:00.000000", "13:59:00.000000",
                 "23:59:59.123456")
@@ -274,28 +274,28 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("TIMESTAMP")
-            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+            .jsonSchemaType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
             .addInsertValues("null", "'2018-03-22 12:00:00.123'", "'2018-03-22 12:00:00.123456'")
             .addExpectedValues(null, "2018-03-22T12:00:00.123000", "2018-03-22T12:00:00.123456")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("TIMESTAMP_LTZ")
-            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
+            .jsonSchemaType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
             .addInsertValues("null", "'2018-03-22 12:00:00.123 +05:00'", "'2018-03-22 12:00:00.123456 +05:00'")
             .addExpectedValues(null, "2018-03-22T07:00:00.123000Z", "2018-03-22T07:00:00.123456Z")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("TIMESTAMP_NTZ")
-            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+            .jsonSchemaType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
             .addInsertValues("null", "'2018-03-22 12:00:00.123 +05:00'", "'2018-03-22 12:00:00.123456 +05:00'")
             .addExpectedValues(null, "2018-03-22T12:00:00.123000", "2018-03-22T12:00:00.123456")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("TIMESTAMP_TZ")
-            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
+            .jsonSchemaType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
             .addInsertValues("null", "'2018-03-22 12:00:00.123 +05:00'", "'2018-03-22 12:00:00.123456 +05:00'")
             .addExpectedValues(null, "2018-03-22T07:00:00.123000Z", "2018-03-22T07:00:00.123456Z")
             .build());
@@ -304,7 +304,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("VARIANT")
-            .airbyteType(JsonSchemaType.STRING)
+            .jsonSchemaType(JsonSchemaType.STRING)
             .insertPatternSql(INSERT_SEMI_STRUCTURED_SQL)
             .addInsertValues("null",
                 "parse_json(' { \"key1\": \"value1\", \"key2\": \"value2\" } ')")
@@ -313,7 +313,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("ARRAY")
-            .airbyteType(JsonSchemaType.STRING)
+            .jsonSchemaType(JsonSchemaType.STRING)
             .insertPatternSql(INSERT_SEMI_STRUCTURED_SQL)
             .addInsertValues("null", "array_construct(1, 2, 3)")
             .addExpectedValues(null, "[\n  1,\n  2,\n  3\n]")
@@ -321,7 +321,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("OBJECT")
-            .airbyteType(JsonSchemaType.STRING)
+            .jsonSchemaType(JsonSchemaType.STRING)
             .insertPatternSql(INSERT_SEMI_STRUCTURED_SQL)
             .addInsertValues("null",
                 "parse_json(' { \"outer_key1\": { \"inner_key1A\": \"1a\", \"inner_key1B\": \"1b\" }, \"outer_key2\": { \"inner_key2\": 2 } } ')")
@@ -333,7 +333,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("GEOGRAPHY")
-            .airbyteType(JsonSchemaType.STRING)
+            .jsonSchemaType(JsonSchemaType.STRING)
             .addInsertValues("null", "'POINT(-122.35 37.55)'",
                 "'LINESTRING(-124.20 42.00, -120.01 41.99)'")
             .addExpectedValues(null,

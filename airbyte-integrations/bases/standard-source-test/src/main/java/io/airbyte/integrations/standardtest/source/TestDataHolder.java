@@ -16,7 +16,7 @@ public class TestDataHolder {
   private static final String DEFAULT_INSERT_SQL = "INSERT INTO %1$s VALUES (%2$s, %3$s)";
 
   private final String sourceType;
-  private final JsonSchemaType airbyteType;
+  private final JsonSchemaType jsonSchemaType;
   private final List<String> values;
   private final List<String> expectedValues;
   private final String createTablePatternSql;
@@ -28,14 +28,14 @@ public class TestDataHolder {
   private String testColumnName;
 
   TestDataHolder(final String sourceType,
-                 final JsonSchemaType airbyteType,
+                 final JsonSchemaType jsonSchemaType,
                  final List<String> values,
                  final List<String> expectedValues,
                  final String createTablePatternSql,
                  final String insertPatternSql,
                  final String fullSourceDataType) {
     this.sourceType = sourceType;
-    this.airbyteType = airbyteType;
+    this.jsonSchemaType = jsonSchemaType;
     this.values = values;
     this.expectedValues = expectedValues;
     this.createTablePatternSql = createTablePatternSql;
@@ -55,7 +55,7 @@ public class TestDataHolder {
   public static class TestDataHolderBuilder {
 
     private String sourceType;
-    private JsonSchemaType airbyteType;
+    private JsonSchemaType jsonSchemaType;
     private final List<String> values = new ArrayList<>();
     private final List<String> expectedValues = new ArrayList<>();
     private String createTablePatternSql;
@@ -84,14 +84,14 @@ public class TestDataHolder {
     }
 
     /**
-     * corresponding Airbyte data type. It requires for proper configuration
+     * corresponding Json schema type. It requires for proper configuration
      * {@link ConfiguredAirbyteStream}
      *
-     * @param airbyteType Airbyte data type
+     * @param jsonSchemaType Json schema data type
      * @return builder
      */
-    public TestDataHolderBuilder airbyteType(final JsonSchemaType airbyteType) {
-      this.airbyteType = airbyteType;
+    public TestDataHolderBuilder jsonSchemaType(final JsonSchemaType jsonSchemaType) {
+      this.jsonSchemaType = jsonSchemaType;
       return this;
     }
 
@@ -171,7 +171,7 @@ public class TestDataHolder {
     }
 
     public TestDataHolder build() {
-      return new TestDataHolder(sourceType, airbyteType, values, expectedValues, createTablePatternSql, insertPatternSql, fullSourceDataType);
+      return new TestDataHolder(sourceType, jsonSchemaType, values, expectedValues, createTablePatternSql, insertPatternSql, fullSourceDataType);
     }
 
   }
@@ -196,8 +196,8 @@ public class TestDataHolder {
     return sourceType;
   }
 
-  public JsonSchemaType getAirbyteType() {
-    return airbyteType;
+  public JsonSchemaType getJsonSchemaType() {
+    return jsonSchemaType;
   }
 
   public List<String> getExpectedValues() {

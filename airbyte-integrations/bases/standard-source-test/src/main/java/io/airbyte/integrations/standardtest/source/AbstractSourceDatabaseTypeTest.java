@@ -119,7 +119,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
         final AirbyteStream airbyteStream = streams.get(testDataHolder.getNameWithTestPrefix());
         final Map<String, String> jsonSchemaTypeMap = (Map<String, String>) Jsons.deserialize(
             airbyteStream.getJsonSchema().get("properties").get(getTestColumnName()).toString(), Map.class);
-        assertEquals(testDataHolder.getAirbyteType().getJsonSchemaTypeMap(), jsonSchemaTypeMap,
+        assertEquals(testDataHolder.getJsonSchemaType().getJsonSchemaTypeMap(), jsonSchemaTypeMap,
             "Expected column type for " + testDataHolder.getNameWithTestPrefix());
       }
 
@@ -195,7 +195,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
                     String.format("%s", test.getNameWithTestPrefix()),
                     String.format("%s", getNameSpace()),
                     Field.of(getIdColumnName(), JsonSchemaType.INTEGER),
-                    Field.of(getTestColumnName(), test.getAirbyteType()))
+                    Field.of(getTestColumnName(), test.getJsonSchemaType()))
                     .withSourceDefinedCursor(true)
                     .withSourceDefinedPrimaryKey(List.of(List.of(getIdColumnName())))
                     .withSupportedSyncModes(
