@@ -43,7 +43,7 @@ class InitialSizeEstimatorTest {
     assertTrue(fetchSize.isPresent());
     final long expectedMaxByteSize = 21L;
     assertEquals(expectedMaxByteSize, Math.round(sizeEstimator.getMaxRowByteSize()));
-    assertEquals((bufferByteSize / expectedMaxByteSize) +1 , fetchSize.get().longValue()); // + 1 needed for int remainder rounding
+    assertEquals((bufferByteSize / expectedMaxByteSize) + 1, fetchSize.get().longValue()); // + 1 needed for int remainder rounding
   }
 
 }
