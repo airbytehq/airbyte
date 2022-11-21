@@ -593,6 +593,7 @@ class ConfigRepositoryE2EReadWriteTest {
 
     assertEquals(MockData.ACTOR_CATALOG_ID_1, result.get(MockData.SOURCE_ID_1).getActorCatalogId());
     assertEquals(MockData.ACTOR_CATALOG_ID_3, result.get(MockData.SOURCE_ID_2).getActorCatalogId());
+    assertEquals(false, result.containsKey(MockData.SOURCE_ID_3));
   }
 
   private void insertCatalogFetchEvent(final DSLContext ctx, final UUID sourceId, final UUID catalogId, final OffsetDateTime creationDate) {

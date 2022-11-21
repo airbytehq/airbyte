@@ -1098,6 +1098,9 @@ public class ConfigRepository {
     return records.stream().findFirst().map(DbConverter::buildActorCatalogFetchEvent);
   }
 
+  /**
+   * Get the latest catalog fetch events agggregated by the sourceIds provided as an input.
+   */
   public Map<UUID, ActorCatalogFetchEvent> getMostRecentActorCatalogFetchEventForSources(final List<UUID> sourceIds)
       throws IOException {
 
@@ -1106,9 +1109,10 @@ public class ConfigRepository {
         select actor_catalog_id, actor_id, created_at from
           (select actor_catalog_id, actor_id, created_at, rank() over (partition by actor_id order by created_at desc) as creation_order_rank
           from public.actor_catalog_fetch_event
+          where actor_id in ({0})
           ) table_with_rank
         where creation_order_rank = 1;
-        """))
+        """, DSL.list(sourceIds.stream().map(DSL::value).collect(Collectors.toList()))))
         .stream().map(DbConverter::buildActorCatalogFetchEvent)
         .collect(Collectors.toMap(record -> record.getActorId(),
             record -> record));

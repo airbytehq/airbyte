@@ -77,7 +77,7 @@ public class MockData {
   private static final UUID DESTINATION_DEFINITION_ID_4 = UUID.randomUUID();
   public static final UUID SOURCE_ID_1 = UUID.randomUUID();
   public static final UUID SOURCE_ID_2 = UUID.randomUUID();
-  private static final UUID SOURCE_ID_3 = UUID.randomUUID();
+  public static final UUID SOURCE_ID_3 = UUID.randomUUID();
   private static final UUID DESTINATION_ID_1 = UUID.randomUUID();
   private static final UUID DESTINATION_ID_2 = UUID.randomUUID();
   private static final UUID DESTINATION_ID_3 = UUID.randomUUID();
@@ -689,10 +689,17 @@ public class MockData {
         .withActorId(SOURCE_ID_2)
         .withConfigHash("1394")
         .withConnectorVersion("1.2.0");
+    final ActorCatalogFetchEvent actorCatalogFetchEvent4 = new ActorCatalogFetchEvent()
+        .withId(ACTOR_CATALOG_FETCH_EVENT_ID_3)
+        .withActorCatalogId(ACTOR_CATALOG_ID_3)
+        .withActorId(SOURCE_ID_3)
+        .withConfigHash("1394")
+        .withConnectorVersion("1.2.0");
     return Arrays.asList(
         new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent1, now),
         new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent2, yesterday),
-        new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent3, now));
+        new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent3, now),
+        new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent4, now));
   }
 
   public static List<WorkspaceServiceAccount> workspaceServiceAccounts() {
