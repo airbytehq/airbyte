@@ -88,6 +88,7 @@ module.exports = {
     "react/jsx-fragments": "warn",
     "react/jsx-no-useless-fragment": ["warn", { allowExpressions: true }],
     "react/self-closing-comp": "warn",
+    "react/style-prop-object": ["warn", { allow: ["FormattedNumber"] }],
   },
   parser: "@typescript-eslint/parser",
   overrides: [

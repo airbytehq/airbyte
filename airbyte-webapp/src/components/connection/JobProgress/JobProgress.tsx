@@ -75,56 +75,47 @@ export const JobProgress: React.FC<ProgressBarProps> = ({ job, expanded }) => {
               <span>{formatNumber(totalPercentRecords, { style: "percent", maximumFractionDigits: 0 })}</span>
             </div>
           )}
-          {denominatorRecords > 0 && expanded && (
-            <div className={styles.estimationDetails}>
-              <span>
-                <FontAwesomeIcon icon={faDiagramNext} className={styles.icon} />
-                {formatNumber(numeratorRecords)} {displayProgressBar ? "" : `/ ${formatNumber(denominatorRecords)}`}{" "}
-                {formatMessage({ id: "estimate.recordsSynced" }, { value: numeratorRecords })} (
-                {Math.round((numeratorRecords / elapsedTimeMS) * 1000)}{" "}
-                {formatMessage({ id: "estimate.recordsPerSecond" })})
-              </span>
-              <span>
-                <FontAwesomeIcon icon={faDatabase} className={styles.icon} />
-                {formatBytes(numeratorBytes)}{" "}
-                {displayProgressBar && (
-                  <>
-                    <span>/ </span>
-                    {formatBytes(denominatorBytes)}
-                  </>
-                )}{" "}
-                {formatMessage({ id: "estimate.bytesSynced" })} ({formatBytes((numeratorBytes * 1000) / elapsedTimeMS)}
-                {formatMessage({ id: "estimate.perSecond" })})
-              </span>
-            </div>
-          )}
-
-          {latestAttempt.streamStats && (
-            <div className={classNames(styles.streams, { [styles.open]: expanded })}>
-              {latestAttempt.streamStats?.map((stream) => {
-                return <StreamProgress stream={stream} key={stream.streamName} />;
-                // const localNumerator = stream.stats.recordsEmitted;
-                // const localDenominator = stream.stats.estimatedRecords;
-                // return (
-                //   <Text size="xs" as="div" key={`stream-progress-${idx}`}>
-                //     <strong>{stream.streamName}</strong> -{" "}
-                //     {localNumerator && localDenominator
-                //       ? `${Math.round((localNumerator * 100) / localDenominator)}${formatMessage({
-                //           id: "estimate.percentComplete",
-                //         })} (${formatNumber(localNumerator)} / ${formatNumber(localDenominator)} ${formatMessage(
-                //           { id: "estimate.recordsSynced" },
-                //           { value: localNumerator }
-                //         )})`
-                //       : `${localNumerator} ${formatMessage(
-                //           { id: "estimate.recordsSynced" },
-                //           { value: localNumerator }
-                //         )} (${formatMessage({
-                //           id: "estimate.noEstimate",
-                //         })})`}
-                //   </Text>
-                // );
-              })}
-            </div>
+          {expanded && (
+            <>
+              {denominatorRecords > 0 && (
+                <div className={styles.estimationDetails}>
+                  <span>
+                    <FontAwesomeIcon icon={faDiagramNext} className={styles.icon} />
+                    {formatNumber(numeratorRecords)} {displayProgressBar ? "" : `/ ${formatNumber(denominatorRecords)}`}{" "}
+                    {formatMessage({ id: "estimate.recordsSynced" }, { value: numeratorRecords })} (
+                    {Math.round((numeratorRecords / elapsedTimeMS) * 1000)}{" "}
+                    {formatMessage({ id: "estimate.recordsPerSecond" })})
+                  </span>
+                  <span>
+                    <FontAwesomeIcon icon={faDatabase} className={styles.icon} />
+                    {formatBytes(numeratorBytes)}{" "}
+                    {displayProgressBar && (
+                      <>
+                        <span>/ </span>
+                        {formatBytes(denominatorBytes)}
+                      </>
+                    )}{" "}
+                    {formatMessage({ id: "estimate.bytesSynced" })} (
+                    {formatBytes((numeratorBytes * 1000) / elapsedTimeMS)}
+                    {formatMessage({ id: "estimate.perSecond" })})
+                  </span>
+                </div>
+              )}
+              {latestAttempt.streamStats && (
+                <div className={classNames(styles.streams, { [styles.open]: expanded })}>
+                  {latestAttempt.streamStats
+                    ?.map((stats) => ({
+                      ...stats,
+                      done: (stats.stats.recordsEmitted ?? 0) >= (stats.stats.estimatedRecords ?? Infinity),
+                    }))
+                    // Move finished streams to the end of the list
+                    .sort((a, b) => Number(a.done) - Number(b.done))
+                    .map((stream) => {
+                      return <StreamProgress stream={stream} key={stream.streamName} />;
+                    })}
+                </div>
+              )}
+            </>
           )}
         </>
       )}

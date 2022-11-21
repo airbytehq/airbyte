@@ -17,6 +17,7 @@ const JobsList: React.FC<JobsListProps> = ({ jobs }) => {
         .filter((job): job is JobsWithJobs => !!job.job)
         .sort((a, b) => (a.job.createdAt > b.job.createdAt ? -1 : 1))
         .map((value, index) => {
+          // TODO: Remove before merging
           if (index !== 0 || !value.attempts) {
             return value;
           }

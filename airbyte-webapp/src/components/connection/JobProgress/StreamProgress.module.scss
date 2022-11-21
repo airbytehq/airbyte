@@ -17,17 +17,61 @@
   display: flex;
   align-items: center;
   gap: variables.$spacing-sm;
+  min-height: 16px + 2 * variables.$spacing-xs;
 }
 
 .progress {
-  background-color: colors.$white;
-  border-radius: 100%;
   justify-content: center;
   align-items: center;
   min-width: 16px;
   margin: variables.$spacing-xs;
-
-  // padding: variables.$spacing-sm;
   aspect-ratio: 1 / 1;
   display: flex;
+
+  .check {
+    fill: colors.$white;
+    display: none;
+  }
+
+  .fg {
+    stroke: colors.$blue;
+  }
+
+  .bg {
+    fill: colors.$white;
+  }
+
+  &.done {
+    .bg {
+      fill: colors.$green;
+    }
+
+    .fg {
+      display: none;
+    }
+
+    .check {
+      display: block;
+    }
+  }
+
+  &.unknown {
+    display: none;
+  }
+}
+
+.metrics {
+  margin: variables.$spacing-md 0 0;
+  display: grid;
+  grid-template-columns: max-content auto;
+  gap: variables.$spacing-md;
+
+  dt {
+    grid-column-start: 1;
+  }
+
+  dd {
+    margin: 0;
+    grid-column-start: 2;
+  }
 }
