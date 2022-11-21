@@ -24,32 +24,8 @@ runs:
         [[ "${{ inputs.branch_version_tag }}" != '' ]] && echo "branch_version_tag=${{ inputs.branch_version_tag }}" >> $GITHUB_OUTPUT \
           || { short_hash=$(git rev-parse --short=10 HEAD); echo "branch_version_tag=dev-$short_hash" >> $GITHUB_OUTPUT ; }
 
-    - uses: actions/setup-java@v3
-      with:
-        distribution: "zulu"
-        java-version: "17"
-
-    - uses: actions/setup-node@v3
-      with:
-        node-version: "lts/gallium"
-
-    - uses: actions/setup-python@v4
-      with:
-        python-version: "3.9"
-
-    - name: Set up CI Gradle Properties
-      run: |
-        mkdir -p ~/.gradle/
-        cat > ~/.gradle/gradle.properties <<EOF
-        org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
-          --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
-          --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
-          --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
-          --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
-        org.gradle.workers.max=8
-        org.gradle.vfs.watch=false
-        EOF
-      shell: bash
+    - name: Prepare Runner for Building
+      uses: ./.github/actions/runner-prepare-for-build
 
     - name: Build with Docker Images
       if: inputs.build_docker_images == 'true'
