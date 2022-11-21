@@ -15,7 +15,7 @@ import { useConnectionFormService } from "hooks/services/ConnectionForm/Connecti
 
 import styles from "./CatalogTreeTableRow.module.scss";
 
-export const useRowStatus = (stream: SyncSchemaStream) => {
+export const useCatalogTreeRowProps = (stream: SyncSchemaStream) => {
   const { initialValues } = useConnectionFormService();
   const [isSelected] = useBulkEditSelect(stream.id);
 
@@ -25,23 +25,24 @@ export const useRowStatus = (stream: SyncSchemaStream) => {
   const hasError = error !== undefined;
 
   const isStreamEnabled = stream.config?.selected;
-  const rowStatusChanged =
-    initialValues.syncCatalog.streams.find(
-      (item) => item.stream?.name === stream.stream?.name && item.stream?.namespace === stream.stream?.namespace
-    )?.config?.selected !== stream.config?.selected;
-
-  const rowChanged = !isEqual(
-    initialValues.syncCatalog.streams.find(
-      (item) =>
-        item.stream &&
-        stream.stream &&
-        item.stream.name === stream.stream.name &&
-        item.stream.namespace === stream.stream.namespace
-    )?.config,
-    stream.config
-  );
 
   const statusToDisplay = useMemo(() => {
+    const rowStatusChanged =
+      initialValues.syncCatalog.streams.find(
+        (item) => item.stream?.name === stream.stream?.name && item.stream?.namespace === stream.stream?.namespace
+      )?.config?.selected !== stream.config?.selected;
+
+    const rowChanged = !isEqual(
+      initialValues.syncCatalog.streams.find(
+        (item) =>
+          item.stream &&
+          stream.stream &&
+          item.stream.name === stream.stream.name &&
+          item.stream.namespace === stream.stream.namespace
+      )?.config,
+      stream.config
+    );
+
     if (rowStatusChanged) {
       return isStreamEnabled ? "added" : "removed";
     } else if (rowChanged) {
@@ -50,18 +51,18 @@ export const useRowStatus = (stream: SyncSchemaStream) => {
       return "disabled";
     }
     return "unchanged";
-  }, [isStreamEnabled, rowChanged, rowStatusChanged]);
+  }, [initialValues.syncCatalog.streams, isStreamEnabled, stream.config, stream.stream]);
 
   const pillButtonVariant: PillButtonVariant = useMemo(() => {
     if (statusToDisplay === "added") {
       return "green";
     } else if (statusToDisplay === "removed") {
       return "red";
-    } else if (statusToDisplay === "changed") {
+    } else if (statusToDisplay === "changed" || isSelected) {
       return "blue";
     }
     return "grey";
-  }, [statusToDisplay]);
+  }, [isSelected, statusToDisplay]);
 
   const statusIcon = useMemo(() => {
     if (statusToDisplay === "added") {
@@ -81,7 +82,7 @@ export const useRowStatus = (stream: SyncSchemaStream) => {
   const streamHeaderContentStyle = classNames(styles.streamHeaderContent, {
     [styles.added]: statusToDisplay === "added",
     [styles.removed]: statusToDisplay === "removed",
-    [styles.changed]: isSelected || statusToDisplay === "changed",
+    [styles.changed]: statusToDisplay === "changed" || isSelected,
     [styles.disabled]: statusToDisplay === "disabled",
     [styles.error]: hasError,
   });
