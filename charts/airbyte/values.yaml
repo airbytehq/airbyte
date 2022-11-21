@@ -100,23 +100,23 @@ global:
       ## requests:
       ##    memory: 256Mi
       ##    cpu: 250m
-      requests: {}
+      requests: { }
       ## Example:
       ## limits:
       ##    cpu: 200m
       ##    memory: 1Gi
-      limits: {}
+      limits: { }
 
     kube:
       ## JOB_KUBE_ANNOTATIONS
       ## pod annotations of the sync job and the default pod annotations fallback for others jobs
       ##  jobs.kube.annotations [object] key/value annotations applied to kube jobs
-      annotations: {}
+      annotations: { }
 
       ## JOB_KUBE_NODE_SELECTORS
       ## pod node selector of the sync job and the default pod node selector fallback for others jobs
       ##  jobs.kube.nodeSelector [object] key/value node selector applied to kube jobs
-      nodeSelector: {}
+      nodeSelector: { }
 
       ## JOB_KUBE_TOLERATIONS
       ##  jobs.kube.tolerations [array] Tolerations for jobs.kube pod assignment.
@@ -126,7 +126,7 @@ global:
       ##   operator: Equal
       ##   value: "true"
       ##   effect: NoSchedule
-      tolerations: []
+      tolerations: [ ]
 
       ## JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET
       ## image pull secret to use for job pod
@@ -150,7 +150,7 @@ fullnameOverride: ""
 ##
 serviceAccount:
   create: true
-  annotations: {}
+  annotations: { }
   name: *service-account-name
 
 # version Sets the AIRBYTE_VERSION environment variable. Defaults to Chart.AppVersion.
@@ -173,7 +173,7 @@ webapp:
 
   ##  webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
   ##
-  podAnnotations: {}
+  podAnnotations: { }
 
   ##  webapp.containerSecurityContext Security context for the container
   ## Examples:
@@ -181,7 +181,7 @@ webapp:
   ##    runAsNonRoot: true
   ##    runAsUser: 1000
   ##    readOnlyRootFilesystem: true
-  containerSecurityContext: {}
+  containerSecurityContext: { }
 
   ## Configure extra options for the webapp containers' liveness and readiness probes
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
@@ -221,7 +221,7 @@ webapp:
   service:
     type: ClusterIP
     port: 80
-    annotations: {}
+    annotations: { }
 
   ## Web app resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
@@ -236,27 +236,27 @@ webapp:
     ## limits:
     ##    cpu: 200m
     ##    memory: 1Gi
-    limits: {}
+    limits: { }
     ## Examples:
     ## requests:
     ##    memory: 256Mi
     ##    cpu: 250m
-    requests: {}
+    requests: { }
 
   ##  webapp.nodeSelector [object] Node labels for pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
-  nodeSelector: {}
+  nodeSelector: { }
 
   ##  webapp.tolerations [array] Tolerations for webapp pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
-  tolerations: []
+  tolerations: [ ]
 
   ##  webapp.affinity [object] Affinity and anti-affinity for webapp pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   ##
-  affinity: {}
+  affinity: { }
 
   ## Configure the ingress resource that allows you to access the Airbyte installation.
   ## ref: http://kubernetes.io/docs/user-guide/ingress/
@@ -268,16 +268,16 @@ webapp:
   ingress:
     enabled: false
     className: ""
-    annotations: {}
+    annotations: { }
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
-    hosts: []
+    hosts: [ ]
     # - host: chart-example.local
     #   paths:
     #   - path: /
     #     pathType: ImplementationSpecific
 
-    tls: []
+    tls: [ ]
     # - secretName: chart-example-tls
     #   hosts:
     #   - chart-example.local
@@ -301,7 +301,7 @@ webapp:
   ##   - mountPath: /etc/nginx/conf.d
   ##     name: nginx-conf-d
   ##
-  extraVolumeMounts: []
+  extraVolumeMounts: [ ]
 
   ##  webapp.extraVolumes [array] Additional volumes for webapp pod(s).
   ## Examples (when using `webapp.containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -313,7 +313,7 @@ webapp:
   ##   - name: nginx-conf-d
   ##     emptyDir: {}
   ##
-  extraVolumes: []
+  extraVolumes: [ ]
 
   ##  extraContainer [array] Additional container for server pod(s)
   ## Example:
@@ -329,7 +329,7 @@ webapp:
   #       - name: volumeMountCool
   #         mountPath: /some/path
   #         readOnly: true
-  extraContainers: []
+  extraContainers: [ ]
 
   ##  extraInitContainers [array] Additional init containers for server pod(s)
   ## Example:
@@ -338,7 +338,7 @@ webapp:
   #     image: alpine
   #     command: ['sleep', '60']
 
-  extraInitContainers: []
+  extraInitContainers: [ ]
 
   ##  extraEnv [array] Supply extra env variables to main container using full notation
   ## Example: (With default env vars and values taken from generated config map)
@@ -368,20 +368,20 @@ webapp:
   #         name: airbyte-env
   #         key: DATABASE_HOST
   ##
-  extraEnv: []
+  extraEnv: [ ]
   ##  secrets [object] Supply additional secrets to container
   ## Example:
   ## secrets:
   ##   DATABASE_PASSWORD: strong-password
   ##   DATABASE_USER: my-db-user
-  secrets: {}
+  secrets: { }
 
   ##  env_vars [object] Supply extra env variables to main container using simplified notation
   ## Example:
   ## env_vars:
   ##   DATABASE_HOST: airbyte-db
   ##   DATABASE_PORT: 5432
-  env_vars: {}
+  env_vars: { }
 
 
 
@@ -401,7 +401,7 @@ pod-sweeper:
 
   ##  podSweeper.podAnnotations [object] Add extra annotations to the podSweeper pod
   ##
-  podAnnotations: {}
+  podAnnotations: { }
 
   ##  podSweeper.containerSecurityContext Security context for the container
   ## Examples:
@@ -409,7 +409,7 @@ pod-sweeper:
   ##    runAsNonRoot: true
   ##    runAsUser: 1000
   ##    readOnlyRootFilesystem: true
-  containerSecurityContext: {}
+  containerSecurityContext: { }
 
   ## Configure extra options for the podSweeper containers' liveness and readiness probes
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
@@ -456,27 +456,27 @@ pod-sweeper:
     ## limits:
     ##    cpu: 200m
     ##    memory: 1Gi
-    limits: {}
+    limits: { }
     ## Examples:
     ## requests:
     ##    memory: 256Mi
     ##    cpu: 250m
-    requests: {}
+    requests: { }
 
   ##  podSweeper.nodeSelector [object] Node labels for pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
-  nodeSelector: {}
+  nodeSelector: { }
 
   ##  podSweeper.tolerations [array] Tolerations for podSweeper pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
-  tolerations: []
+  tolerations: [ ]
 
   ##  podSweeper.affinity [object] Affinity and anti-affinity for podSweeper pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   ##
-  affinity: {}
+  affinity: { }
 
   ##  podSweeper.extraVolumeMounts [array] Additional volumeMounts for podSweeper container(s).
   ## Examples:
@@ -484,7 +484,7 @@ pod-sweeper:
   ##   - name: tmpdir
   ##     mountPath: /tmp
   ##
-  extraVolumeMounts: []
+  extraVolumeMounts: [ ]
 
   ##  podSweeper.extraVolumes [array] Additional volumes for podSweeper pod(s).
   ## Examples:
@@ -492,7 +492,7 @@ pod-sweeper:
   ##   - name: tmpdir
   ##     emptyDir: {}
   ##
-  extraVolumes: []
+  extraVolumes: [ ]
 
 ## @section Server parameters
 
@@ -510,7 +510,7 @@ server:
 
   ##  server.podAnnotations [object] Add extra annotations to the server pod(s)
   ##
-  podAnnotations: {}
+  podAnnotations: { }
 
   ##  server.containerSecurityContext Security context for the container
   ## Examples:
@@ -518,7 +518,7 @@ server:
   ##    runAsNonRoot: true
   ##    runAsUser: 1000
   ##    readOnlyRootFilesystem: true
-  containerSecurityContext: {}
+  containerSecurityContext: { }
 
   ## Configure extra options for the server containers' liveness and readiness probes
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
@@ -565,27 +565,27 @@ server:
     ## limits:
     ##    cpu: 200m
     ##    memory: 1Gi
-    limits: {}
+    limits: { }
     ## Examples:
     ## requests:
     ##    memory: 256Mi
     ##    cpu: 250m
-    requests: {}
+    requests: { }
 
   ##  server.nodeSelector [object] Node labels for pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
-  nodeSelector: {}
+  nodeSelector: { }
 
   ##  server.tolerations [array] Tolerations for server pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
-  tolerations: []
+  tolerations: [ ]
 
   ##  server.affinity [object] Affinity and anti-affinity for server pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   ##
-  affinity: {}
+  affinity: { }
 
   ##  server.log.level The log level to log at.
   log:
@@ -599,7 +599,7 @@ server:
   ##   - name: tmpdir
   ##     mountPath: /tmp
   ##
-  extraVolumeMounts: []
+  extraVolumeMounts: [ ]
 
   ##  server.extraVolumes [array] Additional volumes for server pod(s).
   ## Examples (when using `server.containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -607,7 +607,7 @@ server:
   ##   - name: tmpdir
   ##     emptyDir: {}
   ##
-  extraVolumes: []
+  extraVolumes: [ ]
 
   ##  extraContainer [array] Additional container for server pod(s)
   ## Example:
@@ -623,7 +623,7 @@ server:
   #       - name: volumeMountCool
   #         mountPath: /some/path
   #         readOnly: true
-  extraContainers: []
+  extraContainers: [ ]
 
   ##  extraInitContainers [array] Additional init containers for server pod(s)
   ## Example:
@@ -632,7 +632,7 @@ server:
   #     image: alpine
   #     command: ['sleep', '60']
 
-  extraInitContainers: []
+  extraInitContainers: [ ]
 
   ##  extraEnv [array] Supply extra env variables to main container using full notation
   ## Example: (With default env vars and values taken from generated config map)
@@ -663,20 +663,20 @@ server:
   #         name: airbyte-env
   #         key: INTERNAL_API_HOST
   ##
-  extraEnv: []
+  extraEnv: [ ]
   ##  secrets [object] Supply additional secrets to container
   ## Example:
   ## secrets:
   ##   DATABASE_PASSWORD: strong-password
   ##   DATABASE_USER: my-db-user
-  secrets: {}
+  secrets: { }
 
   ##  env_vars [object] Supply extra env variables to main container using simplified notation
   ## Example:
   ## env_vars:
   ##   DATABASE_HOST: airbyte-db
   ##   DATABASE_PORT: 5432
-  env_vars: {}
+  env_vars: { }
 
 ## @section Worker Parameters
 
@@ -694,7 +694,7 @@ worker:
 
   ##  worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
-  podAnnotations: {}
+  podAnnotations: { }
 
   ##  worker.containerSecurityContext Security context for the container
   ## Examples:
@@ -702,7 +702,7 @@ worker:
   ##    runAsNonRoot: true
   ##    runAsUser: 1000
   ##    readOnlyRootFilesystem: true
-  containerSecurityContext: {}
+  containerSecurityContext: { }
 
   ## Configure extra options for the worker containers' liveness and readiness probes
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
@@ -749,27 +749,27 @@ worker:
     ## limits:
     ##    cpu: 200m
     ##    memory: 1Gi
-    limits: {}
+    limits: { }
     ## Examples:
     ## requests:
     ##    memory: 256Mi
     ##    cpu: 250m
-    requests: {}
+    requests: { }
 
   ##  worker.nodeSelector [object] Node labels for pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
-  nodeSelector: {}
+  nodeSelector: { }
 
   ##  worker.tolerations [array] Tolerations for worker pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
-  tolerations: []
+  tolerations: [ ]
 
   ##  worker.affinity [object] Affinity and anti-affinity for worker pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   ##
-  affinity: {}
+  affinity: { }
 
   ##  worker.log.level The log level to log at.
   log:
@@ -781,7 +781,7 @@ worker:
   ## extraEnv:
   ## - name: JOB_KUBE_TOLERATIONS
   ##   value: "key=airbyte-server,operator=Equals,value=true,effect=NoSchedule"
-  extraEnv: []
+  extraEnv: [ ]
 
   ##  worker.extraVolumeMounts [array] Additional volumeMounts for worker container(s).
   ## Examples (when using `worker.containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -789,7 +789,7 @@ worker:
   ##   - name: tmpdir
   ##     mountPath: /tmp
   ##
-  extraVolumeMounts: []
+  extraVolumeMounts: [ ]
 
   ##  worker.extraVolumes [array] Additional volumes for worker pod(s).
   ## Examples (when using `worker.containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -797,9 +797,9 @@ worker:
   ##   - name: tmpdir
   ##     emptyDir: {}
   ##
-  extraVolumes: []
+  extraVolumes: [ ]
 
-  extraContainers: []
+  extraContainers: [ ]
 
   hpa:
     enabled: false
@@ -827,7 +827,7 @@ metrics:
 
   ##  metrics.podAnnotations [object] Add extra annotations to the metrics-reporter pod
   ##
-  podAnnotations: {}
+  podAnnotations: { }
 
   ##  metrics.containerSecurityContext Security context for the container
   ## Examples:
@@ -835,7 +835,7 @@ metrics:
   ##    runAsNonRoot: true
   ##    runAsUser: 1000
   ##    readOnlyRootFilesystem: true
-  containerSecurityContext: {}
+  containerSecurityContext: { }
 
   ## metrics-reporter app resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
@@ -850,27 +850,27 @@ metrics:
     ## limits:
     ##    cpu: 200m
     ##    memory: 1Gi
-    limits: {}
+    limits: { }
     ## Examples:
     ## requests:
     ##    memory: 256Mi
     ##    cpu: 250m
-    requests: {}
+    requests: { }
 
   ##  metrics.nodeSelector [object] Node labels for pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
-  nodeSelector: {}
+  nodeSelector: { }
 
   ##  metrics.tolerations [array] Tolerations for metrics-reporter pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
-  tolerations: []
+  tolerations: [ ]
 
   ##  metrics.affinity [object] Affinity and anti-affinity for metrics-reporter pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   ##
-  affinity: {}
+  affinity: { }
 
   ##  metrics.extraEnv [array] Additional env vars for metrics-reporter pod(s).
   ## Example:
@@ -878,7 +878,7 @@ metrics:
   ## extraEnv:
   ## - name: SAMPLE_ENV_VAR
   ##   value: "key=sample-value"
-  extraEnv: []
+  extraEnv: [ ]
 
   ##  metrics.extraVolumeMounts [array] Additional volumeMounts for metrics-reporter container(s).
   ## Examples (when using `metrics.containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -886,7 +886,7 @@ metrics:
   ##   - name: tmpdir
   ##     mountPath: /tmp
   ##
-  extraVolumeMounts: []
+  extraVolumeMounts: [ ]
 
   ##  metrics.extraVolumes [array] Additional volumes for metrics-reporter pod(s).
   ## Examples (when using `metrics.containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -894,13 +894,13 @@ metrics:
   ##   - name: tmpdir
   ##     emptyDir: {}
   ##
-  extraVolumes: []
+  extraVolumes: [ ]
 
-  extraContainers: []
+  extraContainers: [ ]
 
-  secrets: {}
+  secrets: { }
 
-  env_vars: {}
+  env_vars: { }
 
 ## @section Bootloader Parameters
 
@@ -915,17 +915,17 @@ airbyte-bootloader:
 
   ##  podAnnotations [object] Add extra annotations to the bootloader pod
   ##
-  podAnnotations: {}
+  podAnnotations: { }
 
   ##  nodeSelector [object] Node labels for pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
-  nodeSelector: {}
+  nodeSelector: { }
 
   ##  tolerations [array] Tolerations for worker pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
-  tolerations: []
+  tolerations: [ ]
 
   ## Bootloader resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
@@ -940,17 +940,17 @@ airbyte-bootloader:
     ## requests:
     ##    memory: 256Mi
     ##    cpu: 250m
-    requests: {}
+    requests: { }
     ## Example:
     ## limits:
     ##    cpu: 200m
     ##    memory: 1Gi
-    limits: {}
+    limits: { }
 
   ##  affinity [object] Affinity and anti-affinity for bootloader pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   ##
-  affinity: {}
+  affinity: { }
 
   ##  extraEnv [array] Supply extra env variables to main container using full notation
   ## Example: (With default env vars and values taken from generated config map)
@@ -986,20 +986,20 @@ airbyte-bootloader:
   ##         name: airbyte-secrets
   ##         key: DATABASE_USER
   ##
-  extraEnv: []
+  extraEnv: [ ]
   ##  secrets [object] Supply additional secrets to container
   ## Example:
   ## secrets:
   ##   DATABASE_PASSWORD: strong-password
   ##   DATABASE_USER: my-db-user
-  secrets: {}
+  secrets: { }
 
   ##  env_vars [object] Supply extra env variables to main container using simplified notation
   ## Example:
   ## env_vars:
   ##   DATABASE_HOST: airbyte-db
   ##   DATABASE_PORT: 5432
-  env_vars: {}
+  env_vars: { }
   ##  extraContainer [array] Additional container for server pod(s)
   ## Example:
   # extraContainers:
@@ -1014,7 +1014,7 @@ airbyte-bootloader:
   #       - name: volumeMountCool
   #         mountPath: /some/path
   #         readOnly: true
-  extraContainers: []
+  extraContainers: [ ]
 
   ##  extraInitContainers [array] Additional init containers for server pod(s)
   ## Example:
@@ -1023,7 +1023,7 @@ airbyte-bootloader:
   #     image: alpine
   #     command: ['sleep', '60']
 
-  extraInitContainers: []
+  extraInitContainers: [ ]
 
   ##  extraVolumeMounts [array] Additional volumeMounts for server container(s).
   ## Examples (when using `containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -1031,7 +1031,7 @@ airbyte-bootloader:
   ##   - name: tmpdir
   ##     mountPath: /tmp
   ##
-  extraVolumeMounts: []
+  extraVolumeMounts: [ ]
 
   ##  extraVolumes [array] Additional volumes for server pod(s).
   ## Examples (when using `containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -1039,7 +1039,7 @@ airbyte-bootloader:
   ##   - name: tmpdir
   ##     emptyDir: {}
   ##
-  extraVolumes: []
+  extraVolumes: [ ]
 
 ## @section Temporal parameters
 ## TODO: Move to consuming temporal from a dedicated helm chart
@@ -1065,7 +1065,7 @@ temporal:
 
   ##  temporal.podAnnotations [object] Add extra annotations to the temporal pod
   ##
-  podAnnotations: {}
+  podAnnotations: { }
 
   ##  temporal.containerSecurityContext Security context for the container
   ## Examples:
@@ -1073,7 +1073,7 @@ temporal:
   ##    runAsNonRoot: true
   ##    runAsUser: 1000
   ##    readOnlyRootFilesystem: true
-  containerSecurityContext: {}
+  containerSecurityContext: { }
 
   ##  temporal.extraInitContainers Additional InitContainers to initialize the pod
   ## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -1088,7 +1088,7 @@ temporal:
   ##     volumeMounts:
   ##       - name: config
   ##         mountPath: /config
-  extraInitContainers: []
+  extraInitContainers: [ ]
 
   ## Configure extra options for the temporal containers' liveness and readiness probes
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
@@ -1115,17 +1115,17 @@ temporal:
   ##  temporal.nodeSelector [object] Node labels for temporal pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
-  nodeSelector: {}
+  nodeSelector: { }
 
   ##  temporal.tolerations [array] Tolerations for temporal pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
-  tolerations: []
+  tolerations: [ ]
 
   ##  temporal.affinity [object] Affinity and anti-affinity for temporal pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   ##
-  affinity: {}
+  affinity: { }
 
   ##  temporal.extraEnv [array] Additional env vars for temporal pod(s).
   ## Example:
@@ -1133,7 +1133,7 @@ temporal:
   ## extraEnv:
   ## - name: SAMPLE_ENV_VAR
   ##   value: "key=sample-value"
-  extraEnv: []
+  extraEnv: [ ]
 
   ##  temporal.extraVolumeMounts [array] Additional volumeMounts for temporal container(s).
   ## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -1143,7 +1143,7 @@ temporal:
   ##   - name: config
   ##     mountPath: /etc/temporal/config
   ##
-  extraVolumeMounts: []
+  extraVolumeMounts: [ ]
 
   ##  temporal.extraVolumes [array] Additional volumes for temporal pod(s).
   ## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -1153,7 +1153,7 @@ temporal:
   ##  - name: config
   ##    emptyDir: {}
   ##
-  extraVolumes: []
+  extraVolumes: [ ]
 
   ## Temporal resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
@@ -1168,14 +1168,14 @@ temporal:
     ## requests:
     ##    memory: 256Mi
     ##    cpu: 250m
-    requests: {}
+    requests: { }
     ## Example:
     ## limits:
     ##    cpu: 200m
     ##    memory: 1Gi
-    limits: {}
+    limits: { }
 
-  extraContainers: []
+  extraContainers: [ ]
 
 ## @section Airbyte Database parameters
 
@@ -1251,7 +1251,7 @@ cron:
 
   ##  cron.podAnnotations [object] Add extra annotations to the cron pod(s)
   ##
-  podAnnotations: {}
+  podAnnotations: { }
 
   ##  cron.containerSecurityContext Security context for the container
   ## Examples:
@@ -1259,7 +1259,7 @@ cron:
   ##    runAsNonRoot: true
   ##    runAsUser: 1000
   ##    readOnlyRootFilesystem: true
-  containerSecurityContext: {}
+  containerSecurityContext: { }
 
   ## Configure extra options for the cron containers' liveness and readiness probes
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
@@ -1306,27 +1306,27 @@ cron:
     ## limits:
     ##    cpu: 200m
     ##    memory: 1Gi
-    limits: {}
+    limits: { }
     ## Examples:
     ## requests:
     ##    memory: 256Mi
     ##    cpu: 250m
-    requests: {}
+    requests: { }
 
   ##  cron.nodeSelector [object] Node labels for pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
-  nodeSelector: {}
+  nodeSelector: { }
 
   ##  cron.tolerations [array] Tolerations for cron pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
-  tolerations: []
+  tolerations: [ ]
 
   ##  cron.affinity [object] Affinity and anti-affinity for cron pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   ##
-  affinity: {}
+  affinity: { }
 
   ##  cron.log.level The log level to log at.
   log:
@@ -1340,7 +1340,7 @@ cron:
   ##   - name: tmpdir
   ##     mountPath: /tmp
   ##
-  extraVolumeMounts: []
+  extraVolumeMounts: [ ]
 
   ##  cron.extraVolumes [array] Additional volumes for cron pod(s).
   ## Examples (when using `cron.containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -1348,7 +1348,7 @@ cron:
   ##   - name: tmpdir
   ##     emptyDir: {}
   ##
-  extraVolumes: []
+  extraVolumes: [ ]
 
   ##  extraContainer [array] Additional container for cron pod(s)
   ## Example:
@@ -1364,7 +1364,7 @@ cron:
   #       - name: volumeMountCool
   #         mountPath: /some/path
   #         readOnly: true
-  extraContainers: []
+  extraContainers: [ ]
 
   ##  extraInitContainers [array] Additional init containers for cron pod(s)
   ## Example:
@@ -1373,7 +1373,7 @@ cron:
   #     image: alpine
   #     command: ['sleep', '60']
 
-  extraInitContainers: []
+  extraInitContainers: [ ]
 
   ##  extraEnv [array] Supply extra env variables to main container using full notation
   ## Example: (With default env vars and values taken from generated config map)
@@ -1404,17 +1404,107 @@ cron:
   #         name: airbyte-env
   #         key: INTERNAL_API_HOST
   ##
-  extraEnv: []
+  extraEnv: [ ]
   ##  secrets [object] Supply additional secrets to container
   ## Example:
   ## secrets:
   ##   DATABASE_PASSWORD: strong-password
   ##   DATABASE_USER: my-db-user
-  secrets: {}
+  secrets: { }
 
   ##  env_vars [object] Supply extra env variables to main container using simplified notation
   ## Example:
   ## env_vars:
   ##   DATABASE_HOST: airbyte-db
   ##   DATABASE_PORT: 5432
-  env_vars: {}
+  env_vars: { }
+## @section sonnector-builder-server parameters
+connector-builder-server:
+  enabled: true
+
+  ##  metrics.replicaCount Number of metrics-reporter replicas
+  replicaCount: 1
+
+  ##  metrics.image.repository The repository to use for the airbyte metrics-reporter image.
+  ##  metrics.image.pullPolicy the pull policy to use for the airbyte metrics-reporter image
+  ##  metrics.image.tag The airbyte metrics-reporter image tag. Defaults to the chart's AppVersion
+  image:
+    repository: airbyte/connector-builder-server
+    pullPolicy: IfNotPresent
+
+  ##  metrics.podAnnotations [object] Add extra annotations to the metrics-reporter pod
+  ##
+  podAnnotations: { }
+
+  ##  metrics.containerSecurityContext Security context for the container
+  ## Examples:
+  ## containerSecurityContext:
+  ##    runAsNonRoot: true
+  ##    runAsUser: 1000
+  ##    readOnlyRootFilesystem: true
+  containerSecurityContext: { }
+
+  ## metrics-reporter app resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ##  metrics.resources.limits [object] The resources limits for the metrics-reporter container
+  ##  metrics.resources.requests [object] The requested resources for the metrics-reporter container
+  resources:
+    ## Example:
+    ## limits:
+    ##    cpu: 200m
+    ##    memory: 1Gi
+    limits: { }
+    ## Examples:
+    ## requests:
+    ##    memory: 256Mi
+    ##    cpu: 250m
+    requests: { }
+
+  ##  metrics.nodeSelector [object] Node labels for pod assignment
+  ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+  ##
+  nodeSelector: { }
+
+  ##  metrics.tolerations [array] Tolerations for metrics-reporter pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  ##
+  tolerations: [ ]
+
+  ##  metrics.affinity [object] Affinity and anti-affinity for metrics-reporter pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  ##
+  affinity: { }
+
+  ##  metrics.extraEnv [array] Additional env vars for metrics-reporter pod(s).
+  ## Example:
+  ##
+  ## extraEnv:
+  ## - name: SAMPLE_ENV_VAR
+  ##   value: "key=sample-value"
+  extraEnv: [ ]
+
+  ##  metrics.extraVolumeMounts [array] Additional volumeMounts for metrics-reporter container(s).
+  ## Examples (when using `metrics.containerSecurityContext.readOnlyRootFilesystem=true`):
+  ## extraVolumeMounts:
+  ##   - name: tmpdir
+  ##     mountPath: /tmp
+  ##
+  extraVolumeMounts: [ ]
+
+  ##  metrics.extraVolumes [array] Additional volumes for metrics-reporter pod(s).
+  ## Examples (when using `metrics.containerSecurityContext.readOnlyRootFilesystem=true`):
+  ## extraVolumes:
+  ##   - name: tmpdir
+  ##     emptyDir: {}
+  ##
+  extraVolumes: [ ]
+
+  extraContainers: [ ]
+
+  secrets: { }
+
+  env_vars: { }
