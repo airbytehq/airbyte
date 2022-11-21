@@ -1,0 +1,36 @@
+version: '3.7'
+
+services:
+  develop:
+    build:
+      context: .
+      dockerfile: github-ubuntu-2004.Dockerfile
+
+    volumes:
+      - ..:/workspace:cached
+      # Map the host docker socket into the container.
+      - /var/run/docker.sock:/var/run/docker-host.sock
+      # Map /var/tmp of the host into the container, such that files staged into
+      # /var/tmp are accessible on the host, and from there through started docker
+      # invocations which pass files via bind-mounts.
+      #
+      # NOTE(johnny): For reasons I don't understand, doing this with /tmp doesn't
+      # work on Github Codespaces (but works fine in VSCode Remote Containers).
+      - /var/tmp:/var/tmp
+
+    environment:
+      # Use /var/tmp as the default temporary directory, rather than /tmp.
+      TMPDIR: /var/tmp
+
+    # Wrap in an init process that reaps defunct child processes.
+    init: true
+    # Run app on the same network as the database container; allows "forwardPorts" in devcontainer.json function.
+    network_mode: service:db
+    # Required for ptrace-based debuggers like C++, Go, and Rust.
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+
+volumes:
+  postgres-data: {}

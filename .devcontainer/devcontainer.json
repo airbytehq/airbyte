@@ -1,0 +1,45 @@
+{
+	"name": "Development",
+	"dockerComposeFile": "docker-compose.yaml",
+	"service": "develop",
+	"workspaceFolder": "/workspace",
+	// Set default container specific settings.json values on container create.
+	"settings": {
+		// Integrate the empty docker-compose database into VSCode.
+		"sqltools.connections": [
+			{
+				"database": "flow",
+				"driver": "PostgreSQL",
+				"name": "Test DB",
+				"password": "flow",
+				"port": 5432,
+				"previewLimit": 50,
+				"server": "localhost",
+				"username": "flow"
+			}
+		],
+		// Add extra CGO configuration required for the vscode-go extension to build
+		// the project through IDE-driven interactions, like running tests and analysis.
+		// Yes, these `testEnvVars` vs `toolsEnvVars` blocks are identical.
+		"go.testEnvVars": {
+		},
+		"go.toolsEnvVars": {
+		}
+	},
+	// Add the IDs of extensions you want installed when the container is created.
+	"extensions": [
+		// YAML language & schema support.
+		"redhat.vscode-yaml",
+		// Spell checking.
+		"streetsidesoftware.code-spell-checker"
+	],
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	"forwardPorts": [
+	],
+	// Run extra environment setup required to build & test Flow.
+	// We're using a base image which is compatible with our CI runner,
+	// and thus use the same make target.
+	"postCreateCommand": "",
+	// This user matches the user that's created inside the build image.
+	"remoteUser": "flow"
+}
