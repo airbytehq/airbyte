@@ -64,7 +64,6 @@ import io.airbyte.server.apis.binders.DestinationApiBinder;
 import io.airbyte.server.apis.binders.DestinationDefinitionApiBinder;
 import io.airbyte.server.apis.binders.DestinationDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.DestinationOauthApiBinder;
-import io.airbyte.server.apis.binders.HealthApiBinder;
 import io.airbyte.server.apis.binders.JobsApiBinder;
 import io.airbyte.server.apis.binders.LogsApiBinder;
 import io.airbyte.server.apis.binders.NotificationApiBinder;
@@ -85,7 +84,6 @@ import io.airbyte.server.apis.factories.DestinationApiFactory;
 import io.airbyte.server.apis.factories.DestinationDefinitionApiFactory;
 import io.airbyte.server.apis.factories.DestinationDefinitionSpecificationApiFactory;
 import io.airbyte.server.apis.factories.DestinationOauthApiFactory;
-import io.airbyte.server.apis.factories.HealthApiFactory;
 import io.airbyte.server.apis.factories.JobsApiFactory;
 import io.airbyte.server.apis.factories.LogsApiFactory;
 import io.airbyte.server.apis.factories.NotificationsApiFactory;
@@ -179,7 +177,9 @@ public class ServerBeanFactory {
                                        @Named("config") final DSLContext configsDslContext,
                                        @Named("configFlyway") final Flyway configsFlyway,
                                        @Named("jobs") final DSLContext jobsDslContext,
-                                       @Named("jobsFlyway") final Flyway jobsFlyway)
+                                       @Named("jobsFlyway") final Flyway jobsFlyway,
+                                       final ConfigRepository configRepository,
+                                       final HealthApiController healthApiController)
       throws DatabaseCheckException, IOException {
     final Set<Class<?>> componentClasses = Set.of(
         AttemptApiController.class,
@@ -189,7 +189,6 @@ public class ServerBeanFactory {
         DestinationDefinitionApiController.class,
         DestinationDefinitionSpecificationApiController.class,
         DestinationOauthApiController.class,
-        HealthApiController.class,
         JobsApiController.class,
         LogsApiController.class,
         NotificationsApiController.class,
@@ -213,7 +212,6 @@ public class ServerBeanFactory {
         new DestinationDefinitionApiBinder(),
         new DestinationDefinitionSpecificationApiBinder(),
         new DestinationOauthApiBinder(),
-        new HealthApiBinder(),
         new JobsApiBinder(),
         new LogsApiBinder(),
         new NotificationApiBinder(),
@@ -239,7 +237,6 @@ public class ServerBeanFactory {
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configsDslContext, configs);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configsDslContext, configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configsDslContext, configs);
-    final ConfigRepository configRepository = new ConfigRepository(configsDatabase);
     final SecretsRepositoryReader secretsRepositoryReader = new SecretsRepositoryReader(configRepository, secretsHydrator);
     final SecretsRepositoryWriter secretsRepositoryWriter =
         new SecretsRepositoryWriter(configRepository, secretPersistence, ephemeralSecretPersistence);
@@ -407,7 +404,7 @@ public class ServerBeanFactory {
 
     DestinationDefinitionSpecificationApiFactory.setValues(schedulerHandler);
 
-    HealthApiFactory.setValues(healthCheckHandler);
+    // HealthApiFactory.setValues(healthCheckHandler);
 
     DestinationOauthApiFactory.setValues(oAuthHandler);
 
