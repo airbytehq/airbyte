@@ -5,12 +5,19 @@
 package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.oauth.BaseOAuthFlow;
 import io.airbyte.oauth.MoreOAuthParameters;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.Test;
 
-public class SurveymonkeyOAuthFlowTest extends BaseOAuthFlowTest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class SurveymonkeyOAuthFlowTest extends BaseOAuthFlowTest {
+
+  public static final String STRING = "string";
+  public static final String TYPE = "type";
 
   @Override
   protected BaseOAuthFlow getOAuthFlow() {
@@ -36,6 +43,18 @@ public class SurveymonkeyOAuthFlowTest extends BaseOAuthFlowTest {
   }
 
   @Override
+  protected JsonNode getInputOAuthConfiguration() {
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put("origin", "USA")
+        .build());
+  }
+
+  @Override
+  protected JsonNode getUserInputFromConnectorConfigSpecification() {
+    return getJsonSchema(Map.of("origin", "USA"));
+  }
+
+  @Override
   protected JsonNode getCompleteOAuthOutputSpecification() {
     return getJsonSchema(Map.of("access_token", Map.of("type", "string")));
   }
@@ -46,5 +65,37 @@ public class SurveymonkeyOAuthFlowTest extends BaseOAuthFlowTest {
         "access_token", "access_token_response",
         "client_id", MoreOAuthParameters.SECRET_MASK);
   }
+
+  @Test
+  @Override
+  void testGetDestinationConsentUrlEmptyOAuthSpec() {}
+
+  @Test
+  @Override
+  void testGetDestinationConsentUrl() {}
+
+  @Test
+  @Override
+  void testGetSourceConsentUrlEmptyOAuthSpec() {}
+
+  @Test
+  @Override
+  void testGetSourceConsentUrl() {}
+
+  @Test
+  @Override
+  void testEmptyInputCompleteDestinationOAuth() {}
+
+  @Test
+  @Override
+  void testDeprecatedCompleteDestinationOAuth() {}
+
+  @Test
+  @Override
+  void testDeprecatedCompleteSourceOAuth() {}
+
+  @Test
+  @Override
+  void testEmptyInputCompleteSourceOAuth() {}
 
 }

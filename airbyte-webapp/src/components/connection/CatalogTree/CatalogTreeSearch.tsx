@@ -1,3 +1,4 @@
+import classnames from "classnames";
 import React from "react";
 import { useIntl } from "react-intl";
 
@@ -10,10 +11,17 @@ interface CatalogTreeSearchProps {
 }
 
 export const CatalogTreeSearch: React.FC<CatalogTreeSearchProps> = ({ onSearch }) => {
+  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
+
   const { formatMessage } = useIntl();
 
+  const searchStyles = classnames({
+    [styles.searchContentNew]: isNewStreamsTableEnabled,
+    [styles.searchContent]: !isNewStreamsTableEnabled,
+  });
+
   return (
-    <div className={styles.searchContent}>
+    <div className={searchStyles}>
       <Input
         className={styles.searchInput}
         placeholder={formatMessage({
