@@ -248,8 +248,7 @@ public class ConfigRepository {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return sourceDefQuery(Optional.of(sourceDefinitionId), true)
         .findFirst()
-        // todo (cgardens) - returning null to retain original behavior. this should be standardized.
-        .orElse(null);
+        .orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionId));
   }
 
   public StandardSourceDefinition getSourceDefinitionFromSource(final UUID sourceId) {
@@ -366,8 +365,7 @@ public class ConfigRepository {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return destDefQuery(Optional.of(destinationDefinitionId), true)
         .findFirst()
-        // todo (cgardens) - returning null to retain original behavior. this should be standardized.
-        .orElse(null);
+        .orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefinitionId));
   }
 
   public StandardDestinationDefinition getDestinationDefinitionFromDestination(final UUID destinationId) {

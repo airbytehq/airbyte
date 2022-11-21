@@ -8,14 +8,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.Geography;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardWorkspace;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonValidationException;
@@ -31,6 +32,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
 
+  private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final UUID SOURCE_DEFINITION_ID = UUID.randomUUID();
   private static final UUID DESTINATION_DEFINITION_ID = UUID.randomUUID();
 
@@ -63,56 +65,43 @@ class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
     assertReturnsSrcDef(createBaseSourceDef().withTombstone(false));
   }
 
-  void assertReturnsSrcDef(final StandardSourceDefinition srcDef) throws ConfigNotFoundException, IOException, JsonValidationException {
+  private void assertReturnsSrcDef(final StandardSourceDefinition srcDef) throws ConfigNotFoundException, IOException, JsonValidationException {
     configRepository.writeStandardSourceDefinition(srcDef);
     assertEquals(srcDef, configRepository.getStandardSourceDefinition(srcDef.getSourceDefinitionId()));
   }
 
-  @SuppressWarnings("SameParameterValue")
-  private static SourceConnection createSource(final UUID sourceDefId) {
-    return new SourceConnection()
-        .withSourceId(UUID.randomUUID())
-        .withSourceDefinitionId(sourceDefId);
-  }
-
   @Test
-  void testSourceDefinitionFromSource() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final SourceConnection source = createSource(SOURCE_DEFINITION_ID);
+  void testSourceDefinitionFromSource() throws JsonValidationException, IOException {
+    final StandardWorkspace workspace = createBaseStandardWorkspace();
+    final StandardSourceDefinition srcDef = createBaseSourceDef().withTombstone(false);
+    final SourceConnection source = createSource(srcDef.getSourceDefinitionId(), workspace.getWorkspaceId());
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
+    configRepository.writeStandardSourceDefinition(srcDef);
+    configRepository.writeSourceConnectionNoSecrets(source);
 
-    doReturn(source)
-        .when(configRepository)
-        .getSourceConnection(source.getSourceId());
-
-    configRepository.getSourceDefinitionFromSource(source.getSourceId());
-    verify(configRepository).getStandardSourceDefinition(SOURCE_DEFINITION_ID);
+    assertEquals(srcDef, configRepository.getSourceDefinitionFromSource(source.getSourceId()));
   }
 
   @Test
   void testSourceDefinitionsFromConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardWorkspace workspace = createBaseStandardWorkspace();
+    final StandardSourceDefinition srcDef = createBaseSourceDef().withTombstone(false);
+    final SourceConnection source = createSource(srcDef.getSourceDefinitionId(), workspace.getWorkspaceId());
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
+    configRepository.writeStandardSourceDefinition(srcDef);
+    configRepository.writeSourceConnectionNoSecrets(source);
+
     final UUID connectionId = UUID.randomUUID();
-
-    final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
-        .withSourceDefinitionId(SOURCE_DEFINITION_ID);
-
-    final SourceConnection source = createSource(SOURCE_DEFINITION_ID);
-
     final StandardSync connection = new StandardSync()
         .withSourceId(source.getSourceId())
         .withConnectionId(connectionId);
 
-    doReturn(sourceDefinition)
-        .when(configRepository)
-        .getStandardSourceDefinition(SOURCE_DEFINITION_ID);
-    doReturn(source)
-        .when(configRepository)
-        .getSourceConnection(source.getSourceId());
+    // todo (cgardens) - remove this mock and replace with record in db
     doReturn(connection)
         .when(configRepository)
         .getStandardSync(connectionId);
 
-    configRepository.getSourceDefinitionFromSource(source.getSourceId());
-
-    verify(configRepository).getStandardSourceDefinition(SOURCE_DEFINITION_ID);
+    assertEquals(srcDef, configRepository.getSourceDefinitionFromConnection(connectionId));
   }
 
   @ParameterizedTest
@@ -135,30 +124,6 @@ class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
 
     final List<StandardSourceDefinition> returnedSrcDefsWithTombstone = configRepository.listStandardSourceDefinitions(true);
     assertEquals(allSourceDefinitions, returnedSrcDefsWithTombstone);
-  }
-
-  private static StandardSourceDefinition createBaseSourceDef() {
-    final UUID id = UUID.randomUUID();
-
-    return new StandardSourceDefinition()
-        .withName("source-def-" + id)
-        .withDockerRepository("source-image-" + id)
-        .withDockerImageTag("0.0.1")
-        .withSourceDefinitionId(id)
-        .withProtocolVersion("0.2.0")
-        .withTombstone(false);
-  }
-
-  private static StandardDestinationDefinition createBaseDestDef() {
-    final UUID id = UUID.randomUUID();
-
-    return new StandardDestinationDefinition()
-        .withName("source-def-" + id)
-        .withDockerRepository("source-image-" + id)
-        .withDockerImageTag("0.0.1")
-        .withDestinationDefinitionId(id)
-        .withProtocolVersion("0.2.0")
-        .withTombstone(false);
   }
 
   // todo add test for protocol version behavior
@@ -230,52 +195,38 @@ class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
     assertEquals(destDef, configRepository.getStandardDestinationDefinition(destDef.getDestinationDefinitionId()));
   }
 
-  @SuppressWarnings("SameParameterValue")
-  private static DestinationConnection createDest(final UUID destDefId) {
-    return new DestinationConnection()
-        .withDestinationId(UUID.randomUUID())
-        .withDestinationDefinitionId(destDefId);
-  }
-
   @Test
   void testDestinationDefinitionFromDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardWorkspace workspace = createBaseStandardWorkspace();
+    final StandardDestinationDefinition destDef = createBaseDestDef().withTombstone(false);
+    final DestinationConnection dest = createDest(destDef.getDestinationDefinitionId(), workspace.getWorkspaceId());
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
+    configRepository.writeStandardDestinationDefinition(destDef);
+    configRepository.writeDestinationConnectionNoSecrets(dest);
 
-    final DestinationConnection destination = createDest(DESTINATION_DEFINITION_ID);
-
-    doReturn(destination)
-        .when(configRepository)
-        .getDestinationConnection(destination.getDestinationId());
-
-    configRepository.getDestinationDefinitionFromDestination(destination.getDestinationId());
-    verify(configRepository).getStandardDestinationDefinition(DESTINATION_DEFINITION_ID);
+    assertEquals(destDef, configRepository.getDestinationDefinitionFromDestination(dest.getDestinationId()));
   }
 
   @Test
   void testDestinationDefinitionsFromConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardWorkspace workspace = createBaseStandardWorkspace();
+    final StandardDestinationDefinition destDef = createBaseDestDef().withTombstone(false);
+    final DestinationConnection dest = createDest(destDef.getDestinationDefinitionId(), workspace.getWorkspaceId());
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
+    configRepository.writeStandardDestinationDefinition(destDef);
+    configRepository.writeDestinationConnectionNoSecrets(dest);
+
     final UUID connectionId = UUID.randomUUID();
-
-    final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
-        .withDestinationDefinitionId(DESTINATION_DEFINITION_ID);
-
-    final DestinationConnection destination = createDest(DESTINATION_DEFINITION_ID);
-
     final StandardSync connection = new StandardSync()
-        .withDestinationId(destination.getDestinationId())
+        .withDestinationId(dest.getDestinationId())
         .withConnectionId(connectionId);
 
-    doReturn(destinationDefinition)
-        .when(configRepository)
-        .getStandardDestinationDefinition(DESTINATION_DEFINITION_ID);
-    doReturn(destination)
-        .when(configRepository)
-        .getDestinationConnection(destination.getDestinationId());
+    // todo (cgardens) - remove this mock and replace with record in db
     doReturn(connection)
         .when(configRepository)
         .getStandardSync(connectionId);
 
-    configRepository.getDestinationDefinitionFromDestination(destination.getDestinationId());
-
-    verify(configRepository).getStandardDestinationDefinition(DESTINATION_DEFINITION_ID);
+    assertEquals(destDef, configRepository.getDestinationDefinitionFromConnection(connectionId));
   }
 
   @ParameterizedTest
@@ -298,6 +249,58 @@ class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
 
     final List<StandardDestinationDefinition> returnedDestDefsWithTombstone = configRepository.listStandardDestinationDefinitions(true);
     assertEquals(allDestinationDefinitions, returnedDestDefsWithTombstone);
+  }
+
+  @SuppressWarnings("SameParameterValue")
+  private static SourceConnection createSource(final UUID sourceDefId, final UUID workspaceId) {
+    return new SourceConnection()
+        .withSourceId(UUID.randomUUID())
+        .withSourceDefinitionId(sourceDefId)
+        .withWorkspaceId(workspaceId)
+        .withName("source");
+  }
+
+  @SuppressWarnings("SameParameterValue")
+  private static DestinationConnection createDest(final UUID destDefId, final UUID workspaceId) {
+    return new DestinationConnection()
+        .withDestinationId(UUID.randomUUID())
+        .withDestinationDefinitionId(destDefId)
+        .withWorkspaceId(workspaceId)
+        .withName("dest");
+  }
+
+  private static StandardSourceDefinition createBaseSourceDef() {
+    final UUID id = UUID.randomUUID();
+
+    return new StandardSourceDefinition()
+        .withName("source-def-" + id)
+        .withDockerRepository("source-image-" + id)
+        .withDockerImageTag("0.0.1")
+        .withSourceDefinitionId(id)
+        .withProtocolVersion("0.2.0")
+        .withTombstone(false);
+  }
+
+  private static StandardDestinationDefinition createBaseDestDef() {
+    final UUID id = UUID.randomUUID();
+
+    return new StandardDestinationDefinition()
+        .withName("source-def-" + id)
+        .withDockerRepository("source-image-" + id)
+        .withDockerImageTag("0.0.1")
+        .withDestinationDefinitionId(id)
+        .withProtocolVersion("0.2.0")
+        .withTombstone(false);
+  }
+
+  private static StandardWorkspace createBaseStandardWorkspace() {
+    return new StandardWorkspace()
+        .withWorkspaceId(WORKSPACE_ID)
+        .withName("workspace-a")
+        .withSlug("workspace-a-slug")
+        .withInitialSetupComplete(false)
+        .withTombstone(false)
+        .withDefaultGeography(Geography.AUTO);
   }
 
 }
