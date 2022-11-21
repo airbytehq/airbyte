@@ -49,6 +49,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
   return (
     <ReactDatePicker
+      showPopperArrow={false}
       showTimeSelect={withTime}
       isClearable
       disabled={disabled}
