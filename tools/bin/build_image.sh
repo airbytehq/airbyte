@@ -48,5 +48,5 @@ else
   else
     docker build --build-arg JDK_VERSION="$JDK_VERSION" --build-arg DOCKER_BUILD_ARCH="$DOCKER_BUILD_ARCH" --platform="$DOCKER_BUILD_PLATFORM" . "${args[@]}"
   fi
-  mkdir -p docker-out && cd docker-out && docker save -o "${TAGGED_IMAGE##*\/}.tar" $TAGGED_IMAGE
+  mkdir -p /tmp/docker-out && && docker save -o "/tmp/${TAGGED_IMAGE##*\/}.tar" $TAGGED_IMAGE
 fi

@@ -567,7 +567,7 @@ jobs:
           aws_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws_bucket: airbyte-buildcache
-          source_dir: 'docker-out'
+          source_dir: '/tmp/docker-out'
           destination_dir: 'cache-docker'
 
       - name: Integration test
