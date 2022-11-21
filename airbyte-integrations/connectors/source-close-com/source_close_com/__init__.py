@@ -22,6 +22,5 @@
 
 
 from .source_lc import SourceCloseCom
-from .single_stream_slicer import SingleStreamSlicer
 
-__all__ = ["SourceCloseCom", "SingleStreamSlicer"]
+__all__ = ["SourceCloseCom"]

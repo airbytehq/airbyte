@@ -16,6 +16,11 @@ definitions:
       type: BasicHttpAuthenticator
       username: "{{ config['api_key'] }}"
       password: ""
+  incremental_query_requester:
+    $ref: "*ref(definitions.requester)"
+    request_options_provider:
+      request_parameters:
+        query: "sort:updated date_updated > {{ stream_slice['start_time'] }} date_updated <= {{ stream_slice['end_time'] }}"
   offset_paginator:
     type: DefaultPaginator
     url_base: "*ref(definitions.requester.url_base)"
@@ -41,23 +46,53 @@ definitions:
     page_size_option:
       inject_into: request_parameter
       field_name: ""
-  single_stream_slicer:
+  stream_query_slicer:
+    type: DatetimeStreamSlicer
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
-    start_time_option:
-      field_name: "{{ options['cursor_field_name'] }}__gt"
-      inject_into: "request_parameter"
-    stream_slice_field_start: "date_created"
-    cursor_field: "{{ options['cursor_field_name'] }}"
+    end_datetime:
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%f%z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"  # ISO8601
+    step: "365d"
+    cursor_field: "date_updated"
     datetime_format: "%Y-%m-%d"
-    class_name: "source_close_com.SingleStreamSlicer"
-  single_stream_query_slicer:
-    $ref: "*ref(definitions.single_stream_slicer)"
+
+  stream_slicer__cursor_date_created:
+    type: DatetimeStreamSlicer
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%f%z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"  # ISO8601
     start_time_option:
-      field_name: "query"
+      field_name: "date_created__gt"
       inject_into: "request_parameter"
-    start_time_option_tpl: "sort:updated date_updated >= %s"
+    end_time_option:
+      field_name: "date_created__lte"
+      inject_into: "request_parameter"
+    step: "365d"
+    cursor_field: "date_created"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+
+  stream_slicer__cursor_date_updated:
+    type: DatetimeStreamSlicer
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%f%z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"  # ISO8601
+    start_time_option:
+      field_name: "date_updated__gt"
+      inject_into: "request_parameter"
+    end_time_option:
+      field_name: "date_updated__lte"
+      inject_into: "request_parameter"
+    step: "365d"
+    cursor_field: "date_updated"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -89,22 +124,27 @@ definitions:
     retriever:
       $ref: "*ref(definitions.full_refresh_stream.retriever)"
       stream_slicer:
-        $ref: "*ref(definitions.single_stream_slicer)"
+        $ref: "*ref(definitions.stream_slicer__cursor_date_updated)"
+      requester:
+        $ref: "*ref(definitions.requester)"
     stream_cursor_field: "date_updated"
-    $options:
-      cursor_field_name: "date_updated"
   incremental_cursor_based_stream:
     $ref: "*ref(definitions.incremental_stream)"
     retriever:
       $ref: "*ref(definitions.incremental_stream.retriever)"
       paginator:
         $ref: "*ref(definitions.cursor_paginator)"
+
   activities_base_stream:
     $ref: "*ref(definitions.incremental_stream)"
+    retriever:
+      $ref: "*ref(definitions.incremental_stream.retriever)"
+      stream_slicer:
+        $ref: "*ref(definitions.stream_slicer__cursor_date_created)"
     stream_cursor_field: "date_created"
     $options:
       items_per_page: 100
-      cursor_field_name: "date_created"
+
   tasks_base_stream:
     $ref: "*ref(definitions.incremental_stream)"
     retriever:
@@ -115,11 +155,13 @@ definitions:
           request_parameters:
             _type: "{{ options['task_type'] }}"
             _order_by: "date_created"
+      stream_slicer:
+        $ref: "*ref(definitions.stream_slicer__cursor_date_created)"
     $options:
       path: "task"
       items_per_page: 1000
-      cursor_field_name: "date_created"
     stream_cursor_field: "date_created"
+
   connected_accounts_base_stream:
     $ref: "*ref(definitions.full_refresh_stream)"
     retriever:
@@ -262,7 +304,6 @@ definitions:
   events_stream:
     $ref: "*ref(definitions.incremental_cursor_based_stream)"
     $options:
-      $ref: "*ref(definitions.incremental_stream.$options)"
       name: "events"
       path: "event"
       items_per_page: 50
@@ -271,9 +312,10 @@ definitions:
     retriever:
       $ref: "*ref(definitions.incremental_stream.retriever)"
       stream_slicer:
-        $ref: "*ref(definitions.single_stream_query_slicer)"
+        $ref: "*ref(definitions.stream_query_slicer)"
+      requester:
+        $ref: "*ref(definitions.incremental_query_requester)"
     $options:
-      $ref: "*ref(definitions.incremental_stream.$options)"
       name: "leads"
       path: "lead"
       items_per_page: 200
@@ -285,9 +327,8 @@ definitions:
         $ref: "*ref(definitions.requester)"
         request_options_provider:
           request_parameters:
-            _order_by: "{{ options['cursor_field_name'] }}"
+            _order_by: "date_updated"
     $options:
-      $ref: "*ref(definitions.incremental_stream.$options)"
       name: "opportunities"
       path: "opportunity"
       items_per_page: 250
