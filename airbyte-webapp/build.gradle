@@ -88,6 +88,14 @@ task copyDocs(type: Copy) {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
+task copySetupGuide(type: Copy) {
+    dependsOn copyDocker, copyBuildOutput
+
+    from "${project.rootProject.projectDir}/docs/setup-guide"
+    into "build/docker/bin/build/docs/setup-guide"
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
+
 // Copy images that are used in .md integration documentation docs
 task copyDocAssets(type: Copy) {
     dependsOn copyDocker, copyBuildOutput
@@ -123,4 +131,5 @@ tasks.named("buildDockerImage") {
     dependsOn copyNginx
     dependsOn copyDocs
     dependsOn copyDocAssets
+    dependsOn copySetupGuide
 }
