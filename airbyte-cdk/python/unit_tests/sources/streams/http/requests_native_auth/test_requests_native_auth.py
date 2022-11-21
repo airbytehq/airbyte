@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import logging
 
 import pendulum
@@ -173,6 +174,21 @@ class TestOauth2Authenticator:
         oauth(prepared_request)
 
         assert {"Authorization": "Bearer access_token"} == prepared_request.headers
+
+    def test_auth_with_config_mutation(self, capsys):
+        original_connector_config = {"refresh_token": "foo"}
+        oauth = Oauth2Authenticator(
+            token_refresh_endpoint=TestOauth2Authenticator.refresh_endpoint,
+            client_id=TestOauth2Authenticator.client_id,
+            client_secret=TestOauth2Authenticator.client_secret,
+            refresh_token=TestOauth2Authenticator.refresh_token,
+            connector_config=original_connector_config,
+        )
+        oauth._connector_config["refresh_token"] = "bar"
+        captured = capsys.readouterr()
+        airbyte_message = json.loads(captured.out)
+        assert airbyte_message["control"]["connectorConfig"] == {"config": {"refresh_token": "bar"}}
+        assert original_connector_config["refresh_token"] == "foo"
 
 
 def mock_request(method, url, data):
