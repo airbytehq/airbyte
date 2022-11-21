@@ -1157,7 +1157,7 @@ class Deals(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "companies", "line_items"]
     primary_key = "id"
-    scopes = {"contacts", "crm.objects.deals.read"}
+    scopes = {"crm.objects.contacts.read", "crm.objects.companies.read", "crm.objects.deals.read"}
 
 
 class DealPipelines(Stream):
@@ -1166,11 +1166,20 @@ class DealPipelines(Stream):
     Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
     """
 
-    url = "/crm-pipelines/v1/pipelines/deals"
+    url = "/crm/v3/pipelines/deals"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
-    primary_key = "pipelineId"
-    scopes = {"contacts"}
+    primary_key = "id"
+    scopes = {
+        "crm.schemas.contacts.read",
+        "crm.objects.contacts.read",
+        "crm.objects.deals.read",
+        "crm.schemas.deals.read",
+        "crm.schemas.quotes.read",
+        "crm.objects.companies.read",
+        "crm.schemas.companies.read",
+        "crm.schemas.line_items.read",
+    }
 
 
 class TicketPipelines(Stream):
@@ -1187,10 +1196,10 @@ class TicketPipelines(Stream):
         "crm.schemas.contacts.read",
         "crm.objects.contacts.read",
         "crm.objects.deals.read",
+        "crm.schemas.deals.read",
         "crm.schemas.quotes.read",
         "crm.objects.companies.read",
         "crm.schemas.companies.read",
-        "crm.schemas.deals.read",
         "crm.schemas.line_items.read",
     }
 
