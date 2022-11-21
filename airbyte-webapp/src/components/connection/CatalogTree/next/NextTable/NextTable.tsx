@@ -9,10 +9,8 @@ interface TableProps {
   erroredRows?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onClickRow?: (data: any) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  sortBy?: Array<SortingRule<any>>;
+  onClickRow?: (data: unknown) => void;
+  sortBy?: Array<SortingRule<unknown>>;
 }
 
 export const NextTable: React.FC<TableProps> = memo(({ columns, data, onClickRow, sortBy }) => {
