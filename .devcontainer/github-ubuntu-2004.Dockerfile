@@ -16,6 +16,7 @@ ARG LOCALE=en_US.UTF-8
 RUN apt update -y \
     && apt upgrade -y \
     && DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends -y \
+    software-properties-common \
     bash-completion \
     build-essential \
     ca-certificates \
@@ -44,7 +45,16 @@ RUN apt update -y \
     unzip \
     vim-tiny \
     wget \
-    zip
+    zip \
+    openjdk-17-jdk \
+    openjdk-17-jre
+
+RUN add-apt-repository ppa:deadsnakes/ppa
+
+RUN apt install --no-install-recommends -y python3.9
+
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+RUN python3.9 get-pip.py
 
 RUN locale-gen ${LOCALE}
 
