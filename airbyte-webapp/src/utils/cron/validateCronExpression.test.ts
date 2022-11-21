@@ -1,10 +1,11 @@
-import { validateCronExpression } from "./validateCronExpression";
+import { validateCronExpression, validateCronFrequencyOneHourOrMore } from "./validateCronExpression";
 
 // Test cases are taken from http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html
 describe("validateCronExpression", () => {
   it.each`
     expression                                               | isValid
     ${"0 0 12 * * ?"}                                        | ${true}
+    ${"0  0  12  *  *  ?  "}                                 | ${true}
     ${"0 0 12 * * ? "}                                       | ${true}
     ${" 0 0 12 * * ?"}                                       | ${true}
     ${"0/5 14,18,3-39,52 * ? JAN,MAR,SEP MON-FRI 2002-2010"} | ${true}
@@ -63,7 +64,24 @@ describe("validateCronExpression", () => {
     ${"wildly invalid"}                                      | ${false}
     ${"* * * * *"}                                           | ${false}
     ${"0 0 0 0 0 0"}                                         | ${false}
-  `("'$expression' is valid: $isValid", async ({ expression, isValid }) => {
+  `("'$expression' is valid: $isValid", ({ expression, isValid }) => {
     expect(validateCronExpression(expression)).toEqual(isValid);
+  });
+});
+
+describe("validateCronFrequencyOverOneHour", () => {
+  it.each`
+    expression            | isValid
+    ${"0 0 12 * * ?"}     | ${true}
+    ${"0    0 12 * * ?"}  | ${true}
+    ${"0 0 * * * ?"}      | ${true}
+    ${"0 * 12 * * ?"}     | ${false}
+    ${"* * 12 * * ?"}     | ${false}
+    ${"15,45 * 12 * * ?"} | ${false}
+    ${"0 15,45 12 * * ?"} | ${false}
+    ${"0/10 * * * * ?"}   | ${false}
+    ${"0 0/10 * * * ?"}   | ${false}
+  `("'$expression' is valid: $isValid", ({ expression, isValid }) => {
+    expect(validateCronFrequencyOneHourOrMore(expression)).toEqual(isValid);
   });
 });

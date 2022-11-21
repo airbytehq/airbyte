@@ -69,6 +69,7 @@ class SourceTwilio(AbstractSource):
             "authenticator": auth,
             "start_date": config["start_date"],
             "lookback_window": config.get("lookback_window", 0),
+            "slice_step_map": config.get("slice_step_map", {}),
         }
 
         # Fix for `Date range specified in query is partially or entirely outside of retention window of 400 days`

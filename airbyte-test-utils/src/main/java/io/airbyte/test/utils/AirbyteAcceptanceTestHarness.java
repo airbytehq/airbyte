@@ -33,6 +33,7 @@ import io.airbyte.api.client.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationRead;
 import io.airbyte.api.client.model.generated.DestinationSyncMode;
 import io.airbyte.api.client.model.generated.JobConfigType;
+import io.airbyte.api.client.model.generated.JobDebugInfoRead;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
 import io.airbyte.api.client.model.generated.JobListRequestBody;
 import io.airbyte.api.client.model.generated.JobRead;
@@ -795,13 +796,30 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   @SuppressWarnings("BusyWait")
+  public static void waitWhileJobIsRunning(final JobsApi jobsApi, final JobRead job, final Duration maxWaitTime)
+      throws ApiException, InterruptedException {
+    final Instant waitStart = Instant.now();
+    JobDebugInfoRead jobDebugInfoRead = jobsApi.getJobDebugInfo(new JobIdRequestBody().id(job.getId()));
+    LOGGER.info("workflow state: {}", jobDebugInfoRead.getWorkflowState());
+    while (jobDebugInfoRead.getWorkflowState() != null && jobDebugInfoRead.getWorkflowState().getRunning()) {
+      if (Duration.between(waitStart, Instant.now()).compareTo(maxWaitTime) > 0) {
+        LOGGER.info("Max wait time of {} has been reached. Stopping wait.", maxWaitTime);
+        break;
+      }
+      LOGGER.info("waiting: job id: {}, workflowState.isRunning is still true", job.getId());
+      sleep(1000);
+      jobDebugInfoRead = jobsApi.getJobDebugInfo(new JobIdRequestBody().id(job.getId()));
+    }
+  }
+
+  @SuppressWarnings("BusyWait")
   public static ConnectionState waitForConnectionState(final AirbyteApiClient apiClient, final UUID connectionId)
       throws ApiException, InterruptedException {
-    ConnectionState connectionState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
+    ConnectionState connectionState = apiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
     int count = 0;
     while (count < 60 && (connectionState.getState() == null || connectionState.getState().isNull())) {
       LOGGER.info("fetching connection state. attempt: {}", count++);
-      connectionState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
+      connectionState = apiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
       sleep(1000);
     }
     return connectionState;

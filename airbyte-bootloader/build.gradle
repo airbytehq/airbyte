@@ -11,7 +11,7 @@ dependencies {
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-persistence:job-persistence')
 
-    implementation 'io.temporal:temporal-sdk:1.8.1'
+    implementation libs.temporal.sdk
     implementation libs.flyway.core
 
     testImplementation libs.platform.testcontainers.postgresql

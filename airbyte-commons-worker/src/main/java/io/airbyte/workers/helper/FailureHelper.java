@@ -227,6 +227,12 @@ public class FailureHelper {
     }
   }
 
+  public static FailureReason platformFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
+    return genericFailure(t, jobId, attemptNumber)
+        .withFailureOrigin(FailureOrigin.AIRBYTE_PLATFORM)
+        .withExternalMessage("Something went wrong within the airbyte platform");
+  }
+
   private static Metadata jobAndAttemptMetadata(final Long jobId, final Integer attemptNumber) {
     return new Metadata()
         .withAdditionalProperty(JOB_ID_METADATA_KEY, jobId)

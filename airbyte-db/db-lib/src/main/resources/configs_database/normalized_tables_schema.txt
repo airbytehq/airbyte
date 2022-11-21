@@ -1,4 +1,7 @@
-// The file represents the schema of each of the config table
+// The file represents the schema of each of the config table after the normalization.
+// It is created in https://github.com/airbytehq/airbyte/pull/8563.
+// This schema is maintained manually by copying / pasting the output from Postgres' \d+ command.
+// It is not consumed programmatically, and can be outdated.
 
  enum_schema |         enum_name         |          enum_value
 -------------+---------------------------+------------------------------
@@ -85,8 +88,8 @@ Referenced by:
  release_stage              | release_stage            |           |          |
  release_date               | date                     |           |          |
  resource_requirements      | jsonb                    |           |          |
- normalization_repository   | character varying(256)   |           |          |
- normalization_tag          | character varying(256)   |           |          |
+ normalization_repository   | character varying(255)   |           |          |
+ normalization_tag          | character varying(255)   |           |          |
  supports_dbt               | boolean                  |           |          |
 Indexes:
     "actor_definition_pkey" PRIMARY KEY, btree (id)

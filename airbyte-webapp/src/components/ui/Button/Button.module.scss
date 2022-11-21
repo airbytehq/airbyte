@@ -37,6 +37,10 @@
   }
 
   .buttonIcon {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+
     &.positionLeft {
       &.withLabel {
         margin-right: 7px;

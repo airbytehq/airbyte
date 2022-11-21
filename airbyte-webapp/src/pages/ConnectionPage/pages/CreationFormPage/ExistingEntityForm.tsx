@@ -4,7 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { ConnectorIcon } from "components/ConnectorIcon";
+import { ConnectorIcon } from "components/common/ConnectorIcon";
 import { ControlLabels } from "components/LabeledControl";
 import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";

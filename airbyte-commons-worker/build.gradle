@@ -10,7 +10,10 @@ dependencies {
     implementation libs.bundles.micronaut
 
     implementation 'io.fabric8:kubernetes-client:5.12.2'
-    implementation 'io.temporal:temporal-sdk:1.8.1'
+    implementation libs.guava
+    implementation (libs.temporal.sdk) {
+        exclude module: 'guava'
+    }
     implementation 'org.apache.ant:ant:1.10.10'
     implementation 'org.apache.commons:commons-text:1.10.0'
     implementation libs.bundles.datadog

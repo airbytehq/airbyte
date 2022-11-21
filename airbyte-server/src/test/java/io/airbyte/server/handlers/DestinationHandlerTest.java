@@ -230,7 +230,8 @@ class DestinationHandlerTest {
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(destinationConnection.getWorkspaceId());
 
     when(configRepository.getDestinationConnection(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
-    when(configRepository.listDestinationConnection()).thenReturn(Lists.newArrayList(destinationConnection));
+    when(configRepository.listWorkspaceDestinationConnection(destinationConnection.getWorkspaceId()))
+        .thenReturn(Lists.newArrayList(destinationConnection));
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
     when(secretsProcessor.prepareSecretsForOutput(destinationConnection.getConfiguration(),

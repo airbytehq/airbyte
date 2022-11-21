@@ -31,7 +31,7 @@ jobs:
       - name: UUID ${{ github.event.inputs.uuid }}
         run: true
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Check PAT rate limits
         id: variables
         run: |
@@ -50,7 +50,7 @@ jobs:
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
@@ -62,7 +62,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
           # 80 gb disk
-          ec2-image-id: ami-0d648081937c75a73
+          ec2-image-id: ami-06cf12549e3d9c522
   integration-test:
     timeout-minutes: 240
     needs: start-test-runner
@@ -87,16 +87,17 @@ jobs:
         if: steps.regex.outputs.first_match != github.event.inputs.connector
         run: echo "The connector provided has an invalid format!" && exit 1
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
       - name: Install Java
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
+          distribution: "zulu"
           java-version: "17"
       - name: Install Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: "3.9"
       - name: Install Pyenv and Tox
@@ -134,7 +135,7 @@ jobs:
           TZ: UTC
       - name: Archive test reports artifacts
         if: github.event.inputs.comment-id && failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: test-reports
           path: |
@@ -148,7 +149,7 @@ jobs:
 
       - name: Test coverage reports artifacts
         if: github.event.inputs.comment-id && success()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: test-reports
           path: |
