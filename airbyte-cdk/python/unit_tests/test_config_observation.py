@@ -28,11 +28,9 @@ class TestObservedDict:
 
 
 class TestConfigObserver:
-    def test_update(self, mocker, capsys):
-        mock_write_config_fn = mocker.Mock()
-        mock_config_path = mocker.Mock()
-        config_observer = ConfigObserver(mock_config_path, mock_write_config_fn)
-        config_observer.config = ObservedDict({"key": "value"}, config_observer)
+    def test_update(self, capsys):
+        config_observer = ConfigObserver()
+        config_observer.set_config(ObservedDict({"key": "value"}, config_observer))
         before_time = time.time() * 1000
         config_observer.update()
         after_time = time.time() * 1000
@@ -41,16 +39,6 @@ class TestConfigObserver:
         assert airbyte_message["type"] == "CONTROL"
         assert "control" in airbyte_message
         raw_control_message = airbyte_message["control"]
-        mock_write_config_fn.assert_called_with(config_observer.config, mock_config_path)
         assert raw_control_message["type"] == "CONNECTOR_CONFIG"
         assert raw_control_message["connectorConfig"] == {"config": dict(config_observer.config)}
         assert before_time < raw_control_message["emitted_at"] < after_time
-
-    def test_set_config(self, mocker):
-        mock_write_config_fn = mocker.Mock()
-        mock_config_path = mocker.Mock()
-        config_observer = ConfigObserver(mock_config_path, mock_write_config_fn)
-        observed_config = ObservedDict({"key": "value"}, config_observer)
-        config_observer.set_config(observed_config)
-        assert config_observer.config == observed_config
-        mock_write_config_fn.assert_called_once_with(observed_config, mock_config_path)

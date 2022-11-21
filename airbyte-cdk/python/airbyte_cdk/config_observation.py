@@ -1,22 +1,18 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+from __future__ import (  # Used to evaluate type hints at runtime, a NameError: name 'ConfigObserver' is not defined is thrown otherwise
+    annotations,
+)
 
 import time
-from abc import ABC, abstractmethod
-from typing import Any, Callable, MutableMapping
+from typing import Any, MutableMapping
 
 from airbyte_cdk.models import AirbyteControlConnectorConfigMessage, AirbyteControlMessage, AirbyteMessage, OrchestratorType, Type
 
 
-class BaseObserver(ABC):
-    @abstractmethod
-    def update(self):
-        ...
-
-
 class ObservedDict(dict):
-    def __init__(self, non_observed_mapping: MutableMapping, observer: BaseObserver, update_on_unchanged_value=True) -> None:
+    def __init__(self, non_observed_mapping: MutableMapping, observer: ConfigObserver, update_on_unchanged_value=True) -> None:
         self.observer = observer
         self.update_on_unchanged_value = update_on_unchanged_value
         for item, value in self.items():
@@ -36,21 +32,15 @@ class ObservedDict(dict):
             self.observer.update()
 
 
-class ConfigObserver(BaseObserver):
+class ConfigObserver:
     """This class is made to track mutations on ObservedDict config.
     When update is called the observed configuration is saved on disk a CONNECTOR_CONFIG control message is emitted on stdout.
     """
 
-    def __init__(self, config_path: str, write_config_fn: Callable) -> None:
-        self.config_path = config_path
-        self.write_config_fn = write_config_fn
-
     def set_config(self, config: ObservedDict) -> None:
         self.config = config
-        self.write_config_fn(self.config, self.config_path)
 
     def update(self) -> None:
-        self.write_config_fn(self.config, self.config_path)
         self._emit_airbyte_control_message()
 
     def _emit_airbyte_control_message(self) -> None:
