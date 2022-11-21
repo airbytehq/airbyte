@@ -1,6 +1,4 @@
 name: Publish OSS Artifacts for Cloud
-concurrency:
-  group: ${{ github.workflow }}-${{ inputs.oss_ref || github.sha }}
 
 on:
   workflow_dispatch:
@@ -10,6 +8,9 @@ on:
         required: false
 jobs:
   find_valid_pat:
+    concurrency:
+      group: ${{ github.workflow }}-${{ inputs.oss_ref || github.sha }}
+      cancel-in-progress: false
     name: "Find a PAT with room for actions"
     timeout-minutes: 10
     runs-on: ubuntu-latest
