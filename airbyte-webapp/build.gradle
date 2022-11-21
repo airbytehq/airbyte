@@ -113,7 +113,7 @@ task stylelint(type: NpmTask) {
 }
 
 // Those tasks should be run as part of the "check" task
-check.dependsOn validateLinks, licenseCheck, test, stylelint
+check.dependsOn licenseCheck, test, stylelint
 
 build.dependsOn buildStorybook
 
