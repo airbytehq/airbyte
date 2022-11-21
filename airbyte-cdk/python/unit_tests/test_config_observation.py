@@ -12,20 +12,32 @@ from airbyte_cdk.config_observation import ConfigObserver, ObservedDict, observe
 class TestObservedDict:
     def test_update_called_on_set_item(self, mocker):
         mock_observer = mocker.Mock()
-        my_observed_dict = ObservedDict({"key": "value"}, mock_observer)
+        my_observed_dict = ObservedDict(
+            {"key": "value", "nested_dict": {"key": "value"}, "list_of_dict": [{"key": "value"}, {"key": "value"}]}, mock_observer
+        )
         assert mock_observer.update.call_count == 0
-        my_observed_dict["key"] = {"nested_key": "nested_value"}
+
+        my_observed_dict["nested_dict"]["key"] = "new_value"
         assert mock_observer.update.call_count == 1
-        my_observed_dict["key"]["nested_key"] = "new_nested_value"
-        assert mock_observer.update.call_count == 2
+
         # Setting the same value again should call observer's update
-        my_observed_dict["key"]["nested_key"] = "new_nested_value"
+        my_observed_dict["key"] = "new_value"
+        assert mock_observer.update.call_count == 2
+
+        my_observed_dict["nested_dict"]["new_key"] = "value"
         assert mock_observer.update.call_count == 3
 
-    def test_update_not_called_on_init_with_nested_fields(self, mocker):
-        mock_observer = mocker.Mock()
-        ObservedDict({"key": "value", "nested": {"nested_key": "nested_value"}}, mock_observer)
-        mock_observer.update.assert_not_called()
+        my_observed_dict["list_of_dict"][0]["key"] = "new_value"
+        assert mock_observer.update.call_count == 4
+
+        my_observed_dict["list_of_dict"][0]["new_key"] = "new_value"
+        assert mock_observer.update.call_count == 5
+
+        my_observed_dict["new_list_of_dicts"] = [{"foo": "bar"}]
+        assert mock_observer.update.call_count == 6
+
+        my_observed_dict["new_list_of_dicts"][0]["new_key"] = "new_value"
+        assert mock_observer.update.call_count == 7
 
 
 class TestConfigObserver:

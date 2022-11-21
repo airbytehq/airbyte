@@ -6,7 +6,7 @@ from __future__ import (  # Used to evaluate type hints at runtime, a NameError:
 )
 
 import time
-from typing import Any, MutableMapping
+from typing import Any, List, MutableMapping
 
 from airbyte_cdk.models import AirbyteControlConnectorConfigMessage, AirbyteControlMessage, AirbyteMessage, OrchestratorType, Type
 
@@ -15,9 +15,16 @@ class ObservedDict(dict):
     def __init__(self, non_observed_mapping: MutableMapping, observer: ConfigObserver, update_on_unchanged_value=True) -> None:
         self.observer = observer
         self.update_on_unchanged_value = update_on_unchanged_value
-        for item, value in self.items():
+        for item, value in non_observed_mapping.items():
+            # Observe nested dicts
             if isinstance(value, MutableMapping):
-                self[item] = ObservedDict(value, observer)
+                non_observed_mapping[item] = ObservedDict(value, observer)
+
+            # Observe nested list of dicts
+            if isinstance(value, List):
+                for i, sub_value in enumerate(value):
+                    if isinstance(sub_value, MutableMapping):
+                        value[i] = ObservedDict(sub_value, observer)
         super().__init__(non_observed_mapping)
 
     def __setitem__(self, item: Any, value: Any):
@@ -26,7 +33,12 @@ class ObservedDict(dict):
         2. Call observer update if the new value is different from the previous one
         """
         previous_value = self.get(item)
-        value = ObservedDict(value, self.observer) if isinstance(value, MutableMapping) else value
+        if isinstance(value, MutableMapping):
+            value = ObservedDict(value, self.observer)
+        if isinstance(value, List):
+            for i, sub_value in enumerate(value):
+                if isinstance(sub_value, MutableMapping):
+                    value[i] = ObservedDict(sub_value, self.observer)
         super(ObservedDict, self).__setitem__(item, value)
         if self.update_on_unchanged_value or value != previous_value:
             self.observer.update()
