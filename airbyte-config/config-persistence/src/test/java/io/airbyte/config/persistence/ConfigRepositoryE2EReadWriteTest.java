@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -593,6 +594,14 @@ class ConfigRepositoryE2EReadWriteTest {
 
     assertEquals(MockData.ACTOR_CATALOG_ID_1, result.get(MockData.SOURCE_ID_1).getActorCatalogId());
     assertEquals(MockData.ACTOR_CATALOG_ID_3, result.get(MockData.SOURCE_ID_2).getActorCatalogId());
+  }
+
+  @Test
+  void testGetActorDefinitionsInUseToProtocolVersion() throws IOException {
+    final Set<UUID> actorDefinitionIds = new HashSet<>();
+    actorDefinitionIds.addAll(MockData.sourceConnections().stream().map(SourceConnection::getSourceDefinitionId).toList());
+    actorDefinitionIds.addAll(MockData.destinationConnections().stream().map(DestinationConnection::getDestinationDefinitionId).toList());
+    assertEquals(actorDefinitionIds, configRepository.getActorDefinitionToProtocolVersionMap().keySet());
   }
 
   private void insertCatalogFetchEvent(final DSLContext ctx, final UUID sourceId, final UUID catalogId, final OffsetDateTime creationDate) {
