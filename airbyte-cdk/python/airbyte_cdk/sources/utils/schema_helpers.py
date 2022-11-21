@@ -176,18 +176,23 @@ class InternalConfig(BaseModel):
         return super().dict(*args, **kwargs)
 
 
-def filter_internal_keywords(config: MutableMapping[str, Any]) -> Tuple[MutableMapping, InternalConfig]:
+def split_config(config: Mapping[str, Any]) -> Tuple[dict, InternalConfig]:
     """
-    Remove internal config keywords from config and build an InternalConfig from it.
+    Break config map object into 2 instances: first is a dict with user defined
+    configuration and second is internal config that contains private keys for
+    acceptance test configuration.
 
     :param
-     config - MutableMapping object that has been loaded from config file.
+     config - Dict object that has been loaded from config file.
 
-    :return tuple of user defined config MutableMapping with filtered out internal
+    :return tuple of user defined config dict with filtered out internal
     parameters and SAT internal config object.
     """
+    main_config = {}
     internal_config = {}
-    for key in list(config.keys()):
-        if key in InternalConfig.KEYWORDS:
-            internal_config[key] = config.pop(key)
-    return config, InternalConfig.parse_obj(internal_config)
+    for k, v in config.items():
+        if k in InternalConfig.KEYWORDS:
+            internal_config[k] = v
+        else:
+            main_config[k] = v
+    return main_config, InternalConfig.parse_obj(internal_config)
