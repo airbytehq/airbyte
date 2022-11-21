@@ -38,6 +38,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: API_URL
+            - name: CONNECTOR_BUILDER_API_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CONNECTOR_BUILDER_API_HOST
             - name: TRACKING_STRATEGY
               valueFrom:
                 configMapKeyRef:
