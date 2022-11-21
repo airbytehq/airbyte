@@ -63,6 +63,8 @@ class SourceFacebookMarketing(AbstractSource):
         except requests.exceptions.RequestException as e:
             return False, e
 
+        # read one record from all custom insights streams
+        # to ensure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
         for stream in self.get_custom_insights_streams(api, config):
             try:
                 next(read_full_refresh(stream), None)
