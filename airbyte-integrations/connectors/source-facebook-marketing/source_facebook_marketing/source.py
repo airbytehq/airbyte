@@ -5,6 +5,7 @@
 import logging
 from typing import Any, List, Mapping, Optional, Tuple, Type
 
+import facebook_business
 import pendulum
 import requests
 from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
@@ -31,7 +32,7 @@ from source_facebook_marketing.streams import (
     Videos,
 )
 
-from .utils import validate_end_date, validate_start_date
+from .utils import read_full_refresh, validate_end_date, validate_start_date
 
 logger = logging.getLogger("airbyte")
 
@@ -59,9 +60,15 @@ class SourceFacebookMarketing(AbstractSource):
         try:
             api = API(account_id=config.account_id, access_token=config.access_token)
             logger.info(f"Select account {api.account}")
-            return True, None
         except requests.exceptions.RequestException as e:
             return False, e
+
+        for stream in self.get_custom_insights_streams(api, config):
+            try:
+                next(read_full_refresh(stream), None)
+            except facebook_business.exceptions.FacebookRequestError as e:
+                return False, e._api_error_message
+        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Type[Stream]]:
         """Discovery method, returns available streams
