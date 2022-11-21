@@ -165,12 +165,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   }
 
-  private void replicate(Path jobRoot,
-                         WorkerDestinationConfig destinationConfig,
-                         ThreadedTimeTracker timeTracker,
-                         AtomicReference<FailureReason> replicationRunnableFailureRef,
-                         AtomicReference<FailureReason> destinationRunnableFailureRef,
-                         WorkerSourceConfig sourceConfig) {
+  private void replicate(final Path jobRoot,
+                         final WorkerDestinationConfig destinationConfig,
+                         final ThreadedTimeTracker timeTracker,
+                         final AtomicReference<FailureReason> replicationRunnableFailureRef,
+                         final AtomicReference<FailureReason> destinationRunnableFailureRef,
+                         final WorkerSourceConfig sourceConfig) {
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
     // note: resources are closed in the opposite order in which they are declared. thus source will be
@@ -315,9 +315,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
             recordsRead += 1;
 
-            if (recordsRead % 1000 == 0) {
-              LOGGER.info("Records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
-            }
+            // if (recordsRead % 1000 == 0) {
+            // LOGGER.info("Records read: {} ({})", recordsRead,
+            // FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+            // }
           } else {
             LOGGER.info("Source has no more messages, closing connection.");
             try {
@@ -363,11 +364,11 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
-  private ReplicationOutput getReplicationOutput(StandardSyncInput syncInput,
-                                                 WorkerDestinationConfig destinationConfig,
-                                                 AtomicReference<FailureReason> replicationRunnableFailureRef,
-                                                 AtomicReference<FailureReason> destinationRunnableFailureRef,
-                                                 ThreadedTimeTracker timeTracker)
+  private ReplicationOutput getReplicationOutput(final StandardSyncInput syncInput,
+                                                 final WorkerDestinationConfig destinationConfig,
+                                                 final AtomicReference<FailureReason> replicationRunnableFailureRef,
+                                                 final AtomicReference<FailureReason> destinationRunnableFailureRef,
+                                                 final ThreadedTimeTracker timeTracker)
       throws JsonProcessingException {
     final ReplicationStatus outputStatus;
     // First check if the process was cancelled. Cancellation takes precedence over failures.
@@ -410,7 +411,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return output;
   }
 
-  private SyncStats getTotalStats(ThreadedTimeTracker timeTracker, ReplicationStatus outputStatus) {
+  private SyncStats getTotalStats(final ThreadedTimeTracker timeTracker, final ReplicationStatus outputStatus) {
     final SyncStats totalSyncStats = new SyncStats()
         .withRecordsEmitted(messageTracker.getTotalRecordsEmitted())
         .withBytesEmitted(messageTracker.getTotalBytesEmitted())
@@ -438,7 +439,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return totalSyncStats;
   }
 
-  private List<StreamSyncStats> getPerStreamStats(ReplicationStatus outputStatus) {
+  private List<StreamSyncStats> getPerStreamStats(final ReplicationStatus outputStatus) {
     // assume every stream with stats is in streamToEmittedRecords map
     return messageTracker.getStreamToEmittedRecords().keySet().stream().map(stream -> {
       final SyncStats syncStats = new SyncStats()
@@ -467,7 +468,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
    * @param syncInput
    * @param output
    */
-  private void prepStateForLaterSaving(StandardSyncInput syncInput, ReplicationOutput output) {
+  private void prepStateForLaterSaving(final StandardSyncInput syncInput, final ReplicationOutput output) {
     if (messageTracker.getSourceOutputState().isPresent()) {
       LOGGER.info("Source output at least one state message");
     } else {
@@ -490,9 +491,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     }
   }
 
-  private List<FailureReason> getFailureReasons(AtomicReference<FailureReason> replicationRunnableFailureRef,
-                                                AtomicReference<FailureReason> destinationRunnableFailureRef,
-                                                ReplicationOutput output) {
+  private List<FailureReason> getFailureReasons(final AtomicReference<FailureReason> replicationRunnableFailureRef,
+                                                final AtomicReference<FailureReason> destinationRunnableFailureRef,
+                                                final ReplicationOutput output) {
     // only .setFailures() if a failure occurred or if there is an AirbyteErrorTraceMessage
     final FailureReason sourceFailure = replicationRunnableFailureRef.get();
     final FailureReason destinationFailure = destinationRunnableFailureRef.get();
