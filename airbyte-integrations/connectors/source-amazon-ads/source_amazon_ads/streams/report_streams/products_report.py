@@ -44,6 +44,8 @@ METRICS_MAP = {
         "attributedUnitsOrdered7dSameSKU",
         "attributedUnitsOrdered14dSameSKU",
         "attributedUnitsOrdered30dSameSKU",
+        "campaignBudgetType",
+        "currency",
     ],
     "adGroups": [
         "campaignName",
@@ -77,6 +79,10 @@ METRICS_MAP = {
         "attributedUnitsOrdered7dSameSKU",
         "attributedUnitsOrdered14dSameSKU",
         "attributedUnitsOrdered30dSameSKU",
+        "campaignBudget",
+        "campaignBudgetType",
+        "campaignStatus",
+        "currency",
     ],
     "keywords": [
         "campaignName",
@@ -113,6 +119,11 @@ METRICS_MAP = {
         "attributedUnitsOrdered7dSameSKU",
         "attributedUnitsOrdered14dSameSKU",
         "attributedUnitsOrdered30dSameSKU",
+        "campaignBudget",
+        "campaignBudgetType",
+        "campaignStatus",
+        "currency",
+        "keywordStatus",
     ],
     "productAds": [
         "campaignName",
@@ -149,6 +160,10 @@ METRICS_MAP = {
         "attributedUnitsOrdered7dSameSKU",
         "attributedUnitsOrdered14dSameSKU",
         "attributedUnitsOrdered30dSameSKU",
+        "campaignBudget",
+        "campaignBudgetType",
+        "campaignStatus",
+        "sku",
     ],
     "asins_keywords": [
         "campaignName",
@@ -239,6 +254,9 @@ METRICS_MAP = {
         "attributedUnitsOrdered7dSameSKU",
         "attributedUnitsOrdered14dSameSKU",
         "attributedUnitsOrdered30dSameSKU",
+        "campaignBudget",
+        "campaignBudgetType",
+        "campaignStatus",
     ],
 }
 
@@ -263,6 +281,10 @@ class SponsoredProductsReportStream(ReportStream):
             if profile.accountInfo.type == "vendor":
                 metrics_list = copy(metrics_list)
                 metrics_list.remove("sku")
+
+        if RecordType.PRODUCTADS == record_type and profile.accountInfo.type != "seller":
+            metrics_list = copy(metrics_list)
+            metrics_list.remove("sku")
 
         # adId is automatically added to the report by amazon and requesting adId causes an amazon error
         if "adId" in metrics_list:

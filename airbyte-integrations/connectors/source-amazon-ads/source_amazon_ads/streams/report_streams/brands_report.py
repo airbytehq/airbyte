@@ -42,6 +42,9 @@ METRICS_MAP = {
         "attributedUnitsOrderedNewToBrandPercentage14d",
         "unitsSold14d",
         "dpv14d",
+        "attributedBrandedSearches14d",
+        "keywordId",
+        "searchTermImpressionShare",
     ],
     "adGroups": [
         "campaignName",
@@ -68,6 +71,7 @@ METRICS_MAP = {
         "attributedUnitsOrderedNewToBrandPercentage14d",
         "unitsSold14d",
         "dpv14d",
+        "attributedBrandedSearches14d",
     ],
     "campaigns": [
         "campaignName",
@@ -95,6 +99,7 @@ METRICS_MAP = {
         "attributedUnitsOrderedNewToBrandPercentage14d",
         "unitsSold14d",
         "dpv14d",
+        "attributedBrandedSearches14d",
     ],
 }
 
