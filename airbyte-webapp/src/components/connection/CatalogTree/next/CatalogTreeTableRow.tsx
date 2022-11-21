@@ -16,7 +16,7 @@ import { StreamHeaderProps } from "../StreamHeader";
 import styles from "./CatalogTreeTableRow.module.scss";
 import { StreamPathSelect } from "./StreamPathSelect";
 import { SyncModeSelect } from "./SyncModeSelect";
-import { useCatalogTreeRowProps } from "./useCatalogTreeRowProps";
+import { useCatalogTreeTableRowProps } from "./useCatalogTreeTableRowProps";
 
 export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   stream,
@@ -52,7 +52,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   const fieldCount = fields?.length ?? 0;
   const onRowClick = fieldCount > 0 ? () => onExpand() : undefined;
 
-  const { streamHeaderContentStyle, statusIcon, pillButtonVariant } = useCatalogTreeRowProps(stream);
+  const { streamHeaderContentStyle, statusIcon, pillButtonVariant } = useCatalogTreeTableRowProps(stream);
 
   const checkboxCellCustomStyle = classnames(styles.checkboxCell, styles.streamRowCheckboxCell);
 

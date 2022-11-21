@@ -9,7 +9,7 @@ import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/form
 
 // eslint-disable-next-line css-modules/no-unused-class
 import styles from "./CatalogTreeTableRow.module.scss";
-import { useCatalogTreeRowProps } from "./useCatalogTreeRowProps";
+import { useCatalogTreeTableRowProps } from "./useCatalogTreeTableRowProps";
 
 const mockStream: Partial<AirbyteStreamAndConfiguration> = {
   stream: {
@@ -46,7 +46,7 @@ describe("<CatalogTreeTableRow />", () => {
       return [{}, { error: undefined }] as any; // no error
     });
 
-    const { result } = renderHook(() => useCatalogTreeRowProps(mockStream));
+    const { result } = renderHook(() => useCatalogTreeTableRowProps(mockStream));
 
     expect(result.current.streamHeaderContentStyle).toEqual(classNames(styles.streamHeaderContent));
     expect(result.current.statusIcon).toEqual(null);
@@ -75,7 +75,7 @@ describe("<CatalogTreeTableRow />", () => {
       return [{}, { error: undefined }] as any; // no error
     });
     const { result } = renderHook(() =>
-      useCatalogTreeRowProps({
+      useCatalogTreeTableRowProps({
         ...mockStream,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         config: { ...mockStream.config!, selected: false },
@@ -109,7 +109,7 @@ describe("<CatalogTreeTableRow />", () => {
       return [{}, { error: undefined }] as any; // no error
     });
     const { result } = renderHook(() =>
-      useCatalogTreeRowProps({
+      useCatalogTreeTableRowProps({
         ...mockStream,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         config: { ...mockStream.config!, selected: true }, // selected true
@@ -134,7 +134,7 @@ describe("<CatalogTreeTableRow />", () => {
       return [{}, { error: undefined }] as any; // no error
     });
     const { result } = renderHook(() =>
-      useCatalogTreeRowProps({
+      useCatalogTreeTableRowProps({
         ...mockStream,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         config: { ...mockStream.config!, selected: false }, // selected false
@@ -160,7 +160,7 @@ describe("<CatalogTreeTableRow />", () => {
       return [{}, { error: undefined }] as any; // no error
     });
     const { result } = renderHook(() =>
-      useCatalogTreeRowProps({
+      useCatalogTreeTableRowProps({
         ...mockStream,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         config: { ...mockStream.config!, syncMode: "incremental", destinationSyncMode: "append_dedup" }, // new sync mode and destination sync mode
@@ -194,7 +194,7 @@ describe("<CatalogTreeTableRow />", () => {
       return [{}, { error: undefined }] as any; // no error
     });
     const { result } = renderHook(() =>
-      useCatalogTreeRowProps({
+      useCatalogTreeTableRowProps({
         ...mockStream,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         config: { selected: true, syncMode: "incremental", destinationSyncMode: "append_dedup" }, // selected true, new sync, mode and destination sync mode
@@ -217,7 +217,7 @@ describe("<CatalogTreeTableRow />", () => {
       return [{}, { error: undefined }] as any; // no error
     });
 
-    const { result } = renderHook(() => useCatalogTreeRowProps(mockStream));
+    const { result } = renderHook(() => useCatalogTreeTableRowProps(mockStream));
 
     expect(result.current.streamHeaderContentStyle).toEqual(classNames(styles.streamHeaderContent, styles.changed));
     // expect(result.current.statusIcon).();  TODO: jest is weird at comparing react nodes
@@ -235,7 +235,7 @@ describe("<CatalogTreeTableRow />", () => {
       return [{}, { error: true }] as any; // no error
     });
 
-    const { result } = renderHook(() => useCatalogTreeRowProps(mockStream));
+    const { result } = renderHook(() => useCatalogTreeTableRowProps(mockStream));
 
     expect(result.current.streamHeaderContentStyle).toEqual(classNames(styles.streamHeaderContent, styles.error));
   });

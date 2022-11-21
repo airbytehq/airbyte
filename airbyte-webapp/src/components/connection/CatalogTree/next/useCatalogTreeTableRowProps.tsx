@@ -15,7 +15,7 @@ import { useConnectionFormService } from "hooks/services/ConnectionForm/Connecti
 
 import styles from "./CatalogTreeTableRow.module.scss";
 
-export const useCatalogTreeRowProps = (stream: SyncSchemaStream) => {
+export const useCatalogTreeTableRowProps = (stream: SyncSchemaStream) => {
   const { initialValues } = useConnectionFormService();
   const [isSelected] = useBulkEditSelect(stream.id);
 
