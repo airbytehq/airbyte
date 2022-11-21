@@ -20,7 +20,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         timeout_seconds: 7200
         expect_records:
-          path: "integration_tests/expected_records.txt"
+          bypass_reason: "Bypassed until dedicated sandbox account is up and running."
         empty_streams:
           - name: custom_fields
             bypass_reason: "This stream in not available for our Test Account. 402 - Custom Fields are not available for free users or guests."
