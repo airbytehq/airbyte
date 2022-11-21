@@ -48,5 +48,6 @@ else
   else
     docker build --build-arg JDK_VERSION="$JDK_VERSION" --build-arg DOCKER_BUILD_ARCH="$DOCKER_BUILD_ARCH" --platform="$DOCKER_BUILD_PLATFORM" . "${args[@]}"
   fi
-  mkdir -p /tmp/docker-out && && docker save -o "/tmp/${TAGGED_IMAGE##*\/}.tar" $TAGGED_IMAGE
+  RANDOM_FILENAME=cat /dev/urandom | tr -cd 'a-f0-9' | head -c 32
+  mkdir -p /tmp/docker-out && && docker save -o "/tmp/docker-out/${RANDOM_FILENAME}.tar" $TAGGED_IMAGE
 fi
