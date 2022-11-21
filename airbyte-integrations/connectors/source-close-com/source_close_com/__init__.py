@@ -23,6 +23,5 @@
 
 from .source_lc import SourceCloseCom
 from .single_stream_slicer import SingleStreamSlicer
-from .offset_increment_workaround import OffsetIncrementWorkaround
 
-__all__ = ["OffsetIncrementWorkaround", "SourceCloseCom", "SingleStreamSlicer"]
+__all__ = ["SourceCloseCom", "SingleStreamSlicer"]
