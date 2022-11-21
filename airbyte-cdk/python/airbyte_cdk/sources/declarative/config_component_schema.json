@@ -48,10 +48,6 @@
           "type": "string",
           "default": "<property object at 0x1064298a0>"
         },
-        "_name": {
-          "type": "string",
-          "default": ""
-        },
         "primary_key": {
           "anyOf": [
             {
@@ -74,10 +70,6 @@
             }
           ],
           "default": "<property object at 0x106429760>"
-        },
-        "_primary_key": {
-          "type": "string",
-          "default": ""
         },
         "stream_cursor_field": {
           "anyOf": [
@@ -175,10 +167,6 @@
               "type": "string",
               "default": "<property object at 0x106406f20>"
             },
-            "_name": {
-              "type": "string",
-              "default": ""
-            },
             "primary_key": {
               "anyOf": [
                 {
@@ -201,10 +189,6 @@
                 }
               ],
               "default": "<property object at 0x1064073d0>"
-            },
-            "_primary_key": {
-              "type": "string",
-              "default": ""
             },
             "paginator": {
               "anyOf": [
@@ -490,7 +474,6 @@
                 }
               ]
             },
-            "_token_expiry_date": {},
             "access_token_name": {
               "anyOf": [
                 {
@@ -678,10 +661,6 @@
             "max_retries": {
               "type": "integer",
               "default": "<property object at 0x1063ca2f0>"
-            },
-            "_max_retries": {
-              "type": "integer",
-              "default": 5
             },
             "backoff_strategies": {
               "type": "array",
@@ -1273,10 +1252,6 @@
         "datetime_format": {
           "type": "string",
           "default": "<property object at 0x106404ef0>"
-        },
-        "_datetime_format": {
-          "type": "string",
-          "default": ""
         },
         "min_datetime": {
           "anyOf": [
