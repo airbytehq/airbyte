@@ -1,54 +1,60 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.config.persistence.split_secrets;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Optional;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 public class AWSSecretManagerPersistenceIntegrationTest {
-    public String coordinate_base;
-    private AWSSecretManagerPersistence persistence;
 
-    @BeforeEach
-    void setup() {
-        persistence = new AWSSecretManagerPersistence();
-        coordinate_base = "aws/airbyte/secret/integration/" + RandomUtils.nextInt() % 20000;
-    }
+  public String coordinate_base;
+  private AWSSecretManagerPersistence persistence;
 
-    @Test
-    void testReadWriteUpdate() throws InterruptedException {
-        SecretCoordinate secretCoordinate = new SecretCoordinate(coordinate_base, 1);
+  @BeforeEach
+  void setup() {
+    persistence = new AWSSecretManagerPersistence();
+    coordinate_base = "aws/airbyte/secret/integration/" + RandomUtils.nextInt() % 20000;
+  }
 
-        // try reading a non-existent secret
-        Optional<String> firstRead = persistence.read(secretCoordinate);
-//        Optional<String> firstRead = persistence.read(new SecretCoordinate("identify/snowflake/credentials", 1));
-        assertTrue(firstRead.isEmpty());
+  @Test
+  void testReadWriteUpdate() throws InterruptedException {
+    SecretCoordinate secretCoordinate = new SecretCoordinate(coordinate_base, 1);
 
-        // write it
-        String payload = "foo-secret";
-        persistence.write(secretCoordinate, payload);
-        persistence.cache.refreshNow(secretCoordinate.getCoordinateBase());
-        Optional<String> read2 = persistence.read(secretCoordinate);
-        assertTrue(read2.isPresent());
-        assertEquals(payload, read2.get());
+    // try reading a non-existent secret
+    Optional<String> firstRead = persistence.read(secretCoordinate);
+    // Optional<String> firstRead = persistence.read(new
+    // SecretCoordinate("identify/snowflake/credentials", 1));
+    assertTrue(firstRead.isEmpty());
 
-        // update it
-        final var secondPayload = "bar-secret";
-        final var coordinate2 = new SecretCoordinate(coordinate_base, 2);
-        persistence.write(coordinate2, secondPayload);
-        persistence.cache.refreshNow(secretCoordinate.getCoordinateBase());
-        final var thirdRead = persistence.read(coordinate2);
-        assertTrue(thirdRead.isPresent());
-        assertEquals(secondPayload, thirdRead.get());
-    }
+    // write it
+    String payload = "foo-secret";
+    persistence.write(secretCoordinate, payload);
+    persistence.cache.refreshNow(secretCoordinate.getCoordinateBase());
+    Optional<String> read2 = persistence.read(secretCoordinate);
+    assertTrue(read2.isPresent());
+    assertEquals(payload, read2.get());
 
-    @AfterEach
-    void tearDown() {
-        persistence.deleteSecret(new SecretCoordinate(coordinate_base, 1));
-    }
+    // update it
+    final var secondPayload = "bar-secret";
+    final var coordinate2 = new SecretCoordinate(coordinate_base, 2);
+    persistence.write(coordinate2, secondPayload);
+    persistence.cache.refreshNow(secretCoordinate.getCoordinateBase());
+    final var thirdRead = persistence.read(coordinate2);
+    assertTrue(thirdRead.isPresent());
+    assertEquals(secondPayload, thirdRead.get());
+  }
+
+  @AfterEach
+  void tearDown() {
+    persistence.deleteSecret(new SecretCoordinate(coordinate_base, 1));
+  }
+
 }
