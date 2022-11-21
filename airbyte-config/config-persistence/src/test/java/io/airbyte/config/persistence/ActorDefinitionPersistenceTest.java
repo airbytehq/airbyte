@@ -33,21 +33,17 @@ import org.junit.jupiter.params.provider.ValueSource;
 class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
 
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
-  private static final UUID SOURCE_DEFINITION_ID = UUID.randomUUID();
-  private static final UUID DESTINATION_DEFINITION_ID = UUID.randomUUID();
 
   private ConfigRepository configRepository;
-  private StandardSyncPersistence standardSyncPersistence;
 
   @BeforeEach
   void setup() throws SQLException {
     truncateAllTables();
 
-    standardSyncPersistence = mock(StandardSyncPersistence.class);
     configRepository = spy(new ConfigRepository(
         database,
         new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
-        standardSyncPersistence));
+        mock(StandardSyncPersistence.class)));
   }
 
   @Test
@@ -196,7 +192,7 @@ class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
   }
 
   @Test
-  void testDestinationDefinitionFromDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testDestinationDefinitionFromDestination() throws JsonValidationException, IOException {
     final StandardWorkspace workspace = createBaseStandardWorkspace();
     final StandardDestinationDefinition destDef = createBaseDestDef().withTombstone(false);
     final DestinationConnection dest = createDest(destDef.getDestinationDefinitionId(), workspace.getWorkspaceId());
