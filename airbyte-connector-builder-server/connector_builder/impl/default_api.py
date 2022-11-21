@@ -9,6 +9,9 @@ from typing import Any, Dict, Iterable, Optional, Union
 from urllib.parse import parse_qs, urljoin, urlparse
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
+from fastapi import Body, HTTPException
+from jsonschema import ValidationError
+
 from connector_builder.generated.apis.default_api_interface import DefaultApi
 from connector_builder.generated.models.http_request import HttpRequest
 from connector_builder.generated.models.http_response import HttpResponse
@@ -20,8 +23,6 @@ from connector_builder.generated.models.streams_list_read import StreamsListRead
 from connector_builder.generated.models.streams_list_read_streams import StreamsListReadStreams
 from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
 from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapter
-from fastapi import Body, HTTPException
-from jsonschema import ValidationError
 
 
 class DefaultApiImpl(DefaultApi):
@@ -29,7 +30,6 @@ class DefaultApiImpl(DefaultApi):
 
     async def get_manifest_template(self) -> str:
         return """version: "0.1.0"
-
 definitions:
   selector:
     extractor:
@@ -113,7 +113,7 @@ spec:
         log_messages = []
         try:
             for message_group in self._get_message_groups(
-                adapter.read_stream(stream_read_request_body.stream, stream_read_request_body.config)
+                    adapter.read_stream(stream_read_request_body.stream, stream_read_request_body.config)
             ):
                 if isinstance(message_group, AirbyteLogMessage):
                     log_messages.append({"message": message_group.message})
