@@ -3,6 +3,7 @@
 #
 
 import base64
+import logging
 from typing import Any, List, Mapping, Tuple
 
 import requests
@@ -33,6 +34,8 @@ from .streams import (
     Users,
     UserSettingsStream,
 )
+
+logger = logging.getLogger("airbyte")
 
 
 class BasicApiTokenAuthenticator(TokenAuthenticator):
@@ -133,6 +136,6 @@ class SourceZendeskSupport(AbstractSource):
                 for _ in ticket_forms_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
                     streams.append(ticket_forms_stream)
                     break
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"An exception occurred while trying to access TicketForms stream: {str(e)}. Skipping this stream.")
         return streams

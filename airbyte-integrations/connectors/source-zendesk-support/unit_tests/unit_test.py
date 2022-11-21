@@ -131,17 +131,23 @@ def test_check(response, check_passed):
 
 
 @pytest.mark.parametrize(
-    "ticket_forms_response, status_code, expected_n_streams",
+    "ticket_forms_response, status_code, expected_n_streams, expected_warnings",
     [
-        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 18),
-        ({}, 403, 17),
+        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 18, []),
+        ({"error": "Not sufficient permissions"}, 403, 17, [
+            '"error": "Not sufficient permissions"',
+            "An exception occurred while trying to access TicketForms stream: 403 Client"
+        ]),
     ],
     ids=["forms_accessible", "forms_inaccessible"],
 )
-def test_full_access_streams(requests_mock, ticket_forms_response, status_code, expected_n_streams):
+def test_full_access_streams(caplog, requests_mock, ticket_forms_response, status_code, expected_n_streams, expected_warnings):
     requests_mock.get("/api/v2/ticket_forms", status_code=status_code, json=ticket_forms_response)
     result = SourceZendeskSupport().streams(config=TEST_CONFIG)
     assert len(result) == expected_n_streams
+    logged_messages = iter(caplog.messages)
+    for msg in expected_warnings:
+        assert msg in next(logged_messages)
 
 
 @pytest.fixture(autouse=True)
