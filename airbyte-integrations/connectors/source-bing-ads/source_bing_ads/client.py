@@ -11,7 +11,7 @@ from urllib.error import URLError
 
 import backoff
 import pendulum
-from airbyte_cdk.config_observation import ObservedDict
+from airbyte_cdk.config_observation import observe_connector_config
 from airbyte_cdk.logger import AirbyteLogger
 from bingads.authorization import AuthorizationData, OAuthTokens, OAuthWebAuthCodeGrant
 from bingads.service_client import ServiceClient
@@ -37,8 +37,8 @@ class Client:
     # The time interval in milliseconds between two status polling attempts.
     report_poll_interval: int = 15000
 
-    def __init__(self, config: ObservedDict) -> None:
-        self.config = config
+    def __init__(self, config: Mapping) -> None:
+        self.config = observe_connector_config(config)
         self.authorization_data: Mapping[str, AuthorizationData] = {}
         self.authentication = self._get_auth_client()
         self.oauth: OAuthTokens = self._get_access_token()

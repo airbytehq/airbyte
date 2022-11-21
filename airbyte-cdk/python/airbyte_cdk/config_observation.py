@@ -21,7 +21,7 @@ class ObservedDict(dict):
         super().__init__(non_observed_mapping)
 
     def __setitem__(self, item: Any, value: Any):
-        """Override dict__setitem__ by:
+        """Override dict.__setitem__ by:
         1. Observing the new value if it is a dict
         2. Call observer update if the new value is different from the previous one
         """
@@ -51,3 +51,12 @@ class ConfigObserver:
         )
         airbyte_message = AirbyteMessage(type=Type.CONTROL, control=control_message)
         print(airbyte_message.json(exclude_unset=True))
+
+
+def observe_connector_config(non_observed_connector_config: MutableMapping[str, Any]):
+    if isinstance(non_observed_connector_config, ObservedDict):
+        raise ValueError("This connector configuration is already observed")
+    connector_config_observer = ConfigObserver()
+    observed_connector_config = ObservedDict(non_observed_connector_config, connector_config_observer)
+    connector_config_observer.set_config(observed_connector_config)
+    return observed_connector_config

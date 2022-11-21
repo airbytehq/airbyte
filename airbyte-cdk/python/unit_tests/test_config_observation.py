@@ -5,7 +5,8 @@
 import json
 import time
 
-from airbyte_cdk.config_observation import ConfigObserver, ObservedDict
+import pytest
+from airbyte_cdk.config_observation import ConfigObserver, ObservedDict, observe_connector_config
 
 
 class TestObservedDict:
@@ -42,3 +43,22 @@ class TestConfigObserver:
         assert raw_control_message["type"] == "CONNECTOR_CONFIG"
         assert raw_control_message["connectorConfig"] == {"config": dict(config_observer.config)}
         assert before_time < raw_control_message["emitted_at"] < after_time
+
+
+def test_observe_connector_config(capsys):
+    non_observed_config = {"foo": "bar"}
+    observed_config = observe_connector_config(non_observed_config)
+    observer = observed_config.observer
+    assert isinstance(observed_config, ObservedDict)
+    assert isinstance(observer, ConfigObserver)
+    assert observed_config.observer.config == observed_config
+    observed_config["foo"] = "foo"
+    captured = capsys.readouterr()
+    airbyte_message = json.loads(captured.out)
+    assert airbyte_message["control"]["connectorConfig"] == {"config": {"foo": "foo"}}
+
+
+def test_observe_already_observed_config():
+    observed_config = observe_connector_config({"foo": "bar"})
+    with pytest.raises(ValueError):
+        observe_connector_config(observed_config)
