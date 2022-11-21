@@ -1396,3 +1396,5 @@ cron:
 
 connector-builder-server:
   enabled: true
+  service:
+    port: 8003

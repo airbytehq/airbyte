@@ -1,5 +1,5 @@
 apiVersion: v2
-name: server
+name: connector-builder-server
 description: Helm chart to deploy airbyte-connector-builder-server
 
 # A chart can be either an 'application' or a 'library' chart.

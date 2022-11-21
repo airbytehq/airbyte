@@ -282,6 +282,8 @@ webapp:
   ##  webapp.api.url The webapp API url.
   api:
     url: /api/v1/
+  connector-builder-server:
+    url: /connector-builder-api
 
   ##  webapp.fullstory.enabled Whether or not to enable fullstory
   fullstory:
@@ -1408,3 +1410,5 @@ cron:
 
 connector-builder-server:
   enabled: true
+  service:
+    port: 8003
