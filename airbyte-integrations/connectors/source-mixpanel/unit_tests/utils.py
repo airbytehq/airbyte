@@ -10,7 +10,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, filter_internal_keywords
+from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 
 
 def setup_response(status, body):
@@ -23,7 +23,7 @@ def get_url_to_mock(stream):
 
 def command_check(source: Source, config):
     logger = mock.MagicMock()
-    connector_config, _ = filter_internal_keywords(config)
+    connector_config, _ = split_config(config)
     if source.check_config_against_spec:
         source_spec: ConnectorSpecification = source.spec(logger)
         check_config_against_spec_or_exit(connector_config, source_spec)

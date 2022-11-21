@@ -404,7 +404,6 @@ def test_internal_config_limit(abstract_source, catalog):
 
     # Set limit and check if state is produced when limit is set for incremental stream
     logger_mock.reset_mock()
-    internal_config = {"some_config": 100, "_limit": STREAM_LIMIT}
     records = [r for r in abstract_source.read(logger=logger_mock, config=internal_config, catalog=catalog, state={})]
     assert len(records) == STREAM_LIMIT + 1
     assert records[-1].type == Type.STATE

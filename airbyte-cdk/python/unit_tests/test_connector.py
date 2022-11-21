@@ -14,7 +14,6 @@ from typing import Any, Mapping
 import pytest
 import yaml
 from airbyte_cdk import AirbyteSpec, Connector
-from airbyte_cdk.config_observation import ConfigObserver, ObservedDict
 from airbyte_cdk.models import AirbyteConnectionStatus
 
 logger = logging.getLogger("airbyte")
@@ -81,16 +80,6 @@ def test_write_config(integration, mock_config):
     integration.write_config(mock_config, str(config_path))
     with open(config_path, "r") as actual:
         assert mock_config == json.loads(actual.read())
-
-
-def test_configure(integration, mock_config):
-    temp_dir = tempfile.gettempdir()
-    config = integration.configure(mock_config, temp_dir)
-    assert isinstance(config, ObservedDict)
-    assert isinstance(config.observer, ConfigObserver)
-    assert config.observer.config == config
-    assert config.observer.config_path == os.path.join(temp_dir, "config.json")
-    assert config.observer.write_config_fn == integration.write_config
 
 
 class TestConnectorSpec:
