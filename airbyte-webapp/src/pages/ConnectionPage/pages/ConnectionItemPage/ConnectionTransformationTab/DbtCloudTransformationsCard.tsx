@@ -154,7 +154,7 @@ const DbtJobsList = ({ jobs, remove, dirty, isLoading }: DbtJobsListProps) => {
             <FormattedMessage id="connection.dbtCloudJobs.explanation" />
           </Text>
           {jobs.map((job, i) => (
-            <JobsListItem key={i} job={job} removeJob={() => remove(i)} />
+            <JobsListItem key={i} job={job} removeJob={() => remove(i)} isLoading={isLoading} />
           ))}
         </>
       ) : (
@@ -184,8 +184,9 @@ const DbtJobsList = ({ jobs, remove, dirty, isLoading }: DbtJobsListProps) => {
 interface JobsListItemProps {
   job: DbtCloudJob;
   removeJob: () => void;
+  isLoading: boolean;
 }
-const JobsListItem = ({ job, removeJob }: JobsListItemProps) => {
+const JobsListItem = ({ job, removeJob, isLoading }: JobsListItemProps) => {
   const { formatMessage } = useIntl();
   // TODO if `job.jobName` is undefined, that means we failed to match any of the
   // dbt-Cloud-supplied jobs with the saved job. This means one of two things has
@@ -218,6 +219,7 @@ const JobsListItem = ({ job, removeJob }: JobsListItemProps) => {
           size="lg"
           className={styles.jobListItemDelete}
           onClick={removeJob}
+          disabled={isLoading}
           aria-label={formatMessage({ id: "connection.dbtCloudJobs.job.deleteButton" })}
         >
           <FontAwesomeIcon icon={faXmark} height="21" width="21" />
