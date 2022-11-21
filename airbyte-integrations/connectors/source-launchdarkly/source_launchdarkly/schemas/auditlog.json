@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "_id": {
+      "type": ["null", "string"]
+    },
+    "_accountId": {
+      "type": ["null", "string"]
+    },
+    "date": {
+      "type": ["null", "integer"]
+    },
+    "accesses": {
+      "type": ["null", "array"]
+    },
+    "kind": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "shortDescription": {
+      "type": ["null", "string"]
+    },
+    "comment": {
+      "type": ["null", "string"]
+    },
+    "member": {
+      "type": ["null", "object"]
+    },
+    "titleVerb": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    }
+  }
+}

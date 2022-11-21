@@ -1,5 +1,5 @@
 $transition: 0.3s;
-$transition-out: all $transition ease-out;
+$transition-out: $transition ease-out;
 
 $border-thin: 1px;
 $border-thick: 2px;
@@ -7,6 +7,7 @@ $border-thick: 2px;
 $border-radius-xs: 4px;
 $border-radius-sm: 8px;
 $border-radius-md: 10px;
+$border-radius-2xl: 15px;
 
 $spacing-xs: 3px;
 $spacing-sm: 5px;
@@ -18,6 +19,7 @@ $spacing-page-bottom: 150px;
 $main-page-content-min-width: 960px;
 
 $width-size-menu: 93px;
+$width-wide-menu: 200px;
 
 $width-modal-sm: 492px;
 $width-modal-md: 585px;

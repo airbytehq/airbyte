@@ -6,7 +6,7 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, ValidationError, validator
 
 
 class Model(BaseModel):
@@ -17,6 +17,16 @@ class Model(BaseModel):
     dimensions: list[str]
     metrics: list[str]
     filter: Optional[str]
+
+    @validator("dimensions", "metrics")
+    def check_field_reference_forrmat(cls, value):
+        """
+        Defines rules for nested strings, for fields: dimensions, metrics.
+        General rule: the `ga:` prefix is defined for each field
+        """
+        for v in value:
+            if "ga:" not in v:
+                raise ValueError(v)
 
 
 class Explainer:
@@ -33,16 +43,21 @@ class Explainer:
         "value_error.missing": ("fields required", []),
         "value_error.extra": ("fields not permitted", []),
         "type_error": ("type errors", []),
+        "value_error": ("incorrect field reference, expected format `ga:MY_FIELD_NAME`, but got", []),
     }
 
     def parse(self, errors: List[Dict]) -> str:
         for error in errors:
-            field_name, error_type = error.get("loc")[0], error.get("type")
+            field_name, error_type, error_msg = error.get("loc")[0], error.get("type"), error.get("msg")
 
             # general errors
             if error_type in self.errors_mapping:
-                self.errors_mapping.get(error_type)[1].append(field_name)
-
+                # value errors
+                if error_type == "value_error":
+                    self.errors_mapping.get(error_type)[1].append({"field": field_name, "reference": error_msg})
+                # general errors
+                else:
+                    self.errors_mapping.get(error_type)[1].append(field_name)
             # type errors
             if "type_error" in error_type:
                 error_type, _type = error_type.split(".")

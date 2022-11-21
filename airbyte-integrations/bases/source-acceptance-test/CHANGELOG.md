@@ -1,5 +1,18 @@
 # Changelog
 
+
+## 0.2.19
+Test for exposed secrets: const values can not hold secrets. [#19465](https://github.com/airbytehq/airbyte/pull/19465).
+
+## 0.2.18
+Test connector specification against exposed secret fields. [#19124](https://github.com/airbytehq/airbyte/pull/19124).
+
+## 0.2.17
+Make `incremental.future_state` mandatory in `high` `test_strictness_level`. [#19085](https://github.com/airbytehq/airbyte/pull/19085/).
+
+## 0.2.16
+Run `basic_read` on the discovered catalog in `high` `test_strictness_level`. [#18937](https://github.com/airbytehq/airbyte/pull/18937).
+
 ## 0.2.15
 Make `expect_records` mandatory in `high` `test_strictness_level`. [#18497](https://github.com/airbytehq/airbyte/pull/18497/).
 

@@ -1,0 +1,151 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://api.statuspage.io/v1"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "Authorization"
+      api_token: "OAuth {{ config['api_key'] }}"
+    error_handler:
+      type: "CompositeErrorHandler"
+      error_handlers:
+        - response_filters:
+            - http_codes: [420, 429]
+              action: RETRY
+          backoff_strategies:
+            - type: "ConstantBackoffStrategy"
+              backoff_time_in_seconds: 60
+  offset_paginator:
+    type: DefaultPaginator
+    $options:
+      url_base: "*ref(definitions.requester.url_base)"
+    pagination_strategy:
+      type: "OffsetIncrement"
+      page_size: 100
+    page_token_option:
+      field_name: "page"
+      inject_into: "request_parameter"
+    page_size_option:
+      inject_into: "request_parameter"
+      field_name: "limit"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      $ref: "*ref(definitions.offset_paginator)"
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  pages_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "pages"
+      primary_key: "id"
+      path: "/pages"
+  page_stream_slicer:
+    type: SubstreamSlicer
+    parent_stream_configs:
+      - stream: "*ref(definitions.pages_stream)"
+        parent_key: id
+        stream_slice_field: page_id
+  subscribers_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "subscribers"
+      primary_key: "id"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/pages/{{ stream_slice.page_id }}/subscribers"
+      stream_slicer:
+        $ref: "*ref(definitions.page_stream_slicer)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+  subscribers_histogram_by_state_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "subscribers_histogram_by_state"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/pages/{{ stream_slice.page_id }}/subscribers/histogram_by_state"
+      stream_slicer:
+        $ref: "*ref(definitions.page_stream_slicer)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+  incident_templates_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "incident_templates"
+      primary_key: "id"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/pages/{{ stream_slice.page_id }}/incident_templates"
+      stream_slicer:
+        $ref: "*ref(definitions.page_stream_slicer)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+  incidents_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "incidents"
+      primary_key: "id"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/pages/{{ stream_slice.page_id }}/incidents"
+      stream_slicer:
+        $ref: "*ref(definitions.page_stream_slicer)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+  components_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "components"
+      primary_key: "id"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/pages/{{ stream_slice.page_id }}/components"
+      stream_slicer:
+        $ref: "*ref(definitions.page_stream_slicer)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+  metrics_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "metrics"
+      primary_key: "id"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/pages/{{ stream_slice.page_id }}/metrics"
+      stream_slicer:
+        $ref: "*ref(definitions.page_stream_slicer)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+streams:
+  - "*ref(definitions.pages_stream)"
+  - "*ref(definitions.subscribers_stream)"
+  - "*ref(definitions.subscribers_histogram_by_state_stream)"
+  - "*ref(definitions.incident_templates_stream)"
+  - "*ref(definitions.incidents_stream)"
+  - "*ref(definitions.components_stream)"
+  - "*ref(definitions.metrics_stream)"
+check:
+  stream_names:
+    - "pages"
