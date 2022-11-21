@@ -4,6 +4,10 @@ inputs:
   branch_version_tag:
     description: 'Used to tag jars and docker images with a branch-specific version (should use the form "dev-<commit_hash>" to pass AirbyteVersion validation)'
     required: false
+  build_docker_images:
+    description: 'Build docker images'
+    default: 'true'
+    required: false
 outputs:
   branch_version_tag:
     description: "Tag used for jars and docker images. Either user specified or auto generated as `dev-<commit_hash>`"
@@ -47,8 +51,14 @@ runs:
         EOF
       shell: bash
 
-    - name: Build
+    - name: Build with Docker Images
+      if: inputs.build_docker_images == 'true'
       run: VERSION=${{ steps.parse-input.outputs.branch_version_tag }} SUB_BUILD=PLATFORM ./gradlew build --scan
+      shell: bash
+
+    - name: Build without Docker Images
+      if: inputs.build_docker_images != 'true'
+      run: VERSION=${{ steps.parse-input.outputs.branch_version_tag }} SUB_BUILD=PLATFORM ./gradlew test --scan
       shell: bash
 
     - name: Publish to Maven Local
