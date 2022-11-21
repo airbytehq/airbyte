@@ -30,6 +30,7 @@ def connector_config():
         role_arn="arn:aws:iam::123456789098:role/some-role",
         aws_environment="SANDBOX",
         region="US",
+        source_name="test",
     )
 
 
