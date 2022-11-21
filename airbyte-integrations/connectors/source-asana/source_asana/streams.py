@@ -4,7 +4,7 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Type
 
 import requests
 from airbyte_cdk.models import SyncMode
@@ -25,10 +25,14 @@ class AsanaStream(HttpStream, ABC):
     page_size = 100
     raise_on_http_errors = True
 
+    @property
+    def AsanaStreamType(self) -> Type:
+        return self.__class__
+
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code in ASANA_ERRORS_MAPPING.keys():
             self.logger.error(
-                f"Skipping stream {self.name}. {ASANA_ERRORS_MAPPING.get(response.status_code)}. Errors: {response.json().get('errors')}"
+                f"Skipping stream {self.name}. {ASANA_ERRORS_MAPPING.get(response.status_code)}. Full error message: {response.text}"
             )
             setattr(self, "raise_on_http_errors", False)
             return False
@@ -89,7 +93,7 @@ class AsanaStream(HttpStream, ABC):
         response_json = response.json()
         yield from response_json.get("data", [])  # Asana puts records in a container array "data"
 
-    def read_slices_from_records(self, stream_class: object, slice_field: str) -> Iterable[Optional[Mapping[str, Any]]]:
+    def read_slices_from_records(self, stream_class: AsanaStreamType, slice_field: str) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         General function for getting parent stream (which should be passed through `stream_class`) slice.
         Generates dicts with `gid` of parent streams.

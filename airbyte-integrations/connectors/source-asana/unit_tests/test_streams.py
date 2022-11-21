@@ -33,15 +33,20 @@ def test_next_page_token():
 
 
 @pytest.mark.parametrize(
-    ("http_status_code", "errors", "should_retry"),
+    ("http_status_code", "should_retry"),
     [
-        (402, {}, False),
-        (403, {}, False),
-        (404, {}, False),
-        (451, {}, False),
+        (402, False),
+        (403, False),
+        (404, False),
+        (451, False),
+        (429, True),
     ],
 )
-def test_should_retry(http_status_code, errors, should_retry):
+def test_should_retry(http_status_code, should_retry):
+    """
+    402, 403, 404, 451 - should not retry.
+    429 - should retry.
+    """
     response_mock = MagicMock()
     response_mock.status_code = http_status_code
     stream = Stories(MagicMock())
