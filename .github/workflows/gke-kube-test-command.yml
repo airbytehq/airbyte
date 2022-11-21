@@ -148,7 +148,7 @@ jobs:
       - gke-kube-acceptance-test # required to wait when the main job is done
       - find_valid_pat
     runs-on: ubuntu-latest
-    if: ${{ always() }}
+    if: ${{ always() && needs.find_valid_pat.outputs.pat != '' }}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
