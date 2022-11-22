@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Union
 
 import pendulum
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
@@ -22,6 +22,7 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         refresh_token: str,
         scopes: List[str] = None,
         token_expiry_date: pendulum.DateTime = None,
+        token_expiry_date_format: str = None,
         access_token_name: str = "access_token",
         expires_in_name: str = "expires_in",
         refresh_request_body: Mapping[str, Any] = None,
@@ -38,6 +39,7 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         self._grant_type = grant_type
 
         self._token_expiry_date = token_expiry_date or pendulum.now().subtract(days=1)
+        self._token_expiry_date_format = token_expiry_date_format
         self._access_token = None
 
     def get_token_refresh_endpoint(self) -> str:
@@ -70,8 +72,11 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return self._token_expiry_date
 
-    def set_token_expiry_date(self, value: pendulum.DateTime):
-        self._token_expiry_date = value
+    def set_token_expiry_date(self, value: Union[str, int]):
+        if self._token_expiry_date_format:
+            self._token_expiry_date = pendulum.from_format(value, self._token_expiry_date_format)
+        else:
+            self._token_expiry_date = pendulum.now().add(seconds=value)
 
     @property
     def access_token(self) -> str:

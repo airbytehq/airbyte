@@ -29,10 +29,9 @@ class AbstractOauth2Authenticator(AuthBase):
     def get_access_token(self) -> str:
         """Returns the access token"""
         if self.token_has_expired():
-            t0 = pendulum.now()
             token, expires_in = self.refresh_access_token()
             self.access_token = token
-            self.set_token_expiry_date(t0.add(seconds=expires_in))
+            self.set_token_expiry_date(expires_in)
 
         return self.access_token
 
