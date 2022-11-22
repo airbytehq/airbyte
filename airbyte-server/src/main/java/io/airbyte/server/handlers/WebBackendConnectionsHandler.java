@@ -68,6 +68,11 @@ import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The web backend is an abstraction that allows the frontend to structure data in such a way that
+ * it is easier for a react frontend to consume. It should NOT have direct access to the database.
+ * It should operate exclusively by calling other endpoints that are exposed in the API.
+ */
 @AllArgsConstructor
 @Slf4j
 public class WebBackendConnectionsHandler {
