@@ -45,7 +45,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
 
       navigate(
         {
-          pathname: `${RoutePaths.Source}${RoutePaths.SourceNew}`,
+          pathname: `../../${RoutePaths.Source}/${RoutePaths.SourceNew}`,
         },
         { state: { sourceDefinitionId: result.sourceDefinitionId } }
       );
@@ -61,7 +61,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
 
       navigate(
         {
-          pathname: `${RoutePaths.Destination}${DestinationPaths.NewDestination}`,
+          pathname: `../../${RoutePaths.Destination}/${DestinationPaths.NewDestination}`,
         },
         { state: { destinationDefinitionId: result.destinationDefinitionId } }
       );
