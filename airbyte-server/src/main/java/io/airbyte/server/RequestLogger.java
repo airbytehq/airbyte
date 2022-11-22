@@ -50,7 +50,7 @@ import org.slf4j.MDC;
  * set the request body as a custom property in the request filter. This is where we create and
  * persist log lines that contain both the response status code and the original request body.
  */
-public class RequestLogger implements ContainerRequestFilter, ContainerResponseFilter, HttpFilter {
+public class RequestLogger implements ContainerRequestFilter, ContainerResponseFilter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequestLogger.class);
   private static final String REQUEST_BODY_PROPERTY = "requestBodyProperty";
