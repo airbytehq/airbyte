@@ -150,7 +150,7 @@ services:
       - MICRONAUT_ENVIRONMENTS=${WORKERS_MICRONAUT_ENVIRONMENTS}
     ports:
       - 8001
-      - 8042:8042
+      - 8042
     volumes:
       - workspace:${WORKSPACE_ROOT}
       - data:${CONFIG_ROOT}

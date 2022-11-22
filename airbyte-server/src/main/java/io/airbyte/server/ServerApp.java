@@ -87,7 +87,6 @@ public class ServerApp implements ServerRunnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
   private static final int PORT = 8001;
-  // private static final String DRIVER_CLASS_NAME = "org.postgresql.Driver";
 
   private final AirbyteVersion airbyteVersion;
   private final Set<Class<?>> customComponentClasses;
@@ -104,7 +103,6 @@ public class ServerApp implements ServerRunnable {
   @Override
   @SuppressWarnings("PMD.InvalidLogMessageFormat")
   public void start() throws Exception {
-    LOGGER.error("HOOOOOOOOOOOOOOOOOO");
     final Server server = new Server(PORT);
 
     final ServletContextHandler handler = new ServletContextHandler();
@@ -134,7 +132,6 @@ public class ServerApp implements ServerRunnable {
 
     server.setHandler(handler);
 
-    LOGGER.error("____________________");
     server.start();
     final String banner = MoreResources.readResource("banner/banner.txt");
     LOGGER.info(banner + String.format("Version: %s\n", airbyteVersion.serialize()));
@@ -377,33 +374,5 @@ public class ServerApp implements ServerRunnable {
         webBackendConnectionsHandler,
         webBackendGeographiesHandler);
   }
-
-  /*
-   * public static void main(final String[] args) { try { final Configs configs = new EnvConfigs();
-   *
-   * // Manual configuration that will be replaced by Dependency Injection in the future final
-   * DataSource configsDataSource = DataSourceFactory.create(configs.getConfigDatabaseUser(),
-   * configs.getConfigDatabasePassword(), DRIVER_CLASS_NAME, configs.getConfigDatabaseUrl()); final
-   * DataSource jobsDataSource = DataSourceFactory.create(configs.getDatabaseUser(),
-   * configs.getDatabasePassword(), DRIVER_CLASS_NAME, configs.getDatabaseUrl());
-   *
-   * try (final DSLContext configsDslContext = DSLContextFactory.create(configsDataSource,
-   * SQLDialect.POSTGRES); final DSLContext jobsDslContext = DSLContextFactory.create(jobsDataSource,
-   * SQLDialect.POSTGRES)) {
-   *
-   * // Ensure that the database resources are closed on application shutdown
-   * CloseableShutdownHook.registerRuntimeShutdownHook(configsDataSource, jobsDataSource,
-   * configsDslContext, jobsDslContext);
-   *
-   * final Flyway configsFlyway = FlywayFactory.create(configsDataSource,
-   * DbMigrationHandler.class.getSimpleName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
-   * ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION); final Flyway jobsFlyway =
-   * FlywayFactory.create(jobsDataSource, DbMigrationHandler.class.getSimpleName(),
-   * JobsDatabaseMigrator.DB_IDENTIFIER, JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-   *
-   * getServer(new ServerFactory.Api(), configs, configsDslContext, configsFlyway, jobsDslContext,
-   * jobsFlyway).start(); } } catch (final Throwable e) { LOGGER.error("Server failed", e);
-   * System.exit(1); // so the app doesn't hang on background threads } }
-   */
 
 }

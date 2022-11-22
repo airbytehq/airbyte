@@ -141,10 +141,7 @@ public class ServerBeanFactory {
 
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
-  // @Named("serverRunnable")
   public ServerRunnable serverRunnable(
-                                       // @Named("componentClasses") final Set<Class<?>> componentClasses,
-                                       // @Named("components") final Set<Object> components,
                                        final Configs configs,
                                        @Named("config") final DSLContext configsDslContext,
                                        @Named("configFlyway") final Flyway configsFlyway,
