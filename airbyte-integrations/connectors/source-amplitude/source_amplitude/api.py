@@ -21,9 +21,15 @@ from .errors import HTTP_ERROR_CODES, error_msg_from_status
 
 
 class AmplitudeStream(HttpStream, ABC):
-
-    url_base = "https://amplitude.com/api/"
     api_version = 2
+
+    def __init__(self, data_region: str, **kwargs):
+        super().__init__(**kwargs)
+        self.url_base = (
+            "https://analytics.eu.amplitude.com/api/2/annotations"
+            if data_region == "EU Residency Server"
+            else "https://amplitude.com/api/"
+        )
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -115,7 +121,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = self.base_params
         if next_page_token:
@@ -182,11 +188,11 @@ class Events(IncrementalAmplitudeStream):
         return slices
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         start = pendulum.parse(stream_slice["start"])
