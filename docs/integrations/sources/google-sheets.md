@@ -42,7 +42,8 @@ To set up Google Sheets as a source in Airbyte Open Source:
     - To authenticate your Google account via OAuth, enter your Google application's [client ID, client secret, and refresh token](https://developers.google.com/identity/protocols/oauth2).
     - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. Make sure the Service Account has the Project Viewer permission. If your spreadsheet is viewable by anyone with its link, no further action is needed. If not, [give your Service account access to your spreadsheet](https://youtu.be/GyomEw5a2NQ%22).
 6. For **Spreadsheet Link**, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**.
-<!-- /env:oss -->   
+<!-- /env:oss -->
+   
 
 ### Output schema
 
@@ -75,6 +76,7 @@ The [Google API rate limit](https://developers.google.com/sheets/api/limits) is 
 
 | Version | Date       | Pull Request                                             | Subject                                                                       |
 | ------- | ---------- | -------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| 0.2.31  | 2022-10-09 | [](https://github.com/airbytehq/airbyte/pull/)           | Revert 'Add row_id to rows and use as primary key'                            |
 | 0.2.30  | 2022-10-09 | [](https://github.com/airbytehq/airbyte/pull/)           | Add row_id to rows and use as primary key                                     |
 | 0.2.21  | 2022-10-04 | [15591](https://github.com/airbytehq/airbyte/pull/15591) | Clean instantiation of AirbyteStream                                          |
 | 0.2.20  | 2022-10-10 | [17766](https://github.com/airbytehq/airbyte/pull/17766) | Fix null pointer exception when parsing the spreadsheet id. |

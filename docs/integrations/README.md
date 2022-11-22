@@ -22,7 +22,6 @@ For more information about the grading system, see [Product Release Stages](http
     allowtransparency
 ></iframe>
 
-
 ## Destinations
 
 <iframe
