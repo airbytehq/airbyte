@@ -60,8 +60,7 @@ class DestinationSftpCsv(Destination):
             else:
                 # ignore other message types for now
                 continue
-        
-        writer.close()
+
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
