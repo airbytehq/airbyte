@@ -34,7 +34,6 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
 
   @Override
   public io.airbyte.protocol.models.v0.AirbyteMessage downgrade(AirbyteMessage oldMessage) {
-    // TODO implement downgrade
     io.airbyte.protocol.models.v0.AirbyteMessage newMessage = Jsons.object(
         Jsons.jsonNode(oldMessage),
         io.airbyte.protocol.models.v0.AirbyteMessage.class);
@@ -239,7 +238,8 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
             replacement.setAll(subschema);
           }
         } else {
-          // TODO maybe if this oneOf has boolean entries, then it's doing something funky, and we shouldn't attempt to combine it into a single type entry
+          // TODO maybe if this oneOf has boolean entries, then it's doing something funky, and we shouldn't
+          // attempt to combine it into a single type entry
         }
       }
 
