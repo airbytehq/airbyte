@@ -10,8 +10,9 @@ import pytest
 import requests_mock
 
 from airbyte_cdk.models import SyncMode
-from source_square.components import Oauth2AuthenticatorSquare, SquareSlicer, SquareSubstreamSlicer
+from source_square.components import SquareSlicer, SquareSubstreamSlicer
 from source_square.source import SourceSquare
+from sources.declarative.auth import DeclarativeOauth2Authenticator
 
 
 @pytest.fixture
@@ -42,17 +43,16 @@ def test_refresh_access_token(req_mock):
         "client_id": "some_client_id",
         "client_secret": "some_client_secret",
         "token_expiry_date": pendulum.now().subtract(days=2).to_rfc3339_string(),
-        # "custom_field": "in_outbound_request",
-        # "another_field": "exists_in_body",
     }
     options = {"refresh_token": "some_refresh_token"}
 
     req_mock.post(URL, json={"access_token": TOKEN, "expires_in": next_day})
-    authenticator = Oauth2AuthenticatorSquare(
+    authenticator = DeclarativeOauth2Authenticator(
         token_refresh_endpoint=URL,
         client_secret="client_secret",
         client_id="client_id",
         refresh_token="refresh_token",
+        token_expiry_date_format="YYYY-MM-DDTHH:mm:ss[Z]",
         config=config,
         options=options
     )

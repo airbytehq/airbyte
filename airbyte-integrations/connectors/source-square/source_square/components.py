@@ -4,36 +4,24 @@
 import logging
 from dataclasses import InitVar, dataclass
 from typing import Any, ClassVar, Iterable, Mapping, MutableMapping, Optional, Union
-from typing import Tuple
 
 import pendulum
 from dataclasses_jsonschema import JsonSchemaMixin
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
+from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
-from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
-
-
-class Oauth2AuthenticatorSquare(DeclarativeOauth2Authenticator):
-    def refresh_access_token(self) -> Tuple[str, int]:
-        """Handle differences in expiration attr:
-        from API: "expires_at": "2021-11-05T14:26:57Z"
-        expected: "expires_in": number of seconds
-        """
-        token, expires_at = super().refresh_access_token()
-        expires_in = pendulum.parse(expires_at) - pendulum.now()
-        return token, expires_in.in_seconds()
 
 
 @dataclass
 class AuthenticatorSquare(DeclarativeAuthenticator, JsonSchemaMixin):
     config: Mapping[str, Any]
     bearer: BearerAuthenticator
-    oauth: Oauth2AuthenticatorSquare
+    oauth: DeclarativeOauth2Authenticator
 
     def __new__(cls, bearer, oauth, config, *args, **kwargs):
         if config.get('api_key'):
