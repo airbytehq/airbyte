@@ -49,10 +49,13 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import io.debezium.engine.ChangeEvent;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.apache.kafka.connect.source.SourceRecord;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
@@ -383,4 +386,34 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     assertEquals(MODEL_RECORDS.size() + recordsToCreate + 1, recordsFromThirdBatch.size());
   }
 
+  @Test
+  void testReachedTargetPosition() {
+    final CdcTargetPosition ctp = cdcLatestTargetPosition();
+    final PostgresCdcTargetPosition pctp = (PostgresCdcTargetPosition) ctp;
+    final PgLsn target = pctp.targetLsn;
+    assertTrue(ctp.reachedTargetPosition(target.asLong() + 1));
+    assertTrue(ctp.reachedTargetPosition(target.asLong()));
+    assertFalse(ctp.reachedTargetPosition(target.asLong() - 1));
+    assertFalse(ctp.reachedTargetPosition((Long) null));
+  }
+
+  @Test
+  void testGetHeartbeatPosition() {
+    final CdcTargetPosition ctp = cdcLatestTargetPosition();
+    final PostgresCdcTargetPosition pctp = (PostgresCdcTargetPosition) ctp;
+    final Long lsn = pctp.getHeartbeatPosition(new ChangeEvent<String, String>() {
+      private final SourceRecord sourceRecord = new SourceRecord(null, Collections.singletonMap("lsn", 358824993496L), null, null, null );
+      @Override
+      public String key() { return null; }
+      @Override
+      public String value() { return "{\"ts_ms\":1667616934701}"; }
+      @Override
+      public String destination() { return null; }
+      public SourceRecord sourceRecord() { return sourceRecord; }
+    });
+
+    assertEquals(lsn, 358824993496L);
+
+    assertNull(pctp.getHeartbeatPosition(null));
+  }
 }
