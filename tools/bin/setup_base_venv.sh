@@ -10,6 +10,8 @@ source .venv/bin/activate
 python get-pip.py
 for base in base-normalization base-python base-python-test source-acceptance-test base-singer airbyte-protocol
 do
-  ln -s $(pwd)/.venv airbyte-integrations/bases/$base/
+  $PYTHON_EXECUTABLE -m venv --without-pip airbyte-integrations/bases/$base/.venv
+  source airbyte-integrations/bases/$base/.venv
+  python get-pip.py
 done
 cd airbyte-integrations/connectors/$CONNECTOR
