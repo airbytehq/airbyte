@@ -15,6 +15,7 @@ import io.airbyte.api.model.generated.CatalogDiff;
 import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.model.generated.ConnectionStatus;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
@@ -39,6 +40,7 @@ import io.airbyte.api.model.generated.StreamTransform.TransformTypeEnum;
 import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.ErrorCode;
 import io.airbyte.commons.temporal.TemporalClient.ManualOperationResult;
@@ -95,6 +97,7 @@ public class SchedulerHandler {
   private final JobPersistence jobPersistence;
   private final JobConverter jobConverter;
   private final EventRunner eventRunner;
+  private final EnvVariableFeatureFlags envVariableFeatureFlags;
 
   public SchedulerHandler(final ConfigRepository configRepository,
                           final SecretsRepositoryReader secretsRepositoryReader,
@@ -114,7 +117,8 @@ public class SchedulerHandler {
         jobPersistence,
         eventRunner,
         new JobConverter(workerEnvironment, logConfigs),
-        connectionsHandler);
+        connectionsHandler,
+        new EnvVariableFeatureFlags());
   }
 
   @VisibleForTesting
@@ -126,7 +130,8 @@ public class SchedulerHandler {
                    final JobPersistence jobPersistence,
                    final EventRunner eventRunner,
                    final JobConverter jobConverter,
-                   final ConnectionsHandler connectionsHandler) {
+                   final ConnectionsHandler connectionsHandler,
+                   final EnvVariableFeatureFlags envVariableFeatureFlags) {
     this.configRepository = configRepository;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -136,6 +141,7 @@ public class SchedulerHandler {
     this.eventRunner = eventRunner;
     this.jobConverter = jobConverter;
     this.connectionsHandler = connectionsHandler;
+    this.envVariableFeatureFlags = envVariableFeatureFlags;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(final SourceIdRequestBody sourceIdRequestBody)
@@ -367,8 +373,15 @@ public class SchedulerHandler {
     boolean containsBreakingChange = containsBreakingChange(diff);
     ConnectionUpdate updateObject =
         new ConnectionUpdate().breakingChange(containsBreakingChange).connectionId(discoverSchemaRequestBody.getConnectionId());
+    ConnectionStatus connectionStatus;
+    if (envVariableFeatureFlags.autoDetectSchema() && containsBreakingChange) {
+      connectionStatus = ConnectionStatus.INACTIVE;
+    } else {
+      connectionStatus = ConnectionStatus.ACTIVE;
+    }
+    updateObject.status(connectionStatus);
     connectionsHandler.updateConnection(updateObject);
-    discoveredSchema.catalogDiff(diff).breakingChange(containsBreakingChange);
+    discoveredSchema.catalogDiff(diff).breakingChange(containsBreakingChange).connectionStatus(connectionStatus);
 
   }
 

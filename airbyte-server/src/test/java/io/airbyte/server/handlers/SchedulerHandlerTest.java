@@ -25,6 +25,7 @@ import io.airbyte.api.model.generated.CatalogDiff;
 import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.ConnectionStatus;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
@@ -45,6 +46,7 @@ import io.airbyte.api.model.generated.StreamTransform;
 import io.airbyte.api.model.generated.StreamTransform.TransformTypeEnum;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.temporal.ErrorCode;
@@ -145,6 +147,7 @@ class SchedulerHandlerTest {
   private EventRunner eventRunner;
   private JobConverter jobConverter;
   private ConnectionsHandler connectionsHandler;
+  private EnvVariableFeatureFlags envVariableFeatureFlags;
 
   @BeforeEach
   void setup() {
@@ -162,6 +165,7 @@ class SchedulerHandlerTest {
     jobPersistence = mock(JobPersistence.class);
     eventRunner = mock(EventRunner.class);
     connectionsHandler = mock(ConnectionsHandler.class);
+    envVariableFeatureFlags = mock(EnvVariableFeatureFlags.class);
 
     jobConverter = spy(new JobConverter(WorkerEnvironment.DOCKER, LogConfigs.EMPTY));
 
@@ -174,7 +178,8 @@ class SchedulerHandlerTest {
         jobPersistence,
         eventRunner,
         jobConverter,
-        connectionsHandler);
+        connectionsHandler,
+        envVariableFeatureFlags);
   }
 
   @Test
@@ -619,7 +624,8 @@ class SchedulerHandlerTest {
     final AirbyteCatalog persistenceCatalog = Jsons.object(actorCatalog.getCatalog(),
         io.airbyte.protocol.models.AirbyteCatalog.class);
     final io.airbyte.api.model.generated.AirbyteCatalog expectedActorCatalog = CatalogConverter.toApi(persistenceCatalog);
-    final ConnectionUpdate expectedConnectionUpdate = new ConnectionUpdate().connectionId(connectionId).breakingChange(true);
+    final ConnectionUpdate expectedConnectionUpdate =
+        new ConnectionUpdate().connectionId(connectionId).breakingChange(true).status(ConnectionStatus.ACTIVE);
 
     final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
     assertEquals(actual.getCatalogDiff(), catalogDiff);

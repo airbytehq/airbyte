@@ -2935,6 +2935,8 @@ components:
           $ref: "#/components/schemas/CatalogDiff"
         breakingChange:
           type: boolean
+        connectionStatus:
+          $ref: "#/components/schemas/ConnectionStatus"
     SourceSearch:
       type: object
       properties:
