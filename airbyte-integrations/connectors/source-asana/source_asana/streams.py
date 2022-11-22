@@ -11,9 +11,9 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
 ASANA_ERRORS_MAPPING = {
-    402: "Stream is available to premium organizations and workspaces",
-    403: "Not enough permissions",
-    404: "Object specified by the request does not exist",
+    402: "This stream is available to premium organizations and workspaces only",
+    403: "Missing permissions to consume this stream enough permissions",
+    404: "The object specified by the request does not exist",
     451: "This request was blocked for legal reasons",
 }
 

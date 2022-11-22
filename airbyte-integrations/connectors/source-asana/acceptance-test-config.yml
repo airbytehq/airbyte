@@ -20,15 +20,15 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         timeout_seconds: 7200
         expect_records:
-          bypass_reason: "Bypassed until dedicated sandbox account is up and running."
+          bypass_reason: "Bypassed until dedicated sandbox account is up and running. Please follow https://github.com/airbytehq/airbyte/issues/19662."
         empty_streams:
           - name: custom_fields
-            bypass_reason: "This stream in not available for our Test Account. 402 - Custom Fields are not available for free users or guests."
+            bypass_reason: "This stream is not available on the account we're currently using. Please follow https://github.com/airbytehq/airbyte/issues/19662."
   full_refresh:
     # tests:
     #   - config_path: "secrets/config.json"
     #     configured_catalog_path: "integration_tests/configured_catalog.json"
     #     timeout_seconds: 7200
-    bypass_reason: "Bypassed until dedicated sandbox account is up and running, because `two-sequential-reads` is not happy."
+    bypass_reason: "As we are using an internal account the data is not frozen and results of `two-sequential-reads` are flaky. Please follow https://github.com/airbytehq/airbyte/issues/19662."
   incremental:
     bypass_reason: "Incremental syncs are not supported on this connector."
