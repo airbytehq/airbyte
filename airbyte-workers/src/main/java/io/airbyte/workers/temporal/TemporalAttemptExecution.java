@@ -169,7 +169,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   }
 
   private void retryWithJitter(final AirbyteApiClient airbyteApiClient) throws InterruptedException {
-    final int maxRetries = 3;
+    final int maxRetries = 4;
     int currRetries = 0;
     boolean needToSend = true;
 
@@ -182,7 +182,15 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
         LOGGER.info("Workflow ID attempt {} save error: {}", currRetries, e);
         currRetries++;
         // Sleep anywhere from 1 to 10 seconds.
-        Thread.sleep(Math.min(RANDOM.nextInt(11), 1) * 1000);
+        var backoffTime = Math.min(RANDOM.nextInt(11), 1) * 1000;
+
+        if (currRetries == maxRetries - 1) {
+          // sleep for ten mins on the last attempt.
+          backoffTime = 10 * 60 * 1000;
+        }
+
+        Thread.sleep(backoffTime);
+
       }
     }
   }
