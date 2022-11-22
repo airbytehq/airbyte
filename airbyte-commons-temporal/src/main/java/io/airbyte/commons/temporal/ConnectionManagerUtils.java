@@ -213,14 +213,19 @@ public class ConnectionManagerUtils {
     return connectionManagerWorkflow;
   }
 
-  boolean isWorkflowStateRunning(final WorkflowClient client, final UUID connectionId) {
+  Optional<WorkflowState> getWorkflowState(final WorkflowClient client, final UUID connectionId) {
     try {
       final ConnectionManagerWorkflow connectionManagerWorkflow = client.newWorkflowStub(ConnectionManagerWorkflow.class,
           getConnectionManagerName(connectionId));
-      return connectionManagerWorkflow.getState().isRunning();
+      return Optional.of(connectionManagerWorkflow.getState());
     } catch (final Exception e) {
-      return false;
+      log.error("Exception thrown while checking workflow state for connection id {}", connectionId, e);
+      return Optional.empty();
     }
+  }
+
+  boolean isWorkflowStateRunning(final WorkflowClient client, final UUID connectionId) {
+    return getWorkflowState(client, connectionId).map(WorkflowState::isRunning).orElse(false);
   }
 
   public WorkflowExecutionStatus getConnectionManagerWorkflowStatus(final WorkflowClient workflowClient, final UUID connectionId) {

@@ -43,7 +43,7 @@ This connector implements the [SuiteTalk REST Web Services](https://docs.oracle.
 1. Go to **Setup** » **Users/Roles** » **Manage Roles** » **New**
 2. Fill the **Name** field.
 3. Scroll down to **Permissions** tab
-4. You need to select manually each record on selection lists and give **Full** level access on next tabs: (Permissions, Reports, Lists, Setup, Custom Records). You strongly need to be careful and attentive on this point.
+4. You need to select manually each record on selection lists and give at least **Read-only** level access on the next tabs: (Permissions, Reports, Lists, Setup, Custom Records). You strongly need to be careful and attentive on this point.
 5.
 #### Step 2.5:  Setup User
 1.  Go to **Setup** » **Users/Roles** » **Manage Users**

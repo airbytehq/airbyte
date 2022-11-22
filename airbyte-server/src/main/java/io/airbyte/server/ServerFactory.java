@@ -14,7 +14,6 @@ import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.server.apis.AttemptApiController;
-import io.airbyte.server.apis.ConfigurationApi;
 import io.airbyte.server.apis.ConnectionApiController;
 import io.airbyte.server.apis.DbMigrationApiController;
 import io.airbyte.server.apis.DestinationApiController;
@@ -180,9 +179,6 @@ public interface ServerFactory {
                                  final WebBackendGeographiesHandler webBackendGeographiesHandler) {
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
-      // set static values for factory
-      ConfigurationApiFactory.setValues(mdc);
-
       AttemptApiFactory.setValues(attemptHandler, mdc);
 
       ConnectionApiFactory.setValues(
@@ -231,7 +227,6 @@ public interface ServerFactory {
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(
-          ConfigurationApi.class,
           AttemptApiController.class,
           ConnectionApiController.class,
           DbMigrationApiController.class,
@@ -256,7 +251,6 @@ public interface ServerFactory {
 
       final Set<Object> components = Set.of(
           new CorsFilter(),
-          new ConfigurationApiBinder(),
           new AttemptApiBinder(),
           new ConnectionApiBinder(),
           new DbMigrationBinder(),

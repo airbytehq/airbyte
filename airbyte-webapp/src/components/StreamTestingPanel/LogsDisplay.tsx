@@ -11,10 +11,11 @@ import { formatJson } from "./utils";
 
 interface LogsDisplayProps {
   logs: StreamReadLogsItem[];
+  error?: string;
   onTitleClick: () => void;
 }
 
-export const LogsDisplay: React.FC<LogsDisplayProps> = ({ logs, onTitleClick }) => {
+export const LogsDisplay: React.FC<LogsDisplayProps> = ({ logs, error, onTitleClick }) => {
   const formattedLogs = useMemo(() => formatJson(logs), [logs]);
 
   return (
@@ -23,10 +24,10 @@ export const LogsDisplay: React.FC<LogsDisplayProps> = ({ logs, onTitleClick }) 
         <Text size="sm" bold>
           <FormattedMessage id="connectorBuilder.connectorLogs" />
         </Text>
-        <NumberBadge value={logs.length} color="blue" />
+        {error !== undefined && <NumberBadge value={1} color="red" />}
       </button>
       <div className={styles.logsDisplay}>
-        <pre>{formattedLogs}</pre>
+        {error !== undefined ? <Text className={styles.error}>{error}</Text> : <pre>{formattedLogs}</pre>}
       </div>
     </div>
   );
