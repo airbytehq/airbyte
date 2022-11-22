@@ -47,6 +47,9 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
           final String jsonData = Jsons.serialize(formatData(record.getData()));
           final Timestamp emittedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
           pstmt.setString(1, uuid);
+          LOGGER.debug("uuid: " + uuid);
+          LOGGER.debug("jsonData: " + jsonData);
+          LOGGER.debug("jsonData: " + emittedAt);
           pstmt.setString(2, jsonData);
           pstmt.setTimestamp(3, emittedAt);
           pstmt.addBatch();
