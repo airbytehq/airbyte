@@ -5,9 +5,10 @@
 package io.airbyte.server;
 
 import io.micronaut.runtime.event.ApplicationStartupEvent;
+import io.micronaut.scheduling.TaskExecutors;
+import io.micronaut.scheduling.annotation.ExecuteOn;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
 
 @Singleton
@@ -18,20 +19,12 @@ public class EventListener {
   ServerRunnable serverRunnable;
 
   @io.micronaut.runtime.event.annotation.EventListener
+  @ExecuteOn(TaskExecutors.IO)
   public void startEmitters(final ApplicationStartupEvent event) {
     try {
       log.error("Starting server");
 
-      Executors.newFixedThreadPool(1).submit(() -> {
-        try {
-          serverRunnable.start();
-        } catch (final Exception e) {
-          throw new RuntimeException(e);
-        }
-      });
-      // serverRunnable.start();
-
-      log.error("Server Started");
+      serverRunnable.start();
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
