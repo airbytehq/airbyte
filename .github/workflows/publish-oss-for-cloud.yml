@@ -49,7 +49,6 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
-          ec2-image-id: 'ami-05b3422b3649a6911'
 
   generate-tags:
     name: "Generate Dev and Master Tags"
