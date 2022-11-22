@@ -315,10 +315,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
             recordsRead += 1;
 
-            // if (recordsRead % 1000 == 0) {
-            // LOGGER.info("Records read: {} ({})", recordsRead,
-            // FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
-            // }
+            if (recordsRead % 1000 == 0) {
+              LOGGER.info("Records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+            }
           } else {
             LOGGER.info("Source has no more messages, closing connection.");
             try {
