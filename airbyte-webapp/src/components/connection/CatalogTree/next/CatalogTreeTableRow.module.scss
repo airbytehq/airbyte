@@ -1,6 +1,15 @@
 @use "scss/colors";
 @use "scss/variables";
 
+@mixin header-background($color, $hoverColor) {
+  background-color: $color;
+
+  &:hover {
+    background-color: $hoverColor;
+    cursor: pointer;
+  }
+}
+
 .icon {
   margin-right: 7px;
 
@@ -13,6 +22,7 @@
   }
 
   &.changed {
+    color: colors.$blue;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -20,7 +30,8 @@
 }
 
 .streamHeaderContent {
-  background: colors.$white;
+  @include header-background(colors.$white, colors.$grey-30);
+
   border-bottom: 1px solid colors.$grey-50;
   padding: 0 variables.$spacing-md;
   margin-bottom: 1px;
@@ -31,40 +42,20 @@
   overflow-y: auto;
   scrollbar-gutter: stable;
 
-  &:hover {
-    background: colors.$grey-30;
-    cursor: pointer;
-  }
-
   &.removed {
-    background-color: colors.$red-30;
-
-    &:hover {
-      background: colors.$red-40;
-      cursor: pointer;
-    }
+    @include header-background(colors.$red-30, colors.$red-40);
   }
 
   &.added {
-    background-color: colors.$green-30;
+    @include header-background(colors.$green-30, colors.$green-40);
+  }
 
-    &:hover {
-      background: colors.$green-40;
-      cursor: pointer;
-    }
+  &.changed {
+    @include header-background(colors.$blue-30, colors.$blue-40);
   }
 
   &.error {
     border: 1px solid colors.$red;
-  }
-
-  &.changed {
-    background-color: colors.$blue-30;
-
-    &:hover {
-      background: colors.$blue-40;
-      cursor: pointer;
-    }
   }
 
   &.disabled {

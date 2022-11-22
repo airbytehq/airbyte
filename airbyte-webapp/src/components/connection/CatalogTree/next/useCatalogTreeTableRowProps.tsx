@@ -54,9 +54,9 @@ export const useCatalogTreeTableRowProps = (stream: SyncSchemaStream) => {
   }, [initialValues.syncCatalog.streams, isStreamEnabled, stream.config, stream.stream]);
 
   const pillButtonVariant: PillButtonVariant = useMemo(() => {
-    if (statusToDisplay === "added") {
+    if (statusToDisplay === "added" && !isSelected) {
       return "green";
-    } else if (statusToDisplay === "removed") {
+    } else if (statusToDisplay === "removed" && !isSelected) {
       return "red";
     } else if (statusToDisplay === "changed" || isSelected) {
       return "blue";
@@ -66,9 +66,21 @@ export const useCatalogTreeTableRowProps = (stream: SyncSchemaStream) => {
 
   const statusIcon = useMemo(() => {
     if (statusToDisplay === "added") {
-      return <FontAwesomeIcon icon={faPlus} size="2x" className={classNames(styles.icon, styles.plus)} />;
+      return (
+        <FontAwesomeIcon
+          icon={faPlus}
+          size="2x"
+          className={classNames(styles.icon, { [styles.plus]: !isSelected, [styles.changed]: isSelected })}
+        />
+      );
     } else if (statusToDisplay === "removed") {
-      return <FontAwesomeIcon icon={faMinus} size="2x" className={classNames(styles.icon, styles.minus)} />;
+      return (
+        <FontAwesomeIcon
+          icon={faMinus}
+          size="2x"
+          className={classNames(styles.icon, { [styles.minus]: !isSelected, [styles.changed]: isSelected })}
+        />
+      );
     } else if (statusToDisplay === "changed") {
       return (
         <div className={classNames(styles.icon, styles.changed)}>
@@ -77,7 +89,7 @@ export const useCatalogTreeTableRowProps = (stream: SyncSchemaStream) => {
       );
     }
     return null;
-  }, [statusToDisplay]);
+  }, [isSelected, statusToDisplay]);
 
   const streamHeaderContentStyle = classNames(styles.streamHeaderContent, {
     [styles.added]: statusToDisplay === "added",
