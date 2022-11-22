@@ -1,5 +1,5 @@
+import { ColumnDef } from "@tanstack/react-table";
 import { render } from "@testing-library/react";
-import { CellProps } from "react-table";
 
 import { NextTable } from "./NextTable";
 
@@ -18,20 +18,20 @@ describe("<NextTable>", () => {
       { name: "2021", value: 200 },
     ];
 
-    const columns = [
+    const columns: Array<ColumnDef<Item>> = [
       {
-        Header: "Name",
-        accessor: "name",
-        Cell: ({ cell }: CellProps<Item>) => <strong>{cell.value}</strong>,
+        header: "Name",
+        accessorKey: "name",
+        cell: ({ getValue }) => <strong>{getValue<string>()}</strong>,
       },
       {
-        Header: "Value",
-        accessor: "value",
-        Cell: ({ cell }: CellProps<Item>) => <>{cell.value}</>,
+        header: "Value",
+        accessorKey: "value",
+        cell: ({ getValue }) => getValue<string>(),
       },
     ];
 
-    const { getByText, container } = render(<NextTable columns={columns} data={data} />);
+    const { getByText, container } = render(<NextTable<Item> columns={columns} data={data} />);
     expect(getByText(/2019/)).toBeInTheDocument();
     expect(getByText(/500/)).toBeInTheDocument();
 
