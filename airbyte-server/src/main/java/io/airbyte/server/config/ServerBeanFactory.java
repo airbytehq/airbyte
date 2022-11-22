@@ -102,7 +102,6 @@ import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
-import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.LogsHandler;
 import io.airbyte.server.handlers.OAuthHandler;
@@ -131,41 +130,14 @@ import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
 import org.slf4j.MDC;
 
 @Factory
+@Slf4j
 public class ServerBeanFactory {
-  /*
-   * @Singleton
-   *
-   * @Requires(env = WorkerMode.CONTROL_PLANE)
-   *
-   * @Named("componentClasses") public Set<Class<?>> componentClasses() { return Set.of(
-   * AttemptApiController.class, ConnectionApiController.class, DbMigrationApiController.class,
-   * DestinationApiController.class, DestinationDefinitionApiController.class,
-   * DestinationDefinitionSpecificationApiController.class, DestinationOauthApiController.class,
-   * HealthApiController.class, JobsApiController.class, LogsApiController.class,
-   * NotificationsApiController.class, OpenapiApiController.class, OperationApiController.class,
-   * SchedulerApiController.class, SourceApiController.class, SourceDefinitionApiController.class,
-   * SourceDefinitionSpecificationApiController.class, SourceOauthApiController.class,
-   * StateApiController.class, WebBackendApiController.class, WorkspaceApiController.class); }
-   *
-   * @Singleton
-   *
-   * @Requires(env = WorkerMode.CONTROL_PLANE)
-   *
-   * @Named("components") public Set<Object> components() { return Set.of( new CorsFilter(), new
-   * AttemptApiBinder(), new ConnectionApiBinder(), new DbMigrationBinder(), new
-   * DestinationApiBinder(), new DestinationDefinitionApiBinder(), new
-   * DestinationDefinitionSpecificationApiBinder(), new DestinationOauthApiBinder(), new
-   * HealthApiBinder(), new JobsApiBinder(), new LogsApiBinder(), new NotificationApiBinder(), new
-   * OpenapiApiBinder(), new OperationApiBinder(), new SchedulerApiBinder(), new SourceApiBinder(),
-   * new SourceDefinitionApiBinder(), new SourceDefinitionSpecificationApiBinder(), new
-   * SourceOauthApiBinder(), new StateApiBinder(), new WebBackendApiBinder(), new
-   * WorkspaceApiBinder()); }
-   */
 
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
@@ -334,8 +306,6 @@ public class ServerBeanFactory {
     final DestinationDefinitionsHandler destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, syncSchedulerClient,
         destinationHandler);
 
-    final HealthCheckHandler healthCheckHandler = new HealthCheckHandler(configRepository);
-
     final OAuthHandler oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient, secretsRepositoryReader);
 
     final SourceHandler sourceHandler = new SourceHandler(
@@ -403,8 +373,6 @@ public class ServerBeanFactory {
     DestinationDefinitionApiFactory.setValues(destinationDefinitionsHandler);
 
     DestinationDefinitionSpecificationApiFactory.setValues(schedulerHandler);
-
-    // HealthApiFactory.setValues(healthCheckHandler);
 
     DestinationOauthApiFactory.setValues(oAuthHandler);
 

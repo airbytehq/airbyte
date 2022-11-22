@@ -150,6 +150,7 @@ services:
       - MICRONAUT_ENVIRONMENTS=${WORKERS_MICRONAUT_ENVIRONMENTS}
     ports:
       - 8001
+      - 8042:8042
     volumes:
       - workspace:${WORKSPACE_ROOT}
       - data:${CONFIG_ROOT}
@@ -230,7 +231,6 @@ services:
     ports:
       - 8000:8000
       - 8001:8001
-      - 8042:8042
     environment:
       - BASIC_AUTH_USERNAME=${BASIC_AUTH_USERNAME}
       - BASIC_AUTH_PASSWORD=${BASIC_AUTH_PASSWORD}

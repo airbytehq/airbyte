@@ -7,6 +7,7 @@ package io.airbyte.server;
 import io.micronaut.runtime.event.ApplicationStartupEvent;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
 
 @Singleton
@@ -20,7 +21,17 @@ public class EventListener {
   public void startEmitters(final ApplicationStartupEvent event) {
     try {
       log.error("Starting server");
-      serverRunnable.start();
+
+      Executors.newFixedThreadPool(1).submit(() -> {
+        try {
+          serverRunnable.start();
+        } catch (final Exception e) {
+          throw new RuntimeException(e);
+        }
+      });
+      // serverRunnable.start();
+
+      log.error("Server Started");
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }

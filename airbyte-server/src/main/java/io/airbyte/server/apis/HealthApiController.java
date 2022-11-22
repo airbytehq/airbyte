@@ -12,10 +12,8 @@ import io.micronaut.http.annotation.Get;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import lombok.extern.slf4j.Slf4j;
 
 @Controller("/api/v1/health")
-@Slf4j
 public class HealthApiController {
 
   private final HealthCheckHandler healthCheckHandler;
@@ -33,8 +31,6 @@ public class HealthApiController {
                  message = "Successful operation",
                  response = HealthCheckRead.class)})
   public HealthCheckRead getHealthCheck() {
-    log.error("Hello hello ______________________");
-
     return healthCheckHandler.health();
   }
 

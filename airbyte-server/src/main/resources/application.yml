@@ -1,6 +1,12 @@
 micronaut:
   application:
     name: airbyte-server
+  security:
+    intercept-url-map:
+      - pattern: /**
+        httpMethod: GET
+        access:
+          - isAnonymous()
   server:
     port: 8042
 airbyte:

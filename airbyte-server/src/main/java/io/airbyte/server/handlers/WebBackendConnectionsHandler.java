@@ -81,6 +81,7 @@ public class WebBackendConnectionsHandler {
   private final OperationsHandler operationsHandler;
   private final EventRunner eventRunner;
   // todo (cgardens) - this handler should NOT have access to the db. only access via handler.
+  @Deprecated(forRemoval = true)
   private final ConfigRepository configRepository;
 
   public WebBackendWorkspaceStateResult getWorkspaceState(final WebBackendWorkspaceState webBackendWorkspaceState) throws IOException {
@@ -375,7 +376,7 @@ public class WebBackendConnectionsHandler {
         .sourceId(sourceId)
         .disableCache(true)
         .connectionId(connectionId);
-    SourceDiscoverSchemaRead schemaRead = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
+    final SourceDiscoverSchemaRead schemaRead = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
     return Optional.ofNullable(schemaRead);
   }
 
