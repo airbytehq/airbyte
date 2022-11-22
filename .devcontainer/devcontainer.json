@@ -3,7 +3,7 @@
   "dockerComposeFile": "docker-compose.yaml",
   "service": "develop",
   "workspaceFolder": "/workspace",
-  "postCreateCommand": "bash tools/bin/setup_base_venv.sh python3.9",
+  "postCreateCommand": "bash tools/bin/setup_base_venv.sh python3.9 && bash fetch-flow.sh",
   // Set default container specific settings.json values on container create.
   "settings": {
   },
@@ -15,5 +15,8 @@
     "streetsidesoftware.code-spell-checker"
   ],
   // This user matches the user that's created inside the build image.
-  "remoteUser": "flow"
+  "remoteUser": "flow",
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/workspace/flow-bin"
+  }
 }
