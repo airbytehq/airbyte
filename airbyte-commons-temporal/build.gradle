@@ -19,6 +19,8 @@ dependencies {
     implementation project(':airbyte-persistence:job-persistence')
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-worker-models')
+    implementation project(':airbyte-api')
+    implementation project(':airbyte-json-validation')
 
     testImplementation libs.temporal.testing
     // Needed to be able to mock final class

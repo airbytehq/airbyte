@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.5
+Low-code: Add jinja macro `format_datetime`
+
+## 0.9.4
+Low-code: Fix reference resolution for connector builder
+
+## 0.9.3
+Low-code: Avoid duplicate HTTP query in `simple_retriever`
+
+## 0.9.2
+Low-code: Make `default_paginator.page_token_option` optional
+
 ## 0.9.1
 Low-code: Fix filtering vars in `InterpolatedRequestInputProvider.eval_request_inputs`
 

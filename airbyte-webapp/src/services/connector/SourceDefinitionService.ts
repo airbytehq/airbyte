@@ -4,6 +4,7 @@ import { useConfig } from "config";
 import { SourceDefinitionService } from "core/domain/connector/SourceDefinitionService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
+import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
 
 import { SourceDefinitionCreate, SourceDefinitionRead } from "../../core/request/AirbyteClient";
@@ -16,7 +17,7 @@ export const sourceDefinitionKeys = {
   detail: (id: string) => [...sourceDefinitionKeys.all, "details", id] as const,
 };
 
-function useGetSourceDefinitionService(): SourceDefinitionService {
+export function useGetSourceDefinitionService(): SourceDefinitionService {
   const { apiUrl } = useConfig();
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
@@ -35,9 +36,10 @@ const useSourceDefinitionList = (): {
   sourceDefinitions: SourceDefinitionReadWithLatestTag[];
 } => {
   const service = useGetSourceDefinitionService();
+  const workspaceId = useCurrentWorkspaceId();
 
   return useSuspenseQuery(sourceDefinitionKeys.lists(), async () => {
-    const [definition, latestDefinition] = await Promise.all([service.list(), service.listLatest()]);
+    const [definition, latestDefinition] = await Promise.all([service.list(workspaceId), service.listLatest()]);
 
     const sourceDefinitions = definition.sourceDefinitions.map((source) => {
       const withLatest = latestDefinition.sourceDefinitions.find(
@@ -55,13 +57,18 @@ const useSourceDefinitionList = (): {
 };
 
 const useSourceDefinition = <T extends string | undefined>(
-  id: T
+  sourceDefinitionId: T
 ): T extends string ? SourceDefinitionRead : SourceDefinitionRead | undefined => {
   const service = useGetSourceDefinitionService();
+  const workspaceId = useCurrentWorkspaceId();
 
-  return useSuspenseQuery(sourceDefinitionKeys.detail(id || ""), () => service.get(id || ""), {
-    enabled: isDefined(id),
-  });
+  return useSuspenseQuery(
+    sourceDefinitionKeys.detail(sourceDefinitionId || ""),
+    () => service.get({ workspaceId, sourceDefinitionId: sourceDefinitionId || "" }),
+    {
+      enabled: isDefined(sourceDefinitionId),
+    }
+  );
 };
 
 const useCreateSourceDefinition = () => {
