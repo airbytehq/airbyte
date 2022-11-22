@@ -25,9 +25,10 @@ acceptance_tests:
           - name: custom_fields
             bypass_reason: "This stream in not available for our Test Account. 402 - Custom Fields are not available for free users or guests."
   full_refresh:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        timeout_seconds: 7200
+    # tests:
+    #   - config_path: "secrets/config.json"
+    #     configured_catalog_path: "integration_tests/configured_catalog.json"
+    #     timeout_seconds: 7200
+    bypass_reason: "Bypassed until dedicated sandbox account is up and running, because `two-sequential-reads` is not happy."
   incremental:
     bypass_reason: "Incremental syncs are not supported on this connector."
