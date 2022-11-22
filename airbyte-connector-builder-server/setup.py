@@ -14,7 +14,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="connector-builder-server",
-    version="0.40.21",
+    version="0.40.22",
     description="",
     long_description=README,
     author="Airbyte",
