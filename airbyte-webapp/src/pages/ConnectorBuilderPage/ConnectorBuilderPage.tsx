@@ -1,49 +1,40 @@
-import { useState } from "react";
+import { useIntl } from "react-intl";
 
-import { ControlLabels } from "components";
-import GroupControls from "components/GroupControls";
-import { DropDown } from "components/ui/DropDown";
+import { StreamTestingPanel } from "components/StreamTestingPanel";
+import { ResizablePanels } from "components/ui/ResizablePanels";
+import { YamlEditor } from "components/YamlEditor";
 
+import { useConnectorManifestSchema } from "services/connectorBuilder/ConnectorBuilderApiService";
 import { ConnectorBuilderStateProvider } from "services/connectorBuilder/ConnectorBuilderStateService";
-import { LabelInfo } from "views/Connector/ConnectorForm/components/Property/LabelInfo";
 
-interface Option {
-  label: string;
-  value: string;
-}
+import styles from "./ConnectorBuilderPage.module.scss";
 
 const ConnectorBuilderPageInner: React.FC = () => {
-  const options: Option[] = [
-    { label: "first", value: "first" },
-    { label: "second", value: "second" },
-    { label: "third", value: "third" },
-  ];
-  const [selected, setSelected] = useState(options[0].value);
-  const label = "Label";
-  const description = "Description";
+  const connectorManifestSchema = useConnectorManifestSchema();
+  console.log("connectorManifestSchema", connectorManifestSchema);
+
+  const { formatMessage } = useIntl();
 
   return (
-    <GroupControls
-      title={
-        <>
-          <ControlLabels
-            label={label}
-            infoTooltipContent={<LabelInfo label={label} description={description} />}
-            optional
-          />
-          <DropDown
-            options={options}
-            onChange={(newValue) => {
-              setSelected(newValue);
-            }}
-            value={options.find((option) => option.value === selected)}
-            name="name"
-          />
-        </>
-      }
-    >
-      <div>Inside</div>
-    </GroupControls>
+    <ResizablePanels
+      className={styles.container}
+      firstPanel={{
+        children: <YamlEditor />,
+        className: styles.leftPanel,
+        minWidth: 100,
+      }}
+      secondPanel={{
+        children: <StreamTestingPanel />,
+        className: styles.rightPanel,
+        flex: 0.33,
+        minWidth: 60,
+        overlay: {
+          displayThreshold: 325,
+          header: formatMessage({ id: "connectorBuilder.testConnector" }),
+          rotation: "counter-clockwise",
+        },
+      }}
+    />
   );
 };
 
