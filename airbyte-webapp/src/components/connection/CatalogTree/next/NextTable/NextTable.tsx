@@ -1,94 +1,53 @@
+import { ColumnDef, flexRender, useReactTable, getCoreRowModel } from "@tanstack/react-table";
 import classNames from "classnames";
-import React, { memo, useMemo } from "react";
-import { Column, SortingRule, useSortBy, useTable } from "react-table";
+import { PropsWithChildren } from "react";
 
 import styles from "./NextTable.module.scss";
 
-interface TableProps {
-  columns: ReadonlyArray<Column<Record<string, unknown>>>;
-  erroredRows?: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[];
+interface TableProps<TData> {
+  data: TData[];
+  columns: Array<ColumnDef<TData>>;
   onClickRow?: (data: unknown) => void;
-  sortBy?: Array<SortingRule<unknown>>;
 }
 
-export const NextTable: React.FC<TableProps> = memo(({ columns, data, onClickRow, sortBy }) => {
-  const [plugins, config] = useMemo(() => {
-    const pl = [];
-    const plConfig: Record<string, unknown> = {};
-
-    if (sortBy) {
-      pl.push(useSortBy);
-      plConfig.initialState = { sortBy };
-    }
-    return [pl, plConfig];
-  }, [sortBy]);
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
-    {
-      ...config,
-      columns,
-      data,
-    },
-    ...plugins
-  );
+export const NextTable = <TData,>({ columns, data, onClickRow }: PropsWithChildren<TableProps<TData>>) => {
+  const table = useReactTable({
+    columns,
+    data,
+    getCoreRowModel: getCoreRowModel(),
+  });
 
   return (
-    <table className={styles.table} {...getTableProps()}>
+    <table className={styles.table}>
       <thead>
-        {headerGroups.map((headerGroup, key) => (
-          <tr {...headerGroup.getHeaderGroupProps()} key={`table-header-${key}`}>
-            {headerGroup.headers.map((column, columnKey) => (
+        {table.getHeaderGroups().map((headerGroup) => (
+          <tr key={`table-header-${headerGroup.id}}`}>
+            {headerGroup.headers.map((header) => (
               <th
-                {...column.getHeaderProps([
-                  {
-                    className: classNames(
-                      styles.th,
-                      // @ts-expect-error will be fixed when with typings
-                      column.thClassName
-                    ),
-                  },
-                ])}
-                key={`table-column-${key}-${columnKey}`}
+                colSpan={header.colSpan}
+                className={classNames(styles.th, header.column.columnDef.meta?.thClassName)}
+                key={`table-column-${headerGroup.id}-${header.id}`}
               >
-                {column.render("Header")}
+                {flexRender(header.column.columnDef.header, header.getContext())}
               </th>
             ))}
           </tr>
         ))}
       </thead>
-      <tbody {...getTableBodyProps()}>
-        {rows.map((row) => {
-          prepareRow(row);
-          return (
-            <tr
-              {...row.getRowProps()}
-              className={styles.tr}
-              key={`table-row-${row.id}`}
-              onClick={() => onClickRow?.(row.original)}
-            >
-              {row.cells.map((cell, key) => {
-                return (
-                  <td
-                    {...cell.getCellProps([
-                      {
-                        className: classNames(
-                          styles.td,
-                          // @ts-expect-error will be fixed when with typings
-                          cell.column.tdClassName
-                        ),
-                      },
-                    ])}
-                    key={`table-cell-${row.id}-${key}`}
-                  >
-                    {cell.render("Cell")}
-                  </td>
-                );
-              })}
-            </tr>
-          );
-        })}
+      <tbody>
+        {table.getRowModel().rows.map((row) => (
+          <tr className={styles.tr} key={`table-row-${row.id}`} onClick={() => onClickRow?.(row.original)}>
+            {row.getVisibleCells().map((cell) => (
+              <td
+                className={classNames(styles.td, cell.column.columnDef.meta?.tdClassName)}
+                key={`table-cell-${row.id}-${cell.id}`}
+              >
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              </td>
+            ))}
+          </tr>
+        ))}
       </tbody>
     </table>
   );
-});
+};
