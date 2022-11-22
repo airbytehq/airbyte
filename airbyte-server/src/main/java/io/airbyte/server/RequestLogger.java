@@ -6,8 +6,13 @@ package io.airbyte.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.cloud.storage.HttpMethod;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
+import io.micronaut.http.HttpRequest;
+import io.micronaut.http.HttpResponse;
+import io.micronaut.http.filter.FilterChain;
+import io.micronaut.http.filter.HttpFilter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -24,6 +29,7 @@ import javax.ws.rs.core.Context;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.http.HttpStatus;
 import org.glassfish.jersey.message.MessageUtils;
+import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -44,7 +50,7 @@ import org.slf4j.MDC;
  * set the request body as a custom property in the request filter. This is where we create and
  * persist log lines that contain both the response status code and the original request body.
  */
-public class RequestLogger implements ContainerRequestFilter, ContainerResponseFilter {
+public class RequestLogger implements ContainerRequestFilter, ContainerResponseFilter, HttpFilter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequestLogger.class);
   private static final String REQUEST_BODY_PROPERTY = "requestBodyProperty";
@@ -159,5 +165,4 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
   private static boolean isValidJson(final String json) {
     return Jsons.tryDeserialize(json).isPresent();
   }
-
 }

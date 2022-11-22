@@ -8,7 +8,7 @@ micronaut:
         access:
           - isAnonymous()
   server:
-    port: 8042
+    port: 8080
 airbyte:
   deployment-mode: ${DEPLOYMENT_MODE:OSS}
   flyway:
