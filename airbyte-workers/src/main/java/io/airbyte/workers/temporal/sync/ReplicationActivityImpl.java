@@ -263,13 +263,15 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           Math.toIntExact(sourceLauncherConfig.getAttemptId()),
           sourceLauncherConfig.getDockerImage(),
           processFactory,
-          syncInput.getSourceResourceRequirements());
+          syncInput.getSourceResourceRequirements(),
+          sourceLauncherConfig.getIsCustomConnector());
       final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(
           destinationLauncherConfig.getJobId(),
           Math.toIntExact(destinationLauncherConfig.getAttemptId()),
           destinationLauncherConfig.getDockerImage(),
           processFactory,
-          syncInput.getDestinationResourceRequirements());
+          syncInput.getDestinationResourceRequirements(),
+          destinationLauncherConfig.getIsCustomConnector());
 
       // reset jobs use an empty source to induce resetting all data in destination.
       final AirbyteSource airbyteSource =

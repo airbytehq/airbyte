@@ -330,7 +330,7 @@ class SourceDefinitionsHandlerTest {
     final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
 
     when(uuidSupplier.get()).thenReturn(sourceDefinition.getSourceDefinitionId());
-    when(schedulerSynchronousClient.createGetSpecJob(imageName)).thenReturn(new SynchronousResponse<>(
+    when(schedulerSynchronousClient.createGetSpecJob(imageName, true)).thenReturn(new SynchronousResponse<>(
         sourceDefinition.getSpec(),
         SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
 
@@ -362,7 +362,7 @@ class SourceDefinitionsHandlerTest {
     final SourceDefinitionRead actualRead = sourceDefinitionsHandler.createPrivateSourceDefinition(create);
 
     assertEquals(expectedRead, actualRead);
-    verify(schedulerSynchronousClient).createGetSpecJob(imageName);
+    verify(schedulerSynchronousClient).createGetSpecJob(imageName, true);
     verify(configRepository)
         .writeStandardSourceDefinition(
             sourceDefinition
@@ -380,7 +380,7 @@ class SourceDefinitionsHandlerTest {
     final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
 
     when(uuidSupplier.get()).thenReturn(sourceDefinition.getSourceDefinitionId());
-    when(schedulerSynchronousClient.createGetSpecJob(imageName)).thenReturn(new SynchronousResponse<>(
+    when(schedulerSynchronousClient.createGetSpecJob(imageName, true)).thenReturn(new SynchronousResponse<>(
         sourceDefinition.getSpec(),
         SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
 
@@ -397,7 +397,7 @@ class SourceDefinitionsHandlerTest {
 
     assertThrows(UnsupportedProtocolVersionException.class, () -> sourceDefinitionsHandler.createPrivateSourceDefinition(create));
 
-    verify(schedulerSynchronousClient).createGetSpecJob(imageName);
+    verify(schedulerSynchronousClient).createGetSpecJob(imageName, true);
     verify(configRepository, never())
         .writeStandardSourceDefinition(
             sourceDefinition
@@ -413,7 +413,7 @@ class SourceDefinitionsHandlerTest {
     final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
 
     when(uuidSupplier.get()).thenReturn(sourceDefinition.getSourceDefinitionId());
-    when(schedulerSynchronousClient.createGetSpecJob(imageName)).thenReturn(new SynchronousResponse<>(
+    when(schedulerSynchronousClient.createGetSpecJob(imageName, true)).thenReturn(new SynchronousResponse<>(
         sourceDefinition.getSpec(),
         SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
 
@@ -449,7 +449,7 @@ class SourceDefinitionsHandlerTest {
     final SourceDefinitionRead actualRead = sourceDefinitionsHandler.createCustomSourceDefinition(customCreate);
 
     assertEquals(expectedRead, actualRead);
-    verify(schedulerSynchronousClient).createGetSpecJob(imageName);
+    verify(schedulerSynchronousClient).createGetSpecJob(imageName, true);
     verify(configRepository).writeCustomSourceDefinition(
         sourceDefinition
             .withReleaseDate(null)
@@ -468,7 +468,7 @@ class SourceDefinitionsHandlerTest {
     final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
 
     when(uuidSupplier.get()).thenReturn(sourceDefinition.getSourceDefinitionId());
-    when(schedulerSynchronousClient.createGetSpecJob(imageName)).thenReturn(new SynchronousResponse<>(
+    when(schedulerSynchronousClient.createGetSpecJob(imageName, true)).thenReturn(new SynchronousResponse<>(
         sourceDefinition.getSpec(),
         SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
 
@@ -489,7 +489,7 @@ class SourceDefinitionsHandlerTest {
 
     assertThrows(UnsupportedProtocolVersionException.class, () -> sourceDefinitionsHandler.createCustomSourceDefinition(customCreate));
 
-    verify(schedulerSynchronousClient).createGetSpecJob(imageName);
+    verify(schedulerSynchronousClient).createGetSpecJob(imageName, true);
     verify(configRepository, never()).writeCustomSourceDefinition(
         sourceDefinition
             .withReleaseDate(null)
@@ -514,7 +514,7 @@ class SourceDefinitionsHandlerTest {
     final ConnectorSpecification newSpec = new ConnectorSpecification()
         .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo2", "bar2")))
         .withProtocolVersion(newProtocolVersion);
-    when(schedulerSynchronousClient.createGetSpecJob(newImageName)).thenReturn(new SynchronousResponse<>(
+    when(schedulerSynchronousClient.createGetSpecJob(newImageName, false)).thenReturn(new SynchronousResponse<>(
         newSpec,
         SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
 
@@ -526,7 +526,7 @@ class SourceDefinitionsHandlerTest {
             new SourceDefinitionUpdate().sourceDefinitionId(this.sourceDefinition.getSourceDefinitionId()).dockerImageTag(newDockerImageTag));
 
     assertEquals(newDockerImageTag, sourceDefinitionRead.getDockerImageTag());
-    verify(schedulerSynchronousClient).createGetSpecJob(newImageName);
+    verify(schedulerSynchronousClient).createGetSpecJob(newImageName, false);
     verify(configRepository).writeStandardSourceDefinition(updatedSource);
 
     final Configs configs = new EnvConfigs();
@@ -550,7 +550,7 @@ class SourceDefinitionsHandlerTest {
     final ConnectorSpecification newSpec = new ConnectorSpecification()
         .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo2", "bar2")))
         .withProtocolVersion(newProtocolVersion);
-    when(schedulerSynchronousClient.createGetSpecJob(newImageName)).thenReturn(new SynchronousResponse<>(
+    when(schedulerSynchronousClient.createGetSpecJob(newImageName, false)).thenReturn(new SynchronousResponse<>(
         newSpec,
         SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
 
@@ -561,7 +561,7 @@ class SourceDefinitionsHandlerTest {
         .updateSourceDefinition(
             new SourceDefinitionUpdate().sourceDefinitionId(this.sourceDefinition.getSourceDefinitionId()).dockerImageTag(newDockerImageTag)));
 
-    verify(schedulerSynchronousClient).createGetSpecJob(newImageName);
+    verify(schedulerSynchronousClient).createGetSpecJob(newImageName, false);
     verify(configRepository, never()).writeStandardSourceDefinition(updatedSource);
   }
 

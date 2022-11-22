@@ -52,3 +52,9 @@ properties:
   state:
     description: optional current state of the connection
     "$ref": State.yaml
+  isSourceCustomConnector:
+    description: determine if the running image of the source is a custom connector.
+    type: boolean
+  isDestinationCustomConnector:
+    description: determine if the running image of the destination is a custom connector.
+    type: boolean

@@ -332,7 +332,8 @@ public class TemporalClient {
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
         .withJobId(jobId.toString())
         .withAttemptId((long) attempt)
-        .withDockerImage(config.getDockerImage());
+        .withDockerImage(config.getDockerImage())
+        .withIsCustomConnector(config.getIsCustomConnector());
     return execute(jobRunConfig,
         () -> getWorkflowStub(SpecWorkflow.class, TemporalJobType.GET_SPEC).run(jobRunConfig, launcherConfig));
 

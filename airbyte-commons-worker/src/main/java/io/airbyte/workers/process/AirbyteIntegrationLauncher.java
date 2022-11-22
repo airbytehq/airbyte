@@ -57,22 +57,23 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   private final ResourceRequirements resourceRequirement;
   private final FeatureFlags featureFlags;
 
+  private boolean useIsolatedNodePool;
+
   public AirbyteIntegrationLauncher(final String jobId,
                                     final int attempt,
                                     final String imageName,
                                     final ProcessFactory processFactory,
-                                    final ResourceRequirements resourceRequirement) {
+                                    final ResourceRequirements resourceRequirement,
+        final boolean useIsolatedNodePool) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.imageName = imageName;
     this.processFactory = processFactory;
     this.resourceRequirement = resourceRequirement;
     this.featureFlags = new EnvVariableFeatureFlags();
+    this.useIsolatedNodePool = useIsolatedNodePool;
   }
 
-  public boolean doesProcessNeedToBeIsolated() {
-    return false;
-  }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
@@ -84,7 +85,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         attempt,
         jobRoot,
         imageName,
-        false,
+        useIsolatedNodePool,
         false,
         Collections.emptyMap(),
         null,
@@ -105,7 +106,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         attempt,
         jobRoot,
         imageName,
-        false,
+        useIsolatedNodePool,
         false,
         ImmutableMap.of(configFilename, configContents),
         null,
@@ -127,7 +128,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         attempt,
         jobRoot,
         imageName,
-        false,
+        useIsolatedNodePool,
         false,
         ImmutableMap.of(configFilename, configContents),
         null,
@@ -173,7 +174,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         attempt,
         jobRoot,
         imageName,
-        false,
+        useIsolatedNodePool,
         false,
         files,
         null,
@@ -203,7 +204,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         attempt,
         jobRoot,
         imageName,
-        false,
+        useIsolatedNodePool,
         true,
         files,
         null,

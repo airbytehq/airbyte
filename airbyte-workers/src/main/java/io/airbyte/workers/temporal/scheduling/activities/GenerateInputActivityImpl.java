@@ -69,7 +69,9 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
             .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog())
             .withOperationSequence(resetConnection.getOperationSequence())
             .withResourceRequirements(resetConnection.getResourceRequirements())
-            .withState(resetConnection.getState());
+            .withState(resetConnection.getState())
+            .withIsSourceCustomConnector(resetConnection.getIsSourceCustomConnector())
+            .withIsDestinationCustomConnector(resetConnection.getIsDestinationCustomConnector());
       } else {
         throw new IllegalStateException(
             String.format("Unexpected config type %s for job %d. The only supported config types for this activity are (%s)",
@@ -84,13 +86,15 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withJobId(String.valueOf(jobId))
           .withAttemptId((long) attempt)
           .withDockerImage(config.getSourceDockerImage())
-          .withProtocolVersion(config.getSourceProtocolVersion());
+          .withProtocolVersion(config.getSourceProtocolVersion())
+          .withIsCustomConnector(config.getIsSourceCustomConnector());
 
       final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))
           .withAttemptId((long) attempt)
           .withDockerImage(config.getDestinationDockerImage())
-          .withProtocolVersion(config.getDestinationProtocolVersion());
+          .withProtocolVersion(config.getDestinationProtocolVersion())
+          .withIsCustomConnector(config.getIsDestinationCustomConnector());
 
       final StandardSyncInput syncInput = new StandardSyncInput()
           .withNamespaceDefinition(config.getNamespaceDefinition())

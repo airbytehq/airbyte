@@ -218,7 +218,7 @@ public class SourceDefinitionsHandler {
 
   private StandardSourceDefinition sourceDefinitionFromCreate(final SourceDefinitionCreate sourceDefinitionCreate)
       throws IOException {
-    final ConnectorSpecification spec = getSpecForImage(sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag());
+    final ConnectorSpecification spec = getSpecForImage(sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag(), true);
 
     final Version airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(spec.getProtocolVersion());
 
@@ -247,7 +247,7 @@ public class SourceDefinitionsHandler {
     final boolean specNeedsUpdate = !currentSourceDefinition.getDockerImageTag().equals(sourceDefinitionUpdate.getDockerImageTag())
         || sourceDefinitionUpdate.getDockerImageTag().equals(DEV_IMAGE_TAG);
     final ConnectorSpecification spec = specNeedsUpdate
-        ? getSpecForImage(currentSourceDefinition.getDockerRepository(), sourceDefinitionUpdate.getDockerImageTag())
+        ? getSpecForImage(currentSourceDefinition.getDockerRepository(), sourceDefinitionUpdate.getDockerImageTag(), currentSourceDefinition.getCustom())
         : currentSourceDefinition.getSpec();
     final ActorDefinitionResourceRequirements updatedResourceReqs = sourceDefinitionUpdate.getResourceRequirements() != null
         ? ApiPojoConverters.actorDefResourceReqsToInternal(sourceDefinitionUpdate.getResourceRequirements())
@@ -317,9 +317,9 @@ public class SourceDefinitionsHandler {
     deleteSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(definitionId));
   }
 
-  private ConnectorSpecification getSpecForImage(final String dockerRepository, final String imageTag) throws IOException {
+  private ConnectorSpecification getSpecForImage(final String dockerRepository, final String imageTag, final boolean isCustomConnector) throws IOException {
     final String imageName = DockerUtils.getTaggedImageName(dockerRepository, imageTag);
-    final SynchronousResponse<ConnectorSpecification> getSpecResponse = schedulerSynchronousClient.createGetSpecJob(imageName);
+    final SynchronousResponse<ConnectorSpecification> getSpecResponse = schedulerSynchronousClient.createGetSpecJob(imageName, isCustomConnector);
     return SpecFetcher.getSpecFromJob(getSpecResponse);
   }
 
