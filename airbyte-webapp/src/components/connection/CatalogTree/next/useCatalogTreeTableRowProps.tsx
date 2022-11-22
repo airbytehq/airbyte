@@ -43,12 +43,12 @@ export const useCatalogTreeTableRowProps = (stream: SyncSchemaStream) => {
       stream.config
     );
 
-    if (rowStatusChanged) {
+    if (!isStreamEnabled && !rowStatusChanged) {
+      return "disabled";
+    } else if (rowStatusChanged) {
       return isStreamEnabled ? "added" : "removed";
     } else if (rowChanged) {
       return "changed";
-    } else if (!isStreamEnabled && !rowStatusChanged) {
-      return "disabled";
     }
     return "unchanged";
   }, [initialValues.syncCatalog.streams, isStreamEnabled, stream.config, stream.stream]);
