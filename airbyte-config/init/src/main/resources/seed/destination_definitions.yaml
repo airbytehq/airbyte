@@ -24,6 +24,12 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/doris
   releaseStage: alpha
+- name: Apache Iceberg
+  destinationDefinitionId: df65a8f3-9908-451b-aa9b-445462803560
+  dockerRepository: airbyte/destination-iceberg
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/iceberg
+  releaseStage: alpha
 - name: AWS Datalake
   destinationDefinitionId: 99878c90-0fbd-46d3-9d98-ffde879d17fc
   dockerRepository: airbyte/destination-aws-datalake

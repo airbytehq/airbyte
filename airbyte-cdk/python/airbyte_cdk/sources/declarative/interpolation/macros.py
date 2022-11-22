@@ -96,5 +96,17 @@ def day_delta(num_days: int) -> str:
     return (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=num_days)).strftime("%Y-%m-%dT%H:%M:%S.%f%z")
 
 
-_macros_list = [now_local, now_utc, today_utc, timestamp, max, day_delta]
+def format_datetime(dt: Union[str, datetime.datetime], format: str):
+    """
+    Converts datetime to another format
+
+    Usage:
+    `"{{ format_datetime(config.start_date, '%Y-%m-%d') }}"`
+    """
+    if isinstance(dt, datetime.datetime):
+        return dt.strftime(format)
+    return parser.parse(dt).strftime(format)
+
+
+_macros_list = [now_local, now_utc, today_utc, timestamp, max, day_delta, format_datetime]
 macros = {f.__name__: f for f in _macros_list}
