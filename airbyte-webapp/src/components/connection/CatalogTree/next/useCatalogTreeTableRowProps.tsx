@@ -92,8 +92,8 @@ export const useCatalogTreeTableRowProps = (stream: SyncSchemaStream) => {
   }, [isSelected, statusToDisplay]);
 
   const streamHeaderContentStyle = classNames(styles.streamHeaderContent, {
-    [styles.added]: statusToDisplay === "added",
-    [styles.removed]: statusToDisplay === "removed",
+    [styles.added]: statusToDisplay === "added" && !isSelected,
+    [styles.removed]: statusToDisplay === "removed" && !isSelected,
     [styles.changed]: statusToDisplay === "changed" || isSelected,
     [styles.disabled]: statusToDisplay === "disabled",
     [styles.error]: hasError,
