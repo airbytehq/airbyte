@@ -43,7 +43,7 @@ class Products(Stream, IncrementalMixin):
 
     def generate_products(self) -> list[Dict]:
         dirname = os.path.dirname(os.path.realpath(__file__))
-        return read_json(os.path.join(dirname, "data", "products.json"))
+        return read_json(os.path.join(dirname, "record_data", "products.json"))
 
     def read_records(
         self,
