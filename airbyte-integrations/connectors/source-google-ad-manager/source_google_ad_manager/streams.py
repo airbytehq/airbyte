@@ -47,7 +47,7 @@ class BaseGoogleAdManagerReportStream(Stream, IncrementalMixin):
         if getattr(self, '_cursor_value', None):
             return {self.cursor_field: self._cursor_value}
         else:
-            return {self.cursor_field: self.start_date.strftime('%Y-%m-%d')}
+            return {self.cursor_field: self.today_date.strftime('%Y-%m-%d')}
 
     @property
     def cursor_field(self) -> str:
@@ -215,7 +215,7 @@ class AdUnitPerHourReportStream(BaseGoogleAdManagerReportStream):
         self.customer_name = customer_name
         last_date_pulled = pendulum_parse(self.state.get(self.cursor_field))
         last_date_pulled = last_date_pulled.subtract(days=1)  # just to make sure we are pulling the data for the last day, and have all the value corrected
-        logger.warn("the last date pulled is .....................", last_date_pulled)
+        logger.warn(f"the last date pulled is ..................... {last_date_pulled}")
         start_date = convert_time_to_dict(last_date_pulled)
         end_date = convert_time_to_dict(self.today_date)
         self.report_job = self.generate_report_query(start_date=start_date, end_date=end_date)

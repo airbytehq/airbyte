@@ -110,4 +110,4 @@ def test_stream_date_state(ad_unit_per_referrer_stream):
         ad_unit_per_referrer_stream (_type_): _description_
         test_date (_type_): _description_
     """
-    assert ad_unit_per_referrer_stream.state == {"date": ad_unit_per_referrer_stream.start_date.strftime('%Y-%m-%d')}
+    assert ad_unit_per_referrer_stream.state == {"date": ad_unit_per_referrer_stream.today_date.strftime('%Y-%m-%d')}
