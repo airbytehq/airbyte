@@ -331,8 +331,8 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .build();
 
     final var req = new io.fabric8.kubernetes.api.model.ResourceRequirements(
-        Map.of("cpu", Quantity.parse("3072m"), "memory", Quantity.parse("4096Mi")),
-        Map.of("cpu", Quantity.parse("2048m"), "memory", Quantity.parse("512Mi")));
+        Map.of("cpu", Quantity.parse("2048m"), "memory", Quantity.parse("4096Mi")),
+        Map.of("cpu", Quantity.parse("1024m"), "memory", Quantity.parse("512Mi")));
 
     final var mainContainer = new ContainerBuilder()
         .withName(KubePodProcess.MAIN_CONTAINER_NAME)
