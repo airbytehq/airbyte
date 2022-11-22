@@ -29,6 +29,13 @@ services:
       context: airbyte-workers
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
+  connector-builder-server:
+    image: airbyte/connector-builder-server:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-connector-builder-server
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
   server:
     image: airbyte/server:${VERSION}
     build:

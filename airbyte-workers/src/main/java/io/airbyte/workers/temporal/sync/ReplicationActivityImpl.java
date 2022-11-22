@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.sync;
 
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.REPLICATION_BYTES_SYNCED_KEY;
@@ -45,6 +46,7 @@ import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.Worker;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
@@ -96,6 +98,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private final AirbyteApiClient airbyteApiClient;
   private final AirbyteMessageSerDeProvider serDeProvider;
   private final AirbyteMessageVersionedMigratorFactory migratorFactory;
+  private final WorkerConfigs workerConfigs;
 
   public ReplicationActivityImpl(@Named("containerOrchestratorConfig") final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
                                  @Named("replicationProcessFactory") final ProcessFactory processFactory,
@@ -110,7 +113,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                  final TemporalUtils temporalUtils,
                                  final AirbyteApiClient airbyteApiClient,
                                  final AirbyteMessageSerDeProvider serDeProvider,
-                                 final AirbyteMessageVersionedMigratorFactory migratorFactory) {
+                                 final AirbyteMessageVersionedMigratorFactory migratorFactory,
+                                 @Named("replicationWorkerConfigs") final WorkerConfigs workerConfigs) {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
@@ -125,6 +129,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     this.airbyteApiClient = airbyteApiClient;
     this.serDeProvider = serDeProvider;
     this.migratorFactory = migratorFactory;
+    this.workerConfigs = workerConfigs;
   }
 
   // Marking task queue as nullable because we changed activity signature; thus runs started before
@@ -137,8 +142,9 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                       final IntegrationLauncherConfig destinationLauncherConfig,
                                       final StandardSyncInput syncInput,
                                       @Nullable final String taskQueue) {
-    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
-        destinationLauncherConfig.getDockerImage(), SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage()));
+    ApmTraceUtils
+        .addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
+            destinationLauncherConfig.getDockerImage(), SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage()));
     final ActivityExecutionContext context = Activity.getExecutionContext();
     return temporalUtils.withBackgroundHeartbeat(
         () -> {
@@ -164,7 +170,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                 destinationLauncherConfig,
                 jobRunConfig,
                 syncInput.getResourceRequirements(),
-                () -> context);
+                () -> context,
+                workerConfigs);
           } else {
             workerFactory =
                 getLegacyWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput);
@@ -269,7 +276,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage())
               ? new EmptyAirbyteSource(featureFlags.useStreamCapableState())
               : new DefaultAirbyteSource(sourceLauncher,
-                  new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, sourceLauncherConfig.getProtocolVersion()));
+                  new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, sourceLauncherConfig.getProtocolVersion(),
+                      DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER));
       MetricClientFactory.initialize(MetricEmittingApps.WORKER);
       final MetricClient metricClient = MetricClientFactory.getMetricClient();
       final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
@@ -280,7 +288,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           airbyteSource,
           new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
           new DefaultAirbyteDestination(destinationLauncher,
-              new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion()),
+              new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion(),
+                  DefaultAirbyteDestination.CONTAINER_LOG_MDC_BUILDER),
               new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
           new AirbyteMessageTracker(),
           new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
@@ -293,7 +302,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                                                                                                      final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                                      final JobRunConfig jobRunConfig,
                                                                                                                      final ResourceRequirements resourceRequirements,
-                                                                                                                     final Supplier<ActivityExecutionContext> activityContext)
+                                                                                                                     final Supplier<ActivityExecutionContext> activityContext,
+                                                                                                                     final WorkerConfigs workerConfigs)
       throws ApiException {
     final JobIdRequestBody id = new JobIdRequestBody();
     id.setId(Long.valueOf(jobRunConfig.getJobId()));
@@ -311,7 +321,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
         resourceRequirements,
         activityContext,
         serverPort,
-        temporalUtils);
+        temporalUtils,
+        workerConfigs);
   }
 
 }

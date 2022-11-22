@@ -1,11 +1,5 @@
 # Facebook Marketing
 
-:::warning
-We are currently experiencing an issue for anyone setting up a Facebook Marketing Source Connector who's Facebook Graph API has been updated to v15.0. Our team is blocked until the v15.0 SDK is made available, but once we have access to it we will begin working on a fix. 
-
-Thank you for your patience and understanding! 
-:::
-
 This page guides you through the process of setting up the Facebook Marketing source connector.
 
 ## Prerequisites
@@ -15,10 +9,10 @@ This page guides you through the process of setting up the Facebook Marketing so
 * (For Open Source) A [Facebook App](https://developers.facebook.com/apps/) with the Marketing API enabled
 <!-- /env:oss -->
 
-## Set up Facebook Marketing as a source in Airbyte 
+## Setup guide
 
 <!-- env:cloud -->
-### For Airbyte Cloud
+**For Airbyte Cloud:**
 
 To set up Facebook Marketing as a source in Airbyte Cloud:
 
@@ -27,25 +21,25 @@ To set up Facebook Marketing as a source in Airbyte Cloud:
 3. On the Set up the source page, select **Facebook Marketing** from the **Source type** dropdown.
 4. For Name, enter a name for the Facebook Marketing connector.
 5. Click **Authenticate your account** to authorize your [Meta for Developers](https://developers.facebook.com/) account. Airbyte will authenticate the account you are already logged in to. Make sure you are logged into the right account.
-6. For **Start Date**, enter the date in the YYYY-MM-DDTHR:MIN:S format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data. 
-    
+6. For **Start Date**, enter the date in the YYYY-MM-DDTHR:MIN:S format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+
     :::warning
     Insight tables are only able to pull data from 37 months. If you are syncing insight tables and your start date is older than 37 months, your sync will fail.
     :::
 
 7. For **End Date**, enter the date in the YYYY-MM-DDTHR:MIN:S format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
-8. For Account ID, enter your [Facebook Ad Account ID Number](https://www.facebook.com/business/help/1492627900875762). 
+8. For Account ID, enter your [Facebook Ad Account ID Number](https://www.facebook.com/business/help/1492627900875762).
 9. (Optional) Toggle the **Include Deleted** button to include data from deleted Campaigns, Ads, and AdSets.
-        
+
     :::info
     The Facebook Marketing API does not have a concept of deleting records in the same way that a database does. While you can archive or delete an ad campaign, the API maintains a record of the campaign. Toggling the **Include Deleted** button lets you replicate records for campaigns or ads even if they were archived or deleted from the Facebook platform.
     :::
 
 10. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
-11. (Optional) In the Custom Insights section, click **Add**. 
-    To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync. 
+11. (Optional) In the Custom Insights section, click **Add**.
+    To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync.
 
-    We recommend following the Facebook Marketing [documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns) to understand the breakdown limitations. Some fields can not be requested and many others only work when combined with specific fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field. 
+    We recommend following the Facebook Marketing [documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns) to understand the breakdown limitations. Some fields can not be requested and many others only work when combined with specific fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field.
 
     To configure Custom Insights:
 
@@ -67,11 +61,11 @@ To set up Facebook Marketing as a source in Airbyte Cloud:
 <!-- /env:cloud -->
 
 <!-- env:oss -->
-### For Airbyte Open Source
+**For Airbyte Open Source:**
 
 To set up Facebook Marketing as a source in Airbyte Open Source:
 
-1. Navigate to [Meta for Developers](https://developers.facebook.com/apps/) and [create an app](https://developers.facebook.com/docs/development/create-an-app/) with the app type Business. 
+1. Navigate to [Meta for Developers](https://developers.facebook.com/apps/) and [create an app](https://developers.facebook.com/docs/development/create-an-app/) with the app type Business.
 2. From your App’s dashboard, [setup the Marketing API](https://developers.facebook.com/docs/marketing-apis/get-started).
 3. Generate a Marketing API access token: From your App’s Dashboard, click **Marketing API** --> **Tools**. Select all the available token permissions (`ads_management`, `ads_read`, `read_insights`, `business_management`) and click **Get token**. Copy the generated token for later use.
 4. Request a rate increase limit: Facebook [heavily throttles](https://developers.facebook.com/docs/marketing-api/overview/authorization#limits) API tokens generated from Facebook Apps with the "Standard Access" tier (the default tier for new apps), making it infeasible to use the token for syncs with Airbyte. You'll need to request an upgrade to Advanced Access for your app on the following permissions:

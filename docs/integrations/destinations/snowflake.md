@@ -17,7 +17,7 @@ If you have any issues connecting with Airbyte Cloud please make sure that the l
 
 To determine whether a network policy is set on your account or for a specific user, execute the _SHOW PARAMETERS_ command.
 
-**Account** 
+**Account**
 
         SHOW PARAMETERS LIKE 'network_policy' IN ACCOUNT;
 
@@ -27,7 +27,9 @@ To determine whether a network policy is set on your account or for a specific u
 
 To read more please check official [Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#)
 
-## Step 1: Set up Airbyte-specific entities in Snowflake
+## Setup guide
+
+### Step 1: Set up Airbyte-specific entities in Snowflake
 
 To set up the Snowflake destination connector, you first need to create Airbyte-specific Snowflake entities (a warehouse, database, schema, user, and role) with the `OWNERSHIP` permission to write data into Snowflake, track costs pertaining to Airbyte, and control permissions at a granular level.
 
@@ -110,18 +112,18 @@ You can use the following script in a new [Snowflake worksheet](https://docs.sno
 
 3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowlight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html). Make sure to select the **All Queries** checkbox.
 
-## Step 2: Set up a data loading method
+### Step 2: Set up a data loading method
 
 By default, Airbyte uses Snowflake’s [Internal Stage](https://docs.snowflake.com/en/user-guide/data-load-local-file-system-create-stage.html) to load data. You can also load data using an [Amazon S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html), a [Google Cloud Storage bucket](https://cloud.google.com/storage/docs/introduction), or [Azure Blob Storage](https://docs.microsoft.com/en-us/azure/storage/blobs/).
 
 Make sure the database and schema have the `USAGE` privilege.
 
-### Using an Amazon S3 bucket
+#### Using an Amazon S3 bucket
 
 To use an Amazon S3 bucket, [create a new Amazon S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) with read/write access for Airbyte to stage data to Snowflake.
 
 
-### Using a Google Cloud Storage bucket
+#### Using a Google Cloud Storage bucket
 
 To use a Google Cloud Storage bucket:
 
@@ -148,12 +150,12 @@ To use a Google Cloud Storage bucket:
 
 4. Navigate to the Snowflake UI and run the script as a [Snowflake account admin](https://docs.snowflake.com/en/user-guide/security-access-control-considerations.html) using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowlight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html).
 
-### Using Azure Blob Storage
+#### Using Azure Blob Storage
 
 To use Azure Blob Storage, [create a storage account](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) and [container](https://docs.microsoft.com/en-us/rest/api/storageservices/create-container), and provide a [SAS Token](https://docs.snowflake.com/en/user-guide/data-load-azure-config.html#option-2-generating-a-sas-token) to access the container. We recommend creating a dedicated container for Airbyte to stage data to Snowflake. Airbyte needs read/write access to interact with this container.
 
 
-## Step 3: Set up Snowflake as a destination in Airbyte
+### Step 3: Set up Snowflake as a destination in Airbyte
 
 Navigate to the Airbyte UI to set up Snowflake as a destination. You can authenticate using username/password or OAuth 2.0:
 
@@ -275,8 +277,10 @@ Now that you have set up the Snowflake destination connector, check out the foll
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.4.38  | 2022-09-26 | [\#17115](https://github.com/airbytehq/airbyte/pull/17115) | Added connection string identifier                                                                                                                      |
-| 0.4.37  | 2022-09-21 | [\#16839](https://github.com/airbytehq/airbyte/pull/16839) | Update JDBC driver for Snowflake to 3.13.19                                                                                                                      |
+| 0.4.40  | 2022-11-11 | [\#19302](https://github.com/airbytehq/airbyte/pull/19302) | Set jdbc application env variable depends on env - airbyte_oss or airbyte_cloud                                                                     |
+| 0.4.39  | 2022-11-09 | [\#18970](https://github.com/airbytehq/airbyte/pull/18970) | Updated "check" connection method to handle more errors                                                                                             |
+| 0.4.38  | 2022-09-26 | [\#17115](https://github.com/airbytehq/airbyte/pull/17115) | Added connection string identifier                                                                                                                  |
+| 0.4.37  | 2022-09-21 | [\#16839](https://github.com/airbytehq/airbyte/pull/16839) | Update JDBC driver for Snowflake to 3.13.19                                                                                                         |
 | 0.4.36  | 2022-09-14 | [\#15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage                                                                                                                      |
 | 0.4.35  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields).                           |
 | 0.4.34  | 2022-07-23 | [\#14388](https://github.com/airbytehq/airbyte/pull/14388) | Add support for key pair authentication                                                                                                             |
