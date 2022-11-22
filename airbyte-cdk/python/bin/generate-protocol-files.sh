@@ -5,7 +5,9 @@ set -e
 [ -z "$ROOT_DIR" ] && exit 1
 
 YAML_DIR=airbyte-protocol/models/src/main/resources/airbyte_protocol
-OUTPUT_DIR=airbyte-cdk/python/airbyte_cdk/models
+OUTPUT_DIR=airbyte-integrations/bases/airbyte-protocol/airbyte_protocol/models
+
+CODESPACE_CONTAINERS="$(docker ps --filter "label=Type=codespaces" -q)"
 
 function main() {
   rm -rf "$ROOT_DIR/$OUTPUT_DIR"/*.py
@@ -15,10 +17,17 @@ function main() {
     filename_wo_ext=$(basename "$f" | cut -d . -f 1)
     echo "from .$filename_wo_ext import *" >> "$ROOT_DIR/$OUTPUT_DIR"/__init__.py
 
-    docker run --user "$(id -u):$(id -g)" -v "$ROOT_DIR":/airbyte airbyte/code-generator:dev \
-      --input "/airbyte/$YAML_DIR/$filename_wo_ext.yaml" \
-      --output "/airbyte/$OUTPUT_DIR/$filename_wo_ext.py" \
-      --disable-timestamp
+    if [[ -z "$CODESPACE_CONTAINERS" ]]; then
+      docker run --user "$(id -u):$(id -g)" -v "$ROOT_DIR":/airbyte airbyte/code-generator:dev \
+        --input "/airbyte/$YAML_DIR/$filename_wo_ext.yaml" \
+        --output "/airbyte/$OUTPUT_DIR/$filename_wo_ext.py" \
+        --disable-timestamp
+    else
+      docker run --user "$(id -u):$(id -g)" --volumes-from=$CODESPACE_CONTAINERS airbyte/code-generator:dev \
+        --input "/workspace/$YAML_DIR/$filename_wo_ext.yaml" \
+        --output "/workspace/$OUTPUT_DIR/$filename_wo_ext.py" \
+        --disable-timestamp
+    fi
   done
 }
 
