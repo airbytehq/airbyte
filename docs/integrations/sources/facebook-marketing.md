@@ -21,13 +21,13 @@ To set up Facebook Marketing as a source in Airbyte Cloud:
 3. On the Set up the source page, select **Facebook Marketing** from the **Source type** dropdown.
 4. For Name, enter a name for the Facebook Marketing connector.
 5. Click **Authenticate your account** to authorize your [Meta for Developers](https://developers.facebook.com/) account. Airbyte will authenticate the account you are already logged in to. Make sure you are logged into the right account.
-6. For **Start Date**, enter the date in the YYYY-MM-DDTHR:MIN:S format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+6. For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 
     :::warning
     Insight tables are only able to pull data from 37 months. If you are syncing insight tables and your start date is older than 37 months, your sync will fail.
     :::
 
-7. For **End Date**, enter the date in the YYYY-MM-DDTHR:MIN:S format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
+7. For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
 8. For Account ID, enter your [Facebook Ad Account ID Number](https://www.facebook.com/business/help/1492627900875762).
 9. (Optional) Toggle the **Include Deleted** button to include data from deleted Campaigns, Ads, and AdSets.
 
@@ -45,9 +45,9 @@ To set up Facebook Marketing as a source in Airbyte Cloud:
 
     1. For **Name**, enter a name for the insight. This will be used as the Airbyte stream name
     2. For **Fields**, enter a list of the fields you want to pull from the Facebook Marketing API.
-    3. For **End Date**, enter the date in the YYYY-MM-DDTHR:MIN:S format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
+    3. For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
     4. For **Breakdowns**, enter a list of the breakdowns you want to configure.
-    5. For **Start Date**, enter the date in the YYYY-MM-DDTHR:MIN:S format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+    5. For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
     6. For **Time Increment**, enter the number of days over which you want to aggregate statistics.
 
             For example, if you set this value to 7, Airbyte will report statistics as 7-day aggregates starting from the Start Date. Suppose the start and end dates are October 1st and October 30th, then the connector will output 5 records: 01 - 06, 07 - 13, 14 - 20, 21 - 27, and 28 - 30 (3 days only).  
