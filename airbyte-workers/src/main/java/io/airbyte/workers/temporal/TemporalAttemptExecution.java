@@ -20,6 +20,7 @@ import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,6 +42,8 @@ import org.slf4j.MDC;
 public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TemporalAttemptExecution.class);
+
+  private static final Random RANDOM = new Random();
 
   private final JobRunConfig jobRunConfig;
   private final Path jobRoot;
@@ -139,7 +142,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       }
 
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", airbyteVersion);
-      saveWorkflowIdForCancellation(airbyteApiClient);
+      retryWithJitter(airbyteApiClient);
 
       final Worker<INPUT, OUTPUT> worker = workerSupplier.get();
       final CompletableFuture<OUTPUT> outputFuture = new CompletableFuture<>();
@@ -162,6 +165,25 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       }
     } catch (final Exception e) {
       throw Activity.wrap(e);
+    }
+  }
+
+  private void retryWithJitter(final AirbyteApiClient airbyteApiClient) throws InterruptedException {
+    final int maxRetries = 3;
+    int currRetries = 0;
+    boolean needToSend = true;
+
+    while (needToSend && currRetries < maxRetries) {
+      try {
+        LOGGER.info("Attempt {} to save workflow id", currRetries);
+        saveWorkflowIdForCancellation(airbyteApiClient);
+        needToSend = false;
+      } catch (final ApiException e) {
+        LOGGER.info("Workflow ID attempt {} save error: {}", currRetries, e);
+        currRetries++;
+        // Sleep anywhere from 1 to 10 seconds.
+        Thread.sleep(Math.min(RANDOM.nextInt(11), 1) * 1000);
+      }
     }
   }
 
