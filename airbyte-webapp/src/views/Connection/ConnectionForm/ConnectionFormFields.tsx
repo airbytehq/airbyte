@@ -18,6 +18,7 @@ import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
+import { NonBreakingChangesPreferenceField } from "./components/NonBreakingChangesPreferenceField";
 import { useRefreshSourceSchemaWithConfirmationOnDirty } from "./components/refreshSourceSchemaWithConfirmationOnDirty";
 import { Section } from "./components/Section";
 import { SyncCatalogField } from "./components/SyncCatalogField";
@@ -46,6 +47,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
     clearFormChange(formId);
   });
 
+  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
   return (
     <>
       {/* FormChangeTracker is here as it has access to everything it needs without being repeated */}
@@ -53,6 +55,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
       <div className={styles.formContainer}>
         <Section title={<FormattedMessage id="connection.transfer" />}>
           <ScheduleField />
+          <Field name="nonBreakingChangesPreference" component={NonBreakingChangesPreferenceField} />
         </Section>
         <Section>
           <Heading as="h2" size="sm">

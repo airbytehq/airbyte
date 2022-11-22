@@ -19,6 +19,7 @@ import {
   DestinationSyncMode,
   Geography,
   NamespaceDefinitionType,
+  NonBreakingChangesPreference,
   OperationCreate,
   OperationRead,
   OperatorType,
@@ -36,6 +37,7 @@ export interface FormikConnectionFormValues {
   name?: string;
   scheduleType?: ConnectionScheduleType | null;
   scheduleData?: ConnectionScheduleData | null;
+  nonBreakingChangesPreference?: NonBreakingChangesPreference | null;
   prefix: string;
   syncCatalog: SyncSchema;
   namespaceDefinition?: NamespaceDefinitionType;
@@ -126,6 +128,10 @@ export const createConnectionValidationSchema = ({
             .defined("form.empty.error"),
         });
       }),
+      nonBreakingChangesPreference: yup
+        .string()
+        .oneOf([NonBreakingChangesPreference.disable, NonBreakingChangesPreference.ignore])
+        .required("form.empty.error"),
       namespaceDefinition: yup
         .string()
         .oneOf([
@@ -292,6 +298,7 @@ export const useInitialValues = (
       syncCatalog: initialSchema,
       scheduleType: connection.connectionId ? connection.scheduleType : ConnectionScheduleType.basic,
       scheduleData: connection.connectionId ? connection.scheduleData ?? null : DEFAULT_SCHEDULE,
+      nonBreakingChangesPreference: connection.nonBreakingChangesPreference ?? NonBreakingChangesPreference.disable,
       prefix: connection.prefix || "",
       namespaceDefinition: connection.namespaceDefinition || NamespaceDefinitionType.source,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
@@ -321,6 +328,7 @@ export const useInitialValues = (
     connection.name,
     connection.namespaceDefinition,
     connection.namespaceFormat,
+    connection.nonBreakingChangesPreference,
     connection.operations,
     connection.prefix,
     connection.scheduleData,

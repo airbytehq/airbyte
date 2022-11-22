@@ -148,6 +148,10 @@
   "connectionForm.defaultSyncMode.message": "Set how Airbyte reads from the source and writes to the destination, across all streams <b>when the option is available</b>.",
   "connectionForm.bulkEdit.cancel": "Cancel",
   "connectionForm.bulkEdit.apply": "Apply",
+  "connectionForm.nonBreakingChangesPreference.label": "Non-breaking schema updates detected*",
+  "connectionForm.nonBreakingChangesPreference.message": "When Airbyte detects that the schema of the source has changed, what would you like to do?",
+  "connectionForm.nonBreakingChangesPreference.ignore": "Ignore",
+  "connectionForm.nonBreakingChangesPreference.disable": "Pause sync",
 
   "connectorForm.authenticate": "Authenticate your {connector} account",
   "connectorForm.signInWithGoogle": "Sign in with Google",

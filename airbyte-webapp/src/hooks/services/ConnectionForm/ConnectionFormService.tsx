@@ -55,7 +55,6 @@ export const tidyConnectionFormValues = (
     // Have to set this to undefined to override the existing scheduleData
     formValues.scheduleData = undefined;
   }
-
   return formValues;
 };
 
