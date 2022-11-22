@@ -116,7 +116,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
     } else if (schema.hasNonNull("$ref") && schema.get("$ref").asText().startsWith("WellKnownTypes.json")) {
       return true;
     } else if (schema.hasNonNull("oneOf")) {
-      List<JsonNode> subschemas = getSubschemas(schema, "oneof");
+      List<JsonNode> subschemas = getSubschemas(schema, "oneOf");
       return subschemas.stream().anyMatch(
           subschema -> subschema.hasNonNull("$ref")
               && subschema.get("$ref").asText().startsWith("WellKnownTypes.json"));
@@ -207,8 +207,46 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
       String referenceType = schema.get("$ref").asText();
       ((ObjectNode) schema).removeAll();
       ((ObjectNode) schema).setAll(JsonSchemaReferenceTypes.REFERENCE_TYPE_TO_OLD_TYPE.get(referenceType));
-    } else {
-      // TODO handle oneOf
+    } else if (schema.hasNonNull("oneOf")) {
+      ObjectNode replacement = (ObjectNode) Jsons.emptyObject();
+      ArrayList<String> types = new ArrayList<>();
+      // TODO is this OK?
+      replacement.putPOJO("type", types);
+
+      boolean hasConflicts = false;
+      ArrayNode oneOfOptions = (ArrayNode) schema.get("oneOf");
+      for (JsonNode subschemaNode : oneOfOptions) {
+        if (subschemaNode instanceof ObjectNode subschema) {
+          downgradeSchema(subschema);
+
+          JsonNode subschemaType = subschema.get("type");
+          if (subschemaType != null) {
+            if (types.contains(subschemaType.asText())) {
+              hasConflicts = true;
+            } else if (subschemaType.isTextual()) {
+              types.add(subschemaType.asText());
+            }
+          }
+
+          Iterator<Entry<String, JsonNode>> fields = subschema.fields();
+          while (fields.hasNext()) {
+            Entry<String, JsonNode> field = fields.next();
+            if (replacement.has(field.getKey())) {
+              hasConflicts = true;
+            }
+          }
+          if (!hasConflicts) {
+            replacement.setAll(subschema);
+          }
+        } else {
+          // TODO maybe if this oneOf has boolean entries, then it's doing something funky, and we shouldn't attempt to combine it into a single type entry
+        }
+      }
+
+      if (!hasConflicts) {
+        ((ObjectNode) schema).removeAll();
+        ((ObjectNode) schema).setAll(replacement);
+      }
     }
   }
 

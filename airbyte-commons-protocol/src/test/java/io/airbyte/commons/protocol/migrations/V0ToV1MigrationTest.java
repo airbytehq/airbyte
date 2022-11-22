@@ -780,7 +780,7 @@ public class V0ToV1MigrationTest {
                                                           "nested_oneof": {
                                                             "oneOf": [
                                                               {"$ref": "WellKnownTypes.json#/definitions/String"},
-                                                              {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                                                              {"$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"}
                                                             ]
                                                           },
                                                           "nested_anyof": {
@@ -834,7 +834,7 @@ public class V0ToV1MigrationTest {
                                                      "nested_oneof": {
                                                        "oneOf": [
                                                          {"type": "string"},
-                                                         {"type": "integer"}
+                                                         {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"}
                                                        ]
                                                      },
                                                      "nested_anyof": {
@@ -1061,6 +1061,55 @@ public class V0ToV1MigrationTest {
                                                  "sneaky_singletype_field": {
                                                    "type": ["string", "null"],
                                                    "format": "date-time"
+                                                 }
+                                               }
+                                             }
+                                             """);
+      assertEquals(expectedSchema, downgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
+    }
+
+    // TODO better method name + field names
+    @Test
+    public void testSomething() {
+      JsonNode oldSchema = Jsons.deserialize("""
+                                                  {
+                                                    "type": "object",
+                                                    "properties": {
+                                                      "a": {
+                                                        "type": ["object", "array"],
+                                                        "properties": {
+                                                          "a": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                                                        },
+                                                        "items": [{"$ref": "WellKnownTypes.json#/definitions/String"}]
+                                                      },
+                                                      "b": {
+                                                        "oneOf": [
+                                                          true,
+                                                          {"$ref": "WellKnownTypes.json#/definitions/String"}
+                                                        ]
+                                                      }
+                                                    }
+                                                  }
+                                                  """);
+
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(oldSchema));
+
+      JsonNode expectedSchema = Jsons.deserialize("""
+                                             {
+                                               "type": "object",
+                                               "properties": {
+                                                 "a": {
+                                                   "type": ["object", "array"],
+                                                   "properties": {
+                                                     "a": {"type": "string"}
+                                                   },
+                                                   "items": [{"type": "string"}]
+                                                 },
+                                                 "b": {
+                                                   "oneOf": [
+                                                     true,
+                                                     {"type": "string"}
+                                                   ]
                                                  }
                                                }
                                              }
