@@ -80,14 +80,16 @@ public class WebBackendConnectionsHandler {
   private final SchedulerHandler schedulerHandler;
   private final OperationsHandler operationsHandler;
   private final EventRunner eventRunner;
+
   // todo (cgardens) - this handler should NOT have access to the db. only access via handler.
-  private final ConfigRepository configRepository;
+  @Deprecated
+  private final ConfigRepository configRepositoryDoNotUse;
 
   public WebBackendWorkspaceStateResult getWorkspaceState(final WebBackendWorkspaceState webBackendWorkspaceState) throws IOException {
     final var workspaceId = webBackendWorkspaceState.getWorkspaceId();
-    final var connectionCount = configRepository.countConnectionsForWorkspace(workspaceId);
-    final var destinationCount = configRepository.countDestinationsForWorkspace(workspaceId);
-    final var sourceCount = configRepository.countSourcesForWorkspace(workspaceId);
+    final var connectionCount = configRepositoryDoNotUse.countConnectionsForWorkspace(workspaceId);
+    final var destinationCount = configRepositoryDoNotUse.countDestinationsForWorkspace(workspaceId);
+    final var sourceCount = configRepositoryDoNotUse.countSourcesForWorkspace(workspaceId);
 
     return new WebBackendWorkspaceStateResult()
         .hasConnections(connectionCount > 0)
@@ -104,7 +106,7 @@ public class WebBackendConnectionsHandler {
 
     // passing 'false' so that deleted connections are not included
     final List<StandardSync> standardSyncs =
-        configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(), false);
+        configRepositoryDoNotUse.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(), false);
     final Map<UUID, SourceRead> sourceReadById =
         getSourceReadById(standardSyncs.stream().map(StandardSync::getSourceId).toList());
     final Map<UUID, DestinationRead> destinationReadById =
@@ -115,7 +117,7 @@ public class WebBackendConnectionsHandler {
         getRunningJobByConnectionId(standardSyncs.stream().map(StandardSync::getConnectionId).toList());
 
     final Map<UUID, ActorCatalogFetchEvent> newestFetchEventsByActorId =
-        configRepository.getMostRecentActorCatalogFetchEventForSources(new ArrayList<>());
+        configRepositoryDoNotUse.getMostRecentActorCatalogFetchEventForSources(new ArrayList<>());
 
     final List<WebBackendConnectionListItem> connectionItems = Lists.newArrayList();
 
@@ -144,7 +146,7 @@ public class WebBackendConnectionsHandler {
   }
 
   private Map<UUID, SourceRead> getSourceReadById(final List<UUID> sourceIds) throws IOException {
-    final List<SourceRead> sourceReads = configRepository.getSourceAndDefinitionsFromSourceIds(sourceIds)
+    final List<SourceRead> sourceReads = configRepositoryDoNotUse.getSourceAndDefinitionsFromSourceIds(sourceIds)
         .stream()
         .map(sourceAndDefinition -> SourceHandler.toSourceRead(sourceAndDefinition.source(), sourceAndDefinition.definition()))
         .toList();
@@ -153,7 +155,7 @@ public class WebBackendConnectionsHandler {
   }
 
   private Map<UUID, DestinationRead> getDestinationReadById(final List<UUID> destinationIds) throws IOException {
-    final List<DestinationRead> destinationReads = configRepository.getDestinationAndDefinitionsFromDestinationIds(destinationIds)
+    final List<DestinationRead> destinationReads = configRepositoryDoNotUse.getDestinationAndDefinitionsFromDestinationIds(destinationIds)
         .stream()
         .map(destinationAndDefinition -> DestinationHandler.toDestinationRead(destinationAndDefinition.destination(),
             destinationAndDefinition.definition()))
@@ -181,7 +183,7 @@ public class WebBackendConnectionsHandler {
     });
 
     final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
-        configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
+        configRepositoryDoNotUse.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
 
     final SchemaChange schemaChange = getSchemaChange(connectionRead, currentSourceCatalogId, mostRecentFetchEvent);
 
@@ -375,7 +377,7 @@ public class WebBackendConnectionsHandler {
         .sourceId(sourceId)
         .disableCache(true)
         .connectionId(connectionId);
-    SourceDiscoverSchemaRead schemaRead = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
+    final SourceDiscoverSchemaRead schemaRead = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
     return Optional.ofNullable(schemaRead);
   }
 
@@ -469,7 +471,7 @@ public class WebBackendConnectionsHandler {
     // before doing any updates, fetch the existing catalog so that it can be diffed
     // with the final catalog to determine which streams might need to be reset.
     final ConfiguredAirbyteCatalog oldConfiguredCatalog =
-        configRepository.getConfiguredCatalogForConnection(connectionId);
+        configRepositoryDoNotUse.getConfiguredCatalogForConnection(connectionId);
 
     final List<UUID> newAndExistingOperationIds = createOrUpdateOperations(connectionRead, webBackendConnectionPatch);
 
@@ -528,7 +530,7 @@ public class WebBackendConnectionsHandler {
         final ConnectionStateType stateType = getStateType(connectionIdRequestBody);
 
         if (stateType == ConnectionStateType.LEGACY || stateType == ConnectionStateType.NOT_SET) {
-          streamsToReset = configRepository.getAllStreamsForConnection(connectionId);
+          streamsToReset = configRepositoryDoNotUse.getAllStreamsForConnection(connectionId);
         }
         eventRunner.resetConnection(
             connectionId,
