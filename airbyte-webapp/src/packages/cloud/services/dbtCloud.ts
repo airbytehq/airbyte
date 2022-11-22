@@ -11,7 +11,14 @@
 import isEmpty from "lodash/isEmpty";
 import { useMutation, useQuery } from "react-query";
 
-import { OperatorType, WebBackendConnectionRead, OperationRead, WebhookConfigRead } from "core/request/AirbyteClient";
+import {
+  OperatorType,
+  WebBackendConnectionRead,
+  OperationRead,
+  OperatorWebhookWebhookType,
+  WebhookConfigRead,
+  WorkspaceRead,
+} from "core/request/AirbyteClient";
 import { useWebConnectionService } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import {
@@ -25,63 +32,56 @@ import { useUpdateWorkspace } from "services/workspaces/WorkspacesService";
 import { useConfig } from "./config";
 
 export interface DbtCloudJob {
-  account: string;
-  job: string;
+  accountId: number;
+  jobId: number;
   operationId?: string;
   jobName?: string;
 }
 export type { DbtCloudJobInfo } from "packages/cloud/lib/domain/dbtCloud/api";
-const dbtCloudDomain = "https://cloud.getdbt.com";
 const webhookConfigName = "dbt cloud";
-const executionBody = `{"cause": "airbyte"}`;
-const jobName = (t: DbtCloudJob) => `${t.account}/${t.job}`;
+const jobName = (t: DbtCloudJob) => `${t.accountId}/${t.jobId}`;
 
 const isDbtWebhookConfig = (webhookConfig: WebhookConfigRead) => !!webhookConfig.name?.includes("dbt");
 
-export const toDbtCloudJob = (operationOrCloudJob: OperationRead | DbtCloudJobInfo): DbtCloudJob => {
-  if ("operationId" in operationOrCloudJob) {
-    const { operationId } = operationOrCloudJob;
-    const { executionUrl } = operationOrCloudJob.operatorConfiguration.webhook || {};
-
-    const matches = (executionUrl || "").match(/\/accounts\/([^/]+)\/jobs\/([^]+)\/run/);
-    if (!matches) {
-      throw new Error(`Cannot extract dbt cloud job params from executionUrl ${executionUrl}`);
-    } else {
-      const [, account, job] = matches;
-
-      return {
-        account,
-        job,
-        operationId,
-      };
-    }
-  } else {
-    const { accountId, jobId, jobName } = operationOrCloudJob;
-    return { account: `${accountId}`, job: `${jobId}`, jobName };
+export const toDbtCloudJob = (operationRead: OperationRead): DbtCloudJob => {
+  if (operationRead.operatorConfiguration.webhook?.webhookType === "dbtCloud") {
+    const dbtCloud = operationRead.operatorConfiguration.webhook.dbtCloud as DbtCloudJob;
+    return {
+      accountId: dbtCloud.accountId,
+      jobId: dbtCloud.jobId,
+    };
   }
+  throw new Error(
+    `Cannot convert operationRead of type ${operationRead.operatorConfiguration.operatorType} to DbtCloudJob`
+  );
 };
 
 const isDbtCloudJob = (operation: OperationRead): boolean =>
   operation.operatorConfiguration.operatorType === OperatorType.webhook;
 
 export const isSameJob = (remoteJob: DbtCloudJobInfo, savedJob: DbtCloudJob): boolean =>
-  savedJob.account === `${remoteJob.accountId}` && savedJob.job === `${remoteJob.jobId}`;
+  savedJob.accountId === remoteJob.accountId && savedJob.jobId === remoteJob.jobId;
+
+type ServiceToken = string;
 
 export const useSubmitDbtCloudIntegrationConfig = () => {
   const { workspaceId } = useCurrentWorkspace();
   const { mutateAsync: updateWorkspace } = useUpdateWorkspace();
 
-  return useMutation(async (authToken: string) => {
-    await updateWorkspace({
-      workspaceId,
-      webhookConfigs: [
-        {
-          name: webhookConfigName,
-          authToken,
-        },
-      ],
-    });
-  });
+  return useMutation<WorkspaceRead, Error, ServiceToken>(
+    ["submitWorkspaceDbtCloudToken", workspaceId],
+    async (authToken: string) => {
+      return await updateWorkspace({
+        workspaceId,
+        webhookConfigs: [
+          {
+            name: webhookConfigName,
+            authToken,
+          },
+        ],
+      });
+    }
+  );
 };
 
 export const useDbtIntegration = (connection: WebBackendConnectionRead) => {
@@ -99,9 +99,6 @@ export const useDbtIntegration = (connection: WebBackendConnectionRead) => {
 
   const { mutateAsync, isLoading } = useMutation({
     mutationFn: (jobs: DbtCloudJob[]) => {
-      // TODO dynamically use the workspace's configured dbt cloud domain when it gets returned by backend
-      const urlForJob = (job: DbtCloudJob) => `${dbtCloudDomain}/api/v2/accounts/${job.account}/jobs/${job.job}/run/`;
-
       return connectionService.update({
         connectionId: connection.connectionId,
         operations: [
@@ -113,10 +110,13 @@ export const useDbtIntegration = (connection: WebBackendConnectionRead) => {
             operatorConfiguration: {
               operatorType: OperatorType.webhook,
               webhook: {
-                executionUrl: urlForJob(job),
+                webhookType: OperatorWebhookWebhookType.dbtCloud,
+                dbtCloud: {
+                  jobId: job.jobId,
+                  accountId: job.accountId,
+                },
                 // if `hasDbtIntegration` is true, webhookConfigId is guaranteed to exist
                 ...(webhookConfigId ? { webhookConfigId } : {}),
-                executionBody,
               },
             },
           })),
