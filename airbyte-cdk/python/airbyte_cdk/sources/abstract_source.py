@@ -276,7 +276,9 @@ class AbstractSource(Source, ABC):
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
         slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
-        logger.debug(f"Processing stream slices for {configured_stream.stream.name} (sync_mode: full_refresh)", extra={"stream_slices": slices})
+        logger.debug(
+            f"Processing stream slices for {configured_stream.stream.name} (sync_mode: full_refresh)", extra={"stream_slices": slices}
+        )
         total_records_counter = 0
         for _slice in slices:
             logger.debug("Processing stream slice", extra={"slice": _slice})
