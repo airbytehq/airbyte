@@ -21,6 +21,7 @@ import io.temporal.activity.ActivityExecutionContext;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -142,7 +143,10 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       }
 
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", airbyteVersion);
-      retryWithJitter(airbyteApiClient);
+      retryWithJitter(() -> {
+        saveWorkflowIdForCancellation(airbyteApiClient);
+        return null;
+      });
 
       final Worker<INPUT, OUTPUT> worker = workerSupplier.get();
       final CompletableFuture<OUTPUT> outputFuture = new CompletableFuture<>();
@@ -168,17 +172,18 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     }
   }
 
-  private void retryWithJitter(final AirbyteApiClient airbyteApiClient) throws InterruptedException {
+  public static <T> T retryWithJitter(final Callable<T> call) {
     final int maxRetries = 4;
     int currRetries = 0;
     boolean needToSend = true;
 
+    T data = null;
     while (needToSend && currRetries < maxRetries) {
       try {
         LOGGER.info("Attempt {} to save workflow id", currRetries);
-        saveWorkflowIdForCancellation(airbyteApiClient);
+        data = call.call();
         needToSend = false;
-      } catch (final ApiException e) {
+      } catch (final Exception e) {
         LOGGER.info("Workflow ID attempt {} save error: {}", currRetries, e);
         currRetries++;
         // Sleep anywhere from 1 to 10 seconds.
@@ -189,10 +194,14 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
           backoffTime = 10 * 60 * 1000;
         }
 
-        Thread.sleep(backoffTime);
-
+        try {
+          Thread.sleep(backoffTime);
+        } catch (InterruptedException ex) {
+          throw new RuntimeException(ex);
+        }
       }
     }
+    return data;
   }
 
   private void saveWorkflowIdForCancellation(final AirbyteApiClient airbyteApiClient) throws ApiException {

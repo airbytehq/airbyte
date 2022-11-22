@@ -10,11 +10,11 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
-import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.AttemptNormalizationStatusRead;
 import io.airbyte.api.client.model.generated.AttemptNormalizationStatusReadList;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
 import io.airbyte.metrics.lib.ApmTraceUtils;
+import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.temporal.activity.Activity;
 import jakarta.inject.Singleton;
 import java.util.Comparator;
@@ -48,8 +48,9 @@ public class NormalizationSummaryCheckActivityImpl implements NormalizationSumma
 
     final AttemptNormalizationStatusReadList AttemptNormalizationStatusReadList;
     try {
-      AttemptNormalizationStatusReadList = airbyteApiClient.getJobsApi().getAttemptNormalizationStatusesForJob(new JobIdRequestBody().id(jobId));
-    } catch (final ApiException e) {
+      AttemptNormalizationStatusReadList = TemporalAttemptExecution.retryWithJitter(
+          () -> airbyteApiClient.getJobsApi().getAttemptNormalizationStatusesForJob(new JobIdRequestBody().id(jobId)));
+    } catch (final Exception e) {
       throw Activity.wrap(e);
     }
     final AtomicLong totalRecordsCommitted = new AtomicLong(0L);

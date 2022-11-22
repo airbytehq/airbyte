@@ -307,7 +307,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
       throws ApiException {
     final JobIdRequestBody id = new JobIdRequestBody();
     id.setId(Long.valueOf(jobRunConfig.getJobId()));
-    final var jobInfo = airbyteApiClient.getJobsApi().getJobInfoLight(id);
+    final var jobInfo = TemporalAttemptExecution.retryWithJitter(() -> airbyteApiClient.getJobsApi().getJobInfoLight(id));
     LOGGER.info("received response from from jobsApi.getJobInfoLight: {}", jobInfo);
     final var jobScope = jobInfo.getJob().getConfigId();
     final var connectionId = UUID.fromString(jobScope);

@@ -12,7 +12,6 @@ import static io.airbyte.workers.helper.StateConverter.convertClientStateTypeToI
 import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
-import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionState;
 import io.airbyte.api.client.model.generated.ConnectionStateCreateOrUpdate;
@@ -27,6 +26,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.workers.helper.StateConverter;
+import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Map;
@@ -54,8 +54,9 @@ public class PersistStateActivityImpl implements PersistStateActivity {
       try {
         final Optional<StateWrapper> maybeStateWrapper = StateMessageHelper.getTypedState(state.getState(), featureFlags.useStreamCapableState());
         if (maybeStateWrapper.isPresent()) {
-          final ConnectionState previousState = airbyteApiClient.getStateApi()
-              .getState(new ConnectionIdRequestBody().connectionId(connectionId));
+          final ConnectionState previousState =
+              TemporalAttemptExecution
+                  .retryWithJitter(() -> airbyteApiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
           if (featureFlags.needStateValidation() && previousState != null) {
             final StateType newStateType = maybeStateWrapper.get().getStateType();
             final StateType prevStateType = convertClientStateTypeToInternal(previousState.getStateType());
@@ -65,12 +66,15 @@ public class PersistStateActivityImpl implements PersistStateActivity {
             }
           }
 
-          airbyteApiClient.getStateApi().createOrUpdateState(
-              new ConnectionStateCreateOrUpdate()
-                  .connectionId(connectionId)
-                  .connectionState(StateConverter.toClient(connectionId, maybeStateWrapper.orElse(null))));
+          TemporalAttemptExecution.retryWithJitter(() -> {
+            airbyteApiClient.getStateApi().createOrUpdateState(
+                new ConnectionStateCreateOrUpdate()
+                    .connectionId(connectionId)
+                    .connectionState(StateConverter.toClient(connectionId, maybeStateWrapper.orElse(null))));
+            return null;
+          });
         }
-      } catch (final ApiException e) {
+      } catch (final Exception e) {
         throw new RuntimeException(e);
       }
       return true;
