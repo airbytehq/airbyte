@@ -1,18 +1,19 @@
 {
-	"name": "Development",
-	"dockerComposeFile": "docker-compose.yaml",
-	"service": "develop",
-	"workspaceFolder": "/workspace",
-	// Set default container specific settings.json values on container create.
-	"settings": {
-	},
-	// Add the IDs of extensions you want installed when the container is created.
-	"extensions": [
-		// YAML language & schema support.
-		"redhat.vscode-yaml",
-		// Spell checking.
-		"streetsidesoftware.code-spell-checker"
-	],
-	// This user matches the user that's created inside the build image.
-	"remoteUser": "flow"
+  "name": "Development",
+  "dockerComposeFile": "docker-compose.yaml",
+  "service": "develop",
+  "workspaceFolder": "/workspace",
+  "postCreateCommand": "bash tools/bin/setup_base_venv.sh python3.9",
+  // Set default container specific settings.json values on container create.
+  "settings": {
+  },
+  // Add the IDs of extensions you want installed when the container is created.
+  "extensions": [
+    // YAML language & schema support.
+    "redhat.vscode-yaml",
+    // Spell checking.
+    "streetsidesoftware.code-spell-checker"
+  ],
+  // This user matches the user that's created inside the build image.
+  "remoteUser": "flow"
 }

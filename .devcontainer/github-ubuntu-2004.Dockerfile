@@ -102,8 +102,6 @@ RUN useradd flow --create-home --shell /bin/bash \
 COPY docker-debian.sh /tmp
 RUN bash /tmp/docker-debian.sh true /var/run/docker-host.sock /var/run/docker.sock flow false
 
-RUN python3.9 -m venv --without-pip .venv
-
 # VS Code overrides ENTRYPOINT and CMD when executing `docker run` by default.
 # Setting the ENTRYPOINT to docker-init.sh will configure non-root access to
 # the Docker socket if "overrideCommand": false is set in devcontainer.json.
