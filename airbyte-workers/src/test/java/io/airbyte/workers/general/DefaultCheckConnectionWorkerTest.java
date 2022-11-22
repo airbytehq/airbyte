@@ -37,8 +37,10 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled
 @SuppressWarnings({"PMD.JUnitTestsShouldIncludeAssert", "PMD.UnusedLocalVariable"})
 class DefaultCheckConnectionWorkerTest {
 
