@@ -148,6 +148,8 @@ jobs:
             --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
           org.gradle.workers.max=8
           org.gradle.vfs.watch=false
+          org.gradle.parallel=true
+          org.gradle.caching=true
           EOF
 
       - name: Format
@@ -238,6 +240,8 @@ jobs:
             --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
           org.gradle.workers.max=8
           org.gradle.vfs.watch=false
+          org.gradle.parallel=true
+          org.gradle.caching=true
           EOF
 
       - name: Generate Template scaffold
@@ -387,6 +391,8 @@ jobs:
             --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
           org.gradle.workers.max=8
           org.gradle.vfs.watch=false
+          org.gradle.parallel=true
+          org.gradle.caching=true
           EOF
 
       - name: Build :airbyte-webapp
@@ -442,6 +448,8 @@ jobs:
             --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
           org.gradle.workers.max=8
           org.gradle.vfs.watch=false
+          org.gradle.parallel=true
+          org.gradle.caching=true
           EOF
 
       - name: Build Platform Docker Images
@@ -546,6 +554,8 @@ jobs:
             --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
           org.gradle.workers.max=8
           org.gradle.vfs.watch=false
+          org.gradle.parallel=true
+          org.gradle.caching=true
           EOF
 
       - name: Format
@@ -738,6 +748,8 @@ jobs:
             --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
           org.gradle.workers.max=8
           org.gradle.vfs.watch=false
+          org.gradle.parallel=true
+          org.gradle.caching=true
           EOF
 
       - name: Create cluster config file
@@ -1000,6 +1012,8 @@ jobs:
             --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
           org.gradle.workers.max=8
           org.gradle.vfs.watch=false
+          org.gradle.parallel=true
+          org.gradle.caching=true
           EOF
 
       - name: Build Platform Docker Images
