@@ -709,7 +709,7 @@ public class V0ToV1MigrationTest {
                                              }
                                              """);
 
-      io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.downgrade(createCatalogMessage(oldSchema));
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(oldSchema));
 
       JsonNode expectedSchema = Jsons.deserialize("""
                                                   {
@@ -752,7 +752,318 @@ public class V0ToV1MigrationTest {
                                                     }
                                                   }
                                                   """);
-      assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
+      assertEquals(expectedSchema, downgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
+    }
+
+    @Test
+    public void testDowngradeNestedFields() {
+      JsonNode oldSchema = Jsons.deserialize("""
+                                                  {
+                                                    "type": "object",
+                                                    "properties": {
+                                                      "basic_array": {
+                                                        "items": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                                                      },
+                                                      "tuple_array": {
+                                                        "items": [
+                                                          {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                          {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                                                        ],
+                                                        "additionalItems": {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                        "contains": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                                                      },
+                                                      "nested_object": {
+                                                        "properties": {
+                                                          "id": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+                                                          "nested_oneof": {
+                                                            "oneOf": [
+                                                              {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                              {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                                                            ]
+                                                          },
+                                                          "nested_anyof": {
+                                                            "anyOf": [
+                                                              {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                              {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                                                            ]
+                                                          },
+                                                          "nested_allof": {
+                                                            "allOf": [
+                                                              {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                              {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                                                            ]
+                                                          },
+                                                          "nested_not": {
+                                                            "not": [
+                                                              {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                              {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                                                            ]
+                                                          }
+                                                        },
+                                                        "patternProperties": {
+                                                          "integer_.*": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                                                        },
+                                                        "additionalProperties": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                                                      }
+                                                    }
+                                                  }
+                                                  """);
+
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(oldSchema));
+
+      JsonNode expectedSchema = Jsons.deserialize("""
+                                             {
+                                               "type": "object",
+                                               "properties": {
+                                                 "basic_array": {
+                                                   "items": {"type": "string"}
+                                                 },
+                                                 "tuple_array": {
+                                                   "items": [
+                                                     {"type": "string"},
+                                                     {"type": "integer"}
+                                                   ],
+                                                   "additionalItems": {"type": "string"},
+                                                   "contains": {"type": "integer"}
+                                                 },
+                                                 "nested_object": {
+                                                   "properties": {
+                                                     "id": {"type": "integer"},
+                                                     "nested_oneof": {
+                                                       "oneOf": [
+                                                         {"type": "string"},
+                                                         {"type": "integer"}
+                                                       ]
+                                                     },
+                                                     "nested_anyof": {
+                                                       "anyOf": [
+                                                         {"type": "string"},
+                                                         {"type": "integer"}
+                                                       ]
+                                                     },
+                                                     "nested_allof": {
+                                                       "allOf": [
+                                                         {"type": "string"},
+                                                         {"type": "integer"}
+                                                       ]
+                                                     },
+                                                     "nested_not": {
+                                                       "not": [
+                                                         {"type": "string"},
+                                                         {"type": "integer"}
+                                                       ]
+                                                     }
+                                                   },
+                                                   "patternProperties": {
+                                                     "integer_.*": {"type": "integer"}
+                                                   },
+                                                   "additionalProperties": {"type": "string"}
+                                                 }
+                                               }
+                                             }
+                                             """);
+      assertEquals(expectedSchema, downgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
+    }
+
+    @Test
+    public void testDowngradeBooleanSchemas() {
+      // Most of these should never happen in reality, but let's handle them just in case
+      // The only ones that we're _really_ expecting are additionalItems and additionalProperties
+      String schemaString = """
+                            {
+                              "type": "object",
+                              "properties": {
+                                "basic_array": {
+                                  "items": true
+                                },
+                                "tuple_array": {
+                                  "items": [true],
+                                  "additionalItems": true,
+                                  "contains": true
+                                },
+                                "nested_object": {
+                                  "properties": {
+                                    "id": true,
+                                    "nested_oneof": {
+                                      "oneOf": [true]
+                                    },
+                                    "nested_anyof": {
+                                      "anyOf": [true]
+                                    },
+                                    "nested_allof": {
+                                      "allOf": [true]
+                                    },
+                                    "nested_not": {
+                                      "not": [true]
+                                    }
+                                  },
+                                  "patternProperties": {
+                                    "integer_.*": true
+                                  },
+                                  "additionalProperties": true
+                                }
+                              }
+                            }
+                            """;
+      assertDowngradeIsNoop(schemaString);
+    }
+
+    @Test
+    public void testDowngradeEmptySchema() {
+      // Sources shouldn't do this, but we should have handling for it anyway, since it's not currently
+      // enforced by SATs
+      String schemaString = """
+                            {
+                              "type": "object",
+                              "properties": {
+                                "basic_array": {
+                                  "items": {}
+                                },
+                                "tuple_array": {
+                                  "items": [{}],
+                                  "additionalItems": {},
+                                  "contains": {}
+                                },
+                                "nested_object": {
+                                  "properties": {
+                                    "id": {},
+                                    "nested_oneof": {
+                                      "oneOf": [{}]
+                                    },
+                                    "nested_anyof": {
+                                      "anyOf": [{}]
+                                    },
+                                    "nested_allof": {
+                                      "allOf": [{}]
+                                    },
+                                    "nested_not": {
+                                      "not": [{}]
+                                    }
+                                  },
+                                  "patternProperties": {
+                                    "integer_.*": {}
+                                  },
+                                  "additionalProperties": {}
+                                }
+                              }
+                            }
+                            """;
+      assertDowngradeIsNoop(schemaString);
+    }
+
+    @Test
+    public void testDowngradeLiteralSchema() {
+      // Verify that we do _not_ recurse into places we shouldn't
+      String schemaString = """
+                            {
+                              "type": "object",
+                              "properties": {
+                                "example_schema": {
+                                  "type": "object",
+                                  "default": {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                  "enum": [{"$ref": "WellKnownTypes.json#/definitions/String"}],
+                                  "const": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                                }
+                              }
+                            }
+                            """;
+      assertDowngradeIsNoop(schemaString);
+    }
+
+    @Test
+    public void testDowngradeMultiTypeFields() {
+      JsonNode oldSchema = Jsons.deserialize("""
+                                                  {
+                                                    "type": "object",
+                                                    "properties": {
+                                                      "multityped_field": {
+                                                        "oneOf": [
+                                                          {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                          {
+                                                            "type": "object",
+                                                            "properties": {
+                                                              "id": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                                                            },
+                                                            "patternProperties": {
+                                                              "integer_.*": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                                                            },
+                                                            "additionalProperties": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                                                          },
+                                                          {
+                                                            "type": "array",
+                                                            "items": {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                            "additionalItems": {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                            "contains": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                                                          }
+                                                        ]
+                                                      },
+                                                      "nullable_multityped_field": {
+                                                        "oneOf": [
+                                                          {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                          {
+                                                            "type": "array",
+                                                            "items": [
+                                                              {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                                              {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                                                            ]
+                                                          },
+                                                          {
+                                                            "type": "object",
+                                                            "properties": {
+                                                              "id": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                                                            }
+                                                          }
+                                                        ]
+                                                      },
+                                                      "multityped_date_field": {
+                                                        "oneOf": [
+                                                          {"$ref": "WellKnownTypes.json#/definitions/Date"},
+                                                          {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                                                        ]
+                                                      },
+                                                      "sneaky_singletype_field": {"$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"}
+                                                    }
+                                                  }
+                                                  """);
+
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(oldSchema));
+
+      JsonNode expectedSchema = Jsons.deserialize("""
+                                             {
+                                               "type": "object",
+                                               "properties": {
+                                                 "multityped_field": {
+                                                   "type": ["string", "object", "array"],
+                                                   "properties": {
+                                                     "id": {"type": "string"}
+                                                   },
+                                                   "patternProperties": {
+                                                     "integer_.*": {"type": "integer"}
+                                                   },
+                                                   "additionalProperties": {"type": "string"},
+                                                   "items": {"type": "string"},
+                                                   "additionalItems": {"type": "string"},
+                                                   "contains": {"type": "string"}
+                                                 },
+                                                 "nullable_multityped_field": {
+                                                   "type": ["null", "string", "array", "object"],
+                                                   "items": [{"type": "string"}, {"type": "integer"}],
+                                                   "properties": {
+                                                     "id": {"type": "integer"}
+                                                   }
+                                                 },
+                                                 "multityped_date_field": {
+                                                   "type": ["string", "integer"],
+                                                   "format": "date"
+                                                 },
+                                                 "sneaky_singletype_field": {
+                                                   "type": ["string", "null"],
+                                                   "format": "date-time"
+                                                 }
+                                               }
+                                             }
+                                             """);
+      assertEquals(expectedSchema, downgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
     }
 
     private AirbyteMessage createCatalogMessage(JsonNode schema) {
@@ -760,6 +1071,15 @@ public class V0ToV1MigrationTest {
           .withCatalog(
               new AirbyteCatalog().withStreams(List.of(new AirbyteStream().withJsonSchema(
                   schema))));
+    }
+
+    private void assertDowngradeIsNoop(String schemaString) {
+      JsonNode oldSchema = Jsons.deserialize(schemaString);
+
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(oldSchema));
+
+      JsonNode expectedSchema = Jsons.deserialize(schemaString);
+      assertEquals(expectedSchema, downgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
     }
 
   }
