@@ -33,3 +33,17 @@ streams:
 check:
   stream_names:
     - "customers"
+
+spec:
+  documentation_url: https://docsurl.com
+  connection_specification:
+    title: {{capitalCase name}} Spec
+    type: object
+    required:
+      - api_key
+    additionalProperties: true
+    properties:
+      # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
+      api_key:
+        type: string
+        description: API Key

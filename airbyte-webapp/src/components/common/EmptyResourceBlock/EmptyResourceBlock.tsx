@@ -1,43 +1,18 @@
 import React from "react";
-import styled from "styled-components";
+
+import styles from "./EmptyResourceBlock.module.scss";
 
 interface EmptyResourceBlockProps {
   text: React.ReactNode;
   description?: React.ReactNode;
 }
 
-const Content = styled.div`
-  padding: 74px 0 111px;
-  text-align: center;
-  font-size: 20px;
-  line-height: 27px;
-  color: ${({ theme }) => theme.textColor};
-`;
-
-const ImgBlock = styled.div`
-  height: 80px;
-  width: 80px;
-  border-radius: 50%;
-  background: ${({ theme }) => theme.greyColor20};
-  margin: 0 auto 10px;
-  text-align: center;
-  padding: 20px 0;
-`;
-
-const Description = styled.div`
-  font-weight: normal;
-  font-size: 14px;
-  line-height: 19px;
-  color: ${({ theme }) => theme.greyColor60};
-  margin-top: 5px;
-`;
-
 export const EmptyResourceBlock: React.FC<EmptyResourceBlockProps> = ({ text, description }) => (
-  <Content>
-    <ImgBlock>
-      <img src="/cactus.png" height={40} alt="cactus" />
-    </ImgBlock>
+  <div className={styles.content}>
+    <div className={styles.imgBlock}>
+      <img src="/cactus.png" height={40} alt="" />
+    </div>
     {text}
-    <Description>{description}</Description>
-  </Content>
+    <div className={styles.description}>{description}</div>
+  </div>
 );

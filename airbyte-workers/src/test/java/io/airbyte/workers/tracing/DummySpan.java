@@ -12,7 +12,7 @@ class DummySpan implements MutableSpan {
 
   private final Map<String, Object> tags = new HashMap<>();
   private boolean error = false;
-
+  private String operationName = null;
   private String resourceName = null;
 
   @Override
@@ -27,12 +27,13 @@ class DummySpan implements MutableSpan {
 
   @Override
   public CharSequence getOperationName() {
-    return null;
+    return operationName;
   }
 
   @Override
-  public MutableSpan setOperationName(final CharSequence serviceName) {
-    return null;
+  public MutableSpan setOperationName(final CharSequence operationName) {
+    this.operationName = operationName != null ? operationName.toString() : null;
+    return this;
   }
 
   @Override
@@ -52,7 +53,7 @@ class DummySpan implements MutableSpan {
 
   @Override
   public MutableSpan setResourceName(final CharSequence resourceName) {
-    this.resourceName = resourceName.toString();
+    this.resourceName = resourceName != null ? resourceName.toString() : null;
     return this;
   }
 

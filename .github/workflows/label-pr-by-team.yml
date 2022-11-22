@@ -1,0 +1,9 @@
+name: "Add labels to github PRs based on team"
+on: pull_request
+jobs:
+  team-labeler:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: JulienKode/team-labeler-action@v0.1.1
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"

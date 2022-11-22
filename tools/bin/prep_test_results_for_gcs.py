@@ -17,6 +17,8 @@ parser = argparse.ArgumentParser()
 
 # Add long and short argument
 parser.add_argument("--json", "-j", help="Path to the result json output by https://github.com/EnricoMi/publish-unit-test-result-action")
+parser.add_argument("--runid", "-r", help="Run id of the action") # this can be derived from checks api, but it's easier to derive it here
+parser.add_argument("--jobid", "-c", help="Job id of the action") # this can be derived from checks api, but it's easier to derive it here
 
 def main():
     # Read arguments from the command line
@@ -40,6 +42,8 @@ def main():
                     "time": elem['states'][conclusion][i]['time'],
                     "state": conclusion,
                     "check_run_id": check_run_id,
+                    "workflow_run_id": args.runid,
+                    "job_id": args.jobid,
                     "repo": "airbytehq/airbyte"
                 }
                 out.append(output)

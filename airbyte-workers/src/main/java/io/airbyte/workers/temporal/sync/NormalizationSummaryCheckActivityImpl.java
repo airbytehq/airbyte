@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.sync;
 
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
 import datadog.trace.api.Trace;
@@ -29,7 +30,7 @@ public class NormalizationSummaryCheckActivityImpl implements NormalizationSumma
 
   private final AirbyteApiClient airbyteApiClient;
 
-  public NormalizationSummaryCheckActivityImpl(AirbyteApiClient airbyteApiClient) {
+  public NormalizationSummaryCheckActivityImpl(final AirbyteApiClient airbyteApiClient) {
     this.airbyteApiClient = airbyteApiClient;
   }
 
@@ -37,7 +38,7 @@ public class NormalizationSummaryCheckActivityImpl implements NormalizationSumma
   @Override
   @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   public boolean shouldRunNormalization(final Long jobId, final Long attemptNumber, final Optional<Long> numCommittedRecords) {
-    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobId));
+    ApmTraceUtils.addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, attemptNumber, JOB_ID_KEY, jobId));
 
     // if the count of committed records for this attempt is > 0 OR if it is null,
     // then we should run normalization
@@ -48,7 +49,7 @@ public class NormalizationSummaryCheckActivityImpl implements NormalizationSumma
     final AttemptNormalizationStatusReadList AttemptNormalizationStatusReadList;
     try {
       AttemptNormalizationStatusReadList = airbyteApiClient.getJobsApi().getAttemptNormalizationStatusesForJob(new JobIdRequestBody().id(jobId));
-    } catch (ApiException e) {
+    } catch (final ApiException e) {
       throw Activity.wrap(e);
     }
     final AtomicLong totalRecordsCommitted = new AtomicLong(0L);
