@@ -4,7 +4,6 @@
 
 package io.airbyte.protocol.models;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -49,34 +48,45 @@ public class JsonSchemaReferenceTypes {
       "date", DATE_REFERENCE);
 
   public static final Map<String, ObjectNode> REFERENCE_TYPE_TO_OLD_TYPE = ImmutableMap.of(
-      TIMESTAMP_WITH_TIMEZONE_REFERENCE, (ObjectNode) Jsons.deserialize("""
-          {"type": "string", "airbyte_type": "timestamp_with_timezone"}
+      TIMESTAMP_WITH_TIMEZONE_REFERENCE,
+      (ObjectNode) Jsons.deserialize(
+          """
+          {"type": "string", "airbyte_type": "timestamp_with_timezone", "format": "date-time"}
           """),
-      TIMESTAMP_WITHOUT_TIMEZONE_REFERENCE, (ObjectNode) Jsons.deserialize("""
+      TIMESTAMP_WITHOUT_TIMEZONE_REFERENCE, (ObjectNode) Jsons.deserialize(
+          """
           {"type": "string", "airbyte_type": "timestamp_without_timezone"}
           """),
-      TIME_WITH_TIMEZONE_REFERENCE, (ObjectNode) Jsons.deserialize("""
-          {"type": "string", "airbyte_type": "time_with_timezone"}
+      TIME_WITH_TIMEZONE_REFERENCE, (ObjectNode) Jsons.deserialize(
+          """
+          {"type": "string", "airbyte_type": "time_with_timezone", "format": "time"}
           """),
-      TIME_WITHOUT_TIMEZONE_REFERENCE, (ObjectNode) Jsons.deserialize("""
+      TIME_WITHOUT_TIMEZONE_REFERENCE, (ObjectNode) Jsons.deserialize(
+          """
           {"type": "string", "airbyte_type": "time_without_timezone"}
           """),
-      INTEGER_REFERENCE, (ObjectNode) Jsons.deserialize("""
-          {"type": "integer", "airbyte_type": "integer"}
+      DATE_REFERENCE, (ObjectNode) Jsons.deserialize(
+          """
+          {"type": "string", "format": "date"}
           """),
-      STRING_REFERENCE, (ObjectNode) Jsons.deserialize("""
-          {"type": "string"}
+      INTEGER_REFERENCE, (ObjectNode) Jsons.deserialize(
+          """
+          {"type": "integer"}
           """),
-      NUMBER_REFERENCE, (ObjectNode) Jsons.deserialize("""
+      NUMBER_REFERENCE, (ObjectNode) Jsons.deserialize(
+          """
           {"type": "number"}
           """),
-      BOOLEAN_REFERENCE, (ObjectNode) Jsons.deserialize("""
+      BOOLEAN_REFERENCE, (ObjectNode) Jsons.deserialize(
+          """
           {"type": "boolean"}
           """),
-      DATE_REFERENCE, (ObjectNode) Jsons.deserialize("""
-          {"type": "string", "airbyte_type": "date"}
+      STRING_REFERENCE, (ObjectNode) Jsons.deserialize(
+          """
+          {"type": "string"}
           """),
-      BINARY_DATA_REFERENCE, (ObjectNode) Jsons.deserialize("""
+      BINARY_DATA_REFERENCE, (ObjectNode) Jsons.deserialize(
+          """
           {"type": "string"}
           """));
 

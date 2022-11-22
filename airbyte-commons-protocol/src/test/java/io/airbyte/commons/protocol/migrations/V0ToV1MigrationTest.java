@@ -655,21 +655,104 @@ public class V0ToV1MigrationTest {
       io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(newSchema));
 
       io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize("""
-                                                         {
-                                                           "type": "CATALOG",
-                                                           "catalog": {
-                                                             "streams": [
-                                                               {
-                                                                 "json_schema": {
-                                                                   "type": "string"
-                                                                 }
-                                                               }
-                                                             ]
-                                                           }
-                                                         }
-                                                         """,
+                                                                                       {
+                                                                                         "type": "CATALOG",
+                                                                                         "catalog": {
+                                                                                           "streams": [
+                                                                                             {
+                                                                                               "json_schema": {
+                                                                                                 "type": "string"
+                                                                                               }
+                                                                                             }
+                                                                                           ]
+                                                                                         }
+                                                                                       }
+                                                                                       """,
           io.airbyte.protocol.models.v0.AirbyteMessage.class);
       assertEquals(expectedMessage, downgradedMessage);
+    }
+
+    @Test
+    public void testUpgradeAllPrimitives() {
+      JsonNode oldSchema = Jsons.deserialize("""
+                                             {
+                                               "type": "object",
+                                               "properties": {
+                                                 "example_string": {
+                                                   "$ref": "WellKnownTypes.json#/definitions/String"
+                                                 },
+                                                 "example_number": {
+                                                   "$ref": "WellKnownTypes.json#/definitions/Number"
+                                                 },
+                                                 "example_integer": {
+                                                   "$ref": "WellKnownTypes.json#/definitions/Integer"
+                                                 },
+                                                 "example_boolean": {
+                                                   "$ref": "WellKnownTypes.json#/definitions/Boolean"
+                                                 },
+                                                 "example_timestamptz": {
+                                                   "$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"
+                                                 },
+                                                 "example_timestamp_without_tz": {
+                                                   "$ref": "WellKnownTypes.json#/definitions/TimestampWithoutTimezone"
+                                                 },
+                                                 "example_timez": {
+                                                   "$ref": "WellKnownTypes.json#/definitions/TimeWithTimezone"
+                                                 },
+                                                 "example_time_without_tz": {
+                                                   "$ref": "WellKnownTypes.json#/definitions/TimeWithoutTimezone"
+                                                 },
+                                                 "example_date": {
+                                                   "$ref": "WellKnownTypes.json#/definitions/Date"
+                                                 }
+                                               }
+                                             }
+                                             """);
+
+      io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.downgrade(createCatalogMessage(oldSchema));
+
+      JsonNode expectedSchema = Jsons.deserialize("""
+                                                  {
+                                                    "type": "object",
+                                                    "properties": {
+                                                      "example_string": {
+                                                        "type": "string"
+                                                      },
+                                                      "example_number": {
+                                                        "type": "number"
+                                                      },
+                                                      "example_integer": {
+                                                        "type": "integer"
+                                                      },
+                                                      "example_boolean": {
+                                                        "type": "boolean"
+                                                      },
+                                                      "example_timestamptz": {
+                                                        "type": "string",
+                                                        "airbyte_type": "timestamp_with_timezone",
+                                                        "format": "date-time"
+                                                      },
+                                                      "example_timestamp_without_tz": {
+                                                        "type": "string",
+                                                        "airbyte_type": "timestamp_without_timezone"
+                                                      },
+                                                      "example_timez": {
+                                                        "type": "string",
+                                                        "airbyte_type": "time_with_timezone",
+                                                        "format": "time"
+                                                      },
+                                                      "example_time_without_tz": {
+                                                        "type": "string",
+                                                        "airbyte_type": "time_without_timezone"
+                                                      },
+                                                      "example_date": {
+                                                        "type": "string",
+                                                        "format": "date"
+                                                      }
+                                                    }
+                                                  }
+                                                  """);
+      assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
     }
 
     private AirbyteMessage createCatalogMessage(JsonNode schema) {

@@ -107,8 +107,8 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   }
 
   /**
-   * Detects any schema that looks like a reference type declaration, e.g.: { "$ref": "WellKnownTypes.json...." } or
-   * { "oneOf": [{"$ref": "..."}, {"type": "object"}] }
+   * Detects any schema that looks like a reference type declaration, e.g.: { "$ref":
+   * "WellKnownTypes.json...." } or { "oneOf": [{"$ref": "..."}, {"type": "object"}] }
    */
   private boolean isPrimitiveReferenceTypeDeclaration(JsonNode schema) {
     if (!schema.isObject()) {
