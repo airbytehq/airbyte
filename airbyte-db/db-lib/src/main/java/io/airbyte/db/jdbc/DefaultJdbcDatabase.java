@@ -10,7 +10,6 @@ import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
-
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -82,9 +81,9 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
       final DatabaseMetaData metaData = connection.getMetaData();
       return metaData;
     } catch (final SQLException e) {
-      if (e instanceof SQLTransientException){
+      if (e instanceof SQLTransientException) {
         final String message = e.getMessage();
-        if (message.contains("request timed out")){
+        if (message.contains("request timed out")) {
           throw new ConfigErrorException("Connection timed out. Unable to contact server.");
         }
       }
