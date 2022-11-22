@@ -34,7 +34,7 @@ const mockInitialValues: Partial<FormikConnectionFormValues> = {
   },
 };
 
-describe("<CatalogTreeTableRow />", () => {
+describe("useCatalogTreeTableRowProps", () => {
   it("should return default styles for a row that starts enabled", () => {
     // eslint-disable-next-line
     jest.spyOn(bulkEditService, "useBulkEditSelect").mockImplementation(() => [false, () => null] as any); // not selected for bulk edit
