@@ -347,7 +347,8 @@ public class TemporalClient {
         .withJobId(jobId.toString())
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage())
-        .withProtocolVersion(config.getProtocolVersion());
+        .withProtocolVersion(config.getProtocolVersion())
+        .withIsCustomConnector(config.getIsCustomConnector());
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
 
     return execute(jobRunConfig,
@@ -362,7 +363,8 @@ public class TemporalClient {
         .withJobId(jobId.toString())
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage())
-        .withProtocolVersion(config.getProtocolVersion());
+        .withProtocolVersion(config.getProtocolVersion())
+        .withIsCustomConnector(config.getIsCustomConnector());
     final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput().withConnectionConfiguration(config.getConnectionConfiguration())
         .withSourceId(config.getSourceId()).withConnectorVersion(config.getConnectorVersion()).withConfigHash(config.getConfigHash());
 
@@ -377,13 +379,15 @@ public class TemporalClient {
         .withJobId(String.valueOf(jobId))
         .withAttemptId((long) attempt)
         .withDockerImage(config.getSourceDockerImage())
-        .withProtocolVersion(config.getSourceProtocolVersion());
+        .withProtocolVersion(config.getSourceProtocolVersion())
+        .withIsCustomConnector(config.getIsSourceCustomConnector());
 
     final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
         .withJobId(String.valueOf(jobId))
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDestinationDockerImage())
-        .withProtocolVersion(config.getDestinationProtocolVersion());
+        .withProtocolVersion(config.getDestinationProtocolVersion())
+        .withIsCustomConnector(config.getIsDestinationCustomConnector());
 
     final StandardSyncInput input = new StandardSyncInput()
         .withNamespaceDefinition(config.getNamespaceDefinition())
