@@ -274,6 +274,8 @@ webapp:
   ##  webapp.api.url The webapp API url.
   api:
     url: /api/v1/
+  connectorBuilderServer:
+    url: /connector-builder-api
 
   ##  webapp.fullstory.enabled Whether or not to enable fullstory
   fullstory:
@@ -1393,3 +1395,8 @@ cron:
   ##   DATABASE_HOST: airbyte-db
   ##   DATABASE_PORT: 5432
   env_vars: {}
+
+connectorBuilderServer:
+  enabled: true
+  service:
+    port: 8003

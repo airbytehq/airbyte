@@ -1,6 +1,6 @@
 apiVersion: v2
-name: pod-sweeper
-description: Helm chart to deploy airbyte-pod-sweeper
+name: connector-builder-server
+description: Helm chart to deploy airbyte-connector-builder-server
 
 # A chart can be either an 'application' or a 'library' chart.
 #
@@ -17,12 +17,11 @@ type: application
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
 version: "0.42.0"
 
-
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.39.37-alpha"
+appVersion: "0.40.22"
 
 dependencies:
   - name: common
