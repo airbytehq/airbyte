@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.13.0
+Low-code: Add SessionTokenAuthenticator
+
 ## 0.12.4
 Lookback window should applied when a state is supplied as well
 
