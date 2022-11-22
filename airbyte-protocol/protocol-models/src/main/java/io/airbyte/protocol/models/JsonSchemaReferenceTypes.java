@@ -55,7 +55,7 @@ public class JsonSchemaReferenceTypes {
           """),
       TIMESTAMP_WITHOUT_TIMEZONE_REFERENCE, (ObjectNode) Jsons.deserialize(
           """
-          {"type": "string", "airbyte_type": "timestamp_without_timezone"}
+          {"type": "string", "airbyte_type": "timestamp_without_timezone", "format": "date-time"}
           """),
       TIME_WITH_TIMEZONE_REFERENCE, (ObjectNode) Jsons.deserialize(
           """
@@ -63,7 +63,7 @@ public class JsonSchemaReferenceTypes {
           """),
       TIME_WITHOUT_TIMEZONE_REFERENCE, (ObjectNode) Jsons.deserialize(
           """
-          {"type": "string", "airbyte_type": "time_without_timezone"}
+          {"type": "string", "airbyte_type": "time_without_timezone", "format": "time"}
           """),
       DATE_REFERENCE, (ObjectNode) Jsons.deserialize(
           """
