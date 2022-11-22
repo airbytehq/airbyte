@@ -61,8 +61,8 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
   @Override
   public ParallelFlux<AirbyteMessage> createFlux(final BufferedReader bufferedReader) {
     return Flux.fromStream(bufferedReader.lines())
-        .parallel(8)
-        .runOn(Schedulers.newParallel("par", 8))
+        .parallel(2)
+        .runOn(Schedulers.newParallel("par", 2))
         .flatMap(line -> Flux.fromStream(Jsons.tryDeserialize(line).stream()))
         .filter(this::validate)
         .flatMap(json -> Flux.fromStream(Jsons.tryObject(json, AirbyteMessage.class).stream()))
