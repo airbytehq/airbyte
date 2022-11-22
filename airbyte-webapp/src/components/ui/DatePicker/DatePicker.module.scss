@@ -1,3 +1,5 @@
+/* stylelint-disable selector-class-pattern, no-descending-specificity */
+
 @use "scss/colors";
 @use "scss/fonts";
 @use "scss/variables";
@@ -38,6 +40,7 @@
 :global(.react-datepicker__header.react-datepicker__header--has-time-select) {
   border-top-right-radius: 0;
 }
+
 :global(.react-datepicker__header:not(.react-datepicker__header--has-time-select)) {
   border-top-right-radius: variables.$border-radius-md;
 }
