@@ -186,7 +186,9 @@ public class WorkerConfigs {
     return workerKubeNodeSelectors;
   }
 
-  public Map<String, String> getWorkerIsolatedKubeNodeSelectors() {return workerIsolatedKubeNodeSelectors;}
+  public Map<String, String> getWorkerIsolatedKubeNodeSelectors() {
+    return workerIsolatedKubeNodeSelectors;
+  }
 
   public Map<String, String> getWorkerKubeAnnotations() {
     return workerKubeAnnotations;

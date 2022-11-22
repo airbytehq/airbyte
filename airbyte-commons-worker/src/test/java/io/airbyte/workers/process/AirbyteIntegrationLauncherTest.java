@@ -122,7 +122,7 @@ class AirbyteIntegrationLauncherTest {
   void write() throws WorkerException {
     launcher.write(JOB_ROOT, CONFIG, "{}", CATALOG, "{}");
 
-    Mockito.verify(processFactory).create(WRITE_STEP, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false,   true, CONFIG_CATALOG_FILES, null,
+    Mockito.verify(processFactory).create(WRITE_STEP, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, true, CONFIG_CATALOG_FILES, null,
         workerConfigs.getResourceRequirements(),
         Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, WRITE_STEP),
         JOB_METADATA,

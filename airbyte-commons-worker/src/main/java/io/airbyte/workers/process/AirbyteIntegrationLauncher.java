@@ -57,14 +57,14 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   private final ResourceRequirements resourceRequirement;
   private final FeatureFlags featureFlags;
 
-  private boolean useIsolatedNodePool;
+  private final boolean useIsolatedNodePool;
 
   public AirbyteIntegrationLauncher(final String jobId,
                                     final int attempt,
                                     final String imageName,
                                     final ProcessFactory processFactory,
                                     final ResourceRequirements resourceRequirement,
-        final boolean useIsolatedNodePool) {
+                                    final boolean useIsolatedNodePool) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.imageName = imageName;
@@ -73,7 +73,6 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     this.featureFlags = new EnvVariableFeatureFlags();
     this.useIsolatedNodePool = useIsolatedNodePool;
   }
-
 
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override

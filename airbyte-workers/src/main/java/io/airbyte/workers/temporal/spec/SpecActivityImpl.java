@@ -83,7 +83,8 @@ public class SpecActivityImpl implements SpecActivity {
     ApmTraceUtils.addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), DOCKER_IMAGE_KEY, launcherConfig.getDockerImage(),
         JOB_ID_KEY, jobRunConfig.getJobId()));
 
-    final Supplier<JobGetSpecConfig> inputSupplier = () -> new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage()).withIsCustomConnector(launcherConfig.getIsCustomConnector());
+    final Supplier<JobGetSpecConfig> inputSupplier =
+        () -> new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage()).withIsCustomConnector(launcherConfig.getIsCustomConnector());
 
     final ActivityExecutionContext context = Activity.getExecutionContext();
 

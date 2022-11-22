@@ -37,8 +37,6 @@ public class KubeProcessFactory implements ProcessFactory {
   private final String processRunnerHost;
   private final boolean isOrchestrator;
 
-  private boolean useIsolatedNodePool;
-
   /**
    * Sets up a process factory with the default processRunnerHost.
    */

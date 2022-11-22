@@ -192,7 +192,8 @@ public class SchedulerHandler {
     final String imageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
     final boolean isCustomConnector = destinationDef.getCustom();
     final Version protocolVersion = new Version(destinationDef.getProtocolVersion());
-    return reportConnectionStatus(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName, protocolVersion,isCustomConnector));
+    return reportConnectionStatus(
+        synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName, protocolVersion, isCustomConnector));
   }
 
   public CheckConnectionRead checkDestinationConnectionFromDestinationCreate(final DestinationCoreConfig destinationConfig)
@@ -211,7 +212,8 @@ public class SchedulerHandler {
         .withWorkspaceId(destinationConfig.getWorkspaceId());
     final String imageName = DockerUtils.getTaggedImageName(destDef.getDockerRepository(), destDef.getDockerImageTag());
     final Version protocolVersion = new Version(destDef.getProtocolVersion());
-    return reportConnectionStatus(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName, protocolVersion, isCustomConnector));
+    return reportConnectionStatus(
+        synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName, protocolVersion, isCustomConnector));
   }
 
   public CheckConnectionRead checkDestinationConnectionFromDestinationIdForUpdate(final DestinationUpdate destinationUpdate)
@@ -244,7 +246,8 @@ public class SchedulerHandler {
     final boolean bustActorCatalogCache = discoverSchemaRequestBody.getDisableCache() != null && discoverSchemaRequestBody.getDisableCache();
     if (currentCatalog.isEmpty() || bustActorCatalogCache) {
       final SynchronousResponse<UUID> persistedCatalogId =
-          synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName, connectorVersion, new Version(sourceDef.getProtocolVersion()), isCustomConnector);
+          synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName, connectorVersion, new Version(sourceDef.getProtocolVersion()),
+              isCustomConnector);
       final SourceDiscoverSchemaRead discoveredSchema = retrieveDiscoveredSchema(persistedCatalogId);
 
       if (discoverSchemaRequestBody.getConnectionId() != null) {
