@@ -50,7 +50,7 @@ public class AWSSecretManagerPersistence implements SecretPersistence {
    * @param region AWS region to use
    * @see SecretCache
    */
-  public AWSSecretManagerPersistence(String region) {
+  public AWSSecretManagerPersistence(final String region) {
     this.client = AWSSecretsManagerClientBuilder
         .standard()
         .withRegion(region)
@@ -59,7 +59,7 @@ public class AWSSecretManagerPersistence implements SecretPersistence {
   }
 
   @Override
-  public Optional<String> read(SecretCoordinate coordinate) {
+  public Optional<String> read(final SecretCoordinate coordinate) {
     String secretString = null;
     try {
       log.debug("Reading secret {}", coordinate.getCoordinateBase());
@@ -71,17 +71,17 @@ public class AWSSecretManagerPersistence implements SecretPersistence {
   }
 
   @Override
-  public void write(SecretCoordinate coordinate, String payload) {
+  public void write(final SecretCoordinate coordinate, final String payload) {
     if (read(coordinate).isPresent()) {
       log.debug("Secret {} found updating payload.", coordinate.getCoordinateBase());
-      UpdateSecretRequest request = new UpdateSecretRequest()
+      final UpdateSecretRequest request = new UpdateSecretRequest()
           .withSecretId(coordinate.getCoordinateBase())
           .withSecretString(payload)
           .withDescription("Airbyte secret.");
       client.updateSecret(request);
     } else {
       log.debug("Secret {} not found, creating a new one.", coordinate.getCoordinateBase());
-      CreateSecretRequest secretRequest = new CreateSecretRequest()
+      final CreateSecretRequest secretRequest = new CreateSecretRequest()
           .withName(coordinate.getCoordinateBase())
           .withSecretString(payload)
           .withDescription("Airbyte secret.");
@@ -96,7 +96,7 @@ public class AWSSecretManagerPersistence implements SecretPersistence {
    * @param coordinate SecretCoordinate to delete.
    */
   @VisibleForTesting
-  protected void deleteSecret(SecretCoordinate coordinate) {
+  protected void deleteSecret(final SecretCoordinate coordinate) {
     client.deleteSecret(new DeleteSecretRequest()
         .withSecretId(coordinate.getCoordinateBase())
         .withForceDeleteWithoutRecovery(true));
