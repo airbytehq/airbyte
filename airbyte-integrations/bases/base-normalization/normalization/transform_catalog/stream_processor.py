@@ -8,6 +8,8 @@ import re
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+from normalization import data_type
+
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from jinja2 import Template
 from normalization.destination_type import DestinationType
@@ -360,7 +362,7 @@ class StreamProcessor(object):
             elif is_combining_node(properties[field]):
                 # TODO: merge properties of all combinations
                 pass
-            elif "type" not in properties[field] or is_object(properties[field]["type"]):
+            elif "type" not in properties[field] or is_object(properties[field]["type"]):       #TODO what should be there and below (type or ref) ? !!!!!!!!!!!!!!!!!!!!!!!!!!!
                 # properties without 'type' field are treated like properties with 'type' = 'object'
                 children_properties = find_properties_object([], field, properties[field])
                 is_nested_array = False
@@ -456,13 +458,15 @@ where 1 = 1
             table_alias = ""
 
         json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path})")
-        if "type" in definition:
-            if is_array(definition["type"]):
+        if data_type.REF_TYPE_VAR_NAME in definition or data_type.TYPE_VAR_NAME in definition:
+            if data_type.TYPE_VAR_NAME in definition and is_array(definition[data_type.TYPE_VAR_NAME]):
                 json_extract = jinja_call(f"json_extract_array({json_column_name}, {json_path}, {normalized_json_path})")
-                if is_simple_property(definition.get("items", {"type": "object"})):
+                if is_simple_property(definition.get("items", {data_type.TYPE_VAR_NAME: "object"})):  # TODO do we neen Type or ref here????
                     json_extract = jinja_call(f"json_extract_string_array({json_column_name}, {json_path}, {normalized_json_path})")
-            elif is_object(definition["type"]):
+            elif data_type.TYPE_VAR_NAME in definition and is_object(definition[data_type.TYPE_VAR_NAME]):
                 json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path}, {normalized_json_path})")
+            elif data_type.REF_TYPE_VAR_NAME in definition and (is_date(definition) or is_time(definition) or is_datetime(definition)):
+                json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path}, {normalized_json_path})")
             elif is_simple_property(definition):
                 json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path}, {normalized_json_path})")
 
@@ -504,22 +508,22 @@ where 1 = 1
 
     def cast_property_type(self, property_name: str, column_name: str, jinja_column: str) -> Any:  # noqa: C901
         definition = self.properties[property_name]
-        if "type" not in definition:
+        if data_type.TYPE_VAR_NAME not in definition and data_type.REF_TYPE_VAR_NAME not in definition:
             print(f"WARN: Unknown type for column {property_name} at {self.current_json_path()}")
             return column_name
-        elif is_array(definition["type"]):
+        elif data_type.TYPE_VAR_NAME in definition and is_array(definition[data_type.TYPE_VAR_NAME]):
             return column_name
-        elif is_object(definition["type"]):
+        elif data_type.TYPE_VAR_NAME in definition and is_object(definition[data_type.TYPE_VAR_NAME]):
             sql_type = jinja_call("type_json()")
         # Treat simple types from narrower to wider scope type: boolean < integer < number < string
-        elif is_boolean(definition["type"], definition):
+        elif is_boolean(definition[data_type.REF_TYPE_VAR_NAME], definition):
             cast_operation = jinja_call(f"cast_to_boolean({jinja_column})")
             return f"{cast_operation} as {column_name}"
         elif is_big_integer(definition):
             sql_type = jinja_call("type_very_large_integer()")
-        elif is_long(definition["type"], definition):
+        elif is_long(definition[data_type.REF_TYPE_VAR_NAME], definition):
             sql_type = jinja_call("dbt_utils.type_bigint()")
-        elif is_number(definition["type"]):
+        elif is_number(definition[data_type.REF_TYPE_VAR_NAME]):
             sql_type = jinja_call("dbt_utils.type_float()")
         elif is_datetime(definition):
             if self.destination_type == DestinationType.SNOWFLAKE:
@@ -574,7 +578,7 @@ where 1 = 1
                 return f'nullif(cast({column_name} as {sql_type}), "") as {column_name}'
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
-        elif is_string(definition["type"]):
+        elif is_string(definition[data_type.REF_TYPE_VAR_NAME]):
             sql_type = jinja_call("dbt_utils.type_string()")
             if self.destination_type == DestinationType.CLICKHOUSE:
                 trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
@@ -714,13 +718,13 @@ where 1 = 1
         the curly brackets.
         """
 
-        if "type" not in definition:
+        if data_type.REF_TYPE_VAR_NAME not in definition:   # TODO do we need Type or ref here? Does it take type !!!!!!!!!!!!!!!!!!!!!!!!
             col = column_name
-        elif is_boolean(definition["type"], definition):
+        elif is_boolean(definition[data_type.REF_TYPE_VAR_NAME], definition):
             col = f"boolean_to_string({column_name})"
-        elif is_array(definition["type"]):
+        elif data_type.TYPE_VAR_NAME in definition and is_array(definition[data_type.TYPE_VAR_NAME]):
             col = f"array_to_string({column_name})"
-        elif is_object(definition["type"]):
+        elif data_type.TYPE_VAR_NAME in definition and is_object(definition[data_type.TYPE_VAR_NAME]):
             col = f"object_to_string({column_name})"
         else:
             col = column_name
@@ -799,7 +803,7 @@ where 1 = 1
         if (
             self.destination_type == DestinationType.BIGQUERY
             and self.get_cursor_field_property_name(column_names) != self.airbyte_emitted_at
-            and is_number(self.properties[self.get_cursor_field_property_name(column_names)]["type"])
+            and is_number(self.properties[self.get_cursor_field_property_name(column_names)][data_type.REF_TYPE_VAR_NAME]) # TODO does it take SQL type heer ?!?!?!??!?!?!?
         ):
             # partition by float columns is not allowed in BigQuery, cast it to string
             airbyte_start_at_string = (
@@ -1047,8 +1051,8 @@ from dedup_data where {{ airbyte_row_num }} = 1
         if path and len(path) == 1:
             field = path[0]
             if not is_airbyte_column(field):
-                if "type" in self.properties[field]:
-                    property_type = self.properties[field]["type"]
+                if data_type.REF_TYPE_VAR_NAME in self.properties[field]: # TODO does it take SQL type here? do we need to simplify ref type to SQL type? !!!!!!!!!!
+                    property_type = self.properties[field][data_type.REF_TYPE_VAR_NAME]
                 else:
                     property_type = "object"
                 if is_number(property_type) or is_object(property_type):
@@ -1493,7 +1497,7 @@ def find_properties_object(path: List[str], field: str, properties) -> Dict[str,
         elif "properties" in properties:
             # we found a properties object
             return {current: properties["properties"]}
-        elif "type" in properties and is_simple_property(properties):
+        elif data_type.TYPE_VAR_NAME in properties and is_simple_property(properties):  # TODO keep TYPE_VAR_NAME otherwice get too much tables in list
             # we found a basic type
             return {current: {}}
         elif isinstance(properties, dict):
