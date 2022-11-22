@@ -12,4 +12,5 @@ public class SshPasswordMongoDbDestinationAcceptanceTest extends SshMongoDbDesti
   public SshTunnel.TunnelMethod getTunnelMethod() {
     return SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
   }
+
 }

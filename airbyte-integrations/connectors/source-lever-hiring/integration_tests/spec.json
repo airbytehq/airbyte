@@ -47,19 +47,19 @@
             "type": "object",
             "title": "Authenticate via Lever (Api Key)",
             "required": ["api_key"],
-              "properties": {
-                "auth_type": {
-                  "type": "string",
-                  "const": "Api Key",
-                  "order": 0
-                },
-                "api_key": {
-                  "title": "Api key",
-                  "type": "string",
-                  "description": "The Api Key of your Lever Hiring account.",
-                  "airbyte_secret": true,
-                  "order":1
-                }
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Api Key",
+                "order": 0
+              },
+              "api_key": {
+                "title": "Api key",
+                "type": "string",
+                "description": "The Api Key of your Lever Hiring account.",
+                "airbyte_secret": true,
+                "order": 1
+              }
             }
           }
         ]

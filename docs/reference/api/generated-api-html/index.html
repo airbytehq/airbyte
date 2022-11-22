@@ -221,6 +221,7 @@ font-style: italic;
   <div class="method-summary"></div>
   <h4><a href="#Attempt">Attempt</a></h4>
   <ul>
+  <li><a href="#saveStats"><code><span class="http-method">post</span> /v1/attempt/save_stats</code></a></li>
   <li><a href="#setWorkflowInAttempt"><code><span class="http-method">post</span> /v1/attempt/set_workflow_in_attempt</code></a></li>
   </ul>
   <h4><a href="#Connection">Connection</a></h4>
@@ -273,6 +274,12 @@ font-style: italic;
   <ul>
   <li><a href="#getDestinationDefinitionSpecification"><code><span class="http-method">post</span> /v1/destination_definition_specifications/get</code></a></li>
   </ul>
+  <h4><a href="#DestinationOauth">DestinationOauth</a></h4>
+  <ul>
+  <li><a href="#completeDestinationOAuth"><code><span class="http-method">post</span> /v1/destination_oauths/complete_oauth</code></a></li>
+  <li><a href="#getDestinationOAuthConsent"><code><span class="http-method">post</span> /v1/destination_oauths/get_consent_url</code></a></li>
+  <li><a href="#setInstancewideDestinationOauthParams"><code><span class="http-method">post</span> /v1/destination_oauths/oauth_params/create</code></a></li>
+  </ul>
   <h4><a href="#Health">Health</a></h4>
   <ul>
   <li><a href="#getHealthCheck"><code><span class="http-method">get</span> /v1/health</code></a></li>
@@ -281,6 +288,7 @@ font-style: italic;
   <ul>
   <li><a href="#createOrUpdateState"><code><span class="http-method">post</span> /v1/state/create_or_update</code></a></li>
   <li><a href="#getAttemptNormalizationStatusesForJob"><code><span class="http-method">post</span> /v1/jobs/get_normalization_status</code></a></li>
+  <li><a href="#saveStats"><code><span class="http-method">post</span> /v1/attempt/save_stats</code></a></li>
   <li><a href="#setWorkflowInAttempt"><code><span class="http-method">post</span> /v1/attempt/set_workflow_in_attempt</code></a></li>
   </ul>
   <h4><a href="#Jobs">Jobs</a></h4>
@@ -299,15 +307,6 @@ font-style: italic;
   <h4><a href="#Notifications">Notifications</a></h4>
   <ul>
   <li><a href="#tryNotificationConfig"><code><span class="http-method">post</span> /v1/notifications/try</code></a></li>
-  </ul>
-  <h4><a href="#Oauth">Oauth</a></h4>
-  <ul>
-  <li><a href="#completeDestinationOAuth"><code><span class="http-method">post</span> /v1/destination_oauths/complete_oauth</code></a></li>
-  <li><a href="#completeSourceOAuth"><code><span class="http-method">post</span> /v1/source_oauths/complete_oauth</code></a></li>
-  <li><a href="#getDestinationOAuthConsent"><code><span class="http-method">post</span> /v1/destination_oauths/get_consent_url</code></a></li>
-  <li><a href="#getSourceOAuthConsent"><code><span class="http-method">post</span> /v1/source_oauths/get_consent_url</code></a></li>
-  <li><a href="#setInstancewideDestinationOauthParams"><code><span class="http-method">post</span> /v1/destination_oauths/oauth_params/create</code></a></li>
-  <li><a href="#setInstancewideSourceOauthParams"><code><span class="http-method">post</span> /v1/source_oauths/oauth_params/create</code></a></li>
   </ul>
   <h4><a href="#Openapi">Openapi</a></h4>
   <ul>
@@ -362,6 +361,12 @@ font-style: italic;
   <ul>
   <li><a href="#getSourceDefinitionSpecification"><code><span class="http-method">post</span> /v1/source_definition_specifications/get</code></a></li>
   </ul>
+  <h4><a href="#SourceOauth">SourceOauth</a></h4>
+  <ul>
+  <li><a href="#completeSourceOAuth"><code><span class="http-method">post</span> /v1/source_oauths/complete_oauth</code></a></li>
+  <li><a href="#getSourceOAuthConsent"><code><span class="http-method">post</span> /v1/source_oauths/get_consent_url</code></a></li>
+  <li><a href="#setInstancewideSourceOauthParams"><code><span class="http-method">post</span> /v1/source_oauths/oauth_params/create</code></a></li>
+  </ul>
   <h4><a href="#State">State</a></h4>
   <ul>
   <li><a href="#createOrUpdateState"><code><span class="http-method">post</span> /v1/state/create_or_update</code></a></li>
@@ -382,6 +387,7 @@ font-style: italic;
   <li><a href="#createWorkspace"><code><span class="http-method">post</span> /v1/workspaces/create</code></a></li>
   <li><a href="#deleteWorkspace"><code><span class="http-method">post</span> /v1/workspaces/delete</code></a></li>
   <li><a href="#getWorkspace"><code><span class="http-method">post</span> /v1/workspaces/get</code></a></li>
+  <li><a href="#getWorkspaceByConnectionId"><code><span class="http-method">post</span> /v1/workspaces/get_by_connection_id</code></a></li>
   <li><a href="#getWorkspaceBySlug"><code><span class="http-method">post</span> /v1/workspaces/get_by_slug</code></a></li>
   <li><a href="#listWorkspaces"><code><span class="http-method">post</span> /v1/workspaces/list</code></a></li>
   <li><a href="#updateWorkspace"><code><span class="http-method">post</span> /v1/workspaces/update</code></a></li>
@@ -390,6 +396,58 @@ font-style: italic;
   </ul>
 
   <h1><a name="Attempt">Attempt</a></h1>
+  <div class="method"><a name="saveStats"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/attempt/save_stats</code></pre></div>
+    <div class="method-summary">For worker to set sync stats of a running attempt. (<span class="nickname">saveStats</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SaveStatsRequestBody <a href="#SaveStatsRequestBody">SaveStatsRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#InternalOperationResult">InternalOperationResult</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "succeeded" : true
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful Operation
+        <a href="#InternalOperationResult">InternalOperationResult</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="setWorkflowInAttempt"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -494,6 +552,7 @@ font-style: italic;
     "timeUnit" : "minutes"
   },
   "breakingChange" : true,
+  "notifySchemaChanges" : true,
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -658,6 +717,7 @@ font-style: italic;
     "timeUnit" : "minutes"
   },
   "breakingChange" : true,
+  "notifySchemaChanges" : true,
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -778,6 +838,7 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "breakingChange" : true,
+    "notifySchemaChanges" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -841,6 +902,7 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "breakingChange" : true,
+    "notifySchemaChanges" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -962,6 +1024,7 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "breakingChange" : true,
+    "notifySchemaChanges" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1025,6 +1088,7 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "breakingChange" : true,
+    "notifySchemaChanges" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1151,6 +1215,8 @@ font-style: italic;
         "stateMessagesEmitted" : 7,
         "recordsCommitted" : 1,
         "bytesEmitted" : 4,
+        "estimatedBytes" : 1,
+        "estimatedRecords" : 1,
         "recordsEmitted" : 2
       },
       "failureSummary" : {
@@ -1159,13 +1225,13 @@ font-style: italic;
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         } ],
         "partialSuccess" : true
       },
@@ -1177,6 +1243,8 @@ font-style: italic;
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -1185,6 +1253,8 @@ font-style: italic;
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -1202,6 +1272,8 @@ font-style: italic;
         "stateMessagesEmitted" : 7,
         "recordsCommitted" : 1,
         "bytesEmitted" : 4,
+        "estimatedBytes" : 1,
+        "estimatedRecords" : 1,
         "recordsEmitted" : 2
       },
       "failureSummary" : {
@@ -1210,13 +1282,13 @@ font-style: italic;
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         } ],
         "partialSuccess" : true
       },
@@ -1228,6 +1300,8 @@ font-style: italic;
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -1236,6 +1310,8 @@ font-style: italic;
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -1321,6 +1397,7 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "breakingChange" : true,
+    "notifySchemaChanges" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1384,6 +1461,7 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "breakingChange" : true,
+    "notifySchemaChanges" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1507,6 +1585,8 @@ font-style: italic;
         "stateMessagesEmitted" : 7,
         "recordsCommitted" : 1,
         "bytesEmitted" : 4,
+        "estimatedBytes" : 1,
+        "estimatedRecords" : 1,
         "recordsEmitted" : 2
       },
       "failureSummary" : {
@@ -1515,13 +1595,13 @@ font-style: italic;
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         } ],
         "partialSuccess" : true
       },
@@ -1533,6 +1613,8 @@ font-style: italic;
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -1541,6 +1623,8 @@ font-style: italic;
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -1558,6 +1642,8 @@ font-style: italic;
         "stateMessagesEmitted" : 7,
         "recordsCommitted" : 1,
         "bytesEmitted" : 4,
+        "estimatedBytes" : 1,
+        "estimatedRecords" : 1,
         "recordsEmitted" : 2
       },
       "failureSummary" : {
@@ -1566,13 +1652,13 @@ font-style: italic;
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         } ],
         "partialSuccess" : true
       },
@@ -1584,6 +1670,8 @@ font-style: italic;
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -1592,6 +1680,8 @@ font-style: italic;
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -1679,6 +1769,7 @@ containing the updated stream needs to be sent.</div>
     "timeUnit" : "minutes"
   },
   "breakingChange" : true,
+  "notifySchemaChanges" : true,
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -3785,6 +3876,166 @@ containing the updated stream needs to be sent.</div>
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="DestinationOauth">DestinationOauth</a></h1>
+  <div class="method"><a name="completeDestinationOAuth"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_oauths/complete_oauth</code></pre></div>
+    <div class="method-summary">Given a destination def ID generate an access/refresh token etc. (<span class="nickname">completeDestinationOAuth</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">CompleteDestinationOAuthRequest <a href="#CompleteDestinationOAuthRequest">CompleteDestinationOAuthRequest</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      
+      map[String, oas_any_type_not_mapped]
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="getDestinationOAuthConsent"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_oauths/get_consent_url</code></pre></div>
+    <div class="method-summary">Given a destination connector definition ID, return the URL to the consent screen where to redirect the user to. (<span class="nickname">getDestinationOAuthConsent</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">DestinationOauthConsentRequest <a href="#DestinationOauthConsentRequest">DestinationOauthConsentRequest</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#OAuthConsentRead">OAuthConsentRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "consentUrl" : "consentUrl"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#OAuthConsentRead">OAuthConsentRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="setInstancewideDestinationOauthParams"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_oauths/oauth_params/create</code></pre></div>
+    <div class="method-summary">Sets instancewide variables to be used for the oauth flow when creating this destination. When set, these variables will be injected into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know about these variables. (<span class="nickname">setInstancewideDestinationOauthParams</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SetInstancewideDestinationOauthParamsRequestBody <a href="#SetInstancewideDestinationOauthParamsRequestBody">SetInstancewideDestinationOauthParamsRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Exception occurred; see message for details.
+        <a href="#KnownExceptionInfo">KnownExceptionInfo</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <h1><a name="Health">Health</a></h1>
   <div class="method"><a name="getHealthCheck"/>
     <div class="method-path">
@@ -3971,6 +4222,58 @@ containing the updated stream needs to be sent.</div>
         <a href="#AttemptNormalizationStatusReadList">AttemptNormalizationStatusReadList</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="saveStats"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/attempt/save_stats</code></pre></div>
+    <div class="method-summary">For worker to set sync stats of a running attempt. (<span class="nickname">saveStats</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SaveStatsRequestBody <a href="#SaveStatsRequestBody">SaveStatsRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#InternalOperationResult">InternalOperationResult</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "succeeded" : true
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful Operation
+        <a href="#InternalOperationResult">InternalOperationResult</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="setWorkflowInAttempt"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -4081,6 +4384,8 @@ containing the updated stream needs to be sent.</div>
         "stateMessagesEmitted" : 7,
         "recordsCommitted" : 1,
         "bytesEmitted" : 4,
+        "estimatedBytes" : 1,
+        "estimatedRecords" : 1,
         "recordsEmitted" : 2
       },
       "failureSummary" : {
@@ -4089,13 +4394,13 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         } ],
         "partialSuccess" : true
       },
@@ -4107,6 +4412,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -4115,6 +4422,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -4132,6 +4441,8 @@ containing the updated stream needs to be sent.</div>
         "stateMessagesEmitted" : 7,
         "recordsCommitted" : 1,
         "bytesEmitted" : 4,
+        "estimatedBytes" : 1,
+        "estimatedRecords" : 1,
         "recordsEmitted" : 2
       },
       "failureSummary" : {
@@ -4140,13 +4451,13 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         } ],
         "partialSuccess" : true
       },
@@ -4158,6 +4469,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -4166,6 +4479,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -4297,6 +4612,9 @@ containing the updated stream needs to be sent.</div>
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
+  "workflowState" : {
+    "running" : true
+  },
   "job" : {
     "configId" : "configId",
     "sourceDefinition" : {
@@ -4375,6 +4693,8 @@ containing the updated stream needs to be sent.</div>
         "stateMessagesEmitted" : 7,
         "recordsCommitted" : 1,
         "bytesEmitted" : 4,
+        "estimatedBytes" : 1,
+        "estimatedRecords" : 1,
         "recordsEmitted" : 2
       },
       "failureSummary" : {
@@ -4383,13 +4703,13 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         } ],
         "partialSuccess" : true
       },
@@ -4401,6 +4721,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -4409,6 +4731,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -4426,6 +4750,8 @@ containing the updated stream needs to be sent.</div>
         "stateMessagesEmitted" : 7,
         "recordsCommitted" : 1,
         "bytesEmitted" : 4,
+        "estimatedBytes" : 1,
+        "estimatedRecords" : 1,
         "recordsEmitted" : 2
       },
       "failureSummary" : {
@@ -4434,13 +4760,13 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         } ],
         "partialSuccess" : true
       },
@@ -4452,6 +4778,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -4460,6 +4788,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -4550,6 +4880,8 @@ containing the updated stream needs to be sent.</div>
         "stateMessagesEmitted" : 7,
         "recordsCommitted" : 1,
         "bytesEmitted" : 4,
+        "estimatedBytes" : 1,
+        "estimatedRecords" : 1,
         "recordsEmitted" : 2
       },
       "failureSummary" : {
@@ -4558,13 +4890,13 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         } ],
         "partialSuccess" : true
       },
@@ -4576,6 +4908,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -4584,6 +4918,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -4601,6 +4937,8 @@ containing the updated stream needs to be sent.</div>
         "stateMessagesEmitted" : 7,
         "recordsCommitted" : 1,
         "bytesEmitted" : 4,
+        "estimatedBytes" : 1,
+        "estimatedRecords" : 1,
         "recordsEmitted" : 2
       },
       "failureSummary" : {
@@ -4609,13 +4947,13 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         } ],
         "partialSuccess" : true
       },
@@ -4627,6 +4965,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -4635,6 +4975,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -4798,6 +5140,8 @@ containing the updated stream needs to be sent.</div>
         "stateMessagesEmitted" : 7,
         "recordsCommitted" : 1,
         "bytesEmitted" : 4,
+        "estimatedBytes" : 1,
+        "estimatedRecords" : 1,
         "recordsEmitted" : 2
       },
       "failureSummary" : {
@@ -4806,13 +5150,13 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         } ],
         "partialSuccess" : true
       },
@@ -4824,6 +5168,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -4832,6 +5178,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -4844,6 +5192,8 @@ containing the updated stream needs to be sent.</div>
         "stateMessagesEmitted" : 7,
         "recordsCommitted" : 1,
         "bytesEmitted" : 4,
+        "estimatedBytes" : 1,
+        "estimatedRecords" : 1,
         "recordsEmitted" : 2
       },
       "failureSummary" : {
@@ -4852,13 +5202,13 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         } ],
         "partialSuccess" : true
       },
@@ -4870,6 +5220,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -4878,6 +5230,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -4907,6 +5261,8 @@ containing the updated stream needs to be sent.</div>
         "stateMessagesEmitted" : 7,
         "recordsCommitted" : 1,
         "bytesEmitted" : 4,
+        "estimatedBytes" : 1,
+        "estimatedRecords" : 1,
         "recordsEmitted" : 2
       },
       "failureSummary" : {
@@ -4915,13 +5271,13 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         } ],
         "partialSuccess" : true
       },
@@ -4933,6 +5289,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -4941,6 +5299,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -4953,6 +5313,8 @@ containing the updated stream needs to be sent.</div>
         "stateMessagesEmitted" : 7,
         "recordsCommitted" : 1,
         "bytesEmitted" : 4,
+        "estimatedBytes" : 1,
+        "estimatedRecords" : 1,
         "recordsEmitted" : 2
       },
       "failureSummary" : {
@@ -4961,13 +5323,13 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 1
+          "timestamp" : 6
         } ],
         "partialSuccess" : true
       },
@@ -4979,6 +5341,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -4987,6 +5351,8 @@ containing the updated stream needs to be sent.</div>
           "stateMessagesEmitted" : 7,
           "recordsCommitted" : 1,
           "bytesEmitted" : 4,
+          "estimatedBytes" : 1,
+          "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
         "streamName" : "streamName"
@@ -5132,325 +5498,6 @@ containing the updated stream needs to be sent.</div>
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
-  <h1><a name="Oauth">Oauth</a></h1>
-  <div class="method"><a name="completeDestinationOAuth"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_oauths/complete_oauth</code></pre></div>
-    <div class="method-summary">Given a destination def ID generate an access/refresh token etc. (<span class="nickname">completeDestinationOAuth</span>)</div>
-    <div class="method-notes"></div>
-
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">CompleteDestinationOAuthRequest <a href="#CompleteDestinationOAuthRequest">CompleteDestinationOAuthRequest</a> (required)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      
-      map[String, oas_any_type_not_mapped]
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    Successful operation
-        
-    <h4 class="field-label">404</h4>
-    Object with given id was not found.
-        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
-    <h4 class="field-label">422</h4>
-    Input failed validation
-        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="completeSourceOAuth"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_oauths/complete_oauth</code></pre></div>
-    <div class="method-summary">Given a source def ID generate an access/refresh token etc. (<span class="nickname">completeSourceOAuth</span>)</div>
-    <div class="method-notes"></div>
-
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">CompleteSourceOauthRequest <a href="#CompleteSourceOauthRequest">CompleteSourceOauthRequest</a> (required)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      
-      map[String, oas_any_type_not_mapped]
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    Successful operation
-        
-    <h4 class="field-label">404</h4>
-    Object with given id was not found.
-        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
-    <h4 class="field-label">422</h4>
-    Input failed validation
-        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="getDestinationOAuthConsent"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_oauths/get_consent_url</code></pre></div>
-    <div class="method-summary">Given a destination connector definition ID, return the URL to the consent screen where to redirect the user to. (<span class="nickname">getDestinationOAuthConsent</span>)</div>
-    <div class="method-notes"></div>
-
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">DestinationOauthConsentRequest <a href="#DestinationOauthConsentRequest">DestinationOauthConsentRequest</a> (required)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#OAuthConsentRead">OAuthConsentRead</a>
-      
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: application/json</div>
-    <pre class="example"><code>{
-  "consentUrl" : "consentUrl"
-}</code></pre>
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    Successful operation
-        <a href="#OAuthConsentRead">OAuthConsentRead</a>
-    <h4 class="field-label">404</h4>
-    Object with given id was not found.
-        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
-    <h4 class="field-label">422</h4>
-    Input failed validation
-        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="getSourceOAuthConsent"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_oauths/get_consent_url</code></pre></div>
-    <div class="method-summary">Given a source connector definition ID, return the URL to the consent screen where to redirect the user to. (<span class="nickname">getSourceOAuthConsent</span>)</div>
-    <div class="method-notes"></div>
-
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">SourceOauthConsentRequest <a href="#SourceOauthConsentRequest">SourceOauthConsentRequest</a> (required)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#OAuthConsentRead">OAuthConsentRead</a>
-      
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: application/json</div>
-    <pre class="example"><code>{
-  "consentUrl" : "consentUrl"
-}</code></pre>
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    Successful operation
-        <a href="#OAuthConsentRead">OAuthConsentRead</a>
-    <h4 class="field-label">404</h4>
-    Object with given id was not found.
-        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
-    <h4 class="field-label">422</h4>
-    Input failed validation
-        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="setInstancewideDestinationOauthParams"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_oauths/oauth_params/create</code></pre></div>
-    <div class="method-summary">Sets instancewide variables to be used for the oauth flow when creating this destination. When set, these variables will be injected into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know about these variables. (<span class="nickname">setInstancewideDestinationOauthParams</span>)</div>
-    <div class="method-notes"></div>
-
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">SetInstancewideDestinationOauthParamsRequestBody <a href="#SetInstancewideDestinationOauthParamsRequestBody">SetInstancewideDestinationOauthParamsRequestBody</a> (required)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-
-
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    Successful
-        <a href="#"></a>
-    <h4 class="field-label">400</h4>
-    Exception occurred; see message for details.
-        <a href="#KnownExceptionInfo">KnownExceptionInfo</a>
-    <h4 class="field-label">404</h4>
-    Object with given id was not found.
-        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="setInstancewideSourceOauthParams"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_oauths/oauth_params/create</code></pre></div>
-    <div class="method-summary">Sets instancewide variables to be used for the oauth flow when creating this source. When set, these variables will be injected into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know about these variables. (<span class="nickname">setInstancewideSourceOauthParams</span>)</div>
-    <div class="method-notes"></div>
-
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">SetInstancewideSourceOauthParamsRequestBody <a href="#SetInstancewideSourceOauthParamsRequestBody">SetInstancewideSourceOauthParamsRequestBody</a> (required)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-
-
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    Successful
-        <a href="#"></a>
-    <h4 class="field-label">400</h4>
-    Exception occurred; see message for details.
-        <a href="#KnownExceptionInfo">KnownExceptionInfo</a>
-    <h4 class="field-label">404</h4>
-    Object with given id was not found.
-        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
-  </div> <!-- method -->
-  <hr/>
   <h1><a name="Openapi">Openapi</a></h1>
   <div class="method"><a name="getOpenApiSpec"/>
     <div class="method-path">
@@ -5585,8 +5632,13 @@ containing the updated stream needs to be sent.</div>
   "operatorConfiguration" : {
     "webhook" : {
       "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "dbtCloud" : {
+        "accountId" : 0,
+        "jobId" : 6
+      },
       "executionUrl" : "executionUrl",
-      "executionBody" : "executionBody"
+      "executionBody" : "executionBody",
+      "webhookType" : "dbtCloud"
     },
     "normalization" : {
       "option" : "basic"
@@ -5706,8 +5758,13 @@ containing the updated stream needs to be sent.</div>
   "operatorConfiguration" : {
     "webhook" : {
       "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "dbtCloud" : {
+        "accountId" : 0,
+        "jobId" : 6
+      },
       "executionUrl" : "executionUrl",
-      "executionBody" : "executionBody"
+      "executionBody" : "executionBody",
+      "webhookType" : "dbtCloud"
     },
     "normalization" : {
       "option" : "basic"
@@ -5783,8 +5840,13 @@ containing the updated stream needs to be sent.</div>
     "operatorConfiguration" : {
       "webhook" : {
         "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "dbtCloud" : {
+          "accountId" : 0,
+          "jobId" : 6
+        },
         "executionUrl" : "executionUrl",
-        "executionBody" : "executionBody"
+        "executionBody" : "executionBody",
+        "webhookType" : "dbtCloud"
       },
       "normalization" : {
         "option" : "basic"
@@ -5803,8 +5865,13 @@ containing the updated stream needs to be sent.</div>
     "operatorConfiguration" : {
       "webhook" : {
         "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "dbtCloud" : {
+          "accountId" : 0,
+          "jobId" : 6
+        },
         "executionUrl" : "executionUrl",
-        "executionBody" : "executionBody"
+        "executionBody" : "executionBody",
+        "webhookType" : "dbtCloud"
       },
       "normalization" : {
         "option" : "basic"
@@ -5880,8 +5947,13 @@ containing the updated stream needs to be sent.</div>
   "operatorConfiguration" : {
     "webhook" : {
       "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "dbtCloud" : {
+        "accountId" : 0,
+        "jobId" : 6
+      },
       "executionUrl" : "executionUrl",
-      "executionBody" : "executionBody"
+      "executionBody" : "executionBody",
+      "webhookType" : "dbtCloud"
     },
     "normalization" : {
       "option" : "basic"
@@ -6082,6 +6154,7 @@ containing the updated stream needs to be sent.</div>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "breakingChange" : true,
   "catalog" : {
     "streams" : [ {
       "stream" : {
@@ -6124,6 +6197,51 @@ containing the updated stream needs to be sent.</div>
       "logLines" : [ "logLines", "logLines" ]
     },
     "succeeded" : true
+  },
+  "catalogDiff" : {
+    "transforms" : [ {
+      "streamDescriptor" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "transformType" : "add_stream",
+      "updateStream" : [ {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { },
+        "breaking" : true
+      }, {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { },
+        "breaking" : true
+      } ]
+    }, {
+      "streamDescriptor" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "transformType" : "add_stream",
+      "updateStream" : [ {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { },
+        "breaking" : true
+      }, {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { },
+        "breaking" : true
+      } ]
+    } ]
   }
 }</code></pre>
 
@@ -6496,6 +6614,7 @@ containing the updated stream needs to be sent.</div>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "breakingChange" : true,
   "catalog" : {
     "streams" : [ {
       "stream" : {
@@ -6538,6 +6657,51 @@ containing the updated stream needs to be sent.</div>
       "logLines" : [ "logLines", "logLines" ]
     },
     "succeeded" : true
+  },
+  "catalogDiff" : {
+    "transforms" : [ {
+      "streamDescriptor" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "transformType" : "add_stream",
+      "updateStream" : [ {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { },
+        "breaking" : true
+      }, {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { },
+        "breaking" : true
+      } ]
+    }, {
+      "streamDescriptor" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "transformType" : "add_stream",
+      "updateStream" : [ {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { },
+        "breaking" : true
+      }, {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { },
+        "breaking" : true
+      } ]
+    } ]
   }
 }</code></pre>
 
@@ -8153,6 +8317,166 @@ containing the updated stream needs to be sent.</div>
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="SourceOauth">SourceOauth</a></h1>
+  <div class="method"><a name="completeSourceOAuth"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_oauths/complete_oauth</code></pre></div>
+    <div class="method-summary">Given a source def ID generate an access/refresh token etc. (<span class="nickname">completeSourceOAuth</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">CompleteSourceOauthRequest <a href="#CompleteSourceOauthRequest">CompleteSourceOauthRequest</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      
+      map[String, oas_any_type_not_mapped]
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="getSourceOAuthConsent"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_oauths/get_consent_url</code></pre></div>
+    <div class="method-summary">Given a source connector definition ID, return the URL to the consent screen where to redirect the user to. (<span class="nickname">getSourceOAuthConsent</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceOauthConsentRequest <a href="#SourceOauthConsentRequest">SourceOauthConsentRequest</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#OAuthConsentRead">OAuthConsentRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "consentUrl" : "consentUrl"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#OAuthConsentRead">OAuthConsentRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="setInstancewideSourceOauthParams"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_oauths/oauth_params/create</code></pre></div>
+    <div class="method-summary">Sets instancewide variables to be used for the oauth flow when creating this source. When set, these variables will be injected into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know about these variables. (<span class="nickname">setInstancewideSourceOauthParams</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SetInstancewideSourceOauthParamsRequestBody <a href="#SetInstancewideSourceOauthParamsRequestBody">SetInstancewideSourceOauthParamsRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Exception occurred; see message for details.
+        <a href="#KnownExceptionInfo">KnownExceptionInfo</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <h1><a name="State">State</a></h1>
   <div class="method"><a name="createOrUpdateState"/>
     <div class="method-path">
@@ -8483,24 +8807,19 @@ containing the updated stream needs to be sent.</div>
       } ]
     } ]
   },
-  "resourceRequirements" : {
-    "cpu_limit" : "cpu_limit",
-    "memory_request" : "memory_request",
-    "memory_limit" : "memory_limit",
-    "cpu_request" : "cpu_request"
-  },
-  "schedule" : {
-    "units" : 0,
-    "timeUnit" : "minutes"
-  },
   "operations" : [ {
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "operatorConfiguration" : {
       "webhook" : {
         "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "dbtCloud" : {
+          "accountId" : 0,
+          "jobId" : 6
+        },
         "executionUrl" : "executionUrl",
-        "executionBody" : "executionBody"
+        "executionBody" : "executionBody",
+        "webhookType" : "dbtCloud"
       },
       "normalization" : {
         "option" : "basic"
@@ -8519,8 +8838,13 @@ containing the updated stream needs to be sent.</div>
     "operatorConfiguration" : {
       "webhook" : {
         "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "dbtCloud" : {
+          "accountId" : 0,
+          "jobId" : 6
+        },
         "executionUrl" : "executionUrl",
-        "executionBody" : "executionBody"
+        "executionBody" : "executionBody",
+        "webhookType" : "dbtCloud"
       },
       "normalization" : {
         "option" : "basic"
@@ -8535,6 +8859,28 @@ containing the updated stream needs to be sent.</div>
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ],
   "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "notifySchemaChanges" : true,
+  "namespaceFormat" : "${SOURCE_NAMESPACE}",
+  "scheduleData" : {
+    "cron" : {
+      "cronExpression" : "cronExpression",
+      "cronTimeZone" : "cronTimeZone"
+    },
+    "basicSchedule" : {
+      "units" : 6,
+      "timeUnit" : "minutes"
+    }
+  },
+  "resourceRequirements" : {
+    "cpu_limit" : "cpu_limit",
+    "memory_request" : "memory_request",
+    "memory_limit" : "memory_limit",
+    "cpu_request" : "cpu_request"
+  },
+  "schedule" : {
+    "units" : 0,
+    "timeUnit" : "minutes"
+  },
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -8570,18 +8916,7 @@ containing the updated stream needs to be sent.</div>
     } ]
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "namespaceFormat" : "${SOURCE_NAMESPACE}",
-  "operationIds" : [ null, null ],
-  "scheduleData" : {
-    "cron" : {
-      "cronExpression" : "cronExpression",
-      "cronTimeZone" : "cronTimeZone"
-    },
-    "basicSchedule" : {
-      "units" : 6,
-      "timeUnit" : "minutes"
-    }
-  }
+  "operationIds" : [ null, null ]
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -8708,24 +9043,19 @@ containing the updated stream needs to be sent.</div>
       } ]
     } ]
   },
-  "resourceRequirements" : {
-    "cpu_limit" : "cpu_limit",
-    "memory_request" : "memory_request",
-    "memory_limit" : "memory_limit",
-    "cpu_request" : "cpu_request"
-  },
-  "schedule" : {
-    "units" : 0,
-    "timeUnit" : "minutes"
-  },
   "operations" : [ {
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "operatorConfiguration" : {
       "webhook" : {
         "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "dbtCloud" : {
+          "accountId" : 0,
+          "jobId" : 6
+        },
         "executionUrl" : "executionUrl",
-        "executionBody" : "executionBody"
+        "executionBody" : "executionBody",
+        "webhookType" : "dbtCloud"
       },
       "normalization" : {
         "option" : "basic"
@@ -8744,8 +9074,13 @@ containing the updated stream needs to be sent.</div>
     "operatorConfiguration" : {
       "webhook" : {
         "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "dbtCloud" : {
+          "accountId" : 0,
+          "jobId" : 6
+        },
         "executionUrl" : "executionUrl",
-        "executionBody" : "executionBody"
+        "executionBody" : "executionBody",
+        "webhookType" : "dbtCloud"
       },
       "normalization" : {
         "option" : "basic"
@@ -8760,6 +9095,28 @@ containing the updated stream needs to be sent.</div>
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ],
   "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "notifySchemaChanges" : true,
+  "namespaceFormat" : "${SOURCE_NAMESPACE}",
+  "scheduleData" : {
+    "cron" : {
+      "cronExpression" : "cronExpression",
+      "cronTimeZone" : "cronTimeZone"
+    },
+    "basicSchedule" : {
+      "units" : 6,
+      "timeUnit" : "minutes"
+    }
+  },
+  "resourceRequirements" : {
+    "cpu_limit" : "cpu_limit",
+    "memory_request" : "memory_request",
+    "memory_limit" : "memory_limit",
+    "cpu_request" : "cpu_request"
+  },
+  "schedule" : {
+    "units" : 0,
+    "timeUnit" : "minutes"
+  },
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -8795,18 +9152,7 @@ containing the updated stream needs to be sent.</div>
     } ]
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "namespaceFormat" : "${SOURCE_NAMESPACE}",
-  "operationIds" : [ null, null ],
-  "scheduleData" : {
-    "cron" : {
-      "cronExpression" : "cronExpression",
-      "cronTimeZone" : "cronTimeZone"
-    },
-    "basicSchedule" : {
-      "units" : 6,
-      "timeUnit" : "minutes"
-    }
-  }
+  "operationIds" : [ null, null ]
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -9181,24 +9527,19 @@ containing the updated stream needs to be sent.</div>
       } ]
     } ]
   },
-  "resourceRequirements" : {
-    "cpu_limit" : "cpu_limit",
-    "memory_request" : "memory_request",
-    "memory_limit" : "memory_limit",
-    "cpu_request" : "cpu_request"
-  },
-  "schedule" : {
-    "units" : 0,
-    "timeUnit" : "minutes"
-  },
   "operations" : [ {
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "operatorConfiguration" : {
       "webhook" : {
         "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "dbtCloud" : {
+          "accountId" : 0,
+          "jobId" : 6
+        },
         "executionUrl" : "executionUrl",
-        "executionBody" : "executionBody"
+        "executionBody" : "executionBody",
+        "webhookType" : "dbtCloud"
       },
       "normalization" : {
         "option" : "basic"
@@ -9217,8 +9558,13 @@ containing the updated stream needs to be sent.</div>
     "operatorConfiguration" : {
       "webhook" : {
         "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "dbtCloud" : {
+          "accountId" : 0,
+          "jobId" : 6
+        },
         "executionUrl" : "executionUrl",
-        "executionBody" : "executionBody"
+        "executionBody" : "executionBody",
+        "webhookType" : "dbtCloud"
       },
       "normalization" : {
         "option" : "basic"
@@ -9233,6 +9579,28 @@ containing the updated stream needs to be sent.</div>
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ],
   "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "notifySchemaChanges" : true,
+  "namespaceFormat" : "${SOURCE_NAMESPACE}",
+  "scheduleData" : {
+    "cron" : {
+      "cronExpression" : "cronExpression",
+      "cronTimeZone" : "cronTimeZone"
+    },
+    "basicSchedule" : {
+      "units" : 6,
+      "timeUnit" : "minutes"
+    }
+  },
+  "resourceRequirements" : {
+    "cpu_limit" : "cpu_limit",
+    "memory_request" : "memory_request",
+    "memory_limit" : "memory_limit",
+    "cpu_request" : "cpu_request"
+  },
+  "schedule" : {
+    "units" : 0,
+    "timeUnit" : "minutes"
+  },
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -9268,18 +9636,7 @@ containing the updated stream needs to be sent.</div>
     } ]
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "namespaceFormat" : "${SOURCE_NAMESPACE}",
-  "operationIds" : [ null, null ],
-  "scheduleData" : {
-    "cron" : {
-      "cronExpression" : "cronExpression",
-      "cronTimeZone" : "cronTimeZone"
-    },
-    "basicSchedule" : {
-      "units" : 6,
-      "timeUnit" : "minutes"
-    }
-  }
+  "operationIds" : [ null, null ]
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -9452,6 +9809,97 @@ containing the updated stream needs to be sent.</div>
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
       <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#WorkspaceRead">WorkspaceRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "news" : true,
+  "webhookConfigs" : [ {
+    "name" : "name",
+    "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "name" : "name",
+    "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ],
+  "displaySetupWizard" : true,
+  "initialSetupComplete" : true,
+  "anonymousDataCollection" : true,
+  "customerId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "name" : "name",
+  "firstCompletedSync" : true,
+  "feedbackDone" : true,
+  "email" : "email",
+  "slug" : "slug",
+  "securityUpdates" : true,
+  "notifications" : [ {
+    "slackConfiguration" : {
+      "webhook" : "webhook"
+    },
+    "sendOnSuccess" : false,
+    "sendOnFailure" : true,
+    "customerioConfiguration" : "{}"
+  }, {
+    "slackConfiguration" : {
+      "webhook" : "webhook"
+    },
+    "sendOnSuccess" : false,
+    "sendOnFailure" : true,
+    "customerioConfiguration" : "{}"
+  } ],
+  "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#WorkspaceRead">WorkspaceRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="getWorkspaceByConnectionId"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/workspaces/get_by_connection_id</code></pre></div>
+    <div class="method-summary">Find workspace by connection id (<span class="nickname">getWorkspaceByConnectionId</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">ConnectionIdRequestBody <a href="#ConnectionIdRequestBody">ConnectionIdRequestBody</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -10056,6 +10504,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#LogType"><code>LogType</code> - </a></li>
     <li><a href="#LogsRequestBody"><code>LogsRequestBody</code> - </a></li>
     <li><a href="#NamespaceDefinitionType"><code>NamespaceDefinitionType</code> - </a></li>
+    <li><a href="#NonBreakingChangesPreference"><code>NonBreakingChangesPreference</code> - </a></li>
     <li><a href="#NotFoundKnownExceptionInfo"><code>NotFoundKnownExceptionInfo</code> - </a></li>
     <li><a href="#Notification"><code>Notification</code> - </a></li>
     <li><a href="#NotificationRead"><code>NotificationRead</code> - </a></li>
@@ -10073,6 +10522,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#OperatorNormalization"><code>OperatorNormalization</code> - </a></li>
     <li><a href="#OperatorType"><code>OperatorType</code> - </a></li>
     <li><a href="#OperatorWebhook"><code>OperatorWebhook</code> - </a></li>
+    <li><a href="#OperatorWebhook_dbtCloud"><code>OperatorWebhook_dbtCloud</code> - </a></li>
     <li><a href="#Pagination"><code>Pagination</code> - </a></li>
     <li><a href="#PrivateDestinationDefinitionRead"><code>PrivateDestinationDefinitionRead</code> - </a></li>
     <li><a href="#PrivateDestinationDefinitionReadList"><code>PrivateDestinationDefinitionReadList</code> - </a></li>
@@ -10081,6 +10531,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#ReleaseStage"><code>ReleaseStage</code> - </a></li>
     <li><a href="#ResetConfig"><code>ResetConfig</code> - </a></li>
     <li><a href="#ResourceRequirements"><code>ResourceRequirements</code> - </a></li>
+    <li><a href="#SaveStatsRequestBody"><code>SaveStatsRequestBody</code> - </a></li>
     <li><a href="#SchemaChange"><code>SchemaChange</code> - </a></li>
     <li><a href="#SetInstancewideDestinationOauthParamsRequestBody"><code>SetInstancewideDestinationOauthParamsRequestBody</code> - </a></li>
     <li><a href="#SetInstancewideSourceOauthParamsRequestBody"><code>SetInstancewideSourceOauthParamsRequestBody</code> - </a></li>
@@ -10124,6 +10575,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#WebBackendWorkspaceStateResult"><code>WebBackendWorkspaceStateResult</code> - </a></li>
     <li><a href="#WebhookConfigRead"><code>WebhookConfigRead</code> - </a></li>
     <li><a href="#WebhookConfigWrite"><code>WebhookConfigWrite</code> - </a></li>
+    <li><a href="#WorkflowStateRead"><code>WorkflowStateRead</code> - </a></li>
     <li><a href="#WorkspaceCreate"><code>WorkspaceCreate</code> - </a></li>
     <li><a href="#WorkspaceGiveFeedback"><code>WorkspaceGiveFeedback</code> - </a></li>
     <li><a href="#WorkspaceIdRequestBody"><code>WorkspaceIdRequestBody</code> - </a></li>
@@ -10275,6 +10727,8 @@ containing the updated stream needs to be sent.</div>
 <div class="param">bytesEmitted (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
 <div class="param">stateMessagesEmitted (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
 <div class="param">recordsCommitted (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">estimatedRecords (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">estimatedBytes (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10338,6 +10792,7 @@ containing the updated stream needs to be sent.</div>
 <div class="param">redirectUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> When completing OAuth flow to gain an access token, some API sometimes requires to verify that the app re-send the redirectUrl that was used when consent was given. </div>
 <div class="param">queryParams (optional)</div><div class="param-desc"><span class="param-type"><a href="#AnyType">map[String, oas_any_type_not_mapped]</a></span> The query parameters present in the redirect URL after a user granted consent e.g auth code </div>
 <div class="param">oAuthInputConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuthConfiguration">OAuthConfiguration</a></span>  </div>
+<div class="param">destinationId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10349,6 +10804,7 @@ containing the updated stream needs to be sent.</div>
 <div class="param">redirectUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> When completing OAuth flow to gain an access token, some API sometimes requires to verify that the app re-send the redirectUrl that was used when consent was given. </div>
 <div class="param">queryParams (optional)</div><div class="param-desc"><span class="param-type"><a href="#AnyType">map[String, oas_any_type_not_mapped]</a></span> The query parameters present in the redirect URL after a user granted consent e.g auth code </div>
 <div class="param">oAuthInputConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuthConfiguration">OAuthConfiguration</a></span>  </div>
+<div class="param">sourceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10370,6 +10826,8 @@ containing the updated stream needs to be sent.</div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
+<div class="param">notifySchemaChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">nonBreakingChangesPreference (optional)</div><div class="param-desc"><span class="param-type"><a href="#NonBreakingChangesPreference">NonBreakingChangesPreference</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10400,6 +10858,8 @@ containing the updated stream needs to be sent.</div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
 <div class="param">breakingChange </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">notifySchemaChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">nonBreakingChangesPreference (optional)</div><div class="param-desc"><span class="param-type"><a href="#NonBreakingChangesPreference">NonBreakingChangesPreference</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10519,6 +10979,9 @@ containing the updated stream needs to be sent.</div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
+<div class="param">notifySchemaChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">nonBreakingChangesPreference (optional)</div><div class="param-desc"><span class="param-type"><a href="#NonBreakingChangesPreference">NonBreakingChangesPreference</a></span>  </div>
+<div class="param">breakingChange (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10725,6 +11188,7 @@ containing the updated stream needs to be sent.</div>
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">redirectUrl </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The url to redirect to after getting the user consent </div>
 <div class="param">oAuthInputConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuthConfiguration">OAuthConfiguration</a></span>  </div>
+<div class="param">destinationId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10887,6 +11351,7 @@ containing the updated stream needs to be sent.</div>
     <div class="field-items">
       <div class="param">job </div><div class="param-desc"><span class="param-type"><a href="#JobDebugRead">JobDebugRead</a></span>  </div>
 <div class="param">attempts </div><div class="param-desc"><span class="param-type"><a href="#AttemptInfoRead">array[AttemptInfoRead]</a></span>  </div>
+<div class="param">workflowState (optional)</div><div class="param-desc"><span class="param-type"><a href="#WorkflowStateRead">WorkflowStateRead</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11017,6 +11482,12 @@ containing the updated stream needs to be sent.</div>
   <div class="model">
     <h3><a name="NamespaceDefinitionType"><code>NamespaceDefinitionType</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'>Method used for computing final namespace in destination</div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="NonBreakingChangesPreference"><code>NonBreakingChangesPreference</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
     <div class="field-items">
           </div>  <!-- field-items -->
   </div>
@@ -11168,9 +11639,21 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <h3><a name="OperatorWebhook"><code>OperatorWebhook</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">executionUrl </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The URL to call to execute the webhook operation via POST request. </div>
-<div class="param">executionBody (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> If populated, this will be sent with the POST request. </div>
-<div class="param">webhookConfigId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span> The id of the webhook configs to use from the workspace. format: uuid</div>
+      <div class="param">webhookConfigId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span> The id of the webhook configs to use from the workspace. format: uuid</div>
+<div class="param">webhookType (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">dbtCloud</div>
+<div class="param">dbtCloud (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperatorWebhook_dbtCloud">OperatorWebhook_dbtCloud</a></span>  </div>
+<div class="param">executionUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> DEPRECATED. Populate dbtCloud instead. </div>
+<div class="param">executionBody (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> DEPRECATED. Populate dbtCloud instead. </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="OperatorWebhook_dbtCloud"><code>OperatorWebhook_dbtCloud</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">accountId </div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> The account id associated with the job </div>
+<div class="param">jobId </div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> The job id associated with the job </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11232,6 +11715,16 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">cpu_limit (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">memory_request (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">memory_limit (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="SaveStatsRequestBody"><code>SaveStatsRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">jobId </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">attemptNumber </div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  format: int32</div>
+<div class="param">stats </div><div class="param-desc"><span class="param-type"><a href="#AttemptStats">AttemptStats</a></span>  </div>
+<div class="param">streamStats (optional)</div><div class="param-desc"><span class="param-type"><a href="#AttemptStreamStats">array[AttemptStreamStats]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11396,6 +11889,8 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
       <div class="param">catalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#SynchronousJobRead">SynchronousJobRead</a></span>  </div>
 <div class="param">catalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">catalogDiff (optional)</div><div class="param-desc"><span class="param-type"><a href="#CatalogDiff">CatalogDiff</a></span>  </div>
+<div class="param">breakingChange (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11403,6 +11898,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">connectionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">disable_cache (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -11421,6 +11917,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">redirectUrl </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The url to redirect to after getting the user consent </div>
 <div class="param">oAuthInputConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuthConfiguration">OAuthConfiguration</a></span>  </div>
+<div class="param">sourceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11589,6 +12086,8 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">catalogDiff (optional)</div><div class="param-desc"><span class="param-type"><a href="#CatalogDiff">CatalogDiff</a></span>  </div>
 <div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
 <div class="param">schemaChange </div><div class="param-desc"><span class="param-type"><a href="#SchemaChange">SchemaChange</a></span>  </div>
+<div class="param">notifySchemaChanges </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">nonBreakingChangesPreference </div><div class="param-desc"><span class="param-type"><a href="#NonBreakingChangesPreference">NonBreakingChangesPreference</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11625,6 +12124,8 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#WebBackendOperationCreateOrUpdate">array[WebBackendOperationCreateOrUpdate]</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
+<div class="param">notifySchemaChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">nonBreakingChangesPreference (optional)</div><div class="param-desc"><span class="param-type"><a href="#NonBreakingChangesPreference">NonBreakingChangesPreference</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11675,6 +12176,13 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
       <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> human readable name for this webhook e.g. for UI display. </div>
 <div class="param">authToken (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> an auth token, to be passed as the value for an HTTP Authorization header. </div>
 <div class="param">validationUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> if supplied, the webhook config will be validated by checking that this URL returns a 2xx response. </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WorkflowStateRead"><code>WorkflowStateRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">running </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

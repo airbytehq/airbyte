@@ -7,6 +7,7 @@ package io.airbyte.workers;
 import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 
 public class WorkerMetricReporter {
 
@@ -21,9 +22,9 @@ public class WorkerMetricReporter {
     this.metricClient = metricClient;
   }
 
-  public void trackSchemaValidationError(final String stream) {
+  public void trackSchemaValidationError(final AirbyteStreamNameNamespacePair stream) {
     metricClient.count(OssMetricsRegistry.NUM_SOURCE_STREAMS_WITH_RECORD_SCHEMA_VALIDATION_ERRORS, 1, new MetricAttribute("docker_repo", dockerRepo),
-        new MetricAttribute("docker_version", dockerVersion), new MetricAttribute("stream", stream));
+        new MetricAttribute("docker_version", dockerVersion), new MetricAttribute("stream", stream.toString()));
   }
 
   public void trackStateMetricTrackerError() {

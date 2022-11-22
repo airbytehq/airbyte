@@ -9,17 +9,18 @@
   z-index: 3;
   font-size: 12px;
   line-height: 30px;
-  color: colors.$black;
 
   & a {
-    color: colors.$black;
+    color: inherit;
   }
 }
 
-.beige {
-  background-color: colors.$beige-100;
+.default {
+  background-color: colors.$blue;
+  color: colors.$white;
 }
 
 .red {
   background-color: colors.$red;
+  color: colors.$black;
 }

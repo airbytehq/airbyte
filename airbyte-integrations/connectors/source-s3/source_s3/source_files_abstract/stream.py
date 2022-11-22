@@ -12,10 +12,12 @@ from traceback import format_exc
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
 
+from ..exceptions import S3Exception
 from .file_info import FileInfo
 from .formats.abstract_file_parser import AbstractFileParser
 from .formats.avro_parser import AvroParser
@@ -221,6 +223,7 @@ class FileStream(Stream, ABC):
 
             file_reader = self.fileformatparser_class(self._format)
 
+            processed_files = []
             for file_info in self.get_time_ordered_file_infos():
                 # skip this file if it's earlier than min_datetime
                 if (min_datetime is not None) and (file_info.last_modified < min_datetime):
@@ -228,7 +231,8 @@ class FileStream(Stream, ABC):
 
                 storagefile = self.storagefile_class(file_info, self._provider)
                 with storagefile.open(file_reader.is_binary) as f:
-                    this_schema = file_reader.get_inferred_schema(f)
+                    this_schema = file_reader.get_inferred_schema(f, file_info)
+                    processed_files.append(file_info)
 
                 if this_schema == master_schema:
                     continue  # exact schema match so go to next file
@@ -249,15 +253,18 @@ class FileStream(Stream, ABC):
                             master_schema[col] = broadest_of_types
                         if override_type or type_explicitly_defined:
                             LOGGER.warn(
-                                f"Detected mismatched datatype on column '{col}', in file '{storagefile.url}'. "
+                                f"Detected mismatched datatype on column '{col}', in file '{file_info}'. "
                                 + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'. "
                                 + f"Airbyte will attempt to coerce this to {master_schema[col]} on read."
                             )
                             continue
                         # otherwise throw an error on mismatching datatypes
-                        raise RuntimeError(
-                            f"Detected mismatched datatype on column '{col}', in file '{storagefile.url}'. "
-                            + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'."
+                        raise S3Exception(
+                            processed_files,
+                            "Column type mismatch",
+                            f"Detected mismatched datatype on column '{col}', in file '{file_info}'. "
+                            + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'.",
+                            failure_type=FailureType.config_error,
                         )
 
                 # missing columns in this_schema doesn't affect our master_schema, so we don't check for it here
@@ -343,7 +350,7 @@ class FileStream(Stream, ABC):
             storage_file: StorageFile = file_item["storage_file"]
             with storage_file.open(file_reader.is_binary) as f:
                 # TODO: make this more efficient than mutating every record one-by-one as they stream
-                for record in file_reader.stream_records(f):
+                for record in file_reader.stream_records(f, storage_file.file_info):
                     schema_matched_record = self._match_target_schema(record, list(self._get_schema_map().keys()))
                     complete_record = self._add_extra_fields_from_map(
                         schema_matched_record,

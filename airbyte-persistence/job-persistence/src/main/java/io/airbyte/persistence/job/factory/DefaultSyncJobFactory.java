@@ -7,6 +7,7 @@ package io.airbyte.persistence.job.factory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
@@ -91,7 +92,9 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
           destinationConnection,
           standardSync,
           sourceImageName,
+          new Version(sourceDefinition.getProtocolVersion()),
           destinationImageName,
+          new Version(destinationDefinition.getProtocolVersion()),
           standardSyncOperations,
           workspace.getWebhookOperationConfigs(),
           sourceResourceRequirements,

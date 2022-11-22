@@ -8,6 +8,29 @@ const CRON_REGEX_MAP = [
   /^(([0-9]|,|-|\*|\/)+)?/, // year
 ];
 
+const ONLY_NUMBERS_REGEX = /^([0-9]){1,2}$/;
+
+export function validateCronFrequencyOneHourOrMore(expression: string | undefined): boolean {
+  // yup passes string | undefined, this may be fixed in the future: https://github.com/jquense/yup/issues/1367
+  if (expression === undefined) {
+    return false;
+  }
+
+  try {
+    const cronFields = expression.trim().split(/\s+/g);
+    const [seconds, minutes] = cronFields;
+    [seconds, minutes].forEach((field) => {
+      if (!ONLY_NUMBERS_REGEX.test(field)) {
+        throw new Error(`"${field}" must be a one or two digit number`);
+      }
+    });
+  } catch (e) {
+    return false;
+  }
+
+  return true;
+}
+
 export function validateCronExpression(expression: string | undefined): boolean {
   // yup passes string | undefined, this may be fixed in the future: https://github.com/jquense/yup/issues/1367
   if (expression === undefined) {
@@ -15,7 +38,7 @@ export function validateCronExpression(expression: string | undefined): boolean 
   }
 
   try {
-    const cronFields = expression.trim().split(" ");
+    const cronFields = expression.trim().split(/\s+/g);
 
     if (cronFields.length < 6) {
       throw new Error(

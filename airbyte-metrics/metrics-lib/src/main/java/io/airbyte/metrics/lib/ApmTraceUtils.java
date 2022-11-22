@@ -64,22 +64,22 @@ public class ApmTraceUtils {
   /**
    * Adds an exception to the currently active span, if one exists.
    *
-   * @param e The {@link Exception} to be added to the currently active span.
+   * @param t The {@link Throwable} to be added to the currently active span.
    */
-  public static void addExceptionToTrace(final Exception e) {
-    addExceptionToTrace(GlobalTracer.get().activeSpan(), e);
+  public static void addExceptionToTrace(final Throwable t) {
+    addExceptionToTrace(GlobalTracer.get().activeSpan(), t);
   }
 
   /**
    * Adds an exception to the provided span, if one exists.
    *
    * @param span The {@link Span} that will be associated with the exception.
-   * @param e The {@link Exception} to be added to the provided span.
+   * @param t The {@link Throwable} to be added to the provided span.
    */
-  public static void addExceptionToTrace(final Span span, final Exception e) {
+  public static void addExceptionToTrace(final Span span, final Throwable t) {
     if (span != null) {
       span.setTag(Tags.ERROR, true);
-      span.log(Map.of(Fields.ERROR_OBJECT, e));
+      span.log(Map.of(Fields.ERROR_OBJECT, t));
     }
   }
 

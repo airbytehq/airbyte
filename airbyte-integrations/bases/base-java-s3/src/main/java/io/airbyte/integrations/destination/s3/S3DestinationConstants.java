@@ -16,6 +16,7 @@ public final class S3DestinationConstants {
   // gzip compression for CSV and JSONL
   public static final String COMPRESSION_ARG_NAME = "compression";
   public static final String COMPRESSION_TYPE_ARG_NAME = "compression_type";
+  public static final String FLATTEN_DATA = "flatten_data";
   public static final CompressionType DEFAULT_COMPRESSION_TYPE = CompressionType.GZIP;
 
   private S3DestinationConstants() {}

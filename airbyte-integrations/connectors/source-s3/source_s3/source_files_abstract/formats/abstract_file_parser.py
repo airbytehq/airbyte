@@ -45,12 +45,13 @@ class AbstractFileParser(ABC):
         """
 
     @abstractmethod
-    def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> dict:
+    def get_inferred_schema(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> dict:
         """
         Override this with format-specifc logic to infer the schema of file
         Note: needs to return inferred schema with JsonSchema datatypes
 
         :param file: file-like object (opened via StorageFile)
+        :param file_info: file metadata
         :return: mapping of {columns:datatypes} where datatypes are JsonSchema types
         """
 

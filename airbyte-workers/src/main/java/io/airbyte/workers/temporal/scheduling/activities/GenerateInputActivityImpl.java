@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.scheduling.activities;
 
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
 import datadog.trace.api.Trace;
@@ -42,7 +43,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
   @Override
   public GeneratedJobInput getSyncWorkflowInput(final SyncInput input) {
     try {
-      ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, input.getJobId()));
+      ApmTraceUtils.addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, input.getAttemptId(), JOB_ID_KEY, input.getJobId()));
       final long jobId = input.getJobId();
       final int attempt = input.getAttemptId();
       final JobSyncConfig config;
@@ -60,6 +61,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
             .withPrefix(resetConnection.getPrefix())
             .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
             .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
+            .withDestinationProtocolVersion(resetConnection.getDestinationProtocolVersion())
             // null check for backwards compatibility with reset jobs that did not have a
             // resetSourceConfiguration
             .withSourceConfiguration(resetSourceConfiguration == null ? Jsons.emptyObject() : Jsons.jsonNode(resetSourceConfiguration))
@@ -81,12 +83,14 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))
           .withAttemptId((long) attempt)
-          .withDockerImage(config.getSourceDockerImage());
+          .withDockerImage(config.getSourceDockerImage())
+          .withProtocolVersion(config.getSourceProtocolVersion());
 
       final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))
           .withAttemptId((long) attempt)
-          .withDockerImage(config.getDestinationDockerImage());
+          .withDockerImage(config.getDestinationDockerImage())
+          .withProtocolVersion(config.getDestinationProtocolVersion());
 
       final StandardSyncInput syncInput = new StandardSyncInput()
           .withNamespaceDefinition(config.getNamespaceDefinition())
