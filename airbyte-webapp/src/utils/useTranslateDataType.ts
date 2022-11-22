@@ -31,3 +31,17 @@ export const useTranslateDataType = (props: AirbyteConnectorData) => {
 
   return dataTypeFormatted;
 };
+
+// another ver of useTranslateDataType - without hook and return just string. The old one is left for backward compatibility
+export const getDataType = (data: AirbyteConnectorData): string => {
+  const getDataType = () => {
+    if (data.oneOf || data.anyOf) {
+      return "union";
+    }
+    if (!data.anyOf && !data.oneOf && !data.airbyte_type && !data.format && !data.type) {
+      return "unknown";
+    }
+    return data.airbyte_type ?? data.format ?? data.type;
+  };
+  return `airbyte.datatype.${getDataType()}`;
+};
