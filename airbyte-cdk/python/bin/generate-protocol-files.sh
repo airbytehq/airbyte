@@ -5,9 +5,7 @@ set -e
 [ -z "$ROOT_DIR" ] && exit 1
 
 YAML_DIR=airbyte-protocol/models/src/main/resources/airbyte_protocol
-OUTPUT_DIR=airbyte-integrations/bases/airbyte-protocol/airbyte_protocol/models
-
-CODESPACE_CONTAINERS="$(docker ps --filter "label=Type=codespaces" -q)"
+OUTPUT_DIR=airbyte-cdk/python/airbyte_cdk/models
 
 function main() {
   rm -rf "$ROOT_DIR/$OUTPUT_DIR"/*.py
