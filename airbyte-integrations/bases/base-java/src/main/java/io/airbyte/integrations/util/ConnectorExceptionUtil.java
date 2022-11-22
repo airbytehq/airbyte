@@ -10,17 +10,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
 
+/**
+ * Utility class defining methods for handling configuration exceptions in connectors.
+ */
 public class ConnectorExceptionUtil {
 
-    private static final List<Predicate<Throwable>> configErrorPredicates = new ArrayList<>();
     private static final String RECOVERY_CONNECTION_ERROR_MESSAGE = "We're having issues syncing from a Postgres replica that is configured as a hot standby server. " +
             "Please see https://docs.airbyte.com/integrations/sources/postgres/#sync-data-from-postgres-hot-standby-server for options and workarounds";
-
-    static {
-        configErrorPredicates.add(getConfigErrorPredicate());
-        configErrorPredicates.add(getConnectionErrorPredicate());
-        configErrorPredicates.add(isRecoveryConnectionExceptionPredicate());
-    }
+    private static final List<Predicate<Throwable>> configErrorPredicates =
+            List.of(getConfigErrorPredicate(), getConnectionErrorPredicate(), isRecoveryConnectionExceptionPredicate());
 
     public static boolean isConfigError(final Throwable e) {
         return configErrorPredicates.stream().anyMatch(predicate -> predicate.test(e));
@@ -37,6 +35,22 @@ public class ConnectorExceptionUtil {
         } else {
             return String.format("Could not connect with provided configuration. Error: %s", e.getMessage() != null ? e.getMessage() : "");
         }
+    }
+
+    /**
+     * Returns the first instance of an exception associated with a configuration error (if it exists).
+     * Otherwise, the original exception is returned.
+     */
+    public static Throwable getRootConfigError(final Exception e) {
+        Throwable current = e;
+        while (current != null) {
+            if (ConnectorExceptionUtil.isConfigError(current)) {
+                return current;
+            } else {
+                current = current.getCause();
+            }
+        }
+        return e;
     }
 
     private static Predicate<Throwable> getConfigErrorPredicate() {

@@ -156,7 +156,7 @@ public class IntegrationRunner {
       // to
       // find the root exception that corresponds to a configuration error. If that does not exist, we
       // just return the original exception.
-      final Throwable rootThrowable = getRootConfigError(e);
+      final Throwable rootThrowable = ConnectorExceptionUtil.getRootConfigError(e);
       final String displayMessage = ConnectorExceptionUtil.getDisplayMessage(rootThrowable);
       // If the source connector throws a config error, a trace message with the relevant message should
       // be surfaced.
@@ -181,22 +181,6 @@ public class IntegrationRunner {
     }
 
     LOGGER.info("Completed integration: {}", integration.getClass().getName());
-  }
-
-  /**
-   * Returns the first instance of an exception associated with a configuration error (if it exists).
-   * Otherwise, the original exception is returned.
-   */
-  private Throwable getRootConfigError(final Exception e) {
-    Throwable current = e;
-    while (current != null) {
-      if (ConnectorExceptionUtil.isConfigError(current)) {
-        return current;
-      } else {
-        current = current.getCause();
-      }
-    }
-    return e;
   }
 
   private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator) throws Exception {
