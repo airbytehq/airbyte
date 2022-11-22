@@ -1,17 +1,22 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+import importlib
 import json
+import os
 import pkgutil
 import sys
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Mapping, Union
+from typing import Any, Mapping, Union, Dict, List
+
+import jsonref
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.types import Config
 from dataclasses_jsonschema import JsonSchemaMixin
+
+from sources.utils.schema_helpers import JsonFileLoader
 
 
 def _default_file_path() -> str:
@@ -44,6 +49,7 @@ class JsonFileSchemaLoader(SchemaLoader, JsonSchemaMixin):
     config: Config
     options: InitVar[Mapping[str, Any]]
     file_path: Union[InterpolatedString, str] = field(default=None)
+    __resource: str = None
 
     def __post_init__(self, options: Mapping[str, Any]):
         if not self.file_path:
@@ -63,7 +69,8 @@ class JsonFileSchemaLoader(SchemaLoader, JsonSchemaMixin):
             raw_schema = json.loads(raw_json_file)
         except ValueError as err:
             raise RuntimeError(f"Invalid JSON file format for file {json_schema_path}") from err
-        return raw_schema
+        self.__resource = resource
+        return self.__resolve_schema_references(raw_schema)
 
     def _get_json_filepath(self):
         return self.file_path.eval(self.config)
@@ -89,3 +96,38 @@ class JsonFileSchemaLoader(SchemaLoader, JsonSchemaMixin):
             return "", split_path[0]
 
         return split_path[0], "/".join(split_path[1:])
+
+    def __resolve_schema_references(self, raw_schema: dict) -> dict:
+        """
+        Resolve links to external references and move it to local "definitions" map.
+
+        :param raw_schema jsonschema to lookup for external links.
+        :return JSON serializable object with references without external dependencies.
+        """
+
+        package = importlib.import_module(self.__resource)
+        base = os.path.dirname(package.__file__) + "/"
+        resolved = jsonref.JsonRef.replace_refs(raw_schema, loader=JsonFileLoader(base, "schemas/shared"), base_uri=base)
+        resolved = resolve_ref_links(resolved)
+        return resolved
+
+
+def resolve_ref_links(obj: Any) -> Union[Dict[str, Any], List[Any]]:
+    """
+    Scan resolved schema and convert jsonref.JsonRef object to JSON serializable dict.
+
+    :param obj - jsonschema object with ref field resolved.
+    :return JSON serializable object with references without external dependencies.
+    """
+    if isinstance(obj, jsonref.JsonRef):
+        obj = resolve_ref_links(obj.__subject__)
+        # Omit existing definitions for external resource since
+        # we do not need it anymore.
+        obj.pop("definitions", None)
+        return obj
+    elif isinstance(obj, dict):
+        return {k: resolve_ref_links(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [resolve_ref_links(item) for item in obj]
+    else:
+        return obj

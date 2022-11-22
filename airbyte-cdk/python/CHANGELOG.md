@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.6
+Low-code: Add token_expiry_date_format to OAuth Authenticator. Resolve ref schema
+
 ## 0.9.5
 Low-code: Add jinja macro `format_datetime`
 
