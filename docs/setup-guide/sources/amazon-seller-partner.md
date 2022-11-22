@@ -1,6 +1,6 @@
-# Amazon Selling Partner
+# Amazon Seller Partner
 
-This page contains the setup guide and reference information for the Amazon Selling Partner (SP).
+This page contains the setup guide and reference information for the Amazon Seller Partner (SP).
 
 ## Prerequisites
 
@@ -17,15 +17,15 @@ This page contains the setup guide and reference information for the Amazon Sell
 
 ## Setup guide
 
-### Step 1: Set up Amazon Selling Partner
+### Step 1: Set up Amazon Seller Partner
 
-[Register](https://developer-docs.amazon.com/sp-api/docs/registering-your-application) Amazon Selling Partner application. [Create](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html) IAM user.
+[Register](https://developer-docs.amazon.com/sp-api/docs/registering-your-application) Amazon Seller Partner application. [Create](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html) IAM user.
 
-### Step 2: Set up the Amazon Selling Partner data source
+### Step 2: Set up the Amazon Seller Partner data source
 
-1. Select **Amazon Selling Partner** from the Source list.
+1. Select **Amazon Seller Partner** from the Source list.
 
-2. Using developer application from Step 1, [generate refresh token](https://developer-docs.amazon.com/sp-api/docs/self-authorizationhttps://developer-docs.amazon.com/sp-api/docs/self-authorization).
+2. Using developer application from Step 1, [generate refresh token](https://developer-docs.amazon.com/sp-api/docs/self-authorization).
 
 3. Paste all data to required fields using your IAM user and developer account.
 
