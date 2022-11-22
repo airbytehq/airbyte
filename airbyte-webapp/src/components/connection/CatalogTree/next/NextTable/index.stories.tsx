@@ -1,7 +1,12 @@
-import { ComponentStory, ComponentMeta } from "@storybook/react";
-import { CellProps } from "react-table";
+import { ComponentMeta, Story } from "@storybook/react";
+import { ColumnDef } from "@tanstack/react-table";
 
-import { NextTable } from "./NextTable";
+import { NextTable, TableProps } from "./NextTable";
+
+interface Item {
+  name: string;
+  value: number;
+}
 
 export default {
   title: "UI/NextTable",
@@ -9,12 +14,10 @@ export default {
   argTypes: {},
 } as ComponentMeta<typeof NextTable>;
 
-const Template: ComponentStory<typeof NextTable> = (args) => <NextTable {...args} />;
-
-interface Item {
-  name: string;
-  value: number;
-}
+const Template =
+  <T,>(): Story<TableProps<T>> =>
+  (args) =>
+    <NextTable<T> {...args} />;
 
 const data: Item[] = [
   { name: "2017", value: 100 },
@@ -24,20 +27,20 @@ const data: Item[] = [
   { name: "2021", value: 200 },
 ];
 
-const columns = [
+const columns: Array<ColumnDef<Item>> = [
   {
-    Header: "Name",
-    accessor: "name",
-    Cell: ({ cell }: CellProps<Item>) => <strong>{cell.value}</strong>,
+    header: "Name",
+    accessorKey: "name",
+    cell: ({ getValue }) => <strong>{getValue<string>()}</strong>,
   },
   {
-    Header: "Value",
-    accessor: "value",
-    Cell: ({ cell }: CellProps<Item>) => <>{cell.value}</>,
+    header: "Value",
+    accessorKey: "value",
+    cell: ({ getValue }) => getValue<string>(),
   },
 ];
 
-export const Primary = Template.bind({});
+export const Primary = Template<Item>().bind({});
 Primary.args = {
   data,
   columns,

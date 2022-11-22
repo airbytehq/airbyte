@@ -4,7 +4,7 @@ import { PropsWithChildren } from "react";
 
 import styles from "./NextTable.module.scss";
 
-interface TableProps<TData> {
+export interface TableProps<TData> {
   data: TData[];
   columns: Array<ColumnDef<TData>>;
   onClickRow?: (data: unknown) => void;
