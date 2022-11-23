@@ -32,6 +32,7 @@ COPY main.py ./
 COPY source_hubspot ./source_hubspot
 COPY documentation_url.patch.json ./
 COPY spec.patch.json ./
+COPY spec.map.json ./
 COPY oauth2.patch.json ./
 COPY streams/* ./streams/
 
