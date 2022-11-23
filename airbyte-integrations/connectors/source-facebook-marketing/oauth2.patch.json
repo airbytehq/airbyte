@@ -4,5 +4,5 @@
   "accessTokenUrlTemplate": "https://graph.facebook.com/v12.0/oauth/access_token?client_id={{ urlencode client_id }}&client_secret={{ urlencode client_secret }}&grant_type=fb_exchange_token&fb_exchange_token={{ urlencode code }}",
   "accessTokenBody": "",
   "accessTokenHeaders": "",
-  "accessTokenResponseMap": "{\"access_token\": \"/access_token\""
+  "accessTokenResponseMap": "{\"access_token\": \"/access_token\"}"
 }
