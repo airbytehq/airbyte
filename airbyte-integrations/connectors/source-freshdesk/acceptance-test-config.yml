@@ -24,20 +24,6 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.txt"
         timeout_seconds: 600
-        empty_streams:
-          # should be filled in https://github.com/airbytehq/airbyte/issues/19484
-          - name: "satisfaction_ratings"
-            bypass_reason: "stream not filled"
-          - name: "skills"
-            bypass_reason: "stream not filled"
-          - name: "products"
-            bypass_reason: "stream not filled"
-          - name: "time_entries"
-            bypass_reason: "stream not filled"
-          - name: "conversations"
-            bypass_reason: "stream not filled"
-          - name: "scenario_automations"
-            bypass_reason: "stream not filled"
   incremental:
     tests:
       - config_path: "secrets/config.json"
