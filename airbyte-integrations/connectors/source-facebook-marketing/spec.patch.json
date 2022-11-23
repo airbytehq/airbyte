@@ -71,7 +71,7 @@
               "airbyte_secret": true
           }
         }
-      ]}
+      }]
     }
   }
 }
