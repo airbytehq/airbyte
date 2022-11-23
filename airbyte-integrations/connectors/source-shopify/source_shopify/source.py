@@ -15,9 +15,10 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 from .auth import ShopifyAuthenticator
 from .transform import DataTypeEnforcer
-from .utils import SCOPES_MAPPING
+from .utils import SCOPES_MAPPING, ApiTypeEnum
 from .utils import EagerlyCachedStreamState as stream_state_cache
 from .utils import ShopifyRateLimiter as limiter
+from .graphql import get_query_products
 
 
 class ShopifyStream(HttpStream, ABC):
@@ -114,7 +115,9 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         # but many other use `str` values for this, we determine what to use based on `cursor_field` value
         return 0 if self.cursor_field == "id" else ""
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+    ) -> Mapping[str, Any]:
         return {
             self.cursor_field: max(
                 latest_record.get(self.cursor_field, self.default_state_comparison_value),
@@ -123,7 +126,9 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         }
 
     @stream_state_cache.cache_stream_state
-    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         # If there is a next page token then we should only send pagination-related parameters.
         if not next_page_token:
@@ -135,7 +140,9 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     # Parse the `stream_slice` with respect to `stream_state` for `Incremental refresh`
     # cases where we slice the stream, the endpoints for those classes don't accept any other filtering,
     # but they provide us with the updated_at field in most cases, so we used that as incremental filtering during the order slicing.
-    def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping] = None) -> Iterable:
+    def filter_records_newer_than_state(
+        self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping] = None
+    ) -> Iterable:
         # Getting records >= state
         if stream_state:
             state_value = stream_state.get(self.cursor_field)
@@ -191,7 +198,9 @@ class ShopifySubstream(IncrementalShopifyStream):
         """
         return self.parent_stream_class(self.config) if self.parent_stream_class else None
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+    ) -> Mapping[str, Any]:
         """UPDATING THE STATE OBJECT:
         Stream: Transactions
         Parent Stream: Orders
@@ -262,7 +271,9 @@ class ShopifySubstream(IncrementalShopifyStream):
                     sorted_substream_slices.append(
                         {
                             self.slice_key: record[self.nested_record],
-                            self.cursor_field: record[self.nested_substream][0].get(self.cursor_field, self.default_state_comparison_value),
+                            self.cursor_field: record[self.nested_substream][0].get(
+                                self.cursor_field, self.default_state_comparison_value
+                            ),
                         }
                     )
             else:
@@ -381,6 +392,68 @@ class Products(IncrementalShopifyStream):
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
+
+
+class ProductsGraphQl(IncrementalShopifyStream):
+    filter_field = "updated_at"
+    cursor_field = "updatedAt"
+    data_field = "graphql"
+    http_method = "POST"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+    def request_params(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+        **kwargs,
+    ) -> MutableMapping[str, Any]:
+        return {}
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[Mapping]:
+        state_value = stream_state.get(self.filter_field)
+        if state_value:
+            filter_value = state_value
+        else:
+            filter_value = self.default_filter_field_value
+        query = get_query_products(
+            first=self.limit, filter_field=self.filter_field, filter_value=filter_value, next_page_token=next_page_token
+        )
+        return {"query": query}
+
+    @staticmethod
+    def next_page_token(response: requests.Response) -> Optional[Mapping[str, Any]]:
+        page_info = response.json()["data"]["products"]["pageInfo"]
+        has_next_page = page_info["hasNextPage"]
+        if has_next_page:
+            return page_info["endCursor"]
+        else:
+            return None
+
+    @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.status_code is requests.codes.OK:
+            json_response = response.json()["data"]["products"]["nodes"]
+            if isinstance(json_response, dict):
+                # for cases when we have a single record as dict
+                # add shop_url to the record to make querying easy
+                json_response["shop_url"] = self.config["shop"]
+                yield json_response
+            else:
+                # for other cases
+                for record in json_response:
+                    # add shop_url to the record to make querying easy
+                    record["shop_url"] = self.config["shop"]
+                    yield record
+
+    def get_json_schema(self):
+        return {}
 
 
 class MetafieldProducts(MetafieldShopifySubstream):
@@ -630,7 +703,9 @@ class InventoryLevels(ShopifySubstream):
         records_stream = super().parse_response(response, **kwargs)
 
         def generate_key(record):
-            record.update({"id": "|".join((str(record.get("location_id", "")), str(record.get("inventory_item_id", ""))))})
+            record.update(
+                {"id": "|".join((str(record.get("location_id", "")), str(record.get("inventory_item_id", ""))))}
+            )
             return record
 
         # associate the surrogate key
@@ -751,6 +826,7 @@ class SourceShopify(AbstractSource):
             PriceRules(config),
             ProductImages(config),
             Products(config),
+            ProductsGraphQl(config),
             ProductVariants(config),
             Shop(config),
             SmartCollections(config),
@@ -758,13 +834,19 @@ class SourceShopify(AbstractSource):
             Transactions(config),
         ]
 
-        return [stream_instance for stream_instance in stream_instances if self.format_name(stream_instance.name) in permitted_streams]
+        return [
+            stream_instance
+            for stream_instance in stream_instances
+            if self.format_name(stream_instance.name) in permitted_streams
+        ]
 
     @staticmethod
     def get_user_scopes(config):
         session = requests.Session()
         headers = config["authenticator"].get_auth_header()
-        response = session.get(f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json", headers=headers).json()
+        response = session.get(
+            f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json", headers=headers
+        ).json()
         return response["access_scopes"]
 
     @staticmethod
