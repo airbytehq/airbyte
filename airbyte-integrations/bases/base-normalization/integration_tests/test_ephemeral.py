@@ -188,10 +188,10 @@ def generate_dbt_models(destination_type: DestinationType, test_root_dir: str, c
         ]
     }
     if column_count == 1:
-        catalog_config["streams"][0]["stream"]["json_schema"]["properties"]["_airbyte_id"] = {"type": "integer"}
+        catalog_config["streams"][0]["stream"]["json_schema"]["properties"]["_airbyte_id"] = {"$ref" : "WellKnownTypes.json#/definitions/Integer"}
     else:
         for column in [dbt_test_utils.random_string(5) for _ in range(column_count)]:
-            catalog_config["streams"][0]["stream"]["json_schema"]["properties"][column] = {"type": "string"}
+            catalog_config["streams"][0]["stream"]["json_schema"]["properties"][column] = {"$ref": "WellKnownTypes.json#/definitions/String"}
     catalog = os.path.join(test_root_dir, "catalog.json")
     with open(catalog, "w") as fh:
         fh.write(json.dumps(catalog_config))
