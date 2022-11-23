@@ -353,11 +353,11 @@ public class ConnectionsHandler {
       sync.setBreakingChange(patch.getBreakingChange());
     }
 
-    if(patch.getNotifySchemaChanges() != null) {
+    if (patch.getNotifySchemaChanges() != null) {
       sync.setNotifySchemaChanges(patch.getNotifySchemaChanges());
     }
 
-    if(patch.getNonBreakingChangesPreference() != null) {
+    if (patch.getNonBreakingChangesPreference() != null) {
       sync.setNonBreakingChangesPreference(ApiPojoConverters.toPersistenceNonBreakingChangesPreference(patch.getNonBreakingChangesPreference()));
     }
   }
