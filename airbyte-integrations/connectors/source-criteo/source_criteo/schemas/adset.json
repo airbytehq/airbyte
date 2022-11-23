@@ -29,7 +29,8 @@
       "type": "string"
     },
     "Day": {
-      "type": "string"
+      "type": "string",
+      "format": "date"
     },
     "Device": {
       "type": "string"
