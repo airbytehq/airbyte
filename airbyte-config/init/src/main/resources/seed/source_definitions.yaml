@@ -109,7 +109,7 @@
 - name: Asana
   sourceDefinitionId: d0243522-dccf-4978-8ba0-37ed47a0bdbf
   dockerRepository: airbyte/source-asana
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.com/integrations/sources/asana
   icon: asana.svg
   sourceType: api
@@ -437,7 +437,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.72
+  dockerImageTag: 0.2.73
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -516,6 +516,12 @@
   icon: freshservice.svg
   sourceType: api
   releaseStage: alpha
+- name: Genesys
+  sourceDefinitionId: 5ea4459a-8f1a-452a-830f-a65c38cc438d
+  dockerRepository: airbyte/source-genesys
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/genesys
+  icon: genesys.svg
 - name: GetLago
   sourceDefinitionId: e1a3866b-d3b2-43b6-b6d7-8c1ee4d7f53f
   dockerRepository: airbyte/source-getlago
@@ -578,7 +584,7 @@
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.5
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   icon: google-adwords.svg
   sourceType: api
@@ -1644,6 +1650,14 @@
   icon: twilio.svg
   sourceType: api
   releaseStage: generally_available
+- name: Twilio Taskrouter
+  sourceDefinitionId: 2446953b-b794-429b-a9b3-c821ba992a48
+  dockerRepository: airbyte/source-twilio-taskrouter
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/twilio-taskrouter
+  icon: twilio.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Twitter
   sourceDefinitionId: d7fd4f40-5e5a-4b8b-918f-a73077f8c131
   dockerRepository: airbyte/source-twitter

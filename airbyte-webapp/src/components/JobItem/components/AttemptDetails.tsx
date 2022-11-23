@@ -3,10 +3,9 @@ import dayjs from "dayjs";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import Status from "core/statuses";
 import { formatBytes } from "utils/numberHelper";
 
-import { AttemptRead } from "../../../core/request/AirbyteClient";
+import { AttemptRead, AttemptStatus } from "../../../core/request/AirbyteClient";
 import styles from "./AttemptDetails.module.scss";
 
 interface AttemptDetailsProps {
@@ -22,7 +21,7 @@ const getFailureFromAttempt = (attempt: AttemptRead) => {
 const AttemptDetails: React.FC<AttemptDetailsProps> = ({ attempt, className, hasMultipleAttempts }) => {
   const { formatMessage } = useIntl();
 
-  if (attempt.status !== Status.SUCCEEDED && attempt.status !== Status.FAILED) {
+  if (attempt.status !== AttemptStatus.succeeded && attempt.status !== AttemptStatus.failed) {
     return null;
   }
 
@@ -49,7 +48,7 @@ const AttemptDetails: React.FC<AttemptDetailsProps> = ({ attempt, className, has
   const hours = Math.abs(date2.diff(date1, "hour"));
   const minutes = Math.abs(date2.diff(date1, "minute")) - hours * 60;
   const seconds = Math.abs(date2.diff(date1, "second")) - minutes * 60 - hours * 3600;
-  const isFailed = attempt.status === Status.FAILED;
+  const isFailed = attempt.status === AttemptStatus.failed;
 
   return (
     <div className={classNames(styles.container, className)}>

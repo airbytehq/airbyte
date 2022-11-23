@@ -10,7 +10,7 @@ slf4j = "1.7.36"
 lombok = "1.18.24"
 jooq = "3.13.4"
 junit-jupiter = "5.9.0"
-micronaut = "3.7.3"
+micronaut = "3.7.4"
 micronaut-test = "3.7.0"
 postgresql = "42.3.5"
 connectors-testcontainers = "1.15.3"
@@ -119,7 +119,7 @@ micronaut-jdbc-hikari = { module = "io.micronaut.sql:micronaut-jdbc-hikari" }
 micronaut-jooq = { module = "io.micronaut.sql:micronaut-jooq" }
 micronaut-management = { module = "io.micronaut:micronaut-management" }
 micronaut-runtime = { module = "io.micronaut:micronaut-runtime" }
-micronaut-security = { module = "io.micronaut.security:micronaut-security", version = "3.8.1" }
+micronaut-security = { module = "io.micronaut.security:micronaut-security", version = "3.8.3" }
 micronaut-test-core = { module = "io.micronaut.test:micronaut-test-core", version.ref = "micronaut-test" }
 micronaut-test-junit5 = { module = "io.micronaut.test:micronaut-test-junit5", version.ref = "micronaut-test" }
 micronaut-validation = { module = "io.micronaut:micronaut-validation" }
