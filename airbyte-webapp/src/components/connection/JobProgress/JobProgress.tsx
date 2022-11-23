@@ -1,7 +1,7 @@
 import { faDatabase, faDiagramNext } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
 import { getJobStatus } from "components/JobItem/JobItem";
 import { Text } from "components/ui/Text";
@@ -77,27 +77,29 @@ export const JobProgress: React.FC<ProgressBarProps> = ({ job, expanded }) => {
           )}
           {expanded && (
             <>
-              {denominatorRecords > 0 && (
+              {denominatorRecords > 0 && denominatorBytes > 0 && (
                 <div className={styles.estimationDetails}>
                   <span>
                     <FontAwesomeIcon icon={faDiagramNext} className={styles.icon} />
-                    {formatNumber(numeratorRecords)} {displayProgressBar ? "" : `/ ${formatNumber(denominatorRecords)}`}{" "}
-                    {formatMessage({ id: "estimate.recordsSynced" }, { value: numeratorRecords })} (
-                    {Math.round((numeratorRecords / elapsedTimeMS) * 1000)}{" "}
-                    {formatMessage({ id: "estimate.recordsPerSecond" })})
+                    <FormattedMessage
+                      id="connection.progress.recordsSynced"
+                      values={{
+                        synced: numeratorRecords,
+                        total: denominatorRecords,
+                        speed: Math.round((numeratorRecords / elapsedTimeMS) * 1000),
+                      }}
+                    />
                   </span>
                   <span>
                     <FontAwesomeIcon icon={faDatabase} className={styles.icon} />
-                    {formatBytes(numeratorBytes)}{" "}
-                    {displayProgressBar && (
-                      <>
-                        <span>/ </span>
-                        {formatBytes(denominatorBytes)}
-                      </>
-                    )}{" "}
-                    {formatMessage({ id: "estimate.bytesSynced" })} (
-                    {formatBytes((numeratorBytes * 1000) / elapsedTimeMS)}
-                    {formatMessage({ id: "estimate.perSecond" })})
+                    <FormattedMessage
+                      id="connection.progress.bytesSynced"
+                      values={{
+                        synced: formatBytes(numeratorBytes),
+                        total: formatBytes(denominatorBytes),
+                        speed: formatBytes((numeratorBytes * 1000) / elapsedTimeMS),
+                      }}
+                    />
                   </span>
                 </div>
               )}
