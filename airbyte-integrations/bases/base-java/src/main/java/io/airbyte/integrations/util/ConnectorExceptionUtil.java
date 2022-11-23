@@ -5,7 +5,6 @@ import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.integrations.base.errors.messages.ErrorMessage;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
@@ -15,8 +14,9 @@ import java.util.function.Predicate;
  */
 public class ConnectorExceptionUtil {
 
-    private static final String RECOVERY_CONNECTION_ERROR_MESSAGE = "We're having issues syncing from a Postgres replica that is configured as a hot standby server. " +
+    static final String RECOVERY_CONNECTION_ERROR_MESSAGE = "We're having issues syncing from a Postgres replica that is configured as a hot standby server. " +
             "Please see https://docs.airbyte.com/integrations/sources/postgres/#sync-data-from-postgres-hot-standby-server for options and workarounds";
+    static final String COMMON_EXCEPTION_MESSAGE_TEMPLATE = "Could not connect with provided configuration. Error: %s";
     private static final List<Predicate<Throwable>> configErrorPredicates =
             List.of(getConfigErrorPredicate(), getConnectionErrorPredicate(), isRecoveryConnectionExceptionPredicate());
 
@@ -33,7 +33,7 @@ public class ConnectorExceptionUtil {
         } else if (isRecoveryConnectionExceptionPredicate().test(e)) {
             return RECOVERY_CONNECTION_ERROR_MESSAGE;
         } else {
-            return String.format("Could not connect with provided configuration. Error: %s", e.getMessage() != null ? e.getMessage() : "");
+            return String.format(COMMON_EXCEPTION_MESSAGE_TEMPLATE, e.getMessage() != null ? e.getMessage() : "");
         }
     }
 
