@@ -50,6 +50,7 @@ The Freshdesk connector should not run into Freshdesk API limitations under norm
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------|
+| 0.3.9   | 2022-11-23 | []()                                                     | Change twitter_id type from integer to string in schema/contacts.json                 |
 | 0.3.8   | 2022-11-11 | [19349](https://github.com/airbytehq/airbyte/pull/19349) | Do not rely on response.json() when deciding to retry a request                       |
 | 0.3.7   | 2022-11-03 | [18397](https://github.com/airbytehq/airbyte/pull/18397) | Fix base url for v2 API.                                                              |
 | 0.3.6   | 2022-09-29 | [17410](https://github.com/airbytehq/airbyte/pull/17410) | Migrate to per-stream states.                                                         |
