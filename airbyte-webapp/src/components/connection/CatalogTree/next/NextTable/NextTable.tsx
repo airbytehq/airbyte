@@ -19,7 +19,7 @@ export const NextTable = <TData,>({ columns, data, onClickRow }: PropsWithChildr
 
   return (
     <table className={styles.table}>
-      <thead>
+      <thead className={styles.thead}>
         {table.getHeaderGroups().map((headerGroup) => (
           <tr key={`table-header-${headerGroup.id}}`}>
             {headerGroup.headers.map((header) => (

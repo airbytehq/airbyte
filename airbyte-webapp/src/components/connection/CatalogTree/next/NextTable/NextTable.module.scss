@@ -8,6 +8,11 @@
   border-radius: 10px;
 }
 
+.thead {
+  position: sticky;
+  top: 0;
+}
+
 // --------- <th/> ---------
 .th {
   background: colors.$grey-50;
