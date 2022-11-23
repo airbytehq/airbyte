@@ -113,12 +113,9 @@ def is_number(property_type) -> bool:
         return property_type == data_type.NUMBER_TYPE or data_type.NUMBER_TYPE in property_type
 
 
+# this is obsolete type that will not be used in new datatypes
 def is_big_integer(definition: dict) -> bool:
-    if definition == data_type.REF_TYPE_VAR_NAME or data_type.REF_TYPE_VAR_NAME in definition:
-        property_type = definition[data_type.REF_TYPE_VAR_NAME]
-        return property_type == data_type.INTEGER_TYPE or data_type.INTEGER_TYPE in property_type
-    else:
-        return False
+    return False
     # return "airbyte_type" in definition and definition["airbyte_type"] == "big_integer"
 
 
