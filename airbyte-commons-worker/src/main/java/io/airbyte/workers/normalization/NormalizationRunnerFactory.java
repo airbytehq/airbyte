@@ -44,15 +44,18 @@ public class NormalizationRunnerFactory {
                                            final String normalizationVersion,
                                            final String normalizationImage) {
     final var valuePair = getNormalizationInfoForConnector(connectorImageName);
+    final String factoryNormalizationImage = String.format("%s:%s", valuePair.getLeft(), normalizationVersion);
     if (Objects.nonNull(normalizationImage)
-        && !normalizationImage.equalsIgnoreCase(String.format("%s:%s", valuePair.getLeft(), normalizationVersion))) {
+        && !normalizationImage.equalsIgnoreCase(factoryNormalizationImage)) {
       log.error(
           "The normalization image name or tag in the definition file is different from the normalization image or tag in the NormalizationRunnerFactory!");
+      log.error(
+              "the definition file value - {}, the NormalizationRunnerFactory value - {}", normalizationImage, factoryNormalizationImage);
     }
     return new DefaultNormalizationRunner(
         valuePair.getRight(),
         processFactory,
-        String.format("%s:%s", valuePair.getLeft(), normalizationVersion));
+        factoryNormalizationImage);
   }
 
   public static ImmutablePair<String, DestinationType> getNormalizationInfoForConnector(final String connectorImageName) {
