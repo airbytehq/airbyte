@@ -1,4 +1,7 @@
 @use "scss/colors";
+@use "scss/variables";
+
+$cell-height: 28px;
 
 .headerGroupCell {
   height: 58px;
@@ -6,7 +9,7 @@
   color: colors.$dark-blue;
   font-weight: 700;
   font-size: 16px;
-  line-height: 28px;
+  line-height: $cell-height;
   text-transform: capitalize;
 
   &:last-child {
@@ -17,13 +20,13 @@
 .headerCell {
   color: colors.$grey;
   background-color: colors.$grey-50;
-  height: 28px;
+  height: $cell-height;
   font-weight: 400;
   font-size: 12px;
   line-height: 15px;
 
   &:first-child {
-    padding-left: 45px;
+    padding-left: variables.$spacing-2xl + variables.$spacing-sm;
     border-radius: 0;
   }
 
@@ -34,11 +37,11 @@
 }
 
 %bodyCell {
-  height: 28px;
+  height: $cell-height;
   padding: 0;
 
   &:first-child {
-    padding-left: 45px;
+    padding-left: variables.$spacing-2xl + variables.$spacing-sm;
     border-radius: 0;
   }
 }
@@ -65,7 +68,7 @@
 .checkboxCell {
   display: flex;
   align-items: center;
-  height: 28px;
+  height: $cell-height;
   overflow: unset;
   padding-left: 0;
 }
