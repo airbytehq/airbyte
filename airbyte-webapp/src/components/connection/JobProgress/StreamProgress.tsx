@@ -12,10 +12,9 @@ interface StreamProgressProps {
   stream: AttemptStreamStats;
 }
 
-const CircleProgress: React.FC<{ percent?: number }> = ({ percent }) => {
+const CircleProgress: React.FC<{ percent: number }> = ({ percent }) => {
   const svgClassName = classNames(styles.progress, {
-    [styles.done]: percent && percent >= 1,
-    [styles.unknown]: percent === undefined,
+    [styles.done]: percent >= 1,
   });
 
   return (
@@ -28,7 +27,7 @@ const CircleProgress: React.FC<{ percent?: number }> = ({ percent }) => {
         cy="10"
         fill="transparent"
         stroke-width="10"
-        strokeDasharray={`calc(${(percent ?? 0) * 100} * 31.4/100) 31.4`}
+        strokeDasharray={`calc(${percent * 100} * 31.4/100) 31.4`}
         transform="rotate(-90) translate(-20)"
       />
       <path
