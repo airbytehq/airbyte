@@ -118,7 +118,8 @@ class JsonSchemaValidatorTest {
                                  }
                                  """;
     final File schemaFile = IOs.writeFile(Files.createTempDirectory("test"), "WellKnownTypes.json", referencableSchemas).toFile();
-    JsonSchemaValidator jsonSchemaValidator = new JsonSchemaValidator(new URI("file://" + schemaFile.getParentFile().getAbsolutePath() + "/foo.json"));
+    JsonSchemaValidator jsonSchemaValidator =
+        new JsonSchemaValidator(new URI("file://" + schemaFile.getParentFile().getAbsolutePath() + "/foo.json"));
 
     Set<String> validationResult = jsonSchemaValidator.validate(
         Jsons.deserialize("""
