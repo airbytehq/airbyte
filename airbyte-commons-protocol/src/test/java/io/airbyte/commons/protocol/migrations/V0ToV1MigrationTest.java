@@ -1022,28 +1022,30 @@ public class V0ToV1MigrationTest {
                   }
                 ]
               },
-              "nullable_multityped_field": {
-                "oneOf": [
-                  {"$ref": "WellKnownTypes.json#/definitions/String"},
-                  {
-                    "type": "array",
-                    "items": [
-                      {"$ref": "WellKnownTypes.json#/definitions/String"},
-                      {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                    ]
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "id": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                    }
-                  }
-                ]
-              },
               "multityped_date_field": {
                 "oneOf": [
                   {"$ref": "WellKnownTypes.json#/definitions/Date"},
                   {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                ]
+              },
+              "boolean_field": {
+                "oneOf": [
+                  true,
+                  {"$ref": "WellKnownTypes.json#/definitions/String"},
+                  false
+                ]
+              },
+              "conflicting_field": {
+                "oneOf": [
+                  {"type": "object", "properties": {"id": {"$ref": "WellKnownTypes.json#/definitions/String"}}},
+                  {"type": "object", "properties": {"name": {"$ref": "WellKnownTypes.json#/definitions/String"}}},
+                  {"$ref": "WellKnownTypes.json#/definitions/String"}
+                ]
+              },
+              "conflicting_primitives": {
+                "oneOf": [
+                  {"$ref": "WellKnownTypes.json#/definitions/TimestampWithoutTimezone"},
+                  {"$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"}
                 ]
               }
             }
@@ -1070,16 +1072,29 @@ public class V0ToV1MigrationTest {
                 "additionalItems": {"type": "string"},
                 "contains": {"type": "string"}
               },
-              "nullable_multityped_field": {
-                "type": ["string", "array", "object"],
-                "items": [{"type": "string"}, {"type": "integer"}],
-                "properties": {
-                  "id": {"type": "integer"}
-                }
-              },
               "multityped_date_field": {
                 "type": ["string", "integer"],
                 "format": "date"
+              },
+              "boolean_field": {
+                "oneOf": [
+                  true,
+                  {"type": "string"},
+                  false
+                ]
+              },
+              "conflicting_field": {
+                "oneOf": [
+                  {"type": "object", "properties": {"id": {"type": "string"}}},
+                  {"type": "object", "properties": {"name": {"type": "string"}}},
+                  {"type": "string"}
+                ]
+              },
+              "conflicting_primitives": {
+                "oneOf": [
+                  {"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"},
+                  {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"}
+                ]
               }
             }
           }
@@ -1087,27 +1102,16 @@ public class V0ToV1MigrationTest {
       assertEquals(expectedSchema, downgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
     }
 
-    // TODO better method name + field names
     @Test
-    public void testSomething() {
+    public void testDowngradeWeirdSchemas() {
+      // old_style_schema isn't actually valid (i.e. v1 schemas should always be using $ref)
+      // but we should check that it behaves well anyway
       JsonNode oldSchema = Jsons.deserialize(
           """
           {
             "type": "object",
             "properties": {
-              "a": {
-                "type": ["object", "array"],
-                "properties": {
-                  "a": {"$ref": "WellKnownTypes.json#/definitions/String"}
-                },
-                "items": [{"$ref": "WellKnownTypes.json#/definitions/String"}]
-              },
-              "b": {
-                "oneOf": [
-                  true,
-                  {"$ref": "WellKnownTypes.json#/definitions/String"}
-                ]
-              }
+              "old_style_schema": {"type": "string"}
             }
           }
           """);
@@ -1119,19 +1123,7 @@ public class V0ToV1MigrationTest {
           {
             "type": "object",
             "properties": {
-              "a": {
-                "type": ["object", "array"],
-                "properties": {
-                  "a": {"type": "string"}
-                },
-                "items": [{"type": "string"}]
-              },
-              "b": {
-                "oneOf": [
-                  true,
-                  {"type": "string"}
-                ]
-              }
+              "old_style_schema": {"type": "string"}
             }
           }
           """);
