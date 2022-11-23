@@ -3,7 +3,7 @@
 #
 
 from abc import abstractmethod
-from typing import Any, List, Mapping, MutableMapping, Tuple
+from typing import Any, List, Mapping, MutableMapping, Tuple, Union
 
 import pendulum
 import requests
@@ -102,7 +102,7 @@ class AbstractOauth2Authenticator(AuthBase):
         """Expiration date of the access token"""
 
     @abstractmethod
-    def set_token_expiry_date(self, value: pendulum.datetime):
+    def set_token_expiry_date(self, value: Union[str, int]):
         """Setter for access token expiration date"""
 
     @abstractmethod
