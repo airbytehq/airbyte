@@ -102,9 +102,6 @@ airbyte:
           memory:
             limit: ${CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT:}
             request: ${CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST:}
-    custom:
-      kube:
-        node-selectors: ${CUSTOM_JOB_KUBE_NODE_SELECTORS:}
     connection:
       enabled: ${SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS:true}
     discover:
