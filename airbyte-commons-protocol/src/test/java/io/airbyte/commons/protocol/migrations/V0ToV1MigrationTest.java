@@ -1,4 +1,4 @@
-  /*
+/*
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
@@ -1045,8 +1045,7 @@ public class V0ToV1MigrationTest {
                   {"$ref": "WellKnownTypes.json#/definitions/Date"},
                   {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                 ]
-              },
-              "sneaky_singletype_field": {"$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"}
+              }
             }
           }
           """);
@@ -1072,7 +1071,7 @@ public class V0ToV1MigrationTest {
                 "contains": {"type": "string"}
               },
               "nullable_multityped_field": {
-                "type": ["null", "string", "array", "object"],
+                "type": ["string", "array", "object"],
                 "items": [{"type": "string"}, {"type": "integer"}],
                 "properties": {
                   "id": {"type": "integer"}
@@ -1081,10 +1080,6 @@ public class V0ToV1MigrationTest {
               "multityped_date_field": {
                 "type": ["string", "integer"],
                 "format": "date"
-              },
-              "sneaky_singletype_field": {
-                "type": ["string", "null"],
-                "format": "date-time"
               }
             }
           }

@@ -209,8 +209,6 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
     } else if (schema.hasNonNull("oneOf")) {
       ObjectNode replacement = (ObjectNode) Jsons.emptyObject();
       ArrayList<String> types = new ArrayList<>();
-      // TODO is this OK?
-      replacement.putPOJO("type", types);
 
       boolean hasConflicts = false;
       ArrayNode oneOfOptions = (ArrayNode) schema.get("oneOf");
@@ -230,20 +228,28 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
           Iterator<Entry<String, JsonNode>> fields = subschema.fields();
           while (fields.hasNext()) {
             Entry<String, JsonNode> field = fields.next();
+            if ("type".equals(field.getKey())) {
+              // We're concatenating these into a list, so ignore it here.
+              continue;
+            }
             if (replacement.has(field.getKey())) {
               hasConflicts = true;
+            } else if (!hasConflicts) {
+              replacement.set(field.getKey(), field.getValue());
             }
           }
-          if (!hasConflicts) {
-            replacement.setAll(subschema);
-          }
         } else {
-          // TODO maybe if this oneOf has boolean entries, then it's doing something funky, and we shouldn't
-          // attempt to combine it into a single type entry
+          // If this oneOf has boolean entries, then it's doing something funky, and we shouldn't attempt to
+          // combine it into a single type entry
+          hasConflicts = true;
         }
       }
 
       if (!hasConflicts) {
+        ArrayNode typeNode = Jsons.arrayNode();
+        types.forEach(typeNode::add);
+        replacement.set("type", typeNode);
+
         ((ObjectNode) schema).removeAll();
         ((ObjectNode) schema).setAll(replacement);
       }
