@@ -85,6 +85,14 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
 
 
 class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
+    """
+    Authenticator that should be used for API implementing single use refresh tokens:
+    when refreshing access token some API returns a new refresh token that needs to used in the next refresh flow.
+    This authenticator updates the configuration with new refresh token by emitting Airbyte control message from an observed mutation.
+    This authenticator expects a connector config with a"credentials" field with the following nested fields: client_id, client_secret, refresh_token.
+    This behavior can be changed by overriding getters or changing the default "credentials_configuration_field_name" value.
+    """
+
     def __init__(
         self,
         connector_config: Mapping[str, Any],
@@ -101,7 +109,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         self.credentials_configuration_field_name = credentials_configuration_field_name
         self._refresh_token_name = refresh_token_name
         self._connector_config = observe_connector_config(connector_config)
-        self._validate_config()
+        self._validate_connector_config()
         super().__init__(
             token_refresh_endpoint,
             self.get_client_id(),
@@ -115,15 +123,20 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             grant_type,
         )
 
-    def _validate_config(self):
+    def _validate_connector_config(self):
+        """Validates the defined getters for configuration values are returning values.
+
+        Raises:
+            ValueError: Raised if the defined getters are not returning a value.
+        """
         for field_name, getter in [
             ("client_id", self.get_client_id),
             ("client_secret", self.get_client_secret),
             (self.get_refresh_token_name(), self.get_refresh_token),
         ]:
             try:
-                getter()
-            except KeyError:
+                assert getter()
+            except (AssertionError, KeyError):
                 raise ValueError(
                     f"This authenticator expects a {field_name} field under the {self.credentials_configuration_field_name} field. Please override this class getters or change your configuration structure."
                 )
@@ -141,13 +154,22 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         return self._get_config_credentials_field("client_secret")
 
     def set_refresh_token(self, new_refresh_token: str):
+        """Set the new refresh token value. The mutation of the connector_config object will emit an Airbyte control message.
+
+        Args:
+            new_refresh_token (str): The new refresh token value.
+        """
         self._connector_config[self.credentials_configuration_field_name][self.get_refresh_token_name()] = new_refresh_token
 
     def get_refresh_token(self) -> str:
         return self._get_config_credentials_field(self.get_refresh_token_name())
 
     def get_access_token(self) -> str:
-        """Returns the access token"""
+        """Retrieve new access and refresh token if the access token has expired.
+        The new refresh token is persisted with the set_refresh_token function
+        Returns:
+            str: The current access_token, updated if it was previously expired.
+        """
         if self.token_has_expired():
             t0 = pendulum.now()
             new_access_token, access_token_expires_in, new_refresh_token = self.refresh_access_token()
