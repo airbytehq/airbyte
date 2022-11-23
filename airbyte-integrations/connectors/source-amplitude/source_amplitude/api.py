@@ -172,6 +172,8 @@ class Events(IncrementalAmplitudeStream):
             with zip_file.open(gzip_filename) as file:
                 for record in self._parse_zip_file(file):
                     if record[self.cursor_field] >= state_value:
+                        user_id_key = f"{self.name}_user_id" # to avoid name collision with user_id field
+                        record[user_id_key] = record.pop("user_id")
                         yield self._date_time_to_rfc3339(record)  # transform all `date-time` to RFC3339
 
     def _parse_zip_file(self, zip_file: IO[bytes]) -> Iterable[Mapping]:
