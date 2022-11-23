@@ -17,7 +17,6 @@ check_success() {
 }
 
 ##
-docker --version
 
 echo "Starting app..."
 
