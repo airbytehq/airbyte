@@ -15,7 +15,7 @@ echo "Tag" $TAG
 
 docker login -u "$DOCKER_HUB_USERNAME" -p "$DOCKER_HUB_PASSWORD"
 VERSION=$TAG ./gradlew build
-# VERSION=$TAG docker-compose -f docker-compose.build.yaml push
+# VERSION=$TAG docker compose -f docker-compose.build.yaml push
 
 # For running on Mac
 #sed -i .bak 's/default/'$NAMESPACE'/g' kube/overlays/dev/kustomization.yaml
