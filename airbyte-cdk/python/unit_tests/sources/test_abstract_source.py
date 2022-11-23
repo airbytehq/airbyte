@@ -65,52 +65,6 @@ class MockSource(AbstractSource):
         return self.per_stream
 
 
-class MockAvailabilityStrategy(AvailabilityStrategy):
-    def check_availability(self, source: Source, stream: Stream) -> Tuple[bool, any]:
-        if stream.name == "available_stream":
-            return True, None
-        return False, f"Could not reach stream '{stream.name}'."
-
-
-class MockSourceWithAvailabilityStrategy(MockSource):
-    def availability_strategy(self):
-        return MockAvailabilityStrategy()
-
-
-class MockScopedAvailabilityStrategy(ScopedAvailabilityStrategy):
-    def get_granted_scopes(self, source: Source) -> List[str]:
-        return ["users.read"]
-
-    def required_scopes(self, source: Source) -> Dict[str, List[str]]:
-        return {"users": ["users.read"], "settings": ["admin.read"]}
-
-
-class MockSourceWithScopedAvailabilityStrategy(MockSource):
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return MockScopedAvailabilityStrategy()
-
-
-def test_availability_strategy():
-    stream_1 = AirbyteStream(name="available_stream", json_schema={}, supported_sync_modes=[SyncMode.full_refresh])
-    stream_2 = AirbyteStream(name="unavailable_stream", json_schema={}, supported_sync_modes=[SyncMode.full_refresh])
-
-    source = MockSourceWithAvailabilityStrategy(streams=[stream_1, stream_2])
-    assert isinstance(source.availability_strategy(), MockAvailabilityStrategy)
-    assert source.stream_is_available(stream_1)[0] == True
-    assert source.stream_is_available(stream_2)[0] == False
-    assert "Could not reach stream 'unavailable_stream'" in source.stream_is_available(stream_2)[1]
-
-def test_scoped_availability_strategy():
-    stream_1 = AirbyteStream(name="users", json_schema={}, supported_sync_modes=[SyncMode.full_refresh])
-    stream_2 = AirbyteStream(name="settings", json_schema={}, supported_sync_modes=[SyncMode.full_refresh])
-
-    source = MockSourceWithScopedAvailabilityStrategy(streams=[stream_1, stream_2])
-    assert isinstance(source.availability_strategy(), MockScopedAvailabilityStrategy)
-    assert source.stream_is_available(stream_1)[0] == True
-    assert source.stream_is_available(stream_2)[0] == False
-    assert "Missing required scopes: ['admin.read']" in source.stream_is_available(stream_2)[1]
-
-
 class StreamNoStateMethod(Stream):
     name = "managers"
     primary_key = None
