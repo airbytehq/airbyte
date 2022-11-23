@@ -31,6 +31,7 @@ import io.airbyte.workers.process.ProcessFactory;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -45,6 +46,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
       .setLogPrefix("normalization")
       .setPrefixColor(Color.GREEN_BACKGROUND);
+
+  private static final String NORMALIZATION_IMAGE_PREFIX = "airbyte/normalization-";
 
   private final DestinationType destinationType;
   private final ProcessFactory processFactory;
@@ -73,6 +76,22 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     this.destinationType = destinationType;
     this.processFactory = processFactory;
     this.normalizationImageName = normalizationImageName;
+  }
+
+  public DefaultNormalizationRunner(final ProcessFactory processFactory,
+                                    final String normalizationImage) {
+    this.processFactory = processFactory;
+    this.destinationType = getDestinationTypeByNormalizationImageNamePart(normalizationImage);
+    this.normalizationImageName = normalizationImage;
+  }
+
+  private static DestinationType getDestinationTypeByNormalizationImageNamePart(final String normalizationImageName) {
+    String destinationName = new StringBuffer(normalizationImageName.replaceFirst(NORMALIZATION_IMAGE_PREFIX, ""))
+        .replace(normalizationImageName.indexOf(":"), normalizationImageName.length(), "").toString();
+    return EnumSet.allOf(DestinationType.class).stream()
+        .filter(destinationType -> destinationType.toString().equalsIgnoreCase(destinationName))
+        .findFirst()
+        .orElseGet(null);
   }
 
   @Override

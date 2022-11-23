@@ -17,7 +17,9 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.ResetSourceConfiguration;
+import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.init.LocalDefinitionsProvider;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
@@ -26,8 +28,10 @@ import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConstants;
 import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
@@ -90,7 +94,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withJobId(String.valueOf(jobId))
           .withAttemptId((long) attempt)
           .withDockerImage(config.getDestinationDockerImage())
-          .withProtocolVersion(config.getDestinationProtocolVersion());
+          .withProtocolVersion(config.getDestinationProtocolVersion())
+          .withDockerNormalizationImage(getDestinationNormalizationImageFromDestinationDefinitionFile(config.getDestinationDockerImage()));
 
       final StandardSyncInput syncInput = new StandardSyncInput()
           .withNamespaceDefinition(config.getNamespaceDefinition())
@@ -120,6 +125,16 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
     return getSyncWorkflowInput(new SyncInput(
         input.getAttemptNumber(),
         input.getJobId()));
+  }
+
+  private String getDestinationNormalizationImageFromDestinationDefinitionFile(String destinationDockerImage) throws IOException {
+    LocalDefinitionsProvider provider = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
+    List<StandardDestinationDefinition> destinationDefinitionList = provider.getDestinationDefinitions();
+    Optional<StandardDestinationDefinition> optionalDestinationDefinition = destinationDefinitionList.stream()
+        .filter(dd -> destinationDockerImage.equalsIgnoreCase(dd.getDockerRepository() + ":" + dd.getDockerImageTag()))
+        .findFirst();
+    return optionalDestinationDefinition.map(standardDestinationDefinition -> String.format("%s:%s",
+        standardDestinationDefinition.getNormalizationRepository(), standardDestinationDefinition.getNormalizationTag())).orElse(null);
   }
 
 }
