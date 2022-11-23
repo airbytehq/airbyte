@@ -4,9 +4,10 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { LabeledInput, Link, StatusIcon } from "components";
+import { LabeledInput, Link } from "components";
 import { Button } from "components/ui/Button";
 import { Modal } from "components/ui/Modal";
+import { StatusIcon } from "components/ui/StatusIcon";
 
 import { links } from "utils/links";
 
@@ -20,7 +21,7 @@ export interface IProps {
     documentationUrl: string;
     dockerImageTag: string;
     dockerRepository: string;
-  }) => void;
+  }) => Promise<void>;
 }
 
 const Content = styled.div`
@@ -117,8 +118,8 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
           validateOnBlur
           validateOnChange
           validationSchema={validationSchema}
-          onSubmit={(values, { setSubmitting }) => {
-            onSubmit(values);
+          onSubmit={async (values, { setSubmitting }) => {
+            await onSubmit(values);
             setSubmitting(false);
           }}
         >
@@ -209,10 +210,16 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
                   <div />
                 )}
                 <div>
-                  <Button className={styles.buttonWithMargin} onClick={onClose} type="button" variant="secondary">
+                  <Button
+                    className={styles.buttonWithMargin}
+                    onClick={onClose}
+                    type="button"
+                    variant="secondary"
+                    disabled={isSubmitting}
+                  >
                     <FormattedMessage id="form.cancel" />
                   </Button>
-                  <Button type="submit" disabled={isSubmitting || !dirty || !isValid}>
+                  <Button type="submit" disabled={isSubmitting || !dirty || !isValid} isLoading={isSubmitting}>
                     <FormattedMessage id="form.add" />
                   </Button>
                 </div>

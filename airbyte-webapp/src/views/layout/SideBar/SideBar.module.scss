@@ -1,6 +1,6 @@
-@use "../../../scss/colors";
-@use "../../../scss/variables";
-@use "../../../scss/z-indices";
+@use "scss/colors";
+@use "scss/variables";
+@use "scss/z-indices";
 
 .nav {
   z-index: z-indices.$sidebar;
@@ -11,14 +11,14 @@
   height: 100%;
   width: 100px;
   min-width: 65px;
-  background-color: colors.$dark-blue;
+  background-color: colors.$white;
   padding: 23px 4px 15px;
   text-align: center;
+  box-shadow: 0 2px 4px 0 rgba(colors.$dark-blue, 5%);
 }
 
 .text {
   margin-top: 7px;
-  color: colors.$white;
 }
 
 .helpIcon {
@@ -36,11 +36,40 @@
   }
 }
 
+.dropdownMenuButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 70px;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  border-radius: variables.$border-radius-md;
+  color: inherit;
+  text-decoration: none;
+  transition: all variables.$transition-out;
+
+  .text {
+    margin-top: 7px;
+  }
+
+  &.open {
+    background-color: colors.$blue-100;
+  }
+
+  &:hover:not(.open),
+  &:focus-visible:not(.open) {
+    background-color: colors.$grey-50;
+  }
+}
+
 .menuItem {
   background-color: transparent;
   appearance: none;
   border: none;
-  color: colors.$grey-30;
+  color: colors.$dark-blue;
   width: 100%;
   cursor: pointer;
   border-radius: 12px;
@@ -54,34 +83,28 @@
   line-height: 15px;
   text-decoration: none;
   position: relative;
+  transition: all variables.$transition-out;
 
   &:hover,
   &:focus-visible {
-    background: colors.$dark-blue-800;
-    transition: variables.$transition-out;
+    background: colors.$grey-50;
   }
 
   &.active {
-    color: colors.$white;
-    background: colors.$blue-400;
-    transition: variables.$transition-out;
+    background: colors.$blue-100;
 
     &:hover,
     &:focus-visible {
-      color: colors.$white;
-      background: colors.$blue-300;
-      transition: variables.$transition-out;
+      background: colors.$blue-100;
     }
   }
 
   &.activeChild {
-    color: colors.$white;
-    background: colors.$dark-blue-600;
+    background: colors.$blue-30;
 
     &:hover,
     &:focus-visible {
-      color: colors.$white;
-      background: colors.$dark-blue-400;
+      background: colors.$blue-100;
     }
   }
 }

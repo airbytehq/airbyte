@@ -7,7 +7,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useUnmount } from "react-use";
 
 import { ControlLabels } from "components";
-import { FormChangeTracker } from "components/FormChangeTracker";
+import { FormChangeTracker } from "components/common/FormChangeTracker";
 import { Button } from "components/ui/Button";
 import { Heading } from "components/ui/Heading";
 import { Input } from "components/ui/Input";
@@ -45,6 +45,8 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
   useUnmount(() => {
     clearFormChange(formId);
   });
+
+  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
 
   return (
     <>
@@ -116,7 +118,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
             )}
           </Field>
         </Section>
-        <Section>
+        <Section className={isNewStreamsTableEnabled ? styles.flush : undefined}>
           <Field
             name="syncCatalog.streams"
             component={SyncCatalogField}

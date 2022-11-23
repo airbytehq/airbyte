@@ -2,6 +2,10 @@
 
 This page contains the setup guide and reference information for the Postgres source connector for CDC and non-CDC workflows.
 
+:::note 
+The Postgres source performs best on small databases (under 100GB).
+:::
+
 ## When to use Postgres with CDC
 
 Configure Postgres with CDC if:
@@ -400,6 +404,10 @@ The root causes is that the WALs needed for the incremental sync has been remove
 
 | Version | Date       | Pull Request                                                                                                       | Subject                                                                                                                                                                    |
 |:--------|:-----------|:-------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.25  | 2022-11-16 | [19004](https://github.com/airbytehq/airbyte/pull/19004)                                                           | Use Debezium heartbeats to improve CDC replication of large databases.                                                                                                     |
+| 1.0.24  | 2022-11-07 | [19291](https://github.com/airbytehq/airbyte/pull/19291)                                                           | Default timeout is reduced from 1 min to 10sec                                                                                                                             |
+| 1.0.23  | 2022-11-07 | [19025](https://github.com/airbytehq/airbyte/pull/19025)                                                           | Stop enforce SSL if ssl mode is disabled                                                                                                                                   |
+| 1.0.22  | 2022-10-31 | [18538](https://github.com/airbytehq/airbyte/pull/18538)                                                           | Encode database name                                                                                                                                                       |
 | 1.0.21  | 2022-10-25 | [18256](https://github.com/airbytehq/airbyte/pull/18256)                                                           | Disable allow and prefer ssl modes in CDC mode                                                                                                                             |
 | 1.0.20  | 2022-10-25 | [18383](https://github.com/airbytehq/airbyte/pull/18383)                                                           | Better SSH error handling + messages                                                                                                                                       |
 | 1.0.19  | 2022-10-21 | [18263](https://github.com/airbytehq/airbyte/pull/18263)                                                           | Fixes bug introduced in [15833](https://github.com/airbytehq/airbyte/pull/15833) and adds better error messaging for SSH tunnel in Destinations                            |

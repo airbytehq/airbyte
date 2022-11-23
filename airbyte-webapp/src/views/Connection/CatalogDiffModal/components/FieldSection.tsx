@@ -23,7 +23,7 @@ export const FieldSection: React.FC<FieldSectionProps> = ({ streams, diffVerb })
         <div id={formatMessage({ id: "connection.updateSchema.namespace" })}>
           <FormattedMessage id="connection.updateSchema.namespace" />
         </div>
-        <div className={styles.padLeft} id={formatMessage({ id: "connection.updateSchema.streamName" })}>
+        <div id={formatMessage({ id: "connection.updateSchema.streamName" })}>
           <FormattedMessage id="connection.updateSchema.streamName" />
         </div>
         <div />
