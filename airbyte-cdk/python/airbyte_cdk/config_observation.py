@@ -13,6 +13,7 @@ from airbyte_cdk.models import AirbyteControlConnectorConfigMessage, AirbyteCont
 
 class ObservedDict(dict):
     def __init__(self, non_observed_mapping: MutableMapping, observer: ConfigObserver, update_on_unchanged_value=True) -> None:
+        non_observed_mapping = non_observed_mapping.copy()
         self.observer = observer
         self.update_on_unchanged_value = update_on_unchanged_value
         for item, value in non_observed_mapping.items():
@@ -46,7 +47,7 @@ class ObservedDict(dict):
 
 class ConfigObserver:
     """This class is made to track mutations on ObservedDict config.
-    When update is called the observed configuration is saved on disk a CONNECTOR_CONFIG control message is emitted on stdout.
+    When update is called a CONNECTOR_CONFIG control message is emitted on stdout.
     """
 
     def set_config(self, config: ObservedDict) -> None:
