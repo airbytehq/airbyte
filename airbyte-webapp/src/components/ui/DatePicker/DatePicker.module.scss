@@ -5,21 +5,21 @@
 @use "scss/variables";
 @use "scss/z-indices";
 
+.wrapper {
+  display: flex;
+  align-items: stretch;
+}
+
+.datepickerButton svg {
+  font-size: 14px;
+}
+
 .popup {
   z-index: z-indices.$datepicker;
 }
 
-.clearButton {
-  &::after {
-    font-size: 17px;
-    background: transparent;
-    color: colors.$grey-300;
-  }
-
-  &:hover::after,
-  &:focus-visible::after {
-    color: colors.$grey-400;
-  }
+:global(.react-datepicker-wrapper) {
+  width: auto;
 }
 
 :global(.react-datepicker) {

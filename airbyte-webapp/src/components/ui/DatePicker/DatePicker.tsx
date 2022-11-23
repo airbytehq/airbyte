@@ -1,9 +1,12 @@
+import { faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
 import React, { useCallback, useMemo } from "react";
 import ReactDatePicker from "react-datepicker";
-
 import "react-datepicker/dist/react-datepicker.css";
+import { useIntl } from "react-intl";
 
+import { Button } from "../Button";
 import { Input } from "../Input";
 import styles from "./DatePicker.module.scss";
 
@@ -14,7 +17,7 @@ import styles from "./DatePicker.module.scss";
  * In order to display the UTC timezone in the datepicker, we need to convert it into the local time:
  *
  * 2022-01-01T09:00:00Z       - the UTC format that airbyte-server expects (e.g. 9:00am)
- * 2022-01-01T10:00:00+01:00  - what react-datepicker would convert this date into and display (e.g. 10:00am - bad!)
+ * 2022-01-01T10:00:00+01:00  - what react-datepicker might convert this date into and display (e.g. 10:00am - bad!)
  * 2022-01-01T09:00:00+01:00  - what we give react-datepicker instead, to trick it (User sees 9:00am - good!)
  */
 export const toEquivalentLocalTimeInBrowserTimezone = (date: dayjs.Dayjs): Date => {
@@ -38,6 +41,27 @@ interface DatePickerProps {
   onBlur?: (ev: React.FocusEvent<HTMLInputElement>) => void;
 }
 
+interface DatePickerButtonTriggerProps {
+  onClick?: () => void;
+}
+
+const DatepickerButton = React.forwardRef<HTMLButtonElement, DatePickerButtonTriggerProps>((_props, ref) => {
+  const { formatMessage } = useIntl();
+
+  return (
+    <Button
+      className={styles.datepickerButton}
+      aria-label={formatMessage({ id: "form.openDatepicker" })}
+      onClick={_props.onClick}
+      ref={ref}
+      type="button"
+      variant="clear"
+    >
+      <FontAwesomeIcon icon={faCalendarAlt} width="18" height="18" className={styles.dropdownButton} />
+    </Button>
+  );
+});
+
 export const DatePicker: React.FC<DatePickerProps> = ({
   disabled,
   onChange,
@@ -60,21 +84,30 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     [onChange, withTime]
   );
 
+  const onInputChanged = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      onChange(e.target.value);
+    },
+    [onChange]
+  );
+
   const dateValue = useMemo(() => (value ? dayjs.utc(value) : undefined), [value]);
 
   return (
-    <ReactDatePicker
-      showPopperArrow={false}
-      showTimeSelect={withTime}
-      isClearable
-      disabled={disabled}
-      selected={dateValue?.isValid() ? toEquivalentLocalTimeInBrowserTimezone(dateValue) : undefined}
-      onChange={onDateChanged}
-      onBlur={onBlur}
-      value={value}
-      customInput={<Input error={error} />}
-      clearButtonClassName={styles.clearButton}
-      popperClassName={styles.popup}
-    />
+    <div className={styles.wrapper}>
+      <Input error={error} value={value} onChange={onInputChanged} onBlur={onBlur} />
+      <ReactDatePicker
+        showPopperArrow={false}
+        showTimeSelect={withTime}
+        disabled={disabled}
+        selected={dateValue?.isValid() ? toEquivalentLocalTimeInBrowserTimezone(dateValue) : undefined}
+        onChange={onDateChanged}
+        onBlur={onBlur}
+        value={value}
+        customInput={<DatepickerButton />}
+        clearButtonClassName={styles.clearButton}
+        popperClassName={styles.popup}
+      />
+    </div>
   );
 };
