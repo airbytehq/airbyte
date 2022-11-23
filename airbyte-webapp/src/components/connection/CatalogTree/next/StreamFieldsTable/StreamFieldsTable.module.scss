@@ -24,6 +24,7 @@ $cell-height: 28px;
   font-weight: 400;
   font-size: 12px;
   line-height: 15px;
+  text-transform: capitalize;
 
   &:first-child {
     padding-left: variables.$spacing-2xl + variables.$spacing-sm;
