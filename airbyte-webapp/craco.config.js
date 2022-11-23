@@ -1,7 +1,10 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
+const CracoEsbuildPlugin = require("craco-esbuild");
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
+  plugins: [{ plugin: CracoEsbuildPlugin }],
   webpack: {
     configure: (webpackConfig) => {
       webpackConfig = {
