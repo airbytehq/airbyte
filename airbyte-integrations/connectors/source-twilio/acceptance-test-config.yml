@@ -21,19 +21,9 @@ acceptance_tests:
         empty_streams:
           - name: "alerts"
             bypass_reason: "alerts are transient - they emerge and disappear from time to time"
-          - name: "available_phone_numbers_local"
-            bypass_reason: "stream not filled yet"
-          - name: "available_phone_numbers_mobile"
-            bypass_reason: "stream not filled yet"
           - name: "dependent_phone_numbers"
             bypass_reason: "stream not filled yet"
           - name: "conference_participants"
-            bypass_reason: "stream not filled yet"
-          - name: "available_phone_numbers_toll_free"
-            bypass_reason: "stream not filled yet"
-          - name: "accounts"
-            bypass_reason: "stream not filled yet"
-          - name: "usage_records"
             bypass_reason: "stream not filled yet"
         timeout_seconds: 600
   incremental:
