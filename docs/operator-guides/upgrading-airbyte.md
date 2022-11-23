@@ -34,7 +34,7 @@ If you use custom connectors, this upgrade requires all of your connector specs 
 1. In a terminal, on the host where Airbyte is running, turn off Airbyte.
 
    ```bash
-   docker-compose down
+   docker compose down
    ```
 
 2. Upgrade the docker instance to new version.
@@ -46,7 +46,7 @@ If you use custom connectors, this upgrade requires all of your connector specs 
 3. Bring Airbyte back online.
 
    ```bash
-   docker-compose up
+   docker compose up
    ```
 
 ### Resetting your Configuration
