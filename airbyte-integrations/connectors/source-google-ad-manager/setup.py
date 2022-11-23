@@ -9,7 +9,7 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk >= 0.2",
     "googleads==33.0.0",
     "pydantic==1.9.2",
-    "pandas==1.5.2",
+    "pandas==1.3.2",
 
 ]
 

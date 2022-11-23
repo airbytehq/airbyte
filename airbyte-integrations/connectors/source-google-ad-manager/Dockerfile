@@ -1,17 +1,11 @@
-FROM python:3.9.13-alpine3.15 as base
-
-# build and load all requirements
+FROM python:3.9-slim as base
 FROM base as builder
+
+RUN apt-get update
 WORKDIR /airbyte/integration_code
-
-# upgrade pip to the latest version
-RUN apk --no-cache upgrade \
-    && pip install --upgrade pip \
-    && apk --no-cache add tzdata build-base
-
-
 COPY setup.py ./
-# install necessary packages to a temporary folder
+RUN  pip install --upgrade pip 
+
 RUN pip install --prefix=/install .
 
 # build a clean environment
@@ -23,9 +17,6 @@ COPY --from=builder /install /usr/local
 # add default timezone settings
 COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN echo "Etc/UTC" > /etc/timezone
-
-# bash is installed for more convenient debugging.
-RUN apk --no-cache add bash
 
 # copy payload code only
 COPY main.py ./
