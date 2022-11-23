@@ -12,11 +12,6 @@ on:
         required: false
 jobs:
   start-runner:
-    concurrency:
-      # only allow one workflow run at a time for a given SHA
-      # to prevent multiple runs from pushing artifacts for the same SHA at the same time
-      group: ${{ github.workflow }}-${{ inputs.oss_ref || github.sha }}
-      cancel-in-progress: false
     name: "Start Runner on AWS"
     timeout-minutes: 10
     runs-on: ubuntu-latest
@@ -71,6 +66,12 @@ jobs:
           cat $GITHUB_OUTPUT || true # for the sake of investigation
 
   oss-branch-build:
+    concurrency:
+      # only allow one workflow run at a time for a given SHA
+      # to prevent multiple runs from pushing artifacts for the same SHA at the same time
+      # note: using inputs in the group expression only works when specifying concurrency at the job level
+      group: ${{ github.workflow }}-${{ inputs.oss_ref || github.sha }}
+      cancel-in-progress: false
     name: "Gradle Build and Publish"
     needs:
       - start-runner
@@ -105,6 +106,12 @@ jobs:
         shell: bash
 
   docker-push:
+    concurrency:
+      # only allow one workflow run at a time for a given SHA
+      # to prevent multiple runs from pushing artifacts for the same SHA at the same time
+      # note: using inputs in the group expression only works when specifying concurrency at the job level
+      group: ${{ github.workflow }}-${{ inputs.oss_ref || github.sha }}
+      cancel-in-progress: false
     name: "Push Docker Images"
     needs:
       - start-runner
@@ -157,7 +164,6 @@ jobs:
     needs:
       - start-runner # required to get output from the start-runner job
       - docker-push # wait until all publish steps are done
-      - find_valid_pat
     runs-on: ubuntu-latest
     # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
     # Thus, we check for skipped here.
@@ -169,6 +175,15 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
       - name: Stop EC2 runner
         uses: airbytehq/ec2-github-runner@base64v1.1.0
         with:
