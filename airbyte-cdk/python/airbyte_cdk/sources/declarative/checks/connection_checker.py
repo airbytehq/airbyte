@@ -90,7 +90,7 @@ class ScopedAvailabilityStrategy(AvailabilityStrategy):
             return True, None
         else:
             missing_scopes = [scope for scope in required_scopes_for_stream if scope not in granted_scopes]
-            return False, f"Missing required scopes: {missing_scopes}"
+            return False, f"Missing required scopes: {missing_scopes} for stream {stream.name}. Granted scopes: {granted_scopes}"
 
     @abstractmethod
     def get_granted_scopes(self) -> List[Text]:
