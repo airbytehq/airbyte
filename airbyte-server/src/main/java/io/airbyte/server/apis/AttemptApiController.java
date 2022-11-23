@@ -4,15 +4,21 @@
 
 package io.airbyte.server.apis;
 
-import io.airbyte.api.generated.AttemptApi;
 import io.airbyte.api.model.generated.InternalOperationResult;
 import io.airbyte.api.model.generated.SaveStatsRequestBody;
 import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
 import io.airbyte.server.handlers.AttemptHandler;
-import javax.ws.rs.Path;
+import io.micronaut.http.MediaType;
+import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Post;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
-@Path("/v1/attempt/")
-public class AttemptApiController implements AttemptApi {
+@Controller("/v1/attempt/")
+@Api(description = "the Attempt API")
+public class AttemptApiController {
 
   private final AttemptHandler attemptHandler;
 
@@ -20,12 +26,30 @@ public class AttemptApiController implements AttemptApi {
     this.attemptHandler = attemptHandler;
   }
 
-  @Override
+  @Post(uri = "/save_stats",
+        produces = MediaType.APPLICATION_JSON,
+        consumes = MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "For worker to set sync stats of a running attempt.",
+                notes = "",
+                tags = {"attempt", "internal"})
+  @ApiResponses(value = {
+    @ApiResponse(code = 200,
+                 message = "Successful Operation",
+                 response = InternalOperationResult.class)})
   public InternalOperationResult saveStats(final SaveStatsRequestBody saveStatsRequestBody) {
     throw new UnsupportedOperationException();
   }
 
-  @Override
+  @Post(uri = "/set_workflow_in_attempt",
+        produces = MediaType.APPLICATION_JSON,
+        consumes = MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "For worker to register the workflow id in attempt.",
+                notes = "",
+                tags = {"attempt", "internal"})
+  @ApiResponses(value = {
+    @ApiResponse(code = 200,
+                 message = "Successful Operation",
+                 response = InternalOperationResult.class)})
   public InternalOperationResult setWorkflowInAttempt(final SetWorkflowInAttemptRequestBody requestBody) {
     return ApiHelper.execute(() -> attemptHandler.setWorkflowInAttempt(requestBody));
   }
