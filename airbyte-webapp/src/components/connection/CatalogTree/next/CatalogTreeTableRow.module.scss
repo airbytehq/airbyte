@@ -10,25 +10,6 @@
   }
 }
 
-.icon {
-  margin-right: 7px;
-
-  &.plus {
-    color: colors.$green;
-  }
-
-  &.minus {
-    color: colors.$red;
-  }
-
-  &.changed {
-    color: colors.$blue;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-  }
-}
-
 .streamHeaderContent {
   @include header-background(colors.$white, colors.$grey-30);
 
@@ -89,8 +70,4 @@
 .syncModeCell {
   width: variables.$width-wide-menu;
   min-width: variables.$width-wide-menu;
-}
-
-:export {
-  modificationIconColor: colors.$blue;
 }

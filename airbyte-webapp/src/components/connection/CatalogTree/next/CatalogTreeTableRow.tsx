@@ -14,6 +14,7 @@ import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 import { StreamHeaderProps } from "../StreamHeader";
 // eslint-disable-next-line css-modules/no-unused-class
 import styles from "./CatalogTreeTableRow.module.scss";
+import { CatalogTreeTableRowIcon } from "./CatalogTreeTableRowIcon";
 import { StreamPathSelect } from "./StreamPathSelect";
 import { SyncModeSelect } from "./SyncModeSelect";
 import { useCatalogTreeTableRowProps } from "./useCatalogTreeTableRowProps";
@@ -52,7 +53,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   const fieldCount = fields?.length ?? 0;
   const onRowClick = fieldCount > 0 ? () => onExpand() : undefined;
 
-  const { streamHeaderContentStyle, statusIcon, pillButtonVariant } = useCatalogTreeTableRowProps(stream);
+  const { streamHeaderContentStyle, pillButtonVariant } = useCatalogTreeTableRowProps(stream);
 
   const checkboxCellCustomStyle = classnames(styles.checkboxCell, styles.streamRowCheckboxCell);
 
@@ -61,7 +62,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
     <Row onClick={onRowClick} className={streamHeaderContentStyle}>
       {!disabled && (
         <div className={checkboxCellCustomStyle}>
-          {statusIcon}
+          <CatalogTreeTableRowIcon stream={stream} />
           <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
         </div>
       )}

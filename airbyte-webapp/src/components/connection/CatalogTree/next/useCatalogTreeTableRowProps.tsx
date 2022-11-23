@@ -1,12 +1,9 @@
 /* eslint-disable css-modules/no-unused-class */
-import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { useField } from "formik";
 import { isEqual } from "lodash";
 import { useMemo } from "react";
 
-import { ModificationIcon } from "components/icons/ModificationIcon";
 import { PillButtonVariant } from "components/ui/PillSelect/PillButton";
 
 import { SyncSchemaStream } from "core/domain/catalog";
@@ -64,33 +61,6 @@ export const useCatalogTreeTableRowProps = (stream: SyncSchemaStream) => {
     return "grey";
   }, [isSelected, statusToDisplay]);
 
-  const statusIcon = useMemo(() => {
-    if (statusToDisplay === "added") {
-      return (
-        <FontAwesomeIcon
-          icon={faPlus}
-          size="2x"
-          className={classNames(styles.icon, { [styles.plus]: !isSelected, [styles.changed]: isSelected })}
-        />
-      );
-    } else if (statusToDisplay === "removed") {
-      return (
-        <FontAwesomeIcon
-          icon={faMinus}
-          size="2x"
-          className={classNames(styles.icon, { [styles.minus]: !isSelected, [styles.changed]: isSelected })}
-        />
-      );
-    } else if (statusToDisplay === "changed") {
-      return (
-        <div className={classNames(styles.icon, styles.changed)}>
-          <ModificationIcon color={styles.modificationIconColor} />
-        </div>
-      );
-    }
-    return null;
-  }, [isSelected, statusToDisplay]);
-
   const streamHeaderContentStyle = classNames(styles.streamHeaderContent, {
     [styles.added]: statusToDisplay === "added" && !isSelected,
     [styles.removed]: statusToDisplay === "removed" && !isSelected,
@@ -101,7 +71,8 @@ export const useCatalogTreeTableRowProps = (stream: SyncSchemaStream) => {
 
   return {
     streamHeaderContentStyle,
-    statusIcon,
+    isSelected,
+    statusToDisplay,
     pillButtonVariant,
   };
 };

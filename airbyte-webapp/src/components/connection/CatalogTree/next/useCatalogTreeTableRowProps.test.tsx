@@ -34,47 +34,42 @@ const mockInitialValues: Partial<FormikConnectionFormValues> = {
   },
 };
 
+const mockDisabledInitialValues: Partial<FormikConnectionFormValues> = {
+  syncCatalog: {
+    streams: [
+      {
+        ...mockInitialValues.syncCatalog?.streams[0],
+        config: { ...mockInitialValues.syncCatalog!.streams[0].config!, selected: false },
+      },
+    ],
+  },
+};
+
+const testSetup = (initialValues: Partial<FormikConnectionFormValues>, isBulkEdit: boolean, error: unknown) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  jest.spyOn(bulkEditService, "useBulkEditSelect").mockImplementation(() => [isBulkEdit, () => null] as any); // not selected for bulk edit
+  jest.spyOn(connectionFormService, "useConnectionFormService").mockImplementation(() => {
+    // eslint-disable-next-line
+    return { initialValues: initialValues } as any;
+  });
+  jest.spyOn(formik, "useField").mockImplementationOnce(() => {
+    // eslint-disable-next-line
+    return [{}, { error: error }] as any; // no error
+  });
+};
+
 describe("useCatalogTreeTableRowProps", () => {
   it("should return default styles for a row that starts enabled", () => {
-    // eslint-disable-next-line
-    jest.spyOn(bulkEditService, "useBulkEditSelect").mockImplementation(() => [false, () => null] as any); // not selected for bulk edit
-    jest.spyOn(connectionFormService, "useConnectionFormService").mockImplementation(() => {
-      // eslint-disable-next-line
-      return { initialValues: mockInitialValues } as any;
-    });
-    jest.spyOn(formik, "useField").mockImplementationOnce(() => {
-      // eslint-disable-next-line
-      return [{}, { error: undefined }] as any; // no error
-    });
+    testSetup(mockInitialValues, false, undefined);
 
     const { result } = renderHook(() => useCatalogTreeTableRowProps(mockStream));
 
     expect(result.current.streamHeaderContentStyle).toEqual(classNames(styles.streamHeaderContent));
-    expect(result.current.statusIcon).toEqual(null);
     expect(result.current.pillButtonVariant).toEqual("grey");
   });
   it("should return disabled styles for a row that starts disabled", () => {
-    // eslint-disable-next-line
-    jest.spyOn(bulkEditService, "useBulkEditSelect").mockImplementation(() => [false, () => null] as any); // not selected for bulk edit
-    jest.spyOn(connectionFormService, "useConnectionFormService").mockImplementation(() => {
-      return {
-        initialValues: {
-          syncCatalog: {
-            streams: [
-              {
-                ...mockInitialValues.syncCatalog?.streams[0],
-                config: { ...mockInitialValues.syncCatalog?.streams[0].config, selected: false },
-              },
-            ],
-          },
-        },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any;
-    });
-    jest.spyOn(formik, "useField").mockImplementationOnce(() => {
-      // eslint-disable-next-line
-      return [{}, { error: undefined }] as any; // no error
-    });
+    testSetup(mockDisabledInitialValues, false, undefined);
+
     const { result } = renderHook(() =>
       useCatalogTreeTableRowProps({
         ...mockStream,
@@ -83,115 +78,47 @@ describe("useCatalogTreeTableRowProps", () => {
     );
 
     expect(result.current.streamHeaderContentStyle).toEqual(classNames(styles.streamHeaderContent, styles.disabled));
-    expect(result.current.statusIcon).toEqual(null);
     expect(result.current.pillButtonVariant).toEqual("grey");
   });
   it("should return added styles for a row that is added", () => {
-    // eslint-disable-next-line
-    jest.spyOn(bulkEditService, "useBulkEditSelect").mockImplementation(() => [false, () => null] as any); // not selected for bulk edit
-    jest.spyOn(connectionFormService, "useConnectionFormService").mockImplementation(() => {
-      return {
-        initialValues: {
-          syncCatalog: {
-            streams: [
-              {
-                ...mockInitialValues.syncCatalog?.streams[0],
-                config: { ...mockInitialValues.syncCatalog?.streams[0].config, selected: false },
-              },
-            ],
-          },
-        },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any;
-    });
-    jest.spyOn(formik, "useField").mockImplementationOnce(() => {
-      // eslint-disable-next-line
-      return [{}, { error: undefined }] as any; // no error
-    });
-    const { result } = renderHook(() =>
-      useCatalogTreeTableRowProps({
-        ...mockStream,
-        config: { ...mockStream.config!, selected: true }, // selected true
-      })
-    );
+    testSetup(mockDisabledInitialValues, false, undefined);
+
+    const { result } = renderHook(() => useCatalogTreeTableRowProps(mockStream));
 
     expect(result.current.streamHeaderContentStyle).toEqual(classNames(styles.streamHeaderContent, styles.added));
-    // we care that iconName="plus" and className="icon plus" but it is tricky to test a react node returned from a hook like this
-    expect(result.current.statusIcon).toMatchSnapshot();
     expect(result.current.pillButtonVariant).toEqual("green");
   });
   it("should return removed styles for a row that is removed", () => {
-    // eslint-disable-next-line
-    jest.spyOn(bulkEditService, "useBulkEditSelect").mockImplementation(() => [false, () => null] as any); // not selected for bulk edit
-    jest.spyOn(connectionFormService, "useConnectionFormService").mockImplementation(() => {
-      return {
-        initialValues: { ...mockInitialValues },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any;
-    });
-    jest.spyOn(formik, "useField").mockImplementationOnce(() => {
-      // eslint-disable-next-line
-      return [{}, { error: undefined }] as any; // no error
-    });
+    testSetup(mockInitialValues, false, undefined);
+
     const { result } = renderHook(() =>
       useCatalogTreeTableRowProps({
         ...mockStream,
-        config: { ...mockStream.config!, selected: false }, // selected false
+        config: { ...mockStream.config!, selected: false },
       })
     );
 
     expect(result.current.streamHeaderContentStyle).toEqual(classNames(styles.streamHeaderContent, styles.removed));
-
-    // we care that iconName="minus" and className="icon minus" but it is tricky to test a react node returned from a hook like this
-    expect(result.current.statusIcon).toMatchSnapshot();
     expect(result.current.pillButtonVariant).toEqual("red");
   });
   it("should return updated styles for a row that is updated", () => {
     // eslint-disable-next-line
-    jest.spyOn(bulkEditService, "useBulkEditSelect").mockImplementation(() => [false, () => null] as any); // not selected for bulk edit
-    jest.spyOn(connectionFormService, "useConnectionFormService").mockImplementation(() => {
-      return {
-        initialValues: { ...mockInitialValues },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any;
-    });
-    jest.spyOn(formik, "useField").mockImplementationOnce(() => {
-      // eslint-disable-next-line
-      return [{}, { error: undefined }] as any; // no error
-    });
+    testSetup(mockInitialValues, false, undefined);
+
     const { result } = renderHook(() =>
       useCatalogTreeTableRowProps({
         ...mockStream,
-        config: { ...mockStream.config!, syncMode: "incremental", destinationSyncMode: "append_dedup" }, // new sync mode and destination sync mode
+        config: { ...mockStream.config!, syncMode: "incremental", destinationSyncMode: "append_dedup" },
       })
     );
 
     expect(result.current.streamHeaderContentStyle).toEqual(classNames(styles.streamHeaderContent, styles.changed));
-    // we care that this is our custom ModificationIcon component with modificationColor as its color
-    expect(result.current.statusIcon).toMatchSnapshot();
     expect(result.current.pillButtonVariant).toEqual("blue");
   });
+
   it("should return added styles for a row that is both added and updated", () => {
-    // eslint-disable-next-line
-    jest.spyOn(bulkEditService, "useBulkEditSelect").mockImplementation(() => [false, () => null] as any); // not selected for bulk edit
-    jest.spyOn(connectionFormService, "useConnectionFormService").mockImplementation(() => {
-      return {
-        initialValues: {
-          syncCatalog: {
-            streams: [
-              {
-                ...mockInitialValues.syncCatalog?.streams[0],
-                config: { ...mockInitialValues.syncCatalog?.streams[0].config, selected: false },
-              },
-            ],
-          },
-        }, // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any;
-    });
-    jest.spyOn(formik, "useField").mockImplementationOnce(() => {
-      // eslint-disable-next-line
-      return [{}, { error: undefined }] as any; // no error
-    });
+    testSetup(mockDisabledInitialValues, false, undefined);
+
     const { result } = renderHook(() =>
       useCatalogTreeTableRowProps({
         ...mockStream,
@@ -200,33 +127,10 @@ describe("useCatalogTreeTableRowProps", () => {
     );
 
     expect(result.current.streamHeaderContentStyle).toEqual(classNames(styles.streamHeaderContent, styles.added));
-    // we care that iconName="plus" and className="icon plus" but it is tricky to test a react node returned from a hook like this
-    expect(result.current.statusIcon).toMatchSnapshot();
     expect(result.current.pillButtonVariant).toEqual("green");
   });
-  it("should return change background color with relevant icon if selected for bulk edit", () => {
-    // eslint-disable-next-line
-    jest.spyOn(bulkEditService, "useBulkEditSelect").mockImplementation(() => [true, () => null] as any); // not selected for bulk edit
-    jest.spyOn(connectionFormService, "useConnectionFormService").mockImplementation(() => {
-      return {
-        initialValues: {
-          syncCatalog: {
-            streams: [
-              {
-                ...mockInitialValues.syncCatalog?.streams[0],
-                config: { ...mockInitialValues.syncCatalog?.streams[0].config, selected: false },
-              },
-            ],
-          },
-        },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any;
-    });
-
-    jest.spyOn(formik, "useField").mockImplementationOnce(() => {
-      // eslint-disable-next-line
-      return [{}, { error: undefined }] as any; // no error
-    });
+  it("should return change background color if selected for bulk edit", () => {
+    testSetup(mockInitialValues, true, undefined);
 
     const { result } = renderHook(() =>
       useCatalogTreeTableRowProps({
@@ -235,21 +139,10 @@ describe("useCatalogTreeTableRowProps", () => {
       })
     );
     expect(result.current.streamHeaderContentStyle).toEqual(classNames(styles.streamHeaderContent, styles.changed));
-    // we care that iconName="plus" and className="icon plus" but it is tricky to test a react node returned from a hook like this
-    expect(result.current.statusIcon).toMatchSnapshot();
     expect(result.current.pillButtonVariant).toEqual("blue");
   });
   it("should return error styles for a row that has an error", () => {
-    // eslint-disable-next-line
-    jest.spyOn(bulkEditService, "useBulkEditSelect").mockImplementation(() => [false, () => null] as any); // not selected for bulk edit
-    jest.spyOn(connectionFormService, "useConnectionFormService").mockImplementation(() => {
-      // eslint-disable-next-line
-      return { initialValues: mockInitialValues } as any;
-    });
-    jest.spyOn(formik, "useField").mockImplementationOnce(() => {
-      // eslint-disable-next-line
-      return [{}, { error: true }] as any; // no error
-    });
+    testSetup(mockInitialValues, false, "error");
 
     const { result } = renderHook(() => useCatalogTreeTableRowProps(mockStream));
 
