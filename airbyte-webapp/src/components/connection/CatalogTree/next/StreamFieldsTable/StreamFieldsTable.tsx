@@ -6,7 +6,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
 import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
-import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { getIcon } from "utils/imageUtils";
@@ -18,6 +18,13 @@ import { RadioButton } from "../../../../ui/RadioButton";
 import { pathDisplayName } from "../../PathPopout";
 import { NextTable } from "../NextTable";
 import styles from "./StreamFieldsTable.module.scss";
+
+interface TableStream {
+  path: string[];
+  dataType: string;
+  cursorDefined?: boolean;
+  primaryKeyDefined?: boolean;
+}
 
 export interface StreamFieldsTableProps {
   config?: AirbyteStreamConfiguration;
@@ -50,25 +57,19 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
   // header group icons:
   const {
     connection: { source, destination },
-  } = useConnectionEditService();
+  } = useConnectionFormService();
   const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
 
   // prepare data for table
-  interface Stream {
-    path: string[];
-    dataType: string;
-    cursorDefined?: boolean;
-    primaryKeyDefined?: boolean;
-  }
-  const tableData: Stream[] = syncSchemaFields.map((stream) => ({
+  const tableData: TableStream[] = syncSchemaFields.map((stream) => ({
     path: stream.path,
     dataType: getDataType(stream),
     cursorDefined: shouldDefineCursor && SyncSchemaFieldObject.isPrimitive(stream),
     primaryKeyDefined: shouldDefinePk && SyncSchemaFieldObject.isPrimitive(stream),
   }));
 
-  const columnHelper = createColumnHelper<Stream>();
+  const columnHelper = createColumnHelper<TableStream>();
 
   const sourceColumns = [
     columnHelper.accessor("path", {
@@ -186,5 +187,5 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
     }),
   ];
 
-  return <NextTable<Stream> columns={columns} data={tableData} />;
+  return <NextTable<TableStream> columns={columns} data={tableData} />;
 };
