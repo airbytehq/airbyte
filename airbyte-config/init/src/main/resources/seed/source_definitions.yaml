@@ -109,7 +109,7 @@
 - name: Asana
   sourceDefinitionId: d0243522-dccf-4978-8ba0-37ed47a0bdbf
   dockerRepository: airbyte/source-asana
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.com/integrations/sources/asana
   icon: asana.svg
   sourceType: api
