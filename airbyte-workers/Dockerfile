@@ -3,9 +3,6 @@ FROM ${JDK_IMAGE} AS worker
 
 ARG DOCKER_BUILD_ARCH=amd64
 
-# Grab well-known types file
-COPY WellKnownTypes.json /app
-
 RUN amazon-linux-extras install -y docker
 RUN yum install -y jq tar && yum clean all
 
@@ -22,6 +19,9 @@ WORKDIR /app
 
 # Move worker app
 ADD bin/${APPLICATION}-${VERSION}.tar /app
+
+# Grab well-known types file
+COPY WellKnownTypes.json /app
 
 # wait for upstream dependencies to become available before starting server
 ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-${VERSION}/bin/${APPLICATION}"]
