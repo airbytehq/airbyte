@@ -188,6 +188,6 @@ jobs:
         uses: airbytehq/ec2-github-runner@base64v1.1.0
         with:
           mode: stop
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ env.PAT }}
           label: ${{ needs.start-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}
