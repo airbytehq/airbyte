@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, Optional, List
 import logging
 import time
-import requests
+from pathlib import Path
 import pandas as pd
 from pendulum import parse as pendulum_parse, now as pendulum_now
 from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
@@ -15,7 +15,6 @@ from airbyte_cdk.sources.streams import Stream, IncrementalMixin
 from googleads import ad_manager
 from googleads.errors import AdManagerReportError
 from typing import Any, Mapping, Union, List
-from csv import DictReader as csv_dict_reader
 import tempfile
 from .data_classes import AdUnitPerHourItem, AdUnitPerReferrerItem, ReportStatus
 from .utils import convert_time_to_dict
@@ -70,7 +69,7 @@ class BaseGoogleAdManagerReportStream(Stream, IncrementalMixin):
         self.report_downloader.DownloadReportToFile(report_job_id, EXPORT_FORMAT, report_file)
         report_file.close()
         logger.info('Report job with id "%s" downloaded to:\n%s' % (report_job_id, report_file.name))
-        return report_file.name
+        return Path(report_file.name)
 
     def build_report_dataframe(self, report_file: str) -> List[Mapping[str, Any]]:
         """take the report file and return a pandas dataframe
@@ -82,6 +81,7 @@ class BaseGoogleAdManagerReportStream(Stream, IncrementalMixin):
             Pd.Dataframe:  dataframe of the report
         """
         report_df = pd.read_csv(report_file, compression='gzip', header=0, sep=',', quotechar='"')
+        report_file.unlink(missing_ok=True)
         return report_df
     
     def update_cursor(self, max_date, current_cursor_value):
