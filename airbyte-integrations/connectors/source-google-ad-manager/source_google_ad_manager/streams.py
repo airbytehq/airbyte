@@ -8,6 +8,7 @@ from typing import Any, Iterable, Mapping, Optional, List
 import logging
 import time
 import requests
+import pandas as pd
 from pendulum import parse as pendulum_parse, now as pendulum_now
 from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
 from airbyte_cdk.sources.streams import Stream, IncrementalMixin
@@ -15,12 +16,14 @@ from googleads import ad_manager
 from googleads.errors import AdManagerReportError
 from typing import Any, Mapping, Union, List
 from csv import DictReader as csv_dict_reader
+import tempfile
 from .data_classes import AdUnitPerHourItem, AdUnitPerReferrerItem, ReportStatus
 from .utils import convert_time_to_dict
 
 CHUNK_SIZE = 16 * 1024
 API_VERSION = 'v202208'
 TIMEOUT_LIMIT = 60*10
+EXPORT_FORMAT = 'CSV_DUMP'
 
 logger = logging.getLogger('{}.{}'.format(__name__, 'google_ad_manager_report_downloader'))
 
@@ -59,62 +62,52 @@ class BaseGoogleAdManagerReportStream(Stream, IncrementalMixin):
     @state.setter
     def state(self, value: Mapping[str, Any]):
         self._cursor_value = value[self.cursor_field]
-    
-    def download_report(self, report_job_id: str, export_format: str, include_report_properties: bool = False,
-                        include_totals_row: bool = None, use_gzip_compression: bool = True) -> requests.Response:
-        """make an api call to the api with the report job id and return a response containing the report
+
+    def download_report(self, report_job_id: str) -> str:
+        """given the report job id download the report,
+         save it in a temporary file and return the file name of the report"""
+        report_file = tempfile.NamedTemporaryFile(delete=False, suffix='.csv.gz')
+        self.report_downloader.DownloadReportToFile(report_job_id, EXPORT_FORMAT, report_file)
+        report_file.close()
+        logger.info('Report job with id "%s" downloaded to:\n%s' % (report_job_id, report_file.name))
+        return report_file.name
+
+    def build_report_dataframe(self, report_file: str) -> List[Mapping[str, Any]]:
+        """take the report file and return a pandas dataframe
 
         Args:
-          report_job_id: The ID of the report job to wait for, as a string.
-          export_format: The export format for the report file, as a string.
-          outfile: A writeable, file-like object to write to.
-          include_report_properties: Whether or not to include the report
-            properties (e.g. network, user, date generated...)
-            in the generated report.
-          include_totals_row: Whether or not to include the totals row.
-          use_gzip_compression: Whether or not to use gzip compression.
-        """
-        service = self.report_downloader._GetReportService()
+            report_file (str): path of the report file
 
-        if include_totals_row is None:  # True unless CSV export if not specified
-            include_totals_row = True if export_format != 'CSV_DUMP' else False
-        opts = {
-            'exportFormat': export_format,
-            'includeReportProperties': include_report_properties,
-            'includeTotalsRow': include_totals_row,
-            'useGzipCompression': use_gzip_compression
-        }
-        report_url = service.getReportDownloadUrlWithOptions(report_job_id, opts)
-        logger.info('Request Summary: Report job ID: %s, %s', report_job_id, opts)
-
-        response = self.report_downloader.url_opener.open(report_url)
-        return response
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        Returns:
+            Pd.Dataframe:  dataframe of the report
         """
-        this is the base method to parse the api response
-        """
-        logger.info("start parsing the response stream, should be replaced with logger")
-        timeout = time.time() + TIMEOUT_LIMIT   # 10 minutes from now
-        while True:
-            chunk = response.read(CHUNK_SIZE)
-            if not chunk or time.time() > timeout:  # timeout after 10 minutes
-                break
-            lines = chunk.decode('utf-8')
-            reader = csv_dict_reader(lines.splitlines())
-            for row in reader:
-                item = self.generate_item(row)
-                # this section deals with the cursor, to be revisited
-                if item:
-                    current_cursor_value = pendulum_parse(self.state.get(self.cursor_field))
-                    upcoming_cursor_value = pendulum_parse(getattr(item, self.cursor_field).strftime('%Y-%m-%d'))
-                    cursor_value = (max(upcoming_cursor_value, current_cursor_value)).to_date_string()
-                    max_cursor_value = {self.cursor_field: cursor_value}
-                    self.state = max_cursor_value
-                    yield item.dict()
-                else:
-                    pass
+        report_df = pd.read_csv(report_file, compression='gzip', header=0, sep=',', quotechar='"')
+        return report_df
     
+    def update_cursor(self, max_date, current_cursor_value):
+        """update the cursor value
+
+        Args:
+            max_date (str): _description_
+            current_cursor_value (str): _description_
+        """
+        upcoming_cursor_value = pendulum_parse(max_date)
+        cursor_value = (max(upcoming_cursor_value, current_cursor_value)).to_date_string()
+        max_cursor_value = {self.cursor_field: cursor_value}
+        self.state = max_cursor_value
+
+    def parse_response(self, report_dataframe, **kwargs) -> Iterable[Mapping]:
+        """
+        generate airbyte records from the report dataframe
+        
+        """
+        current_cursor_value = pendulum_parse(self.state.get(self.cursor_field))
+        max_date = report_dataframe["Dimension.DATE"].max()
+        for row in report_dataframe.to_dict(orient='records'):
+            item = self.generate_item(row)
+            yield item.dict()
+        self.update_cursor(max_date, current_cursor_value)
+
     def run_report(self, report_job: str) -> str:
         """Runs a report, then waits (blocks) for the report to finish generating.
 
@@ -183,9 +176,9 @@ class BaseGoogleAdManagerReportStream(Stream, IncrementalMixin):
         """the main method that read the records from the report"""
         try:
             report_job_id = self.get_query(self.report_job)
-            response = self.download_report(report_job_id, export_format='CSV_DUMP', use_gzip_compression=False)
-            # TODO: do something with the response before parsing it
-            yield from self.parse_response(response)
+            report_file = self.download_report(report_job_id)
+            report_dataframe = self.build_report_dataframe(report_file)
+            yield from self.parse_response(report_dataframe, **kwargs)
         except AdManagerReportError as exc:
             # the error handling should be implemented here, for now raise
             raise exc
