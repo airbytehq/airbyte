@@ -92,6 +92,12 @@ public class WorkerConfigurationBeanFactory {
   }
 
   @Singleton
+  @Named("useCustomNodeSelector")
+  public boolean useCustomNodeSelector(@Value("${airbyte.worker.custom.kube.node-selectors}") final boolean kubeNodeSelectors) {
+    return kubeNodeSelectors;
+  }
+
+  @Singleton
   @Named("specJobKubeNodeSelectors")
   public Map<String, String> specJobKubeNodeSelectors(@Value("${airbyte.worker.spec.kube.node-selectors}") final String kubeNodeSelectors) {
     return splitKVPairsFromEnvString(kubeNodeSelectors);
@@ -213,6 +219,7 @@ public class WorkerConfigurationBeanFactory {
                                           final List<TolerationPOJO> jobKubeTolerations,
                                           @Named("checkJobKubeNodeSelectors") final Map<String, String> nodeSelectors,
                                           @Named("customNodeSelectors") final Map<String, String> customNodeSelectors,
+                                          @Named("useCustomNodeSelector") final boolean useCustomNodeSelector,
                                           @Named("checkJobKubeAnnotations") final Map<String, String> annotations,
                                           @Value("${airbyte.worker.job.kube.main.container.image-pull-secret}") final String mainContainerImagePullSecret,
                                           @Value("${airbyte.worker.job.kube.main.container.image-pull-policy}") final String mainContainerImagePullPolicy,
@@ -226,7 +233,7 @@ public class WorkerConfigurationBeanFactory {
         resourceRequirements,
         jobKubeTolerations,
         nodeSelectors,
-        customNodeSelectors,
+        useCustomNodeSelector ? customNodeSelectors : nodeSelectors,
         annotations,
         mainContainerImagePullSecret,
         mainContainerImagePullPolicy,
@@ -245,7 +252,7 @@ public class WorkerConfigurationBeanFactory {
                                             final List<TolerationPOJO> jobKubeTolerations,
                                             @Named("defaultJobKubeNodeSelectors") final Map<String, String> nodeSelectors,
                                             @Named("customNodeSelectors") final Map<String, String> customNodeSelectors,
-
+                                            @Named("useCustomNodeSelector") final boolean useCustomNodeSelector,
                                             @Named("defaultJobKubeAnnotations") final Map<String, String> annotations,
                                             @Value("${airbyte.worker.job.kube.main.container.image-pull-secret}") final String mainContainerImagePullSecret,
                                             @Value("${airbyte.worker.job.kube.main.container.image-pull-policy}") final String mainContainerImagePullPolicy,
@@ -259,7 +266,7 @@ public class WorkerConfigurationBeanFactory {
         resourceRequirements,
         jobKubeTolerations,
         nodeSelectors,
-        customNodeSelectors,
+        useCustomNodeSelector ? customNodeSelectors : nodeSelectors,
         annotations,
         mainContainerImagePullSecret,
         mainContainerImagePullPolicy,
@@ -279,7 +286,7 @@ public class WorkerConfigurationBeanFactory {
                                              final List<TolerationPOJO> jobKubeTolerations,
                                              @Named("discoverJobKubeNodeSelectors") final Map<String, String> nodeSelectors,
                                              @Named("customNodeSelectors") final Map<String, String> customNodeSelectors,
-
+                                             @Named("useCustomNodeSelector") final boolean useCustomNodeSelector,
                                              @Named("discoverJobKubeAnnotations") final Map<String, String> annotations,
                                              @Value("${airbyte.worker.job.kube.main.container.image-pull-secret}") final String mainContainerImagePullSecret,
                                              @Value("${airbyte.worker.job.kube.main.container.image-pull-policy}") final String mainContainerImagePullPolicy,
@@ -293,7 +300,7 @@ public class WorkerConfigurationBeanFactory {
         resourceRequirements,
         jobKubeTolerations,
         nodeSelectors,
-        customNodeSelectors,
+        useCustomNodeSelector ? customNodeSelectors : nodeSelectors,
         annotations,
         mainContainerImagePullSecret,
         mainContainerImagePullPolicy,
@@ -312,7 +319,7 @@ public class WorkerConfigurationBeanFactory {
                                                 final List<TolerationPOJO> jobKubeTolerations,
                                                 @Named("defaultJobKubeNodeSelectors") final Map<String, String> nodeSelectors,
                                                 @Named("customNodeSelectors") final Map<String, String> customNodeSelectors,
-
+                                                @Named("useCustomNodeSelector") final boolean useCustomNodeSelector,
                                                 @Named("defaultJobKubeAnnotations") final Map<String, String> annotations,
                                                 @Value("${airbyte.worker.job.kube.main.container.image-pull-secret}") final String mainContainerImagePullSecret,
                                                 @Value("${airbyte.worker.job.kube.main.container.image-pull-policy}") final String mainContainerImagePullPolicy,
@@ -326,7 +333,7 @@ public class WorkerConfigurationBeanFactory {
         resourceRequirements,
         jobKubeTolerations,
         nodeSelectors,
-        customNodeSelectors,
+        useCustomNodeSelector ? customNodeSelectors : nodeSelectors,
         annotations,
         mainContainerImagePullSecret,
         mainContainerImagePullPolicy,
@@ -346,7 +353,7 @@ public class WorkerConfigurationBeanFactory {
                                          final List<TolerationPOJO> jobKubeTolerations,
                                          @Named("specJobKubeNodeSelectors") final Map<String, String> nodeSelectors,
                                          @Named("customNodeSelectors") final Map<String, String> customNodeSelectors,
-
+                                         @Named("useCustomNodeSelector") final boolean useCustomNodeSelector,
                                          @Named("specJobKubeAnnotations") final Map<String, String> annotations,
                                          @Value("${airbyte.worker.job.kube.main.container.image-pull-secret}") final String mainContainerImagePullSecret,
                                          @Value("${airbyte.worker.job.kube.main.container.image-pull-policy}") final String mainContainerImagePullPolicy,
@@ -360,7 +367,7 @@ public class WorkerConfigurationBeanFactory {
         resourceRequirements,
         jobKubeTolerations,
         nodeSelectors,
-        customNodeSelectors,
+        useCustomNodeSelector ? customNodeSelectors : nodeSelectors,
         annotations,
         mainContainerImagePullSecret,
         mainContainerImagePullPolicy,
