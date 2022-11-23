@@ -72,7 +72,10 @@ export const Control: React.FC<ControlProps> = ({
       <DatePicker
         error={error}
         withTime={property.format === "date-time"}
-        onChange={(value) => helpers.setValue(value)}
+        onChange={(value) => {
+          helpers.setTouched(true);
+          helpers.setValue(value);
+        }}
         value={field.value}
         disabled={disabled}
         onBlur={() => helpers.setTouched(true)}
