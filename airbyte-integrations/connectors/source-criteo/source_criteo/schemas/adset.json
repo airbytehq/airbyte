@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "AdvertiserId": {
+      "type": ["null", "string"]
+    },
+    "AdsetId": {
+      "type": ["null", "string"]
+    },
+    "CategoryId": {
+      "type": ["null", "string"]
+    },
+    "Advertiser": {
+      "type": ["null", "string"]
+    },
+    "Adset": {
+      "type": ["null", "string"]
+    },
+    "Category": {
+      "type": ["null", "string"]
+    },
+    "Device": {
+      "type": ["null", "string"]
+    },
+    "Os": {
+      "type": ["null", "string"]
+    },
+    "Day": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "Displays": {
+      "type": ["null", "integer"]
+    },
+    "Clicks": {
+      "type": ["null", "integer"]
+    },
+    "AdvertiserCost": {
+      "type": ["null", "number"]
+    }
+  }
+}

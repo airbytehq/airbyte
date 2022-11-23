@@ -1,0 +1,89 @@
+{
+  "documentationUrl": "https://developers.google.com/my-business/reference/rest",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Criteo Spec",
+    "type": "object",
+    "required": ["advertiserIds", "start_date", "authorization", "dimensions", "metrics"],
+    "properties": {
+      "advertiserIds": {
+        "title": "Advertiser ID",
+        "description": "A list of advertiser ids (comma separated)",
+        "order": 0,
+        "examples": ["advertiserIds"],
+        "type": "string"
+      },
+      "dimensions": {
+        "title": "Dimensions",
+        "description": "A list of Dimensions",
+        "examples": ["Advertiser,Ads,Day,Hour"],
+        "type": "string"
+      },
+      "metrics": {
+        "title": "Metrics",
+        "description": "A list of metrics",
+        "examples": ["Displays,Clicks,AdvertiserCost"],
+        "type": "string"
+      },
+      "start_date": {
+        "type": "string",
+        "title": "Start Date",
+        "description": "UTC date in the format 2017-01-25. Any data before this date will not be replicated.",
+        "examples": ["2021-01-01"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "order": 1
+      },
+      "end_date": {
+        "type": "string",
+        "title": "End Date",
+        "description": "UTC date in the format 2017-01-25. Any data after this date will not be replicated. Must be greater or equal to the start date field.",
+        "examples": ["2021-12-12"],
+        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "order": 2
+      },
+      "authorization": {
+        "type": "object",
+        "title": "Authentication Type",
+        "description": "",
+        "order": 3,
+        "oneOf": [
+          {
+            "title": "OAuth",
+            "type": "object",
+            "required": [
+              "client_id",
+              "client_secret"
+            ],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Client",
+                "order": 0
+              },
+              "client_id": {
+                "title": "Client ID",
+                "type": "string",
+                "description": "The client ID of your Google Search Console developer application. Read more <a href=\"https://developers.google.com/webmaster-tools/v1/how-tos/authorizing\">here</a>.",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "type": "string",
+                "description": "The client secret of your Google Search Console developer application. Read more <a href=\"https://developers.google.com/webmaster-tools/v1/how-tos/authorizing\">here</a>.",
+                "airbyte_secret": true
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["authorization", 0],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["access_token"],["expires_in"]]
+    }
+  }
+}
