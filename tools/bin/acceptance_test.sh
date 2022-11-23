@@ -17,6 +17,7 @@ check_success() {
 }
 
 ##
+docker compose version
 
 echo "Starting app..."
 
