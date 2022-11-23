@@ -111,10 +111,13 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
    */
   private boolean isPrimitiveReferenceTypeDeclaration(JsonNode schema) {
     if (!schema.isObject()) {
+      // Non-object schemas (i.e. true/false) never need to be modified
       return false;
     } else if (schema.hasNonNull("$ref") && schema.get("$ref").asText().startsWith("WellKnownTypes.json")) {
+      // If this schema has a $ref, then we need to convert it back to type/airbyte_type/format
       return true;
     } else if (schema.hasNonNull("oneOf")) {
+      // If this is a oneOf with at least one primitive $ref option, then we should consider converting it back
       List<JsonNode> subschemas = getSubschemas(schema, "oneOf");
       return subschemas.stream().anyMatch(
           subschema -> subschema.hasNonNull("$ref")
@@ -201,55 +204,87 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
     }
   }
 
+  /**
+   * Modifies the schema in-place to downgrade from the new-style $ref declaration to the old-style type
+   * declaration. Assumes that the schema is an ObjectNode containing a primitive declaration, i.e.
+   * either something like: {"$ref": "WellKnownTypes..."} or: {"oneOf": [{"$ref": "WellKnownTypes..."}, ...]}
+   *
+   * In the latter case, the schema may contain subschemas. This method mutually recurses with
+   * {@link #mutateSchemas(Function, Consumer, JsonNode)} to downgrade those subschemas.
+   *
+   * @param schema An ObjectNode representing a primitive type declaration
+   */
   private void downgradeTypeDeclaration(JsonNode schema) {
     if (schema.hasNonNull("$ref")) {
+      // If this is a direct type declaration, then we can just replace it with the old-style declaration
       String referenceType = schema.get("$ref").asText();
       ((ObjectNode) schema).removeAll();
       ((ObjectNode) schema).setAll(JsonSchemaReferenceTypes.REFERENCE_TYPE_TO_OLD_TYPE.get(referenceType));
     } else if (schema.hasNonNull("oneOf")) {
+      // If this is a oneOf, then we need to check whether we can recombine it into a single type declaration.
+      // This means we must do three things:
+      // 1. Downgrade each subschema
+      // 2. Build a new `type` array, containing the `type` of each subschema
+      // 3. Combine all the fields in each subschema (properties, items, etc)
+      // If any two subschemas have the same `type`, or the same field, then we can't combine them, but we should still downgrade them.
+      // See V0ToV1MigrationTest.CatalogDowngradeTest#testDowngradeMultiTypeFields for some examples.
+
+      // We'll build up a node containing the combined subschemas.
       ObjectNode replacement = (ObjectNode) Jsons.emptyObject();
-      ArrayList<String> types = new ArrayList<>();
+      // As part of this, we need to build up a list of `type` entries. For ease of access, we'll keep it in a List.
+      List<String> types = new ArrayList<>();
 
-      boolean hasConflicts = false;
-      ArrayNode oneOfOptions = (ArrayNode) schema.get("oneOf");
-      for (JsonNode subschemaNode : oneOfOptions) {
+      boolean canRecombineSubschemas = true;
+      for (JsonNode subschemaNode : schema.get("oneOf")) {
+        // No matter what - we always need to downgrade the subschema node.
+        downgradeSchema(subschemaNode);
+
         if (subschemaNode instanceof ObjectNode subschema) {
-          downgradeSchema(subschema);
+          // If this subschema is an object, then we can attempt to combine it with the other subschemas.
 
+          // First, update our list of types.
           JsonNode subschemaType = subschema.get("type");
           if (subschemaType != null) {
             if (types.contains(subschemaType.asText())) {
-              hasConflicts = true;
-            } else if (subschemaType.isTextual()) {
+              // If another subschema has the same type, then we can't combine them.
+              canRecombineSubschemas = false;
+            } else {
               types.add(subschemaType.asText());
             }
           }
 
-          Iterator<Entry<String, JsonNode>> fields = subschema.fields();
-          while (fields.hasNext()) {
-            Entry<String, JsonNode> field = fields.next();
-            if ("type".equals(field.getKey())) {
-              // We're concatenating these into a list, so ignore it here.
-              continue;
-            }
-            if (replacement.has(field.getKey())) {
-              hasConflicts = true;
-            } else if (!hasConflicts) {
-              replacement.set(field.getKey(), field.getValue());
+          // Then, update the combined schema with this subschema's fields.
+          if (canRecombineSubschemas) {
+            Iterator<Entry<String, JsonNode>> fields = subschema.fields();
+            while (fields.hasNext()) {
+              Entry<String, JsonNode> field = fields.next();
+              if ("type".equals(field.getKey())) {
+                // We're handling the `type` field outside this loop, so ignore it here.
+                continue;
+              }
+              if (replacement.has(field.getKey())) {
+                // A previous subschema is already using this field, so we should stop trying to combine them.
+                canRecombineSubschemas = false;
+                break;
+              } else {
+                replacement.set(field.getKey(), field.getValue());
+              }
             }
           }
         } else {
-          // If this oneOf has boolean entries, then it's doing something funky, and we shouldn't attempt to
+          // If this subschema is a boolean, then the oneOf is doing something funky, and we shouldn't attempt to
           // combine it into a single type entry
-          hasConflicts = true;
+          canRecombineSubschemas = false;
         }
       }
 
-      if (!hasConflicts) {
+      if (canRecombineSubschemas) {
+        // Update our replacement node with the full list of types
         ArrayNode typeNode = Jsons.arrayNode();
         types.forEach(typeNode::add);
         replacement.set("type", typeNode);
 
+        // And commit our changes to the actual schema node
         ((ObjectNode) schema).removeAll();
         ((ObjectNode) schema).setAll(replacement);
       }
