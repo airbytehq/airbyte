@@ -130,7 +130,7 @@ To run acceptance and custom integration tests:
 # Run Airbyte using docker-compose
 Under Airbyte's root directory:
 ```
-docker-compose up -d
+docker compose up -d
 ```
 Open the web-page of Airbyte:
 ```

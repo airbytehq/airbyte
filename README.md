@@ -21,7 +21,7 @@ Here's a list of our [connectors with their health status](docs/integrations/).
 ```bash
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
-docker-compose up
+docker compose up
 ```
 
 Now visit [http://localhost:8000](http://localhost:8000). You will be asked for a username (default: `airbyte`) and password (default: `password`). You should update these values by changing `BASIC_AUTH_USERNAME` and `BASIC_AUTH_PASSWORD` in your local `.env` file.

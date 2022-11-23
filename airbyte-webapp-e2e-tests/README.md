@@ -9,7 +9,7 @@ Steps:
 1) If you have not already done so, run `npm install` to install the e2e test dependencies.
 2) Build the OSS backend for the current commit with `SUB_BUILD=PLATFORM ../gradlew clean build`.
 3) Create the test database: `npm run createdb`.
-4) Start the OSS backend: `VERSION=dev docker-compose --file ../docker-compose.yaml up`. If you want, follow this with `docker-compose stop webapp` to turn off the dockerized frontend build; interactive cypress sessions don't use it.
+4) Start the OSS backend: `VERSION=dev docker compose --file ../docker-compose.yaml up`. If you want, follow this with `docker compose stop webapp` to turn off the dockerized frontend build; interactive cypress sessions don't use it.
 5) The following two commands will start a separate long-running server, so open another terminal window. In it, `cd` into the `airbyte-webapp/` directory.
 6) If you have not already done so, run `npm install` to install the frontend app's dependencies.
 7) Start the frontend development server with `npm start`.
@@ -24,5 +24,5 @@ Steps:
 1) If you have not already done so, run `npm install` to install the e2e test dependencies.
 2) Build the OSS backend for the current commit with `SUB_BUILD=PLATFORM ../gradlew clean build`.
 3) Create the test database: `npm run createdb`.
-4) Start the OSS backend: `VERSION=dev docker-compose --file ../docker-compose.yaml up`.
+4) Start the OSS backend: `VERSION=dev docker compose --file ../docker-compose.yaml up`.
 5) Start the cypress test run with `npm run cypress:ci` or `npm run cypress:ci:record`.
