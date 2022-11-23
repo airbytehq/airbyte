@@ -94,8 +94,7 @@ export const jsonSchemaToUiWidget = (
     isRequired,
     isSecret: !!jsonSchema.airbyte_secret,
     multiline: !!jsonSchema.multiline,
-    // TODO: Debugging, remove before merging
-    format: key === "end_date" ? "date" : jsonSchema.format,
+    format: jsonSchema.format,
     type: (Array.isArray(jsonSchema.type) ? jsonSchema.type[0] : jsonSchema.type) ?? "null",
   };
 };
