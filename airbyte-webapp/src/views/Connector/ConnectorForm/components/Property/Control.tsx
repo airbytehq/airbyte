@@ -16,9 +16,9 @@ import ConfirmationControl from "./ConfirmationControl";
 interface ControlProps {
   property: FormBaseItem;
   name: string;
-  unfinishedFlows: Record<string, { startValue: string }>;
-  addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void;
-  removeUnfinishedFlow: (key: string) => void;
+  unfinishedFlows?: Record<string, { startValue: string }>;
+  addUnfinishedFlow?: (key: string, info?: Record<string, unknown>) => void;
+  removeUnfinishedFlow?: (key: string) => void;
   disabled?: boolean;
   error?: boolean;
 }
@@ -84,6 +84,9 @@ export const Control: React.FC<ControlProps> = ({
   } else if (property.multiline && !property.isSecret) {
     return <TextArea {...field} autoComplete="off" value={value ?? ""} rows={3} disabled={disabled} error={error} />;
   } else if (property.isSecret) {
+    if (unfinishedFlows === undefined || addUnfinishedFlow === undefined || removeUnfinishedFlow === undefined) {
+      throw new Error("unfinished flow props must be provided for secret fields");
+    }
     const unfinishedSecret = unfinishedFlows[name];
     const isEditInProgress = !!unfinishedSecret;
     const isFormInEditMode = isDefined(meta.initialValue);

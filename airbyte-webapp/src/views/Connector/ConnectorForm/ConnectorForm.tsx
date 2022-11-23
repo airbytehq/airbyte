@@ -161,6 +161,9 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
   );
 
   const validationSchema = useConstructValidationSchema(jsonSchema, uiWidgetsInfo);
+  console.log("jsonSchema", jsonSchema);
+  console.log("uiWidgetsInfo", uiWidgetsInfo);
+  console.log("validationSchema", validationSchema);
 
   const getValues = useCallback(
     (values: ConnectorFormValues) =>

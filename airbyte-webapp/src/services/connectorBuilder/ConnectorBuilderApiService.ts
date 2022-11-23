@@ -1,5 +1,5 @@
 import $RefParser from "@apidevtools/json-schema-ref-parser";
-import { JSONSchema6 } from "json-schema";
+import { JSONSchema7 } from "json-schema";
 import { useQuery } from "react-query";
 
 import { useConfig } from "config";
@@ -13,7 +13,7 @@ import {
 import { useSuspenseQuery } from "services/connector/useSuspenseQuery";
 import { useInitService } from "services/useInitService";
 
-import connectorManifestSchema from "./config_component_schema.json";
+import connectorManifestSchema from "./example_schema.json";
 
 const connectorBuilderKeys = {
   all: ["connectorBuilder"] as const,
@@ -58,6 +58,6 @@ export const useManifestTemplate = () => {
 
 export const useConnectorManifestSchema = () => {
   return useSuspenseQuery("connectorManifestSchema", () => {
-    return $RefParser.dereference(connectorManifestSchema as JSONSchema6);
+    return $RefParser.dereference(connectorManifestSchema as JSONSchema7) as JSONSchema7;
   });
 };

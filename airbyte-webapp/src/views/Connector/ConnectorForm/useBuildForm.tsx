@@ -86,7 +86,7 @@ export const useBuildUiWidgetsContext = (
 };
 
 // As validation schema depends on what path of oneOf is currently selected in jsonschema
-export const useConstructValidationSchema = (jsonSchema: JSONSchema7, uiWidgetsInfo: WidgetConfigMap): AnySchema =>
+export const useConstructValidationSchema = (jsonSchema: JSONSchema7, uiWidgetsInfo?: WidgetConfigMap): AnySchema =>
   useMemo(() => buildYupFormForJsonSchema(jsonSchema, uiWidgetsInfo), [uiWidgetsInfo, jsonSchema]);
 
 export const usePatchFormik = (): void => {

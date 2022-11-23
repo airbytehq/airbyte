@@ -12,5 +12,6 @@
 }
 
 .container {
-  background-image: linear-gradient(colors.$grey-50, colors.$grey-100);
+  // background-image: linear-gradient(colors.$grey-50, colors.$grey-100);
+  background-color: colors.$grey-50;
 }

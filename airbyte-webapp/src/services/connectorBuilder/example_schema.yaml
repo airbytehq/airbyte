@@ -1,0 +1,105 @@
+$schema: http://json-schema.org/draft-07/schema#
+type: object
+required:
+  - version
+  - checker
+  - streams
+properties:
+  version:
+    type: string
+    description: Declarative CDK version to use
+    default: 1.0.0
+  checker:
+    $ref: "#/definitions/CheckStream"
+  streams:
+    type: array
+    items:
+      $ref: "#/definitions/DeclarativeStream"
+definitions:
+  CheckStream:
+    type: object
+    required:
+      - stream_names
+    properties:
+      stream_names:
+        type: array
+        items:
+          type: string
+  DeclarativeStream:
+    type: object
+    required:
+      - retriever
+    properties:
+      retriever:
+        $ref: "#/definitions/SimpleRetriever"
+  SimpleRetriever:
+    type: object
+    required:
+      - requester
+      - record_selector
+    properties:
+      requester:
+        $ref: "#/definitions/HttpRequester"
+      name:
+        type: string
+  HttpRequester:
+    type: object
+    required:
+      - name
+      - url_base
+      - path
+    properties: # no allOf
+      name:
+        type: string
+      url_base:
+        type: string # no interpolated string
+        title: Base URL # specify title for UI
+      path:
+        type: string
+        title: Path URL
+        description: Path of the URL endpoint that this stream should request # description to populate tooltips
+      authenticator:
+        type: object
+        title: Authenticator
+        description: Configures how your connector will authenticate with the API
+        oneOf: # use oneOf
+          - $ref: "#/definitions/NoAuth"
+          - $ref: "#/definitions/DeclarativeOauth2Authenticator"
+          - $ref: "#/definitions/ApiKeyAuthenticator"
+          - $ref: "#/definitions/BearerAuthenticator"
+          - $ref: "#/definitions/BasicHttpAuthenticator"
+  NoAuth: # no allOf
+    type: object
+    title: NoAuth
+  DeclarativeOauth2Authenticator:
+    type: object
+    title: OAuth 2.0 # title is needed for each option of a oneOf
+    required: # no 'config' in required list
+      - token_refresh_endpoint
+      - client_id
+      - client_secret
+      - refresh_token
+    properties:
+      token_refresh_endpoint:
+        type: string
+        title: Token Refresh endpoint
+        description: Description of the token refresh endpoint field
+      client_id:
+        type: string
+        title: Client ID
+        description: Description of the client ID field
+  ApiKeyAuthenticator:
+    type: object
+    title: API Key
+    required:
+      - header
+      - api_token
+    properties:
+      header:
+        type: string
+        title: Header
+        description: The request header that should contain the API Key
+      api_token:
+        type: string
+        title: API Token
+        description: The value to use for the API token
