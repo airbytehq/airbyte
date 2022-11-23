@@ -23,9 +23,6 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.txt"
-        empty_streams:
-          - name: "tags"
-            bypass_reason: "can not fill the stream"
   incremental:
     tests:
       - config_path: "secrets/config.json"
