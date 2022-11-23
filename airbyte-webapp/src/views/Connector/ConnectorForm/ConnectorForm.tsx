@@ -189,7 +189,7 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
       onSubmit={onFormSubmit}
       enableReinitialize
     >
-      {({ dirty, values, touched }) => (
+      {({ dirty }) => (
         <ConnectorFormContextProvider
           formType={formType}
           widgetsInfo={uiWidgetsInfo}
@@ -203,14 +203,6 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
           validationSchema={validationSchema}
           connectorId={connectorId}
         >
-          {/* TODO: Debugging, remove before merging */}
-          {console.log(
-            "values",
-            Object.fromEntries(
-              Object.entries(values.connectionConfiguration as object).filter(([, v]) => typeof v === "string")
-            )
-          )}
-          {console.log("touched", touched.connectionConfiguration)}
           <RevalidateOnValidationSchemaChange validationSchema={validationSchema} />
           <FormikPatch />
           <FormChangeTracker changed={dirty} formId={formId} />
