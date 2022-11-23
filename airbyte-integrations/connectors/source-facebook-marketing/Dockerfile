@@ -9,6 +9,7 @@ COPY main.py ./
 COPY setup.py ./
 RUN pip install .
 COPY spec.patch.json ./
+COPY spec.map.json ./
 COPY documentation_url.patch.json ./
 COPY oauth2.patch.json ./
 
