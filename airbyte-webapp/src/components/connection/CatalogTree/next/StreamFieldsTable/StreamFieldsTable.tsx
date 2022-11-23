@@ -115,7 +115,11 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
         cell: ({ getValue, row }) => {
           return (
             getValue() && (
-              <CheckBox checked={isPrimaryKey(row.original.path)} onChange={() => onPkSelect(row.original.path)} />
+              <CheckBox
+                checked={isPrimaryKey(row.original.path)}
+                onChange={() => onPkSelect(row.original.path)}
+                className={styles.checkbox}
+              />
             )
           );
         },

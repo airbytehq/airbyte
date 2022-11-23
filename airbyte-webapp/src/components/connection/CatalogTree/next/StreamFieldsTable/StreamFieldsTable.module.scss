@@ -73,3 +73,8 @@ $cell-height: 28px;
   overflow: unset;
   padding-left: 0;
 }
+
+// need to fix styled-component z-index issue
+.checkbox {
+  position: unset !important;
+}
