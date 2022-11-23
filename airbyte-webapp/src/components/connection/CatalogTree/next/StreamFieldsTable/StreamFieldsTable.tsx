@@ -9,7 +9,6 @@ import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
-import { getIcon } from "utils/imageUtils";
 import { equal } from "utils/objects";
 import { getDataType } from "utils/useTranslateDataType";
 
@@ -17,6 +16,7 @@ import { CheckBox } from "../../../../ui/CheckBox";
 import { RadioButton } from "../../../../ui/RadioButton";
 import { pathDisplayName } from "../../PathPopout";
 import { NextTable } from "../NextTable";
+import { ConnectorHeaderGroupIcon } from "./ConnectorHeaderGroupIcon";
 import styles from "./StreamFieldsTable.module.scss";
 
 interface TableStream {
@@ -34,9 +34,6 @@ export interface StreamFieldsTableProps {
   shouldDefineCursor: boolean;
   syncSchemaFields: SyncSchemaField[];
 }
-
-// copied from StreamConnectionHeader
-const renderIcon = (icon?: string): JSX.Element => <div className={styles.icon}>{getIcon(icon)}</div>;
 
 export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
   config,
@@ -151,7 +148,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
   const columns = [
     columnHelper.group({
       id: "source",
-      header: () => <span className={styles.connectorIconContainer}>{renderIcon(sourceDefinition.icon)} Source </span>,
+      header: () => <ConnectorHeaderGroupIcon type="source" icon={sourceDefinition.icon} />,
       columns: sourceColumns,
       meta: {
         thClassName: styles.headerGroupCell,
@@ -176,9 +173,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
     }),
     columnHelper.group({
       id: "destination",
-      header: () => (
-        <span className={styles.connectorIconContainer}>{renderIcon(destinationDefinition.icon)} Destination</span>
-      ),
+      header: () => <ConnectorHeaderGroupIcon type="destination" icon={destinationDefinition.icon} />,
       columns: destinationColumns,
       meta: {
         thClassName: styles.headerGroupCell,

@@ -1,7 +1,5 @@
 @use "scss/colors";
 
-$icon-size: 28px;
-
 .headerGroupCell {
   height: 58px;
   background-color: colors.$white;
@@ -14,18 +12,6 @@ $icon-size: 28px;
   &:last-child {
     padding-left: 0;
   }
-}
-
-.connectorIconContainer {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-}
-
-.icon {
-  height: $icon-size;
-  width: $icon-size;
 }
 
 .headerCell {
