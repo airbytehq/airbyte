@@ -11,13 +11,14 @@
 
 .clearButton {
   &::after {
+    font-size: 17px;
     background: transparent;
     color: colors.$grey-300;
   }
 
   &:hover::after,
   &:focus-visible::after {
-    color: colors.$grey-900;
+    color: colors.$grey-400;
   }
 }
 
@@ -63,6 +64,10 @@
   &:hover {
     background-color: colors.$grey-100;
   }
+}
+
+:global(.react-datepicker__day--outside-month) {
+  color: colors.$grey-300;
 }
 
 :global(.react-datepicker__day--today) {
