@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { renderHook } from "@testing-library/react-hooks";
 import classNames from "classnames";
 import * as formik from "formik";
@@ -39,6 +38,7 @@ const mockDisabledInitialValues: Partial<FormikConnectionFormValues> = {
     streams: [
       {
         ...mockInitialValues.syncCatalog?.streams[0],
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         config: { ...mockInitialValues.syncCatalog!.streams[0].config!, selected: false },
       },
     ],
@@ -73,6 +73,7 @@ describe("useCatalogTreeTableRowProps", () => {
     const { result } = renderHook(() =>
       useCatalogTreeTableRowProps({
         ...mockStream,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         config: { ...mockStream.config!, selected: false },
       })
     );
@@ -94,6 +95,7 @@ describe("useCatalogTreeTableRowProps", () => {
     const { result } = renderHook(() =>
       useCatalogTreeTableRowProps({
         ...mockStream,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         config: { ...mockStream.config!, selected: false },
       })
     );
@@ -108,6 +110,7 @@ describe("useCatalogTreeTableRowProps", () => {
     const { result } = renderHook(() =>
       useCatalogTreeTableRowProps({
         ...mockStream,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         config: { ...mockStream.config!, syncMode: "incremental", destinationSyncMode: "append_dedup" },
       })
     );
@@ -135,6 +138,7 @@ describe("useCatalogTreeTableRowProps", () => {
     const { result } = renderHook(() =>
       useCatalogTreeTableRowProps({
         ...mockStream,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         config: { ...mockStream.config!, selected: true }, // selected true, new sync, mode and destination sync mode
       })
     );
