@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { useQueryClient } from "react-query";
 
 import { ConnectionTable } from "components/EntityTable";
@@ -18,6 +18,8 @@ interface IProps {
 }
 
 const ConnectionsTable: React.FC<IProps> = ({ connections }) => {
+  const [rowId, setRowID] = useState<string>("");
+  const [statusLoading, setStatusLoading] = useState<boolean>(false);
   const { push } = useRouter();
   const { changeStatus, syncManualConnection } = useSyncActions();
   const queryClient = useQueryClient();
@@ -33,8 +35,12 @@ const ConnectionsTable: React.FC<IProps> = ({ connections }) => {
       const connection = connections.find((item) => item.connectionId === connectionId);
 
       if (connection) {
+        setRowID(connectionId);
+        setStatusLoading(true);
         await changeStatus(connection);
         await invalidateConnectionsList(queryClient);
+        setRowID("");
+        setStatusLoading(false);
       }
     },
     [changeStatus, connections, queryClient]
@@ -59,6 +65,8 @@ const ConnectionsTable: React.FC<IProps> = ({ connections }) => {
       entity="connection"
       onChangeStatus={onChangeStatus}
       onSync={onSync}
+      rowId={rowId}
+      statusLoading={statusLoading}
     />
   );
 };

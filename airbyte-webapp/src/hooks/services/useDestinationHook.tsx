@@ -6,7 +6,7 @@ import { DestinationService } from "core/domain/connector/DestinationService";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
-import { useConfig } from "../../config";
+// import { useConfig } from "../../config";
 import { DestinationRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
@@ -34,9 +34,12 @@ interface ConnectorProps {
 }
 
 function useDestinationService() {
-  const { apiUrl } = useConfig();
+  // const { process.env.REACT_APP_API_URL as string } = useConfig();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
-  return useInitService(() => new DestinationService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
+  return useInitService(
+    () => new DestinationService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
+    [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
+  );
 }
 
 interface DestinationList {

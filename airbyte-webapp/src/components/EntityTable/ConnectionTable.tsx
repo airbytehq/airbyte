@@ -4,6 +4,7 @@ import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 import styled from "styled-components";
 
+import { LabeledSwitch } from "components/LabeledSwitch";
 import Table from "components/Table";
 
 import { FeatureItem, useFeature } from "hooks/services/Feature";
@@ -16,7 +17,7 @@ import LastSyncCell from "./components/LastSyncCell";
 // import NameCell from "./components/NameCell";
 // import SortButton from "./components/SortButton";
 // import StatusCell from "./components/StatusCell";
-import SwitchButton from "./components/SwitchButton";
+// import SwitchButton from "./components/SwitchButton";
 import { ITableDataItem, SortOrderEnum } from "./types";
 
 const Content = styled.div`
@@ -29,9 +30,11 @@ interface IProps {
   onClickRow?: (data: ITableDataItem) => void;
   onChangeStatus: (id: string) => void;
   onSync: (id: string) => void;
+  rowId?: string;
+  statusLoading?: boolean;
 }
 
-const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSync }) => {
+const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSync, rowId, statusLoading }) => {
   const { query, push } = useRouter();
   const allowSync = useFeature(FeatureItem.AllowSync);
 
@@ -82,15 +85,15 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
         accessor: "lastSyncStatus",
         customWidth: 1,
         Cell: ({ cell }: CellProps<ITableDataItem>) => (
-          <SwitchButton
+          <LabeledSwitch
             id={`${cell.row.values.connectionId}`}
-            checked={cell.row.values.status === "active" ? true : false}
+            checked={cell.row.values.status === "Active" ? true : false}
             onClick={() => {
               onChangeStatus(cell.row.values.connectionId);
             }}
+            loading={rowId === cell.row.values.connectionId && statusLoading ? true : false}
           />
         ),
-        // Cell: () => ( <SwitchButton id="checkbox" /> ),
       },
       {
         Header: (
