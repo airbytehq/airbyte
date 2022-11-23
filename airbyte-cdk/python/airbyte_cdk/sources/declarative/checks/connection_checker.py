@@ -4,7 +4,7 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, List, Mapping, Optional, Text, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Text, Tuple
 
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.source import Source
@@ -81,22 +81,29 @@ class HTTPAvailabilityStrategy(AvailabilityStrategy):
 
 class ScopedAvailabilityStrategy(AvailabilityStrategy):
     def check_availability(self, source: Source, stream: Stream) -> Tuple[bool, Optional[str]]:
-        if all(self.required_scopes[stream] in self.get_granted_scopes()):
+        """
+
+        :param source:
+        :param stream:
+        :return:
+        """
+        required_scopes_for_stream = self.required_scopes(source)[stream.name]
+        granted_scopes = self.get_granted_scopes(source)
+        if all([scope in granted_scopes for scope in required_scopes_for_stream]):
             return True, None
         else:
-            missing_scopes = set(self.required_scopes[stream]) ^ set(self.get_granted_scopes())
-        return False, f"Missing required scopes: {missing_scopes}"
+            missing_scopes = [scope for scope in required_scopes_for_stream if scope not in granted_scopes]
+            return False, f"Missing required scopes: {missing_scopes}"
 
     @abstractmethod
-    def get_granted_scopes(self):
+    def get_granted_scopes(self, source: Source) -> List[Text]:
         """
 
         :return: A list of scopes granted to the user.
         """
 
-
     @abstractmethod
-    def required_scopes(self):
+    def required_scopes(self, source: Source) -> Dict[Text, List[Text]]:
         """
 
         :return: A dict of (stream name: list of required scopes). Should contain

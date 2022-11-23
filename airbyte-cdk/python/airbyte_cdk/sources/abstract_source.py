@@ -18,6 +18,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.declarative.checks.connection_checker import AvailabilityStrategy
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import StreamData
@@ -129,6 +130,15 @@ class AbstractSource(Source, ABC):
                     logger.info(timer.report())
 
         logger.info(f"Finished syncing {self.name}")
+
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return AvailabilityStrategy()
+
+    def stream_is_available(self, stream: Stream):
+        availability_strategy = self.availability_strategy()
+        if availability_strategy is not None:
+            return availability_strategy.check_availability(self, stream)
+        return True, None
 
     @property
     def per_stream_state_enabled(self) -> bool:
