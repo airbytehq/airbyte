@@ -4,6 +4,15 @@ import timezoneMock from "timezone-mock";
 import { toEquivalentLocalTimeInBrowserTimezone } from "./DatePicker";
 
 describe(`${toEquivalentLocalTimeInBrowserTimezone.name}`, () => {
+  it("outputs the same YYYY-MM-DDTHH:mm:ss", () => {
+    const TEST_UTC_TIMESTAMP = "2000-01-01T12:00:00Z";
+
+    const result = toEquivalentLocalTimeInBrowserTimezone(dayjs(TEST_UTC_TIMESTAMP));
+
+    // Regardless of the timezone, the local time should be the same
+    expect(result.toISOString().substring(0, 19)).toEqual(TEST_UTC_TIMESTAMP.substring(0, 19));
+  });
+
   it("converts utc time to equivalent local time in PST", () => {
     timezoneMock.register("US/Pacific");
     const TEST_TIMEZONE_UTC_OFFSET_IN_MINUTES = 480; // corresponds to the timezone-mock
