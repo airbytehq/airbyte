@@ -660,9 +660,9 @@
                   "type": "string"
                 }
               ],
-               "default": ""
+              "default": ""
             },
-            "username":  {
+            "username": {
               "anyOf": [
                 {
                   "$ref": "#/definitions/InterpolatedString"
@@ -671,9 +671,9 @@
                   "type": "string"
                 }
               ],
-               "default": ""
+              "default": ""
             },
-             "password": {
+            "password": {
               "anyOf": [
                 {
                   "$ref": "#/definitions/InterpolatedString"

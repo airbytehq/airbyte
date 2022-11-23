@@ -3,8 +3,8 @@
 #
 
 import pytest
-from requests.exceptions import HTTPError
 from airbyte_cdk.sources.declarative.auth.token import SessionTokenAuthenticator, get_new_session_token
+from requests.exceptions import HTTPError
 
 options = {"hello": "world"}
 instance_api_url = "https://airbyte.metabaseapp.com/api/"
