@@ -287,6 +287,9 @@
     "source_name": {
       "type": ["null", "string"]
     },
+    "event_name": {
+      "type": ["null", "string"]
+    },
     "source_url": {
       "type": ["null", "string"]
     },

@@ -149,6 +149,15 @@ class Orders(IncrementalShopifyStream):
             params["status"] = "any"
         return params
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+
+        raw_response = response.json()['orders']
+        modified_response = []
+        for data in raw_response:
+            data['event_name'] = 'orders'
+            modified_response.append(data)
+        return modified_response
+
 class LineItems(Orders):
     data_field = "orders"
     fields = "id,created_at,processed_at,updated_at,source_name,line_items,source_name"
