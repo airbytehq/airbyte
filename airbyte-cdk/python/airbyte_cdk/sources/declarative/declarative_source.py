@@ -3,10 +3,11 @@
 #
 
 from abc import abstractmethod
-from typing import Tuple
+from typing import Optional, Tuple
 
 from airbyte_cdk.sources.abstract_source import AbstractSource
-from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
+from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker, AvailabilityStrategy
 
 
 class DeclarativeSource(AbstractSource):
@@ -17,7 +18,7 @@ class DeclarativeSource(AbstractSource):
     @property
     @abstractmethod
     def connection_checker(self) -> ConnectionChecker:
-        """Returns the ConnectioChecker to use for the `check` operation"""
+        """Returns the ConnectionChecker to use for the `check` operation"""
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
@@ -31,3 +32,18 @@ class DeclarativeSource(AbstractSource):
           The error object will be cast to string to display the problem to the user.
         """
         return self.connection_checker.check_connection(self, logger, config)
+
+    @property
+    # @abstractmethod
+    def availability_strategy(self) -> AvailabilityStrategy:
+        """Returns the AvailabilityStrategy to use for the `read` operation."""
+        return None
+
+    def is_available(self, stream: Stream) -> Tuple[bool, Optional[str]]:
+        """
+        :param stream:
+        :return:
+        """
+        if self.availability_strategy is not None:
+            return self.availability_strategy.check_availability(stream)
+        return True, None
