@@ -4,7 +4,7 @@
 
 from typing import Any, Mapping
 
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefreshTokenOauth2Authenticator, TokenAuthenticator
 
 
 class HarvestMixin:
@@ -29,8 +29,11 @@ class HarvestTokenAuthenticator(HarvestMixin, TokenAuthenticator):
     """
 
 
-class HarvestOauth2Authenticator(HarvestMixin, Oauth2Authenticator):
+class HarvestOauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator):
     """
     Auth class for OAuth2
     https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#for-server-side-applications
     """
+
+    def get_auth_header(self) -> Mapping[str, Any]:
+        return {**super().get_auth_header(), "Harvest-Account-ID": self._connector_config["account_id"]}
