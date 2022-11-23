@@ -59,128 +59,150 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
 
   // prepare data for table
-  const tableData: TableStream[] = syncSchemaFields.map((stream) => ({
-    path: stream.path,
-    dataType: getDataType(stream),
-    cursorDefined: shouldDefineCursor && SyncSchemaFieldObject.isPrimitive(stream),
-    primaryKeyDefined: shouldDefinePk && SyncSchemaFieldObject.isPrimitive(stream),
-  }));
+  const tableData: TableStream[] = useMemo(
+    () =>
+      syncSchemaFields.map((stream) => ({
+        path: stream.path,
+        dataType: getDataType(stream),
+        cursorDefined: shouldDefineCursor && SyncSchemaFieldObject.isPrimitive(stream),
+        primaryKeyDefined: shouldDefinePk && SyncSchemaFieldObject.isPrimitive(stream),
+      })),
+    [shouldDefineCursor, shouldDefinePk, syncSchemaFields]
+  );
 
   const columnHelper = createColumnHelper<TableStream>();
 
-  const sourceColumns = [
-    columnHelper.accessor("path", {
-      id: "sourcePath",
-      header: () => <FormattedMessage id="form.field.name" />,
-      cell: ({ getValue }) => pathDisplayName(getValue()),
-      meta: {
-        thClassName: styles.headerCell,
-        tdClassName: styles.textCell,
-      },
-    }),
-    columnHelper.accessor("dataType", {
-      id: "sourceDataType",
-      header: () => <FormattedMessage id="form.field.dataType" />,
-      cell: ({ getValue }) => (
-        <FormattedMessage id={`${getValue()}`} defaultMessage={formatMessage({ id: "airbyte.datatype.unknown" })} />
-      ),
-      meta: {
-        thClassName: styles.headerCell,
-        tdClassName: styles.dataTypeCell,
-      },
-    }),
-    columnHelper.accessor("cursorDefined", {
-      id: "sourceCursorDefined",
-      header: () => <>{shouldDefineCursor && <FormattedMessage id="form.field.cursorField" />}</>,
-      cell: ({ getValue, row }) => {
-        return (
-          getValue() && (
-            <RadioButton checked={isCursor(row.original.path)} onChange={() => onCursorSelect(row.original.path)} />
-          )
-        );
-      },
-      meta: {
-        thClassName: styles.headerCell,
-        tdClassName: styles.checkboxCell,
-      },
-    }),
-    columnHelper.accessor("primaryKeyDefined", {
-      id: "sourcePrimaryKeyDefined",
-      header: () => shouldDefinePk && <FormattedMessage id="form.field.primaryKey" />,
-      cell: ({ getValue, row }) => {
-        return (
-          getValue() && (
-            <CheckBox checked={isPrimaryKey(row.original.path)} onChange={() => onPkSelect(row.original.path)} />
-          )
-        );
-      },
-      meta: {
-        thClassName: styles.headerCell,
-        tdClassName: styles.textCell,
-      },
-    }),
-  ];
-
-  const destinationColumns = [
-    columnHelper.accessor("path", {
-      id: "destinationPath",
-      header: () => <FormattedMessage id="form.field.name" />,
-      cell: ({ getValue }) => pathDisplayName(getValue()),
-      meta: {
-        thClassName: styles.headerCell,
-        tdClassName: styles.textCell,
-      },
-    }),
-    // In the design, but we may be unable to get the destination data type
-    columnHelper.accessor("dataType", {
-      id: "destinationDataType",
-      header: () => <FormattedMessage id="form.field.dataType" />,
-      cell: ({ getValue }) => (
-        <FormattedMessage id={`${getValue()}`} defaultMessage={formatMessage({ id: "airbyte.datatype.unknown" })} />
-      ),
-      meta: {
-        thClassName: styles.headerCell,
-        tdClassName: styles.dataTypeCell,
-      },
-    }),
-  ];
-
-  const columns = [
-    columnHelper.group({
-      id: "source",
-      header: () => <ConnectorHeaderGroupIcon type="source" icon={sourceDefinition.icon} />,
-      columns: sourceColumns,
-      meta: {
-        thClassName: styles.headerGroupCell,
-      },
-    }),
-    columnHelper.group({
-      id: "arrow",
-      header: () => <FontAwesomeIcon icon={faArrowRight} />,
-      columns: [
-        {
-          id: "_", // leave the column name empty
-          cell: () => <FontAwesomeIcon icon={faArrowRight} />,
-          meta: {
-            thClassName: styles.headerCell,
-            tdClassName: styles.arrowCell,
-          },
+  const sourceColumns = useMemo(
+    () => [
+      columnHelper.accessor("path", {
+        id: "sourcePath",
+        header: () => <FormattedMessage id="form.field.name" />,
+        cell: ({ getValue }) => pathDisplayName(getValue()),
+        meta: {
+          thClassName: styles.headerCell,
+          tdClassName: styles.textCell,
         },
-      ],
-      meta: {
-        thClassName: styles.headerGroupCell,
-      },
-    }),
-    columnHelper.group({
-      id: "destination",
-      header: () => <ConnectorHeaderGroupIcon type="destination" icon={destinationDefinition.icon} />,
-      columns: destinationColumns,
-      meta: {
-        thClassName: styles.headerGroupCell,
-        tdClassName: styles.bodyCell,
-      },
-    }),
-  ];
+      }),
+      columnHelper.accessor("dataType", {
+        id: "sourceDataType",
+        header: () => <FormattedMessage id="form.field.dataType" />,
+        cell: ({ getValue }) => (
+          <FormattedMessage id={`${getValue()}`} defaultMessage={formatMessage({ id: "airbyte.datatype.unknown" })} />
+        ),
+        meta: {
+          thClassName: styles.headerCell,
+          tdClassName: styles.dataTypeCell,
+        },
+      }),
+      columnHelper.accessor("cursorDefined", {
+        id: "sourceCursorDefined",
+        header: () => <>{shouldDefineCursor && <FormattedMessage id="form.field.cursorField" />}</>,
+        cell: ({ getValue, row }) => {
+          return (
+            getValue() && (
+              <RadioButton checked={isCursor(row.original.path)} onChange={() => onCursorSelect(row.original.path)} />
+            )
+          );
+        },
+        meta: {
+          thClassName: styles.headerCell,
+          tdClassName: styles.checkboxCell,
+        },
+      }),
+      columnHelper.accessor("primaryKeyDefined", {
+        id: "sourcePrimaryKeyDefined",
+        header: () => shouldDefinePk && <FormattedMessage id="form.field.primaryKey" />,
+        cell: ({ getValue, row }) => {
+          return (
+            getValue() && (
+              <CheckBox checked={isPrimaryKey(row.original.path)} onChange={() => onPkSelect(row.original.path)} />
+            )
+          );
+        },
+        meta: {
+          thClassName: styles.headerCell,
+          tdClassName: styles.textCell,
+        },
+      }),
+    ],
+    [
+      columnHelper,
+      formatMessage,
+      isCursor,
+      isPrimaryKey,
+      onCursorSelect,
+      onPkSelect,
+      shouldDefineCursor,
+      shouldDefinePk,
+    ]
+  );
+
+  const destinationColumns = useMemo(
+    () => [
+      columnHelper.accessor("path", {
+        id: "destinationPath",
+        header: () => <FormattedMessage id="form.field.name" />,
+        cell: ({ getValue }) => pathDisplayName(getValue()),
+        meta: {
+          thClassName: styles.headerCell,
+          tdClassName: styles.textCell,
+        },
+      }),
+      // In the design, but we may be unable to get the destination data type
+      columnHelper.accessor("dataType", {
+        id: "destinationDataType",
+        header: () => <FormattedMessage id="form.field.dataType" />,
+        cell: ({ getValue }) => (
+          <FormattedMessage id={`${getValue()}`} defaultMessage={formatMessage({ id: "airbyte.datatype.unknown" })} />
+        ),
+        meta: {
+          thClassName: styles.headerCell,
+          tdClassName: styles.dataTypeCell,
+        },
+      }),
+    ],
+    [columnHelper, formatMessage]
+  );
+
+  const columns = useMemo(
+    () => [
+      columnHelper.group({
+        id: "source",
+        header: () => <ConnectorHeaderGroupIcon type="source" icon={sourceDefinition.icon} />,
+        columns: sourceColumns,
+        meta: {
+          thClassName: styles.headerGroupCell,
+        },
+      }),
+      columnHelper.group({
+        id: "arrow",
+        header: () => <FontAwesomeIcon icon={faArrowRight} />,
+        columns: [
+          {
+            id: "_", // leave the column name empty
+            cell: () => <FontAwesomeIcon icon={faArrowRight} />,
+            meta: {
+              thClassName: styles.headerCell,
+              tdClassName: styles.arrowCell,
+            },
+          },
+        ],
+        meta: {
+          thClassName: styles.headerGroupCell,
+        },
+      }),
+      columnHelper.group({
+        id: "destination",
+        header: () => <ConnectorHeaderGroupIcon type="destination" icon={destinationDefinition.icon} />,
+        columns: destinationColumns,
+        meta: {
+          thClassName: styles.headerGroupCell,
+          tdClassName: styles.bodyCell,
+        },
+      }),
+    ],
+    [columnHelper, destinationColumns, destinationDefinition.icon, sourceColumns, sourceDefinition.icon]
+  );
 
   return <NextTable<TableStream> columns={columns} data={tableData} />;
 };
