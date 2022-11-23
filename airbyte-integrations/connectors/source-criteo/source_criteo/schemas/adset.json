@@ -1,43 +1,45 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "$schema": "http://json-schema.org/schema#",
   "properties": {
-    "AdvertiserId": {
-      "type": ["null", "string"]
+    "Adset": {
+      "type": "string"
     },
     "AdsetId": {
-      "type": ["null", "string"]
-    },
-    "CategoryId": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "Advertiser": {
-      "type": ["null", "string"]
-    },
-    "Adset": {
-      "type": ["null", "string"]
-    },
-    "Category": {
-      "type": ["null", "string"]
-    },
-    "Device": {
-      "type": ["null", "string"]
-    },
-    "Os": {
-      "type": ["null", "string"]
-    },
-    "Day": {
-      "type": ["null", "string"],
-      "format": "date"
-    },
-    "Displays": {
-      "type": ["null", "integer"]
-    },
-    "Clicks": {
-      "type": ["null", "integer"]
+      "type": "string"
     },
     "AdvertiserCost": {
-      "type": ["null", "number"]
+      "type": "string"
+    },
+    "AdvertiserId": {
+      "type": "string"
+    },
+    "Category": {
+      "type": "string"
+    },
+    "CategoryId": {
+      "type": "string"
+    },
+    "Clicks": {
+      "type": "string"
+    },
+    "Currency": {
+      "type": "string"
+    },
+    "Day": {
+      "type": "string"
+    },
+    "Device": {
+      "type": "string"
+    },
+    "Displays": {
+      "type": "string"
+    },
+    "Os": {
+      "type": "string"
     }
-  }
+  },
+  "type": "object"
 }

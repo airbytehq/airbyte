@@ -28,26 +28,12 @@ class CriteoStream(HttpStream, ABC):
         self.dimensions = dimensions
         self.metrics = metrics
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        decoded_response = response.json()
-        next_page = decoded_response.get("nextPageToken")
-        if next_page:
-            return {"pageToken": next_page}
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-
-        if next_page_token:
-            params = next_page_token
-            return params
-        else:
-            return {}
-
-
     @property
     def http_method(self) -> str:
         return "POST"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if not self.data_field:
