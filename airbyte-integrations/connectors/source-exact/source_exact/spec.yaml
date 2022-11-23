@@ -4,9 +4,19 @@ connectionSpecification:
   title: Exact Spec
   type: object
   required:
-    - TODO
+    # - refresh_token
+    - client_id
+    - client_secret
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    code:
       type: string
-      description: describe me
+      description: Code returned on the return UIR.
+    refresh_token:
+      type: string
+      description: The latest refresh token from Exact.
+    client_id:
+      type: string
+      description: OAuth client_id, can be found at apps.exactonline.com.
+    client_secret:
+      type: string
+      description: OAuth client_secret, can be found at apps.exactonline.com.

@@ -7,10 +7,12 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+import pendulum
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -55,9 +57,8 @@ class ExactStream(HttpStream, ABC):
     See the reference docs for the full list of configurable options.
     """
 
-    # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
-
+    url_base = "https://start.exactonline.nl/api"
+    
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
@@ -183,17 +184,52 @@ class Employees(IncrementalExactStream):
 # Source
 class SourceExact(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
+        token_endpoint = "https://start.exactonline.nl/api/oauth2/token"
 
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
-        for an example.
+        try:
+            resp = requests.post(
+                token_endpoint,
+                data={
+                    "grant_type": "authorization_code",
+                    "redirect_uri": "https://auth.intern.gynzy.net/_oauth/",
+                    "client_id": config["client_id"],
+                    "client_secret": config["client_secret"],
+                    "code": config["code"],
+                },
+                headers={
+                    "Accept": "application/json",
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            )
 
-        :param config:  the user-input config object conforming to the connector's spec.yaml
-        :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
-        """
-        return True, None
+            response_json = resp.json()
+            if resp.status_code != 200:
+                # Yield more user friendly error message
+                error_description = response_json.get("error_description")
+                if error_description:
+                    if 'The message expired at' in response_json.get("error_description"):
+                        return False, "The code is expired. Create a new code by initiating the OAuth flow manually."
+                    if 'This message has already been processed' in response_json.get("error_description"):
+                        return False, "The code is already used. Create a new code by initiating the OAuth flow manually."
+                    
+                    return False, response_json.get("error_description")
+
+                return False, f"Failed to retrieve token\n{response_json}"
+
+            auth = SingleRefreshOauth2Authenticator(
+                token_refresh_endpoint=token_endpoint,
+                client_id=config["client_id"],
+                client_secret=config["client_secret"],
+                refresh_token=response_json["refresh_token"],
+                # Hardcoded: access tokens are valid for 10 minutes (from the documentation). Even the first one
+                # is subject to rate limit.
+                token_expiry_date=pendulum.now().add(minutes=10)
+            )
+            auth.access_token = response_json["access_token"]
+
+            return True, None
+        except Exception as e:
+            return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -202,5 +238,29 @@ class SourceExact(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
+        auth = SingleRefreshOauth2Authenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
         return [Customers(authenticator=auth), Employees(authenticator=auth)]
+
+
+class SingleRefreshOauth2Authenticator(Oauth2Authenticator):
+    def refresh_access_token(self) -> Tuple[str, int]:
+        """
+        Returns the refresh token and its lifespan in seconds
+
+        :return: a tuple of (access_token, token_lifespan_in_seconds)
+        """
+        try:
+            response = requests.post(
+                url=self.get_token_refresh_endpoint(),
+                data=self.build_refresh_request_body(),
+
+            )
+            response_json = response.json()
+            print(response_json)
+            response.raise_for_status()
+
+            self._refresh_token = response_json["refresh_token"]
+
+            return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
+        except Exception as e:
+            raise Exception(f"Error while refreshing access token: {e}") from e
