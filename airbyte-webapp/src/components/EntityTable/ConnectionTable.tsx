@@ -15,7 +15,7 @@ import ConnectorCell from "./components/ConnectorCell";
 import FrequencyCell from "./components/FrequencyCell";
 import LastSyncCell from "./components/LastSyncCell";
 import NameCell from "./components/NameCell";
-import StatusCell from "./components/StatusCell";
+import { StatusCell } from "./components/StatusCell";
 import { ITableDataItem, SortOrderEnum } from "./types";
 
 interface IProps {
@@ -156,6 +156,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
         customWidth: 1,
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <StatusCell
+            schemaChange={row.original.schemaChange}
             enabled={cell.value}
             id={row.original.connectionId}
             isSyncing={row.original.isSyncing}
