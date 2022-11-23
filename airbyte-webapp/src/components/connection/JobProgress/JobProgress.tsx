@@ -104,7 +104,7 @@ export const JobProgress: React.FC<ProgressBarProps> = ({ job, expanded }) => {
                 </div>
               )}
               {latestAttempt.streamStats && (
-                <div className={classNames(styles.streams, { [styles.open]: expanded })}>
+                <div className={classNames(styles.streams)}>
                   {latestAttempt.streamStats
                     ?.map((stats) => ({
                       ...stats,

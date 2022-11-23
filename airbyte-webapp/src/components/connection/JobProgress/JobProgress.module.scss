@@ -20,11 +20,4 @@
 .streams {
   margin: variables.$spacing-md 0 0;
   width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-
-  &.open {
-    white-space: unset;
-  }
 }
