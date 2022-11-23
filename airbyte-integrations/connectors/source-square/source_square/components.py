@@ -71,6 +71,7 @@ class SquareSlicer(StreamSlicer):
         return {}
 
     def _max_dt_str(self, *args: str) -> Optional[str]:
+        """return most recent record time in rfc3339 format"""
         new_state_candidates = list(map(lambda x: pendulum.parse(x) if isinstance(x, str) else x, filter(None, args)))
         if not new_state_candidates:
             return
