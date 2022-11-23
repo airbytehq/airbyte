@@ -4,6 +4,7 @@
 
 REF_TYPE_VAR_NAME = "$ref"
 TYPE_VAR_NAME = "type"
+ONE_OF_VAR_NAME = "oneOf"
 
 STRING_TYPE = "WellKnownTypes.json#/definitions/String"
 BINARY_DATA_TYPE = "WellKnownTypes.json#/definitions/BinaryData"

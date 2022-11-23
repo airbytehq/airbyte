@@ -458,7 +458,7 @@ where 1 = 1
             table_alias = ""
 
         json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path})")
-        if data_type.REF_TYPE_VAR_NAME in definition or data_type.TYPE_VAR_NAME in definition:
+        if data_type.REF_TYPE_VAR_NAME in definition or data_type.TYPE_VAR_NAME in definition or data_type.ONE_OF_VAR_NAME in definition:
             if data_type.TYPE_VAR_NAME in definition and is_array(definition[data_type.TYPE_VAR_NAME]):
                 json_extract = jinja_call(f"json_extract_array({json_column_name}, {json_path}, {normalized_json_path})")
                 if is_simple_property(definition.get("items", {data_type.TYPE_VAR_NAME: "object"})):  # TODO do we neen Type or ref here????
