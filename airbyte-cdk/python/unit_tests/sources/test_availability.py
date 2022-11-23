@@ -56,7 +56,7 @@ class MockSource(AbstractSource):
 
 
 class MockAvailabilityStrategy(AvailabilityStrategy):
-    def check_availability(self, source: Source, stream: Stream) -> Tuple[bool, any]:
+    def check_availability(self, stream: Stream) -> Tuple[bool, any]:
         if stream.name == "available_stream":
             return True, None
         return False, f"Could not reach stream '{stream.name}'."
@@ -69,10 +69,10 @@ class MockSourceWithAvailabilityStrategy(MockSource):
 
 
 class MockScopedAvailabilityStrategy(ScopedAvailabilityStrategy):
-    def get_granted_scopes(self, source: Source) -> List[str]:
+    def get_granted_scopes(self) -> List[str]:
         return ["repo"]
 
-    def required_scopes(self, source: Source) -> Dict[str, List[str]]:
+    def required_scopes(self) -> Dict[str, List[str]]:
         return {"repos": ["repo"], "projectV2": ["read:project"]}
 
 
@@ -94,18 +94,18 @@ def test_availability_strategy():
 
     source = MockSourceWithAvailabilityStrategy(streams=[stream_1, stream_2])
     assert isinstance(source.availability_strategy, MockAvailabilityStrategy)
-    assert source.availability_strategy.check_availability(source, stream_1)[0] == True
-    assert source.availability_strategy.check_availability(source, stream_2)[0] == False
-    assert "Could not reach stream 'unavailable_stream'" in source.availability_strategy.check_availability(source, stream_2)[1]
+    assert source.availability_strategy.check_availability(stream_1)[0] == True
+    assert source.availability_strategy.check_availability(stream_2)[0] == False
+    assert "Could not reach stream 'unavailable_stream'" in source.availability_strategy.check_availability(stream_2)[1]
 
 def test_scoped_availability_strategy():
     stream_1 = AirbyteStream(name="repos", json_schema={}, supported_sync_modes=[SyncMode.full_refresh])
     stream_2 = AirbyteStream(name="projectV2", json_schema={}, supported_sync_modes=[SyncMode.full_refresh])
 
     source = MockSourceWithScopedAvailabilityStrategy(streams=[stream_1, stream_2])
-    assert source.availability_strategy.check_availability(source, stream_1)[0] == True
-    assert source.availability_strategy.check_availability(source, stream_2)[0] == False
-    assert "Missing required scopes: ['read:project']" in source.availability_strategy.check_availability(source, stream_2)[1]
+    assert source.availability_strategy.check_availability(stream_1)[0] == True
+    assert source.availability_strategy.check_availability(stream_2)[0] == False
+    assert "Missing required scopes: ['read:project']" in source.availability_strategy.check_availability(stream_2)[1]
 
 def test_http_availability_strategy():
     stream_1 = AirbyteStream(name="available_stream", json_schema={}, supported_sync_modes=[SyncMode.full_refresh])

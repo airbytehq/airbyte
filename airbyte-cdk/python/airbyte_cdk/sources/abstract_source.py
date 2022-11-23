@@ -133,7 +133,7 @@ class AbstractSource(Source, ABC):
 
     @property
     def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return AvailabilityStrategy()
+        return None
 
     @property
     def per_stream_state_enabled(self) -> bool:

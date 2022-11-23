@@ -32,18 +32,3 @@ class DeclarativeSource(AbstractSource):
           The error object will be cast to string to display the problem to the user.
         """
         return self.connection_checker.check_connection(self, logger, config)
-
-    @property
-    # @abstractmethod
-    def availability_strategy(self) -> AvailabilityStrategy:
-        """Returns the AvailabilityStrategy to use for the `read` operation."""
-        return None
-
-    def is_available(self, stream: Stream) -> Tuple[bool, Optional[str]]:
-        """
-        :param stream:
-        :return:
-        """
-        if self.availability_strategy is not None:
-            return self.availability_strategy.check_availability(stream)
-        return True, None
