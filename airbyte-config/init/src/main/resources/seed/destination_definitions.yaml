@@ -24,6 +24,12 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/doris
   releaseStage: alpha
+- name: Apache Iceberg
+  destinationDefinitionId: df65a8f3-9908-451b-aa9b-445462803560
+  dockerRepository: airbyte/destination-iceberg
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/iceberg
+  releaseStage: alpha
 - name: AWS Datalake
   destinationDefinitionId: 99878c90-0fbd-46d3-9d98-ffde879d17fc
   dockerRepository: airbyte/destination-aws-datalake
@@ -302,6 +308,12 @@
           memory_limit: "1Gi"
           memory_request: "1Gi"
   releaseStage: generally_available
+- name: S3 Glue
+  destinationDefinitionId: 471e5cab-8ed1-49f3-ba11-79c687784737
+  dockerRepository: airbyte/destination-s3-glue
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/s3-glue
+  releaseStage: alpha
 - name: SFTP-JSON
   destinationDefinitionId: e9810f61-4bab-46d2-bb22-edfc902e0644
   dockerRepository: airbyte/destination-sftp-json
