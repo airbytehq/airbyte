@@ -45,6 +45,6 @@ class InterpolatedRequestInputProvider:
         interpolated_value = self._interpolator.eval(self.config, **kwargs)
 
         if isinstance(interpolated_value, dict):
-            non_null_tokens = {k: v for k, v in interpolated_value.items() if v}
+            non_null_tokens = {k: v for k, v in interpolated_value.items() if v is not None}
             return non_null_tokens
         return interpolated_value

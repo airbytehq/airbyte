@@ -1,6 +1,10 @@
 @use "scss/colors";
+@use "scss/variables";
 
 .jobListContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 25px 25px 22px;
   background-color: colors.$grey-50;
 }
@@ -14,16 +18,10 @@
   width: 100%;
 }
 
-.emptyListContent {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  > img {
-    width: 111px;
-    height: 111px;
-    margin: 20px 0;
-  }
+.emptyListImage {
+  width: 111px;
+  height: 111px;
+  margin: variables.$spacing-xl 0;
 }
 
 .contextExplanation {
@@ -38,54 +36,68 @@
 .jobListButtonGroup {
   display: flex;
   justify-content: flex-end;
-  margin-top: 20px;
+  margin-top: variables.$spacing-xl;
   width: 100%;
 }
 
 .jobListButton {
-  margin-left: 10px;
+  margin-left: variables.$spacing-md;
 }
 
 .jobListItem {
-  margin-top: 10px;
-  padding: 18px;
+  margin-top: variables.$spacing-md;
+  padding: variables.$spacing-md variables.$spacing-xl;
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
 
-  & img {
-    height: 32px;
-    width: 32px;
-  }
+.dbtLogo {
+  height: 18px;
+  width: 18px;
+  margin-right: variables.$spacing-md;
 }
 
 .jobListItemIntegrationName {
   display: flex;
   align-items: center;
+  flex: 1 2 auto;
 }
 
-.jobListItemInputGroup {
+.jobListItemIdFieldGroup {
   display: flex;
   justify-content: space-between;
+  margin-left: auto;
   align-items: center;
+  flex: 0 1 auto;
 }
 
-.jobListItemInput {
+.jobListItemIdField {
   height: fit-content;
   margin-left: 1em;
-}
+  background-color: colors.$grey-50;
+  flex-grow: 1;
+  padding: variables.$spacing-xs variables.$spacing-md;
+  border-radius: variables.$border-radius-2xl;
 
-.jobListItemInputLabel {
-  font-size: 11px;
-  font-weight: 500;
+  p {
+    color: colors.$grey-600;
+  }
 }
 
 .jobListItemDelete {
-  color: colors.$grey-200;
-  font-size: large;
-  margin: 0 1em;
-  cursor: pointer;
-  border: none;
-  background-color: inherit;
+  svg {
+    height: 21px;
+    width: 21px;
+    color: colors.$dark-blue-50;
+    transition: color variables.$transition;
+  }
+
+  &:hover,
+  &:focus-visible {
+    svg {
+      color: colors.$dark-blue-100;
+    }
+  }
 }

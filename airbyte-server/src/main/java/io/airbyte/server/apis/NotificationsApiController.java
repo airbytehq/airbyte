@@ -19,7 +19,7 @@ public class NotificationsApiController implements NotificationsApi {
 
   @Override
   public NotificationRead tryNotificationConfig(final Notification notification) {
-    return ConfigurationApi.execute(() -> workspacesHandler.tryNotification(notification));
+    return ApiHelper.execute(() -> workspacesHandler.tryNotification(notification));
   }
 
 }

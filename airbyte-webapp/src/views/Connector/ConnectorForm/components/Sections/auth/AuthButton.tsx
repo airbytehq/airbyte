@@ -23,6 +23,9 @@ function isGoogleConnector(connectorDefinitionId: string): boolean {
     "a4cbd2d1-8dbe-4818-b8bc-b90ad782d12a", // google sheets destination
     "ed9dfefa-1bbc-419d-8c5e-4d78f0ef6734", // google workspace admin reports
     "afa734e4-3571-11ec-991a-1e0031268139", // YouTube analytics
+    // TODO: revert me
+    "78752073-6d96-447d-8a93-2b6953f3c787", // Youtube analytics Business
+    //
   ].includes(connectorDefinitionId);
 }
 
