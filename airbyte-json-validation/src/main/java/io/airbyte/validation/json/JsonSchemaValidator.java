@@ -30,25 +30,37 @@ import org.slf4j.LoggerFactory;
 public class JsonSchemaValidator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonSchemaValidator.class);
+  // This URI just needs to point at any path in the same directory as /app/WellKnownTypes.json
+  // It's required for the JsonSchema#validate method to resolve $ref correctly.
+  private static final URI DEFAULT_BASE_URI;
 
-  private final JsonSchemaFactory jsonSchemaFactory;
-  private final URI BASE_URI;
-
-  public JsonSchemaValidator() {
-    // This URI just needs to point at any path in the same directory as /app/WellKnownTypes.json
-    // It's required for the JsonSchema#validate method to resolve $ref correctly.
-    this("file:///app/nonexistent_file.json");
-  }
-
-  @VisibleForTesting
-  protected JsonSchemaValidator(String baseUri) {
-    this.jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
-
+  static {
     try {
-      this.BASE_URI = new URI(baseUri);
+      DEFAULT_BASE_URI = new URI("file:///app/nonexistent_file.json");
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private final JsonSchemaFactory jsonSchemaFactory;
+  private final URI baseUri;
+
+  public JsonSchemaValidator() {
+    this(DEFAULT_BASE_URI);
+  }
+
+  /**
+   * The public constructor hardcodes a URL with access to WellKnownTypes.json. This method allows
+   * tests to override that URI
+   *
+   * Required to resolve $ref schemas using WellKnownTypes.json
+   *
+   * @param baseUri The base URI for schema resolution
+   */
+  @VisibleForTesting
+  protected JsonSchemaValidator(URI baseUri) {
+    this.jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
+    this.baseUri = baseUri;
   }
 
   public Set<String> validate(final JsonNode schemaJson, final JsonNode objectJson) {
@@ -106,7 +118,7 @@ public class JsonSchemaValidator {
         null);
     JsonSchema schema = new JsonSchema(
         context,
-        BASE_URI,
+        baseUri,
         schemaJson);
     return schema.validate(objectJson);
   }

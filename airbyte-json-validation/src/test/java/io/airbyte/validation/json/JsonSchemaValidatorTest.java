@@ -16,8 +16,10 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.util.Set;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
 class JsonSchemaValidatorTest {
@@ -104,6 +106,7 @@ class JsonSchemaValidatorTest {
     assertNull(JsonSchemaValidator.getSchema(schemaFile, "NonExistentObject"));
   }
 
+  @SneakyThrows
   @Test
   void testResolveReferences() throws IOException {
     String referencableSchemas = """
@@ -115,7 +118,7 @@ class JsonSchemaValidatorTest {
                                  }
                                  """;
     final File schemaFile = IOs.writeFile(Files.createTempDirectory("test"), "WellKnownTypes.json", referencableSchemas).toFile();
-    JsonSchemaValidator jsonSchemaValidator = new JsonSchemaValidator("file://" + schemaFile.getParentFile().getAbsolutePath() + "/foo.json");
+    JsonSchemaValidator jsonSchemaValidator = new JsonSchemaValidator(new URI("file://" + schemaFile.getParentFile().getAbsolutePath() + "/foo.json"));
 
     Set<String> validationResult = jsonSchemaValidator.validate(
         Jsons.deserialize("""
