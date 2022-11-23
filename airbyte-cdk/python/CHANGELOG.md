@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.9.6
+## 0.10.0
 Low-code: Add `start_from_page` option to a PageIncrement class
 
 ## 0.9.5
