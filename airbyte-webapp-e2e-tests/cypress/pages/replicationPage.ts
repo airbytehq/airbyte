@@ -8,7 +8,7 @@ const destinationNamespaceDefault = "div[data-testid='namespaceDefinition-destin
 const destinationNamespaceSource = "div[data-testid='namespaceDefinition-source']";
 const destinationNamespaceCustomInput = "input[data-testid='input']";
 const syncModeDropdown = "div[data-testid='syncSettingsDropdown'] input";
-const cursorFieldDropdown = 'button[class^="PathPopoutButton_button"]';
+const cursorFieldDropdown = "button[class^='PathPopoutButton_button']";
 const primaryKeyText = 'div[class^="PathPopout_text"]';
 const successResult = "div[data-id='success-result']";
 const saveStreamChangesButton = "button[data-testid='resetModal-save']";
@@ -64,7 +64,7 @@ export const resetModalSaveBtnClick = () => {
 export const selectSyncMode = (source: string, dest: string) => {
   cy.get(syncModeDropdown).first().click({ force: true });
 
-  cy.get(`.react-select__option`).contains(`Source:${source}| Dest:${dest}`).click();
+  cy.get(`.react-select__option`).contains(`Source:${source}|Dest:${dest}`).click();
 };
 
 export const selectCursorField = (value: string) => {
@@ -74,6 +74,10 @@ export const selectCursorField = (value: string) => {
 };
 
 export const checkCursorField = (expectedValue: string) => {
+  cy.get(cursorFieldDropdown).contains(expectedValue);
+};
+
+export const checkPrimaryKeyField = (expectedValue: string) => {
   cy.get(cursorFieldDropdown).contains(expectedValue);
 };
 

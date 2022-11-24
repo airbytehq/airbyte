@@ -14,15 +14,7 @@ export const createTestConnection = (sourceName: string, destinationName: string
       break;
 
     case sourceName.includes("Postgres"):
-      createPostgresSource(
-        sourceName,
-        "ec2-3-229-11-55.compute-1.amazonaws.com",
-        "5432",
-        "d5pcodgtmh9pob",
-        "yuxothkqynerju",
-        "1c1771f795985693bc4f780130d7e8af895a3d48155007b93d21218e4bc07cd9",
-        "demo"
-      );
+      createPostgresSource(sourceName);
       break;
     default:
       createPostgresSource(sourceName);
@@ -30,7 +22,7 @@ export const createTestConnection = (sourceName: string, destinationName: string
 
   switch (true) {
     case destinationName.includes("Postgres"):
-      createPostgresDestination(destinationName);
+      createPostgresDestination(destinationName, "localhost", "5434", "airbyte_ci_destination");
       break;
     case destinationName.includes("JSON"):
       createLocalJsonDestination(destinationName);

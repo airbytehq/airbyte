@@ -13,11 +13,12 @@ import {
   refreshSourceSchemaBtnClick,
   resetModalSaveBtnClick,
   toggleStreamEnabledState,
-  searchStream, 
-  selectCursorField, 
+  searchStream,
+  selectCursorField,
   checkCursorField,
   selectSyncMode,
-  setupDestinationNamespaceDefaultFormat
+  setupDestinationNamespaceDefaultFormat,
+  checkPrimaryKey
 } from "pages/replicationPage";
 import { openSourceDestinationFromGrid, goToSourcePage } from "pages/sourcePage";
 import { goToSettingsPage } from "pages/settingsConnectionPage";
@@ -86,6 +87,8 @@ describe("Connection main actions", () => {
 
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
+    populateDBSource();
+
     createTestConnection(sourceName, destName);
 
     goToSourcePage();
@@ -94,9 +97,9 @@ describe("Connection main actions", () => {
 
     goToReplicationTab();
 
-    searchStream("admins");
+    searchStream("users");
     selectSyncMode("Incremental", "Append");
-    selectCursorField("email");
+    selectCursorField("col1");
 
     submitButtonClick();
     confirmStreamConfigurationChangedPopup();
@@ -113,20 +116,21 @@ describe("Connection main actions", () => {
 
     goToReplicationTab();
 
-    searchStream("admins");
-
-    checkCursorField("email");
+    searchStream("users");
+    checkCursorField("col1");
 
     deleteSource(sourceName);
     deleteDestination(destName);
+    cleanDBSource();
   });
 
-  it("Connection sync mode Incremental Deduped History", () => {
+  it("Connection sync mode Incremental Deduped History with existing PK", () => {
     const sourceName = appendRandomString("Test connection Postgres source cypress");
     const destName = appendRandomString("Test connection Postgres destination cypress");
 
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
+    populateDBSource();
     createTestConnection(sourceName, destName);
 
     goToSourcePage();
@@ -135,16 +139,15 @@ describe("Connection main actions", () => {
 
     goToReplicationTab();
 
-    searchStream("admins");
+    searchStream("users");
     selectSyncMode("Incremental", "Deduped + history");
-    selectCursorField("email");
+    selectCursorField("col1");
+    checkPrimaryKey("id");
 
     submitButtonClick();
     confirmStreamConfigurationChangedPopup();
 
-    cy.wait(5000);
-
-    cy.wait("@updateConnection").then((interception) => {
+    cy.wait("@updateConnection", { timeout: 5000 }).then((interception) => {
       assert.isNotNull(interception.response?.statusCode, "200");
     });
 
@@ -156,12 +159,14 @@ describe("Connection main actions", () => {
 
     goToReplicationTab();
 
-    searchStream("admins");
+    searchStream("users");
 
-    checkCursorField("email");
+    checkCursorField("col1");
+    checkPrimaryKey("id");
 
     deleteSource(sourceName);
     deleteDestination(destName);
+    cleanDBSource();
   });
 
   it("Update connection (pokeAPI)", () => {
@@ -385,7 +390,6 @@ describe("Connection main actions", () => {
 
     goToReplicationTab();
 
-    
     const namespace = "_DestinationNamespaceCustomFormat";
     setupDestinationNamespaceCustomFormat(namespace);
 
