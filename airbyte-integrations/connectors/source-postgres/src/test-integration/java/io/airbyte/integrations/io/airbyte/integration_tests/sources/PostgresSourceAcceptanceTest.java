@@ -19,6 +19,7 @@ import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.util.HostPortResolver;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -149,6 +150,18 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
     final String assertionMessageWithoutPermission = "Expected no records after full refresh sync for user without schema permission";
     assertTrue(lessPermFullRefreshRecords.isEmpty(), assertionMessageWithoutPermission);
 
+  }
+
+  @Test
+  public void testDiscoverWithRevokingSchemaPermissions() throws Exception {
+    prepareEnvForUserWithoutPermissions(database);
+    revokeSchemaPermissions(database);
+    config = getConfig(LIMIT_PERMISSION_ROLE, LIMIT_PERMISSION_ROLE_PASSWORD, List.of(LIMIT_PERMISSION_SCHEMA));
+
+    runDiscover();
+    AirbyteCatalog lastPersistedCatalogSecond = getLastPersistedCatalog();
+    final String assertionMessageWithoutPermission = "Expected no streams after discover for user without schema permissions";
+    assertTrue(lastPersistedCatalogSecond.getStreams().isEmpty(), assertionMessageWithoutPermission);
   }
 
   private void revokeSchemaPermissions(Database database) throws SQLException {
