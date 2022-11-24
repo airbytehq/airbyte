@@ -45,6 +45,7 @@ public class NormalizationRunnerFactory {
                                            final String normalizationImage) {
     final var valuePair = getNormalizationInfoForConnector(connectorImageName);
     final String factoryNormalizationImage = String.format("%s:%s", valuePair.getLeft(), normalizationVersion);
+    log.error("destination normalization runner factory -> {}", factoryNormalizationImage);
     if (Objects.nonNull(normalizationImage)
         && !normalizationImage.equalsIgnoreCase(factoryNormalizationImage)) {
       log.error(
