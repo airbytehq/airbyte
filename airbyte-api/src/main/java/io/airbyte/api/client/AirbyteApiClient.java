@@ -142,7 +142,7 @@ public class AirbyteApiClient {
 
   /**
    * Default to 3 retries with a randomised 1 - 10 seconds interval between the first two retries and
-   * an 10 minute wait for the last retry.
+   * an 10-minute wait for the last retry.
    */
   public static <T> T retryWithJitter(final Callable<T> call, final String desc) {
     return retryWithJitter(call, desc, DEFAULT_RETRY_INTERVAL_SECS, DEFAULT_FINAL_INTERVAL_SECS, DEFAULT_MAX_RETRIES);
