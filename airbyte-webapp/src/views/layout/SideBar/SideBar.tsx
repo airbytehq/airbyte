@@ -1,4 +1,6 @@
-import { faRocket } from "@fortawesome/free-solid-svg-icons";
+// import { faRocket } from "@fortawesome/free-solid-svg-icons";
+import { faHome } from "@fortawesome/free-solid-svg-icons";
+import { faGear } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import React from "react";
@@ -10,26 +12,26 @@ import { Link } from "components";
 import Version from "components/Version";
 
 import { useConfig } from "config";
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+// import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import useRouter from "hooks/useRouter";
 
 import { RoutePaths } from "../../../pages/routePaths";
-import ConnectionsIcon from "./components/ConnectionsIcon";
-import DestinationIcon from "./components/DestinationIcon";
-import DocsIcon from "./components/DocsIcon";
-import OnboardingIcon from "./components/OnboardingIcon";
-import SettingsIcon from "./components/SettingsIcon";
-import SidebarPopout from "./components/SidebarPopout";
-import SourceIcon from "./components/SourceIcon";
-import { NotificationIndicator } from "./NotificationIndicator";
+// import ConnectionsIcon from "./components/ConnectionsIcon";
+// import DestinationIcon from "./components/DestinationIcon";
+// import DocsIcon from "./components/DocsIcon";
+// import OnboardingIcon from "./components/OnboardingIcon";
+// import SettingsIcon from "./components/SettingsIcon";
+// import SidebarPopout from "./components/SidebarPopout";
+// import SourceIcon from "./components/SourceIcon";
+// import { NotificationIndicator } from "./NotificationIndicator";
 import styles from "./SideBar.module.scss";
 
 const Bar = styled.nav`
-  width: 100px;
+  width: 300px;
   min-width: 65px;
   height: 100%;
-  background: ${({ theme }) => theme.darkPrimaryColor};
-  padding: 23px 3px 15px 4px;
+  background: ${({ theme }) => theme.white};
+  padding: 23px 0px 15px 0px;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -44,14 +46,72 @@ const Menu = styled.ul`
   width: 100%;
 `;
 
-const Text = styled.div`
-  margin-top: 7px;
+const MenuItem = styled.li`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
-const HelpIcon = styled(FontAwesomeIcon)`
-  font-size: 21px;
-  line-height: 21px;
+const Text = styled.div`
+  // margin-top: 2px;
+  margin-left: 10px;
+  font-weight: 500;
+  font-size: 15px;
 `;
+
+// const TextSetting = styled.div`
+//   color: black;
+//   padding-left: 15px;
+//   font-weight: bold;
+// `;
+
+const LogoContainer = styled.div`
+  margin-top: 30px;
+  margin-bottom: 50px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  font-weight: normal;
+  width: 100%;
+  height: 60px;
+`;
+
+const Logo = styled.img`
+  max-width: 130px;
+  height: auto;
+`;
+
+// const ButtonCenter = styled.div`
+//   display: flex;
+//   flex-direction: column;
+//   justify-content: center;
+//   align-items: center;
+// `;
+
+// const Button = styled.button`
+//   border: none;
+//   border-radius: 8px;
+//   margin-bottom: 50px;
+//   padding: 15px 30px;
+//   display: flex;
+//   flex-direction: row;
+//   justify-content: center;
+//   align-items: center;
+//   background-color: #eae9ff;
+// `;
+
+const MenuItemIcon = styled(FontAwesomeIcon)`
+  font-size: 16px;
+  line-height: 16px;
+`;
+
+// const SettingIcon = styled(FontAwesomeIcon)`
+//   font-size: 21px;
+//   line-height: 21px;
+//   color: black;
+// `;
 
 export const useCalculateSidebarStyles = () => {
   const { location } = useRouter();
@@ -64,92 +124,133 @@ export const useCalculateSidebarStyles = () => {
   return ({ isActive }: { isActive: boolean }) => menuItemStyle(isActive);
 };
 
+export const useCalculateSidebarItemStyles = (route: string) => {
+  const { location } = useRouter();
+
+  const menuItemStyle = () => {
+    const isActive = location.pathname.split("/").length >= 4 && location.pathname.split("/")[3] === route;
+    return classnames(styles.menuItem, { [styles.active]: isActive }, { [styles.inActive]: !isActive });
+  };
+
+  return menuItemStyle();
+};
+
 export const getPopoutStyles = (isOpen?: boolean) => {
   return classnames(styles.menuItem, { [styles.popoutOpen]: isOpen });
 };
 
 const SideBar: React.FC = () => {
   const config = useConfig();
-  const workspace = useCurrentWorkspace();
-
-  const navLinkClassName = useCalculateSidebarStyles();
+  // const workspace = useCurrentWorkspace();
 
   return (
     <Bar>
       <div>
-        <Link to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}>
-          <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
+        <Link to="" $clear>
+          <LogoContainer>
+            <Logo src="/daspireLogo1.svg" alt="logo" />
+          </LogoContainer>
         </Link>
         <Menu>
-          {workspace.displaySetupWizard ? (
-            <li>
-              <NavLink className={navLinkClassName} to={RoutePaths.Onboarding}>
-                <OnboardingIcon />
-                <Text>
-                  <FormattedMessage id="sidebar.onboarding" />
-                </Text>
-              </NavLink>
-            </li>
-          ) : null}
-          <li>
-            <NavLink className={navLinkClassName} to={RoutePaths.Connections}>
-              <ConnectionsIcon />
+          <MenuItem>
+            <NavLink className={useCalculateSidebarItemStyles(RoutePaths.Connections)} to={RoutePaths.Connections}>
+              <div>
+                <MenuItemIcon icon={faHome} />
+              </div>
               <Text>
-                <FormattedMessage id="sidebar.connections" />
+                <FormattedMessage id="sidebar.DaspireDashboard" />
               </Text>
             </NavLink>
-          </li>
-          <li>
-            <NavLink className={navLinkClassName} to={RoutePaths.Source}>
-              <SourceIcon />
-              <Text>
-                <FormattedMessage id="sidebar.sources" />
-              </Text>
-            </NavLink>
-          </li>
-          <li>
-            <NavLink className={navLinkClassName} to={RoutePaths.Destination}>
-              <DestinationIcon />
-              <Text>
-                <FormattedMessage id="sidebar.destinations" />
-              </Text>
-            </NavLink>
-          </li>
+          </MenuItem>
+          {/* {workspace.displaySetupWizard ? (*/}
+          {/*  <li>*/}
+          {/*    <NavLink className={navLinkClassName} to={RoutePaths.Onboarding}>*/}
+          {/*      <OnboardingIcon />*/}
+          {/*      <Text>*/}
+          {/*        <FormattedMessage id="sidebar.onboarding" />*/}
+          {/*      </Text>*/}
+          {/*    </NavLink>*/}
+          {/*  </li>*/}
+          {/* ) : null}*/}
+          {/* <li>*/}
+          {/*  <NavLink className={navLinkClassName} to={RoutePaths.Connections}>*/}
+          {/*    <ConnectionsIcon />*/}
+          {/*    <Text>*/}
+          {/*      <FormattedMessage id="sidebar.connections" />*/}
+          {/*    </Text>*/}
+          {/*  </NavLink>*/}
+          {/* </li>*/}
+          {/* <li>*/}
+          {/*  <NavLink className={navLinkClassName} to={RoutePaths.Source}>*/}
+          {/*    <SourceIcon />*/}
+          {/*    <Text>*/}
+          {/*      <FormattedMessage id="sidebar.sources" />*/}
+          {/*    </Text>*/}
+          {/*  </NavLink>*/}
+          {/* </li>*/}
+          {/* <li>*/}
+          {/*  <NavLink className={navLinkClassName} to={RoutePaths.Destination}>*/}
+          {/*    <DestinationIcon />*/}
+          {/*    <Text>*/}
+          {/*      <FormattedMessage id="sidebar.destinations" />*/}
+          {/*    </Text>*/}
+          {/*  </NavLink>*/}
+          {/* </li>*/}
         </Menu>
       </div>
       <Menu>
-        <li>
-          <a href={config.links.updateLink} target="_blank" rel="noreferrer" className={styles.menuItem}>
-            <HelpIcon icon={faRocket} />
-            <Text>
-              <FormattedMessage id="sidebar.update" />
-            </Text>
-          </a>
-        </li>
-        <li>
-          <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>
-            {({ onOpen, isOpen }) => (
-              <button className={getPopoutStyles(isOpen)} onClick={onOpen}>
-                <DocsIcon />
-                <Text>
-                  <FormattedMessage id="sidebar.resources" />
-                </Text>
-              </button>
-            )}
-          </SidebarPopout>
-        </li>
+        {/* <li>*/}
+        {/*  <a href={config.links.updateLink} target="_blank" rel="noreferrer" className={styles.menuItem}>*/}
+        {/*    <MenuItemIcon icon={faRocket} />*/}
+        {/*    <Text>*/}
+        {/*      <FormattedMessage id="sidebar.update" />*/}
+        {/*    </Text>*/}
+        {/*  </a>*/}
+        {/* </li>*/}
+        {/* <li>*/}
+        {/*  <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>*/}
+        {/*    {({ onOpen, isOpen }) => (*/}
+        {/*      <button className={getPopoutStyles(isOpen)} onClick={onOpen}>*/}
+        {/*        <DocsIcon />*/}
+        {/*        <Text>*/}
+        {/*          <FormattedMessage id="sidebar.resources" />*/}
+        {/*        </Text>*/}
+        {/*      </button>*/}
+        {/*    )}*/}
+        {/*  </SidebarPopout>*/}
+        {/* </li>*/}
 
-        <li>
-          <NavLink className={navLinkClassName} to={RoutePaths.Settings}>
-            <React.Suspense fallback={null}>
-              <NotificationIndicator />
-            </React.Suspense>
-            <SettingsIcon />
+        {/* <li>*/}
+        {/*  <NavLink className={navLinkClassName} to={RoutePaths.Settings}>*/}
+        {/*    <React.Suspense fallback={null}>*/}
+        {/*      <NotificationIndicator />*/}
+        {/*    </React.Suspense>*/}
+        {/*    <SettingsIcon />*/}
+        {/*    <Text>*/}
+        {/*      <FormattedMessage id="sidebar.settings" />*/}
+        {/*    </Text>*/}
+        {/*  </NavLink>*/}
+        {/* </li>*/}
+        <MenuItem>
+          <NavLink className={useCalculateSidebarItemStyles(RoutePaths.Settings)} to={RoutePaths.Settings}>
+            <div>
+              <MenuItemIcon icon={faGear} />
+            </div>
             <Text>
-              <FormattedMessage id="sidebar.settings" />
+              <FormattedMessage id="sidebar.DaspireSetting" />
             </Text>
           </NavLink>
-        </li>
+        </MenuItem>
+        {/* <li>
+          <ButtonCenter>
+            <Button>
+              <SettingIcon icon={faGear} />
+              <TextSetting>
+                <FormattedMessage id="sidebar.DaspireSetting" />
+              </TextSetting>
+            </Button>
+          </ButtonCenter>
+        </li> */}
         {config.version ? (
           <li>
             <Version primary />

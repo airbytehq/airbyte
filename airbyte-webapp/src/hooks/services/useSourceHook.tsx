@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
-import { useConfig } from "config";
+// import { useConfig } from "config";
 import { Action, Namespace } from "core/analytics";
 import { SyncSchema } from "core/domain/catalog";
 import { ConnectionConfiguration } from "core/domain/connection";
@@ -38,9 +38,12 @@ interface ConnectorProps {
 }
 
 function useSourceService() {
-  const { apiUrl } = useConfig();
+  // const { apiUrl } = useConfig();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
-  return useInitService(() => new SourceService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
+  return useInitService(
+    () => new SourceService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
+    [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
+  );
 }
 
 interface SourceList {

@@ -5,7 +5,7 @@ import { Workspace, WorkspaceService } from "core/domain/workspace";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 
-import { useConfig } from "../../config";
+// import { useConfig } from "../../config";
 import { WorkspaceUpdate } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../connector/useSuspenseQuery";
 import { SCOPE_USER, SCOPE_WORKSPACE } from "../Scope";
@@ -70,9 +70,12 @@ export const useWorkspaceService = (): Context => {
 };
 
 function useWorkspaceApiService() {
-  const config = useConfig();
+  // const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
-  return useInitService(() => new WorkspaceService(config.apiUrl, middlewares), [config.apiUrl, middlewares]);
+  return useInitService(
+    () => new WorkspaceService(process.env.REACT_APP_API_URL as string, middlewares),
+    [process.env.REACT_APP_API_URL as string, middlewares]
+  );
 }
 
 export const useCurrentWorkspaceId = () => {

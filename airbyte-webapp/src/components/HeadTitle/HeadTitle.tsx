@@ -2,7 +2,7 @@ import React from "react";
 import { Helmet } from "react-helmet";
 import { useIntl } from "react-intl";
 
-const AIRBYTE = "Airbyte";
+const DASPIRE = "Daspire";
 const SEPARATOR = "|";
 
 interface FormattedHeadTitle {
@@ -37,8 +37,8 @@ const HeadTitle: React.FC<IProps> = ({ titles }) => {
 
   const headTitle = titles.map(getTitle).join(` ${SEPARATOR} `);
   return (
-    <Helmet titleTemplate={`${AIRBYTE} ${SEPARATOR} %s`} defaultTitle={AIRBYTE}>
-      <title>{headTitle}</title>
+    <Helmet titleTemplate={`${headTitle} ${SEPARATOR} %s`} defaultTitle={headTitle}>
+      <title>{DASPIRE}</title>
     </Helmet>
   );
 };

@@ -71,6 +71,7 @@ public class WorkspacesHandler {
 
     final String email = workspaceCreate.getEmail();
     final Boolean anonymousDataCollection = workspaceCreate.getAnonymousDataCollection();
+    final Boolean initialSetupComplete = workspaceCreate.getInitialSetupComplete();
     final Boolean news = workspaceCreate.getNews();
     final Boolean securityUpdates = workspaceCreate.getSecurityUpdates();
     final Boolean displaySetupWizard = workspaceCreate.getDisplaySetupWizard();
@@ -80,7 +81,7 @@ public class WorkspacesHandler {
         .withCustomerId(uuidSupplier.get())
         .withName(workspaceCreate.getName())
         .withSlug(generateUniqueSlug(workspaceCreate.getName()))
-        .withInitialSetupComplete(false)
+        .withInitialSetupComplete(initialSetupComplete != null ? initialSetupComplete : false)
         .withAnonymousDataCollection(anonymousDataCollection != null ? anonymousDataCollection : false)
         .withNews(news != null ? news : false)
         .withSecurityUpdates(securityUpdates != null ? securityUpdates : false)

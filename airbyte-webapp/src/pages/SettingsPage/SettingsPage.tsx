@@ -45,6 +45,9 @@ export const SettingsRoute = {
   Configuration: "configuration",
   Notifications: "notifications",
   Metrics: "metrics",
+  // UserManagement: "UserManagement",
+  // AccountSettings: "AccountSettings",
+  // PlanAndBilling: "PlanAndBilling"
 } as const;
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {

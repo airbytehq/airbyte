@@ -11,6 +11,7 @@ abstract class AirbyteRequestService {
   constructor(rootUrl: string, private middlewares: RequestMiddleware[] = []) {
     // Remove the `/v1/` at the end of the URL if it exists, during the transition period
     // to remove it from all cloud environments
+    // this.rootUrl = rootUrl.replace(/\/v1\/?$/, "");
     this.rootUrl = rootUrl.replace(/\/v1\/?$/, "");
   }
 
@@ -31,6 +32,7 @@ abstract class AirbyteRequestService {
         body: body ? JSON.stringify(body) : undefined,
         headers: {
           "Content-Type": "application/json",
+          "Accept-Language": "en",
         },
       },
       options
@@ -79,7 +81,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
     }
   }
 
-  throw new CommonRequestError(response, resultJsonResponse?.message);
+  throw new CommonRequestError(response, resultJsonResponse?.msg);
 }
 
 export { AirbyteRequestService };

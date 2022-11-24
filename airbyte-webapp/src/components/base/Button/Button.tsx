@@ -14,6 +14,8 @@ const getBorderColor = (props: IStyleProps) => {
     return props.theme.greyColor30;
   } else if (props.danger) {
     return props.theme.dangerColor;
+  } else if (props.black) {
+    return props.theme.black300;
   }
 
   return props.theme.primaryColor;
@@ -29,6 +31,8 @@ const getBackgroundColor = (props: IStyleProps) => {
     return "transparent";
   } else if (props.danger) {
     return props.theme.dangerColor;
+  } else if (props.black) {
+    return props.theme.black300;
   }
 
   return props.theme.primaryColor;
@@ -64,7 +68,7 @@ const getDisabledOpacity = (props: IStyleProps) => {
     return "1";
   }
 
-  return ".3";
+  return "1";
 };
 
 const getShadowOnHover = (props: IStyleProps) => {
@@ -79,6 +83,9 @@ const getFontSize = (props: IStyleProps) => {
   if (props.size === "xl") {
     return 16;
   }
+  if (props.size === "lg") {
+    return 14;
+  }
   if (props.iconOnly) {
     return 14;
   }
@@ -88,6 +95,9 @@ const getFontSize = (props: IStyleProps) => {
 const getPadding = (props: IStyleProps) => {
   if (props.size === "xl") {
     return ".8em 2.5em";
+  }
+  if (props.size === "lg") {
+    return ".7em 2.0em";
   }
   if (props.iconOnly) {
     return "1.5px 3px";
@@ -117,8 +127,8 @@ const Button = styled.button<ButtonProps>`
 
   &:disabled {
     opacity: ${(props) => getDisabledOpacity(props)};
-    background: ${(props) => props.danger && "transparent"};
-    border: ${(props) => props.danger && "none"};
+    background: #d1d5db;
+    border: #d1d5db;
     color: ${(props) => getDisabledTextColor(props)};
     pointer-events: none;
   }

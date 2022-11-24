@@ -21,7 +21,7 @@ const SymbolSpinner = styled(FontAwesomeIcon)<ButtonProps>`
   position: absolute;
   left: 50%;
   animation: ${SpinAnimation} 1.5s linear 0s infinite;
-  color: ${({ theme, danger }) => (danger ? theme.dangerColor : theme.primaryColor)};
+  color: ${({ theme, danger, white }) => (danger ? theme.dangerColor : white ? theme.whiteColor : theme.primaryColor)};
   margin: -1px 0 -3px -9px;
 `;
 
@@ -46,7 +46,7 @@ const LoadingButton: React.FC<ButtonProps> = (props) => {
       <ButtonView {...props}>
         {props.isLoading ? (
           <>
-            <SymbolSpinner icon={faCircleNotch} danger={props.danger} />
+            <SymbolSpinner icon={faCircleNotch} danger={props.danger} white={props.white} />
             <Invisible>{props.children}</Invisible>
           </>
         ) : (

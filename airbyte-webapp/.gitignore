@@ -11,6 +11,7 @@
 
 # misc
 .DS_Store
+.env
 .env.local
 .env.development.local
 .env.test.local
@@ -30,4 +31,4 @@ yarn-error.log*
 storybook-static/
 
 # Ignore generated API client, since it's automatically generated
-/src/core/request/AirbyteClient.ts
+# /src/core/request/AirbyteClient.ts

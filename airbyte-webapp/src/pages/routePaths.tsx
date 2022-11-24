@@ -14,4 +14,7 @@ export enum RoutePaths {
   ConnectionNew = "new-connection",
   SourceNew = "new-source",
   DestinationNew = "new-destination",
+
+  Signup = "signup",
+  Signin = "signin",
 }

@@ -1,0 +1,43 @@
+.logInBtn {
+  width: 100% !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  line-height: 19px !important;
+  height: 44px !important;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background-color: #eff0f5;
+}
+
+.form {
+  width: 33%;
+}
+
+.formTitle {
+  color: #27272a;
+  padding-top: 35px;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 30px;
+  line-height: 27px;
+}
+
+.signupLink {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  padding-top: 30px;
+  color: #6b6b6f;
+}
+
+.link {
+  padding-left: 5px;
+  padding-right: 5px;
+}

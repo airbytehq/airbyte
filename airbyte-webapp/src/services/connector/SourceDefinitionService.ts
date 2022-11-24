@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from "react-query";
 
-import { useConfig } from "config";
+// import { useConfig } from "config";
 import { SourceDefinitionService } from "core/domain/connector/SourceDefinitionService";
+import { getAuthenticatedUser } from "services/auth/AuthService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
@@ -17,13 +18,13 @@ export const sourceDefinitionKeys = {
 };
 
 function useGetSourceDefinitionService(): SourceDefinitionService {
-  const { apiUrl } = useConfig();
+  // const { apiUrl } = useConfig();
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   return useInitService(
-    () => new SourceDefinitionService(apiUrl, requestAuthMiddleware),
-    [apiUrl, requestAuthMiddleware]
+    () => new SourceDefinitionService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
+    [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
   );
 }
 
@@ -35,18 +36,33 @@ const useSourceDefinitionList = (): {
   sourceDefinitions: SourceDefinitionReadWithLatestTag[];
 } => {
   const service = useGetSourceDefinitionService();
+  const user = getAuthenticatedUser();
 
   return useSuspenseQuery(sourceDefinitionKeys.lists(), async () => {
-    const [definition, latestDefinition] = await Promise.all([service.list(), service.listLatest()]);
+    const [
+      // definition,
+      latestDefinition,
+    ] = await Promise.all([
+      // service.list(),
+      // service.listLatest(),
+      service.listLatestForWorkspace({ workspaceId: user?.workspaceId }),
+    ]);
 
-    const sourceDefinitions = definition.sourceDefinitions.map((source) => {
-      const withLatest = latestDefinition.sourceDefinitions.find(
-        (latestSource) => latestSource.sourceDefinitionId === source.sourceDefinitionId
-      );
+    // const sourceDefinitions = definition.sourceDefinitions.map((source) => {
+    //   const withLatest = latestDefinition.sourceDefinitions.find(
+    //     (latestSource) => latestSource.sourceDefinitionId === source.sourceDefinitionId
+    //   );
 
+    //   return {
+    //     ...source,
+    //     latestDockerImageTag: withLatest?.dockerImageTag,
+    //   };
+    // });
+
+    const sourceDefinitions = latestDefinition.sourceDefinitions.map((source) => {
       return {
         ...source,
-        latestDockerImageTag: withLatest?.dockerImageTag,
+        latestDockerImageTag: undefined,
       };
     });
 

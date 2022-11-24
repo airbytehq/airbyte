@@ -2283,6 +2283,8 @@ components:
           type: string
         news:
           type: boolean
+        initialSetupComplete:
+          type: boolean
         securityUpdates:
           type: boolean
         notifications:

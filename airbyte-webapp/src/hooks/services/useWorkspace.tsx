@@ -7,7 +7,7 @@ import { useAnalyticsService } from "hooks/services/Analytics";
 import { useInitService } from "services/useInitService";
 import { useCurrentWorkspace, useUpdateWorkspace } from "services/workspaces/WorkspacesService";
 
-import { useConfig } from "../../config";
+// import { useConfig } from "../../config";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
 
 export interface WebhookPayload {
@@ -17,9 +17,12 @@ export interface WebhookPayload {
 }
 
 function useGetNotificationService() {
-  const config = useConfig();
+  // const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
-  return useInitService(() => new NotificationService(config.apiUrl, middlewares), [config.apiUrl, middlewares]);
+  return useInitService(
+    () => new NotificationService(process.env.REACT_APP_API_URL as string, middlewares),
+    [process.env.REACT_APP_API_URL as string, middlewares]
+  );
 }
 
 const useWorkspace = () => {

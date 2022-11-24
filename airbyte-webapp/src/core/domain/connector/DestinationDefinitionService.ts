@@ -7,6 +7,7 @@ import {
   getDestinationDefinition,
   listDestinationDefinitions,
   listLatestDestinationDefinitions,
+  listDestinationDefinitionsForWorkspace,
   updateDestinationDefinition,
 } from "../../request/AirbyteClient";
 
@@ -21,6 +22,10 @@ export class DestinationDefinitionService extends AirbyteRequestService {
 
   public listLatest() {
     return listLatestDestinationDefinitions(this.requestOptions);
+  }
+
+  public listLatestForWorkspace({ workspaceId }: { workspaceId: string }) {
+    return listDestinationDefinitionsForWorkspace({ workspaceId }, this.requestOptions);
   }
 
   public update(body: DestinationDefinitionUpdate) {

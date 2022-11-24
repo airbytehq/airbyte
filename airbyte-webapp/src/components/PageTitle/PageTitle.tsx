@@ -12,7 +12,8 @@ interface PageTitleProps {
 }
 
 export const MainContainer = styled.div<{ withLine?: boolean }>`
-  padding: 20px 32px 18px;
+  padding-right: 55px;
+  padding-top: 35px;
   border-bottom: ${({ theme, withLine }) => (withLine ? `1px solid ${theme.greyColor20}` : "none")};
   position: relative;
   z-index: 2;

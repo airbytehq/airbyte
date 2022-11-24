@@ -2,13 +2,27 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Tuple, Union, MutableMapping, Iterator
 
 import boto3
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import (
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    AirbyteStateMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    Status,
+    Type,
+)
+import copy
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.utils.schema_helpers import split_config
 from source_amazon_seller_partner.auth import AWSAuthenticator, AWSSignature
 from source_amazon_seller_partner.constants import get_marketplaces
 from source_amazon_seller_partner.spec import AmazonSellerPartnerConfig, advanced_auth
@@ -171,3 +185,54 @@ class SourceAmazonSellerPartner(AbstractSource):
             connectionSpecification=schema,
             advanced_auth=advanced_auth,
         )
+        
+    def read(
+        self,
+        logger: AirbyteLogger,
+        config: Mapping[str, Any],
+        catalog: ConfiguredAirbyteCatalog,
+        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+    ) -> Iterator[AirbyteMessage]:
+        """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-protocol."""
+        #state_manager = ConnectorStateManager(state=state)
+        #connector_state = state_manager.get_legacy_state()
+        
+        connector_state = copy.deepcopy(state or {})
+
+        logger.info(f"*********** Starting syncing {self.name}")
+        config, internal_config = split_config(config)
+        # TODO assert all streams exist in the connector
+        # get the streams once in case the connector needs to make any queries to generate them
+        stream_instances = {s.name: s for s in self.streams(config)}
+        self._stream_to_instance_map = stream_instances
+        with create_timer(self.name) as timer:
+            for configured_stream in catalog.streams:
+                stream_instance = stream_instances.get(configured_stream.stream.name)
+                if not stream_instance:
+                    raise KeyError(
+                        f"The requested stream {configured_stream.stream.name} was not found in the source."
+                        f" Available streams: {stream_instances.keys()}"
+                    )
+                try:
+                    timer.start_event(f"Syncing stream {configured_stream.stream.name}")
+                    yield from self._read_stream(
+                        logger=logger,
+                        stream_instance=stream_instance,
+                        configured_stream=configured_stream,
+                        state_manager=connector_state,
+                        internal_config=internal_config,
+                    )
+                except Exception as e:
+                    logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
+                    display_message = stream_instance.get_error_display_message(e)
+                    if display_message:
+                        logger.exception("display message: {}".format(repr(e)))
+                        #raise AirbyteTracedException.from_exception(e, message=display_message) from e
+                    #raise e
+                    logger.exception("unknown exception message: {}".format(repr(e)))
+                finally:
+                    timer.finish_event()
+                    logger.info(f"Finished syncing {configured_stream.stream.name}")
+                    logger.info(timer.report())
+
+        logger.info(f"Finished syncing {self.name}")

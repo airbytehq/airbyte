@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from "react-query";
 
-import { useConfig } from "config";
+// import { useConfig } from "config";
 import { DestinationDefinitionService } from "core/domain/connector/DestinationDefinitionService";
+import { getAuthenticatedUser } from "services/auth/AuthService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
@@ -17,13 +18,13 @@ export const destinationDefinitionKeys = {
 };
 
 function useGetDestinationDefinitionService(): DestinationDefinitionService {
-  const { apiUrl } = useConfig();
+  // const { apiUrl } = useConfig();
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   return useInitService(
-    () => new DestinationDefinitionService(apiUrl, requestAuthMiddleware),
-    [apiUrl, requestAuthMiddleware]
+    () => new DestinationDefinitionService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
+    [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
   );
 }
 
@@ -35,19 +36,36 @@ const useDestinationDefinitionList = (): {
   destinationDefinitions: DestinationDefinitionReadWithLatestTag[];
 } => {
   const service = useGetDestinationDefinitionService();
+  const user = getAuthenticatedUser();
 
   return useSuspenseQuery(destinationDefinitionKeys.lists(), async () => {
-    const [definition, latestDefinition] = await Promise.all([service.list(), service.listLatest()]);
+    const [
+      // definition,
+      latestDefinition,
+    ] = await Promise.all([
+      // service.list(),
+      // service.listLatest(),
+      service.listLatestForWorkspace({ workspaceId: user?.workspaceId }),
+    ]);
 
-    const destinationDefinitions: DestinationDefinitionRead[] = definition.destinationDefinitions.map(
+    // const destinationDefinitions: DestinationDefinitionRead[] = definition.destinationDefinitions.map(
+    //   (destination: DestinationDefinitionRead) => {
+    //     const withLatest = latestDefinition.destinationDefinitions.find(
+    //       (latestDestination) => latestDestination.destinationDefinitionId === destination.destinationDefinitionId
+    //     );
+
+    //     return {
+    //       ...destination,
+    //       latestDockerImageTag: withLatest?.dockerImageTag,
+    //     };
+    //   }
+    // );
+
+    const destinationDefinitions: DestinationDefinitionRead[] = latestDefinition.destinationDefinitions.map(
       (destination: DestinationDefinitionRead) => {
-        const withLatest = latestDefinition.destinationDefinitions.find(
-          (latestDestination) => latestDestination.destinationDefinitionId === destination.destinationDefinitionId
-        );
-
         return {
           ...destination,
-          latestDockerImageTag: withLatest?.dockerImageTag,
+          latestDockerImageTag: undefined,
         };
       }
     );
