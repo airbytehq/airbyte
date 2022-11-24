@@ -65,7 +65,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   disabled,
   onChange,
   onBlur,
-  value,
+  value = "",
   error,
   withTime = false,
 }) => {
