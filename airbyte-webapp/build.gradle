@@ -30,7 +30,7 @@ npm_run_build {
 }
 
 task test(type: NpmTask) {
-    dependsOn assemble
+    dependsOn npmInstall
 
     args = ['run', 'test', '--', '--watchAll=false', '--silent']
     inputs.files commonConfigs
