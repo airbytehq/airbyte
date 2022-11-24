@@ -25,9 +25,9 @@ from source_acceptance_test.tests.test_core import TestDiscovery as _TestDiscove
 def test_discovery(schema, cursors, should_fail):
     t = _TestDiscovery()
     discovered_catalog = {
-        "test_stream": AirbyteStream.parse_obj({"name": "test_stream",
-            "json_schema": schema, "default_cursor_field": cursors,
-            "supported_sync_modes": ["full_refresh"]})
+        "test_stream": AirbyteStream.parse_obj(
+            {"name": "test_stream", "json_schema": schema, "default_cursor_field": cursors, "supported_sync_modes": ["full_refresh"]}
+        )
     }
     if should_fail:
         with pytest.raises(AssertionError):
@@ -59,8 +59,9 @@ def test_discovery(schema, cursors, should_fail):
 )
 def test_ref_in_discovery_schemas(schema, should_fail):
     t = _TestDiscovery()
-    discovered_catalog = {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema,
-            "supported_sync_modes": ["full_refresh"]})}
+    discovered_catalog = {
+        "test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema, "supported_sync_modes": ["full_refresh"]})
+    }
     if should_fail:
         with pytest.raises(AssertionError):
             t.test_defined_refs_exist_in_schema(discovered_catalog)
@@ -100,8 +101,9 @@ def test_ref_in_discovery_schemas(schema, should_fail):
 )
 def test_keyword_in_discovery_schemas(schema, keyword, should_fail):
     t = _TestDiscovery()
-    discovered_catalog = {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema,
-            "supported_sync_modes": ["full_refresh"]})}
+    discovered_catalog = {
+        "test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema, "supported_sync_modes": ["full_refresh"]})
+    }
     if should_fail:
         with pytest.raises(AssertionError):
             t.test_defined_keyword_exist_in_schema(keyword, discovered_catalog)
@@ -129,8 +131,7 @@ def test_read(schema, record, should_fail):
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
-                stream=AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema,
-            "supported_sync_modes": ["full_refresh"]}),
+                stream=AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema, "supported_sync_modes": ["full_refresh"]}),
                 sync_mode="full_refresh",
                 destination_sync_mode="overwrite",
             )
@@ -158,8 +159,11 @@ def test_read(schema, record, should_fail):
                 streams=[
                     ConfiguredAirbyteStream(
                         stream=AirbyteStream.parse_obj(
-                            {"name": "test1", "json_schema": {"type": "object", "properties": {"f1": {"type": "string"}}},
-            "supported_sync_modes": ["full_refresh"]}
+                            {
+                                "name": "test1",
+                                "json_schema": {"type": "object", "properties": {"f1": {"type": "string"}}},
+                                "supported_sync_modes": ["full_refresh"],
+                            }
                         ),
                         sync_mode="full_refresh",
                         destination_sync_mode="overwrite",
@@ -177,7 +181,7 @@ def test_read(schema, record, should_fail):
                             {
                                 "name": "test1",
                                 "json_schema": {"type": "object", "properties": {"f1": {"type": "string"}, "f2": {"type": "string"}}},
-                                "supported_sync_modes": ["full_refresh"]
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",
@@ -199,7 +203,7 @@ def test_read(schema, record, should_fail):
                             {
                                 "name": "test1",
                                 "json_schema": {"type": "object", "properties": {"f1": {"type": "string"}, "f2": {"type": "string"}}},
-                                "supported_sync_modes": ["full_refresh"]
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",
@@ -228,7 +232,7 @@ def test_read(schema, record, should_fail):
                                         "f3": {"type": "array", "items": {"type": "integer"}},
                                     },
                                 },
-                                "supported_sync_modes": ["full_refresh"]
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",
@@ -257,7 +261,7 @@ def test_read(schema, record, should_fail):
                                         "f3": {"type": "array", "items": {"type": "integer"}},
                                     },
                                 },
-                                "supported_sync_modes": ["full_refresh"]
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",
@@ -286,7 +290,7 @@ def test_read(schema, record, should_fail):
                                         "f3": {"type": "object", "properties": {"f4": {"type": "string"}, "f5": {"type": "array"}}},
                                     },
                                 },
-                                "supported_sync_modes": ["full_refresh"]
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",
@@ -315,7 +319,7 @@ def test_read(schema, record, should_fail):
                                         "f3": {"type": "object", "properties": {"f4": {"type": "string"}, "f5": {"type": "array"}}},
                                     },
                                 },
-                                "supported_sync_modes": ["full_refresh"]
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",
@@ -359,7 +363,7 @@ def test_read(schema, record, should_fail):
                                         },
                                     },
                                 },
-                                "supported_sync_modes": ["full_refresh"]
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",
@@ -407,7 +411,7 @@ def test_read(schema, record, should_fail):
                                         },
                                     },
                                 },
-                                "supported_sync_modes": ["full_refresh"]
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",
@@ -418,7 +422,7 @@ def test_read(schema, record, should_fail):
                             {
                                 "name": "test2",
                                 "json_schema": {"type": "object", "properties": {"f8": {"type": "string"}, "f9": {"type": "string"}}},
-                                "supported_sync_modes": ["full_refresh"]
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",
@@ -464,7 +468,7 @@ def test_read(schema, record, should_fail):
                                         },
                                     },
                                 },
-                                "supported_sync_modes": ["full_refresh"]
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",
@@ -475,7 +479,7 @@ def test_read(schema, record, should_fail):
                             {
                                 "name": "test2",
                                 "json_schema": {"type": "object", "properties": {"f8": {"type": "string"}, "f9": {"type": "string"}}},
-                                "supported_sync_modes": ["full_refresh"]
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",
@@ -510,7 +514,7 @@ def test_read(schema, record, should_fail):
                                         },
                                     },
                                 },
-                                "supported_sync_modes": ["full_refresh"]
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",
@@ -555,7 +559,7 @@ def test_read(schema, record, should_fail):
                                         },
                                     },
                                 },
-                                "supported_sync_modes": ["full_refresh"]
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",
@@ -600,7 +604,7 @@ def test_read(schema, record, should_fail):
                                         },
                                     },
                                 },
-                                "supported_sync_modes": ["full_refresh"]
+                                "supported_sync_modes": ["full_refresh"],
                             }
                         ),
                         sync_mode="full_refresh",

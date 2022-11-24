@@ -1,5 +1,3 @@
-airbyte-integrations/bases/airbyte-protocol/airbyte_protocol/models/*
-airbyte-integrations/bases/source-acceptance-test/unit_tests/*
 acmeCo
 flow-bin
 ensurepip
