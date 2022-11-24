@@ -14,7 +14,7 @@ definitions:
   requester:
     type: HttpRequester
     name: "{{ options['name'] }}"
-    url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api"
+    url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
@@ -34,7 +34,7 @@ definitions:
         field_name: "limit"
       pagination_strategy:
         type: "OffsetIncrement"
-        page_size: 100
+        page_size: 77
       page_token_option:
         field_name: "offset"
         inject_into: "request_parameter"
@@ -109,14 +109,42 @@ definitions:
       requester:
         $ref: "*ref(definitions.requester)"
         path: "/projects/{{ stream_slice.project_id }}/{{ options['name'] }}"
-        request_options_provider:
-          class_name: source_posthog.components.PosthogInterpolatedRequestOptionsProvider
       stream_slicer:
-        class_name: source_posthog.components.PosthogIncrementalSlicer
-        parent_stream_configs:
-          - stream: "*ref(definitions.projects_stream)"
-            parent_key: "id"
-            stream_slice_field: "project_id"
+        type: CartesianProductStreamSlicer
+        stream_slicers:
+          - type: DatetimeStreamSlicer
+            start_datetime:
+              datetime: "{{ config['start_date'] }}"
+              datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+            end_datetime:
+              datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+              datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+            datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+            step: 30d
+            cursor_field: timestamp
+            start_time_option:
+              field_name: after
+              inject_into: request_parameter
+            end_time_option:
+              field_name: before
+              inject_into: request_parameter
+          - type: SubstreamSlicer
+            parent_stream_configs:
+            - stream: "*ref(definitions.projects_stream)"
+              parent_key: "id"
+              stream_slice_field: "project_id"
+      paginator:
+        type: "DefaultPaginator"
+        url_base: "*ref(definitions.requester.url_base)"
+        page_size_option:
+          inject_into: "request_parameter"
+          field_name: "limit"
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ response['next'] }}"
+          page_size: 100
+        page_token_option:
+          inject_into: "path"
 
 streams:
   - "*ref(definitions.projects_stream)"

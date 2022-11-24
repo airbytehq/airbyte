@@ -1,55 +1,35 @@
-#
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
-#
-
-from dataclasses import dataclass
-from typing import Any, Mapping, MutableMapping, Optional
-
-from airbyte_cdk.sources.declarative.stream_slicers import SubstreamSlicer
+from dataclasses import InitVar, dataclass, field
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
-from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
-    InterpolatedRequestOptionsProvider,
-)
+
+from dataclasses import InitVar, dataclass, field
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 
 @dataclass
-class PosthogIncrementalSlicer(SubstreamSlicer):
-    def __post_init__(self, options: Mapping[str, Any]):
-        if not self.parent_stream_configs:
-            raise ValueError("SubstreamSlicer needs at least 1 parent stream")
-        self._cursor = {}
-        self._options = options
+class EventsSimpleRetriever(SimpleRetriever):
 
-    def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
-        # This method is called after the records are processed.
-
-        if not last_record:
-            # this is actually initial stream state from CLI
-            self._cursor = stream_slice
-            return
-
-        # only one parent stream is expected
-        stream_slice_field = self.parent_stream_configs[0].stream_slice_field
-
-        project_id = str(stream_slice.get(stream_slice_field, ""))
-        if project_id:
-            current_cursor_value = self._cursor.get(project_id, {}).get("timestamp", "")
-            new_cursor_value = last_record.get("timestamp", "")
-
-            self._cursor[project_id] = {"timestamp": max(current_cursor_value, new_cursor_value)}
-
-
-@dataclass
-class PosthogInterpolatedRequestOptionsProvider(InterpolatedRequestOptionsProvider):
-    def get_request_params(
+    def request_params(
         self,
-        *,
-        stream_state: Optional[StreamState] = None,
+        stream_state: StreamSlice,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
+        """
+        Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
 
-        project_id = str(stream_slice.get("project_id")) if stream_slice else ""
-        state_value = stream_state.get(project_id, {}).get("timestamp", "") if stream_state else ""
+        E.g: you might want to define query parameters for paging if next_page_token is not None.
+        """
 
-        return {"after": state_value or self.config["start_date"]}
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  request_params FINALLY  ==============")
+        if next_page_token:
+            stream_slice = {}
+
+        return self._get_request_options(
+            stream_slice,
+            next_page_token,
+            self.requester.get_request_params,
+            self.paginator.get_request_params,
+            self.stream_slicer.get_request_params,
+        )
