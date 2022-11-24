@@ -35,6 +35,7 @@ from normalization.transform_catalog.utils import (
     is_time_with_timezone,
     jinja_call,
     remove_jinja,
+    get_plain_list_from_one_of_array,
 )
 
 # using too many columns breaks ephemeral materialization (somewhere between 480 and 490 columns)
@@ -361,13 +362,17 @@ class StreamProcessor(object):
                 pass
             elif is_combining_node(properties[field]):
                 # TODO: merge properties of all combinations
-                pass
-            elif "type" not in properties[field] or is_object(properties[field]["type"]):       #TODO what should be there and below (type or ref) ? !!!!!!!!!!!!!!!!!!!!!!!!!!!
+                pass # todo  !!!!!!!!!!! add getting plain properties if onOf ????
+            # elif data_type.REF_TYPE_VAR_NAME not in properties[field] or is_object(properties[field][data_type.REF_TYPE_VAR_NAME]):       #TODO type seems to should be there als handle both ref and oneOf !!!!!!!!!!!!!!!!!!!!!!!!!!!
+            elif (data_type.TYPE_VAR_NAME not in properties[field] and data_type.REF_TYPE_VAR_NAME not in properties[field]
+                  and data_type.ONE_OF_VAR_NAME not in properties[field])\
+                    or (data_type.TYPE_VAR_NAME in properties[field] and is_object(properties[field][data_type.TYPE_VAR_NAME])):
                 # properties without 'type' field are treated like properties with 'type' = 'object'
                 children_properties = find_properties_object([], field, properties[field])
                 is_nested_array = False
                 json_column_name = column_names[field][1]
-            elif is_array(properties[field]["type"]) and "items" in properties[field]:
+            elif data_type.TYPE_VAR_NAME in properties[field] and is_array(properties[field][data_type.TYPE_VAR_NAME]) and "items" in properties[field]:
+            # elif is_array(properties[field][data_type.REF_TYPE_VAR_NAME]) and "items" in properties[field]:
                 quoted_field = column_names[field][1]
                 children_properties = find_properties_object([], field, properties[field]["items"])
                 is_nested_array = True
@@ -1051,8 +1056,11 @@ from dedup_data where {{ airbyte_row_num }} = 1
         if path and len(path) == 1:
             field = path[0]
             if not is_airbyte_column(field):
-                if data_type.REF_TYPE_VAR_NAME in self.properties[field]: # TODO does it take SQL type here? do we need to simplify ref type to SQL type? !!!!!!!!!!
-                    property_type = self.properties[field][data_type.REF_TYPE_VAR_NAME]
+                if data_type.REF_TYPE_VAR_NAME in self.properties[field] or data_type.ONE_OF_VAR_NAME in self.properties[field]:
+                    if data_type.ONE_OF_VAR_NAME in self.properties[field]:
+                        property_type = get_plain_list_from_one_of_array(self.properties[field])
+                    else:
+                        property_type = self.properties[field][data_type.REF_TYPE_VAR_NAME]
                 else:
                     property_type = "object"
                 if is_number(property_type) or is_object(property_type):
@@ -1497,7 +1505,7 @@ def find_properties_object(path: List[str], field: str, properties) -> Dict[str,
         elif "properties" in properties:
             # we found a properties object
             return {current: properties["properties"]}
-        elif data_type.TYPE_VAR_NAME in properties and is_simple_property(properties):  # TODO keep TYPE_VAR_NAME otherwice get too much tables in list
+        elif data_type.REF_TYPE_VAR_NAME in properties and is_simple_property(properties):  # TODO keep TYPE_VAR_NAME otherwice get too much tables in list
             # we found a basic type
             return {current: {}}
         elif isinstance(properties, dict):

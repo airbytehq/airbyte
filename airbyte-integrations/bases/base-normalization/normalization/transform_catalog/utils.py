@@ -179,4 +179,9 @@ def is_simple_property(definition: dict) -> bool:
 
 
 def is_combining_node(properties: dict) -> Set[str]:
-    return set(properties).intersection({"anyOf", "oneOf", "allOf"})  # TODO probably need to add exclusion if we have ref of simple types
+    # this case appears when we have analog of old protocol like id: {type:[number, string]} and it's handled separately
+    if data_type.ONE_OF_VAR_NAME in properties and len(properties[data_type.ONE_OF_VAR_NAME]) > 0:
+        if data_type.REF_TYPE_VAR_NAME in properties[data_type.ONE_OF_VAR_NAME][0]:
+            return set()
+    else:
+        return set(properties).intersection({"anyOf", "oneOf", "allOf"})
