@@ -18,6 +18,9 @@ properties:
     type: string
   dockerNormalizationImage:
     type: string
+  supportDBT:
+    type: boolean
+    default: false
   protocolVersion:
     type: object
     existingJavaType: io.airbyte.commons.version.Version

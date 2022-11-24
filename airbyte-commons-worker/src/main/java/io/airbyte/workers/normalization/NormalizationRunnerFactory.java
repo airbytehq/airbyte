@@ -50,7 +50,7 @@ public class NormalizationRunnerFactory {
       log.error(
           "The normalization image name or tag in the definition file is different from the normalization image or tag in the NormalizationRunnerFactory!");
       log.error(
-              "the definition file value - {}, the NormalizationRunnerFactory value - {}", normalizationImage, factoryNormalizationImage);
+          "the definition file value - {}, the NormalizationRunnerFactory value - {}", normalizationImage, factoryNormalizationImage);
     }
     return new DefaultNormalizationRunner(
         valuePair.getRight(),

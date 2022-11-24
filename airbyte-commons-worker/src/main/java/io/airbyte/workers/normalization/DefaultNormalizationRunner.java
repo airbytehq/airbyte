@@ -47,8 +47,6 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       .setLogPrefix("normalization")
       .setPrefixColor(Color.GREEN_BACKGROUND);
 
-  private static final String NORMALIZATION_IMAGE_PREFIX = "airbyte/normalization-";
-
   private final DestinationType destinationType;
   private final ProcessFactory processFactory;
   private final String normalizationImageName;
@@ -86,10 +84,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   }
 
   private static DestinationType getDestinationTypeByNormalizationImageNamePart(final String normalizationImageName) {
-    String destinationName = new StringBuffer(normalizationImageName.replaceFirst(NORMALIZATION_IMAGE_PREFIX, ""))
-        .replace(normalizationImageName.indexOf(":"), normalizationImageName.length(), "").toString();
     return EnumSet.allOf(DestinationType.class).stream()
-        .filter(destinationType -> destinationType.toString().equalsIgnoreCase(destinationName))
+        .filter(destinationType -> normalizationImageName.contains(destinationType.name().toLowerCase()))
         .findFirst()
         .orElseGet(null);
   }
