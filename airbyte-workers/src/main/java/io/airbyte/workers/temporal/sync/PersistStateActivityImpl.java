@@ -26,7 +26,6 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.workers.helper.StateConverter;
-import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Map;

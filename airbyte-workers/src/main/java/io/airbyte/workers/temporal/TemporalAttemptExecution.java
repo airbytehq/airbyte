@@ -20,7 +20,6 @@ import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

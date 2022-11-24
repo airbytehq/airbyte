@@ -14,7 +14,6 @@ import io.airbyte.api.client.model.generated.AttemptNormalizationStatusRead;
 import io.airbyte.api.client.model.generated.AttemptNormalizationStatusReadList;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
 import io.airbyte.metrics.lib.ApmTraceUtils;
-import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.temporal.activity.Activity;
 import jakarta.inject.Singleton;
 import java.util.Comparator;

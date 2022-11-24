@@ -45,7 +45,7 @@ public class AirbyteApiClient {
   public static final int DEFAULT_MAX_RETRIES = 4;
   public static final int DEFAULT_RETRY_INTERVAL_SECS = 10;
 
-  public static final int DEFAULT_FINAL_INTERVAL_SECS = 10;
+  public static final int DEFAULT_FINAL_INTERVAL_SECS = 10 * 60;
 
   private final ConnectionApi connectionApi;
   private final DestinationDefinitionApi destinationDefinitionApi;
@@ -142,11 +142,16 @@ public class AirbyteApiClient {
   }
 
   public static <T> T retryWithJitter(final Callable<T> call, final String desc) {
-   return retryWithJitter(call, DEFAULT_RETRY_INTERVAL_SECS, DEFAULT_FINAL_INTERVAL_SECS, DEFAULT_MAX_RETRIES, desc);
+    return retryWithJitter(call, desc, DEFAULT_RETRY_INTERVAL_SECS, DEFAULT_FINAL_INTERVAL_SECS, DEFAULT_MAX_RETRIES);
   }
 
   @VisibleForTesting
-  public static  <T> T retryWithJitter(final Callable<T> call, int jitterIntervalSecs, int finalIntervalMins, int maxTries, final String desc) {
+  @SuppressWarnings("PMD.PreserveStackTrace")
+  public static <T> T retryWithJitter(final Callable<T> call,
+                                      final String desc,
+                                      final int jitterIntervalSecs,
+                                      final int finalIntervalSecs,
+                                      final int maxTries) {
     int currRetries = 0;
     boolean keepTrying = true;
 
@@ -167,7 +172,7 @@ public class AirbyteApiClient {
 
         if (currRetries == maxTries - 1) {
           // sleep for finalIntervalMins on the last attempt.
-          backoffTimeMs = finalIntervalMins * 60 * 1000;
+          backoffTimeMs = finalIntervalSecs * 1000;
         }
 
         try {
