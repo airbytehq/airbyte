@@ -55,8 +55,9 @@ public class PersistStateActivityImpl implements PersistStateActivity {
         final Optional<StateWrapper> maybeStateWrapper = StateMessageHelper.getTypedState(state.getState(), featureFlags.useStreamCapableState());
         if (maybeStateWrapper.isPresent()) {
           final ConnectionState previousState =
-              TemporalAttemptExecution
-                  .retryWithJitter(() -> airbyteApiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+              AirbyteApiClient.retryWithJitter(
+                  () -> airbyteApiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)),
+                  "get state");
           if (featureFlags.needStateValidation() && previousState != null) {
             final StateType newStateType = maybeStateWrapper.get().getStateType();
             final StateType prevStateType = convertClientStateTypeToInternal(previousState.getStateType());
@@ -66,13 +67,15 @@ public class PersistStateActivityImpl implements PersistStateActivity {
             }
           }
 
-          TemporalAttemptExecution.retryWithJitter(() -> {
-            airbyteApiClient.getStateApi().createOrUpdateState(
-                new ConnectionStateCreateOrUpdate()
-                    .connectionId(connectionId)
-                    .connectionState(StateConverter.toClient(connectionId, maybeStateWrapper.orElse(null))));
-            return null;
-          });
+          AirbyteApiClient.retryWithJitter(
+              () -> {
+                airbyteApiClient.getStateApi().createOrUpdateState(
+                    new ConnectionStateCreateOrUpdate()
+                        .connectionId(connectionId)
+                        .connectionState(StateConverter.toClient(connectionId, maybeStateWrapper.orElse(null))));
+                return null;
+              },
+              "create or update state");
         }
       } catch (final Exception e) {
         throw new RuntimeException(e);

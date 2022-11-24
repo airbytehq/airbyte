@@ -48,8 +48,9 @@ public class NormalizationSummaryCheckActivityImpl implements NormalizationSumma
 
     final AttemptNormalizationStatusReadList AttemptNormalizationStatusReadList;
     try {
-      AttemptNormalizationStatusReadList = TemporalAttemptExecution.retryWithJitter(
-          () -> airbyteApiClient.getJobsApi().getAttemptNormalizationStatusesForJob(new JobIdRequestBody().id(jobId)));
+      AttemptNormalizationStatusReadList = AirbyteApiClient.retryWithJitter(
+          () -> airbyteApiClient.getJobsApi().getAttemptNormalizationStatusesForJob(new JobIdRequestBody().id(jobId)),
+          "get normalization statuses");
     } catch (final Exception e) {
       throw Activity.wrap(e);
     }

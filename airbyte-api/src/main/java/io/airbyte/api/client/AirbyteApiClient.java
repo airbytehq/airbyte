@@ -4,6 +4,7 @@
 
 package io.airbyte.api.client;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.client.generated.AttemptApi;
 import io.airbyte.api.client.generated.ConnectionApi;
 import io.airbyte.api.client.generated.DbMigrationApi;
@@ -19,6 +20,10 @@ import io.airbyte.api.client.generated.SourceDefinitionSpecificationApi;
 import io.airbyte.api.client.generated.StateApi;
 import io.airbyte.api.client.generated.WorkspaceApi;
 import io.airbyte.api.client.invoker.generated.ApiClient;
+import java.util.Random;
+import java.util.concurrent.Callable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is meant to consolidate all our API endpoints into a fluent-ish client. Currently, all
@@ -33,6 +38,14 @@ import io.airbyte.api.client.invoker.generated.ApiClient;
  * This is currently manually maintained. We could look into autogenerating it if needed.
  */
 public class AirbyteApiClient {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteApiClient.class);
+  private static final Random RANDOM = new Random();
+
+  public static final int DEFAULT_MAX_RETRIES = 4;
+  public static final int DEFAULT_RETRY_INTERVAL_SECS = 10;
+
+  public static final int DEFAULT_FINAL_INTERVAL_SECS = 10;
 
   private final ConnectionApi connectionApi;
   private final DestinationDefinitionApi destinationDefinitionApi;
@@ -126,6 +139,45 @@ public class AirbyteApiClient {
 
   public StateApi getStateApi() {
     return stateApi;
+  }
+
+  public static <T> T retryWithJitter(final Callable<T> call, final String desc) {
+   return retryWithJitter(call, DEFAULT_RETRY_INTERVAL_SECS, DEFAULT_FINAL_INTERVAL_SECS, DEFAULT_MAX_RETRIES, desc);
+  }
+
+  @VisibleForTesting
+  public static  <T> T retryWithJitter(final Callable<T> call, int jitterIntervalSecs, int finalIntervalMins, int maxTries, final String desc) {
+    int currRetries = 0;
+    boolean keepTrying = true;
+
+    T data = null;
+    while (keepTrying && currRetries < maxTries) {
+      try {
+        LOGGER.info("Attempt {} to {}", currRetries, desc);
+        data = call.call();
+
+        keepTrying = false;
+      } catch (final Exception e) {
+        LOGGER.info("Attempt {} to {} error: {}", currRetries, desc, e);
+        currRetries++;
+
+        // Sleep anywhere from 1 to jitterIntervalSecs seconds.
+        final var backoffTimeSecs = Math.min(RANDOM.nextInt(jitterIntervalSecs + 1), 1);
+        var backoffTimeMs = backoffTimeSecs * 1000;
+
+        if (currRetries == maxTries - 1) {
+          // sleep for finalIntervalMins on the last attempt.
+          backoffTimeMs = finalIntervalMins * 60 * 1000;
+        }
+
+        try {
+          Thread.sleep(backoffTimeMs);
+        } catch (final InterruptedException ex) {
+          throw new RuntimeException(ex);
+        }
+      }
+    }
+    return data;
   }
 
 }

@@ -21,7 +21,6 @@ import io.temporal.activity.ActivityExecutionContext;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Random;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -43,8 +42,6 @@ import org.slf4j.MDC;
 public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TemporalAttemptExecution.class);
-
-  private static final Random RANDOM = new Random();
 
   private final JobRunConfig jobRunConfig;
   private final Path jobRoot;
@@ -143,10 +140,10 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       }
 
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", airbyteVersion);
-      retryWithJitter(() -> {
+      AirbyteApiClient.retryWithJitter(() -> {
         saveWorkflowIdForCancellation(airbyteApiClient);
         return null;
-      });
+      }, "save workflow id for cancellation");
 
       final Worker<INPUT, OUTPUT> worker = workerSupplier.get();
       final CompletableFuture<OUTPUT> outputFuture = new CompletableFuture<>();
@@ -170,38 +167,6 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     } catch (final Exception e) {
       throw Activity.wrap(e);
     }
-  }
-
-  public static <T> T retryWithJitter(final Callable<T> call) {
-    final int maxRetries = 4;
-    int currRetries = 0;
-    boolean needToSend = true;
-
-    T data = null;
-    while (needToSend && currRetries < maxRetries) {
-      try {
-        LOGGER.info("Attempt {} to save workflow id", currRetries);
-        data = call.call();
-        needToSend = false;
-      } catch (final Exception e) {
-        LOGGER.info("Workflow ID attempt {} save error: {}", currRetries, e);
-        currRetries++;
-        // Sleep anywhere from 1 to 10 seconds.
-        var backoffTime = Math.min(RANDOM.nextInt(11), 1) * 1000;
-
-        if (currRetries == maxRetries - 1) {
-          // sleep for ten mins on the last attempt.
-          backoffTime = 10 * 60 * 1000;
-        }
-
-        try {
-          Thread.sleep(backoffTime);
-        } catch (InterruptedException ex) {
-          throw new RuntimeException(ex);
-        }
-      }
-    }
-    return data;
   }
 
   private void saveWorkflowIdForCancellation(final AirbyteApiClient airbyteApiClient) throws ApiException {
