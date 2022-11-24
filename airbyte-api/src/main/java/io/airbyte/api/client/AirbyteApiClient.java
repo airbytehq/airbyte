@@ -44,7 +44,6 @@ public class AirbyteApiClient {
 
   public static final int DEFAULT_MAX_RETRIES = 4;
   public static final int DEFAULT_RETRY_INTERVAL_SECS = 10;
-
   public static final int DEFAULT_FINAL_INTERVAL_SECS = 10 * 60;
 
   private final ConnectionApi connectionApi;
@@ -141,15 +140,34 @@ public class AirbyteApiClient {
     return stateApi;
   }
 
+  /**
+   * Default to 3 retries with a randomised 1 - 10 seconds interval between the first two retries and
+   * an 10 minute wait for the last retry.
+   */
   public static <T> T retryWithJitter(final Callable<T> call, final String desc) {
     return retryWithJitter(call, desc, DEFAULT_RETRY_INTERVAL_SECS, DEFAULT_FINAL_INTERVAL_SECS, DEFAULT_MAX_RETRIES);
   }
 
+  /**
+   * Provides a simple retry wrapper for api calls. This retry behaviour is slightly different from
+   * generally available retries libraries - the last retry is able to wait an interval inconsistent
+   * with regular intervals/exponential backoff.
+   * <p>
+   * Since the primary retries use case is long-running workflows, the benefit of waiting a couple of
+   * minutes as a last ditch effort to outlast networking disruption outweighs the cost of slightly
+   * longer jobs.
+   *
+   * @param call method to execute
+   * @param desc short readable explanation of why this method is executed
+   * @param jitterMaxIntervalSecs upper limit of the randomised retry interval. Minimum value is 1.
+   * @param finalIntervalSecs retry interval before the last retry.
+   */
   @VisibleForTesting
+  // This is okay since we are logging the stack trace, which PMD is not detecting.
   @SuppressWarnings("PMD.PreserveStackTrace")
   public static <T> T retryWithJitter(final Callable<T> call,
                                       final String desc,
-                                      final int jitterIntervalSecs,
+                                      final int jitterMaxIntervalSecs,
                                       final int finalIntervalSecs,
                                       final int maxTries) {
     int currRetries = 0;
@@ -166,8 +184,8 @@ public class AirbyteApiClient {
         LOGGER.info("Attempt {} to {} error: {}", currRetries, desc, e);
         currRetries++;
 
-        // Sleep anywhere from 1 to jitterIntervalSecs seconds.
-        final var backoffTimeSecs = Math.min(RANDOM.nextInt(jitterIntervalSecs + 1), 1);
+        // Sleep anywhere from 1 to jitterMaxIntervalSecs seconds.
+        final var backoffTimeSecs = Math.min(RANDOM.nextInt(jitterMaxIntervalSecs + 1), 1);
         var backoffTimeMs = backoffTimeSecs * 1000;
 
         if (currRetries == maxTries - 1) {

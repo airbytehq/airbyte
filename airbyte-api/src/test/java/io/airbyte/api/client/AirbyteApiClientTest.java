@@ -39,14 +39,29 @@ public class AirbyteApiClientTest {
     }
 
     @Test
-    @DisplayName("Should make ")
-    void ifErrorShouldRetry() throws Exception {
+    @DisplayName("Should retry up to the configured max retries on continued errors")
+    void onlyRetryTillMaxRetries() throws Exception {
       mockCallable = mock(Callable.class);
       when(mockCallable.call()).thenThrow(new RuntimeException("Bomb!"));
 
       AirbyteApiClient.retryWithJitter(mockCallable, "test", TEST_JITTER_INTERVAL_SECS, TEST_FINAL_INTERVAL_SECS, TEST_MAX_RETRIES);
 
       verify(mockCallable, times(TEST_MAX_RETRIES)).call();
+
+    }
+
+    @Test
+    @DisplayName("Should retry only if there are errors")
+    void onlyRetryOnErrors() throws Exception {
+      mockCallable = mock(Callable.class);
+      // Because we succeed on the second try, we should only call the method twice.
+      when(mockCallable.call())
+          .thenThrow(new RuntimeException("Bomb!"))
+          .thenReturn("Success!");
+
+      AirbyteApiClient.retryWithJitter(mockCallable, "test", TEST_JITTER_INTERVAL_SECS, TEST_FINAL_INTERVAL_SECS, 3);
+
+      verify(mockCallable, times(2)).call();
 
     }
 
