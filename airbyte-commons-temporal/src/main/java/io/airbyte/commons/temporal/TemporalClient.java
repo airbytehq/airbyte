@@ -23,9 +23,11 @@ import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.init.LocalDefinitionsProvider;
 import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
@@ -378,11 +380,32 @@ public class TemporalClient {
         .withDockerImage(config.getSourceDockerImage())
         .withProtocolVersion(config.getSourceProtocolVersion());
 
-    final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
-        .withJobId(String.valueOf(jobId))
-        .withAttemptId((long) attempt)
-        .withDockerImage(config.getDestinationDockerImage())
-        .withProtocolVersion(config.getDestinationProtocolVersion());
+    IntegrationLauncherConfig destinationLauncherConfig;
+    try {
+      LocalDefinitionsProvider provider = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
+      List<StandardDestinationDefinition> destinationDefinitionList = provider.getDestinationDefinitions();
+      Optional<StandardDestinationDefinition> optionalDestinationDefinition = destinationDefinitionList.stream()
+          .filter(destinationDefinition -> config.getDestinationDockerImage()
+              .equalsIgnoreCase(destinationDefinition.getDockerRepository() + ":" + destinationDefinition.getDockerImageTag()))
+          .findFirst();
+      final String destinationNormalizationDockerImage = optionalDestinationDefinition.map(standardDestinationDefinition -> String.format("%s:%s",
+          standardDestinationDefinition.getNormalizationRepository(), standardDestinationDefinition.getNormalizationTag())).orElse(null);
+      final boolean supportDBT = optionalDestinationDefinition.isPresent() ? optionalDestinationDefinition.get().getSupportsDbt() : false;
+      destinationLauncherConfig = new IntegrationLauncherConfig()
+          .withJobId(String.valueOf(jobId))
+          .withAttemptId((long) attempt)
+          .withDockerImage(config.getDestinationDockerImage())
+          .withProtocolVersion(config.getDestinationProtocolVersion())
+          .withDockerNormalizationImage(destinationNormalizationDockerImage)
+          .withSupportDBT(supportDBT);
+    } catch (IOException ignored) {
+      destinationLauncherConfig = new IntegrationLauncherConfig()
+          .withJobId(String.valueOf(jobId))
+          .withAttemptId((long) attempt)
+          .withDockerImage(config.getDestinationDockerImage())
+          .withProtocolVersion(config.getDestinationProtocolVersion());
+    }
+    final IntegrationLauncherConfig finalDestinationLauncherConfig = destinationLauncherConfig;
 
     final StandardSyncInput input = new StandardSyncInput()
         .withNamespaceDefinition(config.getNamespaceDefinition())
@@ -401,7 +424,7 @@ public class TemporalClient {
         () -> getWorkflowStub(SyncWorkflow.class, TemporalJobType.SYNC).run(
             jobRunConfig,
             sourceLauncherConfig,
-            destinationLauncherConfig,
+            finalDestinationLauncherConfig,
             input,
             connectionId));
   }

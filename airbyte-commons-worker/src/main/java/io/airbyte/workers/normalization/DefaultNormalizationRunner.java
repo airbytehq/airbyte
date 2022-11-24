@@ -31,6 +31,7 @@ import io.airbyte.workers.process.ProcessFactory;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -73,6 +74,20 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     this.destinationType = destinationType;
     this.processFactory = processFactory;
     this.normalizationImageName = normalizationImageName;
+  }
+
+  public DefaultNormalizationRunner(final ProcessFactory processFactory,
+                                    final String normalizationImage) {
+    this.processFactory = processFactory;
+    this.destinationType = getDestinationTypeByNormalizationImageNamePart(normalizationImage);
+    this.normalizationImageName = normalizationImage;
+  }
+
+  private static DestinationType getDestinationTypeByNormalizationImageNamePart(final String normalizationImageName) {
+    return EnumSet.allOf(DestinationType.class).stream()
+        .filter(destinationType -> normalizationImageName.contains(destinationType.name().toLowerCase()))
+        .findFirst()
+        .orElseGet(null);
   }
 
   @Override
