@@ -10,6 +10,7 @@ import { TagInput } from "components/ui/TagInput/TagInput";
 import { TextArea } from "components/ui/TextArea";
 
 import { FormBaseItem } from "core/form/types";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { isDefined } from "utils/common";
 
 import ConfirmationControl from "./ConfirmationControl";
@@ -34,6 +35,7 @@ export const Control: React.FC<ControlProps> = ({
   error,
 }) => {
   const [field, meta, helpers] = useField(name);
+  const canUseDatepicker = useFeature(FeatureItem.AllowUseDatepicker);
 
   if (property.type === "array" && !property.enum) {
     return (
@@ -67,7 +69,11 @@ export const Control: React.FC<ControlProps> = ({
     );
   }
 
-  if (property.type === "string" && (property.format === "date-time" || property.format === "date")) {
+  if (
+    property.type === "string" &&
+    (property.format === "date-time" || property.format === "date") &&
+    canUseDatepicker
+  ) {
     return (
       <DatePicker
         error={error}

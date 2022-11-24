@@ -7,6 +7,7 @@ export enum FeatureItem {
   AllowSync = "ALLOW_SYNC",
   AllowChangeDataGeographies = "ALLOW_CHANGE_DATA_GEOGRAPHIES",
   AllowSyncSubOneHourCronExpressions = "ALLOW_SYNC_SUB_ONE_HOUR_CRON_EXPRESSIONS",
+  AllowUseDatepicker = "ALLOW_USE_DATEPICKER",
 }
 
 export type FeatureSet = Record<FeatureItem, boolean>;
