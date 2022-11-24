@@ -21,12 +21,13 @@ from .errors import HTTP_ERROR_CODES, error_msg_from_status
 
 
 class AmplitudeStream(HttpStream, ABC):
+    url_base = ""
     api_version = 2
 
     def __init__(self, data_region: str, **kwargs):
         super().__init__(**kwargs)
         self.url_base = (
-            "https://analytics.eu.amplitude.com/api/2/annotations"
+            "https://analytics.eu.amplitude.com/api/"
             if data_region == "EU Residency Server"
             else "https://amplitude.com/api/"
         )
