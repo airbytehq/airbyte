@@ -1,8 +1,9 @@
 import { faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import en from "date-fns/locale/en-US";
 import dayjs from "dayjs";
-import React, { useCallback, useMemo } from "react";
-import ReactDatePicker from "react-datepicker";
+import React, { useCallback, useEffect, useMemo } from "react";
+import ReactDatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useIntl } from "react-intl";
 
@@ -69,6 +70,17 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   error,
   withTime = false,
 }) => {
+  const { locale } = useIntl();
+
+  // Additional locales can be registered here as necessary
+  useEffect(() => {
+    switch (locale) {
+      case "en":
+        registerLocale(locale, en);
+        break;
+    }
+  }, [locale]);
+
   const onDateChanged = useCallback(
     (val: Date | null) => {
       const date = dayjs(val);
@@ -100,6 +112,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           showPopperArrow={false}
           showTimeSelect={withTime}
           disabled={disabled}
+          locale={locale}
           selected={dateValue?.isValid() ? toEquivalentLocalTimeInBrowserTimezone(dateValue) : undefined}
           onChange={onDateChanged}
           onBlur={onBlur}
