@@ -3,6 +3,8 @@ import styled from "styled-components";
 
 import { LoadingPage } from "components";
 
+import useRouter from "hooks/useRouter";
+import { RoutePaths } from "pages/routePaths";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 import SideBar from "views/layout/SideBar";
@@ -22,15 +24,18 @@ const Content = styled.div`
   height: 100%;
 `;
 
-const MainView: React.FC = (props) => (
-  <MainContainer>
-    <SideBar />
-    <Content>
-      <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
-        <React.Suspense fallback={<LoadingPage />}>{props.children}</React.Suspense>
-      </ResourceNotFoundErrorBoundary>
-    </Content>
-  </MainContainer>
-);
+const MainView: React.FC = (props) => {
+  const { pathname } = useRouter();
+  return (
+    <MainContainer>
+      {!pathname.split("/").includes(RoutePaths.Payment) && <SideBar />}
+      <Content>
+        <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
+          <React.Suspense fallback={<LoadingPage />}>{props.children}</React.Suspense>
+        </ResourceNotFoundErrorBoundary>
+      </Content>
+    </MainContainer>
+  );
+};
 
 export default MainView;
