@@ -5,6 +5,7 @@
 
 import calendar
 import re
+from copy import deepcopy
 from datetime import datetime
 from unittest.mock import patch
 from urllib.parse import parse_qsl, urlparse
@@ -40,7 +41,7 @@ from source_zendesk_support.streams import (
     Tickets,
     Users,
     UserSettingsStream,
-    UserSubscriptionStream,
+    UserSubscriptionStream, BEFORE_CURSOR,
 )
 from test_data.data import TICKET_EVENTS_STREAM_RESPONSE
 from utils import read_full_refresh
@@ -386,6 +387,37 @@ class TestSourceZendeskSupportStream:
             "TicketMetrics",
         ],
     )
+    def test_parse_response_skip_old_records_and_finish(self, requests_mock, stream_cls):
+        stream_args = deepcopy(STREAM_ARGS)
+        stream_args["start_date"] = "2022-04-01T00:00:00Z"
+        stream = stream_cls(**stream_args)
+        stream_name = stream.response_list_name or stream.name
+        expected = [{stream.cursor_field: "2022-03-17T16:03:07Z"}]
+        requests_mock.get(STREAM_URL, json={stream_name: expected})
+        test_response = requests.get(STREAM_URL)
+        output = list(stream.parse_response(test_response, None))
+        assert len(output) == 0
+        assert stream._finished
+
+    @pytest.mark.parametrize(
+        "stream_cls",
+        [
+            (Macros),
+            (Organizations),
+            (Groups),
+            (SatisfactionRatings),
+            (TicketFields),
+            (TicketMetrics),
+        ],
+        ids=[
+            "Macros",
+            "Organizations",
+            "Groups",
+            "SatisfactionRatings",
+            "TicketFields",
+            "TicketMetrics",
+        ],
+    )
     def test_url_base(self, stream_cls):
         stream = stream_cls(**STREAM_ARGS)
         result = stream.url_base
@@ -539,6 +571,26 @@ class TestSourceZendeskSupportFullRefreshStream:
         assert expected == result
 
 
+class TestTicketAudits:
+    def test_next_page_token(self, requests_mock):
+        stream = TicketAudits(**STREAM_ARGS)
+        cursor_value = "cursor-not-human-readable"
+        stream_name = snake_case(stream.__class__.__name__)
+        requests_mock.get(STREAM_URL, json={stream_name: [], BEFORE_CURSOR: cursor_value})
+        test_response = requests.get(STREAM_URL)
+        output = stream.next_page_token(test_response)
+        assert output == cursor_value
+
+    def test_next_page_token_when_finished(self, requests_mock):
+        stream = TicketAudits(**STREAM_ARGS)
+        stream_name = stream.response_list_name or stream.name
+        requests_mock.get(STREAM_URL, json={stream_name: [], BEFORE_CURSOR: "cursor-not-human-readable"})
+        stream._finished = True
+        test_response = requests.get(STREAM_URL)
+        output = stream.next_page_token(test_response)
+        assert output is None
+
+
 class TestSourceZendeskSupportCursorPaginationStream:
     @pytest.mark.parametrize(
         "stream_cls, current_state, last_record, expected",
@@ -566,7 +618,6 @@ class TestSourceZendeskSupportCursorPaginationStream:
             (GroupMemberships),
             (TicketForms),
             (TicketMetricEvents),
-            (TicketAudits),
             (TicketMetrics),
             (SatisfactionRatings),
         ],
@@ -574,7 +625,6 @@ class TestSourceZendeskSupportCursorPaginationStream:
             "GroupMemberships",
             "TicketForms",
             "TicketMetricEvents",
-            "TicketAudits",
             "TicketMetrics",
             "SatisfactionRatings",
         ],

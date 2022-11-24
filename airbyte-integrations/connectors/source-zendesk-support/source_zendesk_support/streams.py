@@ -30,6 +30,7 @@ from requests_futures.sessions import PICKLE_ERROR, FuturesSession
 DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY: str = "_last_end_time"
 END_OF_STREAM_KEY: str = "end_of_stream"
+BEFORE_CURSOR = "before_cursor"
 
 
 def to_int(s):
@@ -79,6 +80,7 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
 
         self._start_date = start_date
         self._subdomain = subdomain
+        self._finished = False
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """
@@ -140,11 +142,14 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
         if not self.cursor_field:
             yield from records
         else:
-            cursor_date = (stream_state or {}).get(self.cursor_field)
+            cursor_date = (stream_state or {}).get(self.cursor_field) or self._start_date
             for record in records:
                 updated = record[self.cursor_field]
                 if not cursor_date or updated > cursor_date:
+                    self._finished = False
                     yield record
+                else:
+                    self._finished = True
 
 
 class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
@@ -577,6 +582,7 @@ class TicketAudits(SourceZendeskSupportCursorPaginationStream):
 
     # can request a maximum of 1,000 results
     page_size = 1000
+
     # ticket audits doesn't have the 'updated_by' field
     cursor_field = "created_at"
 
@@ -594,7 +600,10 @@ class TicketAudits(SourceZendeskSupportCursorPaginationStream):
         return params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return response.json().get("before_cursor")
+        if not self._finished:
+            return response.json().get(BEFORE_CURSOR)
+        else:
+            return None
 
 
 class Tags(SourceZendeskSupportFullRefreshStream):

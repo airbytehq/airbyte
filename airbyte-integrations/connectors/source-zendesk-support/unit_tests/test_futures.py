@@ -64,7 +64,7 @@ def test_parse_future_records(records_count, page_size, expected_futures_deque_l
     stream = Macros(**STREAM_ARGS)
     stream.page_size = page_size
     expected_records = [
-        {f"key{i}": f"val{i}", stream.cursor_field: (pendulum.parse("2020-01-01") + timedelta(days=i)).isoformat()}
+        {f"key{i}": f"val{i}", stream.cursor_field: (pendulum.parse("2021-01-30") + timedelta(days=i)).isoformat()}
         for i in range(records_count)
     ]
 
@@ -105,7 +105,7 @@ def test_read_records(mocker, records_count, page_size, expected_futures_deque_l
 
     def record_gen(start=0, end=page_size):
         for i in range(start, end):
-            yield {f"key{i}": f"val{i}", stream.cursor_field: (pendulum.parse("2020-01-01") + timedelta(days=i)).isoformat()}
+            yield {f"key{i}": f"val{i}", stream.cursor_field: (pendulum.parse("2021-01-30") + timedelta(days=i)).isoformat()}
 
     with requests_mock.Mocker() as m:
         count_url = urljoin(stream.url_base, f"{stream.path()}/count.json")
