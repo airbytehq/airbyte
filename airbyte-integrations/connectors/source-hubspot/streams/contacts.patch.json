@@ -3,7 +3,12 @@
     "companies": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null", "integer"]
+        "type": null,
+        "oneOf": [{
+          "type": ["null", "integer"]
+        }, {
+          "type": ["null", "string"]
+        }]
       }
     }
   }

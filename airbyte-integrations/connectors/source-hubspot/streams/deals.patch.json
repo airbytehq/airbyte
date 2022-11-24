@@ -1,0 +1,37 @@
+{
+  "properties": {
+    "companies": {
+      "type": ["null", "array"],
+      "items": {
+        "type": null,
+        "oneOf": [{
+          "type": ["null", "integer"]
+        }, {
+          "type": ["null", "string"]
+        }]
+      }
+    },
+    "contacts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": null,
+        "oneOf": [{
+          "type": ["null", "integer"]
+        }, {
+          "type": ["null", "string"]
+        }]
+      }
+    },
+    "line_items": {
+      "type": ["null", "array"],
+      "items": {
+        "type": null,
+        "oneOf": [{
+          "type": ["null", "integer"]
+        }, {
+          "type": ["null", "string"]
+        }]
+      }
+    }
+  }
+}
