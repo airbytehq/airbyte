@@ -16,7 +16,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from .authenticator import CriteoAuthenticator
 from source_criteo.streams import (
-    Adset
+    Analytics
 )
 
 
@@ -76,6 +76,6 @@ class SourceCriteo(AbstractSource):
         config = self._validate_and_transform(config)
         stream_config = self.get_stream_kwargs(config)
 
-        streams = [Adset(**stream_config)]
+        streams = [Analytics(**stream_config)]
 
         return streams

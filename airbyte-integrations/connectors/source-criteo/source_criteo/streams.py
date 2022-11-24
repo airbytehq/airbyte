@@ -47,7 +47,7 @@ class CriteoStream(HttpStream, ABC):
             for record in records:
                 yield record
 
-class Adset(CriteoStream):
+class Analytics(CriteoStream):
 
     @property
     def state(self) -> Mapping[str, Any]:
