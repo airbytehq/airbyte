@@ -1,0 +1,12 @@
+@use "scss/variables";
+
+.container {
+  padding: variables.$spacing-xl;
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-xl;
+}
+
+.submitButton {
+  width: 100px;
+}

@@ -1,8 +1,8 @@
 import { useIntl } from "react-intl";
 
-import { StreamTestingPanel } from "components/StreamTestingPanel";
+import { Builder } from "components/connectorBuilder/Builder/Builder";
+import { StreamTestingPanel } from "components/connectorBuilder/StreamTestingPanel";
 import { ResizablePanels } from "components/ui/ResizablePanels";
-import { YamlEditor } from "components/YamlEditor";
 
 import { ConnectorBuilderStateProvider } from "services/connectorBuilder/ConnectorBuilderStateService";
 
@@ -15,14 +15,14 @@ const ConnectorBuilderPageInner: React.FC = () => {
     <ResizablePanels
       className={styles.container}
       firstPanel={{
-        children: <YamlEditor />,
+        children: <Builder />,
         className: styles.leftPanel,
         minWidth: 100,
       }}
       secondPanel={{
         children: <StreamTestingPanel />,
         className: styles.rightPanel,
-        flex: 0.33,
+        flex: 0,
         minWidth: 60,
         overlay: {
           displayThreshold: 325,
