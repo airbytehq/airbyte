@@ -723,9 +723,9 @@ where 1 = 1
         the curly brackets.
         """
 
-        if data_type.REF_TYPE_VAR_NAME not in definition:   # TODO do we need Type or ref here? Does it take type !!!!!!!!!!!!!!!!!!!!!!!!
+        if data_type.TYPE_VAR_NAME not in definition and data_type.REF_TYPE_VAR_NAME not in definition and data_type.ONE_OF_VAR_NAME not in definition:
             col = column_name
-        elif is_boolean(definition[data_type.REF_TYPE_VAR_NAME], definition):
+        elif data_type.REF_TYPE_VAR_NAME in definition and is_boolean(definition[data_type.REF_TYPE_VAR_NAME], definition):
             col = f"boolean_to_string({column_name})"
         elif data_type.TYPE_VAR_NAME in definition and is_array(definition[data_type.TYPE_VAR_NAME]):
             col = f"array_to_string({column_name})"
