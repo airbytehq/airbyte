@@ -488,6 +488,7 @@ class TicketComments(SourceZendeskSupportTicketEventsExportStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, **kwargs):
+            # https://github.com/airbytehq/oncall/issues/1001
             if type(record.get("via")) is not dict:
                 record["via"] = None
             yield record
