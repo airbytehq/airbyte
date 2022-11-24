@@ -2,7 +2,7 @@ name: Docker Release
 
 on:
   release:
-    type: [ "created" ]
+    types: [ "published" ]
 
 env:
   DOCKER_TAG: |
