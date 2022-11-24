@@ -1,18 +1,25 @@
 # Redpanda
 
-TODO: update this doc
+The Airbyte Redpanda destination connector allows you to sync data to [Redpada](https://redpanda.com/). Each stream is written to the corresponding Redpanda topic.
+
 
 ## Sync overview
 
 ### Output schema
 
-Is the output schema fixed (e.g: for an API like Stripe)? If so, point to the connector's schema (e.g: link to Stripe’s documentation) or describe the schema here directly (e.g: include a diagram or paragraphs describing the schema).
+Each stream will be output into a Redpanda topic.
 
-Describe how the connector's schema is mapped to Airbyte concepts. An example description might be: "MagicDB tables become Airbyte Streams and MagicDB columns become Airbyte Fields. In addition, an extracted\_at column is appended to each row being read."
+The Redpanda topic will be created with the following format `{namespace}_{stream}`
+
+Currently, this connector only writes data with JSON format. More formats \(e.g. Apache Avro\) will be supported in the future.
+
+Each record will contain in its key the uuid assigned by Airbyte, and in the value these 3 fields:
+
+* `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed.
+* `_airbyte_emitted_at`:  a timestamp representing when the event was pulled from the data source.
+* `_airbyte_data`: a json blob representing with the event data.
 
 ### Data type mapping
-
-This section should contain a table mapping each of the connector's data types to Airbyte types. At the moment, Airbyte uses the same types used by [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html). `string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number` are the most commonly used data types.
 
 | Integration Type | Airbyte Type | Notes |
 | :--- | :--- | :--- |
@@ -22,31 +29,39 @@ This section should contain a table mapping each of the connector's data types t
 
 This section should contain a table with the following format:
 
-| Feature | Supported?(Yes/No) | Notes |
+
+| Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
-| Full Refresh Sync |  |  |
-| Incremental Sync |  |  |
-| Replicate Incremental Deletes |  |  |
-| For databases, WAL/Logical replication |  |  |
-| SSL connection |  |  |
-| SSH Tunnel Support |  |  |
-| (Any other source-specific features) |  |  |
+| Full Refresh Sync | No |  |
+| Incremental - Append Sync | Yes |  |
+| Incremental - Deduped History | No | As this connector does not support dbt, we don't support this sync mode on this destination. |
+| Namespaces | Yes |  |
+
 
 ### Performance considerations
 
-Could this connector hurt the user's database/API/etc... or put too much strain on it in certain circumstances? For example, if there are a lot of tables or rows in a table? What is the breaking point (e.g: 100mm&gt; records)? What can the user do to prevent this? (e.g: use a read-only replica, or schedule frequent syncs, etc..)
+Granted you have enough Redpanda nodes/partitions the cluster should be able to handle any type of load you throw at it from the connector.
 
 ## Getting started
 
 ### Requirements
 
-* What versions of this connector does this implementation support? (e.g: `postgres v3.14 and above`)
-* What configurations, if any, are required on the connector? (e.g: `buffer_size > 1024`)
-* Network accessibility requirements
-* Credentials/authentication requirements? (e.g: A  DB user with read permissions on certain tables)
+* The connector should be able to create topics using the [AdminClient](https://docs.confluent.io/platform/current/installation/configuration/admin-configs.html)
+* Configuration options
+  * **Bootstrap servers**
+  * **Buffer Memory**
+  * **Compression Type**
+  * **Batch Size**
+  * **Retries**
+  * **Number of topic partitions**
+  * **Topic replication factor**
+  * **Socket Connection Setup Timeout**
+  * **Socket Connection Setup Max Timeout**
+
+More info about this can be found in the [Redpanda producer configs documentation site](https://docs.confluent.io/platform/current/installation/configuration/producer-configs.html).
+
+_NOTE_: Configurations for SSL are not available yet.
 
 ### Setup guide
 
-For each of the above high-level requirements as appropriate, add or point to a follow-along guide. See existing source or destination guides for an example.
 
-For each major cloud provider we support, also add a follow-along guide for setting up Airbyte to connect to that destination. See the Postgres destination guide for an example of what this should look like.

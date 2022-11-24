@@ -6,12 +6,9 @@ import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 import LoadingPage from "components/LoadingPage";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
-import { useExperiment } from "hooks/services/Experiment";
 import { FeatureItem, FeatureSet, useFeatureService } from "hooks/services/Feature";
 import { useApiHealthPoll } from "hooks/services/Health";
-import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useQuery } from "hooks/useQuery";
-import { useExperimentSpeedyConnection } from "packages/cloud/components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { Auth } from "packages/cloud/views/auth";
 import { CreditsPage } from "packages/cloud/views/credits";
@@ -24,7 +21,6 @@ import CreateDestinationPage from "pages/destination/CreateDestinationPage";
 import { DestinationItemPage } from "pages/destination/DestinationItemPage";
 import { DestinationOverviewPage } from "pages/destination/DestinationOverviewPage";
 import { DestinationSettingsPage } from "pages/destination/DestinationSettingsPage";
-import OnboardingPage from "pages/OnboardingPage";
 import SourcesPage from "pages/SourcesPage";
 import { SpeakeasyRedirectPage } from "pages/SpeakeasyRedirectPage";
 import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
@@ -64,7 +60,6 @@ const MainRoutes: React.FC = () => {
   const { setWorkspaceFeatures } = useFeatureService();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
-  const hideOnboardingExperiment = useExperiment("onboarding.hideOnboarding", false);
 
   useEffect(() => {
     const outOfCredits =
@@ -87,11 +82,6 @@ const MainRoutes: React.FC = () => {
   );
   useAnalyticsRegisterValues(analyticsContext);
 
-  const mainNavigate =
-    workspace.displaySetupWizard && !hideOnboardingExperiment ? RoutePaths.Onboarding : RoutePaths.Connections;
-
-  // exp-speedy-connection
-  const { isExperimentVariant } = useExperimentSpeedyConnection();
   return (
     <ApiErrorBoundary>
       <Routes>
@@ -108,18 +98,7 @@ const MainRoutes: React.FC = () => {
         <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
         <Route path={`${RoutePaths.Settings}/*`} element={<CloudSettingsPage />} />
         <Route path={CloudRoutes.Credits} element={<CreditsPage />} />
-
-        {(workspace.displaySetupWizard || isExperimentVariant) && !hideOnboardingExperiment && (
-          <Route
-            path={RoutePaths.Onboarding}
-            element={
-              <OnboardingServiceProvider>
-                <OnboardingPage />
-              </OnboardingServiceProvider>
-            }
-          />
-        )}
-        <Route path="*" element={<Navigate to={mainNavigate} replace />} />
+        <Route path="*" element={<Navigate to={RoutePaths.Connections} replace />} />
       </Routes>
     </ApiErrorBoundary>
   );
@@ -151,7 +130,7 @@ const MainViewRoutes = () => {
 };
 
 export const Routing: React.FC = () => {
-  const { user, inited, providers } = useAuthService();
+  const { user, inited, providers, hasCorporateEmail } = useAuthService();
 
   const { search } = useLocation();
 
@@ -169,9 +148,15 @@ export const Routing: React.FC = () => {
         : null,
     [user]
   );
+
+  const userTraits = useMemo(
+    () => (user ? { providers, email: user.email, isCorporate: hasCorporateEmail() } : {}),
+    [hasCorporateEmail, providers, user]
+  );
+
   useGetSegmentAnonymousId();
   useAnalyticsRegisterValues(analyticsContext);
-  useAnalyticsIdentifyUser(user?.userId, { providers, email: user?.email });
+  useAnalyticsIdentifyUser(user?.userId, userTraits);
 
   if (!inited) {
     return <LoadingPage />;
