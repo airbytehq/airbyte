@@ -6,8 +6,19 @@
 @use "scss/z-indices";
 
 .wrapper {
+  position: relative;
+}
+
+.datepickerButtonContainer {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 31px;
   display: flex;
-  align-items: stretch;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  border: none;
 }
 
 .datepickerButton svg {
@@ -18,11 +29,8 @@
   z-index: z-indices.$datepicker;
 }
 
-:global(.react-datepicker-wrapper) {
-  width: auto;
-}
-
 :global(.react-datepicker) {
+  display: flex;
   color: colors.$dark-blue-900;
   font-family: fonts.$primary;
   border: variables.$border-thick solid colors.$grey-100;

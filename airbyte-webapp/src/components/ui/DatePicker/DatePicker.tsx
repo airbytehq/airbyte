@@ -56,9 +56,8 @@ const DatepickerButton = React.forwardRef<HTMLButtonElement, DatePickerButtonTri
       ref={ref}
       type="button"
       variant="clear"
-    >
-      <FontAwesomeIcon icon={faCalendarAlt} width="18" height="18" className={styles.dropdownButton} />
-    </Button>
+      icon={<FontAwesomeIcon icon={faCalendarAlt} className={styles.dropdownButton} fixedWidth />}
+    />
   );
 });
 
@@ -96,18 +95,19 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   return (
     <div className={styles.wrapper}>
       <Input error={error} value={value} onChange={onInputChanged} onBlur={onBlur} />
-      <ReactDatePicker
-        showPopperArrow={false}
-        showTimeSelect={withTime}
-        disabled={disabled}
-        selected={dateValue?.isValid() ? toEquivalentLocalTimeInBrowserTimezone(dateValue) : undefined}
-        onChange={onDateChanged}
-        onBlur={onBlur}
-        value={value}
-        customInput={<DatepickerButton />}
-        clearButtonClassName={styles.clearButton}
-        popperClassName={styles.popup}
-      />
+      <div className={styles.datepickerButtonContainer}>
+        <ReactDatePicker
+          showPopperArrow={false}
+          showTimeSelect={withTime}
+          disabled={disabled}
+          selected={dateValue?.isValid() ? toEquivalentLocalTimeInBrowserTimezone(dateValue) : undefined}
+          onChange={onDateChanged}
+          onBlur={onBlur}
+          value={value}
+          customInput={<DatepickerButton />}
+          popperClassName={styles.popup}
+        />
+      </div>
     </div>
   );
 };
