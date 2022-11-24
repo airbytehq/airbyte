@@ -16,6 +16,9 @@ from source_netsuite.streams import CustomIncrementalNetsuiteStream, Incremental
 
 
 class SourceNetsuite(AbstractSource):
+    
+    logger: logging.Logger = logging.getLogger("airbyte")
+    
     def auth(self, config: Mapping[str, Any]) -> OAuth1:
         return OAuth1(
             client_key=config["consumer_key"],
@@ -50,7 +53,7 @@ class SourceNetsuite(AbstractSource):
             # check connectivity to all provided `object_types`
             for object in object_types:
                 try:
-                    response = session.get(url=base_url + RECORD_PATH + object, params={"limit": 1})
+                    response = session.get(url=base_url + RECORD_PATH + object.lower(), params={"limit": 1})
                     response.raise_for_status()
                     return True, None
                 except requests.exceptions.HTTPError as e:
@@ -69,9 +72,9 @@ class SourceNetsuite(AbstractSource):
     def get_schemas(self, object_names: Union[List[str], str], session: requests.Session, metadata_url: str) -> Mapping[str, Any]:
         # fetch schemas
         if isinstance(object_names, list):
-            return {object_name: session.get(metadata_url + object_name, headers=SCHEMA_HEADERS).json() for object_name in object_names}
+            return {object_name.lower(): session.get(metadata_url + object_name, headers=SCHEMA_HEADERS).json() for object_name in object_names}
         elif isinstance(object_names, str):
-            return {object_names: session.get(metadata_url + object_names, headers=SCHEMA_HEADERS).json()}
+            return {object_names.lower(): session.get(metadata_url + object_names, headers=SCHEMA_HEADERS).json()}
 
     def generate_stream(
         self,
@@ -85,8 +88,6 @@ class SourceNetsuite(AbstractSource):
         window_in_days: int,
     ) -> Union[NetsuiteStream, IncrementalNetsuiteStream, CustomIncrementalNetsuiteStream]:
 
-        logger: logging.Logger = (logging.Logger,)
-
         input_args = {
             "auth": auth,
             "object_name": object_name,
@@ -94,6 +95,7 @@ class SourceNetsuite(AbstractSource):
             "start_datetime": start_datetime,
             "window_in_days": window_in_days,
         }
+        
         try:
             schema = schemas[object_name]
             schema_props = schema["properties"]
@@ -106,7 +108,7 @@ class SourceNetsuite(AbstractSource):
                     # all other streams are full_refresh
                     return NetsuiteStream(**input_args)
         except KeyError:
-            logger.warn(f"Object `{object_name}` schema has missing `properties` key. Retry...")
+            self.logger.warn(f"Object `{object_name}` schema has missing `properties` key. Retry...")
             # somethimes object metadata returns data with missing `properties` key,
             # we should try to fetch metadata again to that object
             schemas = self.get_schemas(object_name, session, metadata_url)
@@ -121,7 +123,7 @@ class SourceNetsuite(AbstractSource):
         object_names = config.get("object_types")
 
         # retrieve all record types if `object_types` config field is not specified
-        if not config.get("object_types"):
+        if not object_names:
             objects_metadata = session.get(metadata_url).json().get("items")
             object_names = [object["name"] for object in objects_metadata]
 
@@ -129,7 +131,7 @@ class SourceNetsuite(AbstractSource):
         schemas = self.get_schemas(object_names, **input_args)
         input_args.update(
             **{
-                "auth": self.auth(config),
+                "auth": auth,
                 "base_url": base_url,
                 "start_datetime": config["start_datetime"],
                 "window_in_days": config["window_in_days"],
@@ -139,6 +141,6 @@ class SourceNetsuite(AbstractSource):
         # build streams
         streams: list = []
         for name in object_names:
-            streams.append(self.generate_stream(object_name=name, **input_args))
+            streams.append(self.generate_stream(object_name=name.lower(), **input_args))
 
         return streams
