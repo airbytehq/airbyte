@@ -73,6 +73,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
   private final TemporalUtils temporalUtils;
   private final WorkerConfigs workerConfigs;
 
+  private final boolean isCustomConnector;
   private final AtomicBoolean cancelled = new AtomicBoolean(false);
   private AsyncOrchestratorPodProcess process;
 
@@ -87,7 +88,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                         final Supplier<ActivityExecutionContext> activityContext,
                         final Integer serverPort,
                         final TemporalUtils temporalUtils,
-                        final WorkerConfigs workerConfigs) {
+                        final WorkerConfigs workerConfigs,
+                        final boolean isCustomConnector) {
 
     this.connectionId = connectionId;
     this.application = application;
@@ -101,6 +103,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     this.serverPort = serverPort;
     this.temporalUtils = temporalUtils;
     this.workerConfigs = workerConfigs;
+    this.isCustomConnector = isCustomConnector;
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
@@ -179,7 +182,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                 resourceRequirements,
                 fileMap,
                 portMap,
-                workerConfigs.getworkerKubeNodeSelectors());
+                isCustomConnector ? workerConfigs.getWorkerIsolatedKubeNodeSelectors() : workerConfigs.getworkerKubeNodeSelectors());
           } catch (final KubernetesClientException e) {
             ApmTraceUtils.addExceptionToTrace(e);
             throw new WorkerException(

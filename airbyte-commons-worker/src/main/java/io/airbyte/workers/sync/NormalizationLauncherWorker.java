@@ -44,7 +44,8 @@ public class NormalizationLauncherWorker extends LauncherWorker<NormalizationInp
         activityContext,
         serverPort,
         temporalUtils,
-        workerConfigs);
+        workerConfigs,
+        false);
 
   }
 

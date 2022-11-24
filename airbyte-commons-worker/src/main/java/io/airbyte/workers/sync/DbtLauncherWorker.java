@@ -43,7 +43,8 @@ public class DbtLauncherWorker extends LauncherWorker<OperatorDbtInput, Void> {
         activityContext,
         serverPort,
         temporalUtils,
-        workerConfigs);
+        workerConfigs,
+        false);
   }
 
 }
