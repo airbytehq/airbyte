@@ -93,7 +93,7 @@ public class WorkerConfigurationBeanFactory {
 
   @Singleton
   @Named("useCustomNodeSelector")
-  public boolean useCustomNodeSelector(@Value("${airbyte.worker.custom.kube.node-selectors}") final boolean kubeNodeSelectors) {
+  public boolean useCustomNodeSelector(@Value("${airbyte.worker.custom.kube.use-custom-node-selector}") final boolean kubeNodeSelectors) {
     return kubeNodeSelectors;
   }
 
