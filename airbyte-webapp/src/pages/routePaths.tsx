@@ -10,6 +10,8 @@ export enum RoutePaths {
   Source = "source",
   Settings = "settings",
 
+  Payment = "payment",
+
   Connection = "connection",
   ConnectionNew = "new-connection",
   SourceNew = "new-source",
