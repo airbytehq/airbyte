@@ -33,8 +33,6 @@ export const BuilderOneOf: React.FC<BuilderOneOfProps> = ({ options, path, label
     typePathHelpers.setValue(value);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // console.log("typePathField.value", typePathField.value);
-
   const selectedOption = options.find((option) => option.typeValue === value);
 
   return (
