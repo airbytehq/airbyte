@@ -13,6 +13,7 @@ import PaymentNav from "./components/PaymentNav";
 import { NavMenuItem } from "./components/PaymentNav";
 import BillingAndPaymentPage from "./pages/BillingAndPaymentPage";
 import SelectPlanPage from "./pages/SelectPlanPage";
+import styles from "./PaymentPage.module.scss";
 
 const Content = styled.div`
   display: flex;
@@ -63,7 +64,7 @@ const PaymentPage: React.FC<SettingsPageProps> = () => {
     <>
       <PaymentNav data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} />
       <MainPageWithScroll headTitle={<HeadTitle titles={[{ id: "payment.tabTitle" }]} />}>
-        <Content>
+        <Content className={styles.pageContainer}>
           <MainView>
             <Suspense fallback={<LoadingPage />}>
               <Routes>

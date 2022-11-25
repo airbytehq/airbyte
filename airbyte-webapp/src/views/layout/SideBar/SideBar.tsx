@@ -9,9 +9,9 @@ import { NavLink } from "react-router-dom";
 import styled from "styled-components";
 
 import { Link } from "components";
-import Version from "components/Version";
+// import Version from "components/Version";
 
-import { useConfig } from "config";
+// import { useConfig } from "config";
 // import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import useRouter from "hooks/useRouter";
 
@@ -42,7 +42,7 @@ const Bar = styled.nav`
 
 const Menu = styled.ul`
   padding: 0;
-  margin: 20px 0 0;
+  margin: 20px 0 40px 0;
   width: 100%;
 `;
 
@@ -140,7 +140,7 @@ export const getPopoutStyles = (isOpen?: boolean) => {
 };
 
 const SideBar: React.FC = () => {
-  const config = useConfig();
+  // const config = useConfig();
   // const workspace = useCurrentWorkspace();
 
   return (
@@ -250,12 +250,12 @@ const SideBar: React.FC = () => {
               </TextSetting>
             </Button>
           </ButtonCenter>
-        </li> */}
+        </li>
         {config.version ? (
           <li>
             <Version primary />
           </li>
-        ) : null}
+        ) : null} */}
       </Menu>
     </Bar>
   );

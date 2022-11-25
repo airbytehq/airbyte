@@ -486,6 +486,8 @@
   "plan.upgrade.btn": "Upgrade Plan",
   "plan.select.plan": "Select a Plan",
   "plan.billing.payment": "Billing & Payment",
+  "plan.rows.card.title": "Total rows per month",
+  "plan.rows.card.note": "Not sure how much data you have? Choose 1 million and upgrade at anytime if you need more.",
 
   "connector.requestConnectorBlock": "+ Request a new connector",
   "connector.requestConnector": "Request a new connector",
