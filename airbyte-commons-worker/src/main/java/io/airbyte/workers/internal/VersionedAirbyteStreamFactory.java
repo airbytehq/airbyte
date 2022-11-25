@@ -78,11 +78,15 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
    * the stream rather than the one passed from the constructor.
    */
   @Trace(operationName = WORKER_OPERATION_NAME)
-  @SneakyThrows
   @Override
   public Stream<AirbyteMessage> create(final BufferedReader bufferedReader) {
     if (shouldDetectVersion) {
-      final Optional<Version> versionMaybe = detectVersion(bufferedReader);
+      final Optional<Version> versionMaybe;
+      try {
+        versionMaybe = detectVersion(bufferedReader);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
       if (versionMaybe.isPresent()) {
         logger.info("Detected Protocol Version {}", versionMaybe.get().serialize());
         initializeForProtocolVersion(versionMaybe.get());
