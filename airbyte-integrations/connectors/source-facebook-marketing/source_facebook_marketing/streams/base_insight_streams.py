@@ -205,12 +205,14 @@ class AdsInsights(FBMarketingIncrementalStream):
         paragraph: "Combining Breakdowns"
         """
         params = self.request_params()
-        params.update({
-            "time_range": {
-                "since": str(self._get_start_date()),
-                "until": str(self._get_start_date()),
+        params.update(
+            {
+                "time_range": {
+                    "since": str(self._get_start_date()),
+                    "until": str(self._get_start_date()),
+                }
             }
-        })
+        )
         self._api.account.get_insights(params=params, is_async=True)
 
     def stream_slices(

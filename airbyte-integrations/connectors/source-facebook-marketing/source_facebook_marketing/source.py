@@ -32,7 +32,7 @@ from source_facebook_marketing.streams import (
     Videos,
 )
 
-from .utils import read_full_refresh, validate_end_date, validate_start_date
+from .utils import validate_end_date, validate_start_date
 
 logger = logging.getLogger("airbyte")
 
