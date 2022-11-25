@@ -46,14 +46,14 @@ interface DatePickerButtonTriggerProps {
   onClick?: () => void;
 }
 
-const DatepickerButton = React.forwardRef<HTMLButtonElement, DatePickerButtonTriggerProps>((_props, ref) => {
+const DatepickerButton = React.forwardRef<HTMLButtonElement, DatePickerButtonTriggerProps>(({ onClick }, ref) => {
   const { formatMessage } = useIntl();
 
   return (
     <Button
       className={styles.datepickerButton}
       aria-label={formatMessage({ id: "form.openDatepicker" })}
-      onClick={_props.onClick}
+      onClick={onClick}
       ref={ref}
       type="button"
       variant="clear"
