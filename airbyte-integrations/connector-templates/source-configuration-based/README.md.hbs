@@ -51,10 +51,9 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 Customize `acceptance-test-config.yml` file to configure tests. See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 
-To run your integration tests with docker:
+To run your integration tests with Docker, run:
 ```
-docker build . -t airbyte/source-exchange-rates-tutorial:dev
-python -m pytest integration_tests -p integration_tests.acceptance
+./acceptance-test-docker.sh
 ```
 
 ### Using gradle to run tests
