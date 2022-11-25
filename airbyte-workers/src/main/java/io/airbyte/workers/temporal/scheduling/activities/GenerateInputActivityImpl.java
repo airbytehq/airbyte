@@ -4,10 +4,6 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
-
 import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
@@ -28,9 +24,14 @@ import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConstants;
 import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
@@ -104,8 +105,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withAttemptId((long) attempt)
           .withDockerImage(config.getDestinationDockerImage())
           .withProtocolVersion(config.getDestinationProtocolVersion())
-          .withDockerNormalizationImage(destinationNormalizationDockerImage)
-          .withSupportDBT(supportDBT);
+          .withNormalizationDockerImage(destinationNormalizationDockerImage)
+          .withSupportDbt(supportDBT);
 
       final StandardSyncInput syncInput = new StandardSyncInput()
           .withNamespaceDefinition(config.getNamespaceDefinition())

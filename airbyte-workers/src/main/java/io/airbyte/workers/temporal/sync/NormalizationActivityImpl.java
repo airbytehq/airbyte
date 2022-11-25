@@ -150,8 +150,8 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   private CheckedSupplier<Worker<NormalizationInput, NormalizationSummary>, Exception> getLegacyWorkerFactory(
                                                                                                               final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                               final JobRunConfig jobRunConfig) {
-    log.error("destination DBT -> {}", destinationLauncherConfig.getSupportDBT());
-    log.error("destination normalization -> {}", destinationLauncherConfig.getDockerNormalizationImage());
+    log.error("destination DBT -> {}", destinationLauncherConfig.getSupportDbt());
+    log.error("destination normalization -> {}", destinationLauncherConfig.getNormalizationDockerImage());
     return () -> new DefaultNormalizationWorker(
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),
@@ -159,7 +159,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
             destinationLauncherConfig.getDockerImage(),
             processFactory,
             NormalizationRunnerFactory.NORMALIZATION_VERSION,
-            destinationLauncherConfig.getDockerNormalizationImage()),
+            destinationLauncherConfig.getNormalizationDockerImage()),
         workerEnvironment);
   }
 

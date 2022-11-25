@@ -16,9 +16,9 @@ properties:
     type: integer
   dockerImage:
     type: string
-  dockerNormalizationImage:
+  normalizationDockerImage:
     type: string
-  supportDBT:
+  supportDbt:
     type: boolean
     default: false
   protocolVersion:

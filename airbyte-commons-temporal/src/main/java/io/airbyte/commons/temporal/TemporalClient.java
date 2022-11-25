@@ -390,14 +390,14 @@ public class TemporalClient {
           .findFirst();
       final String destinationNormalizationDockerImage = optionalDestinationDefinition.map(standardDestinationDefinition -> String.format("%s:%s",
           standardDestinationDefinition.getNormalizationRepository(), standardDestinationDefinition.getNormalizationTag())).orElse(null);
-      final boolean supportDBT = optionalDestinationDefinition.isPresent() ? optionalDestinationDefinition.get().getSupportsDbt() : false;
+      final boolean supportDbt = optionalDestinationDefinition.isPresent() ? optionalDestinationDefinition.get().getSupportsDbt() : false;
       destinationLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))
           .withAttemptId((long) attempt)
           .withDockerImage(config.getDestinationDockerImage())
           .withProtocolVersion(config.getDestinationProtocolVersion())
-          .withDockerNormalizationImage(destinationNormalizationDockerImage)
-          .withSupportDBT(supportDBT);
+          .withNormalizationDockerImage(destinationNormalizationDockerImage)
+          .withSupportDbt(supportDbt);
     } catch (IOException ignored) {
       destinationLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))
