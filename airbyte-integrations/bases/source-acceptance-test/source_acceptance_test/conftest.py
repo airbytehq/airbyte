@@ -49,7 +49,7 @@ def test_strictness_level_fixture(acceptance_test_config: Config) -> Config.Test
 
 
 @pytest.fixture(name="cache_discovered_catalog", scope="session")
-def cache_discovered_catalog_fixture(acceptance_test_config: Config) -> Config.TestStrictnessLevel:
+def cache_discovered_catalog_fixture(acceptance_test_config: Config) -> bool:
     return acceptance_test_config.cache_discovered_catalog
 
 
