@@ -268,4 +268,4 @@ Visit [OssMetricsRegistry.java](https://github.com/airbytehq/airbyte/blob/master
 
 ## Additional information
 
-A different approach to collection metrics shows the tutorial [Airbyte Monitoring with dbt and Metabase](https://airbyte.com/blog/airbyte-monitoring-with-dbt-and-metabase) by accessing Airbyte's Postgres DB. The code is open on [airbytehq/open-data-stack](https://github.com/airbytehq/open-data-stack).
+Suppose you are looking for a non-production way of collecting metrics with dbt and Metabase, the tutorial [Airbyte Monitoring with dbt and Metabase](https://airbyte.com/blog/airbyte-monitoring-with-dbt-and-metabase) by accessing Airbyte's Postgres DB. The source code is open on [airbytehq/open-data-stack](https://github.com/airbytehq/open-data-stack). Think of it as an exploratory for data analysts and data engineers of building a dashboard on top of the existing Airbyte Postgres database versus the Prometheus more for DevOps engineers in production.
