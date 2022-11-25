@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.10.0
-Emit `AirbyteControlMessage.ConnectorConfig` on `config` mutation.
+Declare a new authenticator `SingleUseRefreshTokenOauth2Authenticator` that can perform connector configuration mutation and emit `AirbyteControlMessage.ConnectorConfig`.
 
 ## 0.9.5
 Low-code: Add jinja macro `format_datetime`
