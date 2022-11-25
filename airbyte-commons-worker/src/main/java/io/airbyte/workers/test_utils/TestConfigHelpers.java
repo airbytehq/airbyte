@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
+@SuppressWarnings("PMD.TestClassWithoutTestCases")
 public class TestConfigHelpers {
 
   private static final String CONNECTION_NAME = "favorite_color_pipe";
