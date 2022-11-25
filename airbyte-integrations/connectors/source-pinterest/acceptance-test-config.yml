@@ -19,13 +19,13 @@ acceptance_tests:
         status: "succeed"
   discovery:
     tests:
-        # TODO: remove backward compatibility checks once updated to version `>0.1.3`
+        # TODO: remove backward compatibility checks once updated to version `>0.1.10`
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.1.2"
+          disable_for_version: "0.1.9"
       - config_path: "secrets/config_oauth.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.1.2"
+          disable_for_version: "0.1.9"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
