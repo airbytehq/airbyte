@@ -1,6 +1,6 @@
 import { faSlack } from "@fortawesome/free-brands-svg-icons";
-import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
-import { faDesktop, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
+import { faCircleQuestion, faEnvelope } from "@fortawesome/free-regular-svg-icons";
+import { faDesktop } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
@@ -153,7 +153,7 @@ const SideBar: React.FC = () => {
           >
             {({ open }) => (
               <button className={classNames(styles.dropdownMenuButton, { [styles.open]: open })}>
-                <FontAwesomeIcon icon={faQuestionCircle} size="2x" />
+                <FontAwesomeIcon icon={faCircleQuestion} size="2x" />
                 <Text className={styles.text} size="sm">
                   <FormattedMessage id="sidebar.support" />
                 </Text>
