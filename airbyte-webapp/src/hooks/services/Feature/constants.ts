@@ -7,5 +7,4 @@ export const defaultFeatures = [
   FeatureItem.AllowUpdateConnectors,
   FeatureItem.AllowUploadCustomImage,
   FeatureItem.AllowSyncSubOneHourCronExpressions,
-  FeatureItem.AllowUseDatepicker,
 ];
