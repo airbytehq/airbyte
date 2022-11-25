@@ -4,6 +4,7 @@
 
 from typing import Any, List, Mapping, Tuple
 
+import dpath
 import pendulum
 from airbyte_cdk.config_observation import observe_connector_config
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
@@ -104,9 +105,13 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         refresh_token_name: str = "refresh_token",
         refresh_request_body: Mapping[str, Any] = None,
         grant_type: str = "refresh_token",
-        credentials_configuration_field_name: str = "credentials",
+        client_id_config_path="/credentials/client_id",
+        client_secret_config_path="/credentials/client_secret",
+        refresh_token_config_path="/credentials/refresh_token",
     ):
-        self.credentials_configuration_field_name = credentials_configuration_field_name
+        self._client_id_config_path = client_id_config_path
+        self._client_secret_config_path = client_secret_config_path
+        self._refresh_token_config_path = refresh_token_config_path
         self._refresh_token_name = refresh_token_name
         self._connector_config = observe_connector_config(connector_config)
         self._validate_connector_config()
@@ -129,16 +134,16 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         Raises:
             ValueError: Raised if the defined getters are not returning a value.
         """
-        for field_name, getter in [
-            ("client_id", self.get_client_id),
-            ("client_secret", self.get_client_secret),
-            (self.get_refresh_token_name(), self.get_refresh_token),
+        for field_path, getter in [
+            (self._client_id_config_path, self.get_client_id),
+            (self._client_secret_config_path, self.get_client_secret),
+            (self._refresh_token_config_path, self.get_refresh_token),
         ]:
             try:
                 assert getter()
-            except (AssertionError, KeyError):
+            except KeyError:
                 raise ValueError(
-                    f"This authenticator expects a {field_name} field under the {self.credentials_configuration_field_name} field. Please override this class getters or change your configuration structure."
+                    f"This authenticator expects a value field under the {field_path} field path. Please override this class getters or change your configuration structure."
                 )
 
     def get_refresh_token_name(self) -> str:
@@ -148,10 +153,13 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         return self._connector_config[self.credentials_configuration_field_name][field_name]
 
     def get_client_id(self) -> str:
-        return self._get_config_credentials_field("client_id")
+        return dpath.util.get(self._connector_config, self._client_id_config_path)
 
     def get_client_secret(self) -> str:
-        return self._get_config_credentials_field("client_secret")
+        return dpath.util.get(self._connector_config, self._client_secret_config_path)
+
+    def get_refresh_token(self) -> str:
+        return dpath.util.get(self._connector_config, self._refresh_token_config_path)
 
     def set_refresh_token(self, new_refresh_token: str):
         """Set the new refresh token value. The mutation of the connector_config object will emit an Airbyte control message.
@@ -159,10 +167,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         Args:
             new_refresh_token (str): The new refresh token value.
         """
-        self._connector_config[self.credentials_configuration_field_name][self.get_refresh_token_name()] = new_refresh_token
-
-    def get_refresh_token(self) -> str:
-        return self._get_config_credentials_field(self.get_refresh_token_name())
+        dpath.util.set(self._connector_config, self._refresh_token_config_path, new_refresh_token)
 
     def get_access_token(self) -> str:
         """Retrieve new access and refresh token if the access token has expired.
