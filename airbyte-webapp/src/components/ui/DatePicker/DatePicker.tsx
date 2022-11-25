@@ -2,7 +2,7 @@ import { faCalendarAlt } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import en from "date-fns/locale/en-US";
 import dayjs from "dayjs";
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import ReactDatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useIntl } from "react-intl";
@@ -33,13 +33,14 @@ export const toEquivalentLocalTime = (date: dayjs.Dayjs): Date => {
   return dayjs(dateInUtcAsString).toDate();
 };
 
-interface DatePickerProps {
+export interface DatePickerProps {
   error?: boolean;
   value: string;
   onChange: (value: string) => void;
   withTime?: boolean;
   disabled?: boolean;
   onBlur?: (ev: React.FocusEvent<HTMLInputElement>) => void;
+  placeholder?: string;
 }
 
 interface DatePickerButtonTriggerProps {
@@ -64,13 +65,15 @@ const DatepickerButton = React.forwardRef<HTMLButtonElement, DatePickerButtonTri
 
 export const DatePicker: React.FC<DatePickerProps> = ({
   disabled,
+  error,
   onChange,
   onBlur,
+  placeholder,
   value = "",
-  error,
   withTime = false,
 }) => {
   const { locale } = useIntl();
+  const datepickerRef = useRef<ReactDatePicker>(null);
 
   // Additional locales can be registered here as necessary
   useEffect(() => {
@@ -106,9 +109,17 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
   return (
     <div className={styles.wrapper}>
-      <Input error={error} value={value} onChange={onInputChanged} onBlur={onBlur} />
+      <Input
+        placeholder={placeholder}
+        error={error}
+        value={value}
+        onChange={onInputChanged}
+        onBlur={onBlur}
+        onFocus={() => datepickerRef.current?.setOpen(true)}
+      />
       <div className={styles.datepickerButtonContainer}>
         <ReactDatePicker
+          ref={datepickerRef}
           showPopperArrow={false}
           showTimeSelect={withTime}
           disabled={disabled}
