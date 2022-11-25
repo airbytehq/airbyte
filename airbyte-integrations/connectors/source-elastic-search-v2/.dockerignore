@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!main.py
+!source_elastic_search_v2
+!setup.py
+!secrets
