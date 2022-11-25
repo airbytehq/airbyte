@@ -29,8 +29,8 @@ DESTINATION_SIZE_LIMITS = {
     DestinationType.CLICKHOUSE.value: 63,
     # https://docs.pingcap.com/tidb/stable/tidb-limitations
     DestinationType.TIDB.value: 64,
-    # there is no limit (?), I tested 100'000 lenght, still worked
-    DestinationType.DUCKDB.value: 1024,
+    # Couldn't find
+    DestinationType.DUCKDB.value: 64,
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
@@ -172,7 +172,11 @@ class DestinationNameTransformer:
                 result = result.replace('"', "_")
                 result = result.replace("`", "_")
                 result = result.replace("'", "_")
-            elif self.destination_type.value != DestinationType.MYSQL.value and self.destination_type.value != DestinationType.TIDB.value:
+            elif (
+                self.destination_type.value != DestinationType.MYSQL.value
+                and self.destination_type.value != DestinationType.TIDB.value
+                and self.destination_type.value != DestinationType.DUCKDB.value
+            ):
                 result = result.replace('"', '""')
             else:
                 result = result.replace("`", "_")

@@ -177,7 +177,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ("Identifier Name5", "MySQL", "identifier_name5", "{{ adapter.quote('Identifier Name5') }}"),
         ("Identifier Name6", "MSSQL", "identifier_name6", "{{ adapter.quote('Identifier Name6') }}"),
         ("Identifier Name7", "TiDB", "identifier_name7", "{{ adapter.quote('Identifier Name7') }}"),
-        ("Identifier Name7", "DuckDB", "identifier_name7", "{{ adapter.quote('Identifier Name7') }}"),
+        ("Identifier Name8", "DuckDB", "identifier_name8", "{{ adapter.quote('Identifier Name8') }}"),
         # Unicode
         ("a-Unicode_name_文1", "Postgres", "a_unicode_name__1", "{{ adapter.quote('a-Unicode_name_文1') }}"),
         ("a-Unicode_name_文2", "BigQuery", "a_Unicode_name__2", "a_Unicode_name__2"),
@@ -186,7 +186,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ("a-Unicode_name_文5", "MySQL", "a_unicode_name__5", "{{ adapter.quote('a-Unicode_name_文5') }}"),
         ("a-Unicode_name_文6", "MSSQL", "a_unicode_name__6", "{{ adapter.quote('a-Unicode_name_文6') }}"),
         ("a-Unicode_name_文7", "TiDB", "a_unicode_name__7", "{{ adapter.quote('a-Unicode_name_文7') }}"),
-        ("a-Unicode_name_文7", "DuckDB", "a_unicode_name__7", "{{ adapter.quote('a-Unicode_name_文7') }}"),
+        ("a-Unicode_name_文8", "DuckDB", "a_unicode_name__8", "{{ adapter.quote('a-Unicode_name_文8') }}"),
         # Doesnt start with alpha or underscore
         ("100x2001", "Postgres", "100x2001", "{{ adapter.quote('100x2001') }}"),
         ("100x2002", "BigQuery", "100x2002", "_100x2002"),
@@ -196,7 +196,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ("100x2005", "MySQL", "100x2005", "{{ adapter.quote('100x2005') }}"),
         ("100x2006", "MSSQL", "_100x2006", "{{ adapter.quote('100x2006') }}"),
         ("100x2007", "TiDB", "100x2007", "{{ adapter.quote('100x2007') }}"),
-        ("100x2007", "DuckDB", "100x2007", "{{ adapter.quote('100x2007') }}"),
+        ("100x2008", "DuckDB", "100x2008", "{{ adapter.quote('100x2008') }}"),
         # Reserved Keywords in BQ and MySQL
         ("Groups", "Postgres", "groups", "groups"),
         ("Groups", "BigQuery", "Groups", "{{ adapter.quote('Groups') }}"),
@@ -223,7 +223,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ("'QuoTed5 IdenTifiER'", "MySQL", "_quoted5_identifier_", "{{ adapter.quote('\\'QuoTed5 IdenTifiER\\'') }}"),
         ("'QuoTed6 IdenTifiER'", "MSSQL", "_quoted6_identifier_", "{{ adapter.quote('\\'QuoTed6 IdenTifiER\\'') }}"),
         ("'QuoTed7 IdenTifiER'", "TiDB", "_quoted7_identifier_", "{{ adapter.quote('\\'QuoTed7 IdenTifiER\\'') }}"),
-        ("'QuoTed7 IdenTifiER'", "DuckDB", "_quoted7_identifier_", "{{ adapter.quote('\\'QuoTed7 IdenTifiER\\'') }}"),
+        ("'QuoTed8 IdenTifiER'", "DuckDB", "_quoted8_identifier_", "{{ adapter.quote('\\'QuoTed8 IdenTifiER\\'') }}"),
         # Double Quoted identifiers
         ('"QuoTed7 IdenTifiER"', "Postgres", "_quoted7_identifier_", '{{ adapter.quote(\'""QuoTed7 IdenTifiER""\') }}'),
         ('"QuoTed8 IdenTifiER"', "BigQuery", "_QuoTed8_IdenTifiER_", "_QuoTed8_IdenTifiER_"),
@@ -232,7 +232,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ('"QuoTed11 IdenTifiER"', "MySQL", "_quoted11_identifier_", "{{ adapter.quote('\"QuoTed11 IdenTifiER\"') }}"),
         ('"QuoTed12 IdenTifiER"', "MSSQL", "_quoted12_identifier_", '{{ adapter.quote(\'""QuoTed12 IdenTifiER""\') }}'),
         ('"QuoTed13 IdenTifiER"', "TiDB", "_quoted13_identifier_", "{{ adapter.quote('\"QuoTed13 IdenTifiER\"') }}"),
-        ('"QuoTed13 IdenTifiER"', "DuckDB", "_quoted13_identifier_", "{{ adapter.quote('\"QuoTed13 IdenTifiER\"') }}"),
+        ('"QuoTed14 IdenTifiER"', "DuckDB", "_quoted14_identifier_", "{{ adapter.quote('\"QuoTed14 IdenTifiER\"') }}"),
         # Back Quoted identifiers
         ("`QuoTed13 IdenTifiER`", "Postgres", "_quoted13_identifier_", "{{ adapter.quote('`QuoTed13 IdenTifiER`') }}"),
         ("`QuoTed14 IdenTifiER`", "BigQuery", "_QuoTed14_IdenTifiER_", "_QuoTed14_IdenTifiER_"),
@@ -241,7 +241,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ("`QuoTed17 IdenTifiER`", "MySQL", "_quoted17_identifier_", "{{ adapter.quote('_QuoTed17 IdenTifiER_') }}"),
         ("`QuoTed18 IdenTifiER`", "MSSQL", "_quoted18_identifier_", "{{ adapter.quote('`QuoTed18 IdenTifiER`') }}"),
         ("`QuoTed17 IdenTifiER`", "TiDB", "_quoted17_identifier_", "{{ adapter.quote('_QuoTed17 IdenTifiER_') }}"),
-        ("`QuoTed17 IdenTifiER`", "DuckDB", "_quoted17_identifier_", "{{ adapter.quote('_QuoTed17 IdenTifiER_') }}"),
+        ("`QuoTed19 IdenTifiER`", "DuckDB", "_quoted19_identifier_", "{{ adapter.quote('_QuoTed19 IdenTifiER_') }}"),
     ],
 )
 def test_normalize_name(input_str: str, destination_type: str, expected: str, expected_column: str):
