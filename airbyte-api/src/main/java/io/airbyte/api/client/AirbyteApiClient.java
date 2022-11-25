@@ -141,7 +141,7 @@ public class AirbyteApiClient {
   }
 
   /**
-   * Default to 3 retries with a randomised 1 - 10 seconds interval between the first two retries and
+   * Default to 4 retries with a randomised 1 - 10 seconds interval between the first two retries and
    * an 10-minute wait for the last retry.
    */
   public static <T> T retryWithJitter(final Callable<T> call, final String desc) {
@@ -185,7 +185,7 @@ public class AirbyteApiClient {
         currRetries++;
 
         // Sleep anywhere from 1 to jitterMaxIntervalSecs seconds.
-        final var backoffTimeSecs = Math.min(RANDOM.nextInt(jitterMaxIntervalSecs + 1), 1);
+        final var backoffTimeSecs = Math.max(RANDOM.nextInt(jitterMaxIntervalSecs + 1), 1);
         var backoffTimeMs = backoffTimeSecs * 1000;
 
         if (currRetries == maxTries - 1) {
